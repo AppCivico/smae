@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Funcao {
+    id Int @id @unique @default(autoincrement())
+
+    descricao        String
+    permissoes       Json               @default("[]")
+    timePessoaFuncao TimePessoaFuncao[]
+
+    @@map("funcao")
+}
+
+model Secretaria {
+    id Int @id @unique @default(autoincrement())
+
+    sigla      String
+    descricao  String?
+    TimePessoa TimePessoa[]
+
+    @@map("secretaria")
+}
+
+model Time {
+    id Int @id @unique @default(autoincrement())
+
+    nome       String
+    descricao  String?
+    timePessoa TimePessoa[]
+
+    @@map("time")
+}
+
+model Pessoa {
+    id Int @id @unique @default(autoincrement())
+
+    email String @unique
+    senha String
+
+    eh_super_admin Boolean @default(false)
+
+    nome_exibicao String
+    nome_completo String
+    timePessoa    TimePessoa[]
+
+    @@map("pessoa")
+}
+
+model TimePessoa {
+    id Int @id @unique @default(autoincrement())
+
+    pessoa_id        Int
+    time_id          Int
+    secretaria_id    Int
+    pessoa           Pessoa             @relation(fields: [pessoa_id], references: [id])
+    time             Time               @relation(fields: [time_id], references: [id])
+    secretaria       Secretaria         @relation(fields: [secretaria_id], references: [id])
+    TimePessoaFuncao TimePessoaFuncao[]
+
+    @@map("time_pessoa")
+}
+
+model TimePessoaFuncao {
+    id             Int @id @unique @default(autoincrement())
+    funcao_id      Int
+    time_pessoa_id Int
+
+    funcao     Funcao     @relation(fields: [funcao_id], references: [id])
+    timePessoa TimePessoa @relation(fields: [time_pessoa_id], references: [id])
+
+    @@map("time_pessoa_funcao")
+}
