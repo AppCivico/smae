@@ -76,7 +76,9 @@ model Pessoa {
     email String @unique
     senha String
 
-    eh_super_admin Boolean @default(false)
+    eh_super_admin   Boolean @default(false)
+    /// acesso via api com token fixo apenas para usuarios com eh_super_admin = TRUE
+    token_acesso_api String? @unique @db.Uuid()
 
     nome_exibicao String
     nome_completo String

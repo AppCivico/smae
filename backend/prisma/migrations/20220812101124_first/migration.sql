@@ -57,6 +57,7 @@ CREATE TABLE "pessoa" (
     "email" TEXT NOT NULL,
     "senha" TEXT NOT NULL,
     "eh_super_admin" BOOLEAN NOT NULL DEFAULT false,
+    "token_acesso_api" UUID,
     "nome_exibicao" TEXT NOT NULL,
     "nome_completo" TEXT NOT NULL,
 
@@ -108,6 +109,9 @@ CREATE UNIQUE INDEX "pessoa_id_key" ON "pessoa"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "pessoa_email_key" ON "pessoa"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "pessoa_token_acesso_api_key" ON "pessoa"("token_acesso_api");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "time_pessoa_id_key" ON "time_pessoa"("id");
