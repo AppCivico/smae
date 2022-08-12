@@ -89,7 +89,13 @@ CREATE UNIQUE INDEX "funcao_id_key" ON "funcao"("id");
 CREATE UNIQUE INDEX "modulo_id_key" ON "modulo"("id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "modulo_codigo_key" ON "modulo"("codigo");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "permissao_id_key" ON "permissao"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "permissao_codigo_key" ON "permissao"("codigo");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "secretaria_id_key" ON "secretaria"("id");

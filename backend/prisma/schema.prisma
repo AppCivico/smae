@@ -23,7 +23,7 @@ model Funcao {
 model Modulo {
     id        Int         @id @unique @default(autoincrement())
     nome      String
-    codigo    String
+    codigo    String      @unique
     Permissao Permissao[]
 
     @@map("modulo")
@@ -32,7 +32,7 @@ model Modulo {
 model Permissao {
     id              Int               @id @unique @default(autoincrement())
     nome            String
-    codigo          String
+    codigo          String            @unique
     modulo_id       Int
     modulo          Modulo            @relation(fields: [modulo_id], references: [id])
     FuncaoPermissao FuncaoPermissao[]
