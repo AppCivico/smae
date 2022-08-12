@@ -9,7 +9,7 @@ export class PessoaService {
 
     constructor(private readonly prisma: PrismaService) { }
 
-    pessoaComoLinha(pessoa: Pessoa) {
+    pessoaAsHash(pessoa: Pessoa) {
         return {
             nome_exibicao: pessoa.nome_exibicao,
             id: pessoa.id,
@@ -21,7 +21,7 @@ export class PessoaService {
 
         const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
         if (emailExists > 0) {
-            throw new HttpException('E-mail já tem conta', 400);
+            throw new HttpException('email| E-mail já tem conta', 400);
         }
 
         const data = {
@@ -30,14 +30,15 @@ export class PessoaService {
         } as Prisma.PessoaCreateInput;
 
         const created = await this.prisma.pessoa.create({ data });
-        created.eh_super_admin
-        console.log(created)
 
-        return this.pessoaComoLinha(created);
+        return this.pessoaAsHash(created);
     }
 
-    findByEmail() {
-        return `This action returns all pessoa`;
+    async findByEmailAsHash(createPessoaDto: CreatePessoaDto) {
+        const pessoa = await this.prisma.pessoa.findUnique({ where: { email: createPessoaDto.email } });
+        if (!pessoa) return undefined;
+
+        return this.pessoaAsHash(pessoa);
     }
 
 }
