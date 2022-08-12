@@ -16,7 +16,7 @@ my $translator = SQL::Translator->new(
 
         skip_tables_like => ['^_'],
         gutter           => 90,
-        num_columns      => 6,
+        num_columns      => 4,
         add_color        => 1,
         font_size        => 'large',
     },

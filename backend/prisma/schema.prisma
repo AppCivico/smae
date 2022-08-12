@@ -14,10 +14,40 @@ model Funcao {
     id Int @id @unique @default(autoincrement())
 
     descricao        String
-    permissoes       Json               @default("[]")
     timePessoaFuncao TimePessoaFuncao[]
+    FuncaoPermissao  FuncaoPermissao[]
 
     @@map("funcao")
+}
+
+model Modulo {
+    id        Int         @id @unique @default(autoincrement())
+    nome      String
+    codigo    String
+    Permissao Permissao[]
+
+    @@map("modulo")
+}
+
+model Permissao {
+    id              Int               @id @unique @default(autoincrement())
+    nome            String
+    codigo          String
+    modulo_id       Int
+    modulo          Modulo            @relation(fields: [modulo_id], references: [id])
+    FuncaoPermissao FuncaoPermissao[]
+
+    @@map("permissao")
+}
+
+model FuncaoPermissao {
+    funcao_id    Int
+    permissao_id Int
+    funcao       Funcao    @relation(fields: [funcao_id], references: [id])
+    permissao    Permissao @relation(fields: [permissao_id], references: [id])
+
+    @@id([funcao_id, permissao_id])
+    @@map("funcao_permissao")
 }
 
 model Secretaria {
