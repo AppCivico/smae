@@ -34,11 +34,16 @@ export class PessoaService {
         return this.pessoaAsHash(created);
     }
 
-    async findByEmailAsHash(createPessoaDto: CreatePessoaDto) {
-        const pessoa = await this.prisma.pessoa.findUnique({ where: { email: createPessoaDto.email } });
+    async findByEmailAsHash(email: string) {
+        const pessoa = await this.findByEmail(email);
         if (!pessoa) return undefined;
 
         return this.pessoaAsHash(pessoa);
+    }
+
+    async findByEmail(email: string) {
+        const pessoa = await this.prisma.pessoa.findUnique({ where: { email: email } });
+        return pessoa;
     }
 
 }
