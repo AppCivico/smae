@@ -44,7 +44,6 @@ async function atualizar_superadmin() {
             nome_exibicao: 'super admin',
             email: 'superadmin@admin.com',
             eh_super_admin: true,
-            token_acesso_api: '834987cc-d4e0-4d6f-b004-c6c3cf4c3998',
             senha: '$2y$10$LfpFlFCqBnRQpqETLoNYp.lJWvTz7IhUhvzuwptVRfc4D/F0IzRrW' // "test",
         },
     });
