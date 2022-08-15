@@ -16,11 +16,9 @@ export class LocalAuthGuard extends AuthGuard('local') {
 
     // aqui da para tratar os retorno de erro customizado
     handleRequest(err: any, user: any) {
-        console.log(err, user)
         if (err || !user) {
-            throw new UnauthorizedException(err?.message);
+            throw new UnauthorizedException('Sem permissão para acesso');
         }
-
         return user;
     }
 }
