@@ -17,11 +17,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPessoaPayload): Promise<PessoaFromJwt> {
-
-        const pessoa = await this.authService.pessoaPeloId(payload.id);
+        const pessoa = await this.authService.pessoaPeloSessionId(payload.sid);
 
         return {
-            id: payload.id,
+            id: pessoa.id as number,
             nome_exibicao: pessoa.nome_exibicao,
         };
     }

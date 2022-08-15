@@ -1,5 +1,6 @@
 export interface JwtPessoaPayload {
-    id: number;
+    /// session id
+    sid: number;
     iat?: number;
     exp?: number;
 }

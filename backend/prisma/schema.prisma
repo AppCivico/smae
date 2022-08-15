@@ -76,11 +76,12 @@ model Pessoa {
     email String @unique
     senha String
 
-    eh_super_admin   Boolean @default(false)
+    eh_super_admin Boolean @default(false)
 
-    nome_exibicao String
-    nome_completo String
-    timePessoa    TimePessoa[]
+    nome_exibicao     String
+    nome_completo     String
+    timePessoa        TimePessoa[]
+    PessoaSessaoAtiva PessoaSessaoAtiva[]
 
     @@map("pessoa")
 }
@@ -108,4 +109,13 @@ model TimePessoaFuncao {
     timePessoa TimePessoa @relation(fields: [time_pessoa_id], references: [id])
 
     @@map("time_pessoa_funcao")
+}
+
+model PessoaSessaoAtiva {
+    id Int @id @unique @default(autoincrement())
+
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    @@map("pessoa_sessao_ativa")
 }

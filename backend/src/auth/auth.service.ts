@@ -15,8 +15,10 @@ export class AuthService {
     ) { }
 
     async login(pessoa: Pessoa): Promise<AccessToken> {
+
+        const sessaoId = await this.pessoaService.newSessionForPessoa(pessoa.id as number);
         const payload: JwtPessoaPayload = {
-            id: pessoa.id as number,
+            sid: sessaoId,
             iat: Date.now(),
         };
 
@@ -42,12 +44,12 @@ export class AuthService {
     }
 
 
-    async pessoaPeloId(id: number): Promise<Pessoa> {
-        const pessoa = await this.pessoaService.findById(id);
+    async pessoaPeloSessionId(id: number): Promise<Pessoa> {
+        const pessoa = await this.pessoaService.findBySessionId(id);
         if (pessoa) {
             return pessoa;
         }
-        throw new UnauthorizedError('pessoaPeloId não encontrou a conta');
+        throw new UnauthorizedError('Sessão não está mais ativa');
     }
 
 }
