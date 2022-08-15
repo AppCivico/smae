@@ -5,7 +5,7 @@ import { UnauthorizedError } from './errors/unauthorized.error';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
 import { JwtPessoaPayload } from './models/JwtPessoaPayload';
-import { AuthToken } from './models/AuthToken';
+import { AccessToken } from './models/AccessToken';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
         private readonly pessoaService: PessoaService,
     ) { }
 
-    async login(pessoa: Pessoa): Promise<AuthToken> {
+    async login(pessoa: Pessoa): Promise<AccessToken> {
         const payload: JwtPessoaPayload = {
             id: pessoa.id as number,
             iat: Date.now(),
