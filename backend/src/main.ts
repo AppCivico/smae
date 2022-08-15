@@ -10,6 +10,9 @@ async function bootstrap() {
     const config = new DocumentBuilder()
         .setTitle('SMAE - OpenAPI file')
         .setDescription('SMAE')
+        .addBearerAuth({
+            type: 'http', scheme: 'bearer', bearerFormat: 'Bearer',
+        }, 'access-token')
         .setVersion('1.0')
         .addTag('pessoas')
         .addTag('publico')
