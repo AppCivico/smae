@@ -21,9 +21,9 @@ export class CreatePessoaDto extends Pessoa {
        * Nome para exibir no app
        * @example Fulano
     */
-    @IsString({ message: '$property| Nome Exibição: Precisa ser alfanumérico' })
-    @MinLength(4, { message: '$property| Nome Exibição: Mínimo de 4 caracteres' })
-    @MaxLength(30, { message: '$property| Nome Exibição: Máximo 30 caracteres' })
+    @IsString({ message: '$property| Nome Social: Precisa ser alfanumérico' })
+    @MinLength(4, { message: '$property| Nome Social: Mínimo de 4 caracteres' })
+    @MaxLength(30, { message: '$property| Nome Social: Máximo 30 caracteres' })
     nome_exibicao: string;
 
     /**
@@ -37,14 +37,16 @@ export class CreatePessoaDto extends Pessoa {
 
     /**
        * Senha para login
-       * pelo menos 6 chars, 1 caractere em caixa alta e um número
-       * @example Teste123
+       * pelo menos 8 caracteres, 1 caractere em caixa alta e um número
+       * um dos seguintes caracteres: !@#$%^&*()_+-=\[]{};':"\|,.<>/?
+       * - senha não expira, mas bloqueia a conta após 3 tentativas e enviar nova senha por email
+       * @example Testes*1
     */
     @IsString({ message: '$property| Senha: Precisa ser alfanumérico' })
-    @MinLength(6, { message: '$property| Senha: Mínimo de 6 caracteres' })
+    @MinLength(8, { message: '$property| Senha: Mínimo de 8 caracteres' })
     @MaxLength(1000, { message: '$property| Senha: Máximo de 1000 caracteres' })
-    @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-        message: '$property| Senha: Precisa ter pelo menos 1 número e um caractere em caixa alta',
+    @Matches(/((?=.*\d)|(?=.*\W+)|(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]))(?![.\n])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])(?=.*[a-z]).*$/, {
+        message: '$property| Senha: Precisa ter pelo menos 1 número e um caractere em caixa alta e um dos seguintes caracteres especiais: !@#$%^&*()_+-=\\[]{};\':"\\|,.<>/?',
     })
     senha: string;
 }
