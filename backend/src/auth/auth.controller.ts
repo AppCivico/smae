@@ -6,6 +6,7 @@ import {
     Request,
     UseGuards
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Pessoa } from 'src/pessoa/entities/pessoa.entity';
 import { AuthService } from './auth.service';
@@ -17,6 +18,7 @@ import { AuthRequest } from './models/AuthRequest';
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
+    @ApiTags('publico')
     @Post('login')
     @HttpCode(HttpStatus.OK)
     @IsPublic()
@@ -25,7 +27,7 @@ export class AuthController {
         return this.authService.login(req.user);
     }
 
-
+    @ApiTags('minha-conta')
     @Post('sair')
     @HttpCode(HttpStatus.NO_CONTENT)
     async logout(@CurrentUser() user: Pessoa) {
