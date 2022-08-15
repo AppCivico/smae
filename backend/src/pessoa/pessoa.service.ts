@@ -65,4 +65,8 @@ export class PessoaService {
         return pessoaSessao.id;
     }
 
+    async removeSessionForPessoa(id: number) {
+        await this.prisma.pessoaSessaoAtiva.delete({ where: { id: id } });
+    }
+
 }

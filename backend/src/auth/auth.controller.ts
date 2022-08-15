@@ -6,6 +6,8 @@ import {
     Request,
     UseGuards
 } from '@nestjs/common';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Pessoa } from 'src/pessoa/entities/pessoa.entity';
 import { AuthService } from './auth.service';
 import { IsPublic } from './decorators/is-public.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -21,5 +23,13 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     async login(@Request() req: AuthRequest) {
         return this.authService.login(req.user);
+    }
+
+
+    @Post('sair')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async logout(@CurrentUser() user: Pessoa) {
+        await this.authService.logout(user);
+        return ''
     }
 }

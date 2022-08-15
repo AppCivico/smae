@@ -22,6 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         return {
             id: pessoa.id as number,
             nome_exibicao: pessoa.nome_exibicao,
+            session_id: payload.sid,
         };
     }
 }

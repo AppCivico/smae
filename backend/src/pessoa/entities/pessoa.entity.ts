@@ -6,4 +6,5 @@ export class Pessoa {
     token_acesso_api?: string;
     nome_exibicao: string;
     nome_completo: string;
+    session_id?: number;
 }

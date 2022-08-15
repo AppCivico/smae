@@ -27,6 +27,10 @@ export class AuthService {
         };
     }
 
+    async logout(pessoa: Pessoa) {
+        await this.pessoaService.removeSessionForPessoa(pessoa.session_id as number);
+    }
+
     async pessoaPeloEmailSenha(email: string, senhaInformada: string): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findByEmail(email);
         if (pessoa) {
