@@ -1,9 +1,9 @@
 export class Pessoa {
-    id?: Number;
-    email: String;
-    senha: String;
-    eh_super_admin: Boolean;
-    token_acesso_api?: String;
-    nome_exibicao: String;
-    nome_completo: String;
+    id?: number;
+    email: string;
+    senha: string;
+    eh_super_admin: boolean;
+    token_acesso_api?: string;
+    nome_exibicao: string;
+    nome_completo: string;
 }

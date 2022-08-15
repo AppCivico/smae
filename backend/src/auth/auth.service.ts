@@ -31,7 +31,7 @@ export class AuthService {
             const isPasswordValid = await bcrypt.compare(senhaInformada, pessoa.senha);
 
             if (isPasswordValid) {
-                console.log('returning ',  pessoa);
+                console.log('returning ', pessoa);
                 return pessoa as Pessoa;
             }
         }
@@ -40,4 +40,14 @@ export class AuthService {
             'email| E-mail ou senha inválidos',
         );
     }
+
+
+    async pessoaPeloId(id: number): Promise<Pessoa> {
+        const pessoa = await this.pessoaService.findById(id);
+        if (pessoa) {
+            return pessoa;
+        }
+        throw new UnauthorizedError('pessoaPeloId não encontrou a conta');
+    }
+
 }

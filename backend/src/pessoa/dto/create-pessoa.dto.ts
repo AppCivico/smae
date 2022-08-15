@@ -16,12 +16,12 @@ export class CreatePessoaDto extends Pessoa {
     @IsString({ message: '$property| Nome Exibição: Precisa ser alfanumérico' })
     @MinLength(4, { message: '$property| Nome Exibição: Mínimo de 4 caracteres' })
     @MaxLength(30, { message: '$property| Nome Exibição: Máximo 30 caracteres' })
-    nome_exibicao: String;
+    nome_exibicao: string;
 
     @IsString({ message: '$property| Nome Completo: Precisa ser alfanumérico' })
     @MinLength(4, { message: '$property| Nome Completo: Mínimo de 4 caracteres' })
     @MaxLength(250, { message: '$property| Nome Completo: Máximo 250 caracteres' })
-    nome_completo: String;
+    nome_completo: string;
 
     @IsString({ message: '$property| Senha: Precisa ser alfanumérico' })
     @MinLength(6, { message: '$property| Senha: Mínimo de 6 caracteres' })

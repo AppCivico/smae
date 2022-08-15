@@ -3,11 +3,12 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PessoaFromJwt } from '../models/PessoaFromJwt';
 import { JwtPessoaPayload } from '../models/JwtPessoaPayload';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor() {
-        console.log('ExtractJwt.fromAuthHeaderAsBearerToken')
+    constructor(private authService: AuthService) {
+
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
@@ -16,8 +17,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPessoaPayload): Promise<PessoaFromJwt> {
+
+        const pessoa = await this.authService.pessoaPeloId(payload.id);
+
         return {
             id: payload.id,
+            nome_exibicao: pessoa.nome_exibicao,
         };
     }
 }
