@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { UnauthorizedError } from './errors/unauthorized.error';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
@@ -33,12 +32,23 @@ export class AuthService {
 
     async pessoaPeloEmailSenha(email: string, senhaInformada: string): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findByEmail(email);
+
         if (pessoa) {
-            const isPasswordValid = await bcrypt.compare(senhaInformada, pessoa.senha);
+
+            let isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
 
             if (isPasswordValid) {
                 console.log('returning ', pessoa);
                 return pessoa as Pessoa;
+            } else {
+
+                if (pessoa.senha_bloqueada) {
+                    throw new UnauthorizedError(
+                        'email| Conta está bloqueada, acesse o e-mail para recuperar a conta',
+                    );
+                }
+
+                await this.pessoaService.incrementarSenhaInvalida(pessoa);
             }
         }
 
