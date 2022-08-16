@@ -53,6 +53,20 @@ export class PessoaService {
 
     }
 
+    async escreverNovaSenhaById(pessoaId: number, senha: string) {
+
+        let data = {
+            senha_bloqueada: false,
+            senha_bloqueada_em: undefined,
+            senha: await bcrypt.hash(senha, 12)
+        };
+
+        await this.prisma.pessoa.updateMany({
+            where: { id: pessoaId },
+            data: data
+        });
+    }
+
     async create(createPessoaDto: CreatePessoaDto) {
         createPessoaDto.email = createPessoaDto.email.toLocaleLowerCase();
 

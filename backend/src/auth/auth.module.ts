@@ -7,6 +7,7 @@ import { PessoaModule } from 'src/pessoa/pessoa.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginValidationMiddleware } from './middlewares/login-validation.middleware';
+import { EscreverNovaSenhaValidationMiddleware } from 'src/auth/middlewares/escrever-nova-senha-validation.middleware';
 
 @Module({
     imports: [
@@ -24,5 +25,6 @@ import { LoginValidationMiddleware } from './middlewares/login-validation.middle
 export class AuthModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(LoginValidationMiddleware).forRoutes('login');
+        consumer.apply(EscreverNovaSenhaValidationMiddleware).forRoutes('escrever-nova-senha');
     }
 }

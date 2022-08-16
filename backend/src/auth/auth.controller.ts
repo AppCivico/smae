@@ -1,4 +1,5 @@
 import {
+    Body,
     Controller,
     HttpCode,
     HttpStatus,
@@ -16,6 +17,7 @@ import { AuthRequest } from './models/AuthRequest';
 import { AccessToken } from './models/AccessToken';
 import { LoginRequestBody } from 'src/auth/models/LoginRequestBody.dto';
 import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
+import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
 
 @Controller()
 export class AuthController {
@@ -26,7 +28,6 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @IsPublic()
     @UseGuards(LocalAuthGuard)
-    @ApiBody({ type: LoginRequestBody })
     @ApiBody({ type: LoginRequestBody })
     @ApiExtraModels(AccessToken, ReducedAccessToken)
     @ApiOkResponse({
@@ -45,5 +46,14 @@ export class AuthController {
     async logout(@CurrentUser() user: Pessoa) {
         await this.authService.logout(user);
         return ''
+    }
+
+    @ApiTags('publico')
+    @Post('escrever-nova-senha')
+    @HttpCode(HttpStatus.OK)
+    @IsPublic()
+    @ApiBody({ type: EscreverNovaSenhaRequestBody })
+    async escreverNovaSenha(@Body() body: EscreverNovaSenhaRequestBody) {
+        return this.authService.escreverNovaSenha(body);
     }
 }

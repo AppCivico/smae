@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedError } from './errors/unauthorized.error';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
@@ -7,6 +7,7 @@ import { JwtPessoaPayload } from './models/JwtPessoaPayload';
 import { AccessToken } from './models/AccessToken';
 import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
 import { JwtReducedAccessToken } from 'src/auth/models/JwtReducedAccessToken';
+import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
 
 @Injectable()
 export class AuthService {
@@ -29,18 +30,21 @@ export class AuthService {
                 reduced_access_token: this.jwtService.sign(payload, { expiresIn: '10m' }),
             } as ReducedAccessToken
 
-        } else {
-            const sessaoId = await this.pessoaService.newSessionForPessoa(pessoa.id as number);
-            const payload: JwtPessoaPayload = {
-                sid: sessaoId,
-                iat: Date.now(),
-            };
-
-            return {
-                access_token: this.jwtService.sign(payload),
-            } as AccessToken
         }
 
+        return this.#criarSession(pessoa.id as number);
+    }
+
+    async #criarSession(pessoaId: number) {
+        const sessaoId = await this.pessoaService.newSessionForPessoa(pessoaId);
+        const payload: JwtPessoaPayload = {
+            sid: sessaoId,
+            iat: Date.now(),
+        };
+
+        return {
+            access_token: this.jwtService.sign(payload),
+        } as AccessToken
     }
 
     async logout(pessoa: Pessoa) {
@@ -74,4 +78,18 @@ export class AuthService {
         throw new UnauthorizedError('Sessão não está mais ativa');
     }
 
+    async escreverNovaSenha(body: EscreverNovaSenhaRequestBody) {
+        let result: JwtReducedAccessToken;
+        try {
+            result = this.jwtService.verify(body.reduced_access_token);
+        } catch {
+            throw new BadRequestException('reduced_access_token: inválido');
+        }
+
+
+        await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
+
+        return this.#criarSession(result.pessoaId);
+
+    }
 }
