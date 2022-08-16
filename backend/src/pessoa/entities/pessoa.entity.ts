@@ -7,4 +7,5 @@ export class Pessoa {
     nome_exibicao: string;
     nome_completo: string;
     session_id?: number;
+    senha_bloqueada: boolean
 }

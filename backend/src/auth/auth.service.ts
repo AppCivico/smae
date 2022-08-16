@@ -5,6 +5,8 @@ import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
 import { JwtPessoaPayload } from './models/JwtPessoaPayload';
 import { AccessToken } from './models/AccessToken';
+import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
+import { JwtReducedAccessToken } from 'src/auth/models/JwtReducedAccessToken';
 
 @Injectable()
 export class AuthService {
@@ -13,17 +15,32 @@ export class AuthService {
         private readonly pessoaService: PessoaService,
     ) { }
 
-    async login(pessoa: Pessoa): Promise<AccessToken> {
+    async login(pessoa: Pessoa): Promise<AccessToken | ReducedAccessToken> {
 
-        const sessaoId = await this.pessoaService.newSessionForPessoa(pessoa.id as number);
-        const payload: JwtPessoaPayload = {
-            sid: sessaoId,
-            iat: Date.now(),
-        };
+        if (pessoa.senha_bloqueada) {
 
-        return {
-            access_token: this.jwtService.sign(payload),
-        };
+            const payload: JwtReducedAccessToken = {
+                aud: 'resetPass',
+                pessoaId: pessoa.id as number,
+                iat: Date.now(),
+            };
+
+            return {
+                reduced_access_token: this.jwtService.sign(payload, { expiresIn: '10m' }),
+            } as ReducedAccessToken
+
+        } else {
+            const sessaoId = await this.pessoaService.newSessionForPessoa(pessoa.id as number);
+            const payload: JwtPessoaPayload = {
+                sid: sessaoId,
+                iat: Date.now(),
+            };
+
+            return {
+                access_token: this.jwtService.sign(payload),
+            } as AccessToken
+        }
+
     }
 
     async logout(pessoa: Pessoa) {
@@ -33,28 +50,19 @@ export class AuthService {
     async pessoaPeloEmailSenha(email: string, senhaInformada: string): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findByEmail(email);
 
-        if (pessoa) {
+        if (!pessoa)
+            throw new UnauthorizedError('email| E-mail ou senha inválidos');
 
-            let isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
+        let isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
+        if (!isPasswordValid) {
+            if (pessoa.senha_bloqueada)
+                throw new UnauthorizedError('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
 
-            if (isPasswordValid) {
-                console.log('returning ', pessoa);
-                return pessoa as Pessoa;
-            } else {
-
-                if (pessoa.senha_bloqueada) {
-                    throw new UnauthorizedError(
-                        'email| Conta está bloqueada, acesse o e-mail para recuperar a conta',
-                    );
-                }
-
-                await this.pessoaService.incrementarSenhaInvalida(pessoa);
-            }
+            await this.pessoaService.incrementarSenhaInvalida(pessoa);
+            throw new UnauthorizedError('email| E-mail ou senha inválidos');
         }
 
-        throw new UnauthorizedError(
-            'email| E-mail ou senha inválidos',
-        );
+        return pessoa as Pessoa;
     }
 
 
