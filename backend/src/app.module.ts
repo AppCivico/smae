@@ -9,8 +9,17 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { MinhaContaController } from './minha-conta/minha-conta.controller';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 @Module({
-    imports: [PrismaModule, PessoaModule, AuthModule, MinhaContaModule],
+    imports: [
+        ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'public'),
+            serveRoot: '/public',
+        }),
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule
+    ],
     controllers: [AppController, MinhaContaController],
     providers: [AppService,
         {

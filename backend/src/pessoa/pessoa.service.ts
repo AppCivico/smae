@@ -7,8 +7,10 @@ import { Prisma, Pessoa } from '@prisma/client';
 @Injectable()
 export class PessoaService {
     #maxQtdeSenhaInvalidaParaBlock: number
+    #urlLoginSMAE: string
     constructor(private readonly prisma: PrismaService) {
         this.#maxQtdeSenhaInvalidaParaBlock = Number(process.env.MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK) || 3
+        this.#urlLoginSMAE = process.env.URL_LOGIN_SMAE || '#/login-smae';
     }
 
     pessoaAsHash(pessoa: Pessoa) {
@@ -51,8 +53,25 @@ export class PessoaService {
             data: data
         });
 
+        await this.enviaEmailNovaSenha(pessoa, newPass);
     }
 
+    async enviaEmailNovaSenha(pessoa: Pessoa, senha: string) {
+        await this.prisma.emaildbQueue.create({
+            data: {
+                config_id: 1,
+                subject: 'Nova senha',
+                template: 'nova-senha.html',
+                to: pessoa.email,
+                variables: {
+                    tentativas: this.#maxQtdeSenhaInvalidaParaBlock,
+                    link: this.#urlLoginSMAE,
+                    nova_senha: senha,
+                },
+            }
+        });
+
+    }
     async escreverNovaSenhaById(pessoaId: number, senha: string) {
 
         let data = {
