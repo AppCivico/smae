@@ -83,13 +83,14 @@ export class AuthService {
         try {
             result = this.jwtService.verify(body.reduced_access_token);
         } catch {
-            throw new BadRequestException('reduced_access_token: inválido');
+            throw new BadRequestException('reduced_access_token| token inválido');
         }
 
-
-        await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
-
-        return this.#criarSession(result.pessoaId);
-
+        let count = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
+        if (count == 1) {
+            return this.#criarSession(result.pessoaId);
+        } else {
+            throw new BadRequestException('reduced_access_token| a senha já foi atualizada!');
+        }
     }
 }

@@ -80,10 +80,11 @@ export class PessoaService {
             senha: await bcrypt.hash(senha, 12)
         };
 
-        await this.prisma.pessoa.updateMany({
-            where: { id: pessoaId },
+        const updated = await this.prisma.pessoa.updateMany({
+            where: { id: pessoaId, senha_bloqueada: true },
             data: data
         });
+        return updated.count;
     }
 
     async create(createPessoaDto: CreatePessoaDto) {
