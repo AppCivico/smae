@@ -136,10 +136,13 @@ export class PessoaService {
         return pessoaSessao.id;
     }
 
-    async removeSessionForPessoa(id: number) {
+    async invalidarSessao(id: number) {
         await this.prisma.pessoaSessaoAtiva.delete({ where: { id: id } });
     }
 
+    async invalidarTodasSessoesAtivas(pessoaId: number) {
+        await this.prisma.pessoaSessaoAtiva.deleteMany({ where: { pessoa_id: pessoaId } });
+    }
 
     #generateRndPass(pLength: number) {
 

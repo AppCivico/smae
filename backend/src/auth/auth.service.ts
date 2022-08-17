@@ -48,7 +48,7 @@ export class AuthService {
     }
 
     async logout(pessoa: Pessoa) {
-        await this.pessoaService.removeSessionForPessoa(pessoa.session_id as number);
+        await this.pessoaService.invalidarSessao(pessoa.session_id as number);
     }
 
     async pessoaPeloEmailSenha(email: string, senhaInformada: string): Promise<Pessoa> {
@@ -88,6 +88,7 @@ export class AuthService {
 
         let count = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
         if (count == 1) {
+            this.pessoaService.invalidarTodasSessoesAtivas(result.pessoaId);
             return this.#criarSession(result.pessoaId);
         } else {
             throw new BadRequestException('reduced_access_token| a senha já foi atualizada!');
