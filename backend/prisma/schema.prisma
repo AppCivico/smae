@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -11,8 +8,7 @@ datasource db {
 }
 
 model Funcao {
-    id Int @id @unique @default(autoincrement())
-
+    id               Int                @id @unique @default(autoincrement())
     descricao        String
     timePessoaFuncao TimePessoaFuncao[]
     FuncaoPermissao  FuncaoPermissao[]
@@ -51,8 +47,7 @@ model FuncaoPermissao {
 }
 
 model Secretaria {
-    id Int @id @unique @default(autoincrement())
-
+    id         Int          @id @unique @default(autoincrement())
     sigla      String
     descricao  String?
     TimePessoa TimePessoa[]
@@ -61,8 +56,7 @@ model Secretaria {
 }
 
 model Time {
-    id Int @id @unique @default(autoincrement())
-
+    id         Int          @id @unique @default(autoincrement())
     nome       String
     descricao  String?
     timePessoa TimePessoa[]
@@ -71,65 +65,87 @@ model Time {
 }
 
 model Pessoa {
-    id Int @id @unique @default(autoincrement())
-
-    email String @unique
-    senha String
-
-    eh_super_admin Boolean @default(false)
-
-    nome_exibicao     String
-    nome_completo     String
-    timePessoa        TimePessoa[]
-    PessoaSessaoAtiva PessoaSessaoAtiva[]
-    criado_em         DateTime            @default(now()) @db.Timestamptz()
-    criado_por        Int?
-    atualizado_em     DateTime            @default(now()) @db.Timestamptz()
-    atualizado_por    Int?
-
-    criador             Pessoa?  @relation("CriadorPessoas", fields: [criado_por], references: [id])
-    PessoasQueCriei     Pessoa[] @relation("CriadorPessoas")
-    atualizador         Pessoa?  @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
-    PessoasQueAtualizei Pessoa[] @relation("AtualizadorPessoas")
-
-    qtde_senha_invalida Int      @default(0)
-    senha_bloqueada     Boolean  @default(false)
-    senha_bloqueada_em  DateTime @default(now()) @db.Timestamptz()
-    senha_atualizada_em DateTime @default(now()) @db.Timestamptz()
+    id                  Int                 @id @unique @default(autoincrement())
+    email               String              @unique
+    senha               String
+    eh_super_admin      Boolean             @default(false)
+    nome_exibicao       String
+    nome_completo       String
+    atualizado_em       DateTime            @default(now()) @db.Timestamptz(6)
+    atualizado_por      Int?
+    criado_em           DateTime            @default(now()) @db.Timestamptz(6)
+    criado_por          Int?
+    qtde_senha_invalida Int                 @default(0)
+    senha_atualizada_em DateTime            @default(now()) @db.Timestamptz(6)
+    senha_bloqueada     Boolean             @default(false)
+    senha_bloqueada_em  DateTime            @default(now()) @db.Timestamptz(6)
+    atualizador         Pessoa?             @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
+    criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
+    PessoasQueAtualizei Pessoa[]            @relation("AtualizadorPessoas")
+    PessoasQueCriei     Pessoa[]            @relation("CriadorPessoas")
+    PessoaSessaoAtiva   PessoaSessaoAtiva[]
+    timePessoa          TimePessoa[]
 
     @@map("pessoa")
 }
 
 model TimePessoa {
-    id Int @id @unique @default(autoincrement())
-
+    id               Int                @id @unique @default(autoincrement())
     pessoa_id        Int
     time_id          Int
     secretaria_id    Int
     pessoa           Pessoa             @relation(fields: [pessoa_id], references: [id])
-    time             Time               @relation(fields: [time_id], references: [id])
     secretaria       Secretaria         @relation(fields: [secretaria_id], references: [id])
+    time             Time               @relation(fields: [time_id], references: [id])
     TimePessoaFuncao TimePessoaFuncao[]
 
     @@map("time_pessoa")
 }
 
 model TimePessoaFuncao {
-    id             Int @id @unique @default(autoincrement())
+    id             Int        @id @unique @default(autoincrement())
     funcao_id      Int
     time_pessoa_id Int
-
-    funcao     Funcao     @relation(fields: [funcao_id], references: [id])
-    timePessoa TimePessoa @relation(fields: [time_pessoa_id], references: [id])
+    funcao         Funcao     @relation(fields: [funcao_id], references: [id])
+    timePessoa     TimePessoa @relation(fields: [time_pessoa_id], references: [id])
 
     @@map("time_pessoa_funcao")
 }
 
 model PessoaSessaoAtiva {
-    id Int @id @unique @default(autoincrement())
-
+    id        Int    @id @unique @default(autoincrement())
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
 
     @@map("pessoa_sessao_ativa")
+}
+
+model EmaildbConfig {
+    id                       Int                     @id @default(autoincrement())
+    from                     String                  @db.VarChar
+    template_resolver_class  String                  @db.VarChar(60)
+    template_resolver_config Json                    @default("{}") @db.Json
+    email_transporter_class  String                  @db.VarChar(60)
+    email_transporter_config Json                    @default("{}") @db.Json
+    delete_after             Unsupported("interval") @default(dbgenerated("'10 year'::interval"))
+    emaildb_queue            EmaildbQueue[]
+
+    @@map("emaildb_config")
+}
+
+model EmaildbQueue {
+    id             String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    config_id      Int
+    created_at     DateTime      @default(now()) @db.Timestamp(6)
+    template       String        @db.VarChar
+    to             String        @db.VarChar
+    subject        String        @db.VarChar
+    variables      Json          @db.Json
+    sent           Boolean?
+    updated_at     DateTime?     @db.Timestamp(6)
+    visible_after  DateTime?     @db.Timestamp(6)
+    errmsg         String?       @db.VarChar
+    emaildb_config EmaildbConfig @relation(fields: [config_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+    @@map("emaildb_queue")
 }

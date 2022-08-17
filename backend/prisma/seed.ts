@@ -4,9 +4,26 @@ const CodModuloContaPerfil = 'conta.perfil';
 const CodPermPerfilEditar = 'perfil.editar';
 
 async function main() {
+    await criar_emaildb_config();
+
     await atualizar_modulos();
     await atualizar_permissao();
     await atualizar_superadmin();
+}
+
+async function criar_emaildb_config() {
+    await prisma.emaildbConfig.upsert({
+        where: { id: 1 },
+        update: {},
+        create:
+        {
+            from: '"FooBar" user@example.com',
+            template_resolver_class: 'Shypper::TemplateResolvers::HTTP',
+            template_resolver_config: { "base_url": "https://example.com/static/template-emails/" },
+            email_transporter_class: 'Email::Sender::Transport::SMTP::Persistent',
+            email_transporter_config: { "sasl_password": "...", "sasl_username": "apikey", "port": "587", "host": "smtp.sendgrid.net" }
+        },
+    });
 }
 
 async function atualizar_modulos() {
