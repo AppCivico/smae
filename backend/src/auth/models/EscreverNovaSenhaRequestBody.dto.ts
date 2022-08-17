@@ -3,7 +3,7 @@ import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
 export class EscreverNovaSenhaRequestBody {
     /**
     * Access Token
-    * @example admin@email.com
+    * @example header.auth.sign
     */
     @IsString({ message: '$property| Precisa do token' })
     reduced_access_token: string;

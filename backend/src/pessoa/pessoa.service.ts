@@ -34,11 +34,11 @@ export class PessoaService {
         });
 
         if (updatedPessoa.qtde_senha_invalida >= this.#maxQtdeSenhaInvalidaParaBlock) {
-            await this.criaNovaSenha(pessoa);
+            await this.criaNovaSenha(pessoa, false);
         }
     }
 
-    async criaNovaSenha(pessoa: Pessoa) {
+    async criaNovaSenha(pessoa: Pessoa, solicitadoPeloUsuario: boolean) {
         let newPass = this.#generateRndPass(8);
         console.log(`new password: ${newPass}`, pessoa);
 
@@ -53,20 +53,21 @@ export class PessoaService {
             data: data
         });
 
-        await this.enviaEmailNovaSenha(pessoa, newPass);
+        await this.enviaEmailNovaSenha(pessoa, newPass, solicitadoPeloUsuario);
     }
 
-    async enviaEmailNovaSenha(pessoa: Pessoa, senha: string) {
+    async enviaEmailNovaSenha(pessoa: Pessoa, senha: string, solicitadoPeloUsuario: boolean) {
         await this.prisma.emaildbQueue.create({
             data: {
                 config_id: 1,
-                subject: 'Nova senha',
+                subject: solicitadoPeloUsuario ? 'Nova senha solicitada' : 'Nova senha para liberar acesso',
                 template: 'nova-senha.html',
                 to: pessoa.email,
                 variables: {
                     tentativas: this.#maxQtdeSenhaInvalidaParaBlock,
                     link: this.#urlLoginSMAE,
                     nova_senha: senha,
+                    solicitadoPeloUsuario: solicitadoPeloUsuario,
                 },
             }
         });

@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginValidationMiddleware } from './middlewares/login-validation.middleware';
 import { EscreverNovaSenhaValidationMiddleware } from 'src/auth/middlewares/escrever-nova-senha-validation.middleware';
+import { SolicitarNovaSenhaValidationMiddleware } from 'src/auth/middlewares/solicitar-nova-senha-validation.middleware';
 
 @Module({
     imports: [
@@ -26,5 +27,6 @@ export class AuthModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(LoginValidationMiddleware).forRoutes('login');
         consumer.apply(EscreverNovaSenhaValidationMiddleware).forRoutes('escrever-nova-senha');
+        consumer.apply(SolicitarNovaSenhaValidationMiddleware).forRoutes('solicitar-nova-senha');
     }
 }

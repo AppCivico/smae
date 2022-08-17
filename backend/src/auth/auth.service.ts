@@ -8,6 +8,7 @@ import { AccessToken } from './models/AccessToken';
 import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
 import { JwtReducedAccessToken } from 'src/auth/models/JwtReducedAccessToken';
 import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
+import { SolicitarNovaSenhaRequestBody } from 'src/auth/models/SolicitarNovaSenhaRequestBody.dto';
 
 @Injectable()
 export class AuthService {
@@ -94,4 +95,17 @@ export class AuthService {
             throw new BadRequestException('reduced_access_token| a senha já foi atualizada!');
         }
     }
+
+    async solicitarNovaSenha(body: SolicitarNovaSenhaRequestBody) {
+        const pessoa = await this.pessoaService.findByEmail(body.email);
+
+        if (!pessoa)
+            throw new BadRequestException('email| E-mail não encontrado');
+
+        if (pessoa.senha_bloqueada && Date.now() - pessoa.senha_bloqueada_em.getTime() < 3600 * 1000)
+            throw new BadRequestException('email| Solicitação já foi efetuada recentemente. Conferia seu e-mail.');
+
+        await this.pessoaService.criaNovaSenha(pessoa, true);
+    }
+
 }

@@ -18,6 +18,7 @@ import { AccessToken } from './models/AccessToken';
 import { LoginRequestBody } from 'src/auth/models/LoginRequestBody.dto';
 import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
 import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
+import { SolicitarNovaSenhaRequestBody } from 'src/auth/models/SolicitarNovaSenhaRequestBody.dto';
 
 @Controller()
 export class AuthController {
@@ -56,4 +57,15 @@ export class AuthController {
     async escreverNovaSenha(@Body() body: EscreverNovaSenhaRequestBody) {
         return this.authService.escreverNovaSenha(body);
     }
+
+    @ApiTags('publico')
+    @Post('solicitar-nova-senha')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @IsPublic()
+    @ApiBody({ type: SolicitarNovaSenhaRequestBody })
+    async solicitaNovaSenha(@Body() body: SolicitarNovaSenhaRequestBody) {
+        await this.authService.solicitarNovaSenha(body);
+        return '';
+    }
+
 }
