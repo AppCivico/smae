@@ -46,20 +46,11 @@ model FuncaoPermissao {
     @@map("funcao_permissao")
 }
 
-model Secretaria {
-    id         Int          @id @unique @default(autoincrement())
-    sigla      String
-    descricao  String?
-    TimePessoa TimePessoa[]
-
-    @@map("secretaria")
-}
-
 model Time {
-    id         Int          @id @unique @default(autoincrement())
-    nome       String
-    descricao  String?
-    timePessoa TimePessoa[]
+    id          Int          @id @unique @default(autoincrement())
+    nome        String       @unique
+    descricao   String?
+    timePessoas TimePessoa[]
 
     @@map("time")
 }
@@ -68,7 +59,6 @@ model Pessoa {
     id                  Int                 @id @unique @default(autoincrement())
     email               String              @unique
     senha               String
-    eh_super_admin      Boolean             @default(false)
     nome_exibicao       String
     nome_completo       String
     atualizado_em       DateTime            @default(now()) @db.Timestamptz(6)
@@ -83,21 +73,41 @@ model Pessoa {
     criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
     PessoasQueAtualizei Pessoa[]            @relation("AtualizadorPessoas")
     PessoasQueCriei     Pessoa[]            @relation("CriadorPessoas")
-    PessoaSessaoAtiva   PessoaSessaoAtiva[]
-    timePessoa          TimePessoa[]
+    PessoaSessoesAtivas PessoaSessaoAtiva[]
+    timePessoas         TimePessoa[]
+
+    desativado          Boolean  @default(false)
+    desativado_em       DateTime @default(now())
+    desativado_por      Int?
+    PessoasQueDesativei Pessoa[] @relation("DesativadorPessoas")
+    desativador         Pessoa?  @relation("DesativadorPessoas", fields: [desativado_por], references: [id])
+
+    pessoa_fisica_id Int?
+    pessoa_fisica    PessoaFisica? @relation(fields: [pessoa_fisica_id], references: [id])
 
     @@map("pessoa")
 }
 
+model PessoaFisica {
+    id                 Int      @id @unique @default(autoincrement())
+    cargo_id           Int
+    divisao_tecnica_id Int?
+    departamento_id    Int?
+    coordenadoria_id   Int
+    orgao_id           Int
+    Pessoa             Pessoa[]
+    orgao              Orgao    @relation(fields: [orgao_id], references: [id])
+
+    @@map("pessoa_fisica")
+}
+
 model TimePessoa {
-    id               Int                @id @unique @default(autoincrement())
-    pessoa_id        Int
-    time_id          Int
-    secretaria_id    Int
-    pessoa           Pessoa             @relation(fields: [pessoa_id], references: [id])
-    secretaria       Secretaria         @relation(fields: [secretaria_id], references: [id])
-    time             Time               @relation(fields: [time_id], references: [id])
-    TimePessoaFuncao TimePessoaFuncao[]
+    id                 Int                @id @unique @default(autoincrement())
+    pessoa_id          Int
+    time_id            Int
+    pessoa             Pessoa             @relation(fields: [pessoa_id], references: [id])
+    time               Time               @relation(fields: [time_id], references: [id])
+    TimePessoasFuncoes TimePessoaFuncao[]
 
     @@map("time_pessoa")
 }
@@ -148,4 +158,53 @@ model EmaildbQueue {
     emaildb_config EmaildbConfig @relation(fields: [config_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
     @@map("emaildb_queue")
+}
+
+model Cargo {
+    id        Int     @id @unique @default(autoincrement())
+    descricao String?
+
+    @@map("cargao")
+}
+
+model DivisaoTecnica {
+    id        Int     @id @unique @default(autoincrement())
+    descricao String?
+
+    @@map("divisao_tecnica")
+}
+
+model Coordenadoria {
+    id        Int     @id @unique @default(autoincrement())
+    descricao String?
+
+    @@map("coordenadoria")
+}
+
+model Departamento {
+    id        Int     @id @unique @default(autoincrement())
+    descricao String?
+
+    @@map("departamento")
+}
+
+model Orgao {
+    id            Int     @id @unique @default(autoincrement())
+    sigla         String
+    descricao     String?
+    tipo_orgao_id Int
+
+    tipo_orgao   TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
+    PessoaFisica PessoaFisica[]
+
+    @@map("orgao")
+}
+
+model TipoOrgao {
+    id        Int     @id @unique @default(autoincrement())
+    codigo    String
+    descricao String
+    Orgaos    Orgao[]
+
+    @@map("tipo_orgao")
 }
