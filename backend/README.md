@@ -18,14 +18,16 @@ Criar as classes geradas a partir do ORM:
 $ npx prisma generate
 ```
 
-## Configurar variaveis iniciais
+## Configurar variáveis de ambiente
 
 
 ```bash
 $ cp .env.example .env
 ```
 
-Editar arquivo `.env` de acordo
+Editar arquivo `.env` de acordo com a configuração.
+
+> caso `npm run start:dev` não carregar o arquivo .env automaticamente, exportar antes de subir o comando
 
 
 ## Subindo em modo Dev
@@ -45,4 +47,4 @@ $ npm run start:prod
 
 ## License
 
-SMAE é produzido com [GPLv3](LICENSE)
+SMAE é produzido com licença [GPLv3](../LICENSE)
