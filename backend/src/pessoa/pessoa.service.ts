@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
-import { Prisma, Pessoa } from '@prisma/client';
+import { Prisma, Pessoa, PrismaClient, PrismaPromise } from '@prisma/client';
 
 @Injectable()
 export class PessoaService {
@@ -39,7 +39,7 @@ export class PessoaService {
     }
 
     async criaNovaSenha(pessoa: Pessoa, solicitadoPeloUsuario: boolean) {
-        let newPass = this.#generateRndPass(8);
+        let newPass = this.#generateRndPass(10);
         console.log(`new password: ${newPass}`, pessoa);
 
         let data = {
@@ -73,6 +73,23 @@ export class PessoaService {
         });
 
     }
+
+    async enviaPrimeiraSenha(pessoa: Pessoa, senha: string, prisma: Prisma.TransactionClient) {
+        await prisma.emaildbQueue.create({
+            data: {
+                config_id: 1,
+                subject: 'Bem vindo ao SMAE - Senha para primeiro acesso',
+                template: 'primeira-senha.html',
+                to: pessoa.email,
+                variables: {
+                    nome_exibicao: pessoa.nome_exibicao,
+                    link: this.#urlLoginSMAE,
+                    nova_senha: senha,
+                },
+            }
+        });
+    }
+
     async escreverNovaSenhaById(pessoaId: number, senha: string) {
 
         let data = {
@@ -89,6 +106,8 @@ export class PessoaService {
     }
 
     async create(createPessoaDto: CreatePessoaDto) {
+        let newPass = this.#generateRndPass(10);
+        console.log(`new password: ${newPass}`);
         createPessoaDto.email = createPessoaDto.email.toLocaleLowerCase();
 
         const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
@@ -98,12 +117,16 @@ export class PessoaService {
 
         const data = {
             ...createPessoaDto,
-            senha: await bcrypt.hash(createPessoaDto.senha, 12),
+            senha: await bcrypt.hash(newPass, 12),
         } as Prisma.PessoaCreateInput;
 
-        const created = await this.prisma.pessoa.create({ data });
+        const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
+            const created = await prisma.pessoa.create({ data });
+            await this.enviaPrimeiraSenha(created, newPass, prisma);
+            return created;
+        });
 
-        return this.pessoaAsHash(created);
+        return this.pessoaAsHash(pessoa);
     }
 
     async findByEmailAsHash(email: string) {
