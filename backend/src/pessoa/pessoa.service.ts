@@ -4,6 +4,8 @@ import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
 import { Prisma, Pessoa, PrismaClient, PrismaPromise } from '@prisma/client';
 
+const BCRYPT_ROUNDS = 10;
+
 @Injectable()
 export class PessoaService {
     private readonly logger = new Logger(PessoaService.name);
@@ -48,7 +50,7 @@ export class PessoaService {
         let data = {
             senha_bloqueada: true,
             senha_bloqueada_em: new Date(Date.now()),
-            senha: await bcrypt.hash(newPass, 12)
+            senha: await bcrypt.hash(newPass, BCRYPT_ROUNDS)
         };
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
@@ -100,7 +102,7 @@ export class PessoaService {
         let data = {
             senha_bloqueada: false,
             senha_bloqueada_em: undefined,
-            senha: await bcrypt.hash(senha, 12),
+            senha: await bcrypt.hash(senha, BCRYPT_ROUNDS),
             qtde_senha_invalida: 0,
         };
 
@@ -137,7 +139,7 @@ export class PessoaService {
 
         const data = {
             ...createPessoaDto,
-            senha: await bcrypt.hash(newPass, 12),
+            senha: await bcrypt.hash(newPass, BCRYPT_ROUNDS),
         } as Prisma.PessoaCreateInput;
 
         const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {

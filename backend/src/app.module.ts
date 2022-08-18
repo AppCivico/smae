@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { MinhaContaController } from './minha-conta/minha-conta.controller';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -21,11 +22,22 @@ import { join } from 'path';
         PrismaModule, PessoaModule, AuthModule, MinhaContaModule
     ],
     controllers: [AppController, MinhaContaController],
-    providers: [AppService,
+    providers: [
+        AppService,
         {
             provide: APP_GUARD,
             useClass: JwtAuthGuard
         }
     ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(LoggerMiddleware)
+            .forRoutes({
+                path: '*',
+                method: RequestMethod.ALL
+            });
+    }
+
+}
