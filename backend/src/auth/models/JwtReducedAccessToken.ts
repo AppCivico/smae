@@ -1,6 +1,6 @@
 export interface JwtReducedAccessToken {
     pessoaId: number;
-    iat: number;
+    iat?: number;
     exp?: number;
     aud: string
 }

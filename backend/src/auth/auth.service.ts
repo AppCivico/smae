@@ -23,12 +23,11 @@ export class AuthService {
 
             const payload: JwtReducedAccessToken = {
                 aud: 'resetPass',
-                pessoaId: pessoa.id as number,
-                iat: Date.now(),
+                pessoaId: pessoa.id as number
             };
 
             return {
-                reduced_access_token: this.jwtService.sign(payload, { expiresIn: '10m' }),
+                reduced_access_token: this.jwtService.sign(payload, { expiresIn: '10 minutes' }),
             } as ReducedAccessToken
 
         }
@@ -86,7 +85,9 @@ export class AuthService {
     async escreverNovaSenha(body: EscreverNovaSenhaRequestBody) {
         let result: JwtReducedAccessToken;
         try {
-            result = this.jwtService.verify(body.reduced_access_token);
+            result = this.jwtService.verify(body.reduced_access_token, {
+                audience: 'resetPass'
+            });
         } catch {
             throw new BadRequestException('reduced_access_token| token inválido');
         }
