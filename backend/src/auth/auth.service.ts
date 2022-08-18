@@ -79,6 +79,10 @@ export class AuthService {
         throw new UnauthorizedError('Sessão não está mais ativa');
     }
 
+    async permissoesPessoa(pessoaId: number) {
+        await this.pessoaService.listaModulosPermissoes(pessoaId);
+    }
+
     async escreverNovaSenha(body: EscreverNovaSenhaRequestBody) {
         let result: JwtReducedAccessToken;
         try {

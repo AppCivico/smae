@@ -1,48 +1,106 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient(
-    //{log: ['query']}
+    { log: ['query'] }
 )
 
-const CodModuloAdmin = 'admin';
-const CodPermGerenciarPessoa = 'gerenciar.pessoa';
-const CodPermGerenciarOrgao = 'gerenciar.orgao';
-const CodPermGerenciarDivisaoTecnica = 'gerenciar.divisao_tecnica';
-const CodPermGerenciarCargo = 'gerenciar.cargo';
-const CodPermGerenciarCoordenadoria = 'gerenciar.coordenadoria';
-const DescricaoFuncaoAdmin = 'Administrador';
 
-async function atualizar_permissao() {
-    await upsert_permissao('Criar/Editar/Inativar qualquer pessoa', CodPermGerenciarPessoa, CodModuloAdmin);
-    await upsert_permissao('Criar/Editar/Inativar qualquer órgão', CodPermGerenciarOrgao, CodModuloAdmin);
-    await upsert_permissao('Criar/Editar/Inativar qualquer divisão técnica', CodPermGerenciarDivisaoTecnica, CodModuloAdmin);
-    await upsert_permissao('Criar/Editar/Inativar qualquer cargo', CodPermGerenciarCargo, CodModuloAdmin);
-    await upsert_permissao('Criar/Editar/Inativar qualquer coordenadoria', CodPermGerenciarCoordenadoria, CodModuloAdmin);
-}
+const PrivConfig: any = {
+
+    CadastroCargo: [
+        ['CadastroCargo.inserir', 'Inserir cargo'],
+        ['CadastroCargo.editar', 'Editar cargo'],
+        ['CadastroCargo.remover', 'Remover cargo'],
+    ],
+
+    CadastroCoordenadoria: [
+        ['CadastroCoordenadoria.inserir', 'Inserir coordenadoria'],
+        ['CadastroCoordenadoria.editar', 'Editar coordenadoria'],
+        ['CadastroCoordenadoria.remover', 'Remover coordenadoria'],
+    ],
+    CadastroDepartamento: [
+        ['CadastroDepartamento.inserir', 'Inserir departamento'],
+        ['CadastroDepartamento.editar', 'Editar departamento'],
+        ['CadastroDepartamento.remover', 'Remover departamento'],
+    ],
+    CadastroDivisaoTecnica: [
+        ['CadastroDivisaoTecnica.inserir', 'Inserir divisão técnica'],
+        ['CadastroDivisaoTecnica.editar', 'Editar divisão técnica'],
+        ['CadastroDivisaoTecnica.remover', 'Remover divisão técnica'],
+    ],
+
+    CadastroPessoa: [
+        ['CadastroPessoa.inserir', 'Inserir novas pessoas'],
+        ['CadastroPessoa.editar', 'Editar dados das pessoas'],
+        ['CadastroPessoa.inativar', 'Inativar pessoas'],
+    ],
+};
+
+const ModuloDescricao: any = {
+    CadastroCargo: 'Cadastro de cargos',
+    CadastroCoordenadoria: 'Cadastro de coordenadoria',
+    CadastroDepartamento: 'Cadastro de departamento',
+    CadastroDivisaoTecnica: 'Cadastro de divisão técnica',
+    CadastroPessoa: 'Cadastro de pessoas',
+};
+
+const PerfilAcessoConfig: any = [
+    {
+        nome: 'Administrador Geral',
+        descricao: 'Administrador Geral',
+        privilegios: [
+            'CadastroCargo.inserir',
+            'CadastroCargo.editar',
+            'CadastroCargo.remover',
+            'CadastroCoordenadoria.inserir',
+            'CadastroCoordenadoria.editar',
+            'CadastroCoordenadoria.remover',
+            'CadastroDepartamento.inserir',
+            'CadastroDepartamento.editar',
+            'CadastroDepartamento.remover',
+            'CadastroDivisaoTecnica.inserir',
+            'CadastroDivisaoTecnica.editar',
+            'CadastroDivisaoTecnica.remover',
+            'CadastroPessoa.inserir',
+            'CadastroPessoa.editar',
+            'CadastroPessoa.inativar',
+        ]
+    }
+];
+
 
 async function main() {
     await criar_emaildb_config();
-    await atualizar_funcao();
+    await atualizar_modulos_e_privilegios();
+    await atualizar_perfil_acesso();
 
-    await atualizar_modulos();
-    await atualizar_permissao();
     await atualizar_superadmin();
+
 }
 
-async function atualizar_funcao() {
+async function atualizar_modulos_e_privilegios() {
 
-    let funcaoAdmin = await prisma.funcao.findFirst({ where: { descricao: DescricaoFuncaoAdmin } });
-    console.log('funcaoAdmin', funcaoAdmin)
-    if (!funcaoAdmin) {
-        funcaoAdmin = await prisma.funcao.create({ data: { descricao: DescricaoFuncaoAdmin } });
+    let promises: any[] = [];
+
+    for (const codModulo in PrivConfig) {
+        const privilegio = PrivConfig[codModulo];
+        const moduloObject = await prisma.modulo.upsert({
+            where: { codigo: codModulo },
+            update: {
+                descricao: ModuloDescricao[codModulo as string] as string,
+            },
+            create:
+            {
+                codigo: codModulo,
+                descricao: ModuloDescricao[codModulo as string] as string,
+            },
+        });
+        for (const priv of privilegio) {
+            promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string))
+        }
+
     }
 
-    await Promise.all([
-        upsert_funcao_permissao(funcaoAdmin.id, CodPermGerenciarPessoa),
-        upsert_funcao_permissao(funcaoAdmin.id, CodPermGerenciarCargo),
-        upsert_funcao_permissao(funcaoAdmin.id, CodPermGerenciarOrgao),
-        upsert_funcao_permissao(funcaoAdmin.id, CodPermGerenciarDivisaoTecnica),
-        upsert_funcao_permissao(funcaoAdmin.id, CodPermGerenciarCoordenadoria),
-    ]);
+    await Promise.all(promises);
 
 }
 
@@ -61,21 +119,61 @@ async function criar_emaildb_config() {
     });
 }
 
-async function atualizar_modulos() {
-    await prisma.modulo.upsert({
-        where: { codigo: CodModuloAdmin },
-        update: {},
-        create:
-        {
-            nome: 'Administração',
-            codigo: CodModuloAdmin
-        },
+async function upsert_privilegios(moduloId: number, codigo: string, arg2: string) {
+
+    return prisma.privilegio.upsert({
+        where: { codigo: codigo },
+        update: { nome: arg2, modulo_id: moduloId },
+        create: {
+            nome: arg2,
+            modulo_id: moduloId,
+            codigo: codigo
+        }
     });
 }
 
 
+async function atualizar_perfil_acesso() {
+    let promises: any[] = [];
+
+    for (const perfilAcessoConf of PerfilAcessoConfig) {
+        let perfilAcesso = await prisma.perfilAcesso.findFirst({ where: { nome: perfilAcessoConf.nome }, select: { id: true } });
+        if (!perfilAcesso) {
+            perfilAcesso = await prisma.perfilAcesso.create({
+                data: {
+                    nome: perfilAcessoConf.nome,
+                    descricao: perfilAcessoConf.descricao,
+                }, select: { id: true }
+            });
+        }
+
+        for (const codPriv of perfilAcessoConf.privilegios) {
+            const idPriv = (await prisma.privilegio.findFirstOrThrow({ where: { codigo: codPriv } })).id;
+
+            prisma.perfilPrivilegio.findFirst({
+                where: {
+                    perfil_acesso_id: perfilAcesso.id,
+                    privilegios_id: idPriv
+                }
+            }).then(async (match) => {
+                if (!match) {
+                    await prisma.perfilPrivilegio.create({
+                        data: {
+                            perfil_acesso_id: perfilAcesso?.id as number,
+                            privilegios_id: idPriv
+                        }
+                    })
+                }
+            });
+        }
+    }
+
+    await Promise.all(promises);
+}
+
+
 async function atualizar_superadmin() {
-    let pessoa = await prisma.pessoa.upsert({
+    const pessoa = await prisma.pessoa.upsert({
         where: { email: 'superadmin@admin.com' },
         update: {},
         create:
@@ -87,73 +185,25 @@ async function atualizar_superadmin() {
         },
     });
 
-    let time = await prisma.time.upsert({
+    const idPerfilAcesso = (await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'Administrador Geral' } })).id;
+
+    let pessoaPerfilAdmin = await prisma.pessoaPerfil.findFirst({
         where: {
-            nome: 'TI/Admin'
-        },
-        update: {},
-        create: {
-            nome: 'TI/Admin',
-            descricao: 'Time interno para administração'
+            pessoa_id: pessoa.id,
+            perfil_acesso_id: idPerfilAcesso,
         }
     });
-
-    let timePessoa = await prisma.timePessoa.findFirst({ where: { pessoa_id: pessoa.id, time_id: time.id } });
-    if (!timePessoa) {
-        timePessoa = await prisma.timePessoa.create({
+    if (!pessoaPerfilAdmin) {
+        pessoaPerfilAdmin = await prisma.pessoaPerfil.create({
             data: {
                 pessoa_id: pessoa.id,
-                time_id: time.id,
+                perfil_acesso_id: idPerfilAcesso
             }
         });
     }
 
-    let funcaoAdmin = await prisma.funcao.findFirstOrThrow({ where: { descricao: DescricaoFuncaoAdmin } });
-
-    await prisma.timePessoaFuncao.deleteMany({
-        where: { time_pessoa_id: timePessoa.id }
-    });
-    await prisma.timePessoaFuncao.create({
-        data: { time_pessoa_id: timePessoa.id, funcao_id: funcaoAdmin.id }
-    });
-
 }
 
-
-async function upsert_funcao_permissao(funcaoId: number, codPerm: string) {
-    console.log('-> upsert_funcao_permissao', 'funcao-id', funcaoId, 'codPerm', codPerm)
-
-    let permId = (await prisma.permissao.findFirstOrThrow({ where: { codigo: codPerm } })).id;
-    let funcaoPerm = await prisma.funcaoPermissao.findFirst({
-        where: {
-            funcao_id: funcaoId,
-            permissao_id: permId
-        }
-    });
-
-    if (!funcaoPerm) {
-        await prisma.funcaoPermissao.create({
-            data: {
-                funcao_id: funcaoId,
-                permissao_id: permId
-            }
-        });
-    }
-}
-
-async function upsert_permissao(nome: string, codPerm: string, codMod: string) {
-    console.log('-> upsert_funcao_permissao', 'codPerm', codPerm, 'codMod', codMod, '--', nome)
-    await prisma.permissao.upsert({
-        where: { codigo: codPerm },
-        update: {},
-        create:
-        {
-            nome: nome,
-            codigo: codPerm,
-            modulo_id: (await prisma.modulo.findFirstOrThrow({ where: { codigo: codMod } })).id
-        },
-    });
-}
 
 
 main()
@@ -165,3 +215,4 @@ main()
         await prisma.$disconnect()
         process.exit(1)
     })
+

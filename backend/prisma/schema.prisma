@@ -8,52 +8,36 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Funcao {
-    id               Int                @id @unique @default(autoincrement())
-    descricao        String
-    timePessoaFuncao TimePessoaFuncao[]
-    FuncaoPermissao  FuncaoPermissao[]
+model Cargo {
+    id            Int            @id @unique @default(autoincrement())
+    descricao     String?
+    pessoa_fisica PessoaFisica[]
 
-    @@map("funcao")
+    @@map("cargo")
 }
 
-model Modulo {
-    id        Int         @id @unique @default(autoincrement())
-    nome      String
-    codigo    String      @unique
-    Permissao Permissao[]
+model Coordenadoria {
+    id            Int            @id @unique @default(autoincrement())
+    descricao     String?
+    pessoa_fisica PessoaFisica[]
 
-    @@map("modulo")
+    @@map("coordenadoria")
 }
 
-model Permissao {
-    id              Int               @id @unique @default(autoincrement())
-    nome            String
-    codigo          String            @unique
-    modulo_id       Int
-    modulo          Modulo            @relation(fields: [modulo_id], references: [id])
-    FuncaoPermissao FuncaoPermissao[]
+model Departamento {
+    id            Int            @id @unique @default(autoincrement())
+    descricao     String?
+    pessoa_fisica PessoaFisica[]
 
-    @@map("permissao")
+    @@map("departamento")
 }
 
-model FuncaoPermissao {
-    funcao_id    Int
-    permissao_id Int
-    funcao       Funcao    @relation(fields: [funcao_id], references: [id])
-    permissao    Permissao @relation(fields: [permissao_id], references: [id])
+model DivisaoTecnica {
+    id            Int            @id @unique @default(autoincrement())
+    descricao     String?
+    pessoa_fisica PessoaFisica[]
 
-    @@id([funcao_id, permissao_id])
-    @@map("funcao_permissao")
-}
-
-model Time {
-    id          Int          @id @unique @default(autoincrement())
-    nome        String       @unique
-    descricao   String?
-    timePessoas TimePessoa[]
-
-    @@map("time")
+    @@map("divisao_tecnica")
 }
 
 model Pessoa {
@@ -70,23 +54,62 @@ model Pessoa {
     senha_atualizada_em DateTime            @default(now()) @db.Timestamptz(6)
     senha_bloqueada     Boolean             @default(false)
     senha_bloqueada_em  DateTime            @default(now()) @db.Timestamptz(6)
+    desativado          Boolean             @default(false)
+    desativado_em       DateTime            @default(now())
+    desativado_por      Int?
+    pessoa_fisica_id    Int?
     atualizador         Pessoa?             @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
     criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
+    desativador         Pessoa?             @relation("DesativadorPessoas", fields: [desativado_por], references: [id])
+    pessoa_fisica       PessoaFisica?       @relation(fields: [pessoa_fisica_id], references: [id])
     PessoasQueAtualizei Pessoa[]            @relation("AtualizadorPessoas")
     PessoasQueCriei     Pessoa[]            @relation("CriadorPessoas")
+    PessoasQueDesativei Pessoa[]            @relation("DesativadorPessoas")
+    PessoaPerfil        PessoaPerfil[]
     PessoaSessoesAtivas PessoaSessaoAtiva[]
-    timePessoas         TimePessoa[]
-
-    desativado          Boolean  @default(false)
-    desativado_em       DateTime @default(now())
-    desativado_por      Int?
-    PessoasQueDesativei Pessoa[] @relation("DesativadorPessoas")
-    desativador         Pessoa?  @relation("DesativadorPessoas", fields: [desativado_por], references: [id])
-
-    pessoa_fisica_id Int?
-    pessoa_fisica    PessoaFisica? @relation(fields: [pessoa_fisica_id], references: [id])
 
     @@map("pessoa")
+}
+
+model Modulo {
+    id         Int          @id @default(autoincrement())
+    codigo     String?      @unique @db.VarChar
+    descricao  String?      @db.VarChar
+    privilegio Privilegio[]
+
+    @@map("modulo")
+}
+
+model Orgao {
+    id            Int            @id @unique @default(autoincrement())
+    sigla         String
+    descricao     String?
+    tipo_orgao_id Int
+    tipo_orgao    TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
+    pessoa_fisica PessoaFisica[]
+
+    @@map("orgao")
+}
+
+model PerfilAcesso {
+    id                Int                @id @unique @default(autoincrement())
+    nome              String             @db.VarChar
+    descricao         String?            @db.VarChar
+    perfil_privilegio PerfilPrivilegio[]
+    pessoa_perfil     PessoaPerfil[]
+
+    @@map("perfil_acesso")
+}
+
+model PerfilPrivilegio {
+    id               Int          @id @unique @default(autoincrement())
+    perfil_acesso_id Int
+    privilegios_id   Int
+    perfil_acesso    PerfilAcesso @relation(fields: [perfil_acesso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    privilegio       Privilegio   @relation(fields: [privilegios_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+    @@unique([perfil_acesso_id, privilegios_id])
+    @@map("perfil_privilegio")
 }
 
 model PessoaFisica {
@@ -96,35 +119,24 @@ model PessoaFisica {
     departamento_id    Int?
     coordenadoria_id   Int
     orgao_id           Int
-    Pessoa             Pessoa[]
-    Orgao              Orgao           @relation(fields: [orgao_id], references: [id])
-    Cargo              Cargo           @relation(fields: [cargo_id], references: [id])
-    DivisaoTecnica     DivisaoTecnica? @relation(fields: [divisao_tecnica_id], references: [id])
-    Departamento       Departamento?   @relation(fields: [departamento_id], references: [id])
-    Coordenadoria      Coordenadoria   @relation(fields: [coordenadoria_id], references: [id])
+    cargao             Cargo           @relation(fields: [cargo_id], references: [id])
+    coordenadoria      Coordenadoria   @relation(fields: [coordenadoria_id], references: [id])
+    departamento       Departamento?   @relation(fields: [departamento_id], references: [id])
+    divisao_tecnica    DivisaoTecnica? @relation(fields: [divisao_tecnica_id], references: [id])
+    orgao              Orgao           @relation(fields: [orgao_id], references: [id])
+    pessoa             Pessoa[]
 
     @@map("pessoa_fisica")
 }
 
-model TimePessoa {
-    id                 Int                @id @unique @default(autoincrement())
-    pessoa_id          Int
-    time_id            Int
-    pessoa             Pessoa             @relation(fields: [pessoa_id], references: [id])
-    time               Time               @relation(fields: [time_id], references: [id])
-    TimePessoasFuncoes TimePessoaFuncao[]
+model PessoaPerfil {
+    id               Int           @id @default(autoincrement())
+    pessoa_id        Int?
+    perfil_acesso_id Int?
+    perfil_acesso    PerfilAcesso? @relation(fields: [perfil_acesso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    pessoa           Pessoa?       @relation(fields: [pessoa_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-    @@map("time_pessoa")
-}
-
-model TimePessoaFuncao {
-    id             Int        @id @unique @default(autoincrement())
-    funcao_id      Int
-    time_pessoa_id Int
-    funcao         Funcao     @relation(fields: [funcao_id], references: [id])
-    timePessoa     TimePessoa @relation(fields: [time_pessoa_id], references: [id])
-
-    @@map("time_pessoa_funcao")
+    @@map("pessoa_perfil")
 }
 
 model PessoaSessaoAtiva {
@@ -135,6 +147,26 @@ model PessoaSessaoAtiva {
     @@map("pessoa_sessao_ativa")
 }
 
+model Privilegio {
+    id                Int                @id @default(autoincrement())
+    nome              String             @db.VarChar
+    codigo            String             @unique @db.VarChar
+    modulo_id         Int
+    modulo            Modulo             @relation(fields: [modulo_id], references: [id])
+    perfil_privilegio PerfilPrivilegio[]
+
+    @@map("privilegio")
+}
+
+model TipoOrgao {
+    id        Int     @id @unique @default(autoincrement())
+    codigo    String
+    descricao String
+    orgao     Orgao[]
+
+    @@map("tipo_orgao")
+}
+
 model EmaildbConfig {
     id                       Int                     @id @default(autoincrement())
     from                     String                  @db.VarChar
@@ -142,8 +174,8 @@ model EmaildbConfig {
     template_resolver_config Json                    @default("{}") @db.Json
     email_transporter_class  String                  @db.VarChar(60)
     email_transporter_config Json                    @default("{}") @db.Json
-    delete_after             Unsupported("interval") @default(dbgenerated("'10 year'::interval"))
-    emaildb_queue            EmaildbQueue[]
+    delete_after             Unsupported("interval") @default(dbgenerated("'10 years'::interval"))
+    EmaildbQueue             EmaildbQueue[]
 
     @@map("emaildb_config")
 }
@@ -163,57 +195,4 @@ model EmaildbQueue {
     emaildb_config EmaildbConfig @relation(fields: [config_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
     @@map("emaildb_queue")
-}
-
-model Cargo {
-    id           Int            @id @unique @default(autoincrement())
-    descricao    String?
-    PessoaFisica PessoaFisica[]
-
-    @@map("cargao")
-}
-
-model DivisaoTecnica {
-    id           Int            @id @unique @default(autoincrement())
-    descricao    String?
-    PessoaFisica PessoaFisica[]
-
-    @@map("divisao_tecnica")
-}
-
-model Coordenadoria {
-    id           Int            @id @unique @default(autoincrement())
-    descricao    String?
-    PessoaFisica PessoaFisica[]
-
-    @@map("coordenadoria")
-}
-
-model Departamento {
-    id           Int            @id @unique @default(autoincrement())
-    descricao    String?
-    PessoaFisica PessoaFisica[]
-
-    @@map("departamento")
-}
-
-model Orgao {
-    id            Int     @id @unique @default(autoincrement())
-    sigla         String
-    descricao     String?
-    tipo_orgao_id Int
-
-    tipo_orgao   TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
-    PessoaFisica PessoaFisica[]
-
-    @@map("orgao")
-}
-
-model TipoOrgao {
-    id        Int     @id @unique @default(autoincrement())
-    codigo    String
-    descricao String
-    Orgaos    Orgao[]
-
-    @@map("tipo_orgao")
 }

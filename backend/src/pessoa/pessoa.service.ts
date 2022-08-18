@@ -218,4 +218,18 @@ export class PessoaService {
         return password;
     }
 
+    async listaModulosPermissoes(pessoaId: number) {
+        const dados = await this.prisma.pessoaPerfil.findMany({
+            where: {
+                pessoa_id: pessoaId
+            },
+            select: {
+                perfil_acesso: true
+            }
+        });
+
+        console.log(JSON.stringify(dados))
+
+    }
+
 }
