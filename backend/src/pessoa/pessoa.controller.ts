@@ -12,6 +12,6 @@ export class PessoaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     create(@Body() createPessoaDto: CreatePessoaDto) {
-        return this.pessoaService.create(createPessoaDto);
+        return this.pessoaService.criarPessoa(createPessoaDto);
     }
 }

@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
@@ -6,6 +6,9 @@ import { Prisma, Pessoa, PrismaClient, PrismaPromise } from '@prisma/client';
 
 @Injectable()
 export class PessoaService {
+    private readonly logger = new Logger(PessoaService.name);
+
+
     #maxQtdeSenhaInvalidaParaBlock: number
     #urlLoginSMAE: string
     constructor(private readonly prisma: PrismaService) {
@@ -40,7 +43,7 @@ export class PessoaService {
 
     async criaNovaSenha(pessoa: Pessoa, solicitadoPeloUsuario: boolean) {
         let newPass = this.#generateRndPass(10);
-        console.log(`new password: ${newPass}`, pessoa);
+        this.logger.log(`new password: ${newPass}`, pessoa);
 
         let data = {
             senha_bloqueada: true,
@@ -48,16 +51,18 @@ export class PessoaService {
             senha: await bcrypt.hash(newPass, 12)
         };
 
-        await this.prisma.pessoa.updateMany({
-            where: { id: pessoa.id },
-            data: data
-        });
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            await prisma.pessoa.updateMany({
+                where: { id: pessoa.id },
+                data: data
+            });
 
-        await this.enviaEmailNovaSenha(pessoa, newPass, solicitadoPeloUsuario);
+            await this.enviaEmailNovaSenha(pessoa, newPass, solicitadoPeloUsuario, prisma);
+        });
     }
 
-    async enviaEmailNovaSenha(pessoa: Pessoa, senha: string, solicitadoPeloUsuario: boolean) {
-        await this.prisma.emaildbQueue.create({
+    async enviaEmailNovaSenha(pessoa: Pessoa, senha: string, solicitadoPeloUsuario: boolean, prisma: Prisma.TransactionClient) {
+        await prisma.emaildbQueue.create({
             data: {
                 config_id: 1,
                 subject: solicitadoPeloUsuario ? 'Nova senha solicitada' : 'Nova senha para liberar acesso',
@@ -95,19 +100,34 @@ export class PessoaService {
         let data = {
             senha_bloqueada: false,
             senha_bloqueada_em: undefined,
-            senha: await bcrypt.hash(senha, 12)
+            senha: await bcrypt.hash(senha, 12),
+            qtde_senha_invalida: 0,
         };
 
-        const updated = await this.prisma.pessoa.updateMany({
-            where: { id: pessoaId, senha_bloqueada: true },
-            data: data
+        this.logger.log(`escreverNovaSenhaById: ${pessoaId}`);
+        const updated = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<any> => {
+            const updatePassword = await this.prisma.pessoa.updateMany({
+                where: { id: pessoaId, senha_bloqueada: true },
+                data: data
+            });
+            if (updatePassword.count == 1) {
+                this.logger.log(`escreverNovaSenhaById: sucesso, removendo sessões anteriores`);
+                await this.#invalidarTodasSessoesAtivas(pessoaId, prisma);
+                return true;
+            }
+
+            this.logger.log(`escreverNovaSenhaById: senha já foi atualizada`);
+            return false;
         });
-        return updated.count;
+
+        return updated;
     }
 
-    async create(createPessoaDto: CreatePessoaDto) {
+    async criarPessoa(createPessoaDto: CreatePessoaDto) {
+        this.logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         let newPass = this.#generateRndPass(10);
-        console.log(`new password: ${newPass}`);
+        this.logger.log(`senha gerada: ${newPass}`);
+
         createPessoaDto.email = createPessoaDto.email.toLocaleLowerCase();
 
         const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
@@ -164,8 +184,8 @@ export class PessoaService {
         await this.prisma.pessoaSessaoAtiva.delete({ where: { id: id } });
     }
 
-    async invalidarTodasSessoesAtivas(pessoaId: number) {
-        await this.prisma.pessoaSessaoAtiva.deleteMany({ where: { pessoa_id: pessoaId } });
+    async #invalidarTodasSessoesAtivas(pessoaId: number, prisma: Prisma.TransactionClient) {
+        await prisma.pessoaSessaoAtiva.deleteMany({ where: { pessoa_id: pessoaId } });
     }
 
     #generateRndPass(pLength: number) {

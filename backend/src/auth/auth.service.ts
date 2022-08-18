@@ -87,9 +87,8 @@ export class AuthService {
             throw new BadRequestException('reduced_access_token| token inválido');
         }
 
-        let count = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
-        if (count == 1) {
-            this.pessoaService.invalidarTodasSessoesAtivas(result.pessoaId);
+        let updated = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
+        if (updated) {
             return this.#criarSession(result.pessoaId);
         } else {
             throw new BadRequestException('reduced_access_token| a senha já foi atualizada!');
