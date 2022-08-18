@@ -90,14 +90,18 @@ model Pessoa {
 }
 
 model PessoaFisica {
-    id                 Int      @id @unique @default(autoincrement())
+    id                 Int             @id @unique @default(autoincrement())
     cargo_id           Int
     divisao_tecnica_id Int?
     departamento_id    Int?
     coordenadoria_id   Int
     orgao_id           Int
     Pessoa             Pessoa[]
-    orgao              Orgao    @relation(fields: [orgao_id], references: [id])
+    Orgao              Orgao           @relation(fields: [orgao_id], references: [id])
+    Cargo              Cargo           @relation(fields: [cargo_id], references: [id])
+    DivisaoTecnica     DivisaoTecnica? @relation(fields: [divisao_tecnica_id], references: [id])
+    Departamento       Departamento?   @relation(fields: [departamento_id], references: [id])
+    Coordenadoria      Coordenadoria   @relation(fields: [coordenadoria_id], references: [id])
 
     @@map("pessoa_fisica")
 }
@@ -162,29 +166,33 @@ model EmaildbQueue {
 }
 
 model Cargo {
-    id        Int     @id @unique @default(autoincrement())
-    descricao String?
+    id           Int            @id @unique @default(autoincrement())
+    descricao    String?
+    PessoaFisica PessoaFisica[]
 
     @@map("cargao")
 }
 
 model DivisaoTecnica {
-    id        Int     @id @unique @default(autoincrement())
-    descricao String?
+    id           Int            @id @unique @default(autoincrement())
+    descricao    String?
+    PessoaFisica PessoaFisica[]
 
     @@map("divisao_tecnica")
 }
 
 model Coordenadoria {
-    id        Int     @id @unique @default(autoincrement())
-    descricao String?
+    id           Int            @id @unique @default(autoincrement())
+    descricao    String?
+    PessoaFisica PessoaFisica[]
 
     @@map("coordenadoria")
 }
 
 model Departamento {
-    id        Int     @id @unique @default(autoincrement())
-    descricao String?
+    id           Int            @id @unique @default(autoincrement())
+    descricao    String?
+    PessoaFisica PessoaFisica[]
 
     @@map("departamento")
 }

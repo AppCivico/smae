@@ -14,7 +14,7 @@ my $translator = SQL::Translator->new(
         output_type => 'png',
         title       => 'Modelo',
 
-        skip_tables_like => ['^_'],
+        skip_tables_like => ['^_', '^emaildb'],
         gutter           => 90,
         num_columns      => 4,
         add_color        => 1,
