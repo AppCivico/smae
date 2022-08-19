@@ -44,8 +44,6 @@ LANGUAGE plpgsql
 VOLATILE
 COST 100;
 
-ALTER FUNCTION public.email_inserted_notify () OWNER TO postgres;
-
 CREATE TRIGGER tgr_email_inserted
     AFTER INSERT ON public.emaildb_queue
     FOR EACH STATEMENT

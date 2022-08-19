@@ -21,6 +21,7 @@ services:
     restart: unless-stopped
 
   smae_api:
+    command: sh run-api.sh
     build:
       context: ./backend/
       dockerfile: Dockerfile
