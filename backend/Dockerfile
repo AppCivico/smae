@@ -6,12 +6,11 @@ RUN npm install -g npm@8.18.0
 
 COPY package*.json ./
 
+COPY prisma ./prisma/
+
 RUN npm install
 
 COPY . .
-
-
-RUN npx prisma generate
 
 RUN npm run build
 
@@ -32,4 +31,6 @@ COPY . .
 
 COPY --from=development /usr/src/app/dist ./dist
 
-CMD ["node", "dist/main"]
+RUN npx prisma generate
+
+CMD ["npm", "run", "start:prod"]

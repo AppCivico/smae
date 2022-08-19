@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   db:
-    container_name: gl_postgres
+    container_name: smae_postgres
     image: postgres:14-bullseye
     environment:
       POSTGRES_PASSWORD: "smae"
@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: smae_dev_persistent
     networks:
       - postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     ports:
       - 25432:5432
     logging:
@@ -25,6 +27,11 @@ services:
     restart: unless-stopped
     ports:
       - "172.17.0.1:${SMAE_API_LISTEN}:8080"
+    environment:
+      DATABASE_URL: "postgresql://smae:smae@db:5432/smae_dev_persistent?schema=public"
+      SESSION_JWT_SECRET: "testing"
+      MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK: "3"
+      URL_LOGIN_SMAE: "https://smae-frontend.appcivico.com/login"
     volumes:
       - ../data/:/data/
     networks:
@@ -37,3 +44,8 @@ services:
 
 networks:
   postgres:
+
+
+volumes:
+  pgdata:
+    name: smae_pg_data
