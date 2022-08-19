@@ -1,0 +1,38 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+
+
+use Daemon::Control;
+
+my $name = 'process-emails';
+
+my $logdir = $ENV{EMAILDB_LOG_DIR} || '/tmp';
+
+$0 = "daemon $name";
+
+my $stderr = join('/', $logdir, "$name.error.log" );
+
+print "std-error $stderr\n";
+
+Daemon::Control->new(
+  {
+    name      => "$name daemon control",
+    lsb_start => '$syslog $remote_fs',
+    lsb_stop  => '$syslog',
+    lsb_sdesc => "Daemon Control $name",
+    lsb_desc  => "Daemon Control $name",
+
+    fork    => 2,
+    program => "$Bin/$name.pl",
+
+    pid_file     => "/$logdir/$name.pid",
+    stderr_file  => $stderr,
+    stdout_file  => "/$logdir/$name.log",
+    kill_timeout => 300,
+  }
+)->run;
+
