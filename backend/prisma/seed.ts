@@ -32,6 +32,9 @@ const PrivConfig: any = {
         ['CadastroPessoa.inserir', 'Inserir novas pessoas'],
         ['CadastroPessoa.editar', 'Editar dados das pessoas'],
         ['CadastroPessoa.inativar', 'Inativar pessoas'],
+        ['CadastroPessoa.editar:apenas-mesmo-orgao', 'Editar pessoas do mesmo orgão'],
+        ['CadastroPessoa.inserir:apenas-mesmo-orgao', 'Inserir pessoas do mesmo orgão'],
+        ['CadastroPessoa.inativar:apenas_mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
     ],
 };
 
@@ -64,7 +67,20 @@ const PerfilAcessoConfig: any = [
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
         ]
-    }
+    },
+    {
+        nome: 'Unidade de Entregas',
+        descricao: 'Unidade de Entregas',
+        privilegios: [
+            'CadastroPessoa.inserir',
+            'CadastroPessoa.inativar',
+            'CadastroPessoa.editar',
+            'CadastroPessoa.editar:apenas-mesmo-orgao',
+            'CadastroPessoa.inserir:apenas-mesmo-orgao',
+            'CadastroPessoa.inativar:apenas_mesmo-orgao',
+        ]
+    },
+
 ];
 
 
@@ -74,7 +90,23 @@ async function main() {
     await atualizar_perfil_acesso();
 
     await atualizar_superadmin();
+    await atualizar_tipo_orgao();
 
+}
+
+async function atualizar_tipo_orgao() {
+    let list = ['Secretaria', 'Subprefeitura', 'Autarquia', 'Empresa Pública'];
+
+    for (const desc of list) {
+        let found = await prisma.tipoOrgao.findFirst({ where: { descricao: desc }, select: { id: true } });
+        if (!found) {
+            found = await prisma.tipoOrgao.create({
+                data: {
+                    descricao: desc
+                }, select: { id: true }
+            });
+        }
+    }
 }
 
 async function atualizar_modulos_e_privilegios() {

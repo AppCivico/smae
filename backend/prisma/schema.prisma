@@ -160,7 +160,6 @@ model Privilegio {
 
 model TipoOrgao {
     id        Int     @id @unique @default(autoincrement())
-    codigo    String
     descricao String
     orgao     Orgao[]
 
