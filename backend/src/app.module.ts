@@ -12,6 +12,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Module({
     imports: [
@@ -27,7 +28,11 @@ import { join } from 'path';
         {
             provide: APP_GUARD,
             useClass: JwtAuthGuard
-        }
+        },
+        {
+            provide: APP_GUARD,
+            useClass: RolesGuard,
+        },
     ],
 })
 export class AppModule implements NestModule {
