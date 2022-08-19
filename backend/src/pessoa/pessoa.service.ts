@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
 import { Prisma, Pessoa, PrismaClient, PrismaPromise } from '@prisma/client';
+import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosModulos';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -218,8 +219,8 @@ export class PessoaService {
         return password;
     }
 
-    async listaModulosPermissoes(pessoaId: number) {
-        const dados = await this.prisma.$queryRaw`
+    async listaPrivilegiosModulos(pessoaId: number): Promise<ListaPrivilegiosModulos> {
+        const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             with perms as (
             select p.codigo as cod_priv, m.codigo as cod_modulos
             from pessoa_perfil pp
@@ -231,8 +232,7 @@ export class PessoaService {
             select array_agg(distinct cod_priv) as privilegios, array_agg(distinct cod_modulos) as modulos from perms;
         `;
 
-        console.log(JSON.stringify(dados))
-
+        return dados[0];
     }
 
 }

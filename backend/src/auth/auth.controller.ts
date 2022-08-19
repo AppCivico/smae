@@ -19,6 +19,7 @@ import { LoginRequestBody } from 'src/auth/models/LoginRequestBody.dto';
 import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
 import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
 import { SolicitarNovaSenhaRequestBody } from 'src/auth/models/SolicitarNovaSenhaRequestBody.dto';
+import { AuthRequestLogin } from 'src/auth/models/AuthRequestLogin';
 
 @Controller()
 export class AuthController {
@@ -34,7 +35,7 @@ export class AuthController {
     @ApiOkResponse({
         schema: { anyOf: refs(AccessToken, ReducedAccessToken) },
     })
-    async login(@Request() req: AuthRequest): Promise<AccessToken | ReducedAccessToken> {
+    async login(@Request() req: AuthRequestLogin): Promise<AccessToken | ReducedAccessToken> {
         return this.authService.login(req.user);
     }
 

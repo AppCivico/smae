@@ -78,8 +78,8 @@ export class AuthService {
         throw new UnauthorizedError('Sessão não está mais ativa');
     }
 
-    async permissoesPessoa(pessoaId: number) {
-        await this.pessoaService.listaModulosPermissoes(pessoaId);
+    async listaPrivilegiosPessoa(pessoaId: number) {
+        return await this.pessoaService.listaPrivilegiosModulos(pessoaId);
     }
 
     async escreverNovaSenha(body: EscreverNovaSenhaRequestBody) {
