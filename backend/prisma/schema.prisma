@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Cargo {
-    id            Int            @id @unique @default(autoincrement())
+    id            Int            @id @default(autoincrement())
     descricao     String?
     pessoa_fisica PessoaFisica[]
 
@@ -28,7 +28,7 @@ model Cargo {
 }
 
 model Coordenadoria {
-    id            Int            @id @unique @default(autoincrement())
+    id            Int            @id @default(autoincrement())
     descricao     String?
     pessoa_fisica PessoaFisica[]
 
@@ -47,7 +47,7 @@ model Coordenadoria {
 }
 
 model Departamento {
-    id            Int            @id @unique @default(autoincrement())
+    id            Int            @id @default(autoincrement())
     descricao     String?
     pessoa_fisica PessoaFisica[]
 
@@ -66,7 +66,7 @@ model Departamento {
 }
 
 model DivisaoTecnica {
-    id            Int            @id @unique @default(autoincrement())
+    id            Int            @id @default(autoincrement())
     descricao     String?
     pessoa_fisica PessoaFisica[]
 
@@ -85,7 +85,7 @@ model DivisaoTecnica {
 }
 
 model Pessoa {
-    id                  Int                 @id @unique @default(autoincrement())
+    id                  Int                 @id @default(autoincrement())
     email               String              @unique
     senha               String
     nome_exibicao       String
@@ -136,15 +136,15 @@ model Pessoa {
 
 model Modulo {
     id         Int          @id @default(autoincrement())
-    codigo     String       @unique @db.VarChar
-    descricao  String       @db.VarChar
+    codigo     String       @unique
+    descricao  String
     privilegio Privilegio[]
 
     @@map("modulo")
 }
 
 model Orgao {
-    id            Int            @id @unique @default(autoincrement())
+    id            Int            @id @default(autoincrement())
     sigla         String
     descricao     String?
     tipo_orgao_id Int
@@ -166,9 +166,9 @@ model Orgao {
 }
 
 model PerfilAcesso {
-    id                Int                @id @unique @default(autoincrement())
-    nome              String             @db.VarChar
-    descricao         String?            @db.VarChar
+    id                Int                @id @default(autoincrement())
+    nome              String
+    descricao         String?
     perfil_privilegio PerfilPrivilegio[]
     pessoa_perfil     PessoaPerfil[]
 
@@ -176,7 +176,7 @@ model PerfilAcesso {
 }
 
 model PerfilPrivilegio {
-    id               Int          @id @unique @default(autoincrement())
+    id               Int          @id @default(autoincrement())
     perfil_acesso_id Int
     privilegio_id    Int
     perfil_acesso    PerfilAcesso @relation(fields: [perfil_acesso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -187,7 +187,7 @@ model PerfilPrivilegio {
 }
 
 model PessoaFisica {
-    id                 Int             @id @unique @default(autoincrement())
+    id                 Int             @id @default(autoincrement())
     cargo_id           Int
     divisao_tecnica_id Int?
     departamento_id    Int?
@@ -214,7 +214,7 @@ model PessoaPerfil {
 }
 
 model PessoaSessaoAtiva {
-    id        Int    @id @unique @default(autoincrement())
+    id        Int    @id @default(autoincrement())
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
 
@@ -223,8 +223,8 @@ model PessoaSessaoAtiva {
 
 model Privilegio {
     id                Int                @id @default(autoincrement())
-    nome              String             @db.VarChar
-    codigo            String             @unique @db.VarChar
+    nome              String
+    codigo            String             @unique
     modulo_id         Int
     modulo            Modulo             @relation(fields: [modulo_id], references: [id])
     perfil_privilegio PerfilPrivilegio[]
@@ -233,7 +233,7 @@ model Privilegio {
 }
 
 model TipoOrgao {
-    id        Int     @id @unique @default(autoincrement())
+    id        Int     @id @default(autoincrement())
     descricao String
     orgao     Orgao[]
 
@@ -242,7 +242,7 @@ model TipoOrgao {
 
 model EmaildbConfig {
     id                       Int                     @id @default(autoincrement())
-    from                     String                  @db.VarChar
+    from                     String
     template_resolver_class  String                  @db.VarChar(60)
     template_resolver_config Json                    @default("{}") @db.Json
     email_transporter_class  String                  @db.VarChar(60)
@@ -257,14 +257,14 @@ model EmaildbQueue {
     id             String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
     config_id      Int
     created_at     DateTime      @default(now()) @db.Timestamp(6)
-    template       String        @db.VarChar
-    to             String        @db.VarChar
-    subject        String        @db.VarChar
+    template       String
+    to             String
+    subject        String
     variables      Json          @db.Json
     sent           Boolean?
     updated_at     DateTime?     @db.Timestamp(6)
     visible_after  DateTime?     @db.Timestamp(6)
-    errmsg         String?       @db.VarChar
+    errmsg         String?
     emaildb_config EmaildbConfig @relation(fields: [config_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
     @@map("emaildb_queue")
