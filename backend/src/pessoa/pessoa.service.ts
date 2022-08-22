@@ -2,8 +2,9 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
-import { Prisma, Pessoa, PrismaClient, PrismaPromise } from '@prisma/client';
+import { Prisma, Pessoa, PrismaClient, PrismaPromise, PerfilAcesso } from '@prisma/client';
 import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosModulos';
+import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -217,6 +218,23 @@ export class PessoaService {
         password = password.split('').sort(function () { return 0.5 - Math.random() }).join('');
 
         return password;
+    }
+
+    async listaPerfilAcesso(): Promise<PerfilAcessoPrivilegios[]> {
+
+        const dados = await this.prisma.perfilAcesso.findMany({
+            orderBy: { nome: "asc" },
+            select: {
+                nome: true,
+                descricao: true,
+                id: true,
+                perfil_privilegio: {
+                    select: { privilegio: { select: { nome: true } } }
+                }
+            }
+        });
+
+        return dados as PerfilAcessoPrivilegios[];
     }
 
     async listaPrivilegiosModulos(pessoaId: number): Promise<ListaPrivilegiosModulos> {

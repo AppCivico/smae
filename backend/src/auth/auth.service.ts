@@ -9,6 +9,8 @@ import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
 import { JwtReducedAccessToken } from 'src/auth/models/JwtReducedAccessToken';
 import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
 import { SolicitarNovaSenhaRequestBody } from 'src/auth/models/SolicitarNovaSenhaRequestBody.dto';
+import { PerfilAcesso } from '@prisma/client';
+import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
 
 @Injectable()
 export class AuthService {
@@ -80,6 +82,10 @@ export class AuthService {
 
     async listaPrivilegiosPessoa(pessoaId: number) {
         return await this.pessoaService.listaPrivilegiosModulos(pessoaId);
+    }
+
+    async listaPerfilAcesso() : Promise<PerfilAcessoPrivilegios[]> {
+        return await this.pessoaService.listaPerfilAcesso();
     }
 
     async escreverNovaSenha(body: EscreverNovaSenhaRequestBody) {

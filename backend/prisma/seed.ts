@@ -35,6 +35,7 @@ const PrivConfig: any = {
         ['CadastroPessoa.editar:apenas-mesmo-orgao', 'Editar pessoas do mesmo orgão'],
         ['CadastroPessoa.inserir:apenas-mesmo-orgao', 'Inserir pessoas do mesmo orgão'],
         ['CadastroPessoa.inativar:apenas_mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
+        ['CadastroPessoa.inserir:administrador', 'Inserir outras pessoas com esta permissão'],
     ],
 };
 
@@ -54,6 +55,7 @@ const PerfilAcessoConfig: any = [
             'CadastroCargo.inserir',
             'CadastroCargo.editar',
             'CadastroCargo.remover',
+            'CadastroPessoa.inserir:administrador',
             'CadastroCoordenadoria.inserir',
             'CadastroCoordenadoria.editar',
             'CadastroCoordenadoria.remover',

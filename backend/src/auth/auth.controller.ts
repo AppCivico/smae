@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Get,
     HttpCode,
     HttpStatus,
     Post,
@@ -20,6 +21,7 @@ import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
 import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
 import { SolicitarNovaSenhaRequestBody } from 'src/auth/models/SolicitarNovaSenhaRequestBody.dto';
 import { AuthRequestLogin } from 'src/auth/models/AuthRequestLogin';
+import { PerfilDeAcessoLinhaDto } from 'src/auth/models/PerfilDeAcesso.dto';
 
 @Controller()
 export class AuthController {
@@ -67,6 +69,15 @@ export class AuthController {
     async solicitaNovaSenha(@Body() body: SolicitarNovaSenhaRequestBody) {
         await this.authService.solicitarNovaSenha(body);
         return '';
+    }
+
+    @ApiTags('minha-conta')
+    @Get('perfil-de-acesso')
+    @HttpCode(HttpStatus.OK)
+    async perfilDeAcesso(): Promise<PerfilDeAcessoLinhaDto> {
+        return {
+            linhas: await this.authService.listaPerfilAcesso()
+        };
     }
 
 }
