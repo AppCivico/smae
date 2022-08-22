@@ -13,6 +13,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { CargoModule } from './cargo/cargo.module';
 
 @Module({
     imports: [
@@ -20,7 +21,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, CargoModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

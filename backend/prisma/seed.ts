@@ -187,14 +187,14 @@ async function atualizar_perfil_acesso() {
             prisma.perfilPrivilegio.findFirst({
                 where: {
                     perfil_acesso_id: perfilAcesso.id,
-                    privilegios_id: idPriv
+                    privilegio_id: idPriv
                 }
             }).then(async (match) => {
                 if (!match) {
                     await prisma.perfilPrivilegio.create({
                         data: {
                             perfil_acesso_id: perfilAcesso?.id as number,
-                            privilegios_id: idPriv
+                            privilegio_id: idPriv
                         }
                     })
                 }

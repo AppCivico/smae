@@ -13,6 +13,17 @@ model Cargo {
     descricao     String?
     pessoa_fisica PessoaFisica[]
 
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @default(now()) @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
     @@map("cargo")
 }
 
@@ -20,6 +31,17 @@ model Coordenadoria {
     id            Int            @id @unique @default(autoincrement())
     descricao     String?
     pessoa_fisica PessoaFisica[]
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @default(now()) @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("coordenadoria")
 }
@@ -29,6 +51,17 @@ model Departamento {
     descricao     String?
     pessoa_fisica PessoaFisica[]
 
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @default(now()) @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
     @@map("departamento")
 }
 
@@ -36,6 +69,17 @@ model DivisaoTecnica {
     id            Int            @id @unique @default(autoincrement())
     descricao     String?
     pessoa_fisica PessoaFisica[]
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @default(now()) @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("divisao_tecnica")
 }
@@ -51,9 +95,9 @@ model Pessoa {
     criado_em           DateTime            @default(now()) @db.Timestamptz(6)
     criado_por          Int?
     qtde_senha_invalida Int                 @default(0)
-    senha_atualizada_em DateTime            @default(now()) @db.Timestamptz(6)
+    senha_atualizada_em DateTime?           @default(now()) @db.Timestamptz(6)
     senha_bloqueada     Boolean             @default(false)
-    senha_bloqueada_em  DateTime            @default(now()) @db.Timestamptz(6)
+    senha_bloqueada_em  DateTime?           @default(now()) @db.Timestamptz(6)
     desativado          Boolean             @default(false)
     desativado_em       DateTime            @default(now())
     desativado_por      Int?
@@ -67,14 +111,33 @@ model Pessoa {
     PessoasQueDesativei Pessoa[]            @relation("DesativadorPessoas")
     PessoaPerfil        PessoaPerfil[]
     PessoaSessoesAtivas PessoaSessaoAtiva[]
+    CargoQueCriei       Cargo[]             @relation("Criador")
+    CargoQueRemovi      Cargo[]             @relation("Removedor")
+    CargoQueAtualizei   Cargo[]             @relation("Atualizador")
+
+    CoordenadoriaQueCriei     Coordenadoria[] @relation("Criador")
+    CoordenadoriaQueRemovi    Coordenadoria[] @relation("Removedor")
+    CoordenadoriaQueAtualizei Coordenadoria[] @relation("Atualizador")
+
+    DepartamentoQueCriei     Departamento[] @relation("Criador")
+    DepartamentoQueRemovi    Departamento[] @relation("Removedor")
+    DepartamentoQueAtualizei Departamento[] @relation("Atualizador")
+
+    DivisaoTecnicaQueCriei     DivisaoTecnica[] @relation("Criador")
+    DivisaoTecnicaQueRemovi    DivisaoTecnica[] @relation("Removedor")
+    DivisaoTecnicaQueAtualizei DivisaoTecnica[] @relation("Atualizador")
+
+    OrgaoQueCriei     Orgao[] @relation("Criador")
+    OrgaoQueRemovi    Orgao[] @relation("Removedor")
+    OrgaoQueAtualizei Orgao[] @relation("Atualizador")
 
     @@map("pessoa")
 }
 
 model Modulo {
     id         Int          @id @default(autoincrement())
-    codigo     String?      @unique @db.VarChar
-    descricao  String?      @db.VarChar
+    codigo     String       @unique @db.VarChar
+    descricao  String       @db.VarChar
     privilegio Privilegio[]
 
     @@map("modulo")
@@ -87,6 +150,17 @@ model Orgao {
     tipo_orgao_id Int
     tipo_orgao    TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
     pessoa_fisica PessoaFisica[]
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @default(now()) @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("orgao")
 }
@@ -104,11 +178,11 @@ model PerfilAcesso {
 model PerfilPrivilegio {
     id               Int          @id @unique @default(autoincrement())
     perfil_acesso_id Int
-    privilegios_id   Int
+    privilegio_id    Int
     perfil_acesso    PerfilAcesso @relation(fields: [perfil_acesso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-    privilegio       Privilegio   @relation(fields: [privilegios_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    privilegio       Privilegio   @relation(fields: [privilegio_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-    @@unique([perfil_acesso_id, privilegios_id])
+    @@unique([perfil_acesso_id, privilegio_id])
     @@map("perfil_privilegio")
 }
 
@@ -130,11 +204,11 @@ model PessoaFisica {
 }
 
 model PessoaPerfil {
-    id               Int           @id @default(autoincrement())
-    pessoa_id        Int?
-    perfil_acesso_id Int?
-    perfil_acesso    PerfilAcesso? @relation(fields: [perfil_acesso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-    pessoa           Pessoa?       @relation(fields: [pessoa_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    id               Int          @id @default(autoincrement())
+    pessoa_id        Int
+    perfil_acesso_id Int
+    perfil_acesso    PerfilAcesso @relation(fields: [perfil_acesso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    pessoa           Pessoa       @relation(fields: [pessoa_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
     @@map("pessoa_perfil")
 }
@@ -195,3 +269,7 @@ model EmaildbQueue {
 
     @@map("emaildb_queue")
 }
+
+// ODS
+// Eixos
+//
