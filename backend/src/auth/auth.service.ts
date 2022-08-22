@@ -84,7 +84,7 @@ export class AuthService {
         return await this.pessoaService.listaPrivilegiosModulos(pessoaId);
     }
 
-    async listaPerfilAcesso() : Promise<PerfilAcessoPrivilegios[]> {
+    async listaPerfilAcesso(): Promise<PerfilAcessoPrivilegios[]> {
         return await this.pessoaService.listaPerfilAcesso();
     }
 
@@ -112,7 +112,9 @@ export class AuthService {
         if (!pessoa)
             throw new BadRequestException('email| E-mail não encontrado');
 
-        if (pessoa.senha_bloqueada && Date.now() - pessoa.senha_bloqueada_em.getTime() < 3600 * 1000)
+        if (pessoa.senha_bloqueada &&
+            pessoa.senha_bloqueada_em &&
+            Date.now() - pessoa.senha_bloqueada_em.getTime() < 60 * 1000)
             throw new BadRequestException('email| Solicitação já foi efetuada recentemente. Conferia seu e-mail.');
 
         await this.pessoaService.criaNovaSenha(pessoa, true);
