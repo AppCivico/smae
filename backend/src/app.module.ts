@@ -14,6 +14,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CargoModule } from './cargo/cargo.module';
+import { CoordenadoriaModule } from './coordenadoria/coordenadoria.module';
+import { DepartamentoModule } from './departamento/departamento.module';
+import { DivisaoTecnicaModule } from './divisao-tecnica/divisao-tecnica.module';
+import { OrgaoModule } from './orgao/orgao.module';
+import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 
 @Module({
     imports: [
@@ -21,7 +26,7 @@ import { CargoModule } from './cargo/cargo.module';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, CargoModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, CargoModule, CoordenadoriaModule, DepartamentoModule, DivisaoTecnicaModule, OrgaoModule, TipoOrgaoModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

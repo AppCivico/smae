@@ -28,6 +28,17 @@ const PrivConfig: any = {
         ['CadastroDivisaoTecnica.remover', 'Remover divisão técnica'],
     ],
 
+    CadastroOrgao: [
+        ['CadastroOrgao.inserir', 'Inserir órgão'],
+        ['CadastroOrgao.editar', 'Editar órgão'],
+        ['CadastroOrgao.remover', 'Remover órgão'],
+    ],
+    CadastroTipoOrgao: [
+        ['CadastroTipoOrgao.inserir', 'Inserir tipo órgão'],
+        ['CadastroTipoOrgao.editar', 'Editar tipo órgão'],
+        ['CadastroTipoOrgao.remover', 'Remover tipo órgão'],
+    ],
+
     CadastroPessoa: [
         ['CadastroPessoa.inserir', 'Inserir novas pessoas'],
         ['CadastroPessoa.editar', 'Editar dados das pessoas'],
@@ -44,6 +55,8 @@ const ModuloDescricao: any = {
     CadastroCoordenadoria: 'Cadastro de coordenadoria',
     CadastroDepartamento: 'Cadastro de departamento',
     CadastroDivisaoTecnica: 'Cadastro de divisão técnica',
+    CadastroOrgao: 'Cadastro de Órgão',
+    CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
 };
 
@@ -65,6 +78,12 @@ const PerfilAcessoConfig: any = [
             'CadastroDivisaoTecnica.inserir',
             'CadastroDivisaoTecnica.editar',
             'CadastroDivisaoTecnica.remover',
+            'CadastroOrgao.inserir',
+            'CadastroOrgao.editar',
+            'CadastroOrgao.remover',
+            'CadastroTipoOrgao.inserir',
+            'CadastroTipoOrgao.editar',
+            'CadastroTipoOrgao.remover',
             'CadastroPessoa.inserir',
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',

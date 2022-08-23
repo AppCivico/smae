@@ -1,8 +1,8 @@
 import { IsString, MaxLength, MinLength } from "class-validator";
 
-export class CreateCargoDto {
+export class CreateDivisaoTecnicaDto {
     /**
-    * Cargo
+    * Divisão Técnica
     */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| descrição: Mínimo de 1 caractere' })
