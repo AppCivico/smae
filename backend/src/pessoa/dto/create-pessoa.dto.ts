@@ -43,7 +43,6 @@ export class CreatePessoaDto extends Pessoa {
        * @example 1
     */
     @IsOptional()
-
     @IsString({ message: '$property| Locação: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| Locação: Mínimo de 1 caracteres' })
     @MaxLength(250, { message: '$property| Locação: Máximo 250 caracteres' })
@@ -53,6 +52,7 @@ export class CreatePessoaDto extends Pessoa {
        * ID Órgão
        * @example 1
     */
+    @IsOptional()
     @IsPositive()
     orgao_id?: number;
 
