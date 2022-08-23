@@ -2,11 +2,14 @@ import { Pessoa } from '../entities/pessoa.entity';
 
 import {
     IsEmail,
+    IsNumber,
+    IsOptional,
     IsPositive,
     IsString,
     MaxLength,
     MinLength,
 } from 'class-validator';
+
 export class CreatePessoaDto extends Pessoa {
     /**
    * E-mail para login
@@ -39,29 +42,12 @@ export class CreatePessoaDto extends Pessoa {
        * ID Cargo
        * @example 1
     */
-    @IsPositive()
-    cargo_id?: number;
+    @IsOptional()
 
-    /**
-      * ID Divisão Técnica
-      * @example 1
-   */
-    @IsPositive()
-    divisao_tecnica_id?: number;
-
-    /**
-      * ID Departamento
-      * @example 1
-   */
-    @IsPositive()
-    departamento_id?: number;
-
-    /**
-      * ID Coordenadoria
-      * @example 1
-   */
-    @IsPositive()
-    coordenadoria_id?: number;
+    @IsString({ message: '$property| Locação: Precisa ser alfanumérico' })
+    @MinLength(1, { message: '$property| Locação: Mínimo de 1 caracteres' })
+    @MaxLength(250, { message: '$property| Locação: Máximo 250 caracteres' })
+    locacao: string;
 
     /**
        * ID Órgão

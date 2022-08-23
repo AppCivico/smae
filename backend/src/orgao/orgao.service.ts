@@ -23,7 +23,7 @@ export class OrgaoService {
     }
 
     async findAll() {
-        const listActive = await this.prisma.orgao.findMany({
+        let listActive = await this.prisma.orgao.findMany({
             where: {
                 removido_em: null,
             },
@@ -36,7 +36,6 @@ export class OrgaoService {
                 },
             }
         });
-
         return listActive;
     }
 
