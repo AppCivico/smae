@@ -172,11 +172,23 @@ export class PessoaService {
     }
 
     async findBySessionId(id: number) {
-        const pessoaSession = await this.prisma.pessoaSessaoAtiva.findUnique({ where: { id: id } });
+        const pessoaSession = await this.prisma.pessoaSessaoAtiva.findUnique({
+            where: { id: id },
+            select: {
+                pessoa: {
+                    select: {
+                        id: true,
+                        nome_completo: true,
+                        email: true,
+                        nome_exibicao: true,
+                        senha_bloqueada: true,
+                    }
+                }
+            }
+        });
         if (!pessoaSession) return undefined;
 
-        const pessoa = await this.prisma.pessoa.findUnique({ where: { id: pessoaSession.pessoa_id } });
-        return pessoa;
+        return pessoaSession.pessoa;
     }
 
     async newSessionForPessoa(id: number): Promise<number> {
