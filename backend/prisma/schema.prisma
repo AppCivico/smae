@@ -10,7 +10,7 @@ datasource db {
 
 model Cargo {
     id            Int            @id @default(autoincrement())
-    descricao     String?
+    descricao     String
     pessoa_fisica PessoaFisica[]
 
     criado_por     Int?
@@ -29,7 +29,7 @@ model Cargo {
 
 model Coordenadoria {
     id            Int            @id @default(autoincrement())
-    descricao     String?
+    descricao     String
     pessoa_fisica PessoaFisica[]
 
     criado_por     Int?
@@ -48,7 +48,7 @@ model Coordenadoria {
 
 model Departamento {
     id            Int            @id @default(autoincrement())
-    descricao     String?
+    descricao     String
     pessoa_fisica PessoaFisica[]
 
     criado_por     Int?
@@ -67,7 +67,7 @@ model Departamento {
 
 model DivisaoTecnica {
     id            Int            @id @default(autoincrement())
-    descricao     String?
+    descricao     String
     pessoa_fisica PessoaFisica[]
 
     criado_por     Int?
@@ -146,7 +146,7 @@ model Modulo {
 model Orgao {
     id            Int            @id @default(autoincrement())
     sigla         String
-    descricao     String?
+    descricao     String
     tipo_orgao_id Int
     tipo_orgao    TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
     pessoa_fisica PessoaFisica[]

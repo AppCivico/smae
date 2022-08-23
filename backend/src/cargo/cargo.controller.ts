@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse }
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { ListCargoDto } from 'src/cargo/dto/list-cargo.dto';
 import { CargoService } from './cargo.service';
 import { CreateCargoDto } from './dto/create-cargo.dto';
 import { UpdateCargoDto } from './dto/update-cargo.dto';
@@ -22,8 +23,8 @@ export class CargoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll() {
-        return await this.cargoService.findAll();
+    async findAll(): Promise<ListCargoDto> {
+        return { 'linhas': await this.cargoService.findAll() };
     }
 
     @Patch(':id')
