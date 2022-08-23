@@ -6,27 +6,10 @@ const prisma = new PrismaClient(
 
 const PrivConfig: any = {
 
-    CadastroCargo: [
-        ['CadastroCargo.inserir', 'Inserir cargo'],
-        ['CadastroCargo.editar', 'Editar cargo'],
-        ['CadastroCargo.remover', 'Remover cargo'],
-    ],
-
-    CadastroCoordenadoria: [
-        ['CadastroCoordenadoria.inserir', 'Inserir coordenadoria'],
-        ['CadastroCoordenadoria.editar', 'Editar coordenadoria'],
-        ['CadastroCoordenadoria.remover', 'Remover coordenadoria'],
-    ],
-    CadastroDepartamento: [
-        ['CadastroDepartamento.inserir', 'Inserir departamento'],
-        ['CadastroDepartamento.editar', 'Editar departamento'],
-        ['CadastroDepartamento.remover', 'Remover departamento'],
-    ],
-    CadastroDivisaoTecnica: [
-        ['CadastroDivisaoTecnica.inserir', 'Inserir divisão técnica'],
-        ['CadastroDivisaoTecnica.editar', 'Editar divisão técnica'],
-        ['CadastroDivisaoTecnica.remover', 'Remover divisão técnica'],
-    ],
+    CadastroCargo: false,
+    CadastroCoordenadoria: false,
+    CadastroDepartamento: false,
+    CadastroDivisaoTecnica: false,
 
     CadastroOrgao: [
         ['CadastroOrgao.inserir', 'Inserir órgão'],
@@ -45,16 +28,12 @@ const PrivConfig: any = {
         ['CadastroPessoa.inativar', 'Inativar pessoas'],
         ['CadastroPessoa.editar:apenas-mesmo-orgao', 'Editar pessoas do mesmo orgão'],
         ['CadastroPessoa.inserir:apenas-mesmo-orgao', 'Inserir pessoas do mesmo orgão'],
-        ['CadastroPessoa.inativar:apenas_mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
+        ['CadastroPessoa.inativar:apenas-mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
         ['CadastroPessoa.inserir:administrador', 'Inserir outras pessoas com esta permissão'],
     ],
 };
 
 const ModuloDescricao: any = {
-    CadastroCargo: 'Cadastro de cargos',
-    CadastroCoordenadoria: 'Cadastro de coordenadoria',
-    CadastroDepartamento: 'Cadastro de departamento',
-    CadastroDivisaoTecnica: 'Cadastro de divisão técnica',
     CadastroOrgao: 'Cadastro de Órgão',
     CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
@@ -65,19 +44,7 @@ const PerfilAcessoConfig: any = [
         nome: 'Administrador Geral',
         descricao: 'Administrador Geral',
         privilegios: [
-            'CadastroCargo.inserir',
-            'CadastroCargo.editar',
-            'CadastroCargo.remover',
             'CadastroPessoa.inserir:administrador',
-            'CadastroCoordenadoria.inserir',
-            'CadastroCoordenadoria.editar',
-            'CadastroCoordenadoria.remover',
-            'CadastroDepartamento.inserir',
-            'CadastroDepartamento.editar',
-            'CadastroDepartamento.remover',
-            'CadastroDivisaoTecnica.inserir',
-            'CadastroDivisaoTecnica.editar',
-            'CadastroDivisaoTecnica.remover',
             'CadastroOrgao.inserir',
             'CadastroOrgao.editar',
             'CadastroOrgao.remover',
@@ -98,7 +65,7 @@ const PerfilAcessoConfig: any = [
             'CadastroPessoa.editar',
             'CadastroPessoa.editar:apenas-mesmo-orgao',
             'CadastroPessoa.inserir:apenas-mesmo-orgao',
-            'CadastroPessoa.inativar:apenas_mesmo-orgao',
+            'CadastroPessoa.inativar:apenas-mesmo-orgao',
         ]
     },
 
@@ -136,19 +103,49 @@ async function atualizar_modulos_e_privilegios() {
 
     for (const codModulo in PrivConfig) {
         const privilegio = PrivConfig[codModulo];
-        const moduloObject = await prisma.modulo.upsert({
-            where: { codigo: codModulo },
-            update: {
-                descricao: ModuloDescricao[codModulo as string] as string,
-            },
-            create:
-            {
-                codigo: codModulo,
-                descricao: ModuloDescricao[codModulo as string] as string,
-            },
-        });
-        for (const priv of privilegio) {
-            promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string))
+
+        if (privilegio === false) {
+
+            await prisma.perfilPrivilegio.deleteMany({
+                where: {
+                    privilegio: {
+                        modulo: {
+                            codigo: codModulo
+                        }
+                    }
+                }
+            });
+
+            await prisma.privilegio.deleteMany({
+                where: {
+                    modulo: {
+                        codigo: codModulo
+                    }
+                }
+            });
+
+            await prisma.modulo.deleteMany({
+                where: {
+                    codigo: codModulo
+                }
+            });
+
+        } else {
+
+            const moduloObject = await prisma.modulo.upsert({
+                where: { codigo: codModulo },
+                update: {
+                    descricao: ModuloDescricao[codModulo as string] as string,
+                },
+                create:
+                {
+                    codigo: codModulo,
+                    descricao: ModuloDescricao[codModulo as string] as string,
+                },
+            });
+            for (const priv of privilegio) {
+                promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string))
+            }
         }
 
     }
@@ -201,6 +198,7 @@ async function atualizar_perfil_acesso() {
         }
 
         for (const codPriv of perfilAcessoConf.privilegios) {
+            console.log(codPriv)
             const idPriv = (await prisma.privilegio.findFirstOrThrow({ where: { codigo: codPriv } })).id;
 
             prisma.perfilPrivilegio.findFirst({
