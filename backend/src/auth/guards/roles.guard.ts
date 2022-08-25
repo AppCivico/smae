@@ -23,7 +23,7 @@ export class RolesGuard implements CanActivate {
             throw new UnauthorizedException(`Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}`);
 
         const JwtUser = user as PessoaFromJwt;
-        if (JwtUser.hasSomeRoles && JwtUser.hasSomeRoles(requiredRoles)) {
+        if (JwtUser.hasSomeRoles(requiredRoles)) {
             return true
         }
 

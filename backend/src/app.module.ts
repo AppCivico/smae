@@ -15,6 +15,7 @@ import { join } from 'path';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { OrgaoModule } from './orgao/orgao.module';
 import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
+import { OdsModule } from './ods/ods.module';
 
 @Module({
     imports: [
@@ -22,7 +23,7 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

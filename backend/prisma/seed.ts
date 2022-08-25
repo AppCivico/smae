@@ -11,6 +11,12 @@ const PrivConfig: any = {
     CadastroDepartamento: false,
     CadastroDivisaoTecnica: false,
 
+    CadastroOds: [
+        ['CadastroOds.inserir', 'Inserir ODS'],
+        ['CadastroOds.editar', 'Editar ODS'],
+        ['CadastroOds.remover', 'Remover ODS'],
+    ],
+
     CadastroOrgao: [
         ['CadastroOrgao.inserir', 'Inserir órgão'],
         ['CadastroOrgao.editar', 'Editar órgão'],
@@ -37,6 +43,7 @@ const ModuloDescricao: any = {
     CadastroOrgao: 'Cadastro de Órgão',
     CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
+    CadastroOds: 'Cadastro de ODS',
 };
 
 const PerfilAcessoConfig: any = [
@@ -54,6 +61,14 @@ const PerfilAcessoConfig: any = [
             'CadastroPessoa.inserir',
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
+
+            'CadastroOds.inserir',
+            'CadastroOds.editar',
+            'CadastroOds.remover',
+
+            'CadastroEixo.inserir',
+            'CadastroEixo.editar',
+            'CadastroEixo.remover',
         ]
     },
     {
@@ -79,7 +94,25 @@ async function main() {
 
     await atualizar_superadmin();
     await atualizar_tipo_orgao();
+    await atualizar_ods();
 
+}
+
+
+async function atualizar_ods() {
+    let list = [{ numero: 1, titulo: 'Erradicação da Pobreza' }];
+
+    for (const desc of list) {
+        await prisma.ods.upsert({
+            where: { numero: desc.numero },
+            update: { titulo: desc.titulo },
+            create: {
+                numero: desc.numero as number,
+                titulo: desc.titulo,
+                descricao: ''
+            },
+        });
+    }
 }
 
 async function atualizar_tipo_orgao() {

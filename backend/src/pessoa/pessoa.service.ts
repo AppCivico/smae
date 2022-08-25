@@ -155,8 +155,6 @@ export class PessoaService {
 
         createPessoaDto.email = createPessoaDto.email.toLocaleLowerCase();
 
-
-
         const pessoaData = {
             nome_completo: createPessoaDto.nome_completo,
             nome_exibicao: createPessoaDto.nome_exibicao,

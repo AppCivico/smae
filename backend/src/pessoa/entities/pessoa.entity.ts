@@ -19,7 +19,6 @@ export class Pessoa {
     session_id?: number;
     @ApiHideProperty()
     senha_bloqueada?: boolean
-
     @ApiHideProperty()
     PessoaFisica?: PessoaFisica
 
