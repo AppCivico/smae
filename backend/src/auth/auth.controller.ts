@@ -71,9 +71,10 @@ export class AuthController {
         return '';
     }
 
-    @ApiTags('minha-conta')
+    @ApiTags('default')
     @Get('perfil-de-acesso')
     @HttpCode(HttpStatus.OK)
+    @ApiBody({ type: PerfilDeAcessoLinhaDto, description: 'Retorna todos os perfis de acesso do sistema' })
     async perfilDeAcesso(): Promise<PerfilDeAcessoLinhaDto> {
         return {
             linhas: await this.authService.listaPerfilAcesso()
