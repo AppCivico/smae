@@ -1,4 +1,5 @@
 import { ApiHideProperty } from "@nestjs/swagger";
+import { PessoaFisica } from "@prisma/client";
 import { Orgao } from "src/orgao/entities/orgao.entity";
 
 export class Pessoa {
@@ -19,5 +20,7 @@ export class Pessoa {
     @ApiHideProperty()
     senha_bloqueada?: boolean
 
+    @ApiHideProperty()
+    PessoaFisica?: PessoaFisica
 
 }

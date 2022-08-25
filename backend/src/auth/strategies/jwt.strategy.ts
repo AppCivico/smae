@@ -21,12 +21,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
         let modPriv = await this.authService.listaPrivilegiosPessoa(pessoa.id as number);
 
-        return {
+        return new PessoaFromJwt({
             id: pessoa.id as number,
             nome_exibicao: pessoa.nome_exibicao,
             session_id: payload.sid,
             modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
-        };
+            orgao_id: pessoa.PessoaFisica?.orgao_id
+        });
     }
 }

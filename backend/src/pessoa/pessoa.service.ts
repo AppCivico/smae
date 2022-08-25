@@ -1,10 +1,11 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
 import { Prisma, Pessoa, PrismaClient, PrismaPromise, PerfilAcesso } from '@prisma/client';
 import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosModulos';
 import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -127,27 +128,72 @@ export class PessoaService {
         return updated;
     }
 
-    async criarPessoa(createPessoaDto: CreatePessoaDto) {
+    async verificarPrivilegiosCriacao(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
+        if (createPessoaDto.orgao_id === undefined) {
+            if (user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false) {
+                throw new UnauthorizedException(`Para criar pessoas sem órgão é necessário ser um administrador.`);
+            }
+        }
+
+        if (
+            createPessoaDto.orgao_id &&
+            user.hasSomeRoles(['CadastroPessoa.inserir:apenas-mesmo-orgao']) &&
+            Number(createPessoaDto.orgao_id) != Number(user.orgao_id)
+        ) {
+            throw new UnauthorizedException(`Você só pode criar pessoas para o seu próprio órgão.`);
+        }
+
+    }
+
+    async criarPessoa(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
+
+        this.verificarPrivilegiosCriacao(createPessoaDto, user);
+
         this.logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         let newPass = this.#generateRndPass(10);
         this.logger.log(`senha gerada: ${newPass}`);
 
         createPessoaDto.email = createPessoaDto.email.toLocaleLowerCase();
 
-        const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
-        if (emailExists > 0) {
-            throw new HttpException('email| E-mail já tem conta', 400);
-        }
 
-        const data = {
-            ...createPessoaDto,
+
+        const pessoaData = {
+            nome_completo: createPessoaDto.nome_completo,
+            nome_exibicao: createPessoaDto.nome_exibicao,
+            email: createPessoaDto.email,
             senha: await bcrypt.hash(newPass, BCRYPT_ROUNDS),
         } as Prisma.PessoaCreateInput;
 
         const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
-            const created = await prisma.pessoa.create({ data });
+
+            const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
+            if (emailExists > 0) {
+                throw new HttpException('email| E-mail já tem conta', 400);
+            }
+
+            let pessoaFisica;
+            if (createPessoaDto.orgao_id) {
+                pessoaFisica = await prisma.pessoaFisica.create({
+                    data: {
+                        orgao_id: createPessoaDto.orgao_id,
+                        locacao: createPessoaDto.locacao
+                    }
+                });
+            }
+
+            const created = await prisma.pessoa.create({
+                data: {
+                    ...pessoaData,
+                    pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
+                } as Prisma.PessoaCreateInput
+            });
             await this.enviaPrimeiraSenha(created, newPass, prisma);
             return created;
+        }, {
+            // verificar o email dentro do contexto Serializable
+            isolationLevel: 'Serializable',
+            maxWait: 5000,
+            timeout: 5000,
         });
 
         return this.pessoaAsHash(pessoa);
@@ -214,24 +260,27 @@ export class PessoaService {
         return pessoa;
     }
 
-    async findBySessionId(id: number) {
-        const pessoaSession = await this.prisma.pessoaSessaoAtiva.findUnique({
-            where: { id: id },
-            select: {
-                pessoa: {
-                    select: {
-                        id: true,
-                        nome_completo: true,
-                        email: true,
-                        nome_exibicao: true,
-                        senha_bloqueada: true,
+    async findBySessionId(sessionId: number) {
+        const pessoa = await this.prisma.pessoa.findMany({
+            where: {
+                PessoaSessoesAtivas: {
+                    some: {
+                        id: sessionId
                     }
                 }
+            },
+            select: {
+                id: true,
+                nome_completo: true,
+                email: true,
+                nome_exibicao: true,
+                senha_bloqueada: true,
+                pessoa_fisica: true
             }
         });
-        if (!pessoaSession) return undefined;
+        if (!pessoa) return undefined;
 
-        return pessoaSession.pessoa;
+        return pessoa[0];
     }
 
     async newSessionForPessoa(id: number): Promise<number> {

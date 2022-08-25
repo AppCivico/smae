@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UnauthorizedException } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { ListPessoaDto } from 'src/pessoa/dto/list-pessoa.dto';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { PessoaService } from './pessoa.service';
@@ -14,14 +16,14 @@ export class PessoaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPessoa.inserir')
-    create(@Body() createPessoaDto: CreatePessoaDto) {
-        return this.pessoaService.criarPessoa(createPessoaDto);
+    create(@Body() createPessoaDto: CreatePessoaDto, @CurrentUser() user: PessoaFromJwt) {
+        return this.pessoaService.criarPessoa(createPessoaDto, user);
     }
 
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroPessoa.inserir')
+    @Roles('CadastroPessoa.inserir', 'CadastroPessoa.editar', 'CadastroPessoa.inativar')
     async findAll(): Promise<ListPessoaDto> {
         return { 'linhas': await this.pessoaService.findAll() };
     }

@@ -1,15 +1,21 @@
-import { ApiProperty } from "@nestjs/swagger";
-export class PessoaFromJwt {
-    @ApiProperty({ description: 'ID da Pessoa' })
-    id: number;
-    @ApiProperty({ description: 'Nome Social' })
-    nome_exibicao: string;
-    @ApiProperty({ description: 'ID da sessão' })
-    session_id: number;
+import { PessoaFromJwtBase } from "src/auth/models/PessoaFromJwtBase";
 
-    @ApiProperty({ description: 'Lista de privilegios' })
-    privilegios: string[];
+export class PessoaFromJwt extends PessoaFromJwtBase {
 
-    @ApiProperty({ description: 'Lista de Módulos' })
-    modulos: string[];
+    // facilitando pra ter que não ter que usar um método estático aqui
+    constructor(opts: PessoaFromJwtBase) {
+        super()
+        this.id = opts.id;
+        this.nome_exibicao = opts.nome_exibicao;
+        this.session_id = opts.session_id;
+        this.privilegios = opts.privilegios;
+        this.modulos = opts.modulos;
+        this.orgao_id = opts.orgao_id;
+    }
+
+    // não requirido, mas se não existir não vai autorizar
+    public hasSomeRoles(anyRequiredRole: string[]) {
+        if (!this.privilegios) return false;
+        return anyRequiredRole.some((role) => this.privilegios.includes(role));
+    }
 }

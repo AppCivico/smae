@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from 'src/auth/decorators/roles.decorator';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -15,10 +16,17 @@ export class RolesGuard implements CanActivate {
             return true;
         }
 
-        const { user } = context.switchToHttp().getRequest();
-        // qualquer uma das regras que der match
-        const canExecute = requiredRoles.some((role) => user.privilegios?.includes(role));
-        if (canExecute) return true;
+        let { user } = context.switchToHttp().getRequest();
+
+        console.log(user);
+        if (!user)
+            throw new UnauthorizedException(`Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}`);
+
+        const JwtUser = user as PessoaFromJwt;
+        if (JwtUser.hasSomeRoles && JwtUser.hasSomeRoles(requiredRoles)) {
+            return true
+        }
+
         throw new UnauthorizedException(`Pelo menos dos privilégios são necessários para o acesso: ${requiredRoles.join(', ')}`);
     }
 
