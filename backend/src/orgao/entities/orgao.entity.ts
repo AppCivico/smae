@@ -7,7 +7,7 @@ export class Orgao {
     @ApiProperty({ description: 'Sigla', })
     sigla: string;
     @ApiProperty({ description: 'Descrição', })
-    descricao: string;
+    descricao?: string;
     @ApiHideProperty()
     tipo_orgao_id?: number;
     @ApiProperty({ description: 'Tipo do Orgão', })

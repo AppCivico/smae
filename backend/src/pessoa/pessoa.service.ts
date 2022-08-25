@@ -153,6 +153,49 @@ export class PessoaService {
         return this.pessoaAsHash(pessoa);
     }
 
+    async findAll() {
+        let listActive = await this.prisma.pessoa.findMany({
+            orderBy: {
+                atualizado_em: 'desc'
+            },
+            select: {
+                id: true,
+                nome_completo: true,
+                nome_exibicao: true,
+                atualizado_em: true,
+                email: true,
+                pessoa_fisica: {
+                    select: {
+                        locacao: true,
+                        orgao: {
+                            select: {
+                                sigla: true,
+                                id: true,
+                            }
+                        }
+                    }
+                },
+            }
+        });
+
+        const listFixed = listActive.map((p) => {
+            return {
+                id: p.id,
+                nome_completo: p.nome_completo,
+                nome_exibicao: p.nome_exibicao,
+                atualizado_em: p.atualizado_em,
+                email: p.email,
+                locacao: p.pessoa_fisica?.locacao ? p.pessoa_fisica.locacao : undefined,
+                orgao: p.pessoa_fisica?.orgao ? {
+                    id: p.pessoa_fisica.orgao.id,
+                    sigla: p.pessoa_fisica.orgao.sigla,
+                } : undefined,
+            }
+        });
+
+        return listFixed;
+    }
+
     async findByEmailAsHash(email: string) {
         const pessoa = await this.findByEmail(email);
         if (!pessoa) return undefined;
