@@ -19,7 +19,7 @@ export class UpdatePessoaDto extends PartialType(CreatePessoaDto) {
     */
     @IsOptional()
     @IsString({ message: '$property| Motivo: Precisa ser alfanumérico' })
-    //@MinLength(4, { message: '$property| Motivo: Mínimo de 4 caracteres' })
+    @MinLength(4, { message: '$property| Motivo: Mínimo de 4 caracteres' })
     @MaxLength(250, { message: '$property| Motivo: Máximo 250 caracteres' })
     desativado_motivo?: string;
 }
