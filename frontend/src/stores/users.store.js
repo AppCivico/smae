@@ -52,12 +52,31 @@ export const useUsersStore = defineStore({
             }
         },
         async update(id, params) {
-            await requestS.patch(`${baseUrl}/pessoa/${id}`, params);
-            const authStore = useAuthStore();
-            if (id === authStore.user.id) {
-                const user = { ...authStore.user, ...params };
-                localStorage.setItem('user', JSON.stringify(user));
-                authStore.user = user;
+            try {
+                let m = {
+                  "email": params.email,
+                  "nome_exibicao": params.nome_exibicao,
+                  "nome_completo": params.nome_completo,
+                  "lotacao": params.lotacao,
+                  "orgao_id": params.orgao_id,
+                  "perfil_acesso_ids": params.perfil_acesso_ids,
+                };
+
+                if(params.desativado){
+                    m.desativado = params.desativado;
+                    m.desativado_motivo = params.desativado_motivo;
+                }
+
+                let r = await requestS.patch(`${baseUrl}/pessoa/${id}`, m);
+                const authStore = useAuthStore();
+                if (id === authStore.user.id) {
+                    const user = { ...authStore.user, ...params };
+                    localStorage.setItem('user', JSON.stringify(user));
+                    authStore.user = user;
+                }
+                return true;
+            } catch (error) {
+                this.user = { error };
             }
         },
         /*async delete(id) {

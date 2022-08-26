@@ -33,21 +33,23 @@ const schema = Yup.object().shape({
     lotacao: Yup.string().required('Preencha a lotação'),
     orgao_id: Yup.number().required('Selecione um órgão'),
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
-    motivo: Yup.string().when("ativo", {is: true, then: Yup.string().required("Escreva um motivo para a inativação")})
+    desativado_motivo: Yup.string().when("desativado", {is: true, then: Yup.string().required("Escreva um motivo para a inativação")})
 });
 
 async function onSubmit(values) {
     try {
         let msg;
         if (id&&user) {
-            await usersStore.update(user.value.id, values)
+            var r = await usersStore.update(user.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
-            await usersStore.register(values);
+            var r = await usersStore.register(values);
             msg = 'Usuário adicionado com sucesso!';
         }
-        await router.push('/usuarios');
-        alertStore.success(msg);
+        if(r == true){
+            await router.push('/usuarios');
+            alertStore.success(msg);
+        }
     } catch (error) {
         alertStore.error(error);
     }
@@ -70,13 +72,13 @@ async function checkClose() {
                 <div class="flex g2 mb2" v-if="user&&id">
                     <div class="">
                         <label class="block mb1">
-                            <Field name="ativo" class="inputcheckbox" type="checkbox" :value="true"/><span>Inativar cadastro</span>
+                            <Field name="desativado" class="inputcheckbox" type="checkbox" :value="true"/><span>Inativar cadastro</span>
                         </label>
                     </div>
                     <div class="f1">
                         <label class="label">Motivo <span class="tvermelho">*</span></label>
-                        <Field name="motivo" type="text" class="inputtext light mb1" :class="{ 'error': errors.motivo }" />
-                        <div class="error-msg">{{ errors.motivo }}</div>
+                        <Field name="desativado_motivo" type="text" class="inputtext light mb1" :class="{ 'error': errors.desativado_motivo }" />
+                        <div class="error-msg">{{ errors.desativado_motivo }}</div>
                     </div>
                 </div>
 
@@ -109,7 +111,7 @@ async function checkClose() {
                         <Field name="orgao_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
                             <option value="">Selecionar</option>
                             <template v-if="organs.length">
-                                <option v-for="organ in organs" :key="organ.id" :value="organ.id">{{ organ.sigla }}</option>
+                                <option v-for="organ in organs" :key="organ.id" :value="organ.id" :selected="user.organ&&organ.id==user.orgao.id">{{ organ.sigla }}</option>
                             </template>
                         </Field>
                         <div class="error-msg">{{ errors.orgao_id }}</div>

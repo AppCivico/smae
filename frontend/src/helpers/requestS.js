@@ -44,6 +44,11 @@ async function handleResponse(response) {
             alertStore.error("Sem permissão para acessar.");
             return [];
         }
+        if ([502].includes(response.status) && user) {
+            const alertStore = useAlertStore();
+            alertStore.error("Erro de comunicação do servidor.");
+            return [];
+        }
 
         const error = (data && data.message) || response.status;
         return Promise.reject(error);
