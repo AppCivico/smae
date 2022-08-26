@@ -31,9 +31,9 @@ const schema = Yup.object().shape({
     nome_completo: Yup.string().required('Preencha o nome'),
     nome_exibicao: Yup.string().required('Preencha o nome social').max(20,'Máximo de 20 caracteres'),
     lotacao: Yup.string().required('Preencha a lotação'),
-    orgao_id: Yup.number().required('Selecione um órgão'),
+    orgao_id: Yup.string().required('Selecione um órgão'),
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
-    desativado: Yup.number().nullable(),
+    desativado: Yup.string().nullable(),
     desativado_motivo: Yup.string().nullable().when('desativado', (desativado, field) => desativado=="1" ? field.required("Escreva um motivo para a inativação") : field),
 });
 
@@ -66,7 +66,6 @@ async function checkClose() {
     <Dashboard>
         <div class="flex spacebetween center mb2">
             <h1>{{title}}</h1>
-            {{ errors }}
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
@@ -124,19 +123,24 @@ async function checkClose() {
 
                 <div class="mb2">
                     <div class="label">Perfil de acesso</div>
-                    <label v-for="profile in accessProfiles" :key="profile.id" class="block mb1">
-                        <Field name="perfil_acesso_ids" class="inputcheckbox" type="checkbox"
-                            :class="{ 'error': errors.perfil_acesso_ids }" 
-                            :value="profile.id" 
-                            :checked="perfil_acesso_ids&&perfil_acesso_ids.includes(profile.id)"
-                        /><span>{{profile.nome}} <span class="qtipitem">i <div class="qtip">
-                            <p class="label">Privilegios</p>
-                            <ul>
-                                <li v-for="privilegio in profile.perfil_privilegio" :key="privilegio.privilegio.nome">{{privilegio.privilegio.nome}}</li>
-                            </ul>
-                        </div></span></span>
-                    </label>
-                    <div class="error-msg">{{ errors.perfil_acesso_ids }}</div>
+                    <template v-if="accessProfiles?.loading">
+                        <span class="spinner">Carregando</span>
+                    </template>
+                    <template v-if="accessProfiles.length">
+                        <label v-for="profile in accessProfiles" :key="profile.id" class="block mb1">
+                            <Field name="perfil_acesso_ids" class="inputcheckbox" type="checkbox"
+                                :class="{ 'error': errors.perfil_acesso_ids }" 
+                                :value="profile.id" 
+                                :checked="perfil_acesso_ids&&perfil_acesso_ids.includes(profile.id)"
+                            /><span>{{profile.nome}} <span class="qtipitem">i <div class="qtip">
+                                <p class="label">Privilegios</p>
+                                <ul>
+                                    <li v-for="privilegio in profile.perfil_privilegio" :key="privilegio.privilegio.nome">{{privilegio.privilegio.nome}}</li>
+                                </ul>
+                            </div></span></span>
+                        </label>
+                        <div class="error-msg">{{ errors.perfil_acesso_ids }}</div>
+                    </template>
                 </div>
 
                 <div class="flex spacebetween center mb2">
@@ -149,9 +153,9 @@ async function checkClose() {
         <template v-if="user?.loading">
             <span class="spinner">Carregando</span>
         </template>
-        <template v-if="user?.error">
+        <template v-if="user?.error||error">
             <div class="error p1">
-                <div class="error-msg">{{user.error}}</div>
+                <div class="error-msg">{{user.error??error}}</div>
             </div>
         </template>
     </Dashboard>
