@@ -13,5 +13,5 @@ export class DetalhePessoaDto {
     lotacao?: string
 
     orgao_id?: number | undefined
-    pessoa_perfil_ids: number[]
+    perfil_acesso_ids: number[]
 }
