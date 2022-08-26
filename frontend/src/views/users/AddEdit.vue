@@ -119,12 +119,12 @@ async function checkClose() {
                 </div>
 
                 <div class="mb2">
-                    <div class="label">Permissões</div>
-                    {{perfil_acesso_ids}}
+                    <div class="label">Perfil de acesso</div>
                     <label v-for="profile in accessProfiles" :key="profile.id" class="block mb1">
-                        <Field name="perfil_acesso_ids" class="inputcheckbox" type="checkbox" 
-                                :value="profile.id" 
-                                :checked="perfil_acesso_ids&&perfil_acesso_ids.includes(profile.id)"
+                        <Field name="perfil_acesso_ids" class="inputcheckbox" type="checkbox"
+                            :class="{ 'error': errors.perfil_acesso_ids }" 
+                            :value="profile.id" 
+                            :checked="user&&perfil_acesso_ids&&perfil_acesso_ids.includes(profile.id)"
                         /><span>{{profile.nome}} <span class="qtipitem">i <div class="qtip">
                             <p class="label">Privilegios</p>
                             <ul>
