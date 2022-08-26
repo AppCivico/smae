@@ -32,9 +32,11 @@ const PrivConfig: any = {
         ['CadastroPessoa.inserir', 'Inserir novas pessoas'],
         ['CadastroPessoa.editar', 'Editar dados das pessoas'],
         ['CadastroPessoa.inativar', 'Inativar pessoas'],
+        ['CadastroPessoa.ativar', 'Ativar pessoas'],
         ['CadastroPessoa.editar:apenas-mesmo-orgao', 'Editar pessoas do mesmo orgão'],
         ['CadastroPessoa.inserir:apenas-mesmo-orgao', 'Inserir pessoas do mesmo orgão'],
         ['CadastroPessoa.inativar:apenas-mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
+        ['CadastroPessoa.ativar:apenas-mesmo-orgao', 'Ativar pessoas do mesmo orgão'],
         ['CadastroPessoa.inserir:administrador', 'Inserir outras pessoas com esta permissão'],
     ],
 
@@ -68,6 +70,7 @@ const PerfilAcessoConfig: any = [
             'CadastroPessoa.inserir',
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
+            'CadastroPessoa.ativar',
 
             'CadastroOds.inserir',
             'CadastroOds.editar',
@@ -84,6 +87,7 @@ const PerfilAcessoConfig: any = [
         privilegios: [
             'CadastroPessoa.inserir',
             'CadastroPessoa.inativar',
+            'CadastroPessoa.ativar',
             'CadastroPessoa.editar',
             'CadastroPessoa.editar:apenas-mesmo-orgao',
             'CadastroPessoa.inserir:apenas-mesmo-orgao',

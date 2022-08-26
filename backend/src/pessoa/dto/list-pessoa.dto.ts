@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Pessoa } from 'src/pessoa/entities/pessoa.entity';
+import { ListPessoa } from 'src/pessoa/entities/list-pessoa.entity';
 
 export class ListPessoaDto {
     @ApiProperty({ description: 'Lista de Pessoas', })
-    linhas: Pessoa[];
+    linhas: ListPessoa[];
 }

@@ -167,13 +167,41 @@ export class PessoaService {
             throw new UnauthorizedException(`Você só pode editar pessoas do seu próprio órgão.`);
         }
 
+        if (updatePessoaDto.desativado === true
+            &&
+            user.hasSomeRoles(['CadastroPessoa.inativar:apenas-mesmo-orgao']) &&
+            Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
+        ) {
+            throw new UnauthorizedException(`Você só pode inativar pessoas do seu próprio órgão.`);
+        } else if (updatePessoaDto.desativado === true
+            &&
+            user.hasSomeRoles(['CadastroPessoa.inativar']) === false
+        ) {
+            throw new UnauthorizedException(`Você só não pode inativar pessoas.`);
+        } else if (updatePessoaDto.desativado === true && !updatePessoaDto.desativado_motivo) {
+            throw new UnauthorizedException(`Você precisa informar o motivo para desativar uma pessoa.`);
+        }
+
+        if (updatePessoaDto.desativado === false
+            &&
+            user.hasSomeRoles(['CadastroPessoa.ativar:apenas-mesmo-orgao']) &&
+            Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
+        ) {
+            throw new UnauthorizedException(`Você só pode ativar pessoas do seu próprio órgão.`);
+        } else if (updatePessoaDto.desativado === false
+            &&
+            user.hasSomeRoles(['CadastroPessoa.ativar']) === false
+        ) {
+            throw new UnauthorizedException(`Você só não pode ativar pessoas.`);
+        }
+
     }
 
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
         updatePessoaDto.id = pessoaId;
-        this.verificarPrivilegiosEdicao(updatePessoaDto, user);
+        await this.verificarPrivilegiosEdicao(updatePessoaDto, user);
 
-        const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
 
             const emailExists = updatePessoaDto.email ? await this.prisma.pessoa.count({
                 where: {
@@ -206,15 +234,44 @@ export class PessoaService {
                 }
             });
 
-            await prisma.pessoa.update({
-                where: {
-                    id: pessoaId,
-                },
-                data: {
-                    atualizado_por: Number(user.id),
-                    atualizado_em: new Date(Date.now()),
-                }
-            });
+            if (updatePessoaDto.desativado === true) {
+                await prisma.pessoa.update({
+                    where: {
+                        id: pessoaId,
+                    },
+                    data: {
+                        desativado: true,
+                        desativado_motivo: updatePessoaDto.desativado_motivo,
+                        desativado_por: Number(user.id),
+                        desativado_em: new Date(Date.now()),
+                    }
+                });
+            } else if (updatePessoaDto.desativado === false) {
+                await prisma.pessoa.update({
+                    where: {
+                        id: pessoaId,
+                    },
+                    data: {
+                        desativado: false,
+                        desativado_por: null,
+                        desativado_em: null,
+                        desativado_motivo: null,
+                        atualizado_por: Number(user.id),
+                        atualizado_em: new Date(Date.now()),
+                    }
+                });
+            } else {
+
+                await prisma.pessoa.update({
+                    where: {
+                        id: pessoaId,
+                    },
+                    data: {
+                        atualizado_por: Number(user.id),
+                        atualizado_em: new Date(Date.now()),
+                    }
+                });
+            }
 
             if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
                 let promises = [];
@@ -243,7 +300,7 @@ export class PessoaService {
 
     async criarPessoa(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
 
-        this.verificarPrivilegiosCriacao(createPessoaDto, user);
+        await this.verificarPrivilegiosCriacao(createPessoaDto, user);
 
         this.logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         let newPass = this.#generateRndPass(10);
@@ -310,6 +367,8 @@ export class PessoaService {
                 nome_completo: true,
                 nome_exibicao: true,
                 atualizado_em: true,
+                desativado_em: true,
+                desativado: true,
                 email: true,
                 pessoa_fisica: {
                     select: {
@@ -331,6 +390,8 @@ export class PessoaService {
                 nome_completo: p.nome_completo,
                 nome_exibicao: p.nome_exibicao,
                 atualizado_em: p.atualizado_em,
+                desativado_em: p.desativado_em || undefined,
+                desativado: p.desativado,
                 email: p.email,
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao: p.pessoa_fisica?.orgao ? {

@@ -23,8 +23,9 @@ model Pessoa {
     senha_bloqueada     Boolean             @default(false)
     senha_bloqueada_em  DateTime?           @default(now()) @db.Timestamptz(6)
     desativado          Boolean             @default(false)
-    desativado_em       DateTime            @default(now())
+    desativado_em       DateTime?
     desativado_por      Int?
+    desativado_motivo   String?
     pessoa_fisica_id    Int?
     atualizador         Pessoa?             @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
     criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
