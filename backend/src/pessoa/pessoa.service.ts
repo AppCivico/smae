@@ -202,6 +202,52 @@ export class PessoaService {
 
     }
 
+    async getDetail(pessoaId: number, user: PessoaFromJwt) {
+        let pessoa = await this.prisma.pessoa.findFirst({
+            where: {
+                id: pessoaId
+            },
+            include: {
+                pessoa_fisica: {
+                    select: {
+                        lotacao: true,
+                        orgao: {
+                            select: {
+                                sigla: true,
+                                id: true,
+                            }
+                        }
+                    }
+                },
+                PessoaPerfil: {
+                    select: {
+                        id: true
+                    }
+                },
+            }
+        });
+        if (!pessoa) throw new HttpException('Pessoa não encontrada', 404)
+
+        const listFixed = {
+            id: pessoa.id,
+            nome_completo: pessoa.nome_completo,
+            nome_exibicao: pessoa.nome_exibicao,
+            atualizado_em: pessoa.atualizado_em,
+            desativado_em: pessoa.desativado_em || undefined,
+            desativado: pessoa.desativado,
+            desativado_motivo: pessoa.desativado_motivo,
+            email: pessoa.email,
+            lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : undefined,
+            orgao: pessoa.pessoa_fisica?.orgao ? {
+                id: pessoa.pessoa_fisica.orgao.id,
+                sigla: pessoa.pessoa_fisica.orgao.sigla,
+            } : undefined,
+            pessoa_perfil_ids: pessoa.PessoaPerfil.map((e) => e.id)
+        };
+
+        return listFixed;
+    }
+
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
         updatePessoaDto.id = pessoaId;
         await this.verificarPrivilegiosEdicao(updatePessoaDto, user);
