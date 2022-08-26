@@ -41,13 +41,13 @@ async function handleResponse(response) {
         const { user } = useAuthStore();
         if ([401, 403].includes(response.status) && user) {
             const alertStore = useAlertStore();
-            alertStore.error("Sem permissão para acessar.");
-            return [];
+            alertStore.error(data && data.message?data.message:"Sem permissão para acessar.");
+            return Promise.reject(error);
         }
         if ([502].includes(response.status) && user) {
             const alertStore = useAlertStore();
             alertStore.error("Erro de comunicação do servidor.");
-            return [];
+            return Promise.reject(error);
         }
 
         const error = (data && data.message) || response.status;
