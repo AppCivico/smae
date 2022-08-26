@@ -21,6 +21,9 @@ function filterUsers(){
     filters.nomeemail = nomeemail.value;
     usersStore.filterUsers(filters);
 }
+function filterOrgan(orgao_id){
+    return organs.value.length ? organs.value.find(o=>o.id==orgao_id) : '-';
+}
 </script>
 <template>
     <Dashboard>
@@ -59,7 +62,7 @@ function filterUsers(){
                         <td>{{ user.email }}</td>
                         <td>{{ user.nome_completo }}</td>
                         <td>{{ user.lotacao ?? '-' }}</td>
-                        <td>{{ user.orgao?.sigla ?? '-' }}</td>
+                        <td>{{ user.orgao_id ? filterOrgan(user.orgao_id).sigla : '-' }}</td>
                         <td style="white-space: nowrap; text-align: right;">
                             <router-link :to="`/usuarios/editar/${user.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                         </td>
