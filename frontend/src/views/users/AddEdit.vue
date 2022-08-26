@@ -33,12 +33,15 @@ const schema = Yup.object().shape({
     lotacao: Yup.string().required('Preencha a lotação'),
     orgao_id: Yup.number().required('Selecione um órgão'),
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
-    desativado_motivo: Yup.string().when("desativado", {is: true, then: Yup.string().required("Escreva um motivo para a inativação")})
+    desativado: Yup.boolean().default(false),
+    desativado_motivo: Yup.string().nullable().when('desativado', (desativado, field) => desativado ? field.required("Escreva um motivo para a inativação") : field),
 });
 
 async function onSubmit(values) {
     try {
-        let msg;
+        console.log(values);
+
+        var msg;
         if (id&&user) {
             var r = await usersStore.update(user.value.id, values);
             msg = 'Dados salvos com sucesso!';
@@ -72,7 +75,7 @@ async function checkClose() {
                 <div class="flex g2 mb2" v-if="user&&id">
                     <div class="">
                         <label class="block mb1">
-                            <Field name="desativado" class="inputcheckbox" type="checkbox" :value="true"/><span>Inativar cadastro</span>
+                            <Field name="desativado" class="inputcheckbox" type="checkbox" :checked="desativado"/><span>Inativar cadastro</span>
                         </label>
                     </div>
                     <div class="f1">
@@ -124,7 +127,7 @@ async function checkClose() {
                         <Field name="perfil_acesso_ids" class="inputcheckbox" type="checkbox"
                             :class="{ 'error': errors.perfil_acesso_ids }" 
                             :value="profile.id" 
-                            :checked="user&&perfil_acesso_ids&&perfil_acesso_ids.includes(profile.id)"
+                            :checked="perfil_acesso_ids&&perfil_acesso_ids.includes(profile.id)"
                         /><span>{{profile.nome}} <span class="qtipitem">i <div class="qtip">
                             <p class="label">Privilegios</p>
                             <ul>
