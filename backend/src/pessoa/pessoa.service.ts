@@ -413,6 +413,7 @@ export class PessoaService {
                 nome_exibicao: true,
                 atualizado_em: true,
                 desativado_em: true,
+                desativado_motivo: true,
                 desativado: true,
                 email: true,
                 pessoa_fisica: {
@@ -435,6 +436,7 @@ export class PessoaService {
                 nome_completo: p.nome_completo,
                 nome_exibicao: p.nome_exibicao,
                 atualizado_em: p.atualizado_em,
+                desativado_motivo: p.desativado_motivo,
                 desativado_em: p.desativado_em || undefined,
                 desativado: p.desativado,
                 email: p.email,
