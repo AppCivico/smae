@@ -16,7 +16,7 @@ export class ListPessoa {
     desativado_em?: Date
 
     orgao_id?: number | undefined
-    pessoa_perfil_ids: number[]
+    perfil_acesso_ids: number[]
 
     @ApiHideProperty()
     PessoaFisica?: PessoaFisica

@@ -236,7 +236,7 @@ export class PessoaService {
             email: pessoa.email,
             lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : undefined,
             orgao_id: pessoa.pessoa_fisica?.orgao_id || undefined,
-            pessoa_perfil_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id)
+            perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id)
         };
 
         return listFixed;
@@ -440,7 +440,7 @@ export class PessoaService {
                 email: p.email,
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
-                pessoa_perfil_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id)
+                perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id)
             }
         });
 
