@@ -1,0 +1,126 @@
+@u: "@/assets/";
+@primary: #152741;
+@amarelo: #F7C234;
+@c50: #F7F7F7;
+@c100: #E3E5E8;
+@c200: #D1D5DC;
+@c300: #B8C0CC;
+@c400: #8B9BB1;
+@c500: #607A9F;
+@c600: #3B5881;
+@escuro: #061223;
+@branco: #FFF;
+@vermelho: #EE3B2B;
+
+
+.clearfix() {
+  &:before,
+  &:after {
+      content:"";
+      display:table;
+  }
+  &:after {
+      clear:both;
+  }
+}
+.br(@r: 3px;){border-radius: @r; -moz-border-radius: @r; -webkit-border-radius: @r; }
+
+.bs(@string: 1px 5px 8px rgba(0,0,0,.1) ) {-webkit-box-shadow: @string; -moz-box-shadow: @string; box-shadow: @string; }
+
+.opacity (@opacity: 0.5) {-webkit-opacity: @opacity; -moz-opacity: @opacity; opacity: @opacity; }
+
+.animation (@name, @duration: 300ms, @ease: ease) {
+  -webkit-animation: @name @duration @ease;
+  -moz-animation:    @name @duration @ease;
+  -ms-animation:     @name @duration @ease;
+  animation:     @name @duration @ease;
+
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+.cubic (@duration: 300ms, @name: all) {
+  -moz-transition: @name @duration cubic-bezier(0, 1, 0, 1);
+  -ms-transition: @name @duration cubic-bezier(0, 1, 0, 1);
+  -webkit-transition: @name @duration cubic-bezier(0, 1, 0, 1);
+  transition: @name @duration cubic-bezier(0, 1, 0, 1);
+}
+
+.delay (@delay: 0) {
+  -webkit-animation-delay: @delay*0.03s;
+  -moz-animation-delay:    @delay*0.03s;
+  -ms-animation-delay:     @delay*0.03s;
+}
+
+.delayloop (@i) when (@i > 0) {
+  &:nth-child(@{i}) {
+    .delay(@i);
+  }
+  .delayloop(@i - 1);
+}
+
+.transition (@a: all, @t:.2s, @e: ease-in-out) {
+  -webkit-transition: @a @t @e;  
+  -moz-transition:    @a @t @e;
+  -ms-transition:     @a @t @e; 
+  -o-transition:      @a @t @e;  
+}
+
+.transform(@string){
+  -webkit-transform: @string;
+  -moz-transform:    @string;
+  -ms-transform:     @string;
+  -o-transform:      @string;
+}
+.scale (@factor) {
+  -webkit-transform: scale(@factor);
+  -moz-transform:    scale(@factor);
+  -ms-transform:     scale(@factor);
+  -o-transform:      scale(@factor);
+}
+.rotate(@z: -90deg){
+  -webkit-transform-origin: 50%; -ms-transform-origin: 50%; transform-origin: 50%;
+  -webkit-transform: rotate(@z); 
+  -moz-transform: rotate(@z); 
+  -ms-transform: rotate(@z); 
+  transform: rotate(@z); 
+}
+.skew (@deg, @deg2) {
+  -webkit-transform:       skew(@deg, @deg2);
+  -moz-transform:    skew(@deg, @deg2);
+  -ms-transform:     skew(@deg, @deg2);
+  -o-transform:      skew(@deg, @deg2);
+}
+.translate (@x, @y:0) {
+  -webkit-transform:       translate(@x, @y);
+  -moz-transform:    translate(@x, @y);
+  -ms-transform:     translate(@x, @y);
+  -o-transform:      translate(@x, @y);
+}
+.translate3d (@x, @y: 0, @z: 0) {
+  -webkit-transform:       translate3d(@x, @y, @z);
+  -moz-transform:    translate3d(@x, @y, @z);
+  -ms-transform:     translate3d(@x, @y, @z);
+  -o-transform:      translate3d(@x, @y, @z);
+}
+.perspective (@value: 1000) {
+  -webkit-perspective:  @value;
+  -moz-perspective:   @value;
+  -ms-perspective:  @value;
+  perspective:    @value;
+}
+.transform-origin (@x:center, @y:center) {
+  -webkit-transform-origin: @x @y;
+  -moz-transform-origin:    @x @y;
+  -ms-transform-origin:     @x @y;
+  -o-transform-origin:      @x @y;
+}
+
+.gradient (@startColor: fadeOut(white,100%), @endColor: white, @fim: 95%) {
+  background-color: @startColor;
+  background: -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
+  background: -webkit-linear-gradient(top, @startColor, @endColor @fim);
+  background: -moz-linear-gradient(top, @startColor, @endColor @fim);
+  background: -ms-linear-gradient(top, @startColor, @endColor @fim);
+  background: -o-linear-gradient(top, @startColor, @endColor @fim);
+}
