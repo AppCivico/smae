@@ -107,7 +107,7 @@ async function checkClose() {
                     <div class="f1">
                         <label class="label">Órgão <span class="tvermelho">*</span></label>
                         <Field name="orgao_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
-                            <option value="1">Nenhum</option>
+                            <option value="">Selecionar</option>
                             <template v-if="organs.length">
                                 <option v-for="organ in organs" :key="organ.id" :value="organ.id">{{ organ.sigla }}</option>
                             </template>
