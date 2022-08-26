@@ -32,7 +32,7 @@ function filterUsers(){
         <div class="flex center mb2">
             <div class="f1">
                 <select v-model="orgao" @change="filterUsers" class="inputtext">
-                    <option value="">Todos os orgãos</option>
+                    <option value="">Todos os órgãos</option>
                     <template v-if="organs.length">
                         <option v-for="organ in organs" :key="organ.id" :value="organ.id">{{ organ.sigla }}</option>
                     </template>
@@ -48,8 +48,8 @@ function filterUsers(){
                 <tr>
                     <th style="width: 30%">E-mail</th>
                     <th style="width: 20%">Nome</th>
-                    <th style="width: 20%">Locação</th>
-                    <th style="width: 20%">Orgão</th>
+                    <th style="width: 20%">Lotação</th>
+                    <th style="width: 20%">Órgão</th>
                     <th style="width: 10%"></th>
                 </tr>
             </thead>
@@ -58,7 +58,7 @@ function filterUsers(){
                     <tr v-for="user in usersFiltered" :key="user.id">
                         <td>{{ user.email }}</td>
                         <td>{{ user.nome_completo }}</td>
-                        <td>{{ user.locacao ?? '-' }}</td>
+                        <td>{{ user.lotacao ?? '-' }}</td>
                         <td>{{ user.orgao?.descricao ?? '-' }}</td>
                         <td style="white-space: nowrap; text-align: right;">
                             <router-link :to="`/usuarios/editar/${user.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
@@ -74,7 +74,7 @@ function filterUsers(){
                     <td colspan="54">
                         Error: {{usersFiltered.error}}
                     </td>
-                </tr>            
+                </tr>
             </tbody>
         </table>
     </Dashboard>
