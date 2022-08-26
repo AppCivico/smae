@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             session_id: payload.sid,
             modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
-            orgao_id: pessoa.PessoaFisica?.orgao_id
+            orgao_id: pessoa.pessoa_fisica?.orgao_id
         });
     }
 }

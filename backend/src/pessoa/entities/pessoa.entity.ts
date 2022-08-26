@@ -22,11 +22,9 @@ export class Pessoa {
     session_id?: number;
     @ApiHideProperty()
     senha_bloqueada?: boolean
-    @ApiHideProperty()
-    PessoaFisica?: PessoaFisica
 
     @ApiHideProperty()
-    pessoa_fisica?: PessoaFisica
+    pessoa_fisica?: PessoaFisica | null
 
 
 }
