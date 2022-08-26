@@ -8,7 +8,7 @@ export class UpdatePessoaDto extends PartialType(CreatePessoaDto) {
     * Inativar pessoa
     */
     @IsOptional()
-    @IsBoolean({ message: '$property| desativado ser true ou false ou nulo' })
+    @IsBoolean({ message: '$property| true para desativar, false para ativar novamente. Nulo não faz nenhuma ação' })
     desativado?: boolean;
 
     /**
