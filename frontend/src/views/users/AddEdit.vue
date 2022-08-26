@@ -31,7 +31,7 @@ const schema = Yup.object().shape({
     nome_completo: Yup.string().required('Preencha o nome'),
     nome_exibicao: Yup.string().required('Preencha o nome social').max(20,'Máximo de 20 caracteres'),
     lotacao: Yup.string().required('Preencha a lotação'),
-    orgao_id: Yup.number().required('Selecione um orgão'),
+    orgao_id: Yup.number().required('Selecione um órgão'),
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
     motivo: Yup.string().when("ativo", {is: true, then: Yup.string().required("Escreva um motivo para a inativação")})
 });
@@ -100,14 +100,14 @@ async function checkClose() {
                         <div class="error-msg">{{ errors.nome_exibicao }}</div>
                     </div>
                     <div class="f1">
-                        <label class="label">Locação <span class="tvermelho">*</span></label>
+                        <label class="label">Lotação <span class="tvermelho">*</span></label>
                         <Field name="lotacao" type="text" class="inputtext light mb1" :class="{ 'error': errors.lotacao }" />
                         <div class="error-msg">{{ errors.lotacao }}</div>
                     </div>
                     <div class="f1">
-                        <label class="label">Orgão <span class="tvermelho">*</span></label>
+                        <label class="label">Órgão <span class="tvermelho">*</span></label>
                         <Field name="orgao_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
-                            <option value="1">Nenhum</option>
+                            <option value="">Selecionar</option>
                             <template v-if="organs.length">
                                 <option v-for="organ in organs" :key="organ.id" :value="organ.id">{{ organ.sigla }}</option>
                             </template>
@@ -115,7 +115,7 @@ async function checkClose() {
                         <div class="error-msg">{{ errors.orgao_id }}</div>
                     </div>
                 </div>
-                
+
                 <div class="mb2">
                     <div class="label">Permissões</div>
                     <label v-for="profile in accessProfiles" :key="profile.id" class="block mb1">
@@ -128,7 +128,7 @@ async function checkClose() {
                     </label>
                     <div class="error-msg">{{ errors.perfil_acesso_ids }}</div>
                 </div>
-                
+
                 <div class="flex spacebetween center mb2">
                     <hr class="mr2 f1"/>
                     <button class="btn big" :disabled="isSubmitting">Salvar cadastro</button>
