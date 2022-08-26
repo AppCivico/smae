@@ -559,14 +559,30 @@ export class PessoaService {
     async listaPrivilegiosModulos(pessoaId: number): Promise<ListaPrivilegiosModulos> {
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             with perms as (
-            select p.codigo as cod_priv, m.codigo as cod_modulos
-            from pessoa_perfil pp
-            join perfil_acesso pa on pp.perfil_acesso_id = pa.id
-            join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
-            join privilegio p on p.id = priv.privilegio_id
-            join modulo m on p.modulo_id = m.id
-            where pp.pessoa_id = ${pessoaId})
-            select array_agg(distinct cod_priv) as privilegios, array_agg(distinct cod_modulos) as modulos from perms;
+                select p.codigo as cod_priv, m.codigo as cod_modulos
+                from pessoa_perfil pp
+                join perfil_acesso pa on pp.perfil_acesso_id = pa.id
+                join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
+                join privilegio p on p.id = priv.privilegio_id
+                join modulo m on p.modulo_id = m.id
+                where pp.pessoa_id = ${pessoaId}
+            ),
+            isAdmin as (
+                    select true as CadastroPessoaAdmin
+                    from perms
+                    where cod_priv = 'CadastroPessoa.inserir:administrador'
+            )
+            select
+                array_agg(distinct cod_priv) as privilegios,
+                array_agg(distinct cod_modulos) as modulos
+            from perms
+            where
+                (
+                    (select CadastroPessoaAdmin from isAdmin) = false)
+                OR
+                (
+                    (select CadastroPessoaAdmin from isAdmin) and cod_priv not like 'CadastroPessoa%:apenas-mesmo-orgao'
+                );
         `;
 
         return dados[0];
