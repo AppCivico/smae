@@ -2,7 +2,9 @@
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
-import { useUsersStore, useOrgansStore  } from '@/stores';
+import { useUsersStore, useOrgansStore, useAuthStore  } from '@/stores';
+
+const authStore = useAuthStore();
 
 const usersStore = useUsersStore();
 const { temp } = storeToRefs(usersStore);
@@ -64,7 +66,9 @@ function filterOrgan(orgao_id){
                         <td>{{ user.lotacao ?? '-' }}</td>
                         <td>{{ user.orgao_id ? filterOrgan(user.orgao_id).sigla : '-' }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <router-link :to="`/usuarios/editar/${user.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            <template v-if="user.orgao_id==authStore.user.orgao_id">
+                                <router-link :to="`/usuarios/editar/${user.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            </template>
                         </td>
                     </tr>
                 </template>
