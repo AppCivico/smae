@@ -11,7 +11,7 @@ export class Pessoa {
 
     atualizado_em?: Date
     orgao?: Orgao
-    locacao?: string
+    lotacao?: string
 
     @ApiHideProperty()
     token_acesso_api?: string;
