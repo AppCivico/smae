@@ -161,6 +161,10 @@ export class PessoaService {
             select: { orgao_id: true }
         });
 
+        this.logger.debug(`pessoaCurrentOrgao=${JSON.stringify(pessoaCurrentOrgao)}`);
+        this.logger.debug(`updatePessoaDto=${JSON.stringify(updatePessoaDto)}`);
+        this.logger.debug(`user=${JSON.stringify(user)}`);
+
         if (
             pessoaCurrentOrgao &&
             updatePessoaDto.orgao_id &&
