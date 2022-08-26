@@ -111,7 +111,7 @@ async function checkClose() {
                         <Field name="orgao_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
                             <option value="">Selecionar</option>
                             <template v-if="organs.length">
-                                <option v-for="organ in organs" :key="organ.id" :value="organ.id" :selected="user.organ&&organ.id==user.orgao.id">{{ organ.sigla }}</option>
+                                <option v-for="organ in organs" :key="organ.id" :value="organ.id" :selected="orgao_id&&organ.id==orgao_id">{{ organ.sigla }}</option>
                             </template>
                         </Field>
                         <div class="error-msg">{{ errors.orgao_id }}</div>
@@ -120,8 +120,12 @@ async function checkClose() {
 
                 <div class="mb2">
                     <div class="label">Permissões</div>
+                    {{perfil_acesso_ids}}
                     <label v-for="profile in accessProfiles" :key="profile.id" class="block mb1">
-                        <Field name="perfil_acesso_ids" class="inputcheckbox" type="checkbox" :value="profile.id" /><span>{{profile.nome}} <span class="qtipitem">i <div class="qtip">
+                        <Field name="perfil_acesso_ids" class="inputcheckbox" type="checkbox" 
+                                :value="profile.id" 
+                                :checked="perfil_acesso_ids&&perfil_acesso_ids.includes(profile.id)"
+                        /><span>{{profile.nome}} <span class="qtipitem">i <div class="qtip">
                             <p class="label">Privilegios</p>
                             <ul>
                                 <li v-for="privilegio in profile.perfil_privilegio" :key="privilegio.privilegio.nome">{{privilegio.privilegio.nome}}</li>
