@@ -30,7 +30,7 @@ const schema = Yup.object().shape({
     email: Yup.string().required('Preencha o e-mail').email('E-mail inválido'),
     nome_completo: Yup.string().required('Preencha o nome'),
     nome_exibicao: Yup.string().required('Preencha o nome social').max(20,'Máximo de 20 caracteres'),
-    locacao: Yup.string().required('Preencha a locação'),
+    lotacao: Yup.string().required('Preencha a lotação'),
     orgao_id: Yup.number().required('Selecione um orgão'),
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
     motivo: Yup.string().when("ativo", {is: true, then: Yup.string().required("Escreva um motivo para a inativação")})
@@ -101,8 +101,8 @@ async function checkClose() {
                     </div>
                     <div class="f1">
                         <label class="label">Locação <span class="tvermelho">*</span></label>
-                        <Field name="locacao" type="text" class="inputtext light mb1" :class="{ 'error': errors.locacao }" />
-                        <div class="error-msg">{{ errors.locacao }}</div>
+                        <Field name="lotacao" type="text" class="inputtext light mb1" :class="{ 'error': errors.lotacao }" />
+                        <div class="error-msg">{{ errors.lotacao }}</div>
                     </div>
                     <div class="f1">
                         <label class="label">Orgão <span class="tvermelho">*</span></label>
