@@ -33,8 +33,8 @@ const schema = Yup.object().shape({
     lotacao: Yup.string().required('Preencha a lotação'),
     orgao_id: Yup.number().required('Selecione um órgão'),
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
-    desativado: Yup.boolean().default(false),
-    desativado_motivo: Yup.string().nullable().when('desativado', (desativado, field) => desativado ? field.required("Escreva um motivo para a inativação") : field),
+    desativado: Yup.number().nullable(),
+    desativado_motivo: Yup.string().nullable().when('desativado', (desativado, field) => desativado=="1" ? field.required("Escreva um motivo para a inativação") : field),
 });
 
 async function onSubmit(values) {
@@ -66,6 +66,7 @@ async function checkClose() {
     <Dashboard>
         <div class="flex spacebetween center mb2">
             <h1>{{title}}</h1>
+            {{ errors }}
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
@@ -75,7 +76,7 @@ async function checkClose() {
                 <div class="flex g2 mb2" v-if="user&&id">
                     <div class="">
                         <label class="block mb1">
-                            <Field name="desativado" class="inputcheckbox" type="checkbox" :checked="desativado"/><span>Inativar cadastro</span>
+                            <Field name="desativado" class="inputcheckbox" type="checkbox" value="1" :checked="desativado"/><span>Inativar cadastro</span>
                         </label>
                     </div>
                     <div class="f1">

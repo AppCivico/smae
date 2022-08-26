@@ -46,6 +46,7 @@ export const useUsersStore = defineStore({
                     await this.getAll();
                 }
                 this.user = this.users.find((u)=>u.id == id);
+                this.user.desativado = this.user.desativado?"1":false;
                 if(!this.user) throw 'Usuário não encontrado';
             } catch (error) {
                 this.user = { error };
@@ -62,9 +63,11 @@ export const useUsersStore = defineStore({
                   "perfil_acesso_ids": params.perfil_acesso_ids,
                 };
 
-                if(params.desativado){
-                    m.desativado = params.desativado;
+                if(params.desativado=="1"){
+                    m.desativado = true;
                     m.desativado_motivo = params.desativado_motivo;
+                }else{
+                    m.desativado = false;
                 }
 
                 let r = await requestS.patch(`${baseUrl}/pessoa/${id}`, m);
