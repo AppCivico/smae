@@ -8,10 +8,14 @@ export class Pessoa {
     email: string;
     nome_exibicao: string;
     nome_completo: string;
-
-    atualizado_em?: Date
-    orgao?: Orgao
     lotacao?: string
+
+
+    @ApiHideProperty()
+    atualizado_em?: Date
+
+    @ApiHideProperty()
+    orgao?: Orgao
 
     @ApiHideProperty()
     token_acesso_api?: string;
