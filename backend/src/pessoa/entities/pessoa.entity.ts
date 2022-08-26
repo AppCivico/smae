@@ -25,4 +25,8 @@ export class Pessoa {
     @ApiHideProperty()
     PessoaFisica?: PessoaFisica
 
+    @ApiHideProperty()
+    pessoa_fisica?: PessoaFisica
+
+
 }
