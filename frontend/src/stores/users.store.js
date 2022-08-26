@@ -74,6 +74,7 @@ export const useUsersStore = defineStore({
                     localStorage.setItem('user', JSON.stringify(user));
                     authStore.user = user;
                 }
+                this.users = {};
                 return true;
             } catch (error) {
                 this.user = { error };
@@ -94,7 +95,7 @@ export const useUsersStore = defineStore({
                     await this.getAll();
                 }
                 this.temp = f ? this.users.filter((u) =>{
-                    return (f.orgao?u.orgao==f.orgao:1)&&(f.nomeemail?(u.nome_completo.includes(f.nomeemail)||u.email.includes(f.nomeemail)):1);
+                    return (f.orgao?u.orgao_id==f.orgao:1)&&(f.nomeemail?(u.nome_completo.includes(f.nomeemail)||u.email.includes(f.nomeemail)):1);
                 }) : this.users;
             } catch (error) {
                 this.user = { error };
