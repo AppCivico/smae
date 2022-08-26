@@ -12,6 +12,6 @@ export class DetalhePessoaDto {
     nome_completo: string;
     lotacao?: string
 
-    orgao?: Orgao | undefined
+    orgao_id?: number | undefined
     pessoa_perfil_ids: number[]
 }

@@ -213,12 +213,7 @@ export class PessoaService {
                 pessoa_fisica: {
                     select: {
                         lotacao: true,
-                        orgao: {
-                            select: {
-                                sigla: true,
-                                id: true,
-                            }
-                        }
+                        orgao_id: true,
                     }
                 },
                 PessoaPerfil: {
@@ -240,10 +235,7 @@ export class PessoaService {
             desativado_motivo: pessoa.desativado_motivo,
             email: pessoa.email,
             lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : undefined,
-            orgao: pessoa.pessoa_fisica?.orgao ? {
-                id: pessoa.pessoa_fisica.orgao.id,
-                sigla: pessoa.pessoa_fisica.orgao.sigla,
-            } : undefined,
+            orgao_id: pessoa.pessoa_fisica?.orgao_id || undefined,
             pessoa_perfil_ids: pessoa.PessoaPerfil.map((e) => e.id)
         };
 
@@ -426,12 +418,12 @@ export class PessoaService {
                 pessoa_fisica: {
                     select: {
                         lotacao: true,
-                        orgao: {
-                            select: {
-                                sigla: true,
-                                id: true,
-                            }
-                        }
+                        orgao_id: true
+                    }
+                },
+                PessoaPerfil: {
+                    select: {
+                        id: true
                     }
                 },
             }
@@ -447,10 +439,8 @@ export class PessoaService {
                 desativado: p.desativado,
                 email: p.email,
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
-                orgao: p.pessoa_fisica?.orgao ? {
-                    id: p.pessoa_fisica.orgao.id,
-                    sigla: p.pessoa_fisica.orgao.sigla,
-                } : undefined,
+                orgao_id: p.pessoa_fisica?.orgao_id || undefined,
+                pessoa_perfil_ids: p.PessoaPerfil.map((e) => e.id)
             }
         });
 
