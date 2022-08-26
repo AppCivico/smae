@@ -37,6 +37,12 @@ const PrivConfig: any = {
         ['CadastroPessoa.inativar:apenas-mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
         ['CadastroPessoa.inserir:administrador', 'Inserir outras pessoas com esta permissão'],
     ],
+
+    CadastroEixo: [
+        ['CadastroEixo.inserir', 'Inserir tipo eixo'],
+        ['CadastroEixo.editar', 'Editar tipo eixo'],
+        ['CadastroEixo.remover', 'Remover tipo eixo'],
+    ],
 };
 
 const ModuloDescricao: any = {
@@ -44,6 +50,7 @@ const ModuloDescricao: any = {
     CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
     CadastroOds: 'Cadastro de ODS',
+    CadastroEixo: 'Cadastro de Eixo',
 };
 
 const PerfilAcessoConfig: any = [
@@ -93,11 +100,36 @@ async function main() {
     await atualizar_perfil_acesso();
 
     await atualizar_superadmin();
-    await atualizar_tipo_orgao();
     await atualizar_ods();
+    await atualizar_tipo_orgao();
+    await atualizar_orgao();
 
 }
 
+
+
+async function atualizar_orgao() {
+    let list = [{ sigla: 'SEPEP', desc: 'Secretaria Executiva de Planejamento e Entregas Prioritárias', tipo: 'Secretaria' }];
+
+    for (const item of list) {
+        const tipo = await prisma.tipoOrgao.findFirstOrThrow({
+            where: { descricao: item.tipo },
+        });
+
+        await prisma.orgao.upsert({
+            where: { sigla: item.sigla },
+            update: {
+                descricao: item.desc,
+                tipo_orgao_id: tipo.id,
+            },
+            create: {
+                sigla: item.sigla,
+                descricao: item.desc,
+                tipo_orgao_id: tipo.id,
+            },
+        });
+    }
+}
 
 async function atualizar_ods() {
     let list = [{ numero: 1, titulo: 'Erradicação da Pobreza' }];
