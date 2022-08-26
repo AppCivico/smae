@@ -6,6 +6,7 @@ import { Prisma, Pessoa, PrismaClient, PrismaPromise, PerfilAcesso } from '@pris
 import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosModulos';
 import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { UpdatePessoaDto } from 'src/pessoa/dto/update-pessoa.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -142,6 +143,101 @@ export class PessoaService {
         ) {
             throw new UnauthorizedException(`Você só pode criar pessoas para o seu próprio órgão.`);
         }
+
+    }
+
+    async verificarPrivilegiosEdicao(updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+
+        let pessoaCurrentOrgao = await this.prisma.pessoaFisica.findFirstOrThrow({
+            where: {
+                pessoa: {
+                    some: {
+                        id: updatePessoaDto.id
+                    }
+                }
+            },
+            select: { orgao_id: true }
+        });
+
+        if (
+            updatePessoaDto.orgao_id &&
+            user.hasSomeRoles(['CadastroPessoa.editar:apenas-mesmo-orgao']) &&
+            Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
+        ) {
+            throw new UnauthorizedException(`Você só pode editar pessoas do seu próprio órgão.`);
+        }
+
+    }
+
+    async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+        updatePessoaDto.id = pessoaId;
+        this.verificarPrivilegiosEdicao(updatePessoaDto, user);
+
+        const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
+
+            const emailExists = updatePessoaDto.email ? await this.prisma.pessoa.count({
+                where: {
+                    email: updatePessoaDto.email,
+                    NOT: {
+                        id: pessoaId
+                    }
+                }
+            }) : 0;
+            if (emailExists > 0) {
+                throw new HttpException('email| E-mail está em uso em outra conta', 400);
+            }
+
+
+            const updated = await prisma.pessoa.update({
+                where: {
+                    id: pessoaId,
+                },
+                data: {
+                    nome_completo: updatePessoaDto.nome_completo,
+                    nome_exibicao: updatePessoaDto.nome_exibicao,
+                    email: updatePessoaDto.email,
+
+                    pessoa_fisica: {
+                        update: {
+                            lotacao: updatePessoaDto.lotacao,
+                            orgao_id: updatePessoaDto.orgao_id,
+                        }
+                    }
+                }
+            });
+
+            await prisma.pessoa.update({
+                where: {
+                    id: pessoaId,
+                },
+                data: {
+                    atualizado_por: Number(user.id),
+                    atualizado_em: new Date(Date.now()),
+                }
+            });
+
+            if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
+                let promises = [];
+
+                await prisma.pessoaPerfil.deleteMany({
+                    where: { pessoa_id: pessoaId }
+                });
+
+                for (const perm of updatePessoaDto.perfil_acesso_ids) {
+                    promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: perm, pessoa_id: pessoaId } }))
+                }
+                await Promise.all(promises);
+            }
+
+
+            return updated;
+        }, {
+            // verificar o email dentro do contexto Serializable
+            isolationLevel: 'Serializable',
+            maxWait: 5000,
+            timeout: 5000,
+        });
+
 
     }
 
