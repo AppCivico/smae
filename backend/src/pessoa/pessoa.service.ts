@@ -141,7 +141,7 @@ export class PessoaService {
             createPessoaDto.orgao_id &&
             user.orgao_id &&
             user.hasSomeRoles(['CadastroPessoa.inserir:apenas-mesmo-orgao']) &&
-            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false
+            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
             Number(createPessoaDto.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode criar pessoas para o seu próprio órgão.`);
