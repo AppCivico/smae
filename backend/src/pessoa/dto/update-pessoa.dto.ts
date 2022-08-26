@@ -1,8 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
+import { ApiHideProperty, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { Pessoa } from 'src/pessoa/entities/pessoa.entity';
 import { CreatePessoaDto } from './create-pessoa.dto';
 
 export class UpdatePessoaDto extends PartialType(CreatePessoaDto) {
+    @ApiHideProperty()
+    id?: number
 
     /**
     * Inativar pessoa

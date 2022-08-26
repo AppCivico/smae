@@ -11,7 +11,7 @@ import {
     MinLength,
 } from 'class-validator';
 
-export class CreatePessoaDto extends Pessoa {
+export class CreatePessoaDto {
     /**
    * E-mail para login
    * @example admin@email.com
