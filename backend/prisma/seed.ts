@@ -38,6 +38,7 @@ const PrivConfig: any = {
         ['CadastroPessoa.inativar:apenas-mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
         ['CadastroPessoa.ativar:apenas-mesmo-orgao', 'Ativar pessoas do mesmo orgão'],
         ['CadastroPessoa.inserir:administrador', 'Inserir outras pessoas com esta permissão'],
+        ['CadastroPessoa.editar:administrador', 'Eitar outras pessoas com esta permissão'],
     ],
 
     CadastroEixo: [
@@ -61,6 +62,7 @@ const PerfilAcessoConfig: any = [
         descricao: 'Administrador Geral',
         privilegios: [
             'CadastroPessoa.inserir:administrador',
+            'CadastroPessoa.editar:administrador',
             'CadastroOrgao.inserir',
             'CadastroOrgao.editar',
             'CadastroOrgao.remover',
