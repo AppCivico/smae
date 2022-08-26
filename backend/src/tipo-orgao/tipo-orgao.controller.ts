@@ -7,6 +7,7 @@ import { TipoOrgaoService } from './tipo-orgao.service';
 import { CreateTipoOrgaoDto } from './dto/create-tipo-orgao.dto';
 import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
 import { ListTipoOrgaoDto } from 'src/tipo-orgao/dto/list-tipo-orgao.dto';
+import { FindOneParams } from 'src/common/decorators/find-one-params';
 
 @ApiTags('tipoOrgao')
 @Controller('tipo-orgao')
@@ -31,8 +32,8 @@ export class TipoOrgaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoOrgao.editar')
-    async update(@Param('id') id: string, @Body() updateTipoOrgaoDto: UpdateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt) {
-        return await this.tipoOrgaoService.update(+id, updateTipoOrgaoDto, user);
+    async update(@Param() params: FindOneParams, @Body() updateTipoOrgaoDto: UpdateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.tipoOrgaoService.update(+params.id, updateTipoOrgaoDto, user);
     }
 
     @Delete(':id')
@@ -41,8 +42,8 @@ export class TipoOrgaoController {
     @Roles('CadastroTipoOrgao.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
-        await this.tipoOrgaoService.remove(+id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.tipoOrgaoService.remove(+params.id, user);
         return '';
     }
 }

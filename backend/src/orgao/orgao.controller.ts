@@ -7,6 +7,7 @@ import { ListOrgaoDto } from 'src/orgao/dto/list-orgao.dto';
 import { OrgaoService } from './orgao.service';
 import { CreateOrgaoDto } from './dto/create-orgao.dto';
 import { UpdateOrgaoDto } from './dto/update-orgao.dto';
+import { FindOneParams } from 'src/common/decorators/find-one-params';
 
 @ApiTags('orgao')
 @Controller('orgao')
@@ -31,8 +32,8 @@ export class OrgaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroOrgao.editar')
-    async update(@Param('id') id: string, @Body() updateOrgaoDto: UpdateOrgaoDto, @CurrentUser() user: PessoaFromJwt) {
-        return await this.orgaoService.update(+id, updateOrgaoDto, user);
+    async update(@Param() params: FindOneParams, @Body() updateOrgaoDto: UpdateOrgaoDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.orgaoService.update(+params.id, updateOrgaoDto, user);
     }
 
     @Delete(':id')
@@ -41,8 +42,8 @@ export class OrgaoController {
     @Roles('CadastroOrgao.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
-        await this.orgaoService.remove(+id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.orgaoService.remove(+params.id, user);
         return '';
     }
 }
