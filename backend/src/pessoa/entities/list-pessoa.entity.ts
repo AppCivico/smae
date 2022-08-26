@@ -17,6 +17,7 @@ export class ListPessoa {
 
     orgao_id?: number | undefined
     perfil_acesso_ids: number[]
+    desativado_motivo?: string | null
 
     @ApiHideProperty()
     PessoaFisica?: PessoaFisica
