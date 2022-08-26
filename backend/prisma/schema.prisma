@@ -62,7 +62,7 @@ model Modulo {
 
 model Orgao {
     id            Int            @id @default(autoincrement())
-    sigla         String
+    sigla         String         @unique
     descricao     String
     tipo_orgao_id Int
     tipo_orgao    TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
