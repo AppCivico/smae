@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, HttpException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
@@ -133,16 +133,17 @@ export class PessoaService {
     async verificarPrivilegiosCriacao(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
         if (createPessoaDto.orgao_id === undefined) {
             if (user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false) {
-                throw new UnauthorizedException(`Para criar pessoas sem órgão é necessário ser um administrador.`);
+                throw new ForbiddenException(`Para criar pessoas sem órgão é necessário ser um administrador.`);
             }
         }
 
         if (
             createPessoaDto.orgao_id &&
+            user.orgao_id &&
             user.hasSomeRoles(['CadastroPessoa.inserir:apenas-mesmo-orgao']) &&
             Number(createPessoaDto.orgao_id) != Number(user.orgao_id)
         ) {
-            throw new UnauthorizedException(`Você só pode criar pessoas para o seu próprio órgão.`);
+            throw new ForbiddenException(`Você só pode criar pessoas para o seu próprio órgão.`);
         }
 
     }
@@ -166,7 +167,7 @@ export class PessoaService {
             user.hasSomeRoles(['CadastroPessoa.editar:apenas-mesmo-orgao']) &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
-            throw new UnauthorizedException(`Você só pode editar pessoas do seu próprio órgão.`);
+            throw new ForbiddenException(`Você só pode editar pessoas do seu próprio órgão.`);
         }
 
         if (
@@ -176,14 +177,14 @@ export class PessoaService {
             user.hasSomeRoles(['CadastroPessoa.inativar:apenas-mesmo-orgao']) &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
-            throw new UnauthorizedException(`Você só pode inativar pessoas do seu próprio órgão.`);
+            throw new ForbiddenException(`Você só pode inativar pessoas do seu próprio órgão.`);
         } else if (updatePessoaDto.desativado === true
             &&
             user.hasSomeRoles(['CadastroPessoa.inativar']) === false
         ) {
-            throw new UnauthorizedException(`Você só não pode inativar pessoas.`);
+            throw new ForbiddenException(`Você só não pode inativar pessoas.`);
         } else if (updatePessoaDto.desativado === true && !updatePessoaDto.desativado_motivo) {
-            throw new UnauthorizedException(`Você precisa informar o motivo para desativar uma pessoa.`);
+            throw new ForbiddenException(`Você precisa informar o motivo para desativar uma pessoa.`);
         }
 
         if (
@@ -193,12 +194,12 @@ export class PessoaService {
             user.hasSomeRoles(['CadastroPessoa.ativar:apenas-mesmo-orgao']) &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
-            throw new UnauthorizedException(`Você só pode ativar pessoas do seu próprio órgão.`);
+            throw new ForbiddenException(`Você só pode ativar pessoas do seu próprio órgão.`);
         } else if (updatePessoaDto.desativado === false
             &&
             user.hasSomeRoles(['CadastroPessoa.ativar']) === false
         ) {
-            throw new UnauthorizedException(`Você só não pode ativar pessoas.`);
+            throw new ForbiddenException(`Você só não pode ativar pessoas.`);
         }
 
     }
