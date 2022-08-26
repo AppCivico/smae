@@ -7,6 +7,7 @@ import { OdsService } from './ods.service';
 import { CreateOdsDto } from './dto/create-ods.dto';
 import { UpdateOdsDto } from './dto/update-ods.dto';
 import { ListOdsDto } from 'src/ods/dto/list-ods.dto';
+import { FindOneParams } from 'src/common/decorators/find-one-params';
 
 @ApiTags('ODS')
 @Controller('ods')
@@ -31,8 +32,8 @@ export class OdsController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroOds.editar')
-    async update(@Param('id') id: string, @Body() updateOdsDto: UpdateOdsDto, @CurrentUser() user: PessoaFromJwt) {
-        return await this.odsService.update(+id, updateOdsDto, user);
+    async update(@Param() params: FindOneParams, @Body() updateOdsDto: UpdateOdsDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.odsService.update(+params.id, updateOdsDto, user);
     }
 
     @Delete(':id')
@@ -41,8 +42,8 @@ export class OdsController {
     @Roles('CadastroOds.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
-        await this.odsService.remove(+id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.odsService.remove(+params.id, user);
         return '';
     }
 }
