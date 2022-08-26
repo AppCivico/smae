@@ -7,6 +7,7 @@ import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosMod
 import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { UpdatePessoaDto } from 'src/pessoa/dto/update-pessoa.dto';
+import { DetalhePessoaDto } from 'src/pessoa/dto/detalhe-pessoa.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -202,7 +203,7 @@ export class PessoaService {
 
     }
 
-    async getDetail(pessoaId: number, user: PessoaFromJwt) {
+    async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         let pessoa = await this.prisma.pessoa.findFirst({
             where: {
                 id: pessoaId

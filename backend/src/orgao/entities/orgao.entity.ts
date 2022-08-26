@@ -10,6 +10,6 @@ export class Orgao {
     descricao?: string;
     @ApiHideProperty()
     tipo_orgao_id?: number;
-    @ApiProperty({ description: 'Tipo do Orgão', })
+    @ApiProperty({ description: 'Tipo do Orgão - Apenas na listagem dos órgãos', })
     tipo_orgao?: TipoOrgao;
 }
