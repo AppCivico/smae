@@ -148,7 +148,7 @@ export class PessoaService {
 
     async verificarPrivilegiosEdicao(updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
 
-        let pessoaCurrentOrgao = await this.prisma.pessoaFisica.findFirstOrThrow({
+        let pessoaCurrentOrgao = await this.prisma.pessoaFisica.findFirst({
             where: {
                 pessoa: {
                     some: {
@@ -160,6 +160,7 @@ export class PessoaService {
         });
 
         if (
+            pessoaCurrentOrgao &&
             updatePessoaDto.orgao_id &&
             user.hasSomeRoles(['CadastroPessoa.editar:apenas-mesmo-orgao']) &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
@@ -167,7 +168,9 @@ export class PessoaService {
             throw new UnauthorizedException(`Você só pode editar pessoas do seu próprio órgão.`);
         }
 
-        if (updatePessoaDto.desativado === true
+        if (
+            pessoaCurrentOrgao &&
+            updatePessoaDto.desativado === true
             &&
             user.hasSomeRoles(['CadastroPessoa.inativar:apenas-mesmo-orgao']) &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
@@ -182,7 +185,9 @@ export class PessoaService {
             throw new UnauthorizedException(`Você precisa informar o motivo para desativar uma pessoa.`);
         }
 
-        if (updatePessoaDto.desativado === false
+        if (
+            pessoaCurrentOrgao &&
+            updatePessoaDto.desativado === false
             &&
             user.hasSomeRoles(['CadastroPessoa.ativar:apenas-mesmo-orgao']) &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
