@@ -37,4 +37,12 @@ export class PessoaController {
         return await this.pessoaService.update(+id, updatePessoaDto, user);
     }
 
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroPessoa.inserir', 'CadastroPessoa.editar', 'CadastroPessoa.inativar')
+    async get(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
+        return await this.pessoaService.getDetail(+id, user);
+    }
+
 }
