@@ -174,7 +174,7 @@ export class PessoaService {
                 pessoaFisica = await prisma.pessoaFisica.create({
                     data: {
                         orgao_id: createPessoaDto.orgao_id,
-                        locacao: createPessoaDto.locacao
+                        lotacao: createPessoaDto.lotacao
                     }
                 });
             }
@@ -210,7 +210,7 @@ export class PessoaService {
                 email: true,
                 pessoa_fisica: {
                     select: {
-                        locacao: true,
+                        lotacao: true,
                         orgao: {
                             select: {
                                 sigla: true,
@@ -229,7 +229,7 @@ export class PessoaService {
                 nome_exibicao: p.nome_exibicao,
                 atualizado_em: p.atualizado_em,
                 email: p.email,
-                locacao: p.pessoa_fisica?.locacao ? p.pessoa_fisica.locacao : undefined,
+                locacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao: p.pessoa_fisica?.orgao ? {
                     id: p.pessoa_fisica.orgao.id,
                     sigla: p.pessoa_fisica.orgao.sigla,
