@@ -2,7 +2,10 @@
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
-import { useUsersStore, useOrgansStore  } from '@/stores';
+import { useUsersStore, useOrgansStore, useAuthStore  } from '@/stores';
+
+const authStore = useAuthStore();
+const { permissions } = storeToRefs(authStore);
 
 const usersStore = useUsersStore();
 const { temp } = storeToRefs(usersStore);
@@ -30,7 +33,7 @@ function filterOrgan(orgao_id){
         <div class="flex spacebetween center mb2">
             <h1>Gerenciamento de usuários</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/usuarios/novo" class="btn big ml2">Novo usuário</router-link>
+            <router-link to="/usuarios/novo" class="btn big ml2" v-if="permissions.insertpermission>1">Novo usuário</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f1">
@@ -64,7 +67,9 @@ function filterOrgan(orgao_id){
                         <td>{{ user.lotacao ?? '-' }}</td>
                         <td>{{ user.orgao_id ? filterOrgan(user.orgao_id).sigla : '-' }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <router-link :to="`/usuarios/editar/${user.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            <template v-if="permissions.editpermission>2||(permissions.editpermission>1&&user.orgao_id==authStore.user.orgao_id)">
+                                <router-link :to="`/usuarios/editar/${user.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            </template>
                         </td>
                     </tr>
                 </template>

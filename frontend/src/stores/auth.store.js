@@ -12,7 +12,8 @@ export const useAuthStore = defineStore({
         user: JSON.parse(localStorage.getItem('user')),
         token: JSON.parse(localStorage.getItem('token')),
         reducedtoken: null,
-        returnUrl: null
+        returnUrl: null,
+        permissions: {}
     }),
     actions: {
         async login(username, password) {
@@ -30,6 +31,20 @@ export const useAuthStore = defineStore({
                 const user = await requestS.get(`${baseUrl}/minha-conta`);    
                 this.user = user.sessao;
                 localStorage.setItem('user', JSON.stringify(user.sessao));
+                var per = {
+                    insertpermission: 0,
+                    editpermission: 0,
+                };
+                this.user.privilegios.forEach(p=>{
+                    if(p=='CadastroPessoa.editar') per.editpermission++;
+                    if(p=='CadastroPessoa.editar:apenas-mesmo-orgao') per.editpermission++;
+                    if(p=='CadastroPessoa.editar:administrador') per.editpermission++;
+                    if(p=='CadastroPessoa.inserir') per.insertpermission++;
+                    if(p=='CadastroPessoa.inserir:apenas-mesmo-orgao') per.insertpermission++;
+                    if(p=='CadastroPessoa.inserir:administrador') per.insertpermission++;
+                });
+                this.permissions = per;
+
                 router.push(this.returnUrl || '/');
             } catch (error) {
                 const alertStore = useAlertStore();
@@ -75,6 +90,7 @@ export const useAuthStore = defineStore({
             requestS.post(`${baseUrl}/sair`);    
             this.user = null;
             this.token = null;
+            this.permissions = null;
             this.reducedtoken = null;
             localStorage.removeItem('user');
             localStorage.removeItem('token');
