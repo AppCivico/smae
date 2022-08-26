@@ -33,7 +33,7 @@ const schema = Yup.object().shape({
     lotacao: Yup.string().required('Preencha a lotação'),
     orgao_id: Yup.number().required('Selecione um órgão'),
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
-    desativado: Yup.boolean(),
+    desativado: Yup.boolean().default(false),
     desativado_motivo: Yup.string().nullable().when('desativado', (desativado, field) => desativado ? field.required("Escreva um motivo para a inativação") : field),
 });
 
@@ -75,7 +75,7 @@ async function checkClose() {
                 <div class="flex g2 mb2" v-if="user&&id">
                     <div class="">
                         <label class="block mb1">
-                            <Field name="desativado" class="inputcheckbox" type="checkbox" value=true :checked="desativado==true"/><span>Inativar cadastro</span>
+                            <Field name="desativado" class="inputcheckbox" type="checkbox" :checked="desativado"/><span>Inativar cadastro</span>
                         </label>
                     </div>
                     <div class="f1">
