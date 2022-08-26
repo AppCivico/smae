@@ -141,6 +141,7 @@ export class PessoaService {
             createPessoaDto.orgao_id &&
             user.orgao_id &&
             user.hasSomeRoles(['CadastroPessoa.inserir:apenas-mesmo-orgao']) &&
+            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false
             Number(createPessoaDto.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode criar pessoas para o seu próprio órgão.`);
@@ -169,6 +170,7 @@ export class PessoaService {
             pessoaCurrentOrgao &&
             updatePessoaDto.orgao_id &&
             user.hasSomeRoles(['CadastroPessoa.editar:apenas-mesmo-orgao']) &&
+            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode editar pessoas do seu próprio órgão.`);
@@ -179,6 +181,7 @@ export class PessoaService {
             updatePessoaDto.desativado === true
             &&
             user.hasSomeRoles(['CadastroPessoa.inativar:apenas-mesmo-orgao']) &&
+            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode inativar pessoas do seu próprio órgão.`);
@@ -196,6 +199,7 @@ export class PessoaService {
             updatePessoaDto.desativado === false
             &&
             user.hasSomeRoles(['CadastroPessoa.ativar:apenas-mesmo-orgao']) &&
+            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode ativar pessoas do seu próprio órgão.`);
