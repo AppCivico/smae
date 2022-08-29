@@ -73,6 +73,7 @@ export class AuthController {
 
     @ApiTags('default')
     @Get('perfil-de-acesso')
+    @ApiBearerAuth('access-token')
     @HttpCode(HttpStatus.OK)
     @ApiBody({ type: PerfilDeAcessoLinhaDto, description: 'Retorna todos os perfis de acesso do sistema' })
     async perfilDeAcesso(): Promise<PerfilDeAcessoLinhaDto> {
