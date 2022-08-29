@@ -1,4 +1,15 @@
-import { PartialType } from '@nestjs/swagger';
+import { ApiHideProperty, PartialType } from '@nestjs/swagger';
+import { IsBoolean, IsOptional } from 'class-validator';
 import { CreatePdmDto } from './create-pdm.dto';
 
-export class UpdatePdmDto extends PartialType(CreatePdmDto) {}
+export class UpdatePdmDto extends PartialType(CreatePdmDto) {
+    @ApiHideProperty()
+    id?: number
+
+    /**
+    * use true para manter ativo, false para desativar. nulo/faltando não faz nenhuma ação
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| valor inválido' })
+    ativo?: boolean;
+}

@@ -252,7 +252,7 @@ model Pdm {
     data_publicacao                       DateTime? @db.Date()
     periodo_do_ciclo_participativo_inicio DateTime? @db.Date()
     periodo_do_ciclo_participativo_fim    DateTime? @db.Date()
-    ativo                                 Boolean   @default(true)
+    ativo                                 Boolean   @default(false)
 
     prefeito       String
     equipe_tecnica String
