@@ -1,4 +1,5 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { Pessoa, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePdmDto } from './dto/create-pdm.dto';
@@ -56,17 +57,67 @@ export class PdmService {
         return pdm;
     }
 
-    async update(id: number, updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {
+    async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {
+        if (
+            updatePdmDto.ativo === true &&
+            user.hasSomeRoles(['CadastroPdm.ativar']) === false
+        ) {
+            throw new ForbiddenException(`Você não pode ativar Plano de Metas`);
+        } else if (
+            updatePdmDto.ativo === false &&
+            user.hasSomeRoles(['CadastroPdm.inativar']) === false
+        ) {
+            throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
+        }
 
-        const created = await this.prisma.pdm.update({
-            where: { id: id },
-            data: {
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-                ...updatePdmDto,
-            },
-            select: { id: true }
+    }
+
+    async update(id: number, updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {
+        let pdm = await this.prisma.pdm.count({ where: { id: id } });
+        if (!pdm) throw new HttpException('PDM não encontrado', 404);
+
+        updatePdmDto.id = id
+        await this.verificarPrivilegiosEdicao(updatePdmDto, user);
+
+        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Object> => {
+
+            if (updatePdmDto.ativo === true) {
+                // desativa outros planos
+                prisma.pdm.updateMany({
+                    where: {
+                        ativo: true
+                    },
+                    data: {
+                        ativo: false,
+                        desativado_em: new Date(Date.now()),
+                        desativado_por: user.id,
+                    }
+                });
+            } else if (updatePdmDto.ativo === false) {
+                await prisma.pdm.update({
+                    where: { id: id },
+                    data: {
+                        ativo: false,
+                        desativado_em: new Date(Date.now()),
+                        desativado_por: user.id,
+                    },
+                    select: { id: true }
+                });
+            }
+
+            const created = await prisma.pdm.update({
+                where: { id: id },
+                data: {
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                    ...updatePdmDto,
+                },
+                select: { id: true }
+            });
+
+            return created;
         });
+
 
         return created;
     }
