@@ -17,6 +17,7 @@ import { OrgaoModule } from './orgao/orgao.module';
 import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { OdsModule } from './ods/ods.module';
 import { EixoModule } from './eixo/eixo.module';
+import { PdmModule } from './pdm/pdm.module';
 
 @Module({
     imports: [
@@ -24,7 +25,7 @@ import { EixoModule } from './eixo/eixo.module';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

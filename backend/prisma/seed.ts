@@ -46,6 +46,13 @@ const PrivConfig: any = {
         ['CadastroEixo.editar', 'Editar tipo eixo'],
         ['CadastroEixo.remover', 'Remover tipo eixo'],
     ],
+
+    CadastroPdm: [
+        ['CadastroPdm.inserir', 'Inserir tipo eixo'],
+        ['CadastroPdm.editar', 'Editar tipo eixo'],
+        ['CadastroPdm.inativar', 'Inativar PDM'],
+        ['CadastroPdm.ativar', 'Ativar PDM'],
+    ],
 };
 
 const ModuloDescricao: any = {
@@ -54,6 +61,7 @@ const ModuloDescricao: any = {
     CadastroPessoa: 'Cadastro de pessoas',
     CadastroOds: 'Cadastro de ODS',
     CadastroEixo: 'Cadastro de Eixo',
+    CadastroPdm: 'Cadastro do PDM',
 };
 
 const PerfilAcessoConfig: any = [
@@ -81,6 +89,11 @@ const PerfilAcessoConfig: any = [
             'CadastroEixo.inserir',
             'CadastroEixo.editar',
             'CadastroEixo.remover',
+
+            'CadastroPdm.inserir',
+            'CadastroPdm.editar',
+            'CadastroPdm.inativar',
+            'CadastroPdm.ativar',
         ]
     },
     {
