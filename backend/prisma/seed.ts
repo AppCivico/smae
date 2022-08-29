@@ -97,6 +97,19 @@ const PerfilAcessoConfig: any = [
         ]
     },
     {
+        nome: 'Coordenadoria de Planejamento',
+        descricao: 'Coordenadoria de Planejamento',
+        privilegios: [
+            'CadastroPessoa.inserir',
+            'CadastroPessoa.inativar',
+            'CadastroPessoa.ativar',
+            'CadastroPessoa.editar',
+            'CadastroPessoa.editar:apenas-mesmo-orgao',
+            'CadastroPessoa.inserir:apenas-mesmo-orgao',
+            'CadastroPessoa.inativar:apenas-mesmo-orgao',
+        ]
+    },
+    {
         nome: 'Unidade de Entregas',
         descricao: 'Unidade de Entregas',
         privilegios: [
