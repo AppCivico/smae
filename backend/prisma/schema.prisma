@@ -53,6 +53,10 @@ model Pessoa {
     EixoQueRemovi    Eixo[] @relation("Removedor")
     EixoQueAtualizei Eixo[] @relation("Atualizador")
 
+    PDMQueCriei     Pdm[] @relation("Criador")
+    PDMQueDesativei Pdm[] @relation("Desativador")
+    PDMQueAtualizei Pdm[] @relation("Atualizador")
+
     @@map("pessoa")
 }
 
@@ -111,6 +115,7 @@ model PerfilPrivilegio {
 model PessoaFisica {
     id Int @id @default(autoincrement())
 
+    cargo    String?
     lotacao  String?
     orgao_id Int
     orgao    Orgao    @relation(fields: [orgao_id], references: [id])
@@ -235,4 +240,33 @@ model Eixo {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("eixo")
+}
+
+model Pdm {
+    id Int @id @default(autoincrement())
+
+    nome                                  String
+    descricao                             String?
+    data_inicio                           DateTime  @db.Date()
+    data_fim                              DateTime  @db.Date()
+    data_publicacao                       DateTime? @db.Date()
+    periodo_do_ciclo_participativo_inicio DateTime? @db.Date()
+    periodo_do_ciclo_participativo_fim    DateTime? @db.Date()
+    ativo                                 Boolean   @default(true)
+
+    prefeito       String
+    equipe_tecnica String
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    desativado_por Int?
+    desativado_em  DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    desativador Pessoa? @relation("Desativador", fields: [desativado_por], references: [id])
+
+    @@map("pdm")
 }
