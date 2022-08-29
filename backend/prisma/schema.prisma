@@ -49,6 +49,10 @@ model Pessoa {
     OdsQueRemovi    Ods[] @relation("Removedor")
     OdsQueAtualizei Ods[] @relation("Atualizador")
 
+    EixoQueCriei     Eixo[] @relation("Criador")
+    EixoQueRemovi    Eixo[] @relation("Removedor")
+    EixoQueAtualizei Eixo[] @relation("Atualizador")
+
     @@map("pessoa")
 }
 
@@ -212,4 +216,23 @@ model Ods {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("ods")
+}
+
+model Eixo {
+    id Int @id @default(autoincrement())
+
+    descricao String
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("eixo")
 }
