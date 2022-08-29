@@ -29,16 +29,11 @@ const PrivConfig: any = {
     ],
 
     CadastroPessoa: [
-        ['CadastroPessoa.inserir', 'Inserir novas pessoas'],
-        ['CadastroPessoa.editar', 'Editar dados das pessoas'],
-        ['CadastroPessoa.inativar', 'Inativar pessoas'],
-        ['CadastroPessoa.ativar', 'Ativar pessoas'],
-        ['CadastroPessoa.editar:apenas-mesmo-orgao', 'Editar pessoas do mesmo orgão'],
-        ['CadastroPessoa.inserir:apenas-mesmo-orgao', 'Inserir pessoas do mesmo orgão'],
-        ['CadastroPessoa.inativar:apenas-mesmo-orgao', 'Inativar pessoas do mesmo orgão'],
-        ['CadastroPessoa.ativar:apenas-mesmo-orgao', 'Ativar pessoas do mesmo orgão'],
-        ['CadastroPessoa.inserir:administrador', 'Inserir outras pessoas com esta permissão'],
-        ['CadastroPessoa.editar:administrador', 'Eitar outras pessoas com esta permissão'],
+        ['CadastroPessoa.inserir', 'Inserir novas pessoas com o mesmo órgão'],
+        ['CadastroPessoa.editar', 'Editar dados das pessoas com o mesmo órgão'],
+        ['CadastroPessoa.inativar', 'Inativar pessoas com o mesmo órgão'],
+        ['CadastroPessoa.ativar', 'Ativar pessoas com o mesmo órgão'],
+        ['CadastroPessoa.administrador', 'Editar/Inserir/Inativar/Ativar qualquer pessoa, até mesmo outros administradores'],
     ],
 
     CadastroEixo: [
@@ -69,14 +64,14 @@ const PerfilAcessoConfig: any = [
         nome: 'Administrador Geral',
         descricao: 'Administrador Geral',
         privilegios: [
-            'CadastroPessoa.inserir:administrador',
-            'CadastroPessoa.editar:administrador',
             'CadastroOrgao.inserir',
             'CadastroOrgao.editar',
             'CadastroOrgao.remover',
             'CadastroTipoOrgao.inserir',
             'CadastroTipoOrgao.editar',
             'CadastroTipoOrgao.remover',
+
+            'CadastroPessoa:administrador',
             'CadastroPessoa.inserir',
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
@@ -104,9 +99,6 @@ const PerfilAcessoConfig: any = [
             'CadastroPessoa.inativar',
             'CadastroPessoa.ativar',
             'CadastroPessoa.editar',
-            'CadastroPessoa.editar:apenas-mesmo-orgao',
-            'CadastroPessoa.inserir:apenas-mesmo-orgao',
-            'CadastroPessoa.inativar:apenas-mesmo-orgao',
         ]
     },
     {
@@ -117,9 +109,6 @@ const PerfilAcessoConfig: any = [
             'CadastroPessoa.inativar',
             'CadastroPessoa.ativar',
             'CadastroPessoa.editar',
-            'CadastroPessoa.editar:apenas-mesmo-orgao',
-            'CadastroPessoa.inserir:apenas-mesmo-orgao',
-            'CadastroPessoa.inativar:apenas-mesmo-orgao',
         ]
     },
 
