@@ -16,7 +16,7 @@ export class OdsService {
                 criado_em: new Date(Date.now()),
                 ...createOdsDto,
             },
-            select: { id: true, descricao: true }
+            select: { id: true, descricao: true, titulo: true, }
         });
 
         return created;
@@ -27,7 +27,7 @@ export class OdsService {
             where: {
                 removido_em: null,
             },
-            select: { id: true, descricao: true }
+            select: { id: true, descricao: true, titulo: true }
         });
 
         return listActive;
@@ -42,7 +42,7 @@ export class OdsService {
                 atualizado_em: new Date(Date.now()),
                 ...updateOdsDto,
             },
-            select: { id: true, descricao: true }
+            select: { id: true, descricao: true, titulo: true }
         });
 
         return created;
