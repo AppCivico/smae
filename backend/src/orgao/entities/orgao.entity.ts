@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
 import { TipoOrgao } from "src/tipo-orgao/entities/tipo-orgao.entity";
 
 export class Orgao {
-    @ApiProperty({ description: 'ID do Orgão', })
+    @ApiProperty({ description: 'ID do Órgão', })
     id?: number;
     @ApiProperty({ description: 'Sigla', })
     sigla: string;
@@ -10,6 +10,6 @@ export class Orgao {
     descricao?: string;
     @ApiHideProperty()
     tipo_orgao_id?: number;
-    @ApiProperty({ description: 'Tipo do Orgão - Apenas na listagem dos órgãos', })
+    @ApiProperty({ description: 'Tipo do Órgão - Apenas na listagem dos órgãos', })
     tipo_orgao?: TipoOrgao;
 }
