@@ -71,7 +71,7 @@ const PerfilAcessoConfig: any = [
             'CadastroTipoOrgao.editar',
             'CadastroTipoOrgao.remover',
 
-            'CadastroPessoa:administrador',
+            'CadastroPessoa.administrador',
             'CadastroPessoa.inserir',
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
