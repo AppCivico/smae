@@ -187,6 +187,7 @@ async function atualizar_modulos_e_privilegios() {
 
     let promises: any[] = [];
 
+    let allPrivs: string[] = [];
     for (const codModulo in PrivConfig) {
         const privilegio = PrivConfig[codModulo];
 
@@ -231,12 +232,32 @@ async function atualizar_modulos_e_privilegios() {
             });
             for (const priv of privilegio) {
                 promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string))
+                allPrivs.push(priv[0] as string)
             }
         }
 
     }
 
     await Promise.all(promises);
+
+    console.log(allPrivs)
+    await prisma.perfilPrivilegio.deleteMany({
+        where: {
+            privilegio: {
+                codigo: {
+                    notIn: allPrivs
+                }
+            }
+        }
+    });
+
+    await prisma.privilegio.deleteMany({
+        where: {
+            codigo: {
+                notIn: allPrivs
+            }
+        }
+    });
 
 }
 
