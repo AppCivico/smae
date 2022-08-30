@@ -11,6 +11,13 @@ const PrivConfig: any = {
     CadastroDepartamento: false,
     CadastroDivisaoTecnica: false,
 
+
+    CadastroFonteRecurso: [
+        ['CadastroFonteRecurso.inserir', 'Inserir Fonte de Recurso'],
+        ['CadastroFonteRecurso.editar', 'Editar Fonte de Recurso'],
+        ['CadastroFonteRecurso.remover', 'Remover Fonte de Recurso'],
+    ],
+
     CadastroOds: [
         ['CadastroOds.inserir', 'Inserir ODS'],
         ['CadastroOds.editar', 'Editar ODS'],
@@ -57,6 +64,7 @@ const ModuloDescricao: any = {
     CadastroOds: 'Cadastro de ODS',
     CadastroEixo: 'Cadastro de Eixo',
     CadastroPdm: 'Cadastro do PDM',
+    CadastroFonteRecurso: 'Cadastro de Fonte de Recurso',
 };
 
 const PerfilAcessoConfig: any = [

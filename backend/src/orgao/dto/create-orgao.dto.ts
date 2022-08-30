@@ -1,11 +1,11 @@
-import { IsPositive, IsString, MaxLength, MinLength } from "class-validator";
+import { IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
 
 export class CreateOrgaoDto {
     /**
     * Sigla do Órgão
     */
+    @IsOptional()
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| sigla: Mínimo de 1 caractere' })
     @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
     sigla?: string | null
 
