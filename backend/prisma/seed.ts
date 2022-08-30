@@ -138,9 +138,9 @@ async function atualizar_orgao() {
         });
 
         await prisma.orgao.upsert({
-            where: { sigla: item.sigla },
+            where: { descricao: item.desc },
             update: {
-                descricao: item.desc,
+                sigla: item.sigla,
                 tipo_orgao_id: tipo.id,
             },
             create: {
