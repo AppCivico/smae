@@ -57,6 +57,26 @@ model Pessoa {
     PDMQueDesativei Pdm[] @relation("Desativador")
     PDMQueAtualizei Pdm[] @relation("Atualizador")
 
+    OEQueCriei     ObjetivoEstrategico[] @relation("Criador")
+    OEQueDesativei ObjetivoEstrategico[] @relation("Removedor")
+    OEQueAtualizei ObjetivoEstrategico[] @relation("Atualizador")
+
+    TagQueCriei     Tag[] @relation("Criador")
+    TagQueDesativei Tag[] @relation("Removedor")
+    TagQueAtualizei Tag[] @relation("Atualizador")
+
+    FRQueCriei     FonteRecurso[] @relation("Criador")
+    FRQueDesativei FonteRecurso[] @relation("Removedor")
+    FRQueAtualizei FonteRecurso[] @relation("Atualizador")
+
+    TipoDocQueCriei     TipoDocumento[] @relation("Criador")
+    TipoDocQueDesativei TipoDocumento[] @relation("Removedor")
+    TipoDocQueAtualizei TipoDocumento[] @relation("Atualizador")
+
+    RegiaoQueCriei     Regiao[] @relation("Criador")
+    RegiaoQueDesativei Regiao[] @relation("Removedor")
+    RegiaoQueAtualizei Regiao[] @relation("Atualizador")
+
     @@map("pessoa")
 }
 
@@ -71,8 +91,8 @@ model Modulo {
 
 model Orgao {
     id            Int            @id @default(autoincrement())
-    sigla         String         @unique
-    descricao     String
+    sigla         String?
+    descricao     String         @unique
     tipo_orgao_id Int
     tipo_orgao    TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
     pessoa_fisica PessoaFisica[]
@@ -219,27 +239,9 @@ model Ods {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    Tag         Tag[]
 
     @@map("ods")
-}
-
-model Eixo {
-    id Int @id @default(autoincrement())
-
-    descricao String
-
-    criado_por     Int?
-    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
-    atualizado_por Int?
-    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
-    removido_por   Int?
-    removido_em    DateTime? @db.Timestamptz(6)
-
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
-
-    @@map("eixo")
 }
 
 model Pdm {
@@ -264,9 +266,147 @@ model Pdm {
     desativado_por Int?
     desativado_em  DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    desativador Pessoa? @relation("Desativador", fields: [desativado_por], references: [id])
+    atualizador         Pessoa?               @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador             Pessoa?               @relation("Criador", fields: [criado_por], references: [id])
+    desativador         Pessoa?               @relation("Desativador", fields: [desativado_por], references: [id])
+    Eixo                Eixo[]
+    Tag                 Tag[]
+    ObjetivoEstrategico ObjetivoEstrategico[]
 
     @@map("pdm")
+}
+
+model Eixo {
+    id Int @id @default(autoincrement())
+
+    descricao String
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("eixo")
+}
+
+model FonteRecurso {
+    id    Int     @id @default(autoincrement())
+    fonte String  @unique
+    sigla String?
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("fonte_recurso")
+}
+
+model TipoDocumento {
+    id        Int     @id @default(autoincrement())
+    codigo    String  @unique
+    titulo    String
+    descricao String?
+    extensoes String?
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("tipo_documento")
+}
+
+model Tag {
+    id Int @id @default(autoincrement())
+
+    descricao String
+    icone     String?
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ods_id Int?
+    ods    Ods? @relation(fields: [ods_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("tag")
+}
+
+model ObjetivoEstrategico {
+    id Int @id @default(autoincrement())
+
+    descricao String
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("objetivo_estrategico")
+}
+
+model Regiao {
+    id Int @id @default(autoincrement())
+
+    descricao  String
+    shapefile  String?
+    nivel      Int
+    parente_id Int
+
+    RegiaoAcima Regiao? @relation("Parente", fields: [parente_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador   Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador       Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    removedor     Pessoa?  @relation("Removedor", fields: [removido_por], references: [id])
+    RegioesAbaixo Regiao[] @relation("Parente")
+
+    @@map("regiao")
 }
