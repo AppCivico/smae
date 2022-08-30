@@ -169,8 +169,7 @@ export class PessoaService {
         if (
             pessoaCurrentOrgao &&
             updatePessoaDto.orgao_id &&
-            user.hasSomeRoles(['CadastroPessoa.editar:apenas-mesmo-orgao']) &&
-            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
+            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode editar pessoas do seu próprio órgão.`);
@@ -180,8 +179,8 @@ export class PessoaService {
             pessoaCurrentOrgao &&
             updatePessoaDto.desativado === true
             &&
-            user.hasSomeRoles(['CadastroPessoa.inativar:apenas-mesmo-orgao']) &&
-            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
+            user.hasSomeRoles(['CadastroPessoa.inativar']) &&
+            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode inativar pessoas do seu próprio órgão.`);
@@ -189,7 +188,7 @@ export class PessoaService {
             &&
             user.hasSomeRoles(['CadastroPessoa.inativar']) === false
         ) {
-            throw new ForbiddenException(`Você só não pode inativar pessoas.`);
+            throw new ForbiddenException(`Você não pode inativar pessoas.`);
         } else if (updatePessoaDto.desativado === true && !updatePessoaDto.desativado_motivo) {
             throw new ForbiddenException(`Você precisa informar o motivo para desativar uma pessoa.`);
         }
@@ -198,8 +197,8 @@ export class PessoaService {
             pessoaCurrentOrgao &&
             updatePessoaDto.desativado === false
             &&
-            user.hasSomeRoles(['CadastroPessoa.ativar:apenas-mesmo-orgao']) &&
-            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
+            user.hasSomeRoles(['CadastroPessoa.ativar']) &&
+            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode ativar pessoas do seu próprio órgão.`);
@@ -207,9 +206,12 @@ export class PessoaService {
             &&
             user.hasSomeRoles(['CadastroPessoa.ativar']) === false
         ) {
-            throw new ForbiddenException(`Você só não pode ativar pessoas.`);
+            throw new ForbiddenException(`Você não pode ativar pessoas.`);
         }
 
+        if (pessoaCurrentOrgao == undefined && updatePessoaDto.orgao_id) {
+            throw new ForbiddenException(`Atualização do órgão da pessoa não é possível, peça atualização no banco de dados.`);
+        }
     }
 
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
@@ -280,6 +282,7 @@ export class PessoaService {
 
                     pessoa_fisica: {
                         update: {
+                            cargo: updatePessoaDto.cargo,
                             lotacao: updatePessoaDto.lotacao,
                             orgao_id: updatePessoaDto.orgao_id,
                         }
