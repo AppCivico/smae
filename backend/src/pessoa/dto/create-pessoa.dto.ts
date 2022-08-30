@@ -40,14 +40,22 @@ export class CreatePessoaDto {
     nome_completo: string;
 
     /**
-       * Coordenadoria/Cargo/Etc
-       * @example 1
+       * Coordenadoria/
+       * @example Bar
     */
     @IsOptional()
     @IsString({ message: '$property| Lotação: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| Lotação: Mínimo de 1 caracteres' })
     @MaxLength(250, { message: '$property| Lotação: Máximo 250 caracteres' })
     lotacao?: string;
+
+    /**
+       * Cargo
+       * @example Coordenador
+    */
+    @IsOptional()
+    @IsString({ message: '$property| Cargo: Precisa ser alfanumérico' })
+    @MaxLength(250, { message: '$property| Cargo: Máximo 250 caracteres' })
+    cargo?: string;
 
     /**
        * ID Órgão
