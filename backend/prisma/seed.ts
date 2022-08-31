@@ -93,37 +93,23 @@ const ModuloDescricao: any = {
     CadastroRegiao: 'Cadastro de Regiões'
 };
 
+let todosPrivilegios: string[] = [];
+
+for (const codModulo in PrivConfig) {
+    const privilegio = PrivConfig[codModulo];
+    if (privilegio === false) continue;
+
+    for (const priv of privilegio) {
+        todosPrivilegios.push(priv[0] as string)
+    }
+}
+console.log(todosPrivilegios)
+
 const PerfilAcessoConfig: any = [
     {
         nome: 'Administrador Geral',
         descricao: 'Administrador Geral',
-        privilegios: [
-            'CadastroOrgao.inserir',
-            'CadastroOrgao.editar',
-            'CadastroOrgao.remover',
-            'CadastroTipoOrgao.inserir',
-            'CadastroTipoOrgao.editar',
-            'CadastroTipoOrgao.remover',
-
-            'CadastroPessoa.administrador',
-            'CadastroPessoa.inserir',
-            'CadastroPessoa.editar',
-            'CadastroPessoa.inativar',
-            'CadastroPessoa.ativar',
-
-            'CadastroOds.inserir',
-            'CadastroOds.editar',
-            'CadastroOds.remover',
-
-            'CadastroEixo.inserir',
-            'CadastroEixo.editar',
-            'CadastroEixo.remover',
-
-            'CadastroPdm.inserir',
-            'CadastroPdm.editar',
-            'CadastroPdm.inativar',
-            'CadastroPdm.ativar',
-        ]
+        privilegios: todosPrivilegios
     },
     {
         nome: 'Coordenadoria de Planejamento',
@@ -221,7 +207,6 @@ async function atualizar_modulos_e_privilegios() {
 
     let promises: any[] = [];
 
-    let allPrivs: string[] = [];
     for (const codModulo in PrivConfig) {
         const privilegio = PrivConfig[codModulo];
 
@@ -266,7 +251,6 @@ async function atualizar_modulos_e_privilegios() {
             });
             for (const priv of privilegio) {
                 promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string))
-                allPrivs.push(priv[0] as string)
             }
         }
 
@@ -274,12 +258,11 @@ async function atualizar_modulos_e_privilegios() {
 
     await Promise.all(promises);
 
-    console.log(allPrivs)
     await prisma.perfilPrivilegio.deleteMany({
         where: {
             privilegio: {
                 codigo: {
-                    notIn: allPrivs
+                    notIn: todosPrivilegios
                 }
             }
         }
@@ -288,7 +271,7 @@ async function atualizar_modulos_e_privilegios() {
     await prisma.privilegio.deleteMany({
         where: {
             codigo: {
-                notIn: allPrivs
+                notIn: todosPrivilegios
             }
         }
     });

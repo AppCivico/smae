@@ -1,4 +1,4 @@
-import { IsPositive, IsString, MaxLength } from "class-validator"
+import { IsPositive, IsString, MaxLength, ValidateIf } from "class-validator"
 
 export class CreateTagDto {
     /**
@@ -24,5 +24,6 @@ export class CreateTagDto {
     * ID do ODS (opcional, enviar null para remover/não existir)
     */
     @IsPositive({ message: '$property' })
-    ods_id?: number | null
+    @ValidateIf((object, value) => value !== null)
+    ods_id?: number | undefined | null
 }

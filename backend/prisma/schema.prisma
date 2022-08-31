@@ -392,7 +392,7 @@ model Regiao {
     descricao  String
     shapefile  String?
     nivel      Int
-    parente_id Int
+    parente_id Int?
 
     RegiaoAcima Regiao? @relation("Parente", fields: [parente_id], references: [id])
 
