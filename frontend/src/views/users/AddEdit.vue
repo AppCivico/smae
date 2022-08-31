@@ -39,8 +39,6 @@ const schema = Yup.object().shape({
 
 async function onSubmit(values) {
     try {
-        console.log(values);
-
         var msg;
         if (id&&user) {
             var r = await usersStore.update(user.value.id, values);

@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores';
 import { Home } from '@/views';
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 import { AddEditUsers, ListUsers } from '@/views/users';
+import { AddEditOrgans, ListOrgans, AddEditOrganTypes, ListOrganTypes } from '@/views/organs';
 
 
 export const router = createRouter({
@@ -22,6 +23,16 @@ export const router = createRouter({
                 { path: '', component: ListUsers },
                 { path: 'novo', component: AddEditUsers },
                 { path: 'editar/:id', component: AddEditUsers }
+            ]
+        },
+        { path: '/orgaos',
+            children: [
+                { path: '', component: ListOrgans },
+                { path: 'novo', component: AddEditOrgans },
+                { path: 'editar/:id', component: AddEditOrgans },
+                { path: 'tipos', component: ListOrganTypes },
+                { path: 'tipos/novo', component: AddEditOrganTypes },
+                { path: 'tipos/editar/:id', component: AddEditOrganTypes }
             ]
         },
         { path: '/:pathMatch(.*)*', redirect: '/' }
