@@ -100,7 +100,6 @@ export const useOrgansStore = defineStore({
             var m = {
                 descricao: params.descricao
             };
-            console.log(m);
             await requestS.patch(`${baseUrl}/tipo-orgao/${id}`, m);
             return true;
         },
