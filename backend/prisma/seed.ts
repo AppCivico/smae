@@ -34,7 +34,11 @@ const PrivConfig: any = {
         ['CadastroTipoOrgao.editar', 'Editar tipo órgão'],
         ['CadastroTipoOrgao.remover', 'Remover tipo órgão'],
     ],
-
+    CadastroTipoDocumento: [
+        ['CadastroTipoDocumento.inserir', 'Inserir tipo de documento'],
+        ['CadastroTipoDocumento.editar', 'Editar tipo de documento'],
+        ['CadastroTipoDocumento.remover', 'Remover tipo de documento'],
+    ],
     CadastroPessoa: [
         ['CadastroPessoa.inserir', 'Inserir novas pessoas com o mesmo órgão'],
         ['CadastroPessoa.editar', 'Editar dados das pessoas com o mesmo órgão'],
@@ -42,6 +46,7 @@ const PrivConfig: any = {
         ['CadastroPessoa.ativar', 'Ativar pessoas com o mesmo órgão'],
         ['CadastroPessoa.administrador', 'Editar/Inserir/Inativar/Ativar qualquer pessoa, até mesmo outros administradores'],
     ],
+
 
     CadastroEixo: [
         ['CadastroEixo.inserir', 'Inserir tipo eixo'],
@@ -65,6 +70,7 @@ const ModuloDescricao: any = {
     CadastroEixo: 'Cadastro de Eixo',
     CadastroPdm: 'Cadastro do PDM',
     CadastroFonteRecurso: 'Cadastro de Fonte de Recurso',
+    CadastroTipoDocumento: 'Cadastro de Tipo de Arquivo',
 };
 
 const PerfilAcessoConfig: any = [

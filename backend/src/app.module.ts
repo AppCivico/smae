@@ -19,6 +19,7 @@ import { OdsModule } from './ods/ods.module';
 import { EixoModule } from './eixo/eixo.module';
 import { PdmModule } from './pdm/pdm.module';
 import { FonteRecursoModule } from './fonte-recurso/fonte-recurso.module';
+import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 
 @Module({
     imports: [
@@ -26,7 +27,7 @@ import { FonteRecursoModule } from './fonte-recurso/fonte-recurso.module';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
