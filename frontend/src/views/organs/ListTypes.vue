@@ -52,14 +52,19 @@ function filterItems(){
                         </td>
                     </tr>
                 </template>
-                <tr v-if="itemsFiltered.loading">
+                <tr v-else-if="itemsFiltered.loading">
                     <td colspan="54">
                         Carregando
                     </td>
                 </tr>
-                <tr v-if="itemsFiltered.error">
+                <tr v-else-if="itemsFiltered.error">
                     <td colspan="54">
                         Error: {{itemsFiltered.error}}
+                    </td>
+                </tr>
+                <tr v-else>
+                    <td colspan="54">
+                        Nenhum resultado encontrado.
                     </td>
                 </tr>
             </tbody>

@@ -8,6 +8,7 @@ import { Home } from '@/views';
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 import { AddEditUsers, ListUsers } from '@/views/users';
 import { AddEditOrgans, ListOrgans, AddEditOrganTypes, ListOrganTypes } from '@/views/organs';
+import { AddEditResources, ListResources } from '@/views/resources';
 
 
 export const router = createRouter({
@@ -33,6 +34,13 @@ export const router = createRouter({
                 { path: 'tipos', component: ListOrganTypes },
                 { path: 'tipos/novo', component: AddEditOrganTypes },
                 { path: 'tipos/editar/:id', component: AddEditOrganTypes }
+            ]
+        },
+        { path: '/fonte-recurso',
+            children: [
+                { path: '', component: ListResources },
+                { path: 'novo', component: AddEditResources },
+                { path: 'editar/:id', component: AddEditResources },
             ]
         },
         { path: '/:pathMatch(.*)*', redirect: '/' }

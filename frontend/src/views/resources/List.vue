@@ -2,31 +2,31 @@
 import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
-import { useAuthStore, useOrgansStore } from '@/stores';
+import { useAuthStore, useResourcesStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 
-const organsStore = useOrgansStore();
-const { tempOrgans } = storeToRefs(organsStore);
-organsStore.clear();
-organsStore.filterOrgans();
+const resourcesStore = useResourcesStore();
+const { tempResources } = storeToRefs(resourcesStore);
+resourcesStore.clear();
+resourcesStore.filterResources();
 
 const filters = reactive({
     textualSearch: ""
 });
-let itemsFiltered = ref(tempOrgans);
+let itemsFiltered = ref(tempResources);
 
 function filterItems(){
-    organsStore.filterOrgans(filters);
+    resourcesStore.filterResources(filters);
 }
 </script>
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Orgãos</h1>
+            <h1>Fontes de recurso</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/orgaos/novo" class="btn big ml2" v-if="permissions.insertpermission>0">Novo orgão</router-link>
+            <router-link to="/fonte-recurso/novo" class="btn big ml2" v-if="permissions.insertpermission>0">Nova fonte</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -37,21 +37,19 @@ function filterItems(){
         <table class="tablemain">
             <thead>
                 <tr>
-                    <th style="width: 50%">Orgão</th>
-                    <th style="width: 20%">Tipo</th>
-                    <th style="width: 20%">Sigla</th>
+                    <th style="width: 45%">Fonte</th>
+                    <th style="width: 45%">Sigla</th>
                     <th style="width: 10%"></th>
                 </tr>
             </thead>
             <tbody>
                 <template v-if="itemsFiltered.length">
                     <tr v-for="item in itemsFiltered" :key="item.id">
-                        <td>{{ item.descricao }}</td>
-                        <td>{{ item.tipo_orgao.descricao }}</td>
-                        <td>{{ item.sigla ?? '-' }}</td>
+                        <td>{{ item.fonte }}</td>
+                        <td>{{ item.sigla }}</td>
                         <td style="white-space: nowrap; text-align: right;">
                             <template v-if="permissions.editpermission>0">
-                                <router-link :to="`/orgaos/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                <router-link :to="`/fonte-recurso/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>
                     </tr>
