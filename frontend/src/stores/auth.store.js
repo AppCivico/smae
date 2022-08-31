@@ -37,11 +37,8 @@ export const useAuthStore = defineStore({
                 };
                 this.user.privilegios.forEach(p=>{
                     if(p=='CadastroPessoa.editar') per.editpermission++;
-                    if(p=='CadastroPessoa.editar:apenas-mesmo-orgao') per.editpermission++;
-                    if(p=='CadastroPessoa.editar:administrador') per.editpermission++;
                     if(p=='CadastroPessoa.inserir') per.insertpermission++;
-                    if(p=='CadastroPessoa.inserir:apenas-mesmo-orgao') per.insertpermission++;
-                    if(p=='CadastroPessoa.inserir:administrador') per.insertpermission++;
+                    if(p=='CadastroPessoa.administrador') per.insertpermission++;
                 });
                 this.permissions = per;
 
