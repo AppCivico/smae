@@ -10,6 +10,8 @@ export class RegiaoService {
 
     async create(createRegiaoDto: CreateRegiaoDto, user: PessoaFromJwt) {
 
+        if (createRegiaoDto.parente_id === null) createRegiaoDto.parente_id = undefined;
+
         if (createRegiaoDto.parente_id) {
             const upper = await this.prisma.regiao.findFirst({ where: { id: createRegiaoDto.parente_id, removido_em: null }, select: { nivel: true } });
             if (!upper) throw new HttpException('Região acima não encontrada', 404);
@@ -19,6 +21,7 @@ export class RegiaoService {
             }
         }
 
+        console.log(createRegiaoDto)
         const created = await this.prisma.regiao.create({
             data: {
                 criado_por: user.id,
