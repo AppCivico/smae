@@ -1,20 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateEixoDto } from './dto/create-eixo.dto';
-import { UpdateEixoDto } from './dto/update-eixo.dto';
+import { CreateTagDto } from './dto/create-tag.dto';
+import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
-export class EixoService {
+export class TagService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
+    async create(createTagDto: CreateTagDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.eixo.create({
+        const created = await this.prisma.tag.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
-                ...createEixoDto,
+                ...createTagDto,
             },
             select: { id: true, descricao: true }
         });
@@ -23,7 +23,7 @@ export class EixoService {
     }
 
     async findAll() {
-        let listActive = await this.prisma.eixo.findMany({
+        let listActive = await this.prisma.tag.findMany({
             where: {
                 removido_em: null,
             },
@@ -31,19 +31,21 @@ export class EixoService {
                 id: true,
                 descricao: true,
                 pdm_id: true,
+                ods_id: true,
+                icone: true
             }
         });
         return listActive;
     }
 
-    async update(id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
+    async update(id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.eixo.update({
+        const created = await this.prisma.tag.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
-                ...updateEixoDto,
+                ...updateTagDto,
             },
             select: { id: true, descricao: true }
         });
@@ -52,7 +54,7 @@ export class EixoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const created = await this.prisma.eixo.updateMany({
+        const created = await this.prisma.tag.updateMany({
             where: { id: id },
             data: {
                 removido_por: user.id,

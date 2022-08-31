@@ -49,14 +49,26 @@ const PrivConfig: any = {
 
 
     CadastroEixo: [
-        ['CadastroEixo.inserir', 'Inserir tipo eixo'],
-        ['CadastroEixo.editar', 'Editar tipo eixo'],
-        ['CadastroEixo.remover', 'Remover tipo eixo'],
+        ['CadastroEixo.inserir', 'Inserir Eixo'],
+        ['CadastroEixo.editar', 'Editar Eixo'],
+        ['CadastroEixo.remover', 'Remover Eixo'],
+    ],
+
+    CadastroObjetivoEstrategico: [
+        ['CadastroObjetivoEstrategico.inserir', 'Inserir Objetivo Estratégico'],
+        ['CadastroObjetivoEstrategico.editar', 'Editar Objetivo Estratégico'],
+        ['CadastroObjetivoEstrategico.remover', 'Remover Objetivo Estratégico'],
+    ],
+
+    CadastroTag: [
+        ['CadastroTag.inserir', 'Inserir Tag'],
+        ['CadastroTag.editar', 'Editar Tag'],
+        ['CadastroTag.remover', 'Remover Tag'],
     ],
 
     CadastroPdm: [
-        ['CadastroPdm.inserir', 'Inserir tipo eixo'],
-        ['CadastroPdm.editar', 'Editar tipo eixo'],
+        ['CadastroPdm.inserir', 'Inserir PDM'],
+        ['CadastroPdm.editar', 'Editar PDM'],
         ['CadastroPdm.inativar', 'Inativar PDM'],
         ['CadastroPdm.ativar', 'Ativar PDM'],
     ],
@@ -71,6 +83,8 @@ const ModuloDescricao: any = {
     CadastroPdm: 'Cadastro do PDM',
     CadastroFonteRecurso: 'Cadastro de Fonte de Recurso',
     CadastroTipoDocumento: 'Cadastro de Tipo de Arquivo',
+    CadastroTag: 'Cadastro de Tag',
+    CadastroObjetivoEstrategico: 'Cadastro de Objetivo Estratégico',
 };
 
 const PerfilAcessoConfig: any = [

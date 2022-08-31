@@ -1,5 +1,6 @@
-import { IsNumber, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
-export class CreateEixoDto {
+import { IsPositive, IsString, MaxLength } from "class-validator"
+
+export class CreateObjetivoEstrategicoDto {
     /**
     * Descrição
     */
@@ -12,4 +13,5 @@ export class CreateEixoDto {
    */
     @IsPositive({ message: '$property' })
     pdm_id: number
+
 }
