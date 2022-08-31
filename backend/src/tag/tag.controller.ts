@@ -8,8 +8,9 @@ import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
-@ApiTags('Objetivo Estratégico')
+@ApiTags('Tag')
 @Controller('tag')
 export class TagController {
     constructor(private readonly tagService: TagService) { }
@@ -18,7 +19,7 @@ export class TagController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTag.inserir')
-    async create(@Body() createTagDto: CreateTagDto, @CurrentUser() user: PessoaFromJwt) {
+    async create(@Body() createTagDto: CreateTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tagService.create(createTagDto, user);
     }
 
@@ -32,7 +33,7 @@ export class TagController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTag.editar')
-    async update(@Param() params: FindOneParams, @Body() updateTagDto: UpdateTagDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(@Param() params: FindOneParams, @Body() updateTagDto: UpdateTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tagService.update(+params.id, updateTagDto, user);
     }
 

@@ -79,7 +79,7 @@ export class PdmService {
         updatePdmDto.id = id
         await this.verificarPrivilegiosEdicao(updatePdmDto, user);
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Object> => {
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
             if (updatePdmDto.ativo === true) {
                 // desativa outros planos
@@ -105,7 +105,7 @@ export class PdmService {
                 });
             }
 
-            const created = await prisma.pdm.update({
+            await prisma.pdm.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
@@ -115,11 +115,9 @@ export class PdmService {
                 select: { id: true }
             });
 
-            return created;
         });
 
-
-        return created;
+        return { id: id };
     }
 
 

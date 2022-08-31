@@ -16,7 +16,7 @@ export class OrgaoService {
                 criado_em: new Date(Date.now()),
                 ...createOrgaoDto,
             },
-            select: { id: true, descricao: true }
+            select: { id: true }
         });
 
         return created;
@@ -41,17 +41,16 @@ export class OrgaoService {
 
     async update(id: number, updateOrgaoDto: UpdateOrgaoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.orgao.update({
+        await this.prisma.orgao.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateOrgaoDto,
-            },
-            select: { id: true, descricao: true }
+            }
         });
 
-        return created;
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

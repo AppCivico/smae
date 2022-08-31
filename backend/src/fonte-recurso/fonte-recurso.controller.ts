@@ -8,6 +8,7 @@ import { FonteRecursoService } from './fonte-recurso.service';
 import { CreateFonteRecursoDto } from './dto/create-fonte-recurso.dto';
 import { UpdateFonteRecursoDto } from './dto/update-fonte-recurso.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Fonte de Recurso')
 @Controller('fonte-recurso')
@@ -18,7 +19,7 @@ export class FonteRecursoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroFonteRecurso.inserir')
-    async create(@Body() createFonteRecursoDto: CreateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt) {
+    async create(@Body() createFonteRecursoDto: CreateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt) : Promise<RecordWithId>{
         return await this.fonteRecursoService.create(createFonteRecursoDto, user);
     }
 
@@ -32,7 +33,7 @@ export class FonteRecursoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroFonteRecurso.editar')
-    async update(@Param() params: FindOneParams, @Body() updateFonteRecursoDto: UpdateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(@Param() params: FindOneParams, @Body() updateFonteRecursoDto: UpdateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.fonteRecursoService.update(+params.id, updateFonteRecursoDto, user);
     }
 

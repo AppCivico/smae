@@ -27,7 +27,7 @@ import { PerfilDeAcessoLinhaDto } from 'src/auth/models/PerfilDeAcesso.dto';
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
-    @ApiTags('publico')
+    @ApiTags('Público')
     @Post('login')
     @HttpCode(HttpStatus.OK)
     @IsPublic()
@@ -41,7 +41,7 @@ export class AuthController {
         return this.authService.login(req.user);
     }
 
-    @ApiTags('minha-conta')
+    @ApiTags('Minha Conta')
     @Post('sair')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiBearerAuth('access-token')
@@ -52,7 +52,7 @@ export class AuthController {
         return ''
     }
 
-    @ApiTags('publico')
+    @ApiTags('Público')
     @Post('escrever-nova-senha')
     @HttpCode(HttpStatus.OK)
     @IsPublic()
@@ -61,7 +61,7 @@ export class AuthController {
         return this.authService.escreverNovaSenha(body);
     }
 
-    @ApiTags('publico')
+    @ApiTags('Público')
     @Post('solicitar-nova-senha')
     @HttpCode(HttpStatus.NO_CONTENT)
     @IsPublic()

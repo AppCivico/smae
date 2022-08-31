@@ -8,6 +8,7 @@ import { TipoDocumentoService } from './tipo-documento.service';
 import { CreateTipoDocumentoDto } from './dto/create-tipo-documento.dto';
 import { UpdateTipoDocumentoDto } from './dto/update-tipo-documento.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Tipo de Documento')
 @Controller('tipo-documento')
@@ -18,7 +19,7 @@ export class TipoDocumentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoDocumento.inserir')
-    async create(@Body() createTipoDocumentoDto: CreateTipoDocumentoDto, @CurrentUser() user: PessoaFromJwt) {
+    async create(@Body() createTipoDocumentoDto: CreateTipoDocumentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tipoDocumentoService.create(createTipoDocumentoDto, user);
     }
 
@@ -32,7 +33,7 @@ export class TipoDocumentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoDocumento.editar')
-    async update(@Param() params: FindOneParams, @Body() updateTipoDocumentoDto: UpdateTipoDocumentoDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(@Param() params: FindOneParams, @Body() updateTipoDocumentoDto: UpdateTipoDocumentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tipoDocumentoService.update(+params.id, updateTipoDocumentoDto, user);
     }
 

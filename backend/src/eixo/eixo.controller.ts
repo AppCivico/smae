@@ -8,8 +8,9 @@ import { EixoService } from './eixo.service';
 import { CreateEixoDto } from './dto/create-eixo.dto';
 import { UpdateEixoDto } from './dto/update-eixo.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
-@ApiTags('eixo')
+@ApiTags('Eixo')
 @Controller('eixo')
 export class EixoController {
     constructor(private readonly eixoService: EixoService) { }
@@ -18,7 +19,7 @@ export class EixoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroEixo.inserir')
-    async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt) {
+    async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.eixoService.create(createEixoDto, user);
     }
 

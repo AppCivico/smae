@@ -16,7 +16,7 @@ export class TagService {
                 criado_em: new Date(Date.now()),
                 ...createTagDto,
             },
-            select: { id: true, descricao: true }
+            select: { id: true }
         });
 
         return created;
@@ -46,11 +46,10 @@ export class TagService {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateTagDto,
-            },
-            select: { id: true, descricao: true }
+            }
         });
 
-        return created;
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

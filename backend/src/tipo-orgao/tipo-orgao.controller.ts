@@ -8,8 +8,9 @@ import { CreateTipoOrgaoDto } from './dto/create-tipo-orgao.dto';
 import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
 import { ListTipoOrgaoDto } from 'src/tipo-orgao/dto/list-tipo-orgao.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
-@ApiTags('tipoOrgao')
+@ApiTags('Tipo de Órgão')
 @Controller('tipo-orgao')
 export class TipoOrgaoController {
     constructor(private readonly tipoOrgaoService: TipoOrgaoService) { }
@@ -18,7 +19,7 @@ export class TipoOrgaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoOrgao.inserir')
-    async create(@Body() createTipoOrgaoDto: CreateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt) {
+    async create(@Body() createTipoOrgaoDto: CreateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tipoOrgaoService.create(createTipoOrgaoDto, user);
     }
 
@@ -32,7 +33,7 @@ export class TipoOrgaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoOrgao.editar')
-    async update(@Param() params: FindOneParams, @Body() updateTipoOrgaoDto: UpdateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(@Param() params: FindOneParams, @Body() updateTipoOrgaoDto: UpdateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tipoOrgaoService.update(+params.id, updateTipoOrgaoDto, user);
     }
 

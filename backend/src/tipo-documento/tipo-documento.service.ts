@@ -40,17 +40,16 @@ export class TipoDocumentoService {
 
     async update(id: number, updateTipoDocumentoDto: UpdateTipoDocumentoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.tipoDocumento.update({
+        await this.prisma.tipoDocumento.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateTipoDocumentoDto,
             },
-            select: { id: true }
         });
 
-        return created;
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

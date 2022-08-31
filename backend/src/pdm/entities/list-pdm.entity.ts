@@ -1,4 +1,4 @@
-import { IsISO8601, IsOptional, IsString, Length, MaxLength, MinLength } from "class-validator";
+import { IsBoolean, isBoolean, IsISO8601, IsOptional, IsString, Length, MaxLength, MinLength } from "class-validator";
 
 export class ListPdm {
 
@@ -37,5 +37,6 @@ export class ListPdm {
     /**
     * Ativo
     */
-    ativo: Boolean
+    @IsBoolean()
+    ativo: boolean
 }

@@ -8,6 +8,7 @@ import { CreateOdsDto } from './dto/create-ods.dto';
 import { UpdateOdsDto } from './dto/update-ods.dto';
 import { ListOdsDto } from 'src/ods/dto/list-ods.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('ODS')
 @Controller('ods')
@@ -18,7 +19,7 @@ export class OdsController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroOds.inserir')
-    async create(@Body() createOdsDto: CreateOdsDto, @CurrentUser() user: PessoaFromJwt) {
+    async create(@Body() createOdsDto: CreateOdsDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.odsService.create(createOdsDto, user);
     }
 
@@ -32,7 +33,7 @@ export class OdsController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroOds.editar')
-    async update(@Param() params: FindOneParams, @Body() updateOdsDto: UpdateOdsDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(@Param() params: FindOneParams, @Body() updateOdsDto: UpdateOdsDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.odsService.update(+params.id, updateOdsDto, user);
     }
 
