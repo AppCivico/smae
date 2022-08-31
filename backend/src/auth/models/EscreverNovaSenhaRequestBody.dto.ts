@@ -3,14 +3,14 @@ import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
 export class EscreverNovaSenhaRequestBody {
     /**
     * Access Token
-    * @example header.auth.sign
+    * @example "header.auth.sign"
     */
     @IsString({ message: '$property| Precisa do token' })
     reduced_access_token: string;
 
     /**
     * Senha
-    * @example Teste*123
+    * @example "Teste*123"
     */
     @IsString({ message: '$property| Senha: Precisa ser alfanumérico' })
     @MinLength(8, { message: '$property| Senha: Mínimo de 8 caracteres' })
