@@ -13,8 +13,7 @@ export function CheckExt(validationOptions?: ValidationOptions) {
             },
             validator: {
                 validate(value: any) {
-                    // TODO
-                    return true;
+                    return typeof value === 'string' && /^(?:\.(?:[\w0-9]{1,8}))(?:\s*\,\s*\.(?:[\w0-9]{1,8})){0,99}$/.test(value);
                 },
             },
 
@@ -28,6 +27,7 @@ import { IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-va
 export class CreateTipoDocumentoDto {
     /**
     * Extensão separada por virgula
+    * passar na regexp: /^(?:\.(?:[\w0-9]{1,8}))(?:\s*\,\s*\.(?:[\w0-9]{1,8})){0,99}$/
     * @example .doc, .docx
     */
     @IsOptional()
