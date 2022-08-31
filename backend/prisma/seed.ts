@@ -72,6 +72,11 @@ const PrivConfig: any = {
         ['CadastroPdm.inativar', 'Inativar PDM'],
         ['CadastroPdm.ativar', 'Ativar PDM'],
     ],
+    CadastroRegiao: [
+        ['CadastroRegiao.inserir', 'Inserir Regiões'],
+        ['CadastroRegiao.editar', 'Editar Regiões'],
+        ['CadastroRegiao.remover', 'Remover Regiões'],
+    ],
 };
 
 const ModuloDescricao: any = {
@@ -85,6 +90,7 @@ const ModuloDescricao: any = {
     CadastroTipoDocumento: 'Cadastro de Tipo de Arquivo',
     CadastroTag: 'Cadastro de Tag',
     CadastroObjetivoEstrategico: 'Cadastro de Objetivo Estratégico',
+    CadastroRegiao: 'Cadastro de Regiões'
 };
 
 const PerfilAcessoConfig: any = [

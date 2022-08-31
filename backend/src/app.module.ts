@@ -22,6 +22,7 @@ import { FonteRecursoModule } from './fonte-recurso/fonte-recurso.module';
 import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { TagModule } from './tag/tag.module';
 import { ObjetivoEstrategicoModule } from './objetivo-estrategico/objetivo-estrategico.module';
+import { RegiaoModule } from './regiao/regiao.module';
 
 @Module({
     imports: [
@@ -29,7 +30,7 @@ import { ObjetivoEstrategicoModule } from './objetivo-estrategico/objetivo-estra
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
