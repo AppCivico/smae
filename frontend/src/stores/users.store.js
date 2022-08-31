@@ -20,6 +20,7 @@ export const useUsersStore = defineStore({
         },
         async register(user) {
             await requestS.post(`${baseUrl}/pessoa`, user);
+            return true;
         },
         async getAll() {
             this.users = { loading: true };

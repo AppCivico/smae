@@ -13,7 +13,7 @@ export const useAuthStore = defineStore({
         token: JSON.parse(localStorage.getItem('token')),
         reducedtoken: null,
         returnUrl: null,
-        permissions: {}
+        permissions: JSON.parse(localStorage.getItem('permissions'))
     }),
     actions: {
         async login(username, password) {
@@ -31,19 +31,8 @@ export const useAuthStore = defineStore({
                 const user = await requestS.get(`${baseUrl}/minha-conta`);    
                 this.user = user.sessao;
                 localStorage.setItem('user', JSON.stringify(user.sessao));
-                var per = {
-                    insertpermission: 0,
-                    editpermission: 0,
-                };
-                this.user.privilegios.forEach(p=>{
-                    if(p=='CadastroPessoa.editar') per.editpermission++;
-                    if(p=='CadastroPessoa.inserir') per.insertpermission++;
-                    if(p=='CadastroPessoa.administrador'){
-                        per.insertpermission++;
-                        per.editpermission++;
-                    }
-                });
-                this.permissions = per;
+                
+                this.setPermissions();
 
                 router.push(this.returnUrl || '/');
             } catch (error) {
@@ -78,6 +67,8 @@ export const useAuthStore = defineStore({
                 this.user = user.sessao;
                 localStorage.setItem('user', JSON.stringify(user.sessao));
 
+                this.setPermissions();
+
                 const alertStore = useAlertStore();
                 alertStore.success("Senha salva com sucesso. Bem-vindo!");
                 router.push(this.returnUrl || '/');
@@ -95,6 +86,23 @@ export const useAuthStore = defineStore({
             localStorage.removeItem('user');
             localStorage.removeItem('token');
             router.push('/login');
+        },
+        setPermissions(){
+            var per = {
+                insertpermission: 0,
+                editpermission: 0,
+            };
+            this.user.privilegios.forEach(p=>{
+                if(p=='CadastroPessoa.editar') per.editpermission++;
+                if(p=='CadastroPessoa.inserir') per.insertpermission++;
+                if(p=='CadastroPessoa.administrador'){
+                    per.insertpermission++;
+                    per.editpermission++;
+                }
+            });
+
+            localStorage.setItem('permissions', JSON.stringify(per));
+            return this.permissions = per;
         }
     }
 });
