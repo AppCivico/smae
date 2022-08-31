@@ -1,6 +1,3 @@
-import { Orgao } from "src/orgao/entities/orgao.entity";
-
-
 export class DetalhePessoaDto {
     atualizado_em?: Date
     desativado: boolean
