@@ -368,6 +368,8 @@ export class PessoaService {
             nome_exibicao: createPessoaDto.nome_exibicao,
             email: createPessoaDto.email,
             senha: await bcrypt.hash(newPass, BCRYPT_ROUNDS),
+            senha_bloqueada: true,
+            senha_bloqueada_em: new Date(Date.now()),
         } as Prisma.PessoaCreateInput;
 
         const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
