@@ -569,23 +569,11 @@ export class PessoaService {
                 join privilegio p on p.id = priv.privilegio_id
                 join modulo m on p.modulo_id = m.id
                 where pp.pessoa_id = ${pessoaId}
-            ),
-            isAdmin as (
-                    select true as CadastroPessoaAdmin
-                    from perms
-                    where cod_priv = 'CadastroPessoa.inserir:administrador'
             )
             select
                 array_agg(distinct cod_priv) as privilegios,
                 array_agg(distinct cod_modulos) as modulos
-            from perms
-            where
-                (
-                    (select CadastroPessoaAdmin from isAdmin) = false)
-                OR
-                (
-                    (select CadastroPessoaAdmin from isAdmin) and cod_priv not like 'CadastroPessoa%:apenas-mesmo-orgao'
-                );
+            from perms;
         `;
 
         return dados[0];
