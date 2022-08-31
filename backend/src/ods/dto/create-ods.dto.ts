@@ -10,7 +10,7 @@ export class CreateOdsDto {
 
     /**
        * Título
-       * @example Erradicar Pobreza
+       * @example "Erradicar Pobreza"
     */
     @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
     @MinLength(4, { message: '$property| Título: Mínimo de 4 caracteres' })

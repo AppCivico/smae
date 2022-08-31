@@ -14,7 +14,7 @@ import {
 export class CreatePessoaDto {
     /**
    * E-mail para login
-   * @example admin@email.com
+   * @example "admin@email.com"
     */
     @MinLength(1, { message: '$property| E-mail: Mínimo de 1 caractere' })
     @MaxLength(250, { message: '$property| E-mail: Máximo 250 caracteres' })
@@ -32,7 +32,7 @@ export class CreatePessoaDto {
 
     /**
        * Nome completo
-       * @example Fulano de Zo
+       * @example "Fulano de Zo"
     */
     @IsString({ message: '$property| Nome Completo: Precisa ser alfanumérico' })
     @MinLength(4, { message: '$property| Nome Completo: Mínimo de 4 caracteres' })
@@ -67,7 +67,7 @@ export class CreatePessoaDto {
 
     /**
        * Lista dos IDs do perfil de acesso
-       * @example [1, 2]
+       * @example "[1, 2]"
     */
     @IsArray({ message: '$property| está inválido' })
     perfil_acesso_ids: number[];
