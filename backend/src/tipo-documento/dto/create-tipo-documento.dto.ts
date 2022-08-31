@@ -1,6 +1,6 @@
-import { registerDecorator, ValidationOptions } from 'class-validator';
+import { IsOptional, IsString, MaxLength, registerDecorator, ValidationOptions } from 'class-validator';
 
-export function CheckExt(validationOptions?: ValidationOptions) {
+function CheckExt(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
             name: 'IsOnlyDate',
@@ -21,14 +21,11 @@ export function CheckExt(validationOptions?: ValidationOptions) {
     };
 }
 
-
-import { IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
-
 export class CreateTipoDocumentoDto {
     /**
     * Extensão separada por virgula
     * passar na regexp: /^(?:\.(?:[\w0-9]{1,8}))(?:\s*\,\s*\.(?:[\w0-9]{1,8})){0,99}$/
-    * @example .doc, .docx
+    * @example ".doc, .docx"
     */
     @IsOptional()
     @CheckExt()
