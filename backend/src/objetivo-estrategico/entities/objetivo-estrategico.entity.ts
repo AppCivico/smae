@@ -1,4 +1,4 @@
-export class Eixo {
+export class ObjetivoEstrategico {
     descricao: string;
     pdm_id: number;
 }

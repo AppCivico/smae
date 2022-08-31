@@ -1,20 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateEixoDto } from './dto/create-eixo.dto';
-import { UpdateEixoDto } from './dto/update-eixo.dto';
+import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
+import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
 
 @Injectable()
-export class EixoService {
+export class ObjetivoEstrategicoService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
+    async create(createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.eixo.create({
+        const created = await this.prisma.objetivoEstrategico.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
-                ...createEixoDto,
+                ...createObjetivoEstrategicoDto,
             },
             select: { id: true, descricao: true }
         });
@@ -23,7 +23,7 @@ export class EixoService {
     }
 
     async findAll() {
-        let listActive = await this.prisma.eixo.findMany({
+        let listActive = await this.prisma.objetivoEstrategico.findMany({
             where: {
                 removido_em: null,
             },
@@ -36,14 +36,14 @@ export class EixoService {
         return listActive;
     }
 
-    async update(id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
+    async update(id: number, updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.eixo.update({
+        const created = await this.prisma.objetivoEstrategico.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
-                ...updateEixoDto,
+                ...updateObjetivoEstrategicoDto,
             },
             select: { id: true, descricao: true }
         });
@@ -52,7 +52,7 @@ export class EixoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const created = await this.prisma.eixo.updateMany({
+        const created = await this.prisma.objetivoEstrategico.updateMany({
             where: { id: id },
             data: {
                 removido_por: user.id,
