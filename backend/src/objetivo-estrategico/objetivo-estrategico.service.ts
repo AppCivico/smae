@@ -38,17 +38,16 @@ export class ObjetivoEstrategicoService {
 
     async update(id: number, updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.objetivoEstrategico.update({
+        await this.prisma.objetivoEstrategico.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateObjetivoEstrategicoDto,
-            },
-            select: { id: true, descricao: true }
+            }
         });
 
-        return created;
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

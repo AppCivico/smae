@@ -38,17 +38,16 @@ export class EixoService {
 
     async update(id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.eixo.update({
+        await this.prisma.eixo.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateEixoDto,
             },
-            select: { id: true, descricao: true }
         });
 
-        return created;
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

@@ -38,17 +38,16 @@ export class FonteRecursoService {
 
     async update(id: number, updateFonteRecursoDto: UpdateFonteRecursoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.fonteRecurso.update({
+        await this.prisma.fonteRecurso.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateFonteRecursoDto,
-            },
-            select: { id: true }
+            }
         });
 
-        return created;
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

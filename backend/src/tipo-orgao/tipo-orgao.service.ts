@@ -16,7 +16,7 @@ export class TipoOrgaoService {
                 criado_em: new Date(Date.now()),
                 ...createTipoOrgaoDto,
             },
-            select: { id: true, descricao: true }
+            select: { id: true }
         });
 
         return created;
@@ -35,17 +35,16 @@ export class TipoOrgaoService {
 
     async update(id: number, updateTipoOrgaoDto: UpdateTipoOrgaoDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.tipoOrgao.update({
+        await this.prisma.tipoOrgao.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateTipoOrgaoDto,
             },
-            select: { id: true, descricao: true }
         });
 
-        return created;
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

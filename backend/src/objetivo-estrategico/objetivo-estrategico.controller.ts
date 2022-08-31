@@ -8,6 +8,7 @@ import { ObjetivoEstrategicoService } from './objetivo-estrategico.service';
 import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Objetivo Estratégico')
 @Controller('objetivo-estrategico')
@@ -18,7 +19,7 @@ export class ObjetivoEstrategicoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroObjetivoEstrategico.inserir')
-    async create(@Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt) {
+    async create(@Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
     }
 
@@ -32,7 +33,7 @@ export class ObjetivoEstrategicoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroObjetivoEstrategico.editar')
-    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt) : Promise<RecordWithId>{
         return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
     }
 

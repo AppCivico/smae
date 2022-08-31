@@ -16,7 +16,7 @@ export class OdsService {
                 criado_em: new Date(Date.now()),
                 ...createOdsDto,
             },
-            select: { id: true, descricao: true, titulo: true, }
+            select: { id: true }
         });
 
         return created;
@@ -35,7 +35,7 @@ export class OdsService {
 
     async update(id: number, updateOdsDto: UpdateOdsDto, user: PessoaFromJwt) {
 
-        const created = await this.prisma.ods.update({
+        await this.prisma.ods.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
@@ -45,7 +45,7 @@ export class OdsService {
             select: { id: true, descricao: true, titulo: true }
         });
 
-        return created;
+        return {id};
     }
 
     async remove(id: number, user: PessoaFromJwt) {

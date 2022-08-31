@@ -256,7 +256,7 @@ export class PessoaService {
         updatePessoaDto.id = pessoaId;
         await this.verificarPrivilegiosEdicao(updatePessoaDto, user);
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
             const emailExists = updatePessoaDto.email ? await this.prisma.pessoa.count({
                 where: {
@@ -343,7 +343,6 @@ export class PessoaService {
             }
 
 
-            return updated;
         }, {
             // verificar o email dentro do contexto Serializable
             isolationLevel: 'Serializable',
@@ -351,7 +350,7 @@ export class PessoaService {
             timeout: 5000,
         });
 
-
+        return { id: pessoaId };
     }
 
     async criarPessoa(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
@@ -410,7 +409,7 @@ export class PessoaService {
             timeout: 5000,
         });
 
-        return this.pessoaAsHash(pessoa);
+        return { id: pessoa.id };
     }
 
     async findAll() {

@@ -14,9 +14,9 @@ async function bootstrap() {
             type: 'http', scheme: 'bearer', bearerFormat: 'Bearer',
         }, 'access-token')
         .setVersion('1.0')
-        .addTag('pessoas', 'Cadastro de usuários do SMAE')
-        .addTag('publico', 'Rotas públicas')
-        .addTag('minha-conta', 'Dados do próprio usuário ou sistema')
+        .addTag('Público', 'Rotas públicas')
+        .addTag('Minha Conta', 'Dados do próprio usuário')
+        .addTag('default', 'Informações do sistema')
         .build();
 
     const document = SwaggerModule.createDocument(app, config);
