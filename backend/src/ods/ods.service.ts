@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOdsDto } from './dto/create-ods.dto';
@@ -9,6 +9,9 @@ export class OdsService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createOdsDto: CreateOdsDto, user: PessoaFromJwt) {
+        const equalExists = await this.prisma.ods.count({ where: { numero: createOdsDto.numero, removido_em: null } });
+        if (equalExists > 0)
+            throw new HttpException('numero| Número já existe em outro registro ativo', 400);
 
         const created = await this.prisma.ods.create({
             data: {
@@ -34,6 +37,18 @@ export class OdsService {
     }
 
     async update(id: number, updateOdsDto: UpdateOdsDto, user: PessoaFromJwt) {
+
+        if (updateOdsDto.numero !== undefined) {
+            const equalExists = await this.prisma.ods.count({
+                where: {
+                    numero: updateOdsDto.numero,
+                    removido_em: null,
+                    NOT: { id: id }
+                }
+            });
+            if (equalExists > 0)
+                throw new HttpException('numero| Número já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.ods.update({
             where: { id: id },

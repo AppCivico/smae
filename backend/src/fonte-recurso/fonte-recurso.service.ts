@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFonteRecursoDto } from './dto/create-fonte-recurso.dto';
@@ -9,6 +9,14 @@ export class FonteRecursoService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createFonteRecursoDto: CreateFonteRecursoDto, user: PessoaFromJwt) {
+        const similarExists = await this.prisma.fonteRecurso.count({
+            where: {
+                fonte: { endsWith: createFonteRecursoDto.fonte, mode: 'insensitive' },
+                removido_em: null
+            }
+        });
+        if (similarExists > 0)
+            throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.fonteRecurso.create({
             data: {
@@ -37,6 +45,17 @@ export class FonteRecursoService {
     }
 
     async update(id: number, updateFonteRecursoDto: UpdateFonteRecursoDto, user: PessoaFromJwt) {
+        if (updateFonteRecursoDto.fonte !== undefined) {
+            const similarExists = await this.prisma.fonteRecurso.count({
+                where: {
+                    fonte: { endsWith: updateFonteRecursoDto.fonte, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id }
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.fonteRecurso.update({
             where: { id: id },
