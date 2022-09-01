@@ -9,6 +9,8 @@ import { Login, LostPassword, NewPassword } from '@/views/auth';
 import { AddEditUsers, ListUsers } from '@/views/users';
 import { AddEditOrgans, ListOrgans, AddEditOrganTypes, ListOrganTypes } from '@/views/organs';
 import { AddEditResources, ListResources } from '@/views/resources';
+import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
+import { AddEditODS, ListODS } from '@/views/ods';
 
 
 export const router = createRouter({
@@ -41,6 +43,20 @@ export const router = createRouter({
                 { path: '', component: ListResources },
                 { path: 'novo', component: AddEditResources },
                 { path: 'editar/:id', component: AddEditResources },
+            ]
+        },
+        { path: '/tipo-documento',
+            children: [
+                { path: '', component: ListDocumentTypes },
+                { path: 'novo', component: AddEditDocumentTypes },
+                { path: 'editar/:id', component: AddEditDocumentTypes },
+            ]
+        },
+        { path: '/ods',
+            children: [
+                { path: '', component: ListODS },
+                { path: 'novo', component: AddEditODS },
+                { path: 'editar/:id', component: AddEditODS },
             ]
         },
         { path: '/:pathMatch(.*)*', redirect: '/' }

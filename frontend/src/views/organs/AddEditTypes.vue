@@ -29,11 +29,12 @@ const schema = Yup.object().shape({
 async function onSubmit(values) {
     try {
         var msg;
+        var r;
         if (id&&tempOrganTypes.value.id) {
-            var r = await organsStore.updateType(tempOrganTypes.value.id, values);
+            r = await organsStore.updateType(tempOrganTypes.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
-            var r = await organsStore.insertType(values);
+            r = await organsStore.insertType(values);
             msg = 'Orgão adicionado com sucesso!';
         }
         if(r == true){
@@ -49,7 +50,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/orgaos/tipos');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{organsStore.deleteType(id); router.push('/orgaos/tipos')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(organsStore.deleteType(id)) router.push('/orgaos/tipos')},'Remover');
 }
 
 </script>

@@ -30,11 +30,12 @@ const schema = Yup.object().shape({
 async function onSubmit(values) {
     try {
         var msg;
+        var r;
         if (id&&tempResources.value.id) {
-            var r = await resourcesStore.updateType(tempResources.value.id, values);
+            r = await resourcesStore.updateType(tempResources.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
-            var r = await resourcesStore.insertType(values);
+            r = await resourcesStore.insertType(values);
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
@@ -50,7 +51,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/fonte-recurso');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{resourcesStore.deleteType(id); router.push('/fonte-recurso')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(resourcesStore.deleteType(id))router.push('/fonte-recurso')},'Remover');
 }
 
 </script>

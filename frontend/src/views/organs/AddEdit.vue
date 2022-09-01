@@ -32,11 +32,12 @@ const schema = Yup.object().shape({
 async function onSubmit(values) {
     try {
         var msg;
+        var r;
         if (id&&tempOrgans.value.id) {
-            var r = await organsStore.update(tempOrgans.value.id, values);
+            r = await organsStore.update(tempOrgans.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
-            var r = await organsStore.insert(values);
+            r = await organsStore.insert(values);
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
@@ -52,7 +53,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/orgaos');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{organsStore.delete(id); router.push('/orgaos')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(organsStore.delete(id))router.push('/orgaos')},'Remover');
 }
 
 </script>
