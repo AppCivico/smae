@@ -101,10 +101,10 @@ networks:
 
 volumes:
   pgdata:
-    name: smae_pg_data
+    name: "${DATA_PREFIX}smae_pg_data"
 
   email_data:
-    name: smae_email_data
+    name: "${DATA_PREFIX}smae_email_data"
 
   minio_data:
-    name: smae_minio_data
+    name: "${DATA_PREFIX}smae_minio_data"
