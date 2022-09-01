@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { TrimPipe } from 'src/common/pipes/trim-pipe';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -23,12 +24,13 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document);
 
     app.useGlobalPipes(
+        new TrimPipe(),
         new ValidationPipe({
             dismissDefaultMessages: true,
             transform: true,
             whitelist: true,
             forbidNonWhitelisted: true, // conferir com o pessoal do frontend, talvez seja muito strict essa config!
-        })
+        }),
     );
 
     await app.listen(3001);
