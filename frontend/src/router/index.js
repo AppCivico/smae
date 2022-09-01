@@ -11,7 +11,10 @@ import { AddEditOrgans, ListOrgans, AddEditOrganTypes, ListOrganTypes } from '@/
 import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import { AddEditODS, ListODS } from '@/views/ods';
-
+import { AddEditPdM, ListPdM } from '@/views/pdm';
+import { AddEditAxes, ListAxes } from '@/views/axes';
+import { AddEditTags, ListTags } from '@/views/tags';
+import { AddEditStrategicObjectives, ListStrategicObjectives } from '@/views/strategicObjectives';
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,6 +62,35 @@ export const router = createRouter({
                 { path: 'editar/:id', component: AddEditODS },
             ]
         },
+        { path: '/pdm',
+            children: [
+                { path: '', component: ListPdM },
+                { path: 'novo', component: AddEditPdM },
+                { path: 'editar/:id', component: AddEditPdM },
+            ]
+        },
+        { path: '/eixos',
+            children: [
+                { path: '', component: ListAxes },
+                { path: 'novo', component: AddEditAxes },
+                { path: 'editar/:id', component: AddEditAxes },
+            ]
+        },
+        { path: '/tags',
+            children: [
+                { path: '', component: ListTags },
+                { path: 'novo', component: AddEditTags },
+                { path: 'editar/:id', component: AddEditTags },
+            ]
+        },
+        { path: '/objetivos-estrategicos',
+            children: [
+                { path: '', component: ListStrategicObjectives },
+                { path: 'novo', component: AddEditStrategicObjectives },
+                { path: 'editar/:id', component: AddEditStrategicObjectives },
+            ]
+        },
+
         { path: '/:pathMatch(.*)*', redirect: '/' }
     ]
 });
