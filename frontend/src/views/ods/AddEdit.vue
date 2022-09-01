@@ -52,7 +52,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/ods');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(ODSStore.delete(id)) router.push('/ods')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await ODSStore.delete(id)) router.push('/ods')},'Remover');
 }
 
 </script>

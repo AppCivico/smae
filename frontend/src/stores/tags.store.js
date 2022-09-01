@@ -35,8 +35,8 @@ export const useTagsStore = defineStore({
             }
         },
         async insert(params) {
-            await requestS.post(`${baseUrl}/tag`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/tag`, params)) return true;
+            return false;
         },
         async update(id, params) {
             var m = {
@@ -44,12 +44,12 @@ export const useTagsStore = defineStore({
                 titulo: params.titulo,
                 descricao: params.descricao
             };
-            await requestS.patch(`${baseUrl}/tag/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/tag/${id}`, m)) return true;
+            return false;
         },
         async delete(id) {
-            await requestS.delete(`${baseUrl}/tag/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/tag/${id}`)) return true;
+            return false;
         },
         async filterTags(f){
             this.tempTags = { loading: true };

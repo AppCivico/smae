@@ -40,8 +40,8 @@ export const useOrgansStore = defineStore({
             }
         },
         async insert(params) {
-            await requestS.post(`${baseUrl}/orgao`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/orgao`, params)) return true;
+            return false;
         },
         async update(id, params) {
             var m = {
@@ -49,12 +49,12 @@ export const useOrgansStore = defineStore({
                 descricao: params.descricao,
                 tipo_orgao_id: params.tipo_orgao_id
             };
-            await requestS.patch(`${baseUrl}/orgao/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/orgao/${id}`, m)) return true;
+            return false;
         },
         async delete(id) {
-            await requestS.delete(`${baseUrl}/orgao/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/orgao/${id}`)) return true;
+            return false;
         },
         async filterOrgans(f){
             this.tempOrgans = { loading: true };
@@ -93,19 +93,19 @@ export const useOrgansStore = defineStore({
             }
         },
         async insertType(params) {
-            await requestS.post(`${baseUrl}/tipo-orgao`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/tipo-orgao`, params)) return true;
+            return false;
         },
         async updateType(id, params) {
             var m = {
                 descricao: params.descricao
             };
-            await requestS.patch(`${baseUrl}/tipo-orgao/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/tipo-orgao/${id}`, m)) return true;
+            return false;
         },
         async deleteType(id) {
-            await requestS.delete(`${baseUrl}/tipo-orgao/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/tipo-orgao/${id}`)) return true;
+            return false;
         },
         async filterOrganTypes(f){
             this.tempOrganTypes = { loading: true };

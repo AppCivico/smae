@@ -35,8 +35,8 @@ export const useDocumentTypesStore = defineStore({
             }
         },
         async insert(params) {
-            await requestS.post(`${baseUrl}/tipo-documento`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/tipo-documento`, params)) return true;
+            return false;
         },
         async update(id, params) {
             var m = {
@@ -45,12 +45,12 @@ export const useDocumentTypesStore = defineStore({
                 titulo: params.titulo,
                 codigo: params.codigo
             };
-            await requestS.patch(`${baseUrl}/tipo-documento/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/tipo-documento/${id}`, m)) return true;
+            return false;
         },
         async delete(id) {
-            await requestS.delete(`${baseUrl}/tipo-documento/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/tipo-documento/${id}`)) return true;
+            return false;
         },
         async filterDocumentTypes(f){
             this.tempDocumentTypes = { loading: true };

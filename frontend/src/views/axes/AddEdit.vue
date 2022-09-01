@@ -56,7 +56,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/eixos');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(AxesStore.delete(id)) router.push('/eixos')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await AxesStore.delete(id)) router.push('/eixos')},'Remover');
 }
 
 </script>
