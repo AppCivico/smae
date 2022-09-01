@@ -4,7 +4,7 @@ import { IsNumber, IsOptional, isPositive, IsPositive, IsString, Max, MaxLength,
 export class CreateRegiaoDto {
     /**
    * Nivel (1 até 3)
-   * @example "2"
+   * @example 2
     */
     @IsPositive({ message: '$property| Precisa ser um número' })
     @Min(1, { message: "$property| região mínima nível 1" })

@@ -10,7 +10,11 @@ export class RegiaoService {
 
     async create(createRegiaoDto: CreateRegiaoDto, user: PessoaFromJwt) {
 
-        if (createRegiaoDto.parente_id === null) createRegiaoDto.parente_id = undefined;
+        if (createRegiaoDto.parente_id === null) {
+            createRegiaoDto.parente_id = undefined;
+
+            if (createRegiaoDto.nivel != 1) throw new HttpException('Região sem parente_id precisa ser nível 1', 404);
+        }
 
         if (createRegiaoDto.parente_id) {
             const upper = await this.prisma.regiao.findFirst({ where: { id: createRegiaoDto.parente_id, removido_em: null }, select: { nivel: true } });
@@ -21,7 +25,6 @@ export class RegiaoService {
             }
         }
 
-        console.log(createRegiaoDto)
         const created = await this.prisma.regiao.create({
             data: {
                 criado_por: user.id,
@@ -77,6 +80,16 @@ export class RegiaoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.regiao.findFirst({
+            where: { id: id }, select: { parente_id: true }
+        });
+        if (!self) throw new HttpException('Região não encontrada', 404);
+
+        const existsDown = await this.prisma.regiao.count({
+            where: { parente_id: id, removido_em: null }
+        });
+        if (existsDown > 0) throw new HttpException(`Há ${existsDown} região(ões) depedentes. Apgue primeiro as regiões abaixo.`, 400);
+
         const created = await this.prisma.regiao.updateMany({
             where: { id: id },
             data: {
