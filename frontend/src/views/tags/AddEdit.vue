@@ -60,7 +60,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/tags');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(TagsStore.delete(id)) router.push('/tags')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await TagsStore.delete(id)) router.push('/tags')},'Remover');
 }
 
 </script>

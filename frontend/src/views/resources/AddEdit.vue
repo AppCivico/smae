@@ -51,7 +51,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/fonte-recurso');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(resourcesStore.deleteType(id))router.push('/fonte-recurso')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await resourcesStore.deleteType(id))router.push('/fonte-recurso')},'Remover');
 }
 
 </script>

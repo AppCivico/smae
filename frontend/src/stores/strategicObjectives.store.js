@@ -35,8 +35,8 @@ export const useStrategicObjectivesStore = defineStore({
             }
         },
         async insert(params) {
-            await requestS.post(`${baseUrl}/objetivo-estrategico`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/objetivo-estrategico`, params)) return true;
+            return false;
         },
         async update(id, params) {
             var m = {
@@ -45,12 +45,12 @@ export const useStrategicObjectivesStore = defineStore({
                 titulo: params.titulo,
                 codigo: params.codigo
             };
-            await requestS.patch(`${baseUrl}/objetivo-estrategico/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/objetivo-estrategico/${id}`, m)) return true;
+            return false;
         },
         async delete(id) {
-            await requestS.delete(`${baseUrl}/objetivo-estrategico/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/objetivo-estrategico/${id}`)) return true;
+            return false;
         },
         async filterStrategicObjectives(f){
             this.tempStrategicObjectives = { loading: true };

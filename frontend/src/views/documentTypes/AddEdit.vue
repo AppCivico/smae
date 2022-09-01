@@ -53,7 +53,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/tipo-documento');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(documentTypesStore.delete(id)) router.push('/tipo-documento')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await documentTypesStore.delete(id)) router.push('/tipo-documento')},'Remover');
 }
 function removeChars(x){
     x.target.value = x.target.value.replace(/[^a-zA-Z0-9,]/g,'');

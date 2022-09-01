@@ -35,8 +35,8 @@ export const usePdMStore = defineStore({
             }
         },
         async insert(params) {
-            await requestS.post(`${baseUrl}/pdm`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/pdm`, params)) return true;
+            return false;
         },
         async update(id, params) {
             var m = {
@@ -50,12 +50,12 @@ export const usePdMStore = defineStore({
                 periodo_do_ciclo_participativo_inicio: params.periodo_do_ciclo_participativo_inicio, //"2022-09-01T02:23:12.803Z",
                 periodo_do_ciclo_participativo_fim: params.periodo_do_ciclo_participativo_fim, //"2022-09-01T02:23:12.803Z"
             };
-            await requestS.patch(`${baseUrl}/pdm/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/pdm/${id}`, m)) return true;
+            return false;
         },
         async delete(id) {
-            await requestS.delete(`${baseUrl}/pdm/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/pdm/${id}`)) return true;
+            return false;
         },
         async filterPdM(f){
             this.tempPdM = { loading: true };

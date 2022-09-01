@@ -53,7 +53,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/orgaos');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(organsStore.delete(id))router.push('/orgaos')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await organsStore.delete(id))router.push('/orgaos')},'Remover');
 }
 
 </script>

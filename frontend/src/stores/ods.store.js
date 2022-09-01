@@ -35,8 +35,8 @@ export const useODSStore = defineStore({
             }
         },
         async insert(params) {
-            await requestS.post(`${baseUrl}/ods`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/ods`, params)) return true;
+            return false;
         },
         async update(id, params) {
             var m = {
@@ -44,12 +44,12 @@ export const useODSStore = defineStore({
                 titulo: params.titulo,
                 descricao: params.descricao
             };
-            await requestS.patch(`${baseUrl}/ods/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/ods/${id}`, m)) return true;
+            return false;
         },
         async delete(id) {
-            await requestS.delete(`${baseUrl}/ods/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/ods/${id}`)) return true;
+            return false;
         },
         async filterODS(f){
             this.tempODS = { loading: true };

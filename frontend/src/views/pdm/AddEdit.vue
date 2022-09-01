@@ -52,7 +52,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(PdMStore.delete(id)) router.push('/pdm')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await PdMStore.delete(id)) router.push('/pdm')},'Remover');
 }
 
 </script>

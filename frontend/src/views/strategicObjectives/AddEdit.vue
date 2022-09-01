@@ -57,7 +57,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/objetivos-estrategicos');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(strategicObjectivesStore.delete(id)) router.push('/objetivos-estrategicos')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await strategicObjectivesStore.delete(id)) router.push('/objetivos-estrategicos')},'Remover');
 }
 
 </script>

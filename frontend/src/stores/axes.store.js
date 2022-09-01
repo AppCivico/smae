@@ -35,8 +35,8 @@ export const useAxesStore = defineStore({
             }
         },
         async insert(params) {
-            await requestS.post(`${baseUrl}/eixo`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/eixo`, params)) return true;
+            return false;
         },
         async update(id, params) {
             var m = {
@@ -44,12 +44,12 @@ export const useAxesStore = defineStore({
                 titulo: params.titulo,
                 descricao: params.descricao
             };
-            await requestS.patch(`${baseUrl}/eixo/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/eixo/${id}`, m)) return true;
+            return false;
         },
         async delete(id) {
-            await requestS.delete(`${baseUrl}/eixo/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/eixo/${id}`)) return true;
+            return false;
         },
         async filterAxes(f){
             this.tempAxes = { loading: true };

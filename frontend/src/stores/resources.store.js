@@ -35,20 +35,20 @@ export const useResourcesStore = defineStore({
             }
         },
         async insertType(params) {
-            await requestS.post(`${baseUrl}/fonte-recurso`, params);
-            return true;
+            if(await requestS.post(`${baseUrl}/fonte-recurso`, params)) return true;
+            return false;
         },
         async updateType(id, params) {
             var m = {
                 sigla: params.sigla,
                 fonte: params.fonte,
             };
-            await requestS.patch(`${baseUrl}/fonte-recurso/${id}`, m);
-            return true;
+            if(await requestS.patch(`${baseUrl}/fonte-recurso/${id}`, m)) return true;
+            return false;
         },
         async deleteType(id) {
-            await requestS.delete(`${baseUrl}/fonte-recurso/${id}`);
-            return true;
+            if(await requestS.delete(`${baseUrl}/fonte-recurso/${id}`)) return true;
+            return false;
         },
         async filterResources(f){
             this.tempResources = { loading: true };
