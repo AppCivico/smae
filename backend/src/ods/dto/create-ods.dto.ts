@@ -1,11 +1,13 @@
-import { IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
+import { Type } from "class-transformer";
+import { IsNumberString, IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
 
 export class CreateOdsDto {
     /**
    * Número
    * @example 1
     */
-    @IsPositive()
+    @IsPositive({ message: '$property| Número precisa ser positivo' })
+    @Type(() => Number)
     numero: number;
 
     /**
