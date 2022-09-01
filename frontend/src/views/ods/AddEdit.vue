@@ -23,7 +23,7 @@ if (id) {
 }
 
 const schema = Yup.object().shape({
-    numero: Yup.string().required('Preencha o número'),
+    numero: Yup.number().required('Preencha o número'),
     titulo: Yup.string().required('Preencha o título'),
     descricao: Yup.string().required('Preencha a descrição'),
 });
@@ -69,7 +69,7 @@ async function checkDelete(id) {
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Número <span class="tvermelho">*</span></label>
-                        <Field name="numero" type="text" class="inputtext light mb1" :class="{ 'error': errors.numero }" />
+                        <Field name="numero" type="number" class="inputtext light mb1" :class="{ 'error': errors.numero }" />
                         <div class="error-msg">{{ errors.numero }}</div>
                     </div>
                     <div class="f2">
