@@ -79,7 +79,7 @@ export class OrgaoService {
                 where: {
                     sigla: { endsWith: updateOrgaoDto.sigla, mode: 'insensitive' },
                     removido_em: null,
-
+                    NOT: { id: id }
                 }
             });
             if (similarExists > 0)
