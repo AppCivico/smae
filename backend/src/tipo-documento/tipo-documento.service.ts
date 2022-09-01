@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTipoDocumentoDto } from './dto/create-tipo-documento.dto';
@@ -9,6 +9,16 @@ export class TipoDocumentoService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createTipoDocumentoDto: CreateTipoDocumentoDto, user: PessoaFromJwt) {
+
+        const similarExists = await this.prisma.tipoDocumento.count({
+            where: {
+                descricao: { endsWith: createTipoDocumentoDto.descricao, mode: 'insensitive' },
+                removido_em: null,
+            }
+        });
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+
 
         const created = await this.prisma.tipoDocumento.create({
             data: {
@@ -39,6 +49,17 @@ export class TipoDocumentoService {
     }
 
     async update(id: number, updateTipoDocumentoDto: UpdateTipoDocumentoDto, user: PessoaFromJwt) {
+        if (updateTipoDocumentoDto.descricao !== undefined) {
+            const similarExists = await this.prisma.tipoDocumento.count({
+                where: {
+                    descricao: { endsWith: updateTipoDocumentoDto.descricao, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id }
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.tipoDocumento.update({
             where: { id: id },
