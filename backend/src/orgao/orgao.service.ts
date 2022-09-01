@@ -9,17 +9,29 @@ export class OrgaoService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createOrgaoDto: CreateOrgaoDto, user: PessoaFromJwt) {
-        if (createOrgaoDto.descricao !== undefined) {
+
+        const similarExists = await this.prisma.orgao.count({
+            where: {
+                descricao: { endsWith: createOrgaoDto.descricao, mode: 'insensitive' },
+                removido_em: null,
+
+            }
+        });
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+
+        if (createOrgaoDto.sigla) {
             const similarExists = await this.prisma.orgao.count({
                 where: {
-                    descricao: { endsWith: createOrgaoDto.descricao, mode: 'insensitive' },
+                    sigla: { endsWith: createOrgaoDto.sigla, mode: 'insensitive' },
                     removido_em: null,
 
                 }
             });
             if (similarExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
+
         const created = await this.prisma.orgao.create({
             data: {
                 criado_por: user.id,
@@ -60,6 +72,18 @@ export class OrgaoService {
             });
             if (similarExists > 0)
                 throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
+
+        if (updateOrgaoDto.sigla) {
+            const similarExists = await this.prisma.orgao.count({
+                where: {
+                    sigla: { endsWith: updateOrgaoDto.sigla, mode: 'insensitive' },
+                    removido_em: null,
+
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.orgao.update({
