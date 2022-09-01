@@ -39,6 +39,7 @@ services:
       LGPDJUS_S3_HOST: "${LGPDJUS_S3_HOST}"
     networks:
       - postgres
+      - minio
     depends_on:
       - db
       - minio
@@ -97,6 +98,7 @@ services:
 
 networks:
   postgres:
+  minio:
 
 
 volumes:
