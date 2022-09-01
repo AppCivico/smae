@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   db:
-    container_name: smae_postgres
+    container_name: "${PG_CONTAINER_NAME}"
     image: postgres:14-bullseye
     environment:
       POSTGRES_PASSWORD: "smae"
@@ -12,7 +12,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - 25432:5432
+      - "172.17.0.1:${PG_DB_LISTEN}:5432"
     logging:
       driver: "json-file"
       options:
@@ -30,11 +30,18 @@ services:
       - "172.17.0.1:${SMAE_API_LISTEN}:3001"
     environment:
       DATABASE_URL: "postgresql://smae:smae@db:5432/smae_dev_persistent?schema=public"
-      SESSION_JWT_SECRET: "testing"
+      SESSION_JWT_SECRET: "${SESSION_JWT_SECRET}"
       MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK: "3"
-      URL_LOGIN_SMAE: "https://smae-frontend.appcivico.com/login"
+      URL_LOGIN_SMAE: "${URL_LOGIN_SMAE}"
+      S3_ACCESS_KEY: "${S3_ACCESS_KEY}"
+      S3_SECRET_KEY: "${S3_SECRET_KEY}"
+      S3_BUCKET: "${S3_BUCKET}"
+      LGPDJUS_S3_HOST: "${LGPDJUS_S3_HOST}"
     networks:
       - postgres
+    depends_on:
+      - db
+      - minio
     logging:
       driver: "json-file"
       options:
@@ -57,6 +64,8 @@ services:
       EMAILDB_FETCH_ROWS: "100"
     volumes:
       - email_data:/data/
+    depends_on:
+      - db
     networks:
       - postgres
     logging:
@@ -64,6 +73,27 @@ services:
       options:
         max-file: "2"
         max-size: 100MB
+
+  minio:
+    container_name: minio
+    image: minio/minio:RELEASE.2022-08-26T19-53-15Z
+    hostname: minio
+    command: server --console-address ":9001" /data1
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
+    networks:
+      - minio
+    expose:
+      - "172.17.0.1:${MINIO_S3_LISTEN}:9000"
+      - "172.17.0.1:${MINIO_CONSOLE_LISTEN}:9001"
+    volumes:
+      - minio_data:/data1
+    logging:
+      driver: "json-file"
+      options:
+        max-file: '100'
+        max-size: 1m
 
 networks:
   postgres:
@@ -75,3 +105,6 @@ volumes:
 
   email_data:
     name: smae_email_data
+
+  minio_data:
+    name: smae_minio_data
