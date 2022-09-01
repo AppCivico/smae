@@ -27,7 +27,7 @@ export class OdsService {
             where: {
                 removido_em: null,
             },
-            select: { id: true, descricao: true, titulo: true }
+            select: { id: true, descricao: true, titulo: true, numero: true }
         });
 
         return listActive;
@@ -41,11 +41,10 @@ export class OdsService {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateOdsDto,
-            },
-            select: { id: true, descricao: true, titulo: true }
+            }
         });
 
-        return {id};
+        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
