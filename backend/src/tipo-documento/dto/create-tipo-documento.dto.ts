@@ -8,12 +8,12 @@ function CheckExt(validationOptions?: ValidationOptions) {
             propertyName: propertyName,
             constraints: [],
             options: {
-                message: '$property| Envie os formatos separado por virgulas, eg: .doc, .docx, .txt',
+                message: '$property| Envie os formatos separado por virgulas, eg: doc, docx, txt',
                 ...validationOptions,
             },
             validator: {
                 validate(value: any) {
-                    return typeof value === 'string' && /^(?:\.(?:[\w0-9]{1,8}))(?:\s*\,\s*\.(?:[\w0-9]{1,8})){0,99}$/.test(value);
+                    return typeof value === 'string' && /^(?:(?:[\w0-9]{1,8}))(?:\s*\,\s*(?:[\w0-9]{1,8})){0,99}$/.test(value);
                 },
             },
 
@@ -24,8 +24,8 @@ function CheckExt(validationOptions?: ValidationOptions) {
 export class CreateTipoDocumentoDto {
     /**
     * Extensão separada por virgula
-    * passar na regexp: /^(?:\.(?:[\w0-9]{1,8}))(?:\s*\,\s*\.(?:[\w0-9]{1,8})){0,99}$/
-    * @example ".doc, .docx"
+    * passar na regexp: /^(?:(?:[\w0-9]{1,8}))(?:\s*\,\s*(?:[\w0-9]{1,8})){0,99}$/
+    * @example "doc, docx"
     */
     @IsOptional()
     @CheckExt()
