@@ -18,6 +18,18 @@ export class FonteRecursoService {
         if (similarExists > 0)
             throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
 
+        if (createFonteRecursoDto.sigla) {
+            const similarExists = await this.prisma.fonteRecurso.count({
+                where: {
+                    sigla: { endsWith: createFonteRecursoDto.sigla, mode: 'insensitive' },
+                    removido_em: null,
+
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+        }
+
         const created = await this.prisma.fonteRecurso.create({
             data: {
                 criado_por: user.id,
@@ -55,6 +67,17 @@ export class FonteRecursoService {
             });
             if (similarExists > 0)
                 throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
+        }
+        if (updateFonteRecursoDto.sigla) {
+            const similarExists = await this.prisma.fonteRecurso.count({
+                where: {
+                    sigla: { endsWith: updateFonteRecursoDto.sigla, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id }
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.fonteRecurso.update({
