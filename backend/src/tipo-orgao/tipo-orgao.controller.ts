@@ -42,7 +42,7 @@ export class TipoOrgaoController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoOrgao.remover')
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.tipoOrgaoService.remove(+params.id, user);
         return '';
