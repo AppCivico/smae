@@ -10,6 +10,7 @@ import {
     MaxLength,
     MinLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreatePessoaDto {
     /**
@@ -61,8 +62,9 @@ export class CreatePessoaDto {
        * ID Órgão
        * @example 1
     */
-    @IsPositive()
     @IsOptional()
+    @IsPositive({ message: '$property| precisa ser um número' })
+    @Type(() => Number)
     orgao_id?: number;
 
     /**
