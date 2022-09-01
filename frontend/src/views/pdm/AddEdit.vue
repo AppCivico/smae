@@ -40,7 +40,7 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
-            await router.push('/ods');
+            await router.push('/pdm');
             alertStore.success(msg);
         }
     } catch (error) {
@@ -49,10 +49,10 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?','/ods');
+    alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(PdMStore.delete(id)) router.push('/ods')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',()=>{if(PdMStore.delete(id)) router.push('/pdm')},'Remover');
 }
 
 </script>
