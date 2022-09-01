@@ -33,24 +33,34 @@ function userToken(url) {
     }
 }
 
+function listErrors(r){
+    var o = '';
+    if(typeof r == 'object'){
+        r.forEach(rr=>{
+            o+=`${rr.includes('|')?rr.split('| ')[1]:rr}\r\n`;
+        });
+        return o;
+    }
+    return r;
+}
+
 async function handleResponse(response) {
     const isJson = response.headers?.get('content-type')?.includes('application/json');
     const data = isJson ? await response.json() : null;
 
     if (!response.ok) {
+        if(response.status == 204){return;}
+        const alertStore = useAlertStore();
         const { user } = useAuthStore();
+        var msgDefault;
         if ([401, 403].includes(response.status) && user) {
-            const alertStore = useAlertStore();
-            alertStore.error(data && data.message?data.message:"Sem permissão para acessar.");
-            return Promise.reject(error);
+            msgDefault = "Sem permissão para acessar.";
         }
         if ([502].includes(response.status) && user) {
-            const alertStore = useAlertStore();
-            alertStore.error("Erro de comunicação do servidor.");
-            return Promise.reject(error);
+            msgDefault = "Erro de comunicação do servidor.";
         }
-
-        const error = (data && data.message) || response.status;
+        const error = (data && data.message)?listErrors(data.message): msgDefault ?? response.status;
+        alertStore.error(error);
         return Promise.reject(error);
     }
 
