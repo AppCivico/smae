@@ -42,7 +42,7 @@ export class TipoDocumentoController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoDocumento.remover')
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.tipoDocumentoService.remove(+params.id, user);
         return '';

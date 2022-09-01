@@ -43,7 +43,7 @@ export class RegiaoController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroRegiao.remover')
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.regiaoService.remove(+params.id, user);
         return '';
