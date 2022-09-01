@@ -92,7 +92,7 @@ model Modulo {
 model Orgao {
     id            Int            @id @default(autoincrement())
     sigla         String?
-    descricao     String         @unique
+    descricao     String
     tipo_orgao_id Int
     tipo_orgao    TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
     pessoa_fisica PessoaFisica[]
@@ -225,7 +225,7 @@ model EmaildbQueue {
 model Ods {
     id Int @id @default(autoincrement())
 
-    numero    Int    @unique
+    numero    Int
     titulo    String
     descricao String
 
@@ -300,7 +300,7 @@ model Eixo {
 
 model FonteRecurso {
     id    Int     @id @default(autoincrement())
-    fonte String  @unique
+    fonte String
     sigla String?
 
     criado_por     Int?
@@ -319,7 +319,7 @@ model FonteRecurso {
 
 model TipoDocumento {
     id        Int     @id @default(autoincrement())
-    codigo    String  @unique
+    codigo    String
     titulo    String
     descricao String?
     extensoes String?
