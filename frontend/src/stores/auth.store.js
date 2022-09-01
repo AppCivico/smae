@@ -42,8 +42,7 @@ export const useAuthStore = defineStore({
         },
         async passwordRecover(username) {
             try {
-                const msg = await requestS.post(`${baseUrl}/solicitar-nova-senha`, { 'email': username });    
-
+                await requestS.post(`${baseUrl}/solicitar-nova-senha`, { 'email': username });    
                 const alertStore = useAlertStore();
                 alertStore.success('Uma senha temporária foi enviada para o seu e-mail.');
                 router.push('/login');

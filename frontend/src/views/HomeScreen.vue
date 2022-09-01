@@ -15,6 +15,8 @@ const { user } = storeToRefs(authStore);
         <router-link to="/orgaos" class="btn big mb1">Gerenciar Orgãos</router-link><br>
         <router-link to="/orgaos/tipos" class="btn big mb1">Gerenciar Tipos de Orgão</router-link><br>
         <router-link to="/fonte-recurso" class="btn big mb1">Fontes de Recurso</router-link><br>
+        <router-link to="/tipo-documento" class="btn big mb1">Tipos de Documento</router-link><br>
+        <router-link to="/ods" class="btn big mb1">ODS</router-link><br>
 
     </Dashboard>
 </template>

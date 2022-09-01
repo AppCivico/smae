@@ -40,11 +40,12 @@ const schema = Yup.object().shape({
 async function onSubmit(values) {
     try {
         var msg;
+        var r;
         if (id&&user) {
-            var r = await usersStore.update(user.value.id, values);
+            r = await usersStore.update(user.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
-            var r = await usersStore.register(values);
+            r = await usersStore.register(values);
             msg = 'Usuário adicionado com sucesso!';
         }
         if(r == true){

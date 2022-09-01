@@ -71,7 +71,7 @@ export const useUsersStore = defineStore({
                     m.desativado = false;
                 }
 
-                let r = await requestS.patch(`${baseUrl}/pessoa/${id}`, m);
+                await requestS.patch(`${baseUrl}/pessoa/${id}`, m);
                 const authStore = useAuthStore();
                 if (id === authStore.user.id) {
                     const user = { ...authStore.user, ...params };
