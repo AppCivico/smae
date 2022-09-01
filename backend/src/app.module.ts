@@ -23,14 +23,18 @@ import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { TagModule } from './tag/tag.module';
 import { ObjetivoEstrategicoModule } from './objetivo-estrategico/objetivo-estrategico.module';
 import { RegiaoModule } from './regiao/regiao.module';
+import { UploadModule } from './upload/upload.module';
+import { ConfigModule } from '@nestjs/config';
+
 
 @Module({
     imports: [
+        ConfigModule.forRoot(),
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
