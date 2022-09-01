@@ -42,6 +42,9 @@ export class TipoOrgaoService {
     }
 
     async update(id: number, updateTipoOrgaoDto: UpdateTipoOrgaoDto, user: PessoaFromJwt) {
+        const self = await this.prisma.tipoOrgao.findFirst({ where: { id: id }, select: { id: true } });
+        if (!self) throw new HttpException('Tipo de órgão não encontrado', 404);
+
         if (updateTipoOrgaoDto.descricao !== undefined) {
             const similarExists = await this.prisma.tipoOrgao.count({
                 where: {
@@ -67,6 +70,14 @@ export class TipoOrgaoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.tipoOrgao.findFirst({ where: { id: id }, select: { id: true } });
+        if (!self) throw new HttpException('Tipo de órgão não encontrado', 404);
+
+        const existsDown = await this.prisma.orgao.count({
+            where: { tipo_orgao_id: id, removido_em: null }
+        });
+        if (existsDown > 0) throw new HttpException(`Não é possível remover: Há ${existsDown} órgão(ãos) depedentes.`, 400);
+
         const created = await this.prisma.tipoOrgao.updateMany({
             where: { id: id },
             data: {
