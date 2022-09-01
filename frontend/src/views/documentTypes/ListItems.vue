@@ -24,7 +24,7 @@ function filterItems(){
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Fontes de recurso</h1>
+            <h1>Tipos de Documento</h1>
             <hr class="ml2 f1"/>
             <router-link to="/tipo-documento/novo" class="btn big ml2" v-if="permissions.insertpermission>0">Novo tipo</router-link>
         </div>
