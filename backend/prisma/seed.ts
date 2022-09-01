@@ -141,13 +141,13 @@ async function main() {
     await atualizar_perfil_acesso();
 
     await atualizar_superadmin();
-    await atualizar_ods();
-    await atualizar_tipo_orgao();
-    await atualizar_orgao();
+    //await atualizar_ods();
+    //await atualizar_tipo_orgao();
+    //await atualizar_orgao();
 
 }
 
-
+/*
 
 async function atualizar_orgao() {
     let list = [{ sigla: 'SEPEP', desc: 'Secretaria Executiva de Planejamento e Entregas Prioritárias', tipo: 'Secretaria' }];
@@ -202,6 +202,7 @@ async function atualizar_tipo_orgao() {
         }
     }
 }
+*/
 
 async function atualizar_modulos_e_privilegios() {
 
