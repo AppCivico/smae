@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTipoOrgaoDto } from './dto/create-tipo-orgao.dto';
@@ -9,6 +9,14 @@ export class TipoOrgaoService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createTipoOrgaoDto: CreateTipoOrgaoDto, user: PessoaFromJwt) {
+        const similarExists = await this.prisma.tipoOrgao.count({
+            where: {
+                descricao: { endsWith: createTipoOrgaoDto.descricao, mode: 'insensitive' },
+                removido_em: null,
+            }
+        });
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoOrgao.create({
             data: {
@@ -34,6 +42,17 @@ export class TipoOrgaoService {
     }
 
     async update(id: number, updateTipoOrgaoDto: UpdateTipoOrgaoDto, user: PessoaFromJwt) {
+        if (updateTipoOrgaoDto.descricao !== undefined) {
+            const similarExists = await this.prisma.tipoOrgao.count({
+                where: {
+                    descricao: { endsWith: updateTipoOrgaoDto.descricao, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id }
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.tipoOrgao.update({
             where: { id: id },
