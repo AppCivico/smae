@@ -5,3 +5,7 @@ export * from './organs.store';
 export * from './resources.store';
 export * from './documentTypes.store';
 export * from './ods.store';
+export * from './pdm.store';
+export * from './axes.store';
+export * from './tags.store';
+export * from './strategicObjectives.store';
