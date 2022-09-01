@@ -43,7 +43,7 @@ export class AuthController {
 
     @ApiTags('Minha Conta')
     @Post('sair')
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
@@ -63,7 +63,7 @@ export class AuthController {
 
     @ApiTags('Público')
     @Post('solicitar-nova-senha')
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     @IsPublic()
     @ApiBody({ type: SolicitarNovaSenhaRequestBody })
     async solicitaNovaSenha(@Body() body: SolicitarNovaSenhaRequestBody) {
