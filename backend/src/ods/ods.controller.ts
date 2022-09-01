@@ -42,7 +42,7 @@ export class OdsController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroOds.remover')
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.odsService.remove(+params.id, user);
         return '';

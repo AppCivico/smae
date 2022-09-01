@@ -42,7 +42,7 @@ export class TagController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroTag.remover')
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.tagService.remove(+params.id, user);
         return '';
