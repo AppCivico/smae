@@ -84,7 +84,7 @@ services:
       MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
     networks:
       - minio
-    expose:
+    ports:
       - "172.17.0.1:${MINIO_S3_LISTEN}:9000"
       - "172.17.0.1:${MINIO_CONSOLE_LISTEN}:9001"
     volumes:
