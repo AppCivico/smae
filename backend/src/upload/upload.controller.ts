@@ -25,10 +25,19 @@ export class UploadController {
 
         const uploadFile = await this.uploadService.upload(createUploadDto, user, file, ipAddress);
 
-        const uploadToken = await this.uploadService.getToken(uploadFile);
+        const uploadToken = await this.uploadService.getUploadToken(uploadFile);
 
         return uploadToken;
     }
 
+
+    @Get('download/:token')
+    @ApiBearerAuth('access-token')
+    async get(
+        @CurrentUser() user: PessoaFromJwt,
+        @Param('token') dlToken: string
+    ): Promise<NodeJS.ReadableStream> {
+        return await this.uploadService.getBufferByToken(dlToken);
+    }
 
 }

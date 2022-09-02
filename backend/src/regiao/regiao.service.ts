@@ -32,7 +32,7 @@ export class RegiaoService {
 
         let uploadId: number | null = null;
         if (createRegiaoDto.upload_shapefile) {
-            uploadId = this.uploadService.checkToken(createRegiaoDto.upload_shapefile);
+            uploadId = this.uploadService.checkUploadToken(createRegiaoDto.upload_shapefile);
         }
 
         delete createRegiaoDto.upload_shapefile;
@@ -87,7 +87,7 @@ export class RegiaoService {
 
         let uploadId: number | undefined = undefined;
         if (updateRegiaoDto.upload_shapefile) {
-            uploadId = this.uploadService.checkToken(updateRegiaoDto.upload_shapefile);
+            uploadId = this.uploadService.checkUploadToken(updateRegiaoDto.upload_shapefile);
         }
 
         await this.prisma.regiao.update({

@@ -16,7 +16,7 @@ export class TagService {
 
         let uploadId: number | null = null;
         if (createTagDto.upload_icone) {
-            uploadId = this.uploadService.checkToken(createTagDto.upload_icone);
+            uploadId = this.uploadService.checkUploadToken(createTagDto.upload_icone);
         }
         delete createTagDto.upload_icone;
 
@@ -54,7 +54,7 @@ export class TagService {
     async update(id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
         let uploadId: number | undefined = undefined;
         if (updateTagDto.upload_icone) {
-            uploadId = this.uploadService.checkToken(updateTagDto.upload_icone);
+            uploadId = this.uploadService.checkUploadToken(updateTagDto.upload_icone);
         }
         delete updateTagDto.upload_icone;
 
