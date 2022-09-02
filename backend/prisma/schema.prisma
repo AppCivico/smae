@@ -79,9 +79,9 @@ model Pessoa {
 
     ArquivoQueCriei Arquivo[] @relation("Criador")
 
-    PdmArquivoQueCriei     PdmArquivo[] @relation("Criador")
-    PdmArquivoQueDesativei PdmArquivo[] @relation("Removedor")
-    PdmArquivoQueAtualizei PdmArquivo[] @relation("Atualizador")
+    ArquivoDocQueCriei     ArquivoDocumento[] @relation("Criador")
+    ArquivoDocQueDesativei ArquivoDocumento[] @relation("Removedor")
+    ArquivoDocQueAtualizei ArquivoDocumento[] @relation("Atualizador")
 
     @@map("pessoa")
 }
@@ -278,7 +278,7 @@ model Pdm {
     Eixo                Eixo[]
     Tag                 Tag[]
     ObjetivoEstrategico ObjetivoEstrategico[]
-    PdmArquivo          PdmArquivo[]
+    ArquivoDocumento    ArquivoDocumento[]
 
     @@map("pdm")
 }
@@ -429,29 +429,30 @@ model Arquivo {
     id   Int    @id @default(autoincrement())
     tipo String
 
-    criador           Pessoa?        @relation("Criador", fields: [criado_por], references: [id])
+    criador           Pessoa?            @relation("Criador", fields: [criado_por], references: [id])
     criado_por        Int?
-    criado_em         DateTime       @default(now()) @db.Timestamptz(6)
+    criado_em         DateTime           @default(now()) @db.Timestamptz(6)
     caminho           String
     nome_original     String
     tamanho_bytes     Int
     descricao         String?
     tipo_documento_id Int?
-    TipoDocumento     TipoDocumento? @relation(fields: [tipo_documento_id], references: [id])
+    TipoDocumento     TipoDocumento?     @relation(fields: [tipo_documento_id], references: [id])
     Tag               Tag[]
     Regiao            Regiao[]
-    PdmArquivo        PdmArquivo[]
+    ArquivoDocumento  ArquivoDocumento[]
 
     @@map("arquivo")
 }
 
-model PdmArquivo {
+model ArquivoDocumento {
     id Int @id @default(autoincrement())
 
     arquivo_id Int
-    pdm_id     Int
-    pdm        Pdm     @relation(fields: [arquivo_id], references: [id])
-    arquivo    Arquivo @relation(fields: [pdm_id], references: [id])
+    arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])
+
+    pdm_id Int?
+    pdm    Pdm? @relation(fields: [pdm_id], references: [id])
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -464,5 +465,5 @@ model PdmArquivo {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    @@map("pmd_arquivo")
+    @@map("arquivo_documento")
 }

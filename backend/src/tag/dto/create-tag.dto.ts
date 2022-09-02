@@ -10,11 +10,11 @@ export class CreateTagDto {
     descricao: string
 
     /**
-    * Descrição
+    * Upload do Ícone
     */
     @IsOptional()
-    @IsString({ message: '$property| ícone: path da url?' })
-    icone?: string | null
+    @IsString({ message: '$property| upload_token de um arquivo de ícone' })
+    upload_icone?: string
 
     /**
     * ID do PDM
