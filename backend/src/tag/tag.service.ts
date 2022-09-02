@@ -77,18 +77,6 @@ export class TagService {
 
         delete updateTagDto.pdm_id; // nao deixa editar o PDM
 
-        if (updateTagDto.descricao !== undefined) {
-            const similarExists = await this.prisma.tag.count({
-                where: {
-                    descricao: { endsWith: updateTagDto.descricao, mode: 'insensitive' },
-                    removido_em: null,
-                    NOT: { id: id }
-                }
-            });
-            if (similarExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
-        }
-
         await this.prisma.tag.update({
             where: { id: id },
             data: {
