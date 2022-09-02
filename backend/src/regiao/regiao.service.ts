@@ -13,7 +13,7 @@ export class RegiaoService {
         if (createRegiaoDto.parente_id === null) {
             createRegiaoDto.parente_id = undefined;
 
-            if (createRegiaoDto.nivel != 1) throw new HttpException('Região sem parente_id precisa ser nível 1', 404);
+            if (createRegiaoDto.nivel != 1) throw new HttpException('Região sem parente_id precisa ser nível 1', 400);
         }
 
         if (createRegiaoDto.parente_id) {
@@ -21,7 +21,7 @@ export class RegiaoService {
             if (!upper) throw new HttpException('Região acima não encontrada', 404);
 
             if (upper.nivel != createRegiaoDto.nivel - 1) {
-                throw new HttpException('Região acima precisa ser do nível menor que a nova região', 400);
+                throw new HttpException(`Região acima precisa ser do nível menor que a nova região (${upper.nivel} != ${createRegiaoDto.nivel} - 1)`, 400);
             }
         }
 
@@ -63,7 +63,7 @@ export class RegiaoService {
             if (!upper) throw new HttpException('Região acima não encontrada', 404);
 
             if (upper.nivel != self.nivel - 1) {
-                throw new HttpException('Região acima precisa ser de um nível menor que a atual', 400);
+                throw new HttpException(`Região acima precisa ser de um nível menor que a atual (${upper.nivel} != ${self.nivel} - 1)`, 400);
             }
         }
 
@@ -88,7 +88,7 @@ export class RegiaoService {
         const existsDown = await this.prisma.regiao.count({
             where: { parente_id: id, removido_em: null }
         });
-        if (existsDown > 0) throw new HttpException(`Há ${existsDown} região(ões) depedentes. Apgue primeiro as regiões abaixo.`, 400);
+        if (existsDown > 0) throw new HttpException(`Há ${existsDown} região(ões) dependentes. Apague primeiro as regiões abaixo.`, 400);
 
         const created = await this.prisma.regiao.updateMany({
             where: { id: id },
