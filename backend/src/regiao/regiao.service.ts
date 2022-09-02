@@ -64,8 +64,15 @@ export class RegiaoService {
                 descricao: true,
                 nivel: true,
                 parente_id: true,
+                arquivo_shapefile_id: true,
+                shapefile: true
             }
         });
+
+        for (const item of listActive) {
+            if (item.arquivo_shapefile_id)
+                item.shapefile = this.uploadService.getDownloadToken(item.arquivo_shapefile_id, '1 days').download_token;
+        }
 
         return listActive;
     }

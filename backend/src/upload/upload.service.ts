@@ -89,7 +89,7 @@ export class UploadService {
         return decoded.arquivo_id;
     }
 
-    async getDownloadToken(id: number, expiresIn: string): Promise<Download> {
+    getDownloadToken(id: number, expiresIn: string): Download {
         if (!expiresIn) expiresIn = '10 minutes';
 
         return {
