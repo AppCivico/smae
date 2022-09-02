@@ -3,8 +3,7 @@ import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
 import { useAuthStore } from '@/stores';
 const authStore = useAuthStore();
-const { user, permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+const { user } = storeToRefs(authStore);
 </script>
 
 <template>

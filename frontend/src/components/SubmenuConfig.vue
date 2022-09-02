@@ -3,7 +3,7 @@
     import { useAuthStore } from '@/stores';
     const props = defineProps(['parentPage']);
     const authStore = useAuthStore();
-    const { user, permissions } = storeToRefs(authStore);
+    const { /*user, */permissions } = storeToRefs(authStore);
     const perm = permissions.value;
 </script>
 <template>

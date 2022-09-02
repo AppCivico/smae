@@ -10,7 +10,7 @@ function toggleMenu() {
 }
 
 const authStore = useAuthStore();
-const { user, permissions } = storeToRefs(authStore);
+const { user/*, permissions*/ } = storeToRefs(authStore);
 </script>
 
 <template>
