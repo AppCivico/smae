@@ -73,7 +73,7 @@ if(props.type=='editar'){
 
 const schema = Yup.object().shape({
     nivel: Yup.number(),
-    parente_id: Yup.number(),
+    parente_id: Yup.number().nullable(),
     descricao: Yup.string().required('Preencha a descrição'),
     shapefile: Yup.string(),
 });

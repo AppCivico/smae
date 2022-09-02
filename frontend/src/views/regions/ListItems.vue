@@ -50,7 +50,7 @@ function toggleAccordeon(t) {
                 <template v-if="itemsFiltered.length">
                     <template v-for="item in itemsFiltered" :key="item.id">
                         <tr class="tzaccordeon" @click="toggleAccordeon">
-                            <td><svg v-if="item.children.length" class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>{{ item.descricao }}</span></td>
+                            <td><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>{{ item.descricao }}</span></td>
                             <td>{{ item.shapefile??'-' }}</td>
                             <td style="white-space: nowrap; text-align: right;">
                                 <template v-if="perm.CadastroRegiao.editar">
@@ -71,7 +71,7 @@ function toggleAccordeon(t) {
                                     <tbody>
                                         <template v-for="item2 in item.children" :key="item2.id">
                                             <tr class="tzaccordeon" @click="toggleAccordeon">
-                                                <td><svg v-if="item.children.length" class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>{{ item2.descricao }}</span></td>
+                                                <td><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>{{ item2.descricao }}</span></td>
                                                 <td>{{ item2.shapefile??'-' }}</td>
                                                 <td style="white-space: nowrap; text-align: right;">
                                                     <template v-if="perm.CadastroRegiao.editar">

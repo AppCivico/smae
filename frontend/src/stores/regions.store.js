@@ -67,7 +67,7 @@ export const useRegionsStore = defineStore({
         async insert(params) {
             var m = {
                 nivel: Number(params.nivel),
-                parente_id: Number(params.parente_id),
+                parente_id: params.parente_id?Number(params.parente_id):null,
                 descricao: params.descricao,
                 shapefile: params.shapefile,
             };
@@ -77,7 +77,7 @@ export const useRegionsStore = defineStore({
         async update(id, params) {
             var m = {
                 //nivel: Number(params.nivel),
-                parente_id: Number(params.parente_id),
+                parente_id: params.parente_id?Number(params.parente_id):null,
                 descricao: params.descricao,
                 shapefile: params.shapefile,
             };
