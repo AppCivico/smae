@@ -12,7 +12,7 @@
         <div class="links-container mb2">
             <router-link v-if="perm.CadastroPessoa" to="/usuarios">Gerenciar usuários</router-link>
             <router-link v-if="perm.CadastroRegiao" to="/regioes">Regiões, Subprefeituras e Distritos</router-link>
-            <router-link v-if="perm.CadastroPdm" to="/pdm" :class="{active: parentPage=='pdm'}">Planos de Meta</router-link>
+            <router-link v-if="perm.CadastroPdm" to="/pdm" :class="{active: parentPage=='pdm'}">Plano de Metas</router-link>
         </div>
         <h2>Formulários básicos</h2>
         <div class="links-container">

@@ -28,7 +28,7 @@ function toggleAccordeon(t) {
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Planos de Meta</h1>
+            <h1>Plano de Metas</h1>
             <hr class="ml2 f1"/>
             <router-link to="/pdm/novo" class="btn big ml2" v-if="perm.CadastroPdm.inserir">Novo PdM</router-link>
         </div>
