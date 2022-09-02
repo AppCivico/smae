@@ -6,6 +6,7 @@ import { StorageService } from 'src/upload/storage-service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { Upload } from 'src/upload/entities/upload.entity';
 import { JwtService } from '@nestjs/jwt';
+import { UploadBody } from 'src/upload/entities/upload.body';
 
 
 @Injectable()
@@ -67,9 +68,23 @@ export class UploadService {
     async getToken(id: number): Promise<Upload> {
         return {
             upload_token: this.jwtService.sign({
-                arquivo_id: id
+                arquivo_id: id,
+                aud: 'upload'
             }, { expiresIn: '30 days' }),
         } as Upload;
+    }
+
+    checkToken(token: string): number {
+        let decoded: UploadBody | null = null;
+        try {
+            decoded = this.jwtService.decode(token) as UploadBody;
+        } catch (error) {
+            console.log(error)
+        }
+        if (!decoded || decoded.aud != 'upload')
+            throw new HttpException('upload_token inválido', 400);
+
+        return decoded.arquivo_id;
     }
 
 }

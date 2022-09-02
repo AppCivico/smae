@@ -1,20 +1,33 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UploadService } from 'src/upload/upload.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
 export class TagService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService,
+    ) { }
 
     async create(createTagDto: CreateTagDto, user: PessoaFromJwt) {
+
+        let uploadId: number | null = null;
+        if (createTagDto.upload_icone) {
+            uploadId = this.uploadService.checkToken(createTagDto.upload_icone);
+        }
+        delete createTagDto.upload_icone;
+
+        console.log(createTagDto);
 
         const created = await this.prisma.tag.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 ...createTagDto,
+                arquivo_icone_id: uploadId
             },
             select: { id: true }
         });
@@ -39,13 +52,19 @@ export class TagService {
     }
 
     async update(id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
+        let uploadId: number | undefined = undefined;
+        if (updateTagDto.upload_icone) {
+            uploadId = this.uploadService.checkToken(updateTagDto.upload_icone);
+        }
+        delete updateTagDto.upload_icone;
 
-        const created = await this.prisma.tag.update({
+        await this.prisma.tag.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateTagDto,
+                arquivo_icone_id: uploadId
             }
         });
 

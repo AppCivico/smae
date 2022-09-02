@@ -14,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
         }),
     ],
     controllers: [UploadController],
-    providers: [UploadService, StorageService]
+    providers: [UploadService, StorageService],
+    exports: [UploadService]
 })
 export class UploadModule { }
