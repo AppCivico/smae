@@ -36,7 +36,7 @@ if (id) {
 const schema = Yup.object().shape({
     descricao: Yup.string().required('Preencha a descrição'),
     pdm_id: Yup.string(),
-    ods_id: Yup.string(),
+    ods_id: Yup.string().nullable(),
 });
 
 
