@@ -55,10 +55,10 @@ export class RegiaoService {
             where: {
                 removido_em: null,
             },
-            orderBy: {
-                nivel: 'asc',
-                parente_id: 'asc',
-            },
+            orderBy: [
+                { nivel: 'asc' },
+                { parente_id: 'asc' }
+            ],
             select: {
                 id: true,
                 descricao: true,
