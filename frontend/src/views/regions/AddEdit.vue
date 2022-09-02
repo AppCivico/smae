@@ -128,7 +128,7 @@ async function checkDelete(id) {
                 </div>
                 <div class="flex g2">
                     <div class="f1">
-                        <label class="label">Shapefile <span class="tvermelho">*</span></label>
+                        <label class="label">Shapefile</label>
                         <Field name="shapefile" type="text" class="inputtext light mb1" :class="{ 'error': errors.shapefile }" />
                         <div class="error-msg">{{ errors.shapefile }}</div>
                     </div>
