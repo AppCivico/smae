@@ -63,6 +63,11 @@ export class OdsService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const existsDown = await this.prisma.tag.count({
+            where: { ods_id: id, removido_em: null }
+        });
+        if (existsDown > 0) throw new HttpException(`Há ${existsDown} tag(s) dependentes. Remova primeiro as tags.`, 400);
+
         const created = await this.prisma.ods.updateMany({
             where: { id: id },
             data: {

@@ -23,7 +23,7 @@ export class CreateUploadDto {
     @IsPositive({ message: '$property| Necessário ID do Tipo Documento' })
     @ValidateIf((object: CreateUploadDto) => object.tipo == 'DOCUMENTO')
     @Type(() => Number)
-    tipo_documento_id?: number
+    tipo_documento_id?: number | null
 
     /*
      * Descrição do arquivo

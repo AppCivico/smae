@@ -25,18 +25,26 @@ export class ListPdm {
     */
     @IsISO8601({ strict: true, message: '$property| data_inicio: Precisa ser uma data' })
     @Length(10, 10)
-    data_inicio: Date
+    data_inicio?: Date | null
 
     /**
     * Data de fim
     */
     @IsISO8601({ strict: true, message: '$property| data_fim: Precisa ser uma data' })
     @Length(10, 10)
-    data_fim: Date
+    data_fim?: Date | null
 
     /**
     * Ativo
     */
     @IsBoolean()
     ativo: boolean
+
+
+    prefeito: string
+    data_publicacao: Date | null
+    periodo_do_ciclo_participativo_inicio: Date | null
+    periodo_do_ciclo_participativo_fim: Date | null
+
+
 }

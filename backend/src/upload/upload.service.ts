@@ -7,6 +7,8 @@ import { CreateUploadDto } from './dto/create-upload.dto';
 import { Upload } from 'src/upload/entities/upload.entity';
 import { JwtService } from '@nestjs/jwt';
 import { UploadBody } from 'src/upload/entities/upload.body';
+import { DownloadBody } from './entities/download.body';
+import { Download } from './entities/download.entity';
 
 
 @Injectable()
@@ -38,12 +40,15 @@ export class UploadService {
             file.originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
         ].join('/');
 
+        createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id &&
+            createUploadDto.tipo_documento_id > 0 ? createUploadDto.tipo_documento_id : null;
+
         await this.storage.putBlob(key, file.buffer, {
             'Content-Type': file.mimetype || 'application/octet-stream',
             'x-user-id': user.id,
             'x-orgao-id': user.orgao_id,
             'x-tipo': createUploadDto.tipo,
-            'x-tipo-documento-id': createUploadDto.tipo_documento_id || null,
+            'x-tipo-documento-id': createUploadDto.tipo_documento_id,
             'x-uploaded-ip': ip,
         });
 
@@ -65,7 +70,7 @@ export class UploadService {
         return arquivoId;
     }
 
-    async getToken(id: number): Promise<Upload> {
+    async getUploadToken(id: number): Promise<Upload> {
         return {
             upload_token: this.jwtService.sign({
                 arquivo_id: id,
@@ -74,7 +79,7 @@ export class UploadService {
         } as Upload;
     }
 
-    checkToken(token: string): number {
+    checkUploadToken(token: string): number {
         let decoded: UploadBody | null = null;
         try {
             decoded = this.jwtService.decode(token) as UploadBody;
@@ -87,4 +92,40 @@ export class UploadService {
         return decoded.arquivo_id;
     }
 
+    getDownloadToken(id: number, expiresIn: string): Download {
+        if (!expiresIn) expiresIn = '10 minutes';
+
+        return {
+            download_token: this.jwtService.sign({
+                arquivo_id: id,
+                aud: 'upload'
+            }, { expiresIn }),
+        } as Download;
+    }
+
+    checkDownloadToken(downloadToken: string): number {
+
+        let decoded: UploadBody | null = null;
+        try {
+            decoded = this.jwtService.decode(downloadToken) as DownloadBody;
+        } catch (error) {
+            console.log(error)
+        }
+        if (!decoded || decoded.aud != 'download')
+            throw new HttpException('download_token inválido', 400);
+
+        return decoded.arquivo_id;
+    }
+
+    async getBufferByToken(downloadToken: string): Promise<NodeJS.ReadableStream> {
+        const arquivo = await this.prisma.arquivo.findFirst({
+            where: { id: this.checkDownloadToken(downloadToken) },
+            select: { caminho: true }
+        });
+
+        if (!arquivo) throw new HttpException('Arquivo não encontrado', 400);
+
+        return await this.storage.getStream(arquivo.caminho);
+
+    }
 }

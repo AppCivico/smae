@@ -37,6 +37,7 @@ export class EixoService {
     }
 
     async update(id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
+        delete updateEixoDto.pdm_id; // nao deixa editar o PDM
 
         await this.prisma.eixo.update({
             where: { id: id },
