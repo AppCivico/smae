@@ -19,7 +19,7 @@ export class StorageService {
             secretKey: process.env.S3_SECRET_KEY,
             endPoint: endpoint.hostname,
             port: +endpoint.port,
-            useSSL: true,
+            useSSL: endpoint.protocol === 'https:',
         });
         this.BUCKET = process.env.S3_BUCKET;
     }
@@ -30,6 +30,6 @@ export class StorageService {
 
     async putBlob(key: string, blob: Buffer, metadata: MinioJS.ItemBucketMetadata): Promise<MinioJS.UploadedObjectInfo> {
         return this.S3.putObject(this.BUCKET, key, blob, metadata);
-        }
+    }
 
 }
