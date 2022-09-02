@@ -70,10 +70,11 @@ export const useTagsStore = defineStore({
             return false;
         },
         async update(id, params) {
+            console.log(params.ods_id);
             var m = {
                 icone: params.icone,
                 pdm_id: params.pdm_id,
-                ods_id: params.ods_id??null,
+                ods_id: params.ods_id?params.ods_id:null,
                 descricao: params.descricao,
             };
             if(await requestS.patch(`${baseUrl}/tag/${id}`, m)) return true;
