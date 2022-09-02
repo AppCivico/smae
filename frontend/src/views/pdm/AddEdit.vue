@@ -61,9 +61,6 @@ async function onSubmit(values) {
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
-async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await PdMStore.delete(id)) router.push('/pdm')},'Remover');
-}
 function maskDate(el){
     console.log(el);
     var kC = event.keyCode;
@@ -152,9 +149,7 @@ function maskDate(el){
                 </div>
             </Form>
         </template>
-        <template v-if="tempPdM.id">
-            <button @click="checkDelete(tempPdM.id)" class="btn amarelo big">Remover item</button>
-        </template>
+        
         <template v-if="tempPdM?.loading">
             <span class="spinner">Carregando</span>
         </template>
