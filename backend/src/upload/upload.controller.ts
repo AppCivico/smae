@@ -10,6 +10,7 @@ import { Upload } from 'src/upload/entities/upload.entity';
 import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 import { Stream } from 'stream';
 import { createReadStream } from 'fs';
+import { Response } from 'express';
 
 @Controller('')
 @ApiTags('Upload')
@@ -32,7 +33,7 @@ export class UploadController {
 
         return uploadToken;
     }
-/*
+
     @Get('download/:token')
     @IsPublic()
     @ApiOkResponse({
@@ -44,8 +45,7 @@ export class UploadController {
         @Param('token') dlToken: string,
         @Res() res: Response
     ) {
-       // (await this.uploadService.getBufferByToken(dlToken)).pipe(res as any)
+        (await this.uploadService.getBufferByToken(dlToken)).pipe(res)
     }
 
-    */
 }
