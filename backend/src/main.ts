@@ -29,7 +29,7 @@ async function bootstrap() {
             dismissDefaultMessages: true,
             transform: true,
             whitelist: true,
-            forbidNonWhitelisted: true, // conferir com o pessoal do frontend, talvez seja muito strict essa config!
+            forbidNonWhitelisted: false, // conferir com o pessoal do frontend, talvez seja muito strict essa config!
         }),
     );
 
