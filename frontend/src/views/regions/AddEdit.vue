@@ -75,7 +75,7 @@ const schema = Yup.object().shape({
     nivel: Yup.number(),
     parente_id: Yup.number().nullable(),
     descricao: Yup.string().required('Preencha a descrição'),
-    shapefile: Yup.string(),
+    shapefile: Yup.string().nullable(),
 });
 
 async function onSubmit(values) {
