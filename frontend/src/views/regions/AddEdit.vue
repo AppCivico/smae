@@ -22,11 +22,11 @@ regionsStore.clear();
 var title1, title2, level, parentID, lastid;
 
 if(props.type=='editar'){
-    var title1 = 'Editar',
-        title2 = 'Região', 
-        level = 0, 
-        lastid,
-        parentID;
+    title1 = 'Editar';
+    title2 = 'Região';
+    level = 0;
+    lastid;
+    parentID;
 
     if (id) {
         title2 = 'Região';
@@ -51,11 +51,10 @@ if(props.type=='editar'){
     }
 
 }else{
-    var title1 = 'Cadastro de',
-        title2 = 'Região', 
-        level = 1, 
-        lastid,
-        parentID;
+    title1 = 'Cadastro de';
+    title2 = 'Região';
+    level = 1;
+    parentID;
 
     if (id) {
         title2 = 'Subprefeitura';

@@ -26,7 +26,7 @@ if (id) {
     title = 'Editar Objetivo Estratégico';
     strategicObjectivesStore.getById(id);
 }else{
-    var virtualAxes = {pdm_id: route.params.pdm_id};
+    virtualAxes = {pdm_id: route.params.pdm_id};
 }
 
 const schema = Yup.object().shape({
