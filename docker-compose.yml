@@ -37,7 +37,7 @@ services:
       S3_ACCESS_KEY: "${S3_ACCESS_KEY}"
       S3_SECRET_KEY: "${S3_SECRET_KEY}"
       S3_BUCKET: "${S3_BUCKET}"
-      LGPDJUS_S3_HOST: "${LGPDJUS_S3_HOST}"
+      S3_HOST: "${S3_HOST}"
     networks:
       - postgres
       - minio
