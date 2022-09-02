@@ -7,9 +7,9 @@ export const useEditModalStore = defineStore({
     }),
     actions: {
         modal(content,props,classes) {
-            this.editModal = { 
-                props:props, 
-                content:content, 
+            this.editModal = {
+                props:props,
+                content:content,
                 type:classes
             };
         },
