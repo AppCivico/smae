@@ -1,5 +1,5 @@
 <script setup>
-import { Dashboard } from '@/components';
+import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -20,17 +20,18 @@ const PdMStore = usePdMStore();
 const { PdM } = storeToRefs(PdMStore);
 PdMStore.getAll();
 
+var virtualAxes;
 let title = 'Cadastro de Objetivo Estratégico';
 if (id) {
     title = 'Editar Objetivo Estratégico';
     strategicObjectivesStore.getById(id);
+}else{
+    var virtualAxes = {pdm_id: route.params.pdm_id};
 }
 
 const schema = Yup.object().shape({
-    codigo: Yup.string().required('Preencha o código'),
-    titulo: Yup.string().required('Preencha o título'),
     descricao: Yup.string().required('Preencha a descrição'),
-    extensoes: Yup.string().required('Preencha a extensões').matches(/^[a-zA-Z0-9,]*$/,'Somente letras, números e vírgula.')
+    pdm_id: Yup.string().required('Selecione um PdM'),
 });
 
 async function onSubmit(values) {
@@ -45,7 +46,7 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
-            await router.push('/objetivos-estrategicos');
+            await router.push('/pdm');
             alertStore.success(msg);
         }
     } catch (error) {
@@ -54,10 +55,10 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?','/objetivos-estrategicos');
+    alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await strategicObjectivesStore.delete(id)) router.push('/objetivos-estrategicos')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await strategicObjectivesStore.delete(id)) router.push('/pdm')},'Remover');
 }
 
 </script>
@@ -70,7 +71,7 @@ async function checkDelete(id) {
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
         <template v-if="!(tempStrategicObjectives?.loading || tempStrategicObjectives?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempStrategicObjectives" v-slot="{ errors, isSubmitting }">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempStrategicObjectives.pdm_id&&id?tempStrategicObjectives:virtualAxes" v-slot="{ errors, isSubmitting }">
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">PdM <span class="tvermelho">*</span></label>

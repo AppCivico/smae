@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import { usePdMStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useAxesStore = defineStore({
@@ -14,6 +15,24 @@ export const useAxesStore = defineStore({
             this.tempAxes = {};
         },
         async getAll() {
+            this.Axes = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/eixo`);    
+                if(r.linhas.length){
+                    const PdMStore = usePdMStore();
+                    await PdMStore.getAll();
+                    this.Axes = r.linhas.map(x=>{
+                        x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
+                        return x;
+                    });
+                }else{
+                    this.Axes = r.linhas;
+                }
+            } catch (error) {
+                this.Axes = { error };
+            }
+        },
+        async getAllSimple() {
             this.Axes = { loading: true };
             try {
                 let r = await requestS.get(`${baseUrl}/eixo`);    
@@ -35,13 +54,16 @@ export const useAxesStore = defineStore({
             }
         },
         async insert(params) {
-            if(await requestS.post(`${baseUrl}/eixo`, params)) return true;
+            var m = {
+                pdm_id: Number(params.pdm_id),
+                descricao: params.descricao
+            };
+            if(await requestS.post(`${baseUrl}/eixo`, m)) return true;
             return false;
         },
         async update(id, params) {
             var m = {
-                numero: params.numero,
-                titulo: params.titulo,
+                pdm_id: Number(params.pdm_id),
                 descricao: params.descricao
             };
             if(await requestS.patch(`${baseUrl}/eixo/${id}`, m)) return true;

@@ -3,12 +3,16 @@ import { storeToRefs } from 'pinia';
 import { Nav } from '@/components';
 import { useAuthStore } from '@/stores';
 
+const props = defineProps(['submenu','parentPage']);
+const submenuname = props?.submenu?.__name;
+
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 </script>
 
 <template>
-    <Nav />
+    <Nav :activate="submenuname"></Nav>
+    <component :is="submenu" :parentPage="parentPage"></component>
     <section v-if="user" id="dashboard">
         <slot />
     </section>

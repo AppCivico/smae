@@ -1,11 +1,12 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
-import { Dashboard } from '@/components';
+import { Dashboard} from '@/components';
 import { useAuthStore, useResourcesStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
+const perm = permissions.value;
 
 const resourcesStore = useResourcesStore();
 const { tempResources } = storeToRefs(resourcesStore);
@@ -26,7 +27,7 @@ function filterItems(){
         <div class="flex spacebetween center mb2">
             <h1>Fontes de recurso</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/fonte-recurso/novo" class="btn big ml2" v-if="permissions.insertpermission>0">Nova fonte</router-link>
+            <router-link to="/fonte-recurso/novo" class="btn big ml2" v-if="perm.CadastroFonteRecurso.inserir">Nova fonte</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -48,7 +49,7 @@ function filterItems(){
                         <td>{{ item.fonte }}</td>
                         <td>{{ item.sigla }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="permissions.editpermission>0">
+                            <template v-if="perm.CadastroFonteRecurso.editar">
                                 <router-link :to="`/fonte-recurso/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>
