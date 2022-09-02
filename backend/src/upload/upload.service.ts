@@ -98,7 +98,7 @@ export class UploadService {
         return {
             download_token: this.jwtService.sign({
                 arquivo_id: id,
-                aud: 'download'
+                aud: 'upload'
             }, { expiresIn }),
         } as Download;
     }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, StreamableFile, Res } from '@nestjs/common';
 import { UploadService } from './upload.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -8,6 +8,8 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { IpAddress } from 'src/common/decorators/current-ip';
 import { Upload } from 'src/upload/entities/upload.entity';
 import { IsPublic } from 'src/auth/decorators/is-public.decorator';
+import { Stream } from 'stream';
+import { createReadStream } from 'fs';
 
 @Controller('')
 @ApiTags('Upload')
@@ -39,9 +41,10 @@ export class UploadController {
     })
     async get(
         @CurrentUser() user: PessoaFromJwt,
-        @Param('token') dlToken: string
-    ): Promise<NodeJS.ReadableStream> {
-        return await this.uploadService.getBufferByToken(dlToken);
+        @Param('token') dlToken: string,
+        @Res() res: Response
+    ) {
+        (await this.uploadService.getBufferByToken(dlToken)).pipe(res as any)
     }
 
 }
