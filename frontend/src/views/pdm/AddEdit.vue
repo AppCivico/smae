@@ -67,7 +67,6 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 function maskDate(el){
-    console.log(el);
     var kC = event.keyCode;
     var data = el.target.value.replace(/[^0-9/]/g,'');
     if( kC!=8 && kC!=46 ){
