@@ -67,7 +67,7 @@ function filterOrgan(orgao_id){
                         <td>{{ user.email }}</td>
                         <td>{{ user.nome_completo }}</td>
                         <td>{{ user.lotacao ?? '-' }}</td>
-                        <td>{{ user.orgao_id ? filterOrgan(user.orgao_id).sigla : '-' }}</td>
+                        <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
                         <td style="white-space: nowrap; text-align: right;">
                             <template v-if="perm.CadastroPessoa.administrador||(perm.CadastroPessoa.editar&&user.orgao_id==authStore.user.orgao_id)">
                                 <router-link :to="`/usuarios/editar/${user.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
