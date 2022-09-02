@@ -255,15 +255,15 @@ model Pdm {
 
     nome                                  String
     descricao                             String?
-    data_inicio                           DateTime  @db.Date()
-    data_fim                              DateTime  @db.Date()
+    data_inicio                           DateTime? @db.Date()
+    data_fim                              DateTime? @db.Date()
     data_publicacao                       DateTime? @db.Date()
     periodo_do_ciclo_participativo_inicio DateTime? @db.Date()
     periodo_do_ciclo_participativo_fim    DateTime? @db.Date()
     ativo                                 Boolean   @default(false)
 
     prefeito       String
-    equipe_tecnica String
+    equipe_tecnica String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)

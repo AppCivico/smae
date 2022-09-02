@@ -32,6 +32,10 @@ export class PdmService {
                 data_inicio: true,
                 data_fim: true,
                 equipe_tecnica: true,
+                prefeito: true,
+                data_publicacao: true,
+                periodo_do_ciclo_participativo_inicio: true,
+                periodo_do_ciclo_participativo_fim: true,
             }
         });
 

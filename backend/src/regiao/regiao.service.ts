@@ -32,7 +32,7 @@ export class RegiaoService {
 
         let uploadId: number | null = null;
         if (createRegiaoDto.upload_shapefile) {
-            uploadId = this.uploadService.checkToken(createRegiaoDto.upload_shapefile);
+            uploadId = this.uploadService.checkUploadToken(createRegiaoDto.upload_shapefile);
         }
 
         delete createRegiaoDto.upload_shapefile;
@@ -64,8 +64,15 @@ export class RegiaoService {
                 descricao: true,
                 nivel: true,
                 parente_id: true,
+                arquivo_shapefile_id: true,
+                shapefile: true
             }
         });
+
+        for (const item of listActive) {
+            if (item.arquivo_shapefile_id)
+                item.shapefile = this.uploadService.getDownloadToken(item.arquivo_shapefile_id, '1 days').download_token;
+        }
 
         return listActive;
     }
@@ -87,7 +94,7 @@ export class RegiaoService {
 
         let uploadId: number | undefined = undefined;
         if (updateRegiaoDto.upload_shapefile) {
-            uploadId = this.uploadService.checkToken(updateRegiaoDto.upload_shapefile);
+            uploadId = this.uploadService.checkUploadToken(updateRegiaoDto.upload_shapefile);
         }
 
         await this.prisma.regiao.update({

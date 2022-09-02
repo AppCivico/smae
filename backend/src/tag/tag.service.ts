@@ -16,7 +16,7 @@ export class TagService {
 
         let uploadId: number | null = null;
         if (createTagDto.upload_icone) {
-            uploadId = this.uploadService.checkToken(createTagDto.upload_icone);
+            uploadId = this.uploadService.checkUploadToken(createTagDto.upload_icone);
         }
         delete createTagDto.upload_icone;
 
@@ -45,18 +45,27 @@ export class TagService {
                 descricao: true,
                 pdm_id: true,
                 ods_id: true,
-                icone: true
+                icone: true,
+                arquivo_icone_id: true
             }
         });
+
+        for (const item of listActive) {
+            if (item.arquivo_icone_id)
+                item.icone = this.uploadService.getDownloadToken(item.arquivo_icone_id, '1 days').download_token;
+        }
+
         return listActive;
     }
 
     async update(id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
         let uploadId: number | undefined = undefined;
         if (updateTagDto.upload_icone) {
-            uploadId = this.uploadService.checkToken(updateTagDto.upload_icone);
+            uploadId = this.uploadService.checkUploadToken(updateTagDto.upload_icone);
         }
         delete updateTagDto.upload_icone;
+
+        delete updateTagDto.pdm_id; // nao deixa editar o PDM
 
         await this.prisma.tag.update({
             where: { id: id },
