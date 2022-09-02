@@ -4,29 +4,72 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StorageService } from 'src/upload/storage-service';
 import { CreateUploadDto } from './dto/create-upload.dto';
+import { Upload } from 'src/upload/entities/upload.entity';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
 export class UploadService {
     constructor(
+        private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly storage: StorageService,
     ) { }
 
-    async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File) {
+    async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File, ip: string) {
 
-        console.log(file)
-        const r = await this.storage.putBlob('test', file.buffer, {
-            'Content-Type': 'application/octet-stream',
+        if (createUploadDto.tipo_documento_id) {
+            const tipoDoc = await this.prisma.tipoDocumento.count({ where: { id: createUploadDto.tipo_documento_id } });
+            if (!tipoDoc) throw new HttpException('Tipo de Documento não encontrado', 404);
+        }
 
+        const nextVal: any[] = await this.prisma.$queryRaw`select nextval('arquivo_id_seq'::regclass) as id`;
+
+        const arquivoId = Number(nextVal[0].id);
+
+        let key = [
+            'uploads',
+            createUploadDto.tipo.toLocaleLowerCase(),
+            'by-user',
+            String(user.id),
+            new Date(Date.now()).toISOString(),
+            'arquivo-id-' + String(arquivoId),
+            file.originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
+        ].join('/');
+
+        await this.storage.putBlob(key, file.buffer, {
+            'Content-Type': file.mimetype || 'application/octet-stream',
+            'x-user-id': user.id,
+            'x-orgao-id': user.orgao_id,
+            'x-tipo': createUploadDto.tipo,
+            'x-tipo-documento-id': createUploadDto.tipo_documento_id || null,
+            'x-uploaded-ip': ip,
         });
 
-        console.log(r)
-        //await new Promise(r => setTimeout(r, 100));
+        await this.prisma.arquivo.create({
+            data: {
+                id: arquivoId,
+                criado_por: user.id,
+                criado_em: new Date(Date.now()),
+                caminho: key,
+                nome_original: file.originalname,
+                tamanho_bytes: file.size,
+                descricao: createUploadDto.descricao,
+                tipo: createUploadDto.tipo,
+                tipo_documento_id: createUploadDto.tipo_documento_id,
+            },
+            select: { id: true }
+        });
 
-        //console.log(r)
-        return 'yay';
+        return arquivoId;
+    }
 
+    async getToken(id: number): Promise<Upload> {
+        return {
+            upload_token: this.jwtService.sign({
+                arquivo_id: id
+            }, { expiresIn: '30 days' }),
+        } as Upload;
     }
 
 }

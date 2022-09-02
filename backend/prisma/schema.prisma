@@ -77,6 +77,12 @@ model Pessoa {
     RegiaoQueDesativei Regiao[] @relation("Removedor")
     RegiaoQueAtualizei Regiao[] @relation("Atualizador")
 
+    ArquivoQueCriei Arquivo[] @relation("Criador")
+
+    PdmArquivoQueCriei     PdmArquivo[] @relation("Criador")
+    PdmArquivoQueDesativei PdmArquivo[] @relation("Removedor")
+    PdmArquivoQueAtualizei PdmArquivo[] @relation("Atualizador")
+
     @@map("pessoa")
 }
 
@@ -272,6 +278,7 @@ model Pdm {
     Eixo                Eixo[]
     Tag                 Tag[]
     ObjetivoEstrategico ObjetivoEstrategico[]
+    PdmArquivo          PdmArquivo[]
 
     @@map("pdm")
 }
@@ -331,9 +338,10 @@ model TipoDocumento {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa?   @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa?   @relation("Removedor", fields: [removido_por], references: [id])
+    Arquivo     Arquivo[]
 
     @@map("tipo_documento")
 }
@@ -343,6 +351,9 @@ model Tag {
 
     descricao String
     icone     String?
+
+    arquivo_icone_id Int?
+    ArquivoIcone     Arquivo? @relation(fields: [arquivo_icone_id], references: [id])
 
     pdm_id Int
     pdm    Pdm @relation(fields: [pdm_id], references: [id])
@@ -394,6 +405,9 @@ model Regiao {
     nivel      Int
     parente_id Int?
 
+    arquivo_shapefile_id Int?
+    ArquivoShapefile     Arquivo? @relation(fields: [arquivo_shapefile_id], references: [id])
+
     RegiaoAcima Regiao? @relation("Parente", fields: [parente_id], references: [id])
 
     criado_por     Int?
@@ -409,4 +423,46 @@ model Regiao {
     RegioesAbaixo Regiao[] @relation("Parente")
 
     @@map("regiao")
+}
+
+model Arquivo {
+    id   Int    @id @default(autoincrement())
+    tipo String
+
+    criador           Pessoa?        @relation("Criador", fields: [criado_por], references: [id])
+    criado_por        Int?
+    criado_em         DateTime       @default(now()) @db.Timestamptz(6)
+    caminho           String
+    nome_original     String
+    tamanho_bytes     Int
+    descricao         String?
+    tipo_documento_id Int?
+    TipoDocumento     TipoDocumento? @relation(fields: [tipo_documento_id], references: [id])
+    Tag               Tag[]
+    Regiao            Regiao[]
+    PdmArquivo        PdmArquivo[]
+
+    @@map("arquivo")
+}
+
+model PdmArquivo {
+    id Int @id @default(autoincrement())
+
+    arquivo_id Int
+    pdm_id     Int
+    pdm        Pdm     @relation(fields: [arquivo_id], references: [id])
+    arquivo    Arquivo @relation(fields: [pdm_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("pmd_arquivo")
 }

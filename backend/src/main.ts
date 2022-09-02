@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TrimPipe } from 'src/common/pipes/trim-pipe';
 import { AppModule } from './app.module';
+import * as requestIp from 'request-ip';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -32,6 +33,6 @@ async function bootstrap() {
         }),
     );
 
-    await app.listen(3001);
+    await app.listen(3001, '0.0.0.0');
 }
 bootstrap();

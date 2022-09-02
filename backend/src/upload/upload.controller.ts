@@ -4,6 +4,9 @@ import { CreateUploadDto } from './dto/create-upload.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { IpAddress } from 'src/common/decorators/current-ip';
+import { Upload } from 'src/upload/entities/upload.entity';
 
 @Controller('upload')
 @ApiTags('Upload')
@@ -13,15 +16,17 @@ export class UploadController {
     @Post()
     @ApiBearerAuth('access-token')
     @UseInterceptors(FileInterceptor('arquivo'))
-    create(
+    async create(
         @Body() createUploadDto: CreateUploadDto,
-        user: PessoaFromJwt,
-        @UploadedFile() file: Express.Multer.File) {
+        @CurrentUser() user: PessoaFromJwt,
+        @UploadedFile() file: Express.Multer.File,
+        @IpAddress() ipAddress: string) : Promise<Upload>{
 
-            //heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
+        const uploadFile = await this.uploadService.upload(createUploadDto, user, file, ipAddress);
 
+        const uploadToken = await this.uploadService.getToken(uploadFile);
 
-        return this.uploadService.upload(createUploadDto, user, file);
+        return uploadToken;
     }
 
 
