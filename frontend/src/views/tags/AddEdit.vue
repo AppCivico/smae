@@ -1,5 +1,5 @@
 <script setup>
-import { Dashboard } from '@/components';
+import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -24,17 +24,21 @@ const ODSStore = useODSStore();
 const { ODS } = storeToRefs(ODSStore);
 ODSStore.getAll();
 
+var virtualAxes;
 let title = 'Cadastro de Tag';
 if (id) {
     title = 'Editar Tag';
     TagsStore.getById(id);
+}else{
+    var virtualAxes = {pdm_id: route.params.pdm_id};
 }
 
 const schema = Yup.object().shape({
-    numero: Yup.string().required('Preencha o número'),
-    titulo: Yup.string().required('Preencha o título'),
     descricao: Yup.string().required('Preencha a descrição'),
+    pdm_id: Yup.string().required('Selecione um PdM'),
+    ods_id: Yup.string(),
 });
+
 
 async function onSubmit(values) {
     try {
@@ -48,7 +52,7 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
-            await router.push('/tags');
+            await router.push('/pdm');
             alertStore.success(msg);
         }
     } catch (error) {
@@ -57,10 +61,10 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?','/tags');
+    alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await TagsStore.delete(id)) router.push('/tags')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await TagsStore.delete(id)) router.push('/pdm')},'Remover');
 }
 
 </script>
@@ -73,7 +77,7 @@ async function checkDelete(id) {
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
         <template v-if="!(tempTags?.loading || tempTags?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempTags" v-slot="{ errors, isSubmitting }">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempTags.pdm_id&&id?tempTags:virtualAxes" v-slot="{ errors, isSubmitting }">
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">PdM <span class="tvermelho">*</span></label>
@@ -86,11 +90,11 @@ async function checkDelete(id) {
                         <div class="error-msg">{{ errors.pdm_id }}</div>
                     </div>
                     <div class="f1">
-                        <label class="label">ODS <span class="tvermelho">*</span></label>
+                        <label class="label">ODS</label>
                         <Field name="ods_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.ods_id }">
                             <option value="">Selecionar</option>
                             <template v-if="ODS.length">
-                                <option v-for="type in ODS" :key="type.id" :value="type.id" :selected="ods_id&&type.id==ods_id">{{ type.descricao }}</option>
+                                <option v-for="type in ODS" :key="type.id" :value="type.id" :selected="ods_id&&type.id==ods_id">{{ type.titulo }}</option>
                             </template>
                         </Field>
                         <div class="error-msg">{{ errors.ods_id }}</div>

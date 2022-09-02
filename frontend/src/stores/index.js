@@ -9,3 +9,4 @@ export * from './pdm.store';
 export * from './axes.store';
 export * from './tags.store';
 export * from './strategicObjectives.store';
+export * from './regions.store';

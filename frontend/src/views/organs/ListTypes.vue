@@ -1,11 +1,12 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
-import { Dashboard } from '@/components';
+import { Dashboard} from '@/components';
 import { useAuthStore, useOrgansStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
+const perm = permissions.value;
 
 const organsStore = useOrgansStore();
 const { tempOrganTypes } = storeToRefs(organsStore);
@@ -26,7 +27,8 @@ function filterItems(){
         <div class="flex spacebetween center mb2">
             <h1>Tipos de Orgão</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/orgaos/tipos/novo" class="btn big ml2" v-if="permissions.insertpermission>0">Novo tipo</router-link>
+            <router-link to="/orgaos" class="btn big amarelo ml2" v-if="perm.CadastroOrgao">Gerenciar Orgãos</router-link>
+            <router-link to="/orgaos/tipos/novo" class="btn big ml1" v-if="perm.CadastroTipoOrgao.inserir">Novo tipo</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -46,7 +48,7 @@ function filterItems(){
                     <tr v-for="item in itemsFiltered" :key="item.id">
                         <td>{{ item.descricao }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="permissions.editpermission>0">
+                            <template v-if="perm.CadastroTipoOrgao.editar">
                                 <router-link :to="`/orgaos/tipos/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>

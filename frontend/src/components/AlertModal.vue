@@ -5,6 +5,10 @@ import { useAlertStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const { alert } = storeToRefs(alertStore);
+async function callbackFn(){
+    await alert.value.callback();
+    alertStore.clear();
+}
 </script>
 
 <template>
@@ -13,7 +17,7 @@ const { alert } = storeToRefs(alertStore);
         <div class="alert" :class="alert.type">
             <div class="mr2">{{alert.message}}</div>
             <template v-if="alert.type=='confirmAction'">
-                <button @click="alert.callback();alertStore.clear();" class="btn amarelo mr1">{{alert.label}}</button>
+                <button @click="callbackFn" class="btn amarelo mr1">{{alert.label}}</button>
                 <button @click="alertStore.clear()" class="btn amarelo outline">Cancelar</button>
             </template>
             <template v-else-if="alert.type=='confirm'">
