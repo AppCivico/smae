@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useTagsStore, usePdMStore, useODSStore } from '@/stores';
+import { useAlertStore, useTagsStore, /*usePdMStore, */useODSStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -16,9 +16,9 @@ const TagsStore = useTagsStore();
 const { tempTags } = storeToRefs(TagsStore);
 TagsStore.clear();
 
-const PdMStore = usePdMStore();
+/*const PdMStore = usePdMStore();
 const { PdM } = storeToRefs(PdMStore);
-PdMStore.getAll();
+PdMStore.getAll();*/
 
 const ODSStore = useODSStore();
 const { ODS } = storeToRefs(ODSStore);
@@ -35,7 +35,7 @@ if (id) {
 
 const schema = Yup.object().shape({
     descricao: Yup.string().required('Preencha a descrição'),
-    pdm_id: Yup.string().required('Selecione um PdM'),
+    pdm_id: Yup.string(),
     ods_id: Yup.string(),
 });
 
@@ -78,17 +78,8 @@ async function checkDelete(id) {
         </div>
         <template v-if="!(tempTags?.loading || tempTags?.error)">
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempTags.pdm_id&&id?tempTags:virtualAxes" v-slot="{ errors, isSubmitting }">
+                <Field name="pdm_id" type="hidden" :value="pdm_id" /><div class="error-msg">{{ errors.pdm_id }}</div>
                 <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">PdM <span class="tvermelho">*</span></label>
-                        <Field name="pdm_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.pdm_id }">
-                            <option value="">Selecionar</option>
-                            <template v-if="PdM.length">
-                                <option v-for="type in PdM" :key="type.id" :value="type.id" :selected="pdm_id&&type.id==pdm_id">{{ type.descricao }}</option>
-                            </template>
-                        </Field>
-                        <div class="error-msg">{{ errors.pdm_id }}</div>
-                    </div>
                     <div class="f1">
                         <label class="label">ODS</label>
                         <Field name="ods_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.ods_id }">

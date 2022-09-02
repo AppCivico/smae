@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useStrategicObjectivesStore, usePdMStore } from '@/stores';
+import { useAlertStore, useStrategicObjectivesStore/*, usePdMStore*/ } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -16,9 +16,9 @@ const strategicObjectivesStore = useStrategicObjectivesStore();
 const { tempStrategicObjectives } = storeToRefs(strategicObjectivesStore);
 strategicObjectivesStore.clear();
 
-const PdMStore = usePdMStore();
+/*const PdMStore = usePdMStore();
 const { PdM } = storeToRefs(PdMStore);
-PdMStore.getAll();
+PdMStore.getAll();*/
 
 var virtualAxes;
 let title = 'Cadastro de Objetivo Estratégico';
@@ -72,18 +72,7 @@ async function checkDelete(id) {
         </div>
         <template v-if="!(tempStrategicObjectives?.loading || tempStrategicObjectives?.error)">
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempStrategicObjectives.pdm_id&&id?tempStrategicObjectives:virtualAxes" v-slot="{ errors, isSubmitting }">
-                <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">PdM <span class="tvermelho">*</span></label>
-                        <Field name="pdm_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.pdm_id }">
-                            <option value="">Selecionar</option>
-                            <template v-if="PdM.length">
-                                <option v-for="type in PdM" :key="type.id" :value="type.id" :selected="pdm_id&&type.id==pdm_id">{{ type.descricao }}</option>
-                            </template>
-                        </Field>
-                        <div class="error-msg">{{ errors.pdm_id }}</div>
-                    </div>
-                </div>
+                <Field name="pdm_id" type="hidden" :value="pdm_id" /><div class="error-msg">{{ errors.pdm_id }}</div>
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Objetivo Estratégico <span class="tvermelho">*</span></label>
