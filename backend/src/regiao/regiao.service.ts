@@ -30,6 +30,17 @@ export class RegiaoService {
             }
         }
 
+        const similarExists = await this.prisma.regiao.count({
+            where: {
+                descricao: { endsWith: createRegiaoDto.descricao, mode: 'insensitive' },
+                removido_em: null,
+                nivel: createRegiaoDto.nivel
+            }
+        });
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+
+
         let uploadId: number | null = null;
         if (createRegiaoDto.upload_shapefile) {
             uploadId = this.uploadService.checkUploadToken(createRegiaoDto.upload_shapefile);
@@ -90,6 +101,19 @@ export class RegiaoService {
                 throw new HttpException('Região acima precisa ser do nível menor que região atual' +
                     ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != região "${self.descricao}" (nível ${self.nivel}) - 1)`, 400);
             }
+        }
+
+        if (updateRegiaoDto.parente_id) {
+            const similarExists = await this.prisma.regiao.count({
+                where: {
+                    descricao: { endsWith: updateRegiaoDto.descricao, mode: 'insensitive' },
+                    removido_em: null,
+                    nivel: self.nivel,
+                    NOT: { id: id }
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         let uploadId: number | undefined = undefined;

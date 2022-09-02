@@ -16,6 +16,16 @@ export class PdmService {
     ) { }
 
     async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
+
+        const similarExists = await this.prisma.pdm.count({
+            where: {
+                descricao: { endsWith: createPdmDto.nome, mode: 'insensitive' },
+            }
+        });
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+
+
         const created = await this.prisma.pdm.create({
             data: {
                 criado_por: user.id,
@@ -45,14 +55,6 @@ export class PdmService {
             }
         });
 
-        /*
-         conversar com o erico se ele realmente precisa receber de volta em yyyy-mm-dd
-        const nListActive = listActive.map((r: any) => {
-            r.data_fim = r.data_fim.toISOString().substring(0, 10)
-            return r
-        });
-        return nListActive;
-        */
         return listActive;
     }
 
@@ -88,6 +90,17 @@ export class PdmService {
 
         updatePdmDto.id = id
         await this.verificarPrivilegiosEdicao(updatePdmDto, user);
+
+        if (updatePdmDto.nome) {
+            const similarExists = await this.prisma.pdm.count({
+                where: {
+                    descricao: { endsWith: updatePdmDto.nome, mode: 'insensitive' },
+                    NOT: { id: id }
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
