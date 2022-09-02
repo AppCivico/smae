@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
-import { useAuthStore } from '@/stores';
+import { useAlertStore, useAuthStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useUsersStore = defineStore({
@@ -64,6 +64,13 @@ export const useUsersStore = defineStore({
                   "perfil_acesso_ids": params.perfil_acesso_ids,
                 };
 
+                const authStore = useAuthStore();
+                if(id==authStore.user.id && !params.perfil_acesso_ids.length){
+                    const alertStore = useAlertStore();
+                    alertStore.error('Não se pode remover seu próprio perfil.');    
+                    return false;
+                }
+
                 if(params.desativado=="1"){
                     m.desativado = true;
                     m.desativado_motivo = params.desativado_motivo;
@@ -72,7 +79,6 @@ export const useUsersStore = defineStore({
                 }
 
                 await requestS.patch(`${baseUrl}/pessoa/${id}`, m);
-                const authStore = useAuthStore();
                 if (id === authStore.user.id) {
                     const user = { ...authStore.user, ...params };
                     localStorage.setItem('user', JSON.stringify(user));

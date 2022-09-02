@@ -1,11 +1,12 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
-import { Dashboard } from '@/components';
+import { Dashboard} from '@/components';
 import { useAuthStore, useAxesStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
+const perm = permissions.value;
 
 const AxesStore = useAxesStore();
 const { tempAxes } = storeToRefs(AxesStore);
@@ -24,9 +25,9 @@ function filterItems(){
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Eixos</h1>
+            <h1>Eixos Temáticos</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/eixos/novo" class="btn big ml2" v-if="permissions.insertpermission>0">Novo Eixo</router-link>
+            <router-link to="/eixos/novo" class="btn big ml2" v-if="perm.CadastroEixo.inserir">Novo Eixo</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -46,9 +47,9 @@ function filterItems(){
                 <template v-if="itemsFiltered.length">
                     <tr v-for="item in itemsFiltered" :key="item.id">
                         <td>{{ item.descricao }}</td>
-                        <td>{{ item.pdm_id }}</td>
+                        <td>{{ item.pdm.descricao }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="permissions.editpermission>0">
+                            <template v-if="perm.CadastroEixo.editar">
                                 <router-link :to="`/eixos/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>

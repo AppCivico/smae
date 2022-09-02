@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import { usePdMStore,useODSStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useTagsStore = defineStore({
@@ -17,7 +18,37 @@ export const useTagsStore = defineStore({
             this.Tags = { loading: true };
             try {
                 let r = await requestS.get(`${baseUrl}/tag`);    
-                this.Tags = r.linhas;
+                if(r.linhas.length){
+                    const PdMStore = usePdMStore();
+                    await PdMStore.getAll();
+                    const ODSStore = useODSStore();
+                    await ODSStore.getAll();
+                    this.Tags = r.linhas.map(x=>{
+                        x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
+                        x.ods = ODSStore.ODS.find(z=>z.id==x.ods_id);
+                        return x;
+                    });
+                }else{
+                    this.Tags = r.linhas;
+                }
+            } catch (error) {
+                this.Tags = { error };
+            }
+        },
+        async getAllSimple() {
+            this.Tags = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/tag`);    
+                if(r.linhas.length){
+                    const ODSStore = useODSStore();
+                    await ODSStore.getAll();
+                    this.Tags = r.linhas.map(x=>{
+                        x.ods = ODSStore.ODS.find(z=>z.id==x.ods_id);
+                        return x;
+                    });
+                }else{
+                    this.Tags = r.linhas;
+                }
             } catch (error) {
                 this.Tags = { error };
             }
@@ -40,9 +71,10 @@ export const useTagsStore = defineStore({
         },
         async update(id, params) {
             var m = {
-                numero: params.numero,
-                titulo: params.titulo,
-                descricao: params.descricao
+                icone: params.icone,
+                pdm_id: params.pdm_id,
+                ods_id: params.ods_id??null,
+                descricao: params.descricao,
             };
             if(await requestS.patch(`${baseUrl}/tag/${id}`, m)) return true;
             return false;

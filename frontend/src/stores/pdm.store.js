@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import { useAxesStore, useStrategicObjectivesStore, useTagsStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 
 export const usePdMStore = defineStore({
     id: 'PdM',
@@ -13,11 +15,42 @@ export const usePdMStore = defineStore({
             this.PdM = {};
             this.tempPdM = {};
         },
+        dateToField(d){
+            var dd=d?new Date(d):false;
+            return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short'}):d;
+        },
+        fieldToDate(d){
+            var x=d.split('/');
+            return (x.length==3) ? new Date(x[2],x[1]-1,x[0]).toISOString().substring(0, 10) : d;
+        },
         async getAll() {
             this.PdM = { loading: true };
             try {
                 let r = await requestS.get(`${baseUrl}/pdm`);    
-                this.PdM = r.linhas;
+                if(r.linhas.length){
+                    const axesStore = useAxesStore();
+                    await axesStore.getAllSimple();
+                    const strategicObjectivesStore = useStrategicObjectivesStore();
+                    await strategicObjectivesStore.getAllSimple();
+                    const tagsStore = useTagsStore();
+                    await tagsStore.getAllSimple();
+
+                    this.PdM = r.linhas.map(x=>{
+                        x.data_inicio = this.dateToField(x.data_inicio);
+                        x.data_fim = this.dateToField(x.data_fim);
+                        x.data_publicacao = this.dateToField(x.data_publicacao);
+                        x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
+                        x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
+
+                        x.eixos = axesStore.Axes.filter(z=>z.pdm_id==x.id) ?? [];
+                        x.objetivosEstrategicos = strategicObjectivesStore.strategicObjectives.filter(z=>z.pdm_id==x.id) ?? [];
+                        x.tags = tagsStore.Tags.filter(z=>z.pdm_id==x.id) ?? [];
+
+                        return x;
+                    });
+                }else{
+                    this.PdM = r.linhas;
+                }
             } catch (error) {
                 this.PdM = { error };
             }
@@ -35,20 +68,32 @@ export const usePdMStore = defineStore({
             }
         },
         async insert(params) {
-            if(await requestS.post(`${baseUrl}/pdm`, params)) return true;
-            return false;
-        },
-        async update(id, params) {
             var m = {
                 nome: params.nome,
                 descricao: params.descricao,
                 prefeito: params.prefeito,
                 equipe_tecnica: params.equipe_tecnica,
-                data_inicio: params.data_inicio, //"YYYY-MM-DD",
-                data_fim: params.data_fim, //"YYYY-MM-DD",
-                data_publicacao: params.data_publicacao, //"2022-09-01T02:23:12.803Z",
-                periodo_do_ciclo_participativo_inicio: params.periodo_do_ciclo_participativo_inicio, //"2022-09-01T02:23:12.803Z",
-                periodo_do_ciclo_participativo_fim: params.periodo_do_ciclo_participativo_fim, //"2022-09-01T02:23:12.803Z"
+                data_inicio: this.fieldToDate(params.data_inicio),
+                data_fim: this.fieldToDate(params.data_fim),
+                data_publicacao: this.fieldToDate(params.data_publicacao),
+                periodo_do_ciclo_participativo_inicio: this.fieldToDate(params.periodo_do_ciclo_participativo_inicio),
+                periodo_do_ciclo_participativo_fim: this.fieldToDate(params.periodo_do_ciclo_participativo_fim),
+            };
+            if(await requestS.post(`${baseUrl}/pdm`, m)) return true;
+            return false;
+        },
+        async update(id, params) {
+            var m = {
+                ativo: true,
+                nome: params.nome,
+                descricao: params.descricao,
+                prefeito: params.prefeito,
+                equipe_tecnica: params.equipe_tecnica,
+                data_inicio: this.fieldToDate(params.data_inicio),
+                data_fim: this.fieldToDate(params.data_fim),
+                data_publicacao: this.fieldToDate(params.data_publicacao),
+                periodo_do_ciclo_participativo_inicio: this.fieldToDate(params.periodo_do_ciclo_participativo_inicio),
+                periodo_do_ciclo_participativo_fim: this.fieldToDate(params.periodo_do_ciclo_participativo_fim),
             };
             if(await requestS.patch(`${baseUrl}/pdm/${id}`, m)) return true;
             return false;
