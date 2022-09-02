@@ -38,6 +38,7 @@ export class ObjetivoEstrategicoService {
 
     async update(id: number, updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, user: PessoaFromJwt) {
 
+        delete updateObjetivoEstrategicoDto.pdm_id; // nao deixa editar o PDM
         await this.prisma.objetivoEstrategico.update({
             where: { id: id },
             data: {
