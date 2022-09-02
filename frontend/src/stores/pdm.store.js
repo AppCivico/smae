@@ -17,11 +17,11 @@ export const usePdMStore = defineStore({
         },
         dateToField(d){
             var dd=d?new Date(d):false;
-            return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short'}):d;
+            return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short'}):'';
         },
         fieldToDate(d){
             var x=d.split('/');
-            return (x.length==3) ? new Date(x[2],x[1]-1,x[0]).toISOString().substring(0, 10) : d;
+            return (x.length==3) ? new Date(x[2],x[1]-1,x[0]).toISOString().substring(0, 10) : null;
         },
         async getAll() {
             this.PdM = { loading: true };
