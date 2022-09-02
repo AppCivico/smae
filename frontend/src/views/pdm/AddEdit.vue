@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, usePdMStore } from '@/stores';
+import { useAlertStore, useAuthStore, usePdMStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -15,6 +15,10 @@ const id = route.params.id;
 const PdMStore = usePdMStore();
 const { tempPdM } = storeToRefs(PdMStore);
 PdMStore.clear();
+
+const authStore = useAuthStore();
+const { permissions } = storeToRefs(authStore);
+const perm = permissions.value;
 
 let title = 'Cadastro de PdM';
 if (id) {
@@ -37,6 +41,7 @@ const schema = Yup.object().shape({
     prefeito: Yup.string().required('Preencha o prefeito'),
     
     equipe_tecnica: Yup.string(),
+    desativado: Yup.boolean().nullable(),
 });
 
 async function onSubmit(values) {
@@ -62,7 +67,6 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 function maskDate(el){
-    console.log(el);
     var kC = event.keyCode;
     var data = el.target.value.replace(/[^0-9/]/g,'');
     if( kC!=8 && kC!=46 ){
@@ -86,6 +90,13 @@ function maskDate(el){
         </div>
         <template v-if="!(tempPdM?.loading || tempPdM?.error)">
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempPdM" v-slot="{ errors, isSubmitting }">
+                <div class="flex g2 mb2" v-if="id&&perm.CadastroPdm.inativar">
+                    <div class="">
+                        <label class="block mb1">
+                            <Field name="desativado" class="inputcheckbox" type="checkbox" value=1 :checked="desativado" /><span>Inativar PdM</span>
+                        </label>
+                    </div>
+                </div>
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Nome <span class="tvermelho">*</span></label>
