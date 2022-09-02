@@ -64,7 +64,7 @@ export class RegiaoService {
             if (!upper) throw new HttpException('Região acima não encontrada', 404);
 
             if (upper.nivel != self.nivel - 1) {
-                throw new HttpException('Região acima precisa ser do nível menor que a nova região' +
+                throw new HttpException('Região acima precisa ser do nível menor que região atual' +
                     ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != região "${self.descricao}" (nível ${self.nivel}) - 1)`, 400);
             }
         }
