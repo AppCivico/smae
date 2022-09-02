@@ -227,8 +227,10 @@
 			}
 		}
 		.tzaccordeon{
-			>td:first-child{vertical-align: middle; span{display: inline-block; vertical-align: middle;}}
-			.arrow{display: inline-block; vertical-align: middle; transform-origin: center; .transition;}
+			>td:first-child{vertical-align: middle; span{display: inline-block; vertical-align: middle; flex:1;}}
+			.flex{align-items: center;}
+
+			.arrow{display: inline-block; vertical-align: middle; transform-origin: center; .transition; margin-right: .5em;}
 			&:not(.active){
 				+ tz{display: none !important;}
 				.arrow{transform: rotate(-90deg);}
