@@ -31,12 +31,10 @@ export class CreateRegiaoDto {
 
 
     /**
-       * shapefile
-       * @example "{"geojson":"maybe"}"
+    * Upload do Shapefile
     */
     @IsOptional()
-    @IsString({ message: '$property| Shapefile: Precisa ser alfanumérico' })
-    @MaxLength(1000000, { message: '$property| Shapefile: Máximo 1000000 (1MB)' })
-    shapefile: string;
+    @IsString({ message: '$property| upload_token de um arquivo de Shapefile' })
+    upload_shapefile?: string
 
 }
