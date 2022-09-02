@@ -1,12 +1,16 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UploadService } from 'src/upload/upload.service';
 import { CreateRegiaoDto } from './dto/create-regiao.dto';
 import { UpdateRegiaoDto } from './dto/update-regiao.dto';
 
 @Injectable()
 export class RegiaoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService,
+    ) { }
 
     async create(createRegiaoDto: CreateRegiaoDto, user: PessoaFromJwt) {
 
@@ -26,11 +30,19 @@ export class RegiaoService {
             }
         }
 
+        let uploadId: number | null = null;
+        if (createRegiaoDto.upload_shapefile) {
+            uploadId = this.uploadService.checkToken(createRegiaoDto.upload_shapefile);
+        }
+
+        delete createRegiaoDto.upload_shapefile;
+
         const created = await this.prisma.regiao.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 ...createRegiaoDto,
+                arquivo_shapefile_id: uploadId,
             },
             select: { id: true }
         });
@@ -69,12 +81,18 @@ export class RegiaoService {
             }
         }
 
+        let uploadId: number | undefined = undefined;
+        if (updateRegiaoDto.upload_shapefile) {
+            uploadId = this.uploadService.checkToken(updateRegiaoDto.upload_shapefile);
+        }
+
         await this.prisma.regiao.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateRegiaoDto,
+                arquivo_shapefile_id: uploadId,
             }
         });
 
