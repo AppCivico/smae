@@ -40,7 +40,7 @@ const schema = Yup.object().shape({
     periodo_do_ciclo_participativo_fim: Yup.string().notRequired().matches(regx,'Formato inválido'),
     prefeito: Yup.string().required('Preencha o prefeito'),
     
-    equipe_tecnica: Yup.string(),
+    equipe_tecnica: Yup.string().nullable(),
     desativado: Yup.boolean().nullable(),
 });
 
