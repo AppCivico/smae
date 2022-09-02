@@ -3,17 +3,18 @@ import { UploadService } from './upload.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { IpAddress } from 'src/common/decorators/current-ip';
 import { Upload } from 'src/upload/entities/upload.entity';
+import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 
-@Controller('upload')
+@Controller('')
 @ApiTags('Upload')
 export class UploadController {
     constructor(private readonly uploadService: UploadService) { }
 
-    @Post()
+    @Post('upload')
     @ApiConsumes('multipart/form-data')
     @ApiBearerAuth('access-token')
     @UseInterceptors(FileInterceptor('arquivo'))
@@ -30,9 +31,12 @@ export class UploadController {
         return uploadToken;
     }
 
-
     @Get('download/:token')
-    @ApiBearerAuth('access-token')
+    @IsPublic()
+    @ApiOkResponse({
+        description: 'Conteúdo do arquivo',
+        type: ''
+    })
     async get(
         @CurrentUser() user: PessoaFromJwt,
         @Param('token') dlToken: string

@@ -45,9 +45,16 @@ export class TagService {
                 descricao: true,
                 pdm_id: true,
                 ods_id: true,
-                icone: true
+                icone: true,
+                arquivo_icone_id: true
             }
         });
+
+        for (const item of listActive) {
+            if (item.arquivo_icone_id)
+                item.icone = this.uploadService.getDownloadToken(item.arquivo_icone_id, '1 days').download_token;
+        }
+
         return listActive;
     }
 
