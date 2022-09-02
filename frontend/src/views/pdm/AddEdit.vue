@@ -22,21 +22,21 @@ if (id) {
     PdMStore.getById(id);
 }
 
-var regx = /^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
+var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
 
 const schema = Yup.object().shape({
     nome: Yup.string().required('Preencha o nome'),
     descricao: Yup.string().required('Preencha a descrição'),
     
-    data_inicio: Yup.string().required('Preencha a data').min(10,'Formato inválido').matches(regx,'Formato inválido'),
-    data_fim: Yup.string().required('Preencha a data').min(10,'Formato inválido').matches(regx,'Formato inválido'),
-    data_publicacao: Yup.string().required('Preencha a data').min(10,'Formato inválido').matches(regx,'Formato inválido'),
+    data_inicio: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
+    data_fim: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
+    data_publicacao: Yup.string().notRequired().matches(regx,'Formato inválido'),
     
-    periodo_do_ciclo_participativo_inicio: Yup.string().required('Preencha o início do período').min(10,'Formato inválido').matches(regx,'Formato inválido'),
-    periodo_do_ciclo_participativo_fim: Yup.string().required('Preencha o fim do período').min(10,'Formato inválido').matches(regx,'Formato inválido'),
+    periodo_do_ciclo_participativo_inicio: Yup.string().notRequired().matches(regx,'Formato inválido'),
+    periodo_do_ciclo_participativo_fim: Yup.string().notRequired().matches(regx,'Formato inválido'),
     prefeito: Yup.string().required('Preencha o prefeito'),
     
-    equipe_tecnica: Yup.string().required('Preencha a equipe'),
+    equipe_tecnica: Yup.string(),
 });
 
 async function onSubmit(values) {
@@ -65,6 +65,7 @@ async function checkDelete(id) {
     alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await PdMStore.delete(id)) router.push('/pdm')},'Remover');
 }
 function maskDate(el){
+    console.log(el);
     var kC = event.keyCode;
     var data = el.target.value.replace(/[^0-9/]/g,'');
     if( kC!=8 && kC!=46 ){
@@ -114,19 +115,19 @@ function maskDate(el){
                         <div class="error-msg">{{ errors.data_fim }}</div>
                     </div>
                     <div class="f1">
-                        <label class="label">Data de Publicação <span class="tvermelho">*</span></label>
+                        <label class="label">Data de Publicação</label>
                         <Field name="data_publicacao" type="text" class="inputtext light mb1" :class="{ 'error': errors.data_publicacao }" maxlength="10" @keyup="maskDate" />
                         <div class="error-msg">{{ errors.data_publicacao }}</div>
                     </div>
                 </div>
                 <div class="flex g2">
                     <div class="f1">
-                        <label class="label">Inicio do ciclo participativo <span class="tvermelho">*</span></label>
+                        <label class="label">Inicio do ciclo participativo</label>
                         <Field name="periodo_do_ciclo_participativo_inicio" type="text" class="inputtext light mb1" :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }" maxlength="10" @keyup="maskDate" />
                         <div class="error-msg">{{ errors.periodo_do_ciclo_participativo_inicio }}</div>
                     </div>
                     <div class="f1">
-                        <label class="label">Fim do ciclo participativo <span class="tvermelho">*</span></label>
+                        <label class="label">Fim do ciclo participativo</label>
                         <Field name="periodo_do_ciclo_participativo_fim" type="text" class="inputtext light mb1" :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }" maxlength="10" @keyup="maskDate" />
                         <div class="error-msg">{{ errors.periodo_do_ciclo_participativo_fim }}</div>
                     </div>
@@ -138,7 +139,7 @@ function maskDate(el){
                 </div>
                 <div class="flex g2">
                     <div class="f1">
-                        <label class="label">Equipe técnica <span class="tvermelho">*</span></label>
+                        <label class="label">Equipe técnica</label>
                         <Field name="equipe_tecnica" type="text" class="inputtext light mb1" :class="{ 'error': errors.equipe_tecnica }" />
                         <div class="error-msg">{{ errors.equipe_tecnica }}</div>
                         <p class="t13 tc500">Separe os membros por vírgula ou ponto-e-vírgula</p>
