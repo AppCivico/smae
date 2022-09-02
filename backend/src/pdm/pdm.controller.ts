@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -8,7 +8,9 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ListPdmDto } from 'src/pdm/dto/list-pdm.dto';
 import { UpdatePdmDto } from 'src/pdm/dto/update-pdm.dto';
 import { Pdm } from 'src/pdm/entities/pdm.entity';
+import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
+import { ListPdmDocument } from './entities/list-pdm-document.entity';
 import { PdmService } from './pdm.service';
 
 @ApiTags('PDM')
@@ -48,5 +50,31 @@ export class PdmController {
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Pdm> {
         return await this.pdmService.getDetail(+params.id, user);
     }
+
+    @Post(':id/documento')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroPdm.inserir', 'CadastroPdm.editar')
+    async upload(
+        @Param() params: FindOneParams,
+        @Body() createPdmDocDto: CreatePdmDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+
+        return await this.pdmService.append_document(params.id, createPdmDocDto, user);
+    }
+
+    @Get(':id/documento')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroPdm.inserir', 'CadastroPdm.editar')
+    async download(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListPdmDocument> {
+
+        return { linhas: await this.pdmService.list_document(params.id, user) };
+    }
+
 
 }
