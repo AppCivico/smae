@@ -42,9 +42,10 @@ function toggleAccordeon(t) {
             <thead>
                 <tr>
                     <th style="width: 25%">Nome</th>
-                    <th style="width: 35%">Descrição</th>
+                    <th style="width: 25%">Descrição</th>
                     <th style="width: 15%">Período</th>
                     <th style="width: 15%">Prefeito</th>
+                    <th style="width: 10%">Ativo</th>
                     <th style="width: 10%"></th>
                 </tr>
             </thead>
@@ -56,6 +57,7 @@ function toggleAccordeon(t) {
                             <td>{{ item.descricao }}</td>
                             <td>{{ item.data_inicio }} - {{ item.data_fim }}</td>
                             <td>{{ item.prefeito }}</td>
+                            <td>{{ item.ativo?'Sim':'Não' }}</td>
                             <td style="white-space: nowrap; text-align: right;">
                                 <template v-if="perm.CadastroPdm.editar">
                                     <router-link :to="`/pdm/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>

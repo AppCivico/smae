@@ -67,6 +67,7 @@ export const usePdMStore = defineStore({
                         x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
                         x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
 
+                        x.desativado = !x.ativo?'1':false;
                         return x;
                     })(r);
                 }else{
@@ -93,7 +94,8 @@ export const usePdMStore = defineStore({
         },
         async update(id, params) {
             var m = {
-                ativo: true,
+                ativo: params.desativado?false:true,
+                desativado: Boolean(params.desativado),
                 nome: params.nome,
                 descricao: params.descricao,
                 prefeito: params.prefeito,
