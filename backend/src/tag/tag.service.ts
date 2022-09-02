@@ -65,6 +65,8 @@ export class TagService {
         }
         delete updateTagDto.upload_icone;
 
+        delete updateTagDto.pdm_id; // nao deixa editar o PDM
+
         await this.prisma.tag.update({
             where: { id: id },
             data: {
