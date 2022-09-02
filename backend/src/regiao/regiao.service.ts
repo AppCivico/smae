@@ -56,7 +56,7 @@ export class RegiaoService {
 
     async update(id: number, updateRegiaoDto: UpdateRegiaoDto, user: PessoaFromJwt) {
 
-        const self = await this.prisma.regiao.findFirst({ where: { id: updateRegiaoDto.parente_id, removido_em: null }, select: { nivel: true, descricao: true } });
+        const self = await this.prisma.regiao.findFirst({ where: { id: id, removido_em: null }, select: { nivel: true, descricao: true } });
         if (!self) throw new HttpException('Região não encontrada', 404);
 
         if (updateRegiaoDto.parente_id) {
