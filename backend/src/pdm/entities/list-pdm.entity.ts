@@ -39,4 +39,12 @@ export class ListPdm {
     */
     @IsBoolean()
     ativo: boolean
+
+
+    prefeito: string
+    data_publicacao: Date
+    periodo_do_ciclo_participativo_inicio: Date
+    periodo_do_ciclo_participativo_fim: Date
+
+
 }
