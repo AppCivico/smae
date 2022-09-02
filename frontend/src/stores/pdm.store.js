@@ -29,7 +29,7 @@ export const usePdMStore = defineStore({
         async getAll() {
             this.PdM = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/pdm`);    
+                let r = await requestS.get(`${baseUrl}/pdm`);
                 if(r.linhas.length){
                     const axesStore = useAxesStore();
                     await axesStore.getAllSimple();
@@ -61,7 +61,7 @@ export const usePdMStore = defineStore({
         async getById(id) {
             this.tempPdM = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/pdm/${id}`);    
+                let r = await requestS.get(`${baseUrl}/pdm/${id}`);
                 if(r.nome){
                     this.tempPdM = (x=>{
                         x.data_inicio = this.dateToField(x.data_inicio);

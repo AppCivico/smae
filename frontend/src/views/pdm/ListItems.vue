@@ -37,7 +37,7 @@ function toggleAccordeon(t) {
                 <input v-model="filters.textualSearch" @input="filterItems" placeholder="Buscar" type="text" class="inputtext" />
             </div>
         </div>
-        
+
         <table class="tablemain">
             <thead>
                 <tr>

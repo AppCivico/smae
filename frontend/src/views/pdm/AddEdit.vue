@@ -31,15 +31,15 @@ var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1
 const schema = Yup.object().shape({
     nome: Yup.string().required('Preencha o nome'),
     descricao: Yup.string().required('Preencha a descrição'),
-    
+
     data_inicio: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     data_fim: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     data_publicacao: Yup.string().notRequired().matches(regx,'Formato inválido'),
-    
+
     periodo_do_ciclo_participativo_inicio: Yup.string().notRequired().matches(regx,'Formato inválido'),
     periodo_do_ciclo_participativo_fim: Yup.string().notRequired().matches(regx,'Formato inválido'),
     prefeito: Yup.string().required('Preencha o prefeito'),
-    
+
     equipe_tecnica: Yup.string().nullable(),
     desativado: Yup.boolean().nullable(),
 });
@@ -67,6 +67,7 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 function maskDate(el){
+    console.log(el);
     var kC = event.keyCode;
     var data = el.target.value.replace(/[^0-9/]/g,'');
     if( kC!=8 && kC!=46 ){
@@ -160,7 +161,7 @@ function maskDate(el){
                 </div>
             </Form>
         </template>
-        
+
         <template v-if="tempPdM?.loading">
             <span class="spinner">Carregando</span>
         </template>
