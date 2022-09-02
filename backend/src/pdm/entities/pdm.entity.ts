@@ -30,27 +30,30 @@ export class Pdm {
     prefeito: string
 
     /**
-    * Equipe
+    * Equipe Técnica
     */
+    @IsOptional()
     @IsString({ message: '$property| equipe técnica: Precisa ser alfanumérico' })
     @MaxLength(2500, { message: '$property| equipe técnica: Máximo 2500 caracteres' })
-    equipe_tecnica: string
+    equipe_tecnica: string | null
 
     /**
     * Data de inicio
     * @example YYYY-MM-DD
     */
+    @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    data_inicio: Date
+    data_inicio: Date | null
 
     /**
     * Data de fim
     * @example YYYY-MM-DD
     */
+    @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    data_fim: Date
+    data_fim: Date | null
 
     /**
     * Data de publicação
