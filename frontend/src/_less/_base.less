@@ -30,6 +30,7 @@
 
 /* Tipografia */
 	.t64{font-size: 64px;}
+	.t36{font-size: 36px;}
 	.t24{font-size: 24px;}
 	.t20{font-size: 20px;}
 	.t16{font-size: 16px;}
@@ -153,6 +154,31 @@
 		&:disabled{
 			cursor: wait;
 			opacity: .5;
+		}
+	}
+	.editModal-wrap{
+		position: fixed; left: 0; top: 0;
+		width: 100%; height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 9999;
+		.overlay{
+			position: fixed; left: 0; top: 0;
+			width: 100%; height: 100%;
+			background: fade(@c50, 75%);
+		}
+		.editModal{
+			position: relative;
+			background: @branco; color: @primary;
+			padding: 2rem;
+			border-radius: 8px;
+			box-shadow: 0px 8px 16px rgba(21, 39, 65, 0.1);
+			display: block;
+			justify-content: space-between;
+			gap: 1em;
+			width: 80%;
+			max-width: 665px;
 		}
 	}
 	.inputcheckbox{
