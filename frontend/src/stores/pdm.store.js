@@ -58,11 +58,20 @@ export const usePdMStore = defineStore({
         async getById(id) {
             this.tempPdM = { loading: true };
             try {
-                if(!this.PdM.length){
-                    await this.getAll();
+                let r = await requestS.get(`${baseUrl}/pdm/${id}`);    
+                if(r.nome){
+                    this.tempPdM = (x=>{
+                        x.data_inicio = this.dateToField(x.data_inicio);
+                        x.data_fim = this.dateToField(x.data_fim);
+                        x.data_publicacao = this.dateToField(x.data_publicacao);
+                        x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
+                        x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
+
+                        return x;
+                    })(r);
+                }else{
+                    this.tempPdM = r;
                 }
-                this.tempPdM = this.PdM.find((u)=>u.id == id);
-                if(!this.tempPdM) throw 'PdM não encontrada';
             } catch (error) {
                 this.tempPdM = { error };
             }
