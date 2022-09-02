@@ -33,4 +33,7 @@ export class CreateUploadDto {
     @MaxLength(10000, { message: '$property| descrição: Máximo 10000 caracteres' })
     descricao?: string
 
+    @ApiProperty({ type: 'string', format: 'binary', required: true })
+    arquivo: Express.Multer.File
+
 }
