@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -13,6 +13,16 @@ export class TagService {
     ) { }
 
     async create(createTagDto: CreateTagDto, user: PessoaFromJwt) {
+
+        const similarExists = await this.prisma.tag.count({
+            where: {
+                descricao: { endsWith: createTagDto.descricao, mode: 'insensitive' },
+                removido_em: null,
+            }
+        });
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+
 
         let uploadId: number | null = null;
         if (createTagDto.upload_icone) {
@@ -66,6 +76,18 @@ export class TagService {
         delete updateTagDto.upload_icone;
 
         delete updateTagDto.pdm_id; // nao deixa editar o PDM
+
+        if (updateTagDto.descricao !== undefined) {
+            const similarExists = await this.prisma.tag.count({
+                where: {
+                    descricao: { endsWith: updateTagDto.descricao, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id }
+                }
+            });
+            if (similarExists > 0)
+                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.tag.update({
             where: { id: id },
