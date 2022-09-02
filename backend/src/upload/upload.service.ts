@@ -40,12 +40,15 @@ export class UploadService {
             file.originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
         ].join('/');
 
+        createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id &&
+            createUploadDto.tipo_documento_id > 0 ? createUploadDto.tipo_documento_id : null;
+
         await this.storage.putBlob(key, file.buffer, {
             'Content-Type': file.mimetype || 'application/octet-stream',
             'x-user-id': user.id,
             'x-orgao-id': user.orgao_id,
             'x-tipo': createUploadDto.tipo,
-            'x-tipo-documento-id': createUploadDto.tipo_documento_id || null,
+            'x-tipo-documento-id': createUploadDto.tipo_documento_id,
             'x-uploaded-ip': ip,
         });
 
