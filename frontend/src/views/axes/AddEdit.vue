@@ -1,5 +1,5 @@
 <script setup>
-import { Dashboard } from '@/components';
+import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -20,16 +20,18 @@ const PdMStore = usePdMStore();
 const { PdM } = storeToRefs(PdMStore);
 PdMStore.getAll();
 
-let title = 'Cadastro de Eixo';
+var virtualAxes;
+let title = 'Cadastro de Eixo Temático';
 if (id) {
-    title = 'Editar Eixo';
+    title = 'Editar Eixo Temático';
     AxesStore.getById(id);
+}else{
+    var virtualAxes = {pdm_id: route.params.pdm_id};
 }
 
 const schema = Yup.object().shape({
-    numero: Yup.string().required('Preencha o número'),
-    titulo: Yup.string().required('Preencha o título'),
     descricao: Yup.string().required('Preencha a descrição'),
+    pdm_id: Yup.string().required('Selecione um PdM'),
 });
 
 async function onSubmit(values) {
@@ -44,7 +46,7 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
-            await router.push('/eixos');
+            await router.push('/pdm');
             alertStore.success(msg);
         }
     } catch (error) {
@@ -53,10 +55,10 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?','/eixos');
+    alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await AxesStore.delete(id)) router.push('/eixos')},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await AxesStore.delete(id)) router.push('/pdm')},'Remover');
 }
 
 </script>
@@ -69,7 +71,7 @@ async function checkDelete(id) {
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
         <template v-if="!(tempAxes?.loading || tempAxes?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempAxes" v-slot="{ errors, isSubmitting }">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempAxes.pdm_id&&id?tempAxes:virtualAxes" v-slot="{ errors, isSubmitting }">
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">PdM <span class="tvermelho">*</span></label>

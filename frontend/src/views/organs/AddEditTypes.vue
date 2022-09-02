@@ -1,5 +1,5 @@
 <script setup>
-import { Dashboard } from '@/components';
+import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';

@@ -48,6 +48,7 @@ async function handleResponse(response) {
     const isJson = response.headers?.get('content-type')?.includes('application/json');
     const data = isJson ? await response.json() : true;
     if (!response.ok) {
+        if([204].includes(response.status)) return;
         const alertStore = useAlertStore();
         const { user } = useAuthStore();
         var msgDefault;

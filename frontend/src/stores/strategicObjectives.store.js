@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import { usePdMStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useStrategicObjectivesStore = defineStore({
@@ -14,6 +15,24 @@ export const useStrategicObjectivesStore = defineStore({
             this.tempStrategicObjectives = {};
         },
         async getAll() {
+            this.strategicObjectives = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/objetivo-estrategico`);    
+                if(r.linhas.length){
+                    const PdMStore = usePdMStore();
+                    await PdMStore.getAll();
+                    this.strategicObjectives = r.linhas.map(x=>{
+                        x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
+                        return x;
+                    });
+                }else{
+                    this.strategicObjectives = r.linhas;
+                }
+            } catch (error) {
+                this.strategicObjectives = { error };
+            }
+        },
+        async getAllSimple() {
             this.strategicObjectives = { loading: true };
             try {
                 let r = await requestS.get(`${baseUrl}/objetivo-estrategico`);    
@@ -40,10 +59,8 @@ export const useStrategicObjectivesStore = defineStore({
         },
         async update(id, params) {
             var m = {
-                extensoes: params.extensoes,
+                pdm_id: params.pdm_id,
                 descricao: params.descricao,
-                titulo: params.titulo,
-                codigo: params.codigo
             };
             if(await requestS.patch(`${baseUrl}/objetivo-estrategico/${id}`, m)) return true;
             return false;

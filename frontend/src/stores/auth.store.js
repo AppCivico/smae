@@ -87,16 +87,12 @@ export const useAuthStore = defineStore({
             router.push('/login');
         },
         setPermissions(){
-            var per = {
-                insertpermission: 0,
-                editpermission: 0,
-            };
-            this.user.privilegios.forEach(p=>{
-                if(p=='CadastroPessoa.editar') per.editpermission++;
-                if(p=='CadastroPessoa.inserir') per.insertpermission++;
-                if(p=='CadastroPessoa.administrador'){
-                    per.insertpermission++;
-                    per.editpermission++;
+            var per = {};
+            if(this.user.privilegios)this.user.privilegios.forEach(p=>{
+                var c = p.split('.');
+                if(c[1]){
+                    if(!per[c[0]]) per[c[0]] = {};
+                    per[c[0]][c[1]] = 1;
                 }
             });
 
