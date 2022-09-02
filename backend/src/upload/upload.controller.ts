@@ -3,9 +3,10 @@ import { UploadService } from './upload.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('upload')
+@ApiTags('Upload')
 export class UploadController {
     constructor(private readonly uploadService: UploadService) { }
 
