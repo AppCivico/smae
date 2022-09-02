@@ -42,9 +42,9 @@ export class ListPdm {
 
 
     prefeito: string
-    data_publicacao: Date
-    periodo_do_ciclo_participativo_inicio: Date
-    periodo_do_ciclo_participativo_fim: Date
+    data_publicacao: Date | null
+    periodo_do_ciclo_participativo_inicio: Date | null
+    periodo_do_ciclo_participativo_fim: Date | null
 
 
 }
