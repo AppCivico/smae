@@ -34,6 +34,10 @@ export class AuthService {
 
         }
 
+        if (pessoa.desativado) {
+            throw new UnauthorizedError('email| Conta não está mais ativa.');
+        }
+
         return this.#criarSession(pessoa.id as number);
     }
 
