@@ -419,6 +419,9 @@ export class PessoaService {
             orderBy: {
                 atualizado_em: 'desc'
             },
+            where: {
+                NOT: { pessoa_fisica_id: null }
+            },
             select: {
                 id: true,
                 nome_completo: true,
