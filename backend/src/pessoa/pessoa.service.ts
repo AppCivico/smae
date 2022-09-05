@@ -641,7 +641,7 @@ export class PessoaService {
                 join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
                 join privilegio p on p.id = priv.privilegio_id
                 join modulo m on p.modulo_id = m.id
-                join pessoa p on p.id = pp.pessoa_id AND p.desativado = false
+                join pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
                 where pp.pessoa_id = ${pessoaId}
             )
             select
