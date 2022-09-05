@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ExecutionContext,
     Injectable,
     UnauthorizedException,
@@ -33,11 +34,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const canActivatePromise = canActivate as Promise<boolean>;
 
         return canActivatePromise.catch((error) => {
-            if (error instanceof UnauthorizedError) {
+
+            if (error instanceof BadRequestException) {
+                throw error;
+            } else if (error instanceof UnauthorizedError) {
                 throw new UnauthorizedException(error.message);
             }
 
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('Acesso Não Autorizado.');
         });
     }
 }
