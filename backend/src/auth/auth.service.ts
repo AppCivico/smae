@@ -35,7 +35,7 @@ export class AuthService {
         }
 
         if (pessoa.desativado) {
-            throw new UnauthorizedError('email| Conta não está mais ativa.');
+            throw new BadRequestException('email| Conta não está mais ativa.');
         }
 
         return this.#criarSession(pessoa.id as number);
@@ -61,15 +61,15 @@ export class AuthService {
         const pessoa = await this.pessoaService.findByEmail(email);
 
         if (!pessoa)
-            throw new UnauthorizedError('email| E-mail ou senha inválidos');
+            throw new BadRequestException('email| E-mail ou senha inválidos');
 
         let isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
         if (!isPasswordValid) {
             if (pessoa.senha_bloqueada)
-                throw new UnauthorizedError('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
+                throw new BadRequestException('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
 
             await this.pessoaService.incrementarSenhaInvalida(pessoa);
-            throw new UnauthorizedError('email| E-mail ou senha inválidos');
+            throw new BadRequestException('email| E-mail ou senha inválidos');
         }
 
         return pessoa as Pessoa;
