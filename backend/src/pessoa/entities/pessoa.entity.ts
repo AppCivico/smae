@@ -23,6 +23,8 @@ export class Pessoa {
     @ApiHideProperty()
     senha_bloqueada?: boolean
 
+    desativado: boolean
+
     @ApiHideProperty()
     pessoa_fisica?: PessoaFisica | null
 
