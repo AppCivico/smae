@@ -494,7 +494,8 @@ export class PessoaService {
                 email: true,
                 nome_exibicao: true,
                 senha_bloqueada: true,
-                pessoa_fisica: true
+                pessoa_fisica: true,
+                desativado: true
             }
         });
         if (!pessoa) return undefined;
@@ -569,6 +570,7 @@ export class PessoaService {
                 join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
                 join privilegio p on p.id = priv.privilegio_id
                 join modulo m on p.modulo_id = m.id
+                join pessoa p on p.id = pp.pessoa_id AND p.desativado = false
                 where pp.pessoa_id = ${pessoaId}
             )
             select
@@ -576,6 +578,9 @@ export class PessoaService {
                 array_agg(distinct cod_modulos) as modulos
             from perms;
         `;
+        if (!dados[0] || dados[0].modulos.length === 0) {
+            throw new ForbiddenException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
+        }
 
         return dados[0];
     }
