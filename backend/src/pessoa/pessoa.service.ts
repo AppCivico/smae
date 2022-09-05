@@ -1,4 +1,4 @@
-import { ForbiddenException, HttpException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import * as bcrypt from 'bcrypt';
@@ -650,7 +650,7 @@ export class PessoaService {
             from perms;
         `;
         if (!dados[0] || dados[0].modulos.length === 0) {
-            throw new ForbiddenException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
+            throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
 
         return dados[0];
