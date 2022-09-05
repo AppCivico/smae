@@ -581,7 +581,8 @@ export class PessoaService {
                 array_agg(distinct cod_modulos) as modulos
             from perms;
         `;
-        if (!dados[0] || dados[0].modulos.length === 0) {
+        console.log(dados)
+        if (!dados[0] || dados[0].modulos == null || dados[0].modulos.length === 0) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
 
