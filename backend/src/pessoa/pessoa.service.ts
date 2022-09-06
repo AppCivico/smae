@@ -18,9 +18,13 @@ export class PessoaService {
 
     #maxQtdeSenhaInvalidaParaBlock: number
     #urlLoginSMAE: string
+    #cpfObrigatorioSemRF: boolean
+    #matchEmailRFObrigatorio: string
     constructor(private readonly prisma: PrismaService) {
         this.#maxQtdeSenhaInvalidaParaBlock = Number(process.env.MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK) || 3
         this.#urlLoginSMAE = process.env.URL_LOGIN_SMAE || '#/login-smae';
+        this.#cpfObrigatorioSemRF = Number(process.env.CPF_OBRIGATORIO_SEM_RF) == 1
+        this.#matchEmailRFObrigatorio = process.env.MATCH_EMAIL_RF_OBRIGATORIO || ''
     }
 
     pessoaAsHash(pessoa: Pessoa) {
@@ -214,18 +218,21 @@ export class PessoaService {
         }
     }
 
+    verificarCPFObrigatorio(createPessoaDto: CreatePessoaDto) {
+        if (!this.#cpfObrigatorioSemRF) return
+
+        if (!createPessoaDto.registro_funcionario && !createPessoaDto.cpf) {
+            throw new HttpException('cpf| CPF obrigatório para conta sem registro_funcionario', 400);
+        }
+    }
+
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         let pessoa = await this.prisma.pessoa.findFirst({
             where: {
                 id: pessoaId
             },
             include: {
-                pessoa_fisica: {
-                    select: {
-                        lotacao: true,
-                        orgao_id: true,
-                    }
-                },
+                pessoa_fisica: true,
                 PessoaPerfil: {
                     select: {
                         perfil_acesso_id: true
@@ -246,6 +253,9 @@ export class PessoaService {
             email: pessoa.email,
             lotacao: pessoa.pessoa_fisica?.lotacao ? pessoa.pessoa_fisica.lotacao : undefined,
             orgao_id: pessoa.pessoa_fisica?.orgao_id || undefined,
+            cargo: pessoa.pessoa_fisica?.cargo || null,
+            registro_funcionario: pessoa.pessoa_fisica?.registro_funcionario || null,
+            cpf: pessoa.pessoa_fisica?.cpf || null,
             perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id)
         };
 
@@ -356,6 +366,7 @@ export class PessoaService {
     async criarPessoa(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
 
         await this.verificarPrivilegiosCriacao(createPessoaDto, user);
+        this.verificarCPFObrigatorio(createPessoaDto);
 
         this.logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         let newPass = this.#generateRndPass(10);
@@ -377,6 +388,24 @@ export class PessoaService {
             const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
             if (emailExists > 0) {
                 throw new HttpException('email| E-mail já tem conta', 400);
+            }
+
+            if (createPessoaDto.registro_funcionario) {
+                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                    where: { pessoa_fisica: { registro_funcionario: createPessoaDto.registro_funcionario } }
+                });
+                if (registroFuncionarioExists > 0) {
+                    throw new HttpException('registro_funcionario| Registro de funcionário já atrelado a outra conta', 400);
+                }
+            }
+
+            if (createPessoaDto.cpf) {
+                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                    where: { pessoa_fisica: { cpf: createPessoaDto.cpf } }
+                });
+                if (registroFuncionarioExists > 0) {
+                    throw new HttpException('cpf| CPF já atrelado a outra conta', 400);
+                }
             }
 
             let pessoaFisica;

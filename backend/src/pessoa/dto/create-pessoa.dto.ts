@@ -73,4 +73,22 @@ export class CreatePessoaDto {
     */
     @IsArray({ message: '$property| está inválido' })
     perfil_acesso_ids: number[];
+
+    /**
+       * registro_funcionario
+       * @example \d{3}\.\d{3}\-\d
+    */
+    @IsOptional()
+    @IsString({ message: '$property| Registro_funcionario: Precisa ser alfanumérico' })
+    @MaxLength(9, { message: '$property| registro_funcionario: Máximo 9 caracteres' })
+    registro_funcionario?: string;
+
+    /**
+       * cpf
+       * @example xxx.xxx.xxx-xx
+    */
+    @IsOptional()
+    @IsString({ message: '$property| cpf: Precisa ser alfanumérico' })
+    @MaxLength(14, { message: '$property| cpf: Máximo 14 caracteres' })
+    cpf?: string;
 }

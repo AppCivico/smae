@@ -141,11 +141,13 @@ model PerfilPrivilegio {
 model PessoaFisica {
     id Int @id @default(autoincrement())
 
-    cargo    String?
-    lotacao  String?
-    orgao_id Int
-    orgao    Orgao    @relation(fields: [orgao_id], references: [id])
-    pessoa   Pessoa[]
+    cargo                String?
+    lotacao              String?
+    orgao_id             Int
+    orgao                Orgao    @relation(fields: [orgao_id], references: [id])
+    pessoa               Pessoa[]
+    registro_funcionario String?
+    cpf                  String?
 
     @@map("pessoa_fisica")
 }
