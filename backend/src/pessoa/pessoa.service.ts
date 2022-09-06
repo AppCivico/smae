@@ -38,7 +38,7 @@ export class PessoaService {
     async senhaCorreta(senhaInformada: string, pessoa: Partial<Pessoa>) {
         if (!pessoa.senha)
             throw new Error('faltando senha')
-        
+
         return await bcrypt.compare(senhaInformada, pessoa.senha);
     }
 
@@ -110,11 +110,11 @@ export class PessoaService {
         });
     }
 
-    async escreverNovaSenhaById(pessoaId: number, senha: string) {
+    async escreverNovaSenhaById(pessoaId: number, senha: string, keepSession?: boolean) {
 
         let data = {
             senha_bloqueada: false,
-            senha_bloqueada_em: undefined,
+            senha_bloqueada_em: null,
             senha: await bcrypt.hash(senha, BCRYPT_ROUNDS),
             qtde_senha_invalida: 0,
         };
@@ -126,8 +126,10 @@ export class PessoaService {
                 data: data
             });
             if (updatePassword.count == 1) {
-                this.logger.log(`escreverNovaSenhaById: sucesso, removendo sessões anteriores`);
-                await this.#invalidarTodasSessoesAtivas(pessoaId, prisma);
+                if (!keepSession) {
+                    this.logger.log(`escreverNovaSenhaById: sucesso, removendo sessões anteriores`);
+                    await this.#invalidarTodasSessoesAtivas(pessoaId, prisma);
+                }
                 return true;
             }
 
@@ -337,6 +339,8 @@ export class PessoaService {
                             cargo: updatePessoaDto.cargo,
                             lotacao: updatePessoaDto.lotacao,
                             orgao_id: updatePessoaDto.orgao_id,
+                            cpf: updatePessoaDto.cpf,
+                            registro_funcionario: updatePessoaDto.registro_funcionario,
                         }
                     }
                 }
@@ -456,7 +460,9 @@ export class PessoaService {
                 pessoaFisica = await prisma.pessoaFisica.create({
                     data: {
                         orgao_id: createPessoaDto.orgao_id,
-                        lotacao: createPessoaDto.lotacao
+                        lotacao: createPessoaDto.lotacao,
+                        cpf: createPessoaDto.cpf,
+                        registro_funcionario: createPessoaDto.registro_funcionario,
                     }
                 });
             }
@@ -665,7 +671,7 @@ export class PessoaService {
     async novaSenha(novaSenhaDto: NovaSenhaDto, user: PessoaFromJwt) {
         const pessoa = await this.prisma.pessoa.findFirstOrThrow({
             where: { id: user.id },
-            select: {senha: true}
+            select: { senha: true }
         });
 
         let isPasswordValid = await this.senhaCorreta(novaSenhaDto.senha_corrente, pessoa);
@@ -673,7 +679,9 @@ export class PessoaService {
             throw new BadRequestException('senha_corrente| Senha atual não confere');
 
 
-        await this.escreverNovaSenhaById(user.id, novaSenhaDto.senha_nova)
+        if (!await this.escreverNovaSenhaById(user.id, novaSenhaDto.senha_nova, true)) {
+            throw new BadRequestException('senha não pode ser alterada no momento')
+        };
     }
 
 }
