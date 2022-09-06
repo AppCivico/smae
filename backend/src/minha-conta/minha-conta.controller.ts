@@ -9,22 +9,22 @@ import { PessoaService } from 'src/pessoa/pessoa.service';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 
 @ApiTags('Minha Conta')
-@Controller('minha-conta')
+@Controller('')
 export class MinhaContaController {
     constructor(private readonly pessoaService: PessoaService) { }
 
-    @Get()
+    @Get('minha-conta')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     getMe(@CurrentUser() user: PessoaFromJwt): MinhaContaDto {
         return { 'sessao': user };
     }
 
-    @Post()
+    @Post('trocar-senha')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.ACCEPTED)
+    @HttpCode(HttpStatus.NO_CONTENT)
     async updatePassword(@Body() novaSenhaDto: NovaSenhaDto, @CurrentUser() user: PessoaFromJwt) {
         await this.pessoaService.novaSenha(novaSenhaDto, user);
         return '';
