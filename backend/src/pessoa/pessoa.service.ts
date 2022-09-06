@@ -218,11 +218,23 @@ export class PessoaService {
         }
     }
 
-    verificarCPFObrigatorio(createPessoaDto: CreatePessoaDto) {
+    verificarCPFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
         if (!this.#cpfObrigatorioSemRF) return
 
-        if (!createPessoaDto.registro_funcionario && !createPessoaDto.cpf) {
+        if (!dto.registro_funcionario && !dto.cpf) {
             throw new HttpException('cpf| CPF obrigatório para conta sem registro_funcionario', 400);
+        }
+    }
+
+    verificarRFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
+        if (this.#matchEmailRFObrigatorio && !dto.registro_funcionario && dto.email && dto.email.indexOf(this.#matchEmailRFObrigatorio) >= 0) {
+            throw new HttpException(`registro_funcionario| Registro de funcionário obrigatório para e-mails contendo ${this.#matchEmailRFObrigatorio}`, 400);
+        }
+
+        if (!this.#cpfObrigatorioSemRF) return
+
+        if (!dto.cpf && !dto.registro_funcionario) {
+            throw new HttpException('registro_funcionario| Registro de funcionário obrigatório caso CPF não seja informado', 400);
         }
     }
 
@@ -265,6 +277,8 @@ export class PessoaService {
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
         updatePessoaDto.id = pessoaId;
         await this.verificarPrivilegiosEdicao(updatePessoaDto, user);
+        this.verificarCPFObrigatorio(updatePessoaDto);
+        this.verificarRFObrigatorio(updatePessoaDto);
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
@@ -278,6 +292,30 @@ export class PessoaService {
             }) : 0;
             if (emailExists > 0) {
                 throw new HttpException('email| E-mail está em uso em outra conta', 400);
+            }
+
+            if (updatePessoaDto.registro_funcionario) {
+                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                    where: {
+                        NOT: { id: pessoaId },
+                        pessoa_fisica: { registro_funcionario: updatePessoaDto.registro_funcionario }
+                    }
+                });
+                if (registroFuncionarioExists > 0) {
+                    throw new HttpException('registro_funcionario| Registro de funcionário já atrelado a outra conta', 400);
+                }
+            }
+
+            if (updatePessoaDto.cpf) {
+                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                    where: {
+                        NOT: { id: pessoaId },
+                        pessoa_fisica: { cpf: updatePessoaDto.cpf }
+                    }
+                });
+                if (registroFuncionarioExists > 0) {
+                    throw new HttpException('cpf| CPF já atrelado a outra conta', 400);
+                }
             }
 
 
@@ -367,6 +405,7 @@ export class PessoaService {
 
         await this.verificarPrivilegiosCriacao(createPessoaDto, user);
         this.verificarCPFObrigatorio(createPessoaDto);
+        this.verificarRFObrigatorio(createPessoaDto);
 
         this.logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         let newPass = this.#generateRndPass(10);
