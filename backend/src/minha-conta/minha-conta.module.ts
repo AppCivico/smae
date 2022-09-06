@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
+import { PessoaModule } from 'src/pessoa/pessoa.module';
 import { MinhaContaController } from './minha-conta.controller';
 
 @Module({
-  controllers: [MinhaContaController]
+    controllers: [MinhaContaController],
+    imports: [PessoaModule]
 })
-export class MinhaContaModule {}
+export class MinhaContaModule { }

@@ -8,6 +8,7 @@ import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegio
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { UpdatePessoaDto } from 'src/pessoa/dto/update-pessoa.dto';
 import { DetalhePessoaDto } from 'src/pessoa/dto/detalhe-pessoa.dto';
+import { NovaSenhaDto } from 'src/minha-conta/models/nova-senha.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -34,7 +35,10 @@ export class PessoaService {
         }
     }
 
-    async senhaCorreta(senhaInformada: string, pessoa: Pessoa) {
+    async senhaCorreta(senhaInformada: string, pessoa: Partial<Pessoa>) {
+        if (!pessoa.senha)
+            throw new Error('faltando senha')
+        
         return await bcrypt.compare(senhaInformada, pessoa.senha);
     }
 
@@ -656,6 +660,20 @@ export class PessoaService {
 
         console.log('return', dados[0])
         return dados[0];
+    }
+
+    async novaSenha(novaSenhaDto: NovaSenhaDto, user: PessoaFromJwt) {
+        const pessoa = await this.prisma.pessoa.findFirstOrThrow({
+            where: { id: user.id },
+            select: {senha: true}
+        });
+
+        let isPasswordValid = await this.senhaCorreta(novaSenhaDto.senha_corrente, pessoa);
+        if (!isPasswordValid)
+            throw new BadRequestException('senha_corrente| Senha atual não confere');
+
+
+        await this.escreverNovaSenhaById(user.id, novaSenhaDto.senha_nova)
     }
 
 }
