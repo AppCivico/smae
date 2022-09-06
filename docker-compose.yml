@@ -38,6 +38,8 @@ services:
       S3_SECRET_KEY: "${S3_SECRET_KEY}"
       S3_BUCKET: "${S3_BUCKET}"
       S3_HOST: "${S3_HOST}"
+      CPF_OBRIGATORIO_SEM_RF: "${CPF_OBRIGATORIO_SEM_RF}"
+      MATCH_EMAIL_RF_OBRIGATORIO: "${MATCH_EMAIL_RF_OBRIGATORIO}"
     networks:
       - postgres
       - minio
