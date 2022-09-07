@@ -49,17 +49,21 @@ model Pessoa {
     OdsQueRemovi    Ods[] @relation("Removedor")
     OdsQueAtualizei Ods[] @relation("Atualizador")
 
-    EixoQueCriei     Eixo[] @relation("Criador")
-    EixoQueRemovi    Eixo[] @relation("Removedor")
-    EixoQueAtualizei Eixo[] @relation("Atualizador")
+    SubTemaQueCriei     SubTema[] @relation("Criador")
+    SubTemaQueRemovi    SubTema[] @relation("Removedor")
+    SubTemaQueAtualizei SubTema[] @relation("Atualizador")
+
+    EixoQueCriei     MacroTema[] @relation("Criador")
+    EixoQueRemovi    MacroTema[] @relation("Removedor")
+    EixoQueAtualizei MacroTema[] @relation("Atualizador")
 
     PDMQueCriei     Pdm[] @relation("Criador")
     PDMQueDesativei Pdm[] @relation("Desativador")
     PDMQueAtualizei Pdm[] @relation("Atualizador")
 
-    OEQueCriei     ObjetivoEstrategico[] @relation("Criador")
-    OEQueDesativei ObjetivoEstrategico[] @relation("Removedor")
-    OEQueAtualizei ObjetivoEstrategico[] @relation("Atualizador")
+    OEQueCriei     Tema[] @relation("Criador")
+    OEQueDesativei Tema[] @relation("Removedor")
+    OEQueAtualizei Tema[] @relation("Atualizador")
 
     TagQueCriei     Tag[] @relation("Criador")
     TagQueDesativei Tag[] @relation("Removedor")
@@ -267,6 +271,18 @@ model Pdm {
     prefeito       String
     equipe_tecnica String?
 
+    possui_macro_tema          Boolean @default(true)
+    possui_tema                Boolean @default(true)
+    possui_sub_tema            Boolean @default(true)
+    possui_contexto_meta       Boolean @default(true)
+    possui_complementacao_meta Boolean @default(true)
+
+    rotulo_macro_tema          String @default("Macro Tema")
+    rotulo_tema                String @default("Tema")
+    rotulo_sub_tema            String @default("Sub Tema")
+    rotulo_contexto_meta       String @default("Contexto")
+    rotulo_complementacao_meta String @default("Complementação")
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -277,15 +293,16 @@ model Pdm {
     atualizador         Pessoa?               @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador             Pessoa?               @relation("Criador", fields: [criado_por], references: [id])
     desativador         Pessoa?               @relation("Desativador", fields: [desativado_por], references: [id])
-    Eixo                Eixo[]
+    Eixo                MacroTema[]
     Tag                 Tag[]
-    ObjetivoEstrategico ObjetivoEstrategico[]
+    ObjetivoEstrategico Tema[]
     ArquivoDocumento    ArquivoDocumento[]
+    SubTema             SubTema[]
 
     @@map("pdm")
 }
 
-model Eixo {
+model MacroTema {
     id Int @id @default(autoincrement())
 
     descricao String
@@ -305,6 +322,28 @@ model Eixo {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("eixo")
+}
+
+model SubTema {
+    id Int @id @default(autoincrement())
+
+    descricao String
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("subtema")
 }
 
 model FonteRecurso {
@@ -377,7 +416,7 @@ model Tag {
     @@map("tag")
 }
 
-model ObjetivoEstrategico {
+model Tema {
     id Int @id @default(autoincrement())
 
     descricao String

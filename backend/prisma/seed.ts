@@ -47,17 +47,24 @@ const PrivConfig: any = {
         ['CadastroPessoa.administrador', 'Editar/Inserir/Inativar/Ativar qualquer pessoa, até mesmo outros administradores'],
     ],
 
-
-    CadastroEixo: [
-        ['CadastroEixo.inserir', 'Inserir Eixo'],
-        ['CadastroEixo.editar', 'Editar Eixo'],
-        ['CadastroEixo.remover', 'Remover Eixo'],
+    CadastroEixo:false,
+    CadastroMacroTema: [
+        ['CadastroMacroTema.inserir', 'Inserir Macro Tema'],
+        ['CadastroMacroTema.editar', 'Editar Macro Tema'],
+        ['CadastroMacroTema.remover', 'Remover Macro Tema'],
     ],
 
-    CadastroObjetivoEstrategico: [
-        ['CadastroObjetivoEstrategico.inserir', 'Inserir Objetivo Estratégico'],
-        ['CadastroObjetivoEstrategico.editar', 'Editar Objetivo Estratégico'],
-        ['CadastroObjetivoEstrategico.remover', 'Remover Objetivo Estratégico'],
+    CadastroObjetivoEstrategico:false,
+    CadastroTema: [
+        ['CadastroTema.inserir', 'Inserir Macro Tema'],
+        ['CadastroTema.editar', 'Editar Macro Tema'],
+        ['CadastroTema.remover', 'Remover Macro Tema'],
+    ],
+
+    CadastroSubTema: [
+        ['CadastroSubTema.inserir', 'Inserir Macro Tema'],
+        ['CadastroSubTema.editar', 'Editar Macro Tema'],
+        ['CadastroSubTema.remover', 'Remover Macro Tema'],
     ],
 
     CadastroTag: [

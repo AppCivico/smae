@@ -1,20 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateEixoDto } from './dto/create-eixo.dto';
-import { UpdateEixoDto } from './dto/update-eixo.dto';
+import { CreateSubTemaDto } from './dto/create-subtema.dto';
+import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 
 @Injectable()
-export class EixoService {
+export class SubTemaService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
+    async create(createSubTemaDto: CreateSubTemaDto, user: PessoaFromJwt) {
 
         const created = await this.prisma.macroTema.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
-                ...createEixoDto,
+                ...createSubTemaDto,
             },
             select: { id: true, descricao: true }
         });
@@ -36,15 +36,15 @@ export class EixoService {
         return listActive;
     }
 
-    async update(id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
-        delete updateEixoDto.pdm_id; // nao deixa editar o PDM
+    async update(id: number, updateSubTemaDto: UpdateSubTemaDto, user: PessoaFromJwt) {
+        delete updateSubTemaDto.pdm_id; // nao deixa editar o PDM
 
         await this.prisma.macroTema.update({
             where: { id: id },
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
-                ...updateEixoDto,
+                ...updateSubTemaDto,
             },
         });
 

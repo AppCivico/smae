@@ -10,9 +10,48 @@ import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.
 import { FindOneParams } from 'src/common/decorators/find-one-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
-@ApiTags('Objetivo Estratégico')
+@ApiTags('Objetivo Estratégico (Acessa via Tema)')
 @Controller('objetivo-estrategico')
 export class ObjetivoEstrategicoController {
+    constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) { }
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroObjetivoEstrategico.inserir')
+    async create(@Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    async findAll(): Promise<ListObjetivoEstrategicoDto> {
+        return { 'linhas': await this.objetivoEstrategicoService.findAll() };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroObjetivoEstrategico.editar')
+    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt) : Promise<RecordWithId>{
+        return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroObjetivoEstrategico.remover')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.objetivoEstrategicoService.remove(+params.id, user);
+        return '';
+    }
+}
+
+@ApiTags('Tema (ex Objetivo Estratégico)')
+@Controller('tema')
+export class ObjetivoEstrategicoController2 {
     constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) { }
 
     @Post()
