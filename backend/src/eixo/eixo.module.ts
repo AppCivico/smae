@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { EixoService } from './eixo.service';
-import { EixoController } from './eixo.controller';
+import { EixoController, EixoController2 } from './eixo.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
     imports: [PrismaModule],
-    controllers: [EixoController],
+    controllers: [EixoController, EixoController2],
     providers: [EixoService]
 })
 export class EixoModule { }

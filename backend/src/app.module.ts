@@ -25,6 +25,7 @@ import { ObjetivoEstrategicoModule } from './objetivo-estrategico/objetivo-estra
 import { RegiaoModule } from './regiao/regiao.module';
 import { UploadModule } from './upload/upload.module';
 import { ConfigModule } from '@nestjs/config';
+import { SubTemaModule } from './subtema/subtema.module';
 
 
 @Module({
@@ -34,7 +35,8 @@ import { ConfigModule } from '@nestjs/config';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule
+        PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule,
+        SubTemaModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

@@ -10,7 +10,7 @@ import { UpdateEixoDto } from './dto/update-eixo.dto';
 import { FindOneParams } from 'src/common/decorators/find-one-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
-@ApiTags('Eixo')
+@ApiTags('Eixo (Acessa via MacroTema)')
 @Controller('eixo')
 export class EixoController {
     constructor(private readonly eixoService: EixoService) { }
@@ -18,7 +18,7 @@ export class EixoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroEixo.inserir')
+    @Roles('CadastroMacroTema.inserir')
     async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.eixoService.create(createEixoDto, user);
     }
@@ -32,7 +32,7 @@ export class EixoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroEixo.editar')
+    @Roles('CadastroMacroTema.editar')
     async update(@Param() params: FindOneParams, @Body() updateEixoDto: UpdateEixoDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.eixoService.update(+params.id, updateEixoDto, user);
     }
@@ -40,7 +40,46 @@ export class EixoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroEixo.remover')
+    @Roles('CadastroMacroTema.remover')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.eixoService.remove(+params.id, user);
+        return '';
+    }
+}
+
+@ApiTags('Macro Tema')
+@Controller('macrotema')
+export class EixoController2 {
+    constructor(private readonly eixoService: EixoService) { }
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMacroTema.inserir')
+    async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.eixoService.create(createEixoDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    async findAll(): Promise<ListEixoDto> {
+        return { 'linhas': await this.eixoService.findAll() };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMacroTema.editar')
+    async update(@Param() params: FindOneParams, @Body() updateEixoDto: UpdateEixoDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.eixoService.update(+params.id, updateEixoDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMacroTema.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
