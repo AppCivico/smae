@@ -91,12 +91,13 @@ const ModuloDescricao: any = {
     CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
     CadastroOds: 'Cadastro de ODS',
-    CadastroEixo: 'Cadastro de Eixo',
     CadastroPdm: 'Cadastro do PDM',
     CadastroFonteRecurso: 'Cadastro de Fonte de Recurso',
     CadastroTipoDocumento: 'Cadastro de Tipo de Arquivo',
     CadastroTag: 'Cadastro de Tag',
-    CadastroObjetivoEstrategico: 'Cadastro de Objetivo Estratégico',
+    CadastroMacroTema: 'Cadastro de Macro Tema',
+    CadastroSubTema: 'Cadastro de Sub Tema',
+    CadastroTema: 'Cadastro de Tema',
     CadastroRegiao: 'Cadastro de Regiões'
 };
 
