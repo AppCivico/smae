@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { IsBoolean, IsBooleanString, isBooleanString, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class Pdm {
@@ -78,4 +78,82 @@ export class Pdm {
     @IsOnlyDate()
     @Type(() => Date)
     periodo_do_ciclo_participativo_fim?: Date | null
+
+
+    /**
+    * Rótulo Macro Tema
+    */
+    @IsOptional()
+    @MaxLength(30, { message: '$property| Rótulo Macro Tema: Máximo 30 caracteres' })
+    rotulo_macro_tema?: string | undefined
+
+
+    /**
+    * Rótulo Tema
+    */
+    @IsOptional()
+    @MaxLength(30, { message: '$property| Rótulo Tema: Máximo 30 caracteres' })
+    rotulo_tema?: string | undefined
+
+    /**
+    * Rótulo Sub Tema
+    */
+    @IsOptional()
+    @MaxLength(30, { message: '$property| Rótulo Sub Tema: Máximo 30 caracteres' })
+    rotulo_sub_tema?: string | undefined
+
+    /**
+    * Rótulo Contexto Meta
+    */
+    @IsOptional()
+    @IsString({ message: '$property| Rótulo Contexto Meta: Precisa ser alfanumérico' })
+    @MaxLength(30, { message: '$property| Rótulo Contexto Meta: Máximo 30 caracteres' })
+    rotulo_contexto_meta?: string | undefined
+
+    /**
+    * Rótulo Complemento Meta
+    */
+    @IsOptional()
+    @IsString({ message: '$property| Rótulo Complemento Meta: Precisa ser alfanumérico' })
+    @MaxLength(30, { message: '$property| Rótulo Complemento Meta: Máximo 30 caracteres' })
+    rotulo_complementacao_meta?: string | undefined
+
+
+    /**
+    * Rótulo Macro Tema
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    possui_macro_tema?: boolean
+
+
+    /**
+    * Rótulo Tema
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    possui_tema?: boolean
+
+
+    /**
+    * Rótulo Sub Tema
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    possui_sub_tema?: boolean
+
+    /**
+    * Rótulo Contexto Meta
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    possui_contexto_meta?: boolean
+
+    /**
+    * Rótulo Complemento Meta
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    possui_complementacao_meta?: boolean
+
 }
