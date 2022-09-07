@@ -47,4 +47,16 @@ export class ListPdm {
     periodo_do_ciclo_participativo_fim: Date | null
 
 
+    rotulo_macro_tema: string
+    rotulo_tema: string
+    rotulo_sub_tema: string
+    rotulo_contexto_meta: string
+    rotulo_complementacao_meta: string
+    possui_macro_tema: boolean
+    possui_tema: boolean
+    possui_sub_tema: boolean
+    possui_contexto_meta: boolean
+    possui_complementacao_meta: boolean
+
+
 }

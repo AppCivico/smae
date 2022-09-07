@@ -52,6 +52,18 @@ export class PdmService {
                 data_publicacao: true,
                 periodo_do_ciclo_participativo_inicio: true,
                 periodo_do_ciclo_participativo_fim: true,
+
+
+                rotulo_macro_tema: true,
+                rotulo_tema: true,
+                rotulo_sub_tema: true,
+                rotulo_contexto_meta: true,
+                rotulo_complementacao_meta: true,
+                possui_macro_tema: true,
+                possui_tema: true,
+                possui_sub_tema: true,
+                possui_contexto_meta: true,
+                possui_complementacao_meta: true,
             }
         });
 
