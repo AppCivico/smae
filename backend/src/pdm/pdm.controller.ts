@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -76,5 +76,18 @@ export class PdmController {
         return { linhas: await this.pdmService.list_document(params.id, user) };
     }
 
-
+    @Delete(':id/documento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles('CadastroPdm.inserir', 'CadastroPdm.editar')
+    @ApiUnauthorizedResponse()
+    @ApiResponse({ description: 'sucesso ao remover', status: 204 })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async removerDownload(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        if (!params.id2) throw new Error('Missing params.id2')
+        await this.pdmService.remove_document(params.id, params.id2, user)
+        return null;
+    }
 }
