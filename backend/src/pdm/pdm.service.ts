@@ -202,4 +202,17 @@ export class PdmService {
         return arquivos
     }
 
+    async remove_document(pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
+        let pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
+        if (!pdm) throw new HttpException('PDM não encontrado', 404);
+
+        await this.prisma.arquivoDocumento.updateMany({
+            where: { pdm_id: pdm_id, removido_em: null, id: pdmDocId },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            }
+        });
+    }
+
 }
