@@ -27,7 +27,7 @@ function filterItems(){
         <div class="flex spacebetween center mb2">
             <h1>Tipos de Documento</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/tipo-documento/novo" class="btn big ml2" v-if="perm.CadastroTipoDocumento.inserir">Novo tipo</router-link>
+            <router-link to="/tipo-documento/novo" class="btn big ml2" v-if="perm?.CadastroTipoDocumento?.inserir">Novo tipo</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -53,7 +53,7 @@ function filterItems(){
                         <td>{{ item.descricao }}</td>
                         <td>{{ item.extensoes }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="perm.CadastroTipoDocumento.editar">
+                            <template v-if="perm?.CadastroTipoDocumento?.editar">
                                 <router-link :to="`/tipo-documento/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>

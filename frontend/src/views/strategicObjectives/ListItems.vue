@@ -27,7 +27,7 @@ function filterItems(){
         <div class="flex spacebetween center mb2">
             <h1>Objetivos Estratégicos</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/objetivos-estrategicos/novo" class="btn big ml2" v-if="perm.CadastroObjetivoEstrategico.inserir">Novo Objetivo</router-link>
+            <router-link to="/objetivos-estrategicos/novo" class="btn big ml2" v-if="perm?.CadastroTema?.inserir">Novo Objetivo</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -49,7 +49,7 @@ function filterItems(){
                         <td>{{ item.descricao }}</td>
                         <td>{{ item.pdm.descricao }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="perm.CadastroObjetivoEstrategico.editar">
+                            <template v-if="perm?.CadastroTema?.editar">
                                 <router-link :to="`/objetivos-estrategicos/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>

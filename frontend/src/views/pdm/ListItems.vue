@@ -7,7 +7,7 @@ import { useAuthStore, usePdMStore } from '@/stores';
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
-
+console.log(perm);
 const PdMStore = usePdMStore();
 const { tempPdM } = storeToRefs(PdMStore);
 PdMStore.clear();
@@ -28,9 +28,9 @@ function toggleAccordeon(t) {
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Plano de Metas</h1>
+            <h1>Programa de Metas</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/pdm/novo" class="btn big ml2" v-if="perm.CadastroPdm.inserir">Novo PdM</router-link>
+            <router-link to="/pdm/novo" class="btn big ml2" v-if="perm?.CadastroPdm?.inserir">Novo PdM</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -43,7 +43,6 @@ function toggleAccordeon(t) {
                 <tr>
                     <th style="width: 25%">Nome</th>
                     <th style="width: 25%">Descrição</th>
-                    <th style="width: 15%">Período</th>
                     <th style="width: 15%">Prefeito</th>
                     <th style="width: 10%">Ativo</th>
                     <th style="width: 10%"></th>
@@ -55,11 +54,10 @@ function toggleAccordeon(t) {
                         <tr class="tzaccordeon" @click="toggleAccordeon">
                             <td><div class="flex"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg><span>{{ item.nome }}</span></div></td>
                             <td>{{ item.descricao }}</td>
-                            <td>{{ item.data_inicio }} - {{ item.data_fim }}</td>
                             <td>{{ item.prefeito }}</td>
                             <td>{{ item.ativo?'Sim':'Não' }}</td>
                             <td style="white-space: nowrap; text-align: right;">
-                                <template v-if="perm.CadastroPdm.editar">
+                                <template v-if="perm?.CadastroPdm?.editar">
                                     <router-link :to="`/pdm/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                 </template>
                             </td>
@@ -78,7 +76,7 @@ function toggleAccordeon(t) {
                                             <tr>
                                                 <td>{{ subitem.descricao }}</td>
                                                 <td style="white-space: nowrap; text-align: right;">
-                                                    <template v-if="perm.CadastroEixo.editar">
+                                                    <template v-if="perm?.CadastroMacroTema?.editar">
                                                         <router-link :to="`/eixos/editar/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                                     </template>
                                                 </td>
@@ -86,7 +84,7 @@ function toggleAccordeon(t) {
                                         </template>
                                     </tbody>
                                 </table>
-                                <router-link :to="`/eixos/novo/${item.id}`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Eixo temático</span></router-link>
+                                <router-link v-if="perm?.CadastroMacroTema?.inserir" :to="`/eixos/novo/${item.id}`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Eixo temático</span></router-link>
                                 <br />
                                 <table class="tablemain mb1" v-if="item.objetivosEstrategicos.length">
                                     <thead>
@@ -100,7 +98,7 @@ function toggleAccordeon(t) {
                                             <tr>
                                                 <td>{{ subitem.descricao }}</td>
                                                 <td style="white-space: nowrap; text-align: right;">
-                                                    <template v-if="perm.CadastroObjetivoEstrategico.editar">
+                                                    <template v-if="perm?.CadastroTema?.editar">
                                                         <router-link :to="`/objetivos-estrategicos/editar/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                                     </template>
                                                 </td>
@@ -108,7 +106,7 @@ function toggleAccordeon(t) {
                                         </template>
                                     </tbody>
                                 </table>
-                                <router-link :to="`/objetivos-estrategicos/novo/${item.id}`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Objetivo estratégico</span></router-link>
+                                <router-link v-if="perm?.CadastroTema?.inserir" :to="`/objetivos-estrategicos/novo/${item.id}`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Objetivo estratégico</span></router-link>
                                 <br />
                                 <table class="tablemain mb1" v-if="item.tags.length">
                                     <thead>
@@ -122,7 +120,7 @@ function toggleAccordeon(t) {
                                             <tr>
                                                 <td>{{ subitem.descricao }}</td>
                                                 <td style="white-space: nowrap; text-align: right;">
-                                                    <template v-if="perm.CadastroTag.editar">
+                                                    <template v-if="perm?.CadastroTag?.editar">
                                                         <router-link :to="`/tags/editar/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                                     </template>
                                                 </td>
@@ -130,7 +128,7 @@ function toggleAccordeon(t) {
                                         </template>
                                     </tbody>
                                 </table>
-                                <router-link :to="`/tags/novo/${item.id}`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Tag</span></router-link>
+                                <router-link v-if="perm?.CadastroTag?.inserir" :to="`/tags/novo/${item.id}`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Tag</span></router-link>
                             </td>
                         </tz>
                     </template>

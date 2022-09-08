@@ -17,7 +17,7 @@ export const useAxesStore = defineStore({
         async getAll() {
             this.Axes = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/eixo`);    
+                let r = await requestS.get(`${baseUrl}/macrotema`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
                     await PdMStore.getAll();
@@ -35,7 +35,7 @@ export const useAxesStore = defineStore({
         async getAllSimple() {
             this.Axes = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/eixo`);    
+                let r = await requestS.get(`${baseUrl}/macrotema`);    
                 this.Axes = r.linhas;
             } catch (error) {
                 this.Axes = { error };
@@ -58,7 +58,7 @@ export const useAxesStore = defineStore({
                 pdm_id: Number(params.pdm_id),
                 descricao: params.descricao
             };
-            if(await requestS.post(`${baseUrl}/eixo`, m)) return true;
+            if(await requestS.post(`${baseUrl}/macrotema`, m)) return true;
             return false;
         },
         async update(id, params) {
@@ -66,11 +66,11 @@ export const useAxesStore = defineStore({
                 pdm_id: Number(params.pdm_id),
                 descricao: params.descricao
             };
-            if(await requestS.patch(`${baseUrl}/eixo/${id}`, m)) return true;
+            if(await requestS.patch(`${baseUrl}/macrotema/${id}`, m)) return true;
             return false;
         },
         async delete(id) {
-            if(await requestS.delete(`${baseUrl}/eixo/${id}`)) return true;
+            if(await requestS.delete(`${baseUrl}/macrotema/${id}`)) return true;
             return false;
         },
         async filterAxes(f){

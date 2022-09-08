@@ -83,6 +83,7 @@
 		&.column{flex-direction: column;}
 		&.g1{gap:1rem;}
 		&.g2{gap:2rem;}
+		>*{max-width: 100%;}
 		.f1{flex:1;}
 		.f2{flex:2;}
 	}
@@ -192,7 +193,7 @@
 		&:checked + span:before{background: url("@{u}check.svg") center no-repeat @amarelo; background-size: 1.5rem;}
 	}
 	.inputtext{
-		display: block; width: 100%;
+		display: block; width: 100%; max-width: 100%;
 		.br(4px); padding: .75em 1.2em; background: none;
 		border: 1.5px solid; outline: 0;
 		.search &{

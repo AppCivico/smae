@@ -10,19 +10,19 @@
     <div id="submenu">
         <h2>Entrada de dados</h2>
         <div class="links-container mb2">
-            <router-link v-if="perm.CadastroPessoa" to="/usuarios">Gerenciar usuários</router-link>
-            <router-link v-if="perm.CadastroRegiao" to="/regioes">Regiões, Subprefeituras e Distritos</router-link>
-            <router-link v-if="perm.CadastroPdm" to="/pdm" :class="{active: parentPage=='pdm'}">Plano de Metas</router-link>
+            <router-link v-if="perm?.CadastroPessoa" to="/usuarios">Gerenciar usuários</router-link>
+            <router-link v-if="perm?.CadastroRegiao" to="/regioes">Regiões, Subprefeituras e Distritos</router-link>
+            <router-link v-if="perm?.CadastroPdm" to="/pdm" :class="{active: parentPage=='pdm'}">Programa de Metas</router-link>
         </div>
         <h2>Formulários básicos</h2>
         <div class="links-container">
-            <router-link v-if="perm.CadastroOrgao" to="/orgaos">Orgãos</router-link>
-            <router-link v-if="perm.CadastroFonteRecurso" to="/fonte-recurso">Fontes de Recurso</router-link>
-            <router-link v-if="perm.CadastroTipoDocumento" to="/tipo-documento">Tipos de Documento</router-link>
-            <router-link v-if="perm.CadastroOds" to="/ods">ODS</router-link>
-            <!-- <router-link v-if="perm.CadastroEixo" to="/eixos">Eixo</router-link>
-            <router-link v-if="perm.CadastroTag" to="/tags">Tag</router-link>
-            <router-link v-if="perm.CadastroObjetivoEstrategico" to="/objetivos-estrategicos">Objetivo Estratégico</router-link> -->
+            <router-link v-if="perm?.CadastroOrgao" to="/orgaos">Orgãos</router-link>
+            <router-link v-if="perm?.CadastroFonteRecurso" to="/fonte-recurso">Fontes de Recurso</router-link>
+            <router-link v-if="perm?.CadastroTipoDocumento" to="/tipo-documento">Tipos de Documento</router-link>
+            <router-link v-if="perm?.CadastroOds" to="/ods">ODS</router-link>
+            <!-- <router-link v-if="perm?.CadastroMacroTema" to="/eixos">Eixo</router-link>
+            <router-link v-if="perm?.CadastroTag" to="/tags">Tag</router-link>
+            <router-link v-if="perm?.CadastroTema" to="/objetivos-estrategicos">Objetivo Estratégico</router-link> -->
         </div>
     </div>
 </template>

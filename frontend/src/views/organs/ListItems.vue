@@ -27,8 +27,8 @@ function filterItems(){
         <div class="flex spacebetween center mb2">
             <h1>Orgãos</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/orgaos/tipos" class="btn big amarelo ml2" v-if="perm.CadastroTipoOrgao">Gerenciar Tipos de Orgão</router-link>
-            <router-link to="/orgaos/novo" class="btn big ml1" v-if="perm.CadastroOrgao.inserir">Novo orgão</router-link>
+            <router-link to="/orgaos/tipos" class="btn big amarelo ml2" v-if="perm?.CadastroTipoOrgao">Gerenciar Tipos de Orgão</router-link>
+            <router-link to="/orgaos/novo" class="btn big ml1" v-if="perm?.CadastroOrgao?.inserir">Novo orgão</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -52,7 +52,7 @@ function filterItems(){
                         <td>{{ item.tipo_orgao.descricao }}</td>
                         <td>{{ item.sigla ?? '-' }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="perm.CadastroOrgao.editar">
+                            <template v-if="perm?.CadastroOrgao?.editar">
                                 <router-link :to="`/orgaos/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>
