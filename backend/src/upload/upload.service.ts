@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UploadBody } from 'src/upload/entities/upload.body';
 import { DownloadBody } from './entities/download.body';
 import { Download } from './entities/download.entity';
+import { TipoUpload } from './entities/tipo-upload';
 
 const DOWNLOAD_AUD = 'dl';
 const UPLOAD_AUD = 'upload';
@@ -31,13 +32,27 @@ export class UploadService {
             if (!tipoDoc) throw new HttpException('Tipo de Documento não encontrado', 404);
         }
 
+        if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
+            if (/\.zip$/i.test(file.originalname) == false || file.mimetype != 'application/zip') {
+                throw new HttpException('O arquivo de shapefile precisa ser um arquivo ZIP', 400);
+            } else if (file.size > 1000000) {
+                throw new HttpException('O arquivo de shapefile precisa ser menor que 1 megabyte', 400);
+            }
+        } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
+            if (file.size > 200000) {
+                throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
+            } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
+            }
+        }
+
         const nextVal: any[] = await this.prisma.$queryRaw`select nextval('arquivo_id_seq'::regclass) as id`;
 
         const arquivoId = Number(nextVal[0].id);
 
         let key = [
             'uploads',
-            createUploadDto.tipo.toLocaleLowerCase(),
+            String(createUploadDto.tipo).toLocaleLowerCase(),
             'by-user',
             String(user.id),
             new Date(Date.now()).toISOString(),
@@ -66,7 +81,7 @@ export class UploadService {
                 nome_original: file.originalname,
                 tamanho_bytes: file.size,
                 descricao: createUploadDto.descricao,
-                tipo: createUploadDto.tipo,
+                tipo: String(createUploadDto.tipo),
                 tipo_documento_id: createUploadDto.tipo_documento_id,
             },
             select: { id: true }
