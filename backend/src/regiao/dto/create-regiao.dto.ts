@@ -16,6 +16,7 @@ export class CreateRegiaoDto {
       * Código (IBGE, etc)
       * @example 27
        */
+    @IsOptional()
     @IsPositive({ message: '$property| Precisa ser um número' })
     @Type(() => Number)
     codigo?: number;
