@@ -8,11 +8,16 @@ export const useRegionsStore = defineStore({
         listregions: {},
         regions: {},
         tempRegions: {},
+        singleTempRegions: {},
     }),
     actions: {
         clear (){
             this.regions = {};
             this.tempRegions = {};
+            this.singleTempRegions = {};
+        },
+        clearEdit (){
+            this.singleTempRegions = {};
         },
         async getAll() {
             this.regions = { loading: true };
@@ -29,7 +34,13 @@ export const useRegionsStore = defineStore({
                             if(!g[z.id]) g[z.id] = z;
                         }else{
                             if(!g[z.parente_id]){
-                                g[h[z.parente_id].parente_id].children[z.parente_id].children[z.id] = z;
+
+                                if(!g[h[z.parente_id].parente_id]){ // Se for neto
+
+                                    g[h[h[z.parente_id].parente_id].parente_id].children[h[z.parente_id].parente_id].children[z.parente_id].children[z.id] = z;
+                                }else{
+                                    g[h[z.parente_id].parente_id].children[z.parente_id].children[z.id] = z;
+                                }
                             }else{
                                 g[z.parente_id].children[z.id] = z;
                             }
@@ -41,6 +52,9 @@ export const useRegionsStore = defineStore({
                             xx.children = Object.values(xx.children);
                             xx.children.forEach(xxx=>{
                                 xxx.children = Object.values(xxx.children);
+                                xxx.children.forEach(xxxx=>{
+                                    if(xxxx.children)xxxx.children = Object.values(xxxx.children);
+                                });
                             });
                         });
                     });
@@ -53,15 +67,15 @@ export const useRegionsStore = defineStore({
             }
         },
         async getById(id) {
-            this.tempRegions = { loading: true };
+            this.singleTempRegions = { loading: true };
             try {
                 if(!this.listregions.length){
                     await this.getAll();
                 }
-                this.tempRegions = this.listregions.find((u)=>u.id == id);
-                if(!this.tempRegions) throw 'Item não encontrado';
+                this.singleTempRegions = this.listregions.find((u)=>u.id == id);
+                if(!this.singleTempRegions) throw 'Item não encontrado';
             } catch (error) {
-                this.tempRegions = { error };
+                this.singleTempRegions = { error };
             }
         },
         async insert(params) {
@@ -89,11 +103,11 @@ export const useRegionsStore = defineStore({
             return false;
         },
         async filterRegions(f){
-            this.tempRegions = { loading: true };
+            if(!this.tempRegions.length)this.tempRegions = { loading: true };
             try {
-                if(!this.regions.length){
+                //if(!this.regions.length){
                     await this.getAll();
-                }
+                //}
 
                 if(f&&f.textualSearch){
                     var b = f.textualSearch.toLowerCase();

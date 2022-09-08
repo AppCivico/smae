@@ -38,9 +38,9 @@ export const router = createRouter({
                 { path: '', component: ListOrgans, props:{submenu:SubmenuConfig} },
                 { path: 'novo', component: AddEditOrgans, props:{submenu:SubmenuConfig} },
                 { path: 'editar/:id', component: AddEditOrgans, props:{submenu:SubmenuConfig} },
-                { path: 'tipos', component: ListOrganTypes },
-                { path: 'tipos/novo', component: AddEditOrganTypes },
-                { path: 'tipos/editar/:id', component: AddEditOrganTypes }
+                { path: 'tipos', component: ListOrganTypes, props:{submenu:SubmenuConfig}  },
+                { path: 'tipos/novo', component: AddEditOrganTypes, props:{submenu:SubmenuConfig}  },
+                { path: 'tipos/editar/:id', component: AddEditOrganTypes, props:{submenu:SubmenuConfig}  }
             ]
         },
         { path: '/fonte-recurso',
@@ -98,12 +98,13 @@ export const router = createRouter({
         { path: '/regioes',
             children: [
                 { path: '', component: ListRegions, props:{submenu:SubmenuConfig} },
-                { path: 'novo', component: AddEditRegions, props:{type:"novo", submenu:SubmenuConfig} },
-                { path: 'novo/:id', component: AddEditRegions, props:{type:"novo", submenu:SubmenuConfig} },
-                { path: 'novo/:id/:id2', component: AddEditRegions, props:{type:"novo", submenu:SubmenuConfig} },
-                { path: 'editar/:id', component: AddEditRegions, props:{type:"editar", submenu:SubmenuConfig}  },
-                { path: 'editar/:id/:id2', component: AddEditRegions, props:{type:"editar", submenu:SubmenuConfig}  },
-                { path: 'editar/:id/:id2/:id3', component: AddEditRegions, props:{type:"editar", submenu:SubmenuConfig}  },
+                { path: 'novo', component: ListRegions, props:{type:"novo", submenu:SubmenuConfig} },
+                { path: 'novo/:id', component: ListRegions, props:{type:"novo", submenu:SubmenuConfig} },
+                { path: 'novo/:id/:id2/:id3', component: ListRegions, props:{type:"novo", submenu:SubmenuConfig} },
+                { path: 'editar/:id', component: ListRegions, props:{type:"editar", submenu:SubmenuConfig}  },
+                { path: 'editar/:id/:id2', component: ListRegions, props:{type:"editar", submenu:SubmenuConfig}  },
+                { path: 'editar/:id/:id2/:id3', component: ListRegions, props:{type:"editar", submenu:SubmenuConfig}  },
+                { path: 'editar/:id/:id2/:id3/:id4', component: ListRegions, props:{type:"editar", submenu:SubmenuConfig}  },
             ]
         },
 

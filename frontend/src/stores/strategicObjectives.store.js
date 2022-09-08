@@ -17,7 +17,7 @@ export const useStrategicObjectivesStore = defineStore({
         async getAll() {
             this.strategicObjectives = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/objetivo-estrategico`);    
+                let r = await requestS.get(`${baseUrl}/tema`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
                     await PdMStore.getAll();
@@ -35,7 +35,7 @@ export const useStrategicObjectivesStore = defineStore({
         async getAllSimple() {
             this.strategicObjectives = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/objetivo-estrategico`);    
+                let r = await requestS.get(`${baseUrl}/tema`);    
                 this.strategicObjectives = r.linhas;
             } catch (error) {
                 this.strategicObjectives = { error };
@@ -54,7 +54,7 @@ export const useStrategicObjectivesStore = defineStore({
             }
         },
         async insert(params) {
-            if(await requestS.post(`${baseUrl}/objetivo-estrategico`, params)) return true;
+            if(await requestS.post(`${baseUrl}/tema`, params)) return true;
             return false;
         },
         async update(id, params) {
@@ -62,11 +62,11 @@ export const useStrategicObjectivesStore = defineStore({
                 pdm_id: params.pdm_id,
                 descricao: params.descricao,
             };
-            if(await requestS.patch(`${baseUrl}/objetivo-estrategico/${id}`, m)) return true;
+            if(await requestS.patch(`${baseUrl}/tema/${id}`, m)) return true;
             return false;
         },
         async delete(id) {
-            if(await requestS.delete(`${baseUrl}/objetivo-estrategico/${id}`)) return true;
+            if(await requestS.delete(`${baseUrl}/tema/${id}`)) return true;
             return false;
         },
         async filterStrategicObjectives(f){

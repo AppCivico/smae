@@ -21,7 +21,8 @@ async function callbackFn(){
                 <button @click="alertStore.clear()" class="btn amarelo outline">Cancelar</button>
             </template>
             <template v-else-if="alert.type=='confirm'">
-                <router-link :to="alert.url" class="btn amarelo mr1" @click="alertStore.clear()">Sair sem salvar</router-link>
+                <router-link v-if="typeof alert.url == 'string'" :to="alert.url" class="btn amarelo mr1" @click="alertStore.clear()">Sair sem salvar</router-link>
+                <button v-if="typeof alert.url != 'string'" @click="alert.url" class="btn amarelo mr1">Sair sem salvar</button>
                 <button @click="alertStore.clear()" class="btn amarelo outline">Cancelar</button>
             </template>
             <template v-else>

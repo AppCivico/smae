@@ -3,9 +3,9 @@ import { Alert, EditModal } from '@/components';
 </script>
 
 <template>
-    <Alert />
     <router-view />
     <EditModal />
+    <Alert />
 </template>
 
 <style lang="less">

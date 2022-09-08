@@ -90,7 +90,7 @@ function maskDate(el){
         </div>
         <template v-if="!(tempPdM?.loading || tempPdM?.error)">
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempPdM" v-slot="{ errors, isSubmitting }">
-                <div class="flex g2 mb2" v-if="id&&perm.CadastroPdm.inativar">
+                <div class="flex g2 mb2" v-if="id&&perm?.CadastroPdm?.inativar">
                     <div class="">
                         <label class="block mb1">
                             <Field name="desativado" class="inputcheckbox" type="checkbox" value=1 :checked="desativado" /><span>Inativar PdM</span>
@@ -107,7 +107,7 @@ function maskDate(el){
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Descrição <span class="tvermelho">*</span></label>
-                        <Field name="descricao" type="text" class="inputtext light mb1" :class="{ 'error': errors.descricao }" />
+                        <Field name="descricao" as="textarea" rows='3' class="inputtext light mb1" :class="{ 'error': errors.descricao }" />
                         <div class="error-msg">{{ errors.descricao }}</div>
                     </div>
                 </div>
