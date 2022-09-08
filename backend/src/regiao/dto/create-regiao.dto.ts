@@ -13,6 +13,14 @@ export class CreateRegiaoDto {
     nivel: number;
 
     /**
+      * Código (IBGE, etc)
+      * @example 27
+       */
+    @IsPositive({ message: '$property| Precisa ser um número' })
+    @Type(() => Number)
+    codigo?: number;
+
+    /**
        * Descrição
        * @example "Subprefeitura da Sé"
     */
