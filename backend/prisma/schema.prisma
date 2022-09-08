@@ -290,9 +290,9 @@ model Pdm {
     desativado_por Int?
     desativado_em  DateTime? @db.Timestamptz(6)
 
-    atualizador         Pessoa?               @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador             Pessoa?               @relation("Criador", fields: [criado_por], references: [id])
-    desativador         Pessoa?               @relation("Desativador", fields: [desativado_por], references: [id])
+    atualizador         Pessoa?            @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador             Pessoa?            @relation("Criador", fields: [criado_por], references: [id])
+    desativador         Pessoa?            @relation("Desativador", fields: [desativado_por], references: [id])
     Eixo                MacroTema[]
     Tag                 Tag[]
     ObjetivoEstrategico Tema[]
@@ -444,6 +444,7 @@ model Regiao {
     descricao  String
     shapefile  String?
     nivel      Int
+    codigo     Int?
     parente_id Int?
 
     arquivo_shapefile_id Int?

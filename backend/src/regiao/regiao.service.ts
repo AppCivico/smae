@@ -74,6 +74,7 @@ export class RegiaoService {
                 id: true,
                 descricao: true,
                 nivel: true,
+                codigo: true,
                 parente_id: true,
                 arquivo_shapefile_id: true,
                 shapefile: true
@@ -166,6 +167,7 @@ export class RegiaoService {
                 id: true,
                 descricao: true,
                 nivel: true,
+                codigo: true,
                 parente_id: true,
                 shapefile: true,
             }
