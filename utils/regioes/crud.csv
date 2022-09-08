@@ -1,0 +1,135 @@
+id,codigo,descricao,parente_id,nivel,shape,shapefile
+1,27,São Paulo,,1,,1.shp
+2,2,Leste,1,2,,2.shp
+3,3,Norte,1,2,,3.shp
+4,5,Sul,1,2,,4.shp
+5,4,Oeste,1,2,,5.shp
+6,1,Centro,1,2,,6.shp
+7,17,Campo Limpo,4,3,,7.shp
+8,18,M'Boi Mirim,4,3,,8.shp
+9,19,Capela Do Socorro,4,3,,9.shp
+10,31,Cidade Tiradentes,2,3,,10.shp
+11,2,Pirituba-Jaragua,3,3,,11.shp
+12,3,Freguesia-Brasilandia,3,3,,12.shp
+13,4,Casa Verde-Cachoeirinha,3,3,,13.shp
+14,5,Santana-Tucuruvi,3,3,,14.shp
+15,6,Jacana-Tremembe,3,3,,15.shp
+16,7,Vila Maria-Vila Guilherme,3,3,,16.shp
+17,21,Penha,2,3,,17.shp
+18,22,Ermelino Matarazzo,2,3,,18.shp
+19,23,Sao Miguel,2,3,,19.shp
+20,24,Itaim Paulista,2,3,,20.shp
+21,27,Itaquera,2,3,,21.shp
+22,28,Guaianases,2,3,,22.shp
+23,8,Lapa,5,3,,23.shp
+24,9,Se,6,3,,24.shp
+25,25,Mooca,2,3,,25.shp
+26,26,Aricanduva-Formosa-Carrao,2,3,,26.shp
+27,30,Sao Mateus,2,3,,27.shp
+28,29,Vila Prudente,2,3,,28.shp
+29,13,Ipiranga,4,3,,29.shp
+30,12,Vila Mariana,4,3,,30.shp
+31,10,Butanta,5,3,,31.shp
+32,11,Pinheiros,5,3,,32.shp
+33,16,Cidade Ademar,4,3,,33.shp
+34,20,Parelheiros,4,3,,34.shp
+35,15,Jabaquara,4,3,,35.shp
+36,14,Santo Amaro,4,3,,36.shp
+37,1,Perus,3,3,,37.shp
+38,32,Sapopemba,2,3,,38.shp
+39,51,Mandaqui,14,4,,39.shp
+40,53,Mooca,25,4,,40.shp
+41,50,Limao,13,4,,41.shp
+42,38,Jabaquara,35,4,,42.shp
+43,22,Cidade Ademar,33,4,,43.shp
+44,37,Itaquera,21,4,,44.shp
+45,47,Jose Bonifacio,21,4,,45.shp
+46,72,Sao Lucas,28,4,,46.shp
+47,56,Pari,25,4,,47.shp
+48,57,Parque Do Carmo,21,4,,48.shp
+49,58,Pedreira,33,4,,49.shp
+50,59,Penha,17,4,,50.shp
+51,60,Perdizes,23,4,,51.shp
+52,61,Perus,37,4,,52.shp
+53,62,Pinheiros,32,4,,53.shp
+54,63,Pirituba,11,4,,54.shp
+55,64,Ponte Rasa,18,4,,55.shp
+56,66,Republica,24,4,,56.shp
+57,67,Rio Pequeno,31,4,,57.shp
+58,68,Sacoma,29,4,,58.shp
+59,69,Santa Cecilia,24,4,,59.shp
+60,70,Santana,14,4,,60.shp
+61,71,Santo Amaro,36,4,,61.shp
+62,95,Sao Domingos,11,4,,62.shp
+63,73,Sao Mateus,27,4,,63.shp
+64,75,Sao Rafael,27,4,,64.shp
+65,78,Se,24,4,,65.shp
+66,76,Sapopemba,38,4,,66.shp
+67,79,Socorro,9,4,,67.shp
+68,80,Tatuape,25,4,,68.shp
+69,83,Vila Andrade,7,4,,69.shp
+70,84,Vila Curuca,20,4,,70.shp
+71,85,Vila Formosa,26,4,,71.shp
+72,86,Vila Guilherme,16,4,,72.shp
+73,87,Vila Jacui,19,4,,73.shp
+74,88,Vila Leopoldina,23,4,,74.shp
+75,89,Vila Maria,16,4,,75.shp
+76,91,Vila Matilde,17,4,,76.shp
+77,92,Vila Medeiros,16,4,,77.shp
+78,93,Vila Prudente,28,4,,78.shp
+79,43,Jardim Angela,8,4,,79.shp
+80,55,Parelheiros,34,4,,80.shp
+81,94,Vila Sonia,31,4,,81.shp
+82,1,Agua Rasa,25,4,,82.shp
+83,2,Alto De Pinheiros,32,4,,83.shp
+84,3,Anhanguera,37,4,,84.shp
+85,4,Aricanduva,26,4,,85.shp
+86,6,Barra Funda,23,4,,86.shp
+87,44,Jardim Helena,19,4,,87.shp
+88,45,Jardim Paulista,32,4,,88.shp
+89,46,Jardim Sao Luis,8,4,,89.shp
+90,54,Morumbi,31,4,,90.shp
+91,5,Artur Alvim,17,4,,91.shp
+92,7,Bela Vista,24,4,,92.shp
+93,8,Belem,25,4,,93.shp
+94,9,Bom Retiro,24,4,,94.shp
+95,10,Bras,25,4,,95.shp
+96,11,Brasilandia,12,4,,96.shp
+97,12,Butanta,31,4,,97.shp
+98,13,Cachoeirinha,13,4,,98.shp
+99,14,Cambuci,24,4,,99.shp
+100,16,Campo Grande,36,4,,100.shp
+101,17,Campo Limpo,7,4,,101.shp
+102,52,Marsilac,34,4,,102.shp
+103,32,Moema,30,4,,103.shp
+104,65,Raposo Tavares,31,4,,104.shp
+105,74,Sao Miguel,19,4,,105.shp
+106,77,Saude,30,4,,106.shp
+107,81,Tremembe,15,4,,107.shp
+108,82,Tucuruvi,14,4,,108.shp
+109,90,Vila Mariana,30,4,,109.shp
+110,15,Campo Belo,36,4,,110.shp
+111,18,Cangaiba,17,4,,111.shp
+112,19,Capao Redondo,7,4,,112.shp
+113,20,Carrao,26,4,,113.shp
+114,21,Casa Verde,13,4,,114.shp
+115,23,Cidade Dutra,9,4,,115.shp
+116,24,Cidade Lider,21,4,,116.shp
+117,25,Cidade Tiradentes,10,4,,117.shp
+118,26,Consolacao,24,4,,118.shp
+119,27,Cursino,29,4,,119.shp
+120,28,Ermelino Matarazzo,18,4,,120.shp
+121,29,Freguesia Do O,12,4,,121.shp
+122,30,Grajau,9,4,,122.shp
+123,31,Guaianases,22,4,,123.shp
+124,33,Iguatemi,27,4,,124.shp
+125,34,Ipiranga,29,4,,125.shp
+126,35,Itaim Bibi,32,4,,126.shp
+127,36,Itaim Paulista,20,4,,127.shp
+128,39,Jacana,15,4,,128.shp
+129,40,Jaguara,23,4,,129.shp
+130,96,Lajeado,22,4,,130.shp
+131,48,Lapa,23,4,,131.shp
+132,49,Liberdade,24,4,,132.shp
+133,41,Jaguare,23,4,,133.shp
+134,42,Jaragua,11,4,,134.shp
