@@ -10,6 +10,8 @@ import { UploadBody } from 'src/upload/entities/upload.body';
 import { DownloadBody } from './entities/download.body';
 import { Download } from './entities/download.entity';
 
+const DOWNLOAD_AUD = 'dl';
+const UPLOAD_AUD = 'upload';
 
 @Injectable()
 export class UploadService {
@@ -74,7 +76,7 @@ export class UploadService {
         return {
             upload_token: this.jwtService.sign({
                 arquivo_id: id,
-                aud: 'upload'
+                aud: UPLOAD_AUD
             }, { expiresIn: '30 days' }),
         } as Upload;
     }
@@ -86,7 +88,7 @@ export class UploadService {
         } catch (error) {
             console.log(error)
         }
-        if (!decoded || decoded.aud != 'upload')
+        if (!decoded || decoded.aud != UPLOAD_AUD)
             throw new HttpException('upload_token inválido', 400);
 
         return decoded.arquivo_id;
@@ -98,7 +100,7 @@ export class UploadService {
         return {
             download_token: this.jwtService.sign({
                 arquivo_id: id,
-                aud: 'upload'
+                aud: DOWNLOAD_AUD
             }, { expiresIn }),
         } as Download;
     }
@@ -111,7 +113,7 @@ export class UploadService {
         } catch (error) {
             console.log(error)
         }
-        if (!decoded || decoded.aud != 'download')
+        if (!decoded || decoded.aud != DOWNLOAD_AUD)
             throw new HttpException('download_token inválido', 400);
 
         return decoded.arquivo_id;
