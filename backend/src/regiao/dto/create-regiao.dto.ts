@@ -3,12 +3,12 @@ import { IsNumber, IsOptional, isPositive, IsPositive, IsString, Max, MaxLength,
 
 export class CreateRegiaoDto {
     /**
-   * Nivel (1 até 3)
+   * Nivel (1 até 4) [1=cidade, 2=norte/sul, 3=prefeitura, 4=subprefeitura]
    * @example 2
     */
     @IsPositive({ message: '$property| Precisa ser um número' })
     @Min(1, { message: "$property| região mínima nível 1" })
-    @Max(3, { message: "$property| região máxima nível 3" })
+    @Max(4, { message: "$property| região máxima nível 4" })
     @Type(() => Number)
     nivel: number;
 
