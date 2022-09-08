@@ -100,6 +100,7 @@ export const router = createRouter({
                 { path: '', component: ListRegions, props:{submenu:SubmenuConfig} },
                 { path: 'novo', component: ListRegions, props:{type:"novo", submenu:SubmenuConfig} },
                 { path: 'novo/:id', component: ListRegions, props:{type:"novo", submenu:SubmenuConfig} },
+                { path: 'novo/:id/:id2', component: ListRegions, props:{type:"novo", submenu:SubmenuConfig} },
                 { path: 'novo/:id/:id2/:id3', component: ListRegions, props:{type:"novo", submenu:SubmenuConfig} },
                 { path: 'editar/:id', component: ListRegions, props:{type:"editar", submenu:SubmenuConfig}  },
                 { path: 'editar/:id/:id2', component: ListRegions, props:{type:"editar", submenu:SubmenuConfig}  },
