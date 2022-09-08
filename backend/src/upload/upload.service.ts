@@ -22,6 +22,9 @@ export class UploadService {
     ) { }
 
     async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File, ip: string) {
+        if (file.size < 1) {
+            throw new HttpException('O arquivo precisa ter pelo menos 1 byte!', 400);
+        }
 
         if (createUploadDto.tipo_documento_id) {
             const tipoDoc = await this.prisma.tipoDocumento.count({ where: { id: createUploadDto.tipo_documento_id } });
