@@ -121,6 +121,7 @@ export class RegiaoService {
         if (updateRegiaoDto.upload_shapefile) {
             uploadId = this.uploadService.checkUploadToken(updateRegiaoDto.upload_shapefile);
         }
+        delete updateRegiaoDto.upload_shapefile;
 
         await this.prisma.regiao.update({
             where: { id: id },
