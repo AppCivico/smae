@@ -49,8 +49,8 @@ my $current_regions = [grep { defined $_->{codigo} }
 
 my $by_codigo = {};
 do {
-    die to_json($_) . ' código duplicado' if $by_codigo->{$_->{codigo}};
-    $by_codigo->{$_->{codigo}} = $_;
+    die to_json($_) . ' código duplicado' if $by_codigo->{join ',', $_->{nivel}, $_->{codigo}};
+    $by_codigo->{join ',', $_->{nivel}, $_->{codigo}} = $_;
   }
   for $current_regions->@*;
 
@@ -63,16 +63,18 @@ do {
 
 
 use DDP;
-p $by_codigo;
+p $csv_by_id ;
 
 use DDP;
 p $by_codigo;
 foreach my $regiao (@{$aoh}) {
 
 
-    if ($by_codigo->{$regiao->{codigo}} && !$by_codigo->{$regiao->{codigo}}{shapefile}) {
+    if ($by_codigo->{join ',', $regiao->{nivel}, $regiao->{codigo}}
+        && !$by_codigo->{join ',', $regiao->{nivel}, $regiao->{codigo}}{shapefile})
+    {
 
-        $regiao->{db_id} = $by_codigo->{$regiao->{codigo}}{id};
+        ##$regiao->{db_id} = $by_codigo->{$regiao->{codigo}}{id};
 
         print "atualizando shapefile da regiao " . to_json($regiao) . "\n";
 
@@ -82,14 +84,17 @@ foreach my $regiao (@{$aoh}) {
 
         # regiao ja existe, mas sem upload
         my $res = $ua->patch(
-            $enpdoint . '/regiao/' . $by_codigo->{$regiao->{codigo}}{id} => {authorization => "Bearer $apikey"},
-            form                                                         => $data
+                $enpdoint
+              . '/regiao/'
+              . $by_codigo->{join ',', $regiao->{nivel}, $regiao->{codigo}}{id} => {authorization => "Bearer $apikey"},
+            json => $data
         )->result->json;
         use DDP;
         p $res;
+        die to_json($res) if exists $res->{statusCode};
 
     }
-    elsif (!$by_codigo->{$regiao->{codigo}}) {
+    elsif (!$by_codigo->{join ',', $regiao->{nivel}, $regiao->{codigo}}) {
 
         print "criando regiao " . to_json($regiao) . "\n";
 
@@ -103,31 +108,29 @@ foreach my $regiao (@{$aoh}) {
 
         if ($regiao->{parente_id}) {
             my $parent_cod = $csv_by_id->{$regiao->{parente_id}}{codigo} || die 'faltando parente' . to_json($regiao);
-
-            use DDP;
-            p $by_codigo->{$parent_cod};
-            $data->{parente_id} = $by_codigo->{$parent_cod}{db_id};
+            my $parent_nivel = $csv_by_id->{$regiao->{parente_id}}{nivel} || die 'faltando parente' . to_json($regiao);
+            $data->{parente_id} = $by_codigo->{join ',', $parent_nivel, $parent_cod}{id};
 
             if (!$data->{parente_id}) {
-                die 'não encontrou região cod ' . $parent_cod . ' no banco';
+                die 'não encontrou região cod ' . (join ',', $parent_nivel, $parent_cod) . ' no banco';
             }
         }
+
+        use DDP;
+        p $data;
 
         # regiao ja existe, mas sem upload
         my $res = $ua->post(
             $enpdoint . '/regiao' => {authorization => "Bearer $apikey"},
-            form                  => $data,
+            json                  => $data,
         )->result->json;
         use DDP;
         p $res;
-
-        $regiao->{db_id} = $res->{id};
-
+        p $regiao;
+        die to_json($res) if exists $res->{statusCode};
+        $by_codigo->{join ',', $regiao->{nivel}, $regiao->{codigo}} = {id => $res->{id}};
     }
-    elsif ($by_codigo->{$regiao->{codigo}}) {
-
-        $regiao->{db_id} = $by_codigo->{$regiao->{codigo}}{id};
-
+    elsif ($by_codigo->{join ',', $regiao->{nivel}, $regiao->{codigo}}) {
         print "regiao " . to_json($regiao) . " registrada\n";
 
         # TODO? atualizar caso tenha mudanças?
