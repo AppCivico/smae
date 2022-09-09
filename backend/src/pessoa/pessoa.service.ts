@@ -1,14 +1,15 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { Pessoa, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { NovaSenhaDto } from 'src/minha-conta/models/nova-senha.dto';
+import { DetalhePessoaDto } from 'src/pessoa/dto/detalhe-pessoa.dto';
+import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
+import { UpdatePessoaDto } from 'src/pessoa/dto/update-pessoa.dto';
+import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosModulos';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
-import * as bcrypt from 'bcrypt';
-import { Prisma, Pessoa, PrismaClient, PrismaPromise, PerfilAcesso } from '@prisma/client';
-import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosModulos';
-import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { UpdatePessoaDto } from 'src/pessoa/dto/update-pessoa.dto';
-import { DetalhePessoaDto } from 'src/pessoa/dto/detalhe-pessoa.dto';
-import { NovaSenhaDto } from 'src/minha-conta/models/nova-senha.dto';
+import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -492,35 +493,83 @@ export class PessoaService {
         return { id: pessoa.id };
     }
 
-    async findAll() {
-        let listActive = await this.prisma.pessoa.findMany({
-            orderBy: {
-                atualizado_em: 'desc'
+    async findAll(filters: FilterPessoaDto | undefined = undefined) {
+        this.logger.log(`buscando pessoas...`);
+        let selectColumns = {
+            id: true,
+            nome_completo: true,
+            nome_exibicao: true,
+            atualizado_em: true,
+            desativado_em: true,
+            desativado_motivo: true,
+            desativado: true,
+            email: true,
+            pessoa_fisica: {
+                select: {
+                    lotacao: true,
+                    orgao_id: true
+                }
             },
-            where: {
-                NOT: { pessoa_fisica_id: null }
+            PessoaPerfil: {
+                select: {
+                    perfil_acesso_id: true
+                }
             },
-            select: {
-                id: true,
-                nome_completo: true,
-                nome_exibicao: true,
-                atualizado_em: true,
-                desativado_em: true,
-                desativado_motivo: true,
-                desativado: true,
-                email: true,
-                pessoa_fisica: {
-                    select: {
-                        lotacao: true,
-                        orgao_id: true
-                    }
-                },
+        };
+
+        let extraFilter: any = {};
+        if (filters?.coorderandor_responsavel_cp === 'true') {
+            this.logger.log('filtrando apenas coorderandor_responsavel_cp');
+            extraFilter = {
                 PessoaPerfil: {
-                    select: {
-                        perfil_acesso_id: true
+                    some: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'PDM.coorderandor_responsavel_cp'
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
             }
+        } else if (filters?.coorderandor_responsavel_cp === 'false') {
+            this.logger.log('filtrando quem não é coorderandor_responsavel_cp');
+            extraFilter = {
+                PessoaPerfil: {
+                    none: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'PDM.coorderandor_responsavel_cp'
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        if (filters?.orgao_id) {
+            this.logger.log(`filtrando orgão é ${filters?.orgao_id}`);
+        }
+
+        const listActive = await this.prisma.pessoa.findMany({
+            orderBy: {
+                atualizado_em: 'desc',
+            },
+            where: {
+                NOT: { pessoa_fisica_id: null },
+                ...extraFilter,
+                pessoa_fisica: {
+                    orgao_id: filters?.orgao_id
+                },
+            },
+            select: selectColumns
         });
 
         const listFixed = listActive.map((p) => {
@@ -538,6 +587,8 @@ export class PessoaService {
                 perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id)
             }
         });
+
+        this.logger.log(`encontrado ${listFixed.length} resultados`);
 
         return listFixed;
     }
