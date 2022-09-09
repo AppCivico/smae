@@ -122,7 +122,7 @@ export class PessoaService {
         this.logger.log(`escreverNovaSenhaById: ${pessoaId}`);
         const updated = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<any> => {
             const updatePassword = await this.prisma.pessoa.updateMany({
-                where: { id: pessoaId, senha_bloqueada: true },
+                where: { id: pessoaId },
                 data: data
             });
             if (updatePassword.count == 1) {
