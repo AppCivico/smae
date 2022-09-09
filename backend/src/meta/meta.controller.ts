@@ -1,0 +1,51 @@
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { FindOneParams } from 'src/common/decorators/find-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { CreateMetaDto } from './dto/create-meta.dto';
+import { ListMetaDto } from './dto/list-meta.dto';
+import { UpdateMetaDto } from './dto/update-meta.dto';
+import { MetaService } from './meta.service';
+
+@ApiTags('Meta')
+@Controller('meta')
+export class MetaController {
+    constructor(private readonly metaService: MetaService) { }
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.inserir')
+    async create(@Body() createMetaDto: CreateMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.metaService.create(createMetaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    async findAll(): Promise<ListMetaDto> {
+        return { 'linhas': await this.metaService.findAll() };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.editar')
+    async update(@Param() params: FindOneParams, @Body() updateMetaDto: UpdateMetaDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.metaService.update(+params.id, updateMetaDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.remover')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.metaService.remove(+params.id, user);
+        return '';
+    }
+
+}

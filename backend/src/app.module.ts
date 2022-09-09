@@ -26,6 +26,7 @@ import { RegiaoModule } from './regiao/regiao.module';
 import { UploadModule } from './upload/upload.module';
 import { ConfigModule } from '@nestjs/config';
 import { SubTemaModule } from './subtema/subtema.module';
+import { MetaModule } from './meta/meta.module';
 
 
 @Module({
@@ -36,7 +37,8 @@ import { SubTemaModule } from './subtema/subtema.module';
             serveRoot: '/public',
         }),
         PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule,
-        SubTemaModule
+        SubTemaModule,
+        MetaModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
