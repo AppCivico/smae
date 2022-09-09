@@ -47,14 +47,14 @@ const PrivConfig: any = {
         ['CadastroPessoa.administrador', 'Editar/Inserir/Inativar/Ativar qualquer pessoa, até mesmo outros administradores'],
     ],
 
-    CadastroEixo:false,
+    CadastroEixo: false,
     CadastroMacroTema: [
         ['CadastroMacroTema.inserir', 'Inserir Macro Tema'],
         ['CadastroMacroTema.editar', 'Editar Macro Tema'],
         ['CadastroMacroTema.remover', 'Remover Macro Tema'],
     ],
 
-    CadastroObjetivoEstrategico:false,
+    CadastroObjetivoEstrategico: false,
     CadastroTema: [
         ['CadastroTema.inserir', 'Inserir Macro Tema'],
         ['CadastroTema.editar', 'Editar Macro Tema'],
@@ -84,6 +84,9 @@ const PrivConfig: any = {
         ['CadastroRegiao.editar', 'Editar Regiões'],
         ['CadastroRegiao.remover', 'Remover Regiões'],
     ],
+    PDM: [
+        ['PDM.coorderandor_responsavel_cp', 'Coordenador Reponsável CP']
+    ]
 };
 
 const ModuloDescricao: any = {
@@ -98,7 +101,9 @@ const ModuloDescricao: any = {
     CadastroMacroTema: 'Cadastro de Macro Tema',
     CadastroSubTema: 'Cadastro de Sub Tema',
     CadastroTema: 'Cadastro de Tema',
-    CadastroRegiao: 'Cadastro de Regiões'
+    CadastroRegiao: 'Cadastro de Regiões',
+    PDM: 'Regras de Negocio do PDM',
+
 };
 
 let todosPrivilegios: string[] = [];
@@ -117,7 +122,7 @@ const PerfilAcessoConfig: any = [
     {
         nome: 'Administrador Geral',
         descricao: 'Administrador Geral',
-        privilegios: todosPrivilegios
+        privilegios: todosPrivilegios.filter((e) => /^PDM\./.test(e) === false)
     },
     {
         nome: 'Coordenadoria de Planejamento',
@@ -139,9 +144,17 @@ const PerfilAcessoConfig: any = [
             'CadastroPessoa.editar',
         ]
     },
+    {
+        nome: 'Pode ser Responsável da Coordenadoria de Planejamento em Metas',
+        descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+        privilegios: [
+            'PDM.coorderandor_responsavel_cp',
+        ]
+    },
 
 ];
 
+console.log(PerfilAcessoConfig);
 
 async function main() {
     await criar_emaildb_config();
