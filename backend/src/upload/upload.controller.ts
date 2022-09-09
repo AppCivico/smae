@@ -45,7 +45,13 @@ export class UploadController {
         @Param('token') dlToken: string,
         @Res() res: Response
     ) {
-        (await this.uploadService.getBufferByToken(dlToken)).pipe(res)
+        const data = await this.uploadService.getBufferByToken(dlToken);
+
+        res.set({
+            'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"'
+        });
+
+        data.stream.pipe(res);
     }
 
 }
