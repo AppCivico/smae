@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiResponse, ApiTag
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ListPdmDto } from 'src/pdm/dto/list-pdm.dto';
 import { UpdatePdmDto } from 'src/pdm/dto/update-pdm.dto';
@@ -83,10 +83,9 @@ export class PdmController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removerDownload(
-        @Param() params: FindOneParams,
+        @Param() params: FindTwoParams,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        if (!params.id2) throw new Error('Missing params.id2')
         await this.pdmService.remove_document(params.id, params.id2, user)
         return null;
     }

@@ -7,7 +7,7 @@ import { ListTipoDocumentoDto } from './dto/list-tipo-documento.dto';
 import { TipoDocumentoService } from './tipo-documento.service';
 import { CreateTipoDocumentoDto } from './dto/create-tipo-documento.dto';
 import { UpdateTipoDocumentoDto } from './dto/update-tipo-documento.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Tipo de Documento')

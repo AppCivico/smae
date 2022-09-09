@@ -7,7 +7,7 @@ import { RegiaoService } from './regiao.service';
 import { CreateRegiaoDto } from './dto/create-regiao.dto';
 import { UpdateRegiaoDto } from './dto/update-regiao.dto';
 import { ListRegiaoDto } from './dto/list-regiao.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DetalheRegiaoDto } from './dto/detalhe-regiao.dto';
 

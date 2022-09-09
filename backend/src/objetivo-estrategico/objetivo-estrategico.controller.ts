@@ -7,7 +7,7 @@ import { ListObjetivoEstrategicoDto } from './dto/list-objetivo-estrategico.dto'
 import { ObjetivoEstrategicoService } from './objetivo-estrategico.service';
 import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Objetivo Estratégico (Acessa via Tema)')

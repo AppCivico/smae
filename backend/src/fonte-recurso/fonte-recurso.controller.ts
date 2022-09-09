@@ -7,7 +7,7 @@ import { ListFonteRecursoDto } from 'src/fonte-recurso/dto/list-fonte-recurso.dt
 import { FonteRecursoService } from './fonte-recurso.service';
 import { CreateFonteRecursoDto } from './dto/create-fonte-recurso.dto';
 import { UpdateFonteRecursoDto } from './dto/update-fonte-recurso.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Fonte de Recurso')

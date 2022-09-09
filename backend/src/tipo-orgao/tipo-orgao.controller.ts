@@ -7,7 +7,7 @@ import { TipoOrgaoService } from './tipo-orgao.service';
 import { CreateTipoOrgaoDto } from './dto/create-tipo-orgao.dto';
 import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
 import { ListTipoOrgaoDto } from 'src/tipo-orgao/dto/list-tipo-orgao.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Tipo de Órgão')
