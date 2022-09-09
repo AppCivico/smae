@@ -87,6 +87,12 @@ model Pessoa {
     ArquivoDocQueDesativei ArquivoDocumento[] @relation("Removedor")
     ArquivoDocQueAtualizei ArquivoDocumento[] @relation("Atualizador")
 
+    MetaQueCriei     Meta[] @relation("Criador")
+    MetaQueDesativei Meta[] @relation("Desativador")
+    MetaQueAtualizei Meta[] @relation("Atualizador")
+
+    MetasQueSouResp MetaResponsavel[] @relation("MetaPessoaResp")
+
     @@map("pessoa")
 }
 
@@ -114,9 +120,11 @@ model Orgao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    removedor       Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+    MetaOrgao       MetaOrgao[]
+    MetaResponsavel MetaResponsavel[]
 
     @@map("orgao")
 }
@@ -298,6 +306,7 @@ model Pdm {
     ObjetivoEstrategico Tema[]
     ArquivoDocumento    ArquivoDocumento[]
     SubTema             SubTema[]
+    Meta                Meta[]
 
     @@map("pdm")
 }
@@ -320,6 +329,7 @@ model MacroTema {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    Meta        Meta[]
 
     @@map("eixo")
 }
@@ -342,6 +352,7 @@ model SubTema {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    Meta        Meta[]
 
     @@map("subtema")
 }
@@ -431,9 +442,11 @@ model Tema {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa?     @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa?     @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa?     @relation("Removedor", fields: [removido_por], references: [id])
+    Meta        Meta[]
+    MetaOrgao   MetaOrgao[]
 
     @@map("objetivo_estrategico")
 }
@@ -508,4 +521,70 @@ model ArquivoDocumento {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("arquivo_documento")
+}
+
+model Meta {
+    id Int @id @default(autoincrement())
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    status      String
+    codigo      String
+    titulo      String
+    contexto    String?
+    complemento String?
+
+    macro_tema_id Int?
+    macro_tema    MacroTema? @relation(fields: [macro_tema_id], references: [id])
+    tema_id       Int?
+    tema          Tema?      @relation(fields: [tema_id], references: [id])
+    sub_tema_id   Int?
+    sub_tema      SubTema?   @relation(fields: [sub_tema_id], references: [id])
+
+    ativo Boolean @default(false)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    desativado_por Int?
+    desativado_em  DateTime? @db.Timestamptz(6)
+
+    atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    desativador     Pessoa?           @relation("Desativador", fields: [desativado_por], references: [id])
+    MetaOrgao       MetaOrgao[]
+    MetaResponsavel MetaResponsavel[]
+
+    @@map("meta")
+}
+
+model MetaOrgao {
+    id Int @id @default(autoincrement())
+
+    meta_id     Int
+    meta        Meta    @relation(fields: [meta_id], references: [id])
+    responsavel Boolean
+    orgao_id    Int
+    orgao       Orgao   @relation(fields: [orgao_id], references: [id])
+    Tema        Tema?   @relation(fields: [temaId], references: [id])
+    temaId      Int?
+
+    @@map("meta_orgao")
+}
+
+model MetaResponsavel {
+    id Int @id @default(autoincrement())
+
+    meta_id   Int
+    meta      Meta   @relation(fields: [meta_id], references: [id])
+    pessoa_id Int
+    pessoa    Pessoa @relation("MetaPessoaResp", fields: [pessoa_id], references: [id])
+    orgao_id  Int
+    orgao     Orgao  @relation(fields: [orgao_id], references: [id])
+
+    coorderandor_responsavel_cp Boolean
+
+    @@map("meta_responsavel")
 }
