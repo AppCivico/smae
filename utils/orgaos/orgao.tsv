@@ -1,0 +1,84 @@
+id	tipo_orgao_id	sigla	descricao
+1	1	CGM	Controladoria Geral do Município
+2	1	PGM	Procuradoria Geral do Município
+3	1	SGM	Secretaria de Governo Municipal
+4	1	SECOM	Secretaria Especial de Comunicação
+5	1	SEDP	Secretaria Executiva de Desestatização e Parcerias
+6	1	SECLIMA	Secretaria Executiva de Mudanças Climáticas
+7	1	SEPEP	Secretaria Executiva de Planejamento e Entregas Prioritárias
+8	1	SEPE	Secretaria Executiva de Projetos Estratégicos
+9	1	SERI	Secretaria Executiva de Relações Institucionais
+10	1	SETRAM	Secretaria Executiva de Transporte e Mobilidade Urbana
+11	1	SMCC	Secretaria Municipal da Casa Civil
+12	1	SF	Secretaria Municipal da Fazenda
+13	1	SMPED	Secretaria Municipal da Pessoa com Deficiência
+14	1	SMS	Secretaria Municipal da Saúde
+15	1	SMSUB	Secretaria Municipal das Subprefeituras
+16	1	SMADS	Secretaria Municipal de Assistência e Desenvolvimento Social
+17	1	SMC	Secretaria Municipal de Cultura
+18	1	SMDET	Secretaria Municipal de Desenvolvimento Econômico e Trabalho
+19	1	SMDHC	Secretaria Municipal de Direitos Humanos e Cidadania
+20	1	SME	Secretaria Municipal de Educação
+21	1	SEME	Secretaria Municipal de Esportes e Lazer
+22	1	SEGES	Secretaria Municipal de Gestão
+23	1	SEHAB	Secretaria Municipal de Habitação
+24	1	SIURB	Secretaria Municipal de Infraestrutura e Obras
+25	1	SMIT	Secretaria Municipal de Inovação e Tecnologia
+26	1	SMJ	Secretaria Municipal de Justiça
+27	1	SMT	Secretaria Municipal de Mobilidade e Trânsito
+28	1	SMRI	Secretaria Municipal de Relações Internacionais
+29	1	SMSU	Secretaria Municipal de Segurança Urbana
+30	1	SMTUR	Secretaria Municipal de Turismo
+31	1	SMUL	Secretaria Municipal de Urbanismo e Licenciamento
+32	1	SVMA	Secretaria Municipal do Verde e do Meio Ambiente
+1	2	SUBAF	Subprefeitura de Aricanduva
+2	2	SUBBT	Subprefeitura de Butantã
+3	2	SUBCL	Subprefeitura de Campo Limpo
+4	2	SUBCS	Subprefeitura Capela do Socorro
+5	2	SUBCV	Subprefeitura Casa Verde
+6	2	SUBAD	Subprefeitura Cidade Ademar
+7	2	SUBCT	Subprefeitura Cidade Tiradentes
+8	2	SUBEM	Subprefeitura Ermelino Matarazzo
+9	2	SUBFO	Subprefeitura Freguesia/Brasilândia
+10	2	SUBG	Subprefeitura Guaianases
+11	2	SUBIP	Subprefeitura Ipiranga
+12	2	SUBIT	Subprefeitura Itaim Paulista
+13	2	SUBIQ	Subprefeitura Itaquera
+14	2	SUBJA	Subprefeitura Jabaquara
+15	2	SUBJT	Subprefeitura Jaçanã/Tremembé
+16	2	SUBLA	Subprefeitura Lapa
+17	2	SUBMB	Subprefeitura M´Boi Mirim
+18	2	SUBMO	Subprefeitura Mooca
+19	2	SUBPA	Subprefeitura Parelheiros
+20	2	SUBPE	Subprefeitura Penha
+21	2	SUBPR	Subprefeitura Perus
+22	2	SUBPI	Subprefeitura Pinheiros
+23	2	SUBPJ	Subprefeitura Pirituba/Jaraguá
+24	2	SUBST	Subprefeitura Santana/Tucuruvi
+25	2	SUBSA	Subprefeitura Santo Amaro
+26	2	SUBSP	Subprefeitura Sapopemba
+27	2	SUBSM	Subprefeitura São Mateus
+28	2	SUBMP	Subprefeitura São Miguel Paulista
+29	2	SUBSE	Subprefeitura Sé
+30	2	SUBMG	Subprefeitura Vila Maria/Vila Guilherme
+31	2	SUBVM	Subprefeitura Vila Mariana
+32	2	SUBVP	Subprefeitura Vila Prudente
+1	3	AMLURB	Autoridade Municipal de Limpeza Urbana
+2	3	HSPM	Hospital do Servidor Público Municipal
+3	3	IPREM	Instituto de Previdência Municipal de São Paulo
+4	3	SFMSP	Serviço Funerário do Município de São Paulo
+5	3	SP REGULA	Agência Reguladora de Serviços Públicos
+6	3	CET	Companhia de Engenharia de Tráfego
+7	3	COHAB-SP	Companhia Metropolitana de Habitação de São Paulo
+8	3	PRODAM	Empresa de Tecnologia da Informação e Comunicação do Município de São Paulo
+9	3	SPCINE	Empresa de Cinema e Audiovisual de São Paulo
+10	3	SP NEGÓCIOS	São Paulo Negócios
+11	3	SPOBRAS	São Paulo Obras
+12	3	SP PARCERIAS	São Paulo Parcerias
+13	3	SPURBANISMO	São Paulo Urbanismo
+14	3	SPDA	Companhia São Paulo de Desenvolvimento e Mobilização de Ativos
+15	3	SPSEC	SSP Securitização Companhia Paulistana de Securitização
+16	3	SPTRANS	São Paulo Transporte
+17	3	SPTURIS	São Paulo Turismo
+18	3	FPETC	Fundação Paulistana de Educação, Tecnologia e Cultura
+19	3	TMSP	Fundação Theatro Municipal de São Paulo
