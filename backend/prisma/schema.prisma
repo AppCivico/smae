@@ -548,12 +548,12 @@ model Meta {
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
-    desativado_por Int?
-    desativado_em  DateTime? @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
 
     atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
-    desativador     Pessoa?           @relation("Desativador", fields: [desativado_por], references: [id])
+    reovedor        Pessoa?           @relation("Desativador", fields: [removido_por], references: [id])
     MetaOrgao       MetaOrgao[]
     MetaResponsavel MetaResponsavel[]
 

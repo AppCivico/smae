@@ -4,7 +4,8 @@ import { IsTrueFalseString } from "src/common/decorators/IsTrueFalseStr";
 
 export class FilterPessoaDto {
     /**
-   * Filtrar tipo de pessoa?
+   * Filtrar pessoa com privilegio PDM.coorderandor_responsavel_cp?
+   *  true filtra quem tem a PDM.coorderandor_responsavel_cp; false filtra quem não tem
    * @example "true"
     */
     @IsOptional()
@@ -12,8 +13,8 @@ export class FilterPessoaDto {
     coorderandor_responsavel_cp?: string;
 
     /**
-   * Filtrar por orgão
-   * @example 1
+   * Filtrar por órgão?
+   * @example "1"
     */
     @IsOptional()
     @IsPositive({ message: '$property| orgao_id' })
