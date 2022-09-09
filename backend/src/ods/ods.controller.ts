@@ -7,7 +7,7 @@ import { OdsService } from './ods.service';
 import { CreateOdsDto } from './dto/create-ods.dto';
 import { UpdateOdsDto } from './dto/update-ods.dto';
 import { ListOdsDto } from 'src/ods/dto/list-ods.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('ODS')

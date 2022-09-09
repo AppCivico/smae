@@ -7,7 +7,7 @@ import { ListEixoDto } from 'src/eixo/dto/list-eixo.dto';
 import { EixoService } from './eixo.service';
 import { CreateEixoDto } from './dto/create-eixo.dto';
 import { UpdateEixoDto } from './dto/update-eixo.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Eixo (Acessa via MacroTema)')

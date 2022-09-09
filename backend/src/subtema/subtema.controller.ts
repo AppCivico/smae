@@ -7,7 +7,7 @@ import { ListSubTemaDto } from './dto/list-subtema.dto';
 import { SubTemaService } from './subtema.service';
 import { CreateSubTemaDto } from './dto/create-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('SubTema')

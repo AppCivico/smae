@@ -7,7 +7,7 @@ import { ListOrgaoDto } from 'src/orgao/dto/list-orgao.dto';
 import { OrgaoService } from './orgao.service';
 import { CreateOrgaoDto } from './dto/create-orgao.dto';
 import { UpdateOrgaoDto } from './dto/update-orgao.dto';
-import { FindOneParams } from 'src/common/decorators/find-one-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Órgão')
