@@ -18,7 +18,7 @@ export class ObjetivoEstrategicoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroObjetivoEstrategico.inserir')
+    @Roles('CadastroTema.inserir')
     async create(@Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
     }
@@ -32,15 +32,15 @@ export class ObjetivoEstrategicoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroObjetivoEstrategico.editar')
-    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt) : Promise<RecordWithId>{
+    @Roles('CadastroTema.editar')
+    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroObjetivoEstrategico.remover')
+    @Roles('CadastroTema.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -57,7 +57,7 @@ export class ObjetivoEstrategicoController2 {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroObjetivoEstrategico.inserir')
+    @Roles('CadastroTema.inserir')
     async create(@Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
     }
@@ -71,15 +71,15 @@ export class ObjetivoEstrategicoController2 {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroObjetivoEstrategico.editar')
-    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt) : Promise<RecordWithId>{
+    @Roles('CadastroTema.editar')
+    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroObjetivoEstrategico.remover')
+    @Roles('CadastroTema.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
