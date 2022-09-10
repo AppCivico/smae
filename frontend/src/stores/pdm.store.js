@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
-import { useAxesStore, useStrategicObjectivesStore, useTagsStore } from '@/stores';
+import { useMacrotemasStore, useTemasStore, useTagsStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 
@@ -9,11 +9,16 @@ export const usePdMStore = defineStore({
     state: () => ({
         PdM: {},
         tempPdM: {},
+        singlePdm: {},
     }),
     actions: {
         clear (){
             this.PdM = {};
             this.tempPdM = {};
+            this.singlePdm = {};
+        },
+        clearEdit (){
+            this.singlePdm = {};
         },
         dateToField(d){
             var dd=d?new Date(d):false;
@@ -29,14 +34,17 @@ export const usePdMStore = defineStore({
         async getAll() {
             this.PdM = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/pdm`);
+                let r = await requestS.get(`${baseUrl}/pdm`);    
                 if(r.linhas.length){
-                    const axesStore = useAxesStore();
-                    await axesStore.getAllSimple();
-                    const strategicObjectivesStore = useStrategicObjectivesStore();
-                    await strategicObjectivesStore.getAllSimple();
+                    const macrotemasStore = useMacrotemasStore();
+                    const TemasStore = useTemasStore();
                     const tagsStore = useTagsStore();
-                    await tagsStore.getAllSimple();
+
+                    await Promise.all([
+                        macrotemasStore.getAllSimple(),
+                        TemasStore.getAllSimple(),
+                        tagsStore.getAllSimple()
+                    ]);
 
                     this.PdM = r.linhas.map(x=>{
                         x.data_inicio = this.dateToField(x.data_inicio);
@@ -45,8 +53,8 @@ export const usePdMStore = defineStore({
                         x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
                         x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
 
-                        x.eixos = axesStore.Axes.filter(z=>z.pdm_id==x.id) ?? [];
-                        x.objetivosEstrategicos = strategicObjectivesStore.strategicObjectives.filter(z=>z.pdm_id==x.id) ?? [];
+                        x.macrotemas = macrotemasStore.Macrotemas.filter(z=>z.pdm_id==x.id) ?? [];
+                        x.temas = TemasStore.Temas.filter(z=>z.pdm_id==x.id) ?? [];
                         x.tags = tagsStore.Tags.filter(z=>z.pdm_id==x.id) ?? [];
 
                         return x;
@@ -59,11 +67,11 @@ export const usePdMStore = defineStore({
             }
         },
         async getById(id) {
-            this.tempPdM = { loading: true };
+            this.singlePdm = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/pdm/${id}`);
+                let r = await requestS.get(`${baseUrl}/pdm/${id}`);    
                 if(r.nome){
-                    this.tempPdM = (x=>{
+                    this.singlePdm = (x=>{
                         x.data_inicio = this.dateToField(x.data_inicio);
                         x.data_fim = this.dateToField(x.data_fim);
                         x.data_publicacao = this.dateToField(x.data_publicacao);
@@ -74,10 +82,10 @@ export const usePdMStore = defineStore({
                         return x;
                     })(r);
                 }else{
-                    this.tempPdM = r;
+                    this.singlePdm = r;
                 }
             } catch (error) {
-                this.tempPdM = { error };
+                this.singlePdm = { error };
             }
         },
         async insert(params) {
@@ -117,11 +125,9 @@ export const usePdMStore = defineStore({
             return false;
         },
         async filterPdM(f){
-            this.tempPdM = { loading: true };
+            if(!this.tempPdM.length)this.tempPdM = { loading: true };
             try {
-                if(!this.PdM.length){
-                    await this.getAll();
-                }
+                await this.getAll();
                 this.tempPdM = f ? this.PdM.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
                 }) : this.PdM;

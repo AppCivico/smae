@@ -10,10 +10,10 @@ import { useAlertStore, useAuthStore, usePdMStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
-const id = route.params.id;
+const pdm_id = route.params.pdm_id;
 
 const PdMStore = usePdMStore();
-const { tempPdM } = storeToRefs(PdMStore);
+const { singlePdm } = storeToRefs(PdMStore);
 PdMStore.clear();
 
 const authStore = useAuthStore();
@@ -21,9 +21,9 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
 let title = 'Cadastro de PdM';
-if (id) {
+if (pdm_id) {
     title = 'Editar PdM';
-    PdMStore.getById(id);
+    PdMStore.getById(pdm_id);
 }
 
 var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
@@ -31,24 +31,36 @@ var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1
 const schema = Yup.object().shape({
     nome: Yup.string().required('Preencha o nome'),
     descricao: Yup.string().required('Preencha a descrição'),
-
+    
     data_inicio: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     data_fim: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     data_publicacao: Yup.string().notRequired().matches(regx,'Formato inválido'),
-
+    
     periodo_do_ciclo_participativo_inicio: Yup.string().notRequired().matches(regx,'Formato inválido'),
     periodo_do_ciclo_participativo_fim: Yup.string().notRequired().matches(regx,'Formato inválido'),
     prefeito: Yup.string().required('Preencha o prefeito'),
+    
     equipe_tecnica: Yup.string().nullable(),
     desativado: Yup.boolean().nullable(),
+
+    possui_macro_tema: Yup.boolean().nullable(),
+    rotulo_macro_tema: Yup.string().nullable().when('possui_macro_tema', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+    possui_tema: Yup.boolean().nullable(),
+    rotulo_tema: Yup.string().nullable().when('possui_tema', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+    possui_sub_tema: Yup.boolean().nullable(),
+    rotulo_sub_tema: Yup.string().nullable().when('possui_sub_tema', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+    possui_contexto_meta: Yup.boolean().nullable(),
+    rotulo_contexto_meta: Yup.string().nullable().when('possui_contexto_meta', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+    possui_complementacao_meta: Yup.boolean().nullable(),
+    rotulo_complementacao_meta: Yup.string().nullable().when('possui_complementacao_meta', (v,f)=>v=="1"?f.required("Escreva um título"):f),
 });
 
 async function onSubmit(values) {
     try {
         var msg;
         var r;
-        if (id&&tempPdM.value.id) {
-            r = await PdMStore.update(tempPdM.value.id, values);
+        if (id&&singlePdm.value.id) {
+            r = await PdMStore.update(singlePdm.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
             r = await PdMStore.insert(values);
@@ -87,8 +99,8 @@ function maskDate(el){
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
-        <template v-if="!(tempPdM?.loading || tempPdM?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempPdM" v-slot="{ errors, isSubmitting }">
+        <template v-if="!(singlePdm?.loading || singlePdm?.error)">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="singlePdm" v-slot="{ errors, isSubmitting }">
                 <div class="flex g2 mb2" v-if="id&&perm?.CadastroPdm?.inativar">
                     <div class="">
                         <label class="block mb1">
@@ -159,12 +171,13 @@ function maskDate(el){
                 </div>
             </Form>
         </template>
-        <template v-if="tempPdM?.loading">
+        
+        <template v-if="singlePdm?.loading">
             <span class="spinner">Carregando</span>
         </template>
-        <template v-if="tempPdM?.error||error">
+        <template v-if="singlePdm?.error||error">
             <div class="error p1">
-                <div class="error-msg">{{tempPdM.error??error}}</div>
+                <div class="error-msg">{{singlePdm.error??error}}</div>
             </div>
         </template>
     </Dashboard>

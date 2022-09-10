@@ -2,10 +2,10 @@
 import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { useAuthStore, useRegionsStore } from '@/stores';
+import { useEditModalStore, useAuthStore, useRegionsStore } from '@/stores';
 import { default as AddEditRegions } from '@/views/regions/AddEdit.vue';
-import { useEditModalStore } from '@/stores';
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const editModalStore = useEditModalStore();
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -60,9 +60,9 @@ onUpdated(()=>{start()});
             <tbody>
                 <template v-if="itemsFiltered.length">
                     <template v-for="item in itemsFiltered" :key="item.id">
-                        <tr class="tzaccordeon" @click="toggleAccordeon">
-                            <td><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>{{ item.descricao }}</span></td>
-                            <td>{{ item.shapefile??'-' }}</td>
+                        <tr class="tzaccordeon active">
+                            <td><span>{{ item.descricao }}</span></td>
+                            <td><a v-if="item.shapefile" :href="baseUrl+'/download/'+item.shapefile" download>Download</a></td>
                             <td style="white-space: nowrap; text-align: right;">
                                 <template v-if="perm?.CadastroRegiao?.editar">
                                     <router-link :to="`/regioes/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
@@ -83,7 +83,7 @@ onUpdated(()=>{start()});
                                         <template v-for="item2 in item.children" :key="item2.id">
                                             <tr class="tzaccordeon" @click="toggleAccordeon">
                                                 <td><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>{{ item2.descricao }}</span></td>
-                                                <td>{{ item2.shapefile??'-' }}</td>
+                                                <td><a v-if="item2.shapefile" :href="baseUrl+'/download/'+item2.shapefile" download>Download</a></td>
                                                 <td style="white-space: nowrap; text-align: right;">
                                                     <template v-if="perm?.CadastroRegiao?.editar">
                                                         <router-link :to="`/regioes/editar/${item.id}/${item2.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
@@ -104,7 +104,7 @@ onUpdated(()=>{start()});
                                                             <template v-for="item3 in item2.children" :key="item3.id">
                                                                 <tr class="tzaccordeon" @click="toggleAccordeon">
                                                                     <td><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>{{ item3.descricao }}</span></td>
-                                                                    <td>{{ item3.shapefile??'-' }}</td>
+                                                                    <td><a v-if="item3.shapefile" :href="baseUrl+'/download/'+item3.shapefile" download>Download</a></td>
                                                                     <td style="white-space: nowrap; text-align: right;">
                                                                         <template v-if="perm?.CadastroRegiao?.editar">
                                                                             <router-link :to="`/regioes/editar/${item.id}/${item2.id}/${item3.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
@@ -125,7 +125,7 @@ onUpdated(()=>{start()});
                                                                                 <template v-for="item4 in item3.children" :key="item4.id">
                                                                                     <tr>
                                                                                         <td><span>{{ item4.descricao }}</span></td>
-                                                                                        <td>{{ item4.shapefile??'-' }}</td>
+                                                                                        <td><a v-if="item4.shapefile" :href="baseUrl+'/download/'+item4.shapefile" download>Download</a></td>
                                                                                         <td style="white-space: nowrap; text-align: right;">
                                                                                             <template v-if="perm?.CadastroRegiao?.editar">
                                                                                                 <router-link :to="`/regioes/editar/${item.id}/${item2.id}/${item3.id}/${item4.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>

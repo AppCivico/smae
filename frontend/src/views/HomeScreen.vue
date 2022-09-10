@@ -4,11 +4,6 @@ import { Dashboard} from '@/components';
 import { useAuthStore } from '@/stores';
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
-
-import { useEditModalStore } from '@/stores';
-
-const editModalStore = useEditModalStore();
-//editModalStore.modal('Carregar arquivo','OI','tamarelo');
 </script>
 
 <template>

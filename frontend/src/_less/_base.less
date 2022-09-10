@@ -49,6 +49,7 @@
 	h5{.t12; .w700;}
 	h6{.t11; .w700;}
 	p{line-height: 1.4;}
+	.tc{text-align: center;}
 
 /* Colors */
 	.tprimary{color: @primary;}
@@ -90,7 +91,7 @@
 
 /* Components */
 	.addlink{
-		display: inline-block;
+		display: inline-block; cursor: pointer;
 		.t12; .w900; .tc600; .uc; letter-spacing: .05em;
 		span{line-height: 1; margin-top: .25em;}
 		span,svg{display: inline-block; vertical-align: middle; margin-right: .5em;}
@@ -244,7 +245,7 @@
 	}
 	.tablemain{
 		width: 100%;
-		tr,tz{
+		tr,tz,ty{
 			display: table-row; border-bottom: 1px solid @c100;
 			&:nth-of-type(even){
 				background:@c50;
@@ -259,7 +260,7 @@
 
 			.arrow{display: inline-block; vertical-align: middle; transform-origin: center; .transition; margin-right: .5em;}
 			&:not(.active){
-				+ tz{display: none !important;}
+				+tz{display: none !important;}
 				.arrow{transform: rotate(-90deg);}
 			}
 		}
@@ -270,6 +271,10 @@
 
 		.tablemain{
 			border-left: 1px solid @c100;
+		}
+		.tlink{
+			.block; .tprimary; .t12; letter-spacing: .05em; background: @c100; .uc; .w900; .tc; .p1;
+			margin: -1rem -1rem 1em -2rem;
 		}
 	}
 
