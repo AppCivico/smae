@@ -13,10 +13,7 @@ import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import { AddEditODS, ListODS } from '@/views/ods';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
-import { AddEditAxes, ListAxes } from '@/views/axes';
-import { AddEditTags, ListTags } from '@/views/tags';
-import { AddEditStrategicObjectives, ListStrategicObjectives } from '@/views/strategicObjectives';
-import { AddEditRegions, ListRegions } from '@/views/regions';
+import { ListRegions } from '@/views/regions';
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,31 +65,13 @@ export const router = createRouter({
             children: [
                 { path: '', component: ListPdM, props:{submenu:SubmenuConfig} },
                 { path: 'novo', component: AddEditPdM, props:{submenu:SubmenuConfig} },
-                { path: 'editar/:id', component: AddEditPdM, props:{submenu:SubmenuConfig} },
-            ]
-        },
-        { path: '/eixos',
-            children: [
-                { path: '', component: ListAxes, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'novo', component: AddEditAxes, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'novo/:pdm_id', component: AddEditAxes, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'editar/:id', component: AddEditAxes, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-            ]
-        },
-        { path: '/tags',
-            children: [
-                { path: '', component: ListTags, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'novo', component: AddEditTags, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'novo/:pdm_id', component: AddEditTags, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'editar/:id', component: AddEditTags, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-            ]
-        },
-        { path: '/objetivos-estrategicos',
-            children: [
-                { path: '', component: ListStrategicObjectives, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'novo', component: AddEditStrategicObjectives, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'novo/:pdm_id', component: AddEditStrategicObjectives, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
-                { path: 'editar/:id', component: AddEditStrategicObjectives, props:{submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id', component: AddEditPdM, props:{submenu:SubmenuConfig} },
+                { path: ':pdm_id/macrotemas/novo', component: ListPdM, props:{type:"novo",group:"macrotemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/macrotemas/:id', component: ListPdM, props:{type:"editar",group:"macrotemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/temas/novo', component: ListPdM, props:{type:"novo",group:"temas",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/temas/:id', component: ListPdM, props:{type:"editar",group:"temas",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/tags/novo', component: ListPdM, props:{type:"novo",group:"tags",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/tags/:id', component: ListPdM, props:{type:"editar",group:"tags",submenu:SubmenuConfig, parentPage: 'pdm'} },
             ]
         },
         { path: '/regioes',

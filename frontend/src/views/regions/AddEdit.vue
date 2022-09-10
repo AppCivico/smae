@@ -1,14 +1,16 @@
 <script setup>
+import { reactive, onServerPrefetch } from 'vue';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+import { requestS } from '@/helpers';
 
 import { useAlertStore, useEditModalStore, useRegionsStore } from '@/stores';
 
-
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const ps = defineProps(['props']);
 const props = ps.props;
 const alertStore = useAlertStore();
@@ -25,6 +27,7 @@ regionsStore.clearEdit();
 const { singleTempRegions } = storeToRefs(regionsStore);
 
 var title1, title2, level, parentID, lastid;
+const curfile = reactive({});
 
 if(props.type=='editar'){
     title1 = 'Editar';
@@ -59,6 +62,7 @@ if(props.type=='editar'){
 
     if(props.type=='editar'){
         regionsStore.getById(lastid);
+        curfile.name = singleTempRegions.value.shapefile;
     }
 
 }else{
@@ -91,7 +95,7 @@ const schema = Yup.object().shape({
     nivel: Yup.number(),
     parente_id: Yup.number().nullable(),
     descricao: Yup.string().required('Preencha a descrição'),
-    shapefile: Yup.string().nullable(),
+    upload_shapefile: Yup.string().nullable(),
 });
 
 async function onSubmit(values) {
@@ -122,6 +126,26 @@ async function checkClose() {
 async function checkDelete(id) {
     alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await regionsStore.delete(id)){regionsStore.filterRegions(); editModalStore.clear(); router.push('/regioes');}},'Remover');
 }
+function removeshape(t) {
+    curfile.name = '';
+    curfile.loading = null;
+}
+async function uploadshape(e){
+    curfile.name= '';
+    curfile.loading = true;
+
+    const files = e.target.files;
+    const formData = new FormData();
+    formData.append('tipo', 'SHAPEFILE');
+    formData.append('arquivo', files[0]);
+
+    let u = await requestS.upload(`${baseUrl}/upload`, formData)
+    if(u.upload_token){
+        curfile.name= u.upload_token;
+        curfile.loading = null;
+        singleTempRegions.value.upload_shapefile = curfile.name;
+    }
+}
 
 </script>
 
@@ -143,11 +167,16 @@ async function checkDelete(id) {
                     <div class="error-msg">{{ errors.descricao }}</div>
                 </div>
             </div>
-            <div class="flex g2">
+            <div class="flex g2 mb2">
                 <div class="f1">
                     <label class="label">Shapefile</label>
-                    <Field name="shapefile" type="text" class="inputtext light mb1" :class="{ 'error': errors.shapefile }" />
-                    <div class="error-msg">{{ errors.shapefile }}</div>
+                    
+                    <label v-if="!curfile.loading&&!curfile.name" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar arquivo de shapefile ( formatos .KML, GeoJSON ou SHP até 2mb) *</span><input type="file" id="shapefile" accept=".kml,.geojson,.json,.shp,.zip" :onchange="uploadshape" style="display:none;"></label>
+                    
+                    <div v-else-if="curfile.loading" class="addlink"><span>Carregando</span> <svg width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
+                    
+                    <div v-else-if="curfile.name"><span>{{curfile?.name?.slice(0,30)}}</span> <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a></div>
+                    <Field name="upload_shapefile" type="hidden" :value="curfile?.name"/>
                 </div>
             </div>
             <div class="flex spacebetween center mb2">

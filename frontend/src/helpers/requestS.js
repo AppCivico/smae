@@ -3,20 +3,24 @@ import { useAuthStore, useAlertStore } from '@/stores';
 export const requestS = {
     get: request('GET'),
     post: request('POST'),
+    upload: request('POST',1),
     put: request('PUT'),
     patch: request('PATCH'),
     delete: request('DELETE')
 };
 
-function request(method) {
+function request(method,upload) {
     return (url, body) => {
         const requestOptions = {
             method,
             headers: userToken(url)
         };
-        if (body) {
+        if(body&&!upload) {
             requestOptions.headers['Content-Type'] = 'application/json';
             requestOptions.body = JSON.stringify(body);
+        }else{
+            //requestOptions.headers['Content-Type'] = 'multipart/form-data';
+            requestOptions.body = body;
         }
         return fetch(url, requestOptions).then(handleResponse);
     }

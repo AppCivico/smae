@@ -83,8 +83,8 @@ export const useRegionsStore = defineStore({
                 nivel: Number(params.nivel),
                 parente_id: params.parente_id?Number(params.parente_id):null,
                 descricao: params.descricao,
-                shapefile: params.shapefile,
             };
+            if(params.upload_shapefile)m.upload_shapefile = params.upload_shapefile;
             if(await requestS.post(`${baseUrl}/regiao`, m)) return true;
             return false;
         },
@@ -93,8 +93,8 @@ export const useRegionsStore = defineStore({
                 //nivel: Number(params.nivel),
                 parente_id: params.parente_id?Number(params.parente_id):null,
                 descricao: params.descricao,
-                shapefile: params.shapefile,
             };
+            if(params.upload_shapefile)m.upload_shapefile = params.upload_shapefile;
             if(await requestS.patch(`${baseUrl}/regiao/${id}`, m)) return true;
             return false;
         },
@@ -105,9 +105,7 @@ export const useRegionsStore = defineStore({
         async filterRegions(f){
             if(!this.tempRegions.length)this.tempRegions = { loading: true };
             try {
-                //if(!this.regions.length){
-                    await this.getAll();
-                //}
+                await this.getAll();
 
                 if(f&&f.textualSearch){
                     var b = f.textualSearch.toLowerCase();

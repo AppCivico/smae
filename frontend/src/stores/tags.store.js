@@ -20,9 +20,12 @@ export const useTagsStore = defineStore({
                 let r = await requestS.get(`${baseUrl}/tag`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
-                    await PdMStore.getAll();
                     const ODSStore = useODSStore();
-                    await ODSStore.getAll();
+                    await Promise.all([
+                        PdMStore.getAll(),
+                        ODSStore.getAll()
+                    ]);
+                    
                     this.Tags = r.linhas.map(x=>{
                         x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
                         x.ods = ODSStore.ODS.find(z=>z.id==x.ods_id);

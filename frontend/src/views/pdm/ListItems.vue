@@ -1,16 +1,22 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { useAuthStore, usePdMStore } from '@/stores';
+import { useEditModalStore, useAuthStore, usePdMStore } from '@/stores';
+import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue';
+import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
+import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
+
+const editModalStore = useEditModalStore();
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
-console.log(perm);
+
+const props = defineProps(['group','type']);
+
 const PdMStore = usePdMStore();
 const { tempPdM } = storeToRefs(PdMStore);
-PdMStore.clear();
 PdMStore.filterPdM();
 
 const filters = reactive({
@@ -24,6 +30,13 @@ function filterItems(){
 function toggleAccordeon(t) {
     t.target.closest('.tzaccordeon').classList.toggle('active');
 }
+function start(){
+    if(props.group=='macrotemas') editModalStore.modal(AddEditMacrotemas,props);
+    if(props.group=='temas') editModalStore.modal(AddEditTemas,props);
+    if(props.group=='tags') editModalStore.modal(AddEditTags,props);
+}
+onMounted(()=>{start()});
+onUpdated(()=>{start()});
 </script>
 <template>
     <Dashboard>
@@ -37,7 +50,7 @@ function toggleAccordeon(t) {
                 <input v-model="filters.textualSearch" @input="filterItems" placeholder="Buscar" type="text" class="inputtext" />
             </div>
         </div>
-
+        
         <table class="tablemain">
             <thead>
                 <tr>
@@ -58,55 +71,56 @@ function toggleAccordeon(t) {
                             <td>{{ item.ativo?'Sim':'Não' }}</td>
                             <td style="white-space: nowrap; text-align: right;">
                                 <template v-if="perm?.CadastroPdm?.editar">
-                                    <router-link :to="`/pdm/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                    <router-link :to="`/pdm/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                 </template>
                             </td>
                         </tr>
                         <tz>
                             <td colspan="56" style="padding-left: 2rem;">
-                                <table class="tablemain mb1" v-if="item.eixos.length">
+                                <router-link v-if="item.ativo" :to="`/metas/${item.id}`" class="tlink"><span>Visualizar programa de metas ativo</span> <svg width="20" height="20"><use xlink:href="#i_link"></use></svg></router-link>
+                                <table class="tablemain mb1" v-if="item.macrotemas.length">
                                     <thead>
                                         <tr>
-                                            <th style="width: 90%">Eixos temáticos</th>
+                                            <th style="width: 90%">{{item.rotulo_macro_tema??'Macrotema'}}</th>
                                             <th style="width: 10%"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <template v-for="subitem in item.eixos" :key="subitem.id">
+                                        <template v-for="subitem in item.macrotemas" :key="subitem.id">
                                             <tr>
                                                 <td>{{ subitem.descricao }}</td>
                                                 <td style="white-space: nowrap; text-align: right;">
                                                     <template v-if="perm?.CadastroMacroTema?.editar">
-                                                        <router-link :to="`/eixos/editar/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                                        <router-link :to="`/pdm/${item.id}/macrotemas/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                                     </template>
                                                 </td>
                                             </tr>
                                         </template>
                                     </tbody>
                                 </table>
-                                <router-link v-if="perm?.CadastroMacroTema?.inserir" :to="`/eixos/novo/${item.id}`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Eixo temático</span></router-link>
+                                <router-link v-if="perm?.CadastroMacroTema?.inserir" :to="`/pdm/${item.id}/macrotemas/novo`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar {{item.rotulo_macro_tema??'Macrotema'}}</span></router-link>
                                 <br />
-                                <table class="tablemain mb1" v-if="item.objetivosEstrategicos.length">
+                                <table class="tablemain mb1" v-if="item.temas.length">
                                     <thead>
                                         <tr>
-                                            <th style="width: 90%">Objetivo estratégico</th>
+                                            <th style="width: 90%">{{item.rotulo_tema??"Tema"}}</th>
                                             <th style="width: 10%"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <template v-for="subitem in item.objetivosEstrategicos" :key="subitem.id">
+                                        <template v-for="subitem in item.temas" :key="subitem.id">
                                             <tr>
                                                 <td>{{ subitem.descricao }}</td>
                                                 <td style="white-space: nowrap; text-align: right;">
                                                     <template v-if="perm?.CadastroTema?.editar">
-                                                        <router-link :to="`/objetivos-estrategicos/editar/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                                        <router-link :to="`/pdm/${item.id}/temas/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                                     </template>
                                                 </td>
                                             </tr>
                                         </template>
                                     </tbody>
                                 </table>
-                                <router-link v-if="perm?.CadastroTema?.inserir" :to="`/objetivos-estrategicos/novo/${item.id}`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Objetivo estratégico</span></router-link>
+                                <router-link v-if="perm?.CadastroTema?.inserir" :to="`/pdm/${item.id}/temas/novo`" class="addlink mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar {{item.rotulo_tema??"Tema"}}</span></router-link>
                                 <br />
                                 <table class="tablemain mb1" v-if="item.tags.length">
                                     <thead>
@@ -121,14 +135,14 @@ function toggleAccordeon(t) {
                                                 <td>{{ subitem.descricao }}</td>
                                                 <td style="white-space: nowrap; text-align: right;">
                                                     <template v-if="perm?.CadastroTag?.editar">
-                                                        <router-link :to="`/tags/editar/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                                        <router-link :to="`/pdm/${item.id}/tags/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                                     </template>
                                                 </td>
                                             </tr>
                                         </template>
                                     </tbody>
                                 </table>
-                                <router-link v-if="perm?.CadastroTag?.inserir" :to="`/tags/novo/${item.id}`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Tag</span></router-link>
+                                <router-link v-if="perm?.CadastroTag?.inserir" :to="`/pdm/${item.id}/tags/novo`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Tag</span></router-link>
                             </td>
                         </tz>
                     </template>

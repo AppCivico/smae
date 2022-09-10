@@ -20,9 +20,6 @@
             <router-link v-if="perm?.CadastroFonteRecurso" to="/fonte-recurso">Fontes de Recurso</router-link>
             <router-link v-if="perm?.CadastroTipoDocumento" to="/tipo-documento">Tipos de Documento</router-link>
             <router-link v-if="perm?.CadastroOds" to="/ods">ODS</router-link>
-            <!-- <router-link v-if="perm?.CadastroMacroTema" to="/eixos">Eixo</router-link>
-            <router-link v-if="perm?.CadastroTag" to="/tags">Tag</router-link>
-            <router-link v-if="perm?.CadastroTema" to="/objetivos-estrategicos">Objetivo Estratégico</router-link> -->
         </div>
     </div>
 </template>

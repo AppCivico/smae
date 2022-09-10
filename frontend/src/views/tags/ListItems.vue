@@ -27,7 +27,7 @@ function filterItems(){
         <div class="flex spacebetween center mb2">
             <h1>Tags</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/tags/novo" class="btn big ml2" v-if="perm?.CadastroTag?.inserir">Nova Tag</router-link>
+            <router-link to="/tags/novo" class="btn big ml2" v-if="perm.CadastroTag.inserir">Nova Tag</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -51,7 +51,7 @@ function filterItems(){
                         <td>{{ item.pdm?.descricao }}</td>
                         <td>{{ item.ods?.titulo }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="perm?.CadastroTag?.editar">
+                            <template v-if="perm.CadastroTag.editar">
                                 <router-link :to="`/tags/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>

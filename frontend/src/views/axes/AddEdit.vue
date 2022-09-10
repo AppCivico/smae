@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useAxesStore/*, usePdMStore*/ } from '@/stores';
+import { useAlertStore, useAxesStore, usePdMStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -16,9 +16,9 @@ const AxesStore = useAxesStore();
 const { tempAxes } = storeToRefs(AxesStore);
 AxesStore.clear();
 
-/*const PdMStore = usePdMStore();
+const PdMStore = usePdMStore();
 const { PdM } = storeToRefs(PdMStore);
-PdMStore.getAll();*/
+PdMStore.getAll();
 
 var virtualAxes;
 let title = 'Cadastro de Eixo Temático';
@@ -31,7 +31,7 @@ if (id) {
 
 const schema = Yup.object().shape({
     descricao: Yup.string().required('Preencha a descrição'),
-    pdm_id: Yup.string(),
+    pdm_id: Yup.string().required('Selecione um PdM'),
 });
 
 async function onSubmit(values) {
@@ -72,7 +72,18 @@ async function checkDelete(id) {
         </div>
         <template v-if="!(tempAxes?.loading || tempAxes?.error)">
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempAxes.pdm_id&&id?tempAxes:virtualAxes" v-slot="{ errors, isSubmitting }">
-                <Field name="pdm_id" type="hidden" :value="pdm_id" /><div class="error-msg">{{ errors.pdm_id }}</div>
+                <div class="flex g2">
+                    <div class="f1">
+                        <label class="label">PdM <span class="tvermelho">*</span></label>
+                        <Field name="pdm_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.pdm_id }">
+                            <option value="">Selecionar</option>
+                            <template v-if="PdM.length">
+                                <option v-for="type in PdM" :key="type.id" :value="type.id" :selected="pdm_id&&type.id==pdm_id">{{ type.descricao }}</option>
+                            </template>
+                        </Field>
+                        <div class="error-msg">{{ errors.pdm_id }}</div>
+                    </div>
+                </div>
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Eixo Temático <span class="tvermelho">*</span></label>
