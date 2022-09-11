@@ -11,6 +11,8 @@ export class MetaService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createMetaDto: CreateMetaDto, user: PessoaFromJwt) {
+        // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
+        // e se tem o privilegios de CP
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const meta = await prisma.meta.create({
@@ -28,10 +30,54 @@ export class MetaService {
                 data: await this.buildOrgaosParticipantes(meta.id, createMetaDto.orgaos_participantes, createMetaDto.coordenadores_cp),
             });
 
+            await prisma.metaResponsavel.createMany({
+                data: await this.buildMetaResponsaveis(meta.id, createMetaDto.orgaos_participantes, createMetaDto.coordenadores_cp),
+            });
+
             return meta;
         });
 
         return created;
+    }
+
+    async buildMetaResponsaveis(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: MetaParticipanteOuResp[]): Promise<Prisma.MetaResponsavelCreateManyInput[]> {
+        const arr: Prisma.MetaResponsavelCreateManyInput[] = [];
+
+        for (const orgao of orgaos_participantes) {
+            for (const participante of orgao.participantes) {
+                arr.push({
+                    meta_id: metaId,
+                    pessoa_id: participante.pessoa_id,
+                    orgao_id: orgao.orgao_id,
+                    coorderandor_responsavel_cp: false,
+                });
+            }
+        }
+
+        for (const participanteCoordenadoria of coordenadores_cp) {
+            const pessoaFisicaOrgao = await this.prisma.pessoa.findFirst({
+                where: {
+                    id: participanteCoordenadoria.pessoa_id
+                },
+                select: {
+                    pessoa_fisica: { select: { orgao_id: true } }
+                }
+            });
+
+            const orgaoId = pessoaFisicaOrgao?.pessoa_fisica?.orgao_id;
+            if (orgaoId) {
+                arr.push({
+                    meta_id: metaId,
+                    pessoa_id: participanteCoordenadoria.pessoa_id,
+                    orgao_id: orgaoId,
+                    coorderandor_responsavel_cp: true,
+                });
+
+            }
+
+        }
+
+        return arr;
     }
 
     async buildOrgaosParticipantes(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: MetaParticipanteOuResp[]): Promise<Prisma.MetaOrgaoCreateManyInput[]> {
