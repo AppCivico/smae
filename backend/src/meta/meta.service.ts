@@ -146,6 +146,19 @@ export class MetaService {
                 pdm_id: true,
                 status: true,
                 ativo: true,
+                meta_orgao: {
+                    select: {
+                        orgao: { select: { id: true, descricao: true } },
+                        responsavel: true
+                    }
+                },
+                meta_responsavel: {
+                    select: {
+                        orgao: { select: { id: true, descricao: true } },
+                        pessoa: { select: { id: true, nome_exibicao: true } },
+                        coorderandor_responsavel_cp: true,
+                    }
+                }
             }
         });
         return listActive;

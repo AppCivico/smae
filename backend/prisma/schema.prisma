@@ -120,11 +120,11 @@ model Orgao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
-    removedor       Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
-    MetaOrgao       MetaOrgao[]
-    MetaResponsavel MetaResponsavel[]
+    atualizador      Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador          Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    removedor        Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+    meta_orgao       MetaOrgao[]
+    meta_responsavel MetaResponsavel[]
 
     @@map("orgao")
 }
@@ -442,11 +442,10 @@ model Tema {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa?     @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa?     @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa?     @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
     Meta        Meta[]
-    MetaOrgao   MetaOrgao[]
 
     @@map("objetivo_estrategico")
 }
@@ -551,11 +550,11 @@ model Meta {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
-    reovedor        Pessoa?           @relation("Desativador", fields: [removido_por], references: [id])
-    MetaOrgao       MetaOrgao[]
-    MetaResponsavel MetaResponsavel[]
+    atualizador      Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador          Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    reovedor         Pessoa?           @relation("Desativador", fields: [removido_por], references: [id])
+    meta_orgao       MetaOrgao[]
+    meta_responsavel MetaResponsavel[]
 
     @@map("meta")
 }
@@ -568,8 +567,6 @@ model MetaOrgao {
     responsavel Boolean
     orgao_id    Int
     orgao       Orgao   @relation(fields: [orgao_id], references: [id])
-    Tema        Tema?   @relation(fields: [temaId], references: [id])
-    temaId      Int?
 
     @@map("meta_orgao")
 }
