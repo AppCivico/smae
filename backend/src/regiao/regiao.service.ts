@@ -45,7 +45,6 @@ export class RegiaoService {
         if (createRegiaoDto.upload_shapefile) {
             uploadId = this.uploadService.checkUploadToken(createRegiaoDto.upload_shapefile);
         }
-
         delete createRegiaoDto.upload_shapefile;
 
         const created = await this.prisma.regiao.create({
@@ -118,7 +117,7 @@ export class RegiaoService {
         }
 
         let uploadId: number | null | undefined = undefined;
-        if (updateRegiaoDto.upload_shapefile == null) {
+        if (updateRegiaoDto.upload_shapefile === null || updateRegiaoDto.upload_shapefile === '') {
             // remove o arquivo
             uploadId = null
         } else if (updateRegiaoDto.upload_shapefile) {
