@@ -13,8 +13,9 @@ export class CreateTagDto {
     * Upload do Ícone
     */
     @IsOptional()
+    @ValidateIf((object, value) => value !== null)
     @IsString({ message: '$property| upload_token de um arquivo de ícone' })
-    upload_icone?: string
+    upload_icone?: string | null
 
     /**
     * ID do PDM

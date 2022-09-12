@@ -117,8 +117,11 @@ export class RegiaoService {
                 throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-        let uploadId: number | undefined = undefined;
-        if (updateRegiaoDto.upload_shapefile) {
+        let uploadId: number | null | undefined = undefined;
+        if (updateRegiaoDto.upload_shapefile == null) {
+            // remove o arquivo
+            uploadId = null
+        } else if (updateRegiaoDto.upload_shapefile) {
             uploadId = this.uploadService.checkUploadToken(updateRegiaoDto.upload_shapefile);
         }
         delete updateRegiaoDto.upload_shapefile;

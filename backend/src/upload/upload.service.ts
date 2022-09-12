@@ -104,6 +104,8 @@ export class UploadService {
         } as Upload;
     }
 
+    // aceita tanto um token de upload ou de download
+    // eu não acho bom, mas convencido fazer isso pra atrapalhar menos o form do frontend
     checkUploadToken(token: string): number {
         let decoded: UploadBody | null = null;
         try {
@@ -111,7 +113,7 @@ export class UploadService {
         } catch (error) {
             console.log(error)
         }
-        if (!decoded || decoded.aud != UPLOAD_AUD)
+        if (!decoded || ![UPLOAD_AUD, DOWNLOAD_AUD].includes(decoded.aud))
             throw new HttpException('upload_token inválido', 400);
 
         return decoded.arquivo_id;

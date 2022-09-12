@@ -69,8 +69,10 @@ export class TagService {
     }
 
     async update(id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
-        let uploadId: number | undefined = undefined;
-        if (updateTagDto.upload_icone) {
+        let uploadId: number | null | undefined = undefined;
+        if (updateTagDto.upload_icone === null) {
+            uploadId = null;
+        } else if (updateTagDto.upload_icone) {
             uploadId = this.uploadService.checkUploadToken(updateTagDto.upload_icone);
         }
         delete updateTagDto.upload_icone;
