@@ -1,11 +1,11 @@
 import { Type } from "class-transformer";
-import { IsBoolean, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
 
 
 export class MetaOrgaoParticipante {
     /**
-    * orgão participante é responsável?
-    * @example "false"
+    * orgão participante é responsável? Pelo menos um precisa ser responsável
+    * @example false
     */
     @IsBoolean({ message: 'Campo responsavel precisa ser do tipo Boolean' })
     responsavel: boolean
@@ -19,8 +19,12 @@ export class MetaOrgaoParticipante {
     orgao_id: number;
 
     /**
-    * lista dos participantes?
+    * lista dos participantes? pelo menos uma pessoa
+    * @example "[4, 5, 6]"
     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMinSize(1, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
     participantes: number[]
 
 }
@@ -95,12 +99,16 @@ export class CreateMetaDto {
 
 
     /**
-    * orgaos_participantes
+    * Quais são os orgaos participantes e seus membros responsáveis
     */
     orgaos_participantes: MetaOrgaoParticipante[]
 
     /**
-    * meta_participantes
+    * ID das pessoas que são coordenadores
+    * @example "[1, 2, 3]"
     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMinSize(1, { message: '$property| precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
     coordenadores_cp: number[]
 }

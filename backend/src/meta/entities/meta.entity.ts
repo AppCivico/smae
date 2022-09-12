@@ -11,12 +11,7 @@ export class IdNomeExibicao {
 export class MetaOrgao {
     orgao: IdDesc
     responsavel: boolean
-}
-
-export class MetaResp {
-    orgao: IdDesc
-    pessoa: IdNomeExibicao
-    coorderandor_responsavel_cp: boolean
+    participantes: IdNomeExibicao[]
 }
 
 export class Meta {
@@ -31,6 +26,6 @@ export class Meta {
     tema: IdDesc | null
     sub_tema: IdDesc | null
     ativo: boolean
-    meta_orgao: MetaOrgao[]
-    meta_responsavel: MetaResp[]
+    orgaos_participantes: MetaOrgao[]
+    coordenadores_cp: IdNomeExibicao[]
 }

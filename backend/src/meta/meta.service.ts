@@ -5,6 +5,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
+import { Meta } from './entities/meta.entity';
 
 @Injectable()
 export class MetaService {
@@ -137,8 +138,9 @@ export class MetaService {
                 }
             }
         });
+        let ret: Meta[] = [];
 
-        return listActive;
+        return ret;
     }
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
