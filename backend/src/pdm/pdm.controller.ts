@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -10,6 +10,7 @@ import { UpdatePdmDto } from 'src/pdm/dto/update-pdm.dto';
 import { Pdm } from 'src/pdm/entities/pdm.entity';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
+import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
 import { PdmService } from './pdm.service';
 
@@ -30,8 +31,8 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @Get()
     @Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar')
-    async findAll(): Promise<ListPdmDto> {
-        return { 'linhas': await this.pdmService.findAll() };
+    async findAll(@Query() filters: FilterPdmDto): Promise<ListPdmDto> {
+        return { 'linhas': await this.pdmService.findAll(filters) };
     }
 
 

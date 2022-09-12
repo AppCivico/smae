@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
+import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { PdmDocument } from './entities/pdm-document.entity';
 
@@ -38,8 +39,13 @@ export class PdmService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterPdmDto | undefined = undefined) {
+        const active = filters?.ativo === 'true' ? true : (filters?.ativo === 'false' ? false : undefined);
+
         const listActive = await this.prisma.pdm.findMany({
+            where: {
+                ativo: active,
+            },
             select: {
                 id: true,
                 nome: true,
