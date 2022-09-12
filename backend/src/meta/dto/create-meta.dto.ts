@@ -101,7 +101,8 @@ export class CreateMetaDto {
     /**
     * Quais são os orgaos participantes e seus membros responsáveis
     */
-    orgaos_participantes: MetaOrgaoParticipante[]
+    @IsArray({message: 'precisa ser array'})
+    orgaos_participantes?: MetaOrgaoParticipante[]
 
     /**
     * ID das pessoas que são coordenadores
@@ -110,5 +111,5 @@ export class CreateMetaDto {
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(1, { message: '$property| precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    coordenadores_cp: number[]
+    coordenadores_cp?: number[]
 }

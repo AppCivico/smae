@@ -16,6 +16,11 @@ export class MetaService {
         // e se tem o privilegios de CP
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            let op = createMetaDto.orgaos_participantes!;
+            let cp = createMetaDto.coordenadores_cp!;
+            delete createMetaDto.orgaos_participantes;
+            delete createMetaDto.coordenadores_cp;
+
             const meta = await prisma.meta.create({
                 data: {
                     criado_por: user.id,
@@ -28,11 +33,11 @@ export class MetaService {
             });
 
             await prisma.metaOrgao.createMany({
-                data: await this.buildOrgaosParticipantes(meta.id, createMetaDto.orgaos_participantes),
+                data: await this.buildOrgaosParticipantes(meta.id, op),
             });
 
             await prisma.metaResponsavel.createMany({
-                data: await this.buildMetaResponsaveis(meta.id, createMetaDto.orgaos_participantes, createMetaDto.coordenadores_cp),
+                data: await this.buildMetaResponsaveis(meta.id, op, cp),
             });
 
             return meta;
