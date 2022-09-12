@@ -1,38 +1,27 @@
-import { Type } from "class-transformer"
-import { IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator"
-import { IsTrueFalseString } from "src/common/decorators/IsTrueFalseStr"
+import { Type } from "class-transformer";
+import { IsBoolean, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
 
-export class MetaParticipanteOuResp {
-    /**
-   * ID da pessoa_id
-   * @example "1"
-    */
-    @IsPositive({ message: '$property| pessoa_id' })
-    @Type(() => Number)
-    pessoa_id: number;
-}
 
 export class MetaOrgaoParticipante {
     /**
     * orgão participante é responsável?
     * @example "false"
     */
-    @IsTrueFalseString()
-    responsavel: string
-
+    @IsBoolean({ message: 'Campo responsavel precisa ser do tipo Boolean' })
+    responsavel: boolean
 
     /**
     * órgão
-    * @example "1"
+    * @example 1
     */
     @IsPositive({ message: '$property| orgao_id' })
     @Type(() => Number)
     orgao_id: number;
 
     /**
-    * participante é responsável?
+    * lista dos participantes?
     */
-    participantes: MetaParticipanteOuResp[]
+    participantes: number[]
 
 }
 
@@ -113,5 +102,5 @@ export class CreateMetaDto {
     /**
     * meta_participantes
     */
-    coordenadores_cp: MetaParticipanteOuResp[]
+    coordenadores_cp: number[]
 }
