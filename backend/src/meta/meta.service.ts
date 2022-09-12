@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateMetaDto, MetaOrgaoParticipante, MetaParticipanteOuResp } from './dto/create-meta.dto';
+import { CreateMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class MetaService {
             });
 
             await prisma.metaOrgao.createMany({
-                data: await this.buildOrgaosParticipantes(meta.id, createMetaDto.orgaos_participantes, createMetaDto.coordenadores_cp),
+                data: await this.buildOrgaosParticipantes(meta.id, createMetaDto.orgaos_participantes),
             });
 
             await prisma.metaResponsavel.createMany({
@@ -40,24 +40,24 @@ export class MetaService {
         return created;
     }
 
-    async buildMetaResponsaveis(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: MetaParticipanteOuResp[]): Promise<Prisma.MetaResponsavelCreateManyInput[]> {
+    async buildMetaResponsaveis(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.MetaResponsavelCreateManyInput[]> {
         const arr: Prisma.MetaResponsavelCreateManyInput[] = [];
 
         for (const orgao of orgaos_participantes) {
-            for (const participante of orgao.participantes) {
+            for (const participanteId of orgao.participantes) {
                 arr.push({
                     meta_id: metaId,
-                    pessoa_id: participante.pessoa_id,
+                    pessoa_id: participanteId,
                     orgao_id: orgao.orgao_id,
                     coorderandor_responsavel_cp: false,
                 });
             }
         }
 
-        for (const participanteCoordenadoria of coordenadores_cp) {
+        for (const CoordenadoriaParticipanteId of coordenadores_cp) {
             const pessoaFisicaOrgao = await this.prisma.pessoa.findFirst({
                 where: {
-                    id: participanteCoordenadoria.pessoa_id
+                    id: CoordenadoriaParticipanteId
                 },
                 select: {
                     pessoa_fisica: { select: { orgao_id: true } }
@@ -68,7 +68,7 @@ export class MetaService {
             if (orgaoId) {
                 arr.push({
                     meta_id: metaId,
-                    pessoa_id: participanteCoordenadoria.pessoa_id,
+                    pessoa_id: CoordenadoriaParticipanteId,
                     orgao_id: orgaoId,
                     coorderandor_responsavel_cp: true,
                 });
@@ -80,14 +80,14 @@ export class MetaService {
         return arr;
     }
 
-    async buildOrgaosParticipantes(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: MetaParticipanteOuResp[]): Promise<Prisma.MetaOrgaoCreateManyInput[]> {
+    async buildOrgaosParticipantes(metaId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.MetaOrgaoCreateManyInput[]> {
         const arr: Prisma.MetaOrgaoCreateManyInput[] = [];
 
         let orgaoVisto: Record<number, boolean> = {};
         // ordena por responsáveis primeiro
         orgaos_participantes.sort((a, b) => {
-            return a.responsavel === 'true' && b.responsavel === 'false' ? -1 :
-                a.responsavel === 'true' && b.responsavel === 'true' ? 0 : 1;
+            return a.responsavel && !b.responsavel ? -1 :
+                a.responsavel && !b.responsavel ? 0 : 1;
         });
 
         for (const orgao of orgaos_participantes) {
@@ -96,33 +96,9 @@ export class MetaService {
 
                 arr.push({
                     orgao_id: orgao.orgao_id,
-                    responsavel: orgao.responsavel === 'true',
+                    responsavel: orgao.responsavel,
                     meta_id: metaId
                 });
-            }
-        }
-
-        // buscar pelo orgão "implicito" via membros dos coordenadores_cp
-        for (const coordenador of coordenadores_cp) {
-            const pessoaFisicaOrgao = await this.prisma.pessoa.findFirst({
-                where: {
-                    id: coordenador.pessoa_id
-                },
-                select: {
-                    pessoa_fisica: { select: { orgao_id: true } }
-                }
-            });
-
-            const orgaoId = pessoaFisicaOrgao?.pessoa_fisica?.orgao_id;
-            if (orgaoId) {
-                if (!orgaoVisto[orgaoId]) {
-                    orgaoVisto[orgaoId] = true;
-                    arr.push({
-                        orgao_id: orgaoId,
-                        responsavel: false,// o coordenador nunca é o responśavel da meta
-                        meta_id: metaId
-                    });
-                }
             }
         }
 
@@ -161,6 +137,7 @@ export class MetaService {
                 }
             }
         });
+
         return listActive;
     }
 
