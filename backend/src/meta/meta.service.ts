@@ -5,7 +5,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { Meta } from './entities/meta.entity';
+import { IdNomeExibicao, Meta, MetaOrgao } from './entities/meta.entity';
 
 @Injectable()
 export class MetaService {
@@ -139,6 +139,48 @@ export class MetaService {
             }
         });
         let ret: Meta[] = [];
+        for (const dbMeta of listActive) {
+            const coordenadores_cp: IdNomeExibicao[] = [];
+            const orgaos: Record<number, MetaOrgao> = {};
+
+            for (const orgao of dbMeta.meta_orgao) {
+                orgaos[orgao.orgao.id] = {
+                    orgao: orgao.orgao,
+                    responsavel: true,
+                    participantes: []
+                };
+            }
+
+            for (const responsavel of dbMeta.meta_responsavel) {
+                if (responsavel.coorderandor_responsavel_cp) {
+                    coordenadores_cp.push({
+                        id: responsavel.pessoa.id,
+                        nome_exibicao: responsavel.pessoa.nome_exibicao,
+                    })
+                } else {
+                    let orgao = orgaos[responsavel.orgao.id];
+                    orgao.participantes.push(responsavel.pessoa);
+                }
+            }
+
+            let meta: Meta = {
+                id: dbMeta.id,
+                titulo: dbMeta.titulo,
+                contexto: dbMeta.contexto,
+                codigo: dbMeta.codigo,
+                complemento: dbMeta.complemento,
+                macro_tema: dbMeta.macro_tema,
+                tema: dbMeta.tema,
+                sub_tema: dbMeta.sub_tema,
+                pdm_id: dbMeta.pdm_id,
+                status: dbMeta.status,
+                ativo: dbMeta.ativo,
+                coordenadores_cp: coordenadores_cp,
+                orgaos_participantes: Object.values(orgaos),
+            };
+
+            ret.push(meta)
+        }
 
         return ret;
     }
