@@ -84,6 +84,13 @@ const PrivConfig: any = {
         ['CadastroRegiao.editar', 'Editar Regiões'],
         ['CadastroRegiao.remover', 'Remover Regiões'],
     ],
+    CadastroMeta: [
+        ['CadastroMeta.inserir', 'Inserir Metas'],
+        ['CadastroMeta.editar', 'Editar Metas'],
+        ['CadastroMeta.remover', 'Remover Metas'],
+        ['CadastroMeta.inativar', 'Inativar Metas'],
+        ['CadastroMeta.ativar', 'Ativar Metas'],
+    ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Reponsável CP']
     ]
@@ -102,6 +109,7 @@ const ModuloDescricao: any = {
     CadastroSubTema: 'Cadastro de Sub Tema',
     CadastroTema: 'Cadastro de Tema',
     CadastroRegiao: 'Cadastro de Regiões',
+    CadastroMeta: 'Cadastro de Metas',
     PDM: 'Regras de Negocio do PDM',
 
 };

@@ -163,7 +163,7 @@ export class MetaService {
                 }
             }
 
-            let meta: Meta = {
+            ret.push({
                 id: dbMeta.id,
                 titulo: dbMeta.titulo,
                 contexto: dbMeta.contexto,
@@ -177,9 +177,7 @@ export class MetaService {
                 ativo: dbMeta.ativo,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
-            };
-
-            ret.push(meta)
+            })
         }
 
         return ret;
