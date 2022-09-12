@@ -43,7 +43,8 @@ export class CreateRegiaoDto {
     * Upload do Shapefile
     */
     @IsOptional()
+    @ValidateIf((object, value) => value !== null)
     @IsString({ message: '$property| upload_token de um arquivo de Shapefile' })
-    upload_shapefile?: string
+    upload_shapefile?: string | null
 
 }
