@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -6,6 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateMetaDto } from './dto/create-meta.dto';
+import { FilterMetaDto } from './dto/filter-meta.dto';
 import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { MetaService } from './meta.service';
@@ -25,8 +26,8 @@ export class MetaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListMetaDto> {
-        return { 'linhas': await this.metaService.findAll() };
+    async findAll(@Query() filters: FilterMetaDto): Promise<ListMetaDto> {
+        return { 'linhas': await this.metaService.findAll(filters) };
     }
 
     @Patch(':id')
