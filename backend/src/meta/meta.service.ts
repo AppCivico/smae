@@ -4,6 +4,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
+import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao } from './entities/meta.entity';
 
@@ -113,10 +114,13 @@ export class MetaService {
         return arr;
     }
 
-    async findAll() {
+    async findAll(filters: FilterMetaDto | undefined = undefined) {
+        let pdmId = filters?.pdm_id;
+
         let listActive = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
+                pdm_id: pdmId,
             },
             select: {
                 id: true,
