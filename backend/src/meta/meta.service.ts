@@ -14,6 +14,8 @@ export class MetaService {
     async create(createMetaDto: CreateMetaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
+        // e se os *tema_id são do mesmo PDM
+        // se existe pelo menos 1 responsável=true no op
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = createMetaDto.orgaos_participantes!;
@@ -190,13 +192,34 @@ export class MetaService {
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
 
-        await this.prisma.meta.update({
-            where: { id: id },
-            data: {
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-                ...updateMetaDto,
-            },
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            let op = updateMetaDto.orgaos_participantes!;
+            let cp = updateMetaDto.coordenadores_cp!;
+            delete updateMetaDto.orgaos_participantes;
+            delete updateMetaDto.coordenadores_cp;
+
+            const meta = await prisma.meta.update({
+                where: { id: id },
+                data: {
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                    status: '',
+                    ativo: true,
+                    ...updateMetaDto,
+                },
+                select: { id: true }
+            });
+            await Promise.all([prisma.metaOrgao.deleteMany(), prisma.metaResponsavel.deleteMany()]);
+
+            await prisma.metaOrgao.createMany({
+                data: await this.buildOrgaosParticipantes(meta.id, op),
+            });
+
+            await prisma.metaResponsavel.createMany({
+                data: await this.buildMetaResponsaveis(meta.id, op, cp),
+            });
+
+            return meta;
         });
 
         return { id };
