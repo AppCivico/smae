@@ -95,4 +95,14 @@ export class IndicadorService {
 
         return created;
     }
+
+    async agregadores() {
+        return await this.prisma.agregador.findMany({
+            select: {
+                id: true,
+                codigo: true,
+                descricao: true
+            }
+        });
+    }
 }

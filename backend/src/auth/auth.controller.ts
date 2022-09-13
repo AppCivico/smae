@@ -81,5 +81,4 @@ export class AuthController {
             linhas: await this.authService.listaPerfilAcesso()
         };
     }
-
 }
