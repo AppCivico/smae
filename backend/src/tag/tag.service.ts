@@ -3,6 +3,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreateTagDto } from './dto/create-tag.dto';
+import { FilterTagDto } from './dto/filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
@@ -45,10 +46,13 @@ export class TagService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterTagDto | undefined = undefined) {
+        let pdmId = filters?.pdm_id;
+
         let listActive = await this.prisma.tag.findMany({
             where: {
                 removido_em: null,
+                pdm_id: pdmId
             },
             select: {
                 id: true,
