@@ -129,6 +129,7 @@ async function checkDelete(id) {
 function removeshape(t) {
     curfile.name = '';
     curfile.loading = null;
+    singleTempRegions.value.upload_shapefile = curfile.name;
 }
 async function uploadshape(e){
     curfile.name= '';

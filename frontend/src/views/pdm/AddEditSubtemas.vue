@@ -7,16 +7,16 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useEditModalStore, useTemasStore, usePdMStore, useMetasStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useSubtemasStore, usePdMStore, useMetasStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
 const id = route.params.id;
 
-const TemasStore = useTemasStore();
-const { tempTemas } = storeToRefs(TemasStore);
-TemasStore.clear();
+const SubtemasStore = useSubtemasStore();
+const { tempSubtemas } = storeToRefs(SubtemasStore);
+SubtemasStore.clear();
 
 const ps = defineProps(['props']);
 const props = ps.props;
@@ -29,7 +29,6 @@ var pdm_id = reactive(0);
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
 
-console.log(props.parentPage);
 if(props.parentPage=='metas'){
     Promise.all([
         MetasStore.getPdM()
@@ -44,23 +43,22 @@ if(props.parentPage=='metas'){
 }
 
 var label = ref("");
-
 let title = 'Cadastrar';
 if (id) {
     title = 'Editar';
-    TemasStore.getById(id);
+    SubtemasStore.getById(id);
 }
 
 const schema = Yup.object().shape({
     descricao: Yup.string().required('Preencha a descrição'),
-    pdm_id: Yup.string().required('Selecione um PdM'),
+    pdm_id: Yup.string(),
 });
 
 onMounted(()=>{
     if(props.parentPage=='metas'){
-        label.value = activePdm.value.rotulo_tema??"Tema";
+        label.value = activePdm.value.rotulo_Sub_tema??"Subtema";
     }else{
-        label.value = singlePdm.value.rotulo_tema??"Tema";
+        label.value = singlePdm.value.rotulo_Sub_tema??"Subtema";
     }
 });
 
@@ -68,11 +66,11 @@ async function onSubmit(values) {
     try {
         var msg;
         var r;
-        if (id&&tempTemas.value.id) {
-            r = await TemasStore.update(tempTemas.value.id, values);
+        if (id&&tempSubtemas.value.id) {
+            r = await SubtemasStore.update(tempSubtemas.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
-            r = await TemasStore.insert(values);
+            r = await SubtemasStore.insert(values);
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
@@ -85,7 +83,6 @@ async function onSubmit(values) {
         alertStore.error(error);
     }
 }
-
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
         editModalStore.clear(); 
@@ -95,14 +92,13 @@ async function checkClose() {
 }
 async function checkDelete(id) {
     alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
-        if(await TemasStore.delete(id)){ 
+        if(await SubtemasStore.delete(id)){
             if(props.parentPage=='pdm') PdMStore.filterPdM();
             editModalStore.clear(); 
-            router.push('/'+props.parentPage); 
+            router.push('/'+props.parentPage);
         }
     },'Remover');
 }
-
 </script>
 
 <template>
@@ -111,8 +107,8 @@ async function checkDelete(id) {
         <hr class="ml2 f1"/>
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
-    <template v-if="!(tempTemas?.loading || tempTemas?.error)">
-        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?tempTemas:virtualParent" v-slot="{ errors, isSubmitting }">
+    <template v-if="!(tempSubtemas?.loading || tempSubtemas?.error)">
+        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?tempSubtemas:virtualParent" v-slot="{ errors, isSubmitting }">
             <Field name="pdm_id" type="hidden" :value="pdm_id" /><div class="error-msg">{{ errors.pdm_id }}</div>
             <div class="flex g2">
                 <div class="f1">
@@ -128,15 +124,15 @@ async function checkDelete(id) {
             </div>
         </Form>
     </template>
-    <template v-if="tempTemas.id">
-        <button @click="checkDelete(tempTemas.id)" class="btn amarelo big">Remover item</button>
+    <template v-if="tempSubtemas.id">
+        <button @click="checkDelete(tempSubtemas.id)" class="btn amarelo big">Remover item</button>
     </template>
-    <template v-if="tempTemas?.loading">
+    <template v-if="tempSubtemas?.loading">
         <span class="spinner">Carregando</span>
     </template>
-    <template v-if="tempTemas?.error||error">
+    <template v-if="tempSubtemas?.error||error">
         <div class="error p1">
-            <div class="error-msg">{{tempTemas.error??error}}</div>
+            <div class="error-msg">{{tempSubtemas.error??error}}</div>
         </div>
     </template>
 </template>

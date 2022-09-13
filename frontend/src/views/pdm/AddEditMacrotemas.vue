@@ -1,4 +1,5 @@
 <script setup>
+import { ref, reactive, onMounted, onUpdated } from 'vue';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
@@ -6,7 +7,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useEditModalStore, useMacrotemasStore, usePdMStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useMacrotemasStore, usePdMStore, useMetasStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -17,25 +18,48 @@ const MacrotemasStore = useMacrotemasStore();
 const { tempMacrotemas } = storeToRefs(MacrotemasStore);
 MacrotemasStore.clear();
 
-const pdm_id = route.params.pdm_id;
+const ps = defineProps(['props']);
+const props = ps.props;
+
+const virtualParent = reactive({});
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
+
+var pdm_id = reactive(0);
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
-if(!singlePdm.id || singlePdm.id != pdm_id) PdMStore.getById(pdm_id);
 
-var label = singlePdm?.rotulo_macro_tema??"Macrotema";
-
-var virtualParent;
-let title = 'Cadastro de '+label;
-if (id) {
-    title = 'Editar '+label;
-    MacrotemasStore.getById(id);
+if(props.parentPage=='metas'){
+    Promise.all([
+        MetasStore.getPdM()
+    ]).then(()=>{
+        pdm_id = activePdm.value.id;
+        virtualParent.pdm_id=pdm_id;
+    });
 }else{
-    virtualParent = {pdm_id: route.params.pdm_id};
+    pdm_id = route.params.pdm_id;
+    if(!singlePdm.value.id || singlePdm.value.id != pdm_id) PdMStore.getById(pdm_id);
+    virtualParent.pdm_id=pdm_id;
+}
+
+var label = ref("");
+let title = 'Cadastrar';
+if (id) {
+    title = 'Editar';
+    MacrotemasStore.getById(id);
 }
 
 const schema = Yup.object().shape({
     descricao: Yup.string().required('Preencha a descrição'),
     pdm_id: Yup.string(),
+});
+
+onMounted(()=>{
+    if(props.parentPage=='metas'){
+        label.value = activePdm.value.rotulo_macro_tema??"Macrotema";
+    }else{
+        label.value = singlePdm.value.rotulo_macro_tema??"Macrotema";
+    }
 });
 
 async function onSubmit(values) {
@@ -50,8 +74,8 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
-            PdMStore.filterPdM();
-            await router.push('/pdm');
+            if(props.parentPage=='pdm') PdMStore.filterPdM();
+            await router.push('/'+props.parentPage);
             alertStore.success(msg);
             editModalStore.clear();
         }
@@ -59,28 +83,36 @@ async function onSubmit(values) {
         alertStore.error(error);
     }
 }
-
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ editModalStore.clear(); alertStore.clear(); router.push('/pdm'); });
+    alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
+        editModalStore.clear(); 
+        alertStore.clear(); 
+        router.push('/'+props.parentPage);  
+    });
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await MacrotemasStore.delete(id)){PdMStore.filterPdM(); editModalStore.clear(); router.push('/pdm');}},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
+        if(await MacrotemasStore.delete(id)){
+            if(props.parentPage=='pdm') PdMStore.filterPdM();
+            editModalStore.clear(); 
+            router.push('/'+props.parentPage);
+        }
+    },'Remover');
 }
-
 </script>
 
 <template>
     <div class="flex spacebetween center mb2">
-        <h2>{{title}}</h2>
+        <h2>{{title}} {{label}}</h2>
         <hr class="ml2 f1"/>
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
     <template v-if="!(tempMacrotemas?.loading || tempMacrotemas?.error)">
-        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempMacrotemas.pdm_id&&id?tempMacrotemas:virtualParent" v-slot="{ errors, isSubmitting }">
+        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?tempMacrotemas:virtualParent" v-slot="{ errors, isSubmitting }">
             <Field name="pdm_id" type="hidden" :value="pdm_id" /><div class="error-msg">{{ errors.pdm_id }}</div>
             <div class="flex g2">
                 <div class="f1">
-                    <label class="label">Macrotema <span class="tvermelho">*</span></label>
+                    <label class="label">{{label}} <span class="tvermelho">*</span></label>
                     <Field name="descricao" type="text" class="inputtext light mb1" :class="{ 'error': errors.descricao }" />
                     <div class="error-msg">{{ errors.descricao }}</div>
                 </div>

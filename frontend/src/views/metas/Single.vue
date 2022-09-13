@@ -66,7 +66,6 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
-            PdMStore.clear();
             await router.push('/pdm');
             alertStore.success(msg);
         }
@@ -104,7 +103,7 @@ function maskDate(el){
                 <div class="flex g2 mb2" v-if="pdm_id&&perm?.CadastroPdm?.inativar">
                     <div class="f1">
                         <label class="block mb1 interruptorcheckbox">
-                            <Field name="ativo" type="checkbox" value=1 :checked="ativo" /><span>Programa ativo</span><span>Programa inativo</span>
+                            <Field name="ativo" type="checkbox" value=1 :checked="ativo" /><span>Ativar programa</span><span>Desativar programa</span>
                         </label>
                         <p class="t13 tc500">Ao ativar um Programa de Metas, todos os demais programas são ativos</p>
                     </div>

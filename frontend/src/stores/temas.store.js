@@ -82,5 +82,18 @@ export const useTemasStore = defineStore({
                 this.tempTemas = { error };
             }
         },
+        async filterByPdm(pdm_id){
+            this.tempTemas = { loading: true };
+            try {
+                if(!this.Temas.length){
+                    await this.getAll();
+                }
+                this.tempTemas = this.Temas.filter((u)=>{
+                    return u.pdm_id == pdm_id;
+                });
+            } catch (error) {
+                this.tempTemas = { error };
+            }
+        }
     }
 });
