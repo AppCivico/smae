@@ -3,6 +3,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreateTagDto } from './dto/create-tag.dto';
+import { FilterTagDto } from './dto/filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
@@ -45,10 +46,13 @@ export class TagService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterTagDto | undefined = undefined) {
+        let pdmId = filters?.pdm_id;
+
         let listActive = await this.prisma.tag.findMany({
             where: {
                 removido_em: null,
+                pdm_id: pdmId
             },
             select: {
                 id: true,
@@ -69,8 +73,10 @@ export class TagService {
     }
 
     async update(id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
-        let uploadId: number | undefined = undefined;
-        if (updateTagDto.upload_icone) {
+        let uploadId: number | null | undefined = undefined;
+        if (updateTagDto.upload_icone === null || updateTagDto.upload_icone === '') {
+            uploadId = null;
+        } else if (updateTagDto.upload_icone) {
             uploadId = this.uploadService.checkUploadToken(updateTagDto.upload_icone);
         }
         delete updateTagDto.upload_icone;

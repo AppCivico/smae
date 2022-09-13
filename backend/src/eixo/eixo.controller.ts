@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -9,6 +9,7 @@ import { CreateEixoDto } from './dto/create-eixo.dto';
 import { UpdateEixoDto } from './dto/update-eixo.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { FilterEixoDto } from './dto/filter-eixo.dto';
 
 @ApiTags('Eixo (Acessa via MacroTema)')
 @Controller('eixo')
@@ -25,8 +26,8 @@ export class EixoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListEixoDto> {
-        return { 'linhas': await this.eixoService.findAll() };
+    async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
+        return { 'linhas': await this.eixoService.findAll(filters) };
     }
 
     @Patch(':id')

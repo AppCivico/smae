@@ -2,6 +2,18 @@ export class IdDesc {
     id: number
     descricao: string
 }
+
+export class IdNomeExibicao {
+    id: number
+    nome_exibicao: string
+}
+
+export class MetaOrgao {
+    orgao: IdDesc
+    responsavel: boolean
+    participantes: IdNomeExibicao[]
+}
+
 export class Meta {
     id: number
     status: string
@@ -14,4 +26,6 @@ export class Meta {
     tema: IdDesc | null
     sub_tema: IdDesc | null
     ativo: boolean
+    orgaos_participantes: MetaOrgao[]
+    coordenadores_cp: IdNomeExibicao[]
 }
