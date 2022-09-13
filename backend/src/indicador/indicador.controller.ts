@@ -5,7 +5,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { AgregadoresDto, ListAgregadoresDto } from './dto/agregadores.dto';
+import { ListAgregadoresDto } from './dto/agregadores.dto';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { ListIndicadorDto } from './dto/list-indicador.dto';
@@ -13,11 +13,11 @@ import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorService } from './indicador.service';
 
 @ApiTags('Indicador')
-@Controller('indicador')
+@Controller('')
 export class IndicadorController {
     constructor(private readonly indicadorService: IndicadorService) { }
 
-    @Post()
+    @Post('indicador')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.inserir')
@@ -26,12 +26,12 @@ export class IndicadorController {
     }
 
     @ApiBearerAuth('access-token')
-    @Get()
+    @Get('indicador')
     async findAll(@Query() filters: FilterIndicadorDto): Promise<ListIndicadorDto> {
         return { 'linhas': await this.indicadorService.findAll(filters) };
     }
 
-    @Patch(':id')
+    @Patch('indicador/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
@@ -39,7 +39,7 @@ export class IndicadorController {
         return await this.indicadorService.update(+params.id, updateIndicadorDto, user);
     }
 
-    @Delete(':id')
+    @Delete('indicador/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.remover')
