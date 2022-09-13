@@ -27,6 +27,7 @@ import { UploadModule } from './upload/upload.module';
 import { ConfigModule } from '@nestjs/config';
 import { SubTemaModule } from './subtema/subtema.module';
 import { MetaModule } from './meta/meta.module';
+import { IndicadorModule } from './indicador/indicador.module';
 
 
 @Module({
@@ -38,7 +39,8 @@ import { MetaModule } from './meta/meta.module';
         }),
         PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule,
         SubTemaModule,
-        MetaModule
+        MetaModule,
+        IndicadorModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
