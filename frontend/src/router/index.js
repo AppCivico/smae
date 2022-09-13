@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores';
 // Views
 import { Home } from '@/views';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
+import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
+
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 import { AddEditUsers, ListUsers } from '@/views/users';
 import { AddEditOrgans, ListOrgans, AddEditOrganTypes, ListOrganTypes } from '@/views/organs';
@@ -13,6 +15,7 @@ import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import { AddEditODS, ListODS } from '@/views/ods';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
+import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 
 export const router = createRouter({
@@ -68,10 +71,28 @@ export const router = createRouter({
                 { path: ':pdm_id', component: AddEditPdM, props:{submenu:SubmenuConfig} },
                 { path: ':pdm_id/macrotemas/novo', component: ListPdM, props:{type:"novo",group:"macrotemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/macrotemas/:id', component: ListPdM, props:{type:"editar",group:"macrotemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/subtemas/novo', component: ListPdM, props:{type:"novo",group:"subtemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/subtemas/:id', component: ListPdM, props:{type:"editar",group:"subtemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/temas/novo', component: ListPdM, props:{type:"novo",group:"temas",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/temas/:id', component: ListPdM, props:{type:"editar",group:"temas",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/tags/novo', component: ListPdM, props:{type:"novo",group:"tags",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/tags/:id', component: ListPdM, props:{type:"editar",group:"tags",submenu:SubmenuConfig, parentPage: 'pdm'} },
+            ]
+        },
+        { path: '/metas',
+            children: [
+                { path: '', component: ListMetas },
+                { path: 'novo', component: AddEditMetas, props:{type:"novo",parentPage: 'metas'} },
+                { path: 'editar/:id', component: AddEditMetas, props:{type:"editar",parentPage: 'metas'} },
+                { path: 'macrotemas/novo', component: ListMetas, props:{type:"novo",group:"macrotemas", parentPage: 'metas'} },
+                { path: 'subtemas/novo', component: ListMetas, props:{type:"novo",group:"subtemas", parentPage: 'metas'} },
+                { path: 'temas/novo', component: ListMetas, props:{type:"novo",group:"temas", parentPage: 'metas'} },
+                { path: 'tags/novo', component: ListMetas, props:{type:"novo",group:"tags", parentPage: 'metas'} },
+                { path: 'macrotemas/:id', component: ListMetasGroup, props:{type:"list",group:"macrotemas", parentPage: 'metas'} },
+                { path: 'subtemas/:id', component: ListMetasGroup, props:{type:"list",group:"subtemas", parentPage: 'metas'} },
+                { path: 'temas/:id', component: ListMetasGroup, props:{type:"list",group:"temas", parentPage: 'metas'} },
+                { path: 'tags/:id', component: ListMetasGroup, props:{type:"list",group:"tags", parentPage: 'metas'} },
+                { path: ':id', component: SingleMeta, props:{submenu:SubmenuMetas} },
             ]
         },
         { path: '/regioes',

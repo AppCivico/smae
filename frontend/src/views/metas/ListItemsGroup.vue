@@ -14,11 +14,11 @@ const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
-const props = defineProps(['group','type','parentPage']);
+const props = defineProps(['group','type']);
 
 const PdMStore = usePdMStore();
-const { tempPdM } = storeToRefs(PdMStore);
-PdMStore.filterPdM();
+const { activePdm } = storeToRefs(PdMStore);
+PdMStore.getActive();
 
 const filters = reactive({
     textualSearch: ""
@@ -79,7 +79,7 @@ onUpdated(()=>{start()});
                         </tr>
                         <tz>
                             <td colspan="56" style="padding-left: 2rem;">
-                                <router-link v-if="item.ativo" :to="`/metas`" class="tlink"><span>Visualizar programa de metas ativo</span> <svg width="20" height="20"><use xlink:href="#i_link"></use></svg></router-link>
+                                <router-link v-if="item.ativo" :to="`/metas/${item.id}`" class="tlink"><span>Visualizar programa de metas ativo</span> <svg width="20" height="20"><use xlink:href="#i_link"></use></svg></router-link>
                                 <template v-if="item.possui_macro_tema">
                                     <table class="tablemain mb1">
                                         <thead>

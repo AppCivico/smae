@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
-import { useMacrotemasStore, useTemasStore, useTagsStore } from '@/stores';
+import { router } from '@/router';
+import { useAlertStore, useMacrotemasStore, useSubtemasStore, useTemasStore, useTagsStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 
@@ -10,15 +11,18 @@ export const usePdMStore = defineStore({
         PdM: {},
         tempPdM: {},
         singlePdm: {},
+        activePdm: {},
     }),
     actions: {
         clear (){
             this.PdM = {};
             this.tempPdM = {};
             this.singlePdm = {};
+            this.activePdm = {};
         },
         clearEdit (){
             this.singlePdm = {};
+            this.activePdm = {};
         },
         dateToField(d){
             var dd=d?new Date(d):false;
@@ -37,11 +41,13 @@ export const usePdMStore = defineStore({
                 let r = await requestS.get(`${baseUrl}/pdm`);    
                 if(r.linhas.length){
                     const macrotemasStore = useMacrotemasStore();
+                    const subtemasStore = useSubtemasStore();
                     const TemasStore = useTemasStore();
                     const tagsStore = useTagsStore();
 
                     await Promise.all([
                         macrotemasStore.getAllSimple(),
+                        subtemasStore.getAllSimple(),
                         TemasStore.getAllSimple(),
                         tagsStore.getAllSimple()
                     ]);
@@ -52,10 +58,10 @@ export const usePdMStore = defineStore({
                         x.data_publicacao = this.dateToField(x.data_publicacao);
                         x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
                         x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
-
-                        x.macrotemas = macrotemasStore.Macrotemas.filter(z=>z.pdm_id==x.id) ?? [];
-                        x.temas = TemasStore.Temas.filter(z=>z.pdm_id==x.id) ?? [];
-                        x.tags = tagsStore.Tags.filter(z=>z.pdm_id==x.id) ?? [];
+                        x.macrotemas = macrotemasStore.Macrotemas?macrotemasStore.Macrotemas.filter(z=>z.pdm_id==x.id) : [];
+                        x.subtemas = subtemasStore.Subtemas?subtemasStore.Subtemas.filter(z=>z.pdm_id==x.id) : [];
+                        x.temas = TemasStore.Temas?TemasStore.Temas.filter(z=>z.pdm_id==x.id) : [];
+                        x.tags = tagsStore.Tags?tagsStore.Tags.filter(z=>z.pdm_id==x.id) : [];
 
                         return x;
                     });
@@ -77,8 +83,14 @@ export const usePdMStore = defineStore({
                         x.data_publicacao = this.dateToField(x.data_publicacao);
                         x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
                         x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
+                        x.ativo = x.ativo?'1':false;
 
-                        x.desativado = !x.ativo?'1':false;
+                        x.possui_macro_tema = x.possui_macro_tema?'1':false;
+                        x.possui_tema = x.possui_tema?'1':false;
+                        x.possui_sub_tema = x.possui_sub_tema?'1':false;
+                        x.possui_contexto_meta = x.possui_contexto_meta?'1':false;
+                        x.possui_complementacao_meta = x.possui_complementacao_meta?'1':false;
+
                         return x;
                     })(r);
                 }else{
@@ -86,6 +98,38 @@ export const usePdMStore = defineStore({
                 }
             } catch (error) {
                 this.singlePdm = { error };
+            }
+        },
+        async getActive() {
+            this.activePdm = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/pdm?ativo=true`);    
+                if(r.linhas.length){
+                    this.activePdm = (x=>{
+                        x.data_inicio = this.dateToField(x.data_inicio);
+                        x.data_fim = this.dateToField(x.data_fim);
+                        x.data_publicacao = this.dateToField(x.data_publicacao);
+                        x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
+                        x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
+                        x.ativo = x.ativo?'1':false;
+
+                        x.possui_macro_tema = x.possui_macro_tema?'1':false;
+                        x.possui_tema = x.possui_tema?'1':false;
+                        x.possui_sub_tema = x.possui_sub_tema?'1':false;
+                        x.possui_contexto_meta = x.possui_contexto_meta?'1':false;
+                        x.possui_complementacao_meta = x.possui_complementacao_meta?'1':false;
+
+                        return x;
+                    })(r.linhas[0]);
+                    return this.activePdm;
+                }else{
+                    const alertStore = useAlertStore();
+                    alertStore.error('Programa de Metas não encontrado');
+                    router.go(-1);
+                    return false;
+                }
+            } catch (error) {
+                this.activePdm = { error };
             }
         },
         async insert(params) {
@@ -99,14 +143,29 @@ export const usePdMStore = defineStore({
                 data_publicacao: this.fieldToDate(params.data_publicacao),
                 periodo_do_ciclo_participativo_inicio: this.fieldToDate(params.periodo_do_ciclo_participativo_inicio),
                 periodo_do_ciclo_participativo_fim: this.fieldToDate(params.periodo_do_ciclo_participativo_fim),
+                ativo: params.ativo?true:false,
+
+                possui_macro_tema: params.possui_macro_tema?true:false,
+                possui_tema: params.possui_tema?true:false,
+                possui_sub_tema: params.possui_sub_tema?true:false,
+                possui_contexto_meta: params.possui_contexto_meta?true:false,
+                possui_complementacao_meta: params.possui_complementacao_meta?true:false,
+
+                rotulo_macro_tema: params.rotulo_macro_tema,
+                rotulo_tema: params.rotulo_tema,
+                rotulo_sub_tema: params.rotulo_sub_tema,
+                rotulo_contexto_meta: params.rotulo_contexto_meta,
+                rotulo_complementacao_meta: params.rotulo_complementacao_meta,
             };
-            if(await requestS.post(`${baseUrl}/pdm`, m)) return true;
+            if(await requestS.post(`${baseUrl}/pdm`, m)){
+                this.activePdm = {};
+                return true;
+            }
             return false;
         },
         async update(id, params) {
             var m = {
-                ativo: params.desativado?false:true,
-                desativado: Boolean(params.desativado),
+                ativo: params.ativo?true:false,
                 nome: params.nome,
                 descricao: params.descricao,
                 prefeito: params.prefeito,
@@ -116,12 +175,30 @@ export const usePdMStore = defineStore({
                 data_publicacao: this.fieldToDate(params.data_publicacao),
                 periodo_do_ciclo_participativo_inicio: this.fieldToDate(params.periodo_do_ciclo_participativo_inicio),
                 periodo_do_ciclo_participativo_fim: this.fieldToDate(params.periodo_do_ciclo_participativo_fim),
+
+                possui_macro_tema: params.possui_macro_tema?true:false,
+                possui_tema: params.possui_tema?true:false,
+                possui_sub_tema: params.possui_sub_tema?true:false,
+                possui_contexto_meta: params.possui_contexto_meta?true:false,
+                possui_complementacao_meta: params.possui_complementacao_meta?true:false,
+
+                rotulo_macro_tema: params.rotulo_macro_tema,
+                rotulo_tema: params.rotulo_tema,
+                rotulo_sub_tema: params.rotulo_sub_tema,
+                rotulo_contexto_meta: params.rotulo_contexto_meta,
+                rotulo_complementacao_meta: params.rotulo_complementacao_meta,
             };
-            if(await requestS.patch(`${baseUrl}/pdm/${id}`, m)) return true;
+            if(await requestS.patch(`${baseUrl}/pdm/${id}`, m)){
+                this.activePdm = {};
+                return true;
+            }
             return false;
         },
         async delete(id) {
-            if(await requestS.delete(`${baseUrl}/pdm/${id}`)) return true;
+            if(await requestS.delete(`${baseUrl}/pdm/${id}`)){
+                this.activePdm = {};
+                return true;
+            }
             return false;
         },
         async filterPdM(f){

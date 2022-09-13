@@ -100,5 +100,18 @@ export const useTagsStore = defineStore({
                 this.tempTags = { error };
             }
         },
+        async filterByPdm(pdm_id){
+            this.tempTags = { loading: true };
+            try {
+                if(!this.Tags.length){
+                    await this.getAll();
+                }
+                this.tempTags = this.Tags.filter((u)=>{
+                    return u.pdm_id == pdm_id;
+                });
+            } catch (error) {
+                this.tempTags = { error };
+            }
+        }
     }
 });

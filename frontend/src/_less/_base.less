@@ -34,6 +34,8 @@
 	.t24{font-size: 24px;}
 	.t20{font-size: 20px;}
 	.t16{font-size: 16px;}
+	.t14{font-size: 14px;}
+	.t13{font-size: 13px;}
 	.t12{font-size: 12px;}
 	.t11{font-size: 11px;}
 
@@ -67,6 +69,7 @@
 
 /* Margins */
 	.p1{padding: 1rem;}
+	.mb05{margin-bottom: 0.5rem;}
 	.mb1{margin-bottom: 1rem;}
 	.mb2{margin-bottom: 2rem;}
 	.mt1{margin-top: 1rem;}
@@ -124,6 +127,14 @@
 			max-width: 665px;
 		}
 	}
+	.breadcrumb{
+		padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid @c100;
+		a{
+			display: inline-block; .w700; .t12; .uc;
+			&:not(:last-child):after{content:"\005C"; display: inline-block; margin: 0 7px; color: @c300; font-weight: 700;}
+			&:hover{color: @amarelo;}
+		}
+	}
 	.btn{
 		.t12; line-height:1; .w900; .uc; .br(200px); display: inline-block;
 		padding: .75em 1.5em; text-align: center;
@@ -156,6 +167,35 @@
 		&:disabled{
 			cursor: wait;
 			opacity: .5;
+		}
+	}
+	.dropbtn{
+		position: relative;
+		padding: 1rem 0;
+		ul{
+			position: absolute; top: 100%; right: 50%; transform: translateX(50%);
+		    width: max-content; max-width: 200px; background: white; border-top: 4px solid @amarelo;
+			border-radius: .5rem; padding: 1rem; display: none;
+			animation: fadeIn .5s; z-index: 99;
+			.bs(0px 8px 16px rgba(21, 39, 65, 0.1));
+			&:before{
+				content: ""; position: absolute; left: 50%; top: 0; margin: -0.5rem;
+				border: .5rem solid transparent;
+				border-top-color: @amarelo;
+				border-left-color: @amarelo;
+				transform: rotate(45deg);
+			}
+			li{
+				display: block; list-style: none; padding: 0; margin: 0;
+				a{
+					.t14; .w700; color: @primary;
+					&:hover{color: @amarelo;}
+				}
+				+li{margin-top: .5em;}
+			}
+		}
+		&:hover ul{
+			display: block;
 		}
 	}
 	.editModal-wrap{
@@ -208,6 +248,30 @@
 		}
 		&.light{
 			border-color:@c100;
+		}
+		&:disabled{
+			background: @c50; color: @c400;
+		}
+	}
+	.interruptorcheckbox{
+		span{
+			.t12; line-height:1; .w900; .uc; .br(200px); display: inline-block;
+			padding: .75em 1.5em; text-align: center;
+			border: 0; outline: 0; letter-spacing: .05em;
+			color:@c300; cursor: pointer;
+			.transition;
+			&:last-child{background: @primary; color: @amarelo;}
+		}
+		input{
+			display: none;
+			&:checked{
+				+span{
+					background: @primary; color: @amarelo;
+					+span{
+						background: none; color: @c300;
+					}
+				}
+			}
 		}
 	}
 	.label{
@@ -276,6 +340,12 @@
 			.block; .tprimary; .t12; letter-spacing: .05em; background: @c100; .uc; .w900; .tc; .p1;
 			margin: -1rem -1rem 1em -2rem;
 		}
+	}
+	.tagsmall{
+		.t11; .w700; .tc600; display: inline-block;
+		background: @c50; border:1px solid; .br(4px); padding: .5em; margin-right: .5em;
+		cursor: pointer;
+		svg{display: inline-block; width: .8em; height: auto; margin-left: .3rem; vertical-align: middle;}
 	}
 
 /* Áreas */

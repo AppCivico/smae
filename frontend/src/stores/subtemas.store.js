@@ -3,54 +3,54 @@ import { requestS } from '@/helpers';
 import { usePdMStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useMacrotemasStore = defineStore({
-    id: 'Macrotemas',
+export const useSubtemasStore = defineStore({
+    id: 'Subtemas',
     state: () => ({
-        Macrotemas: {},
-        tempMacrotemas: {},
+        Subtemas: {},
+        tempSubtemas: {},
     }),
     actions: {
         clear (){
-            this.Macrotemas = {};
-            this.tempMacrotemas = {};
+            this.Subtemas = {};
+            this.tempSubtemas = {};
         },
         async getAll() {
-            this.Macrotemas = { loading: true };
+            this.Subtemas = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/macrotema`);    
+                let r = await requestS.get(`${baseUrl}/subtema`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
                     await PdMStore.getAll();
-                    this.Macrotemas = r.linhas.map(x=>{
+                    this.Subtemas = r.linhas.map(x=>{
                         x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
                         return x;
                     });
                 }else{
-                    this.Macrotemas = r.linhas;
+                    this.Subtemas = r.linhas;
                 }
             } catch (error) {
-                this.Macrotemas = { error };
+                this.Subtemas = { error };
             }
         },
         async getAllSimple() {
-            this.Macrotemas = { loading: true };
+            this.Subtemas = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/macrotema`);    
-                this.Macrotemas = r.linhas;
+                let r = await requestS.get(`${baseUrl}/subtema`);    
+                this.Subtemas = r.linhas;
             } catch (error) {
-                this.Macrotemas = { error };
+                this.Subtemas = { error };
             }
         },
         async getById(id) {
-            this.tempMacrotemas = { loading: true };
+            this.tempSubtemas = { loading: true };
             try {
-                if(!this.Macrotemas.length){
+                if(!this.Subtemas.length){
                     await this.getAll();
                 }
-                this.tempMacrotemas = this.Macrotemas.find((u)=>u.id == id);
-                if(!this.tempMacrotemas) throw 'Macrotemas não encontrada';
+                this.tempSubtemas = this.Subtemas.find((u)=>u.id == id);
+                if(!this.tempSubtemas) throw 'Subtemas não encontrada';
             } catch (error) {
-                this.tempMacrotemas = { error };
+                this.tempSubtemas = { error };
             }
         },
         async insert(params) {
@@ -58,7 +58,7 @@ export const useMacrotemasStore = defineStore({
                 pdm_id: Number(params.pdm_id),
                 descricao: params.descricao
             };
-            if(await requestS.post(`${baseUrl}/macrotema`, m)) return true;
+            if(await requestS.post(`${baseUrl}/subtema`, m)) return true;
             return false;
         },
         async update(id, params) {
@@ -66,37 +66,37 @@ export const useMacrotemasStore = defineStore({
                 pdm_id: Number(params.pdm_id),
                 descricao: params.descricao
             };
-            if(await requestS.patch(`${baseUrl}/macrotema/${id}`, m)) return true;
+            if(await requestS.patch(`${baseUrl}/subtema/${id}`, m)) return true;
             return false;
         },
         async delete(id) {
-            if(await requestS.delete(`${baseUrl}/macrotema/${id}`)) return true;
+            if(await requestS.delete(`${baseUrl}/subtema/${id}`)) return true;
             return false;
         },
-        async filterMacrotemas(f){
-            this.tempMacrotemas = { loading: true };
+        async filterSubtemas(f){
+            this.tempSubtemas = { loading: true };
             try {
-                if(!this.Macrotemas.length){
+                if(!this.Subtemas.length){
                     await this.getAll();
                 }
-                this.tempMacrotemas = f ? this.Macrotemas.filter((u)=>{
+                this.tempSubtemas = f ? this.Subtemas.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
-                }) : this.Macrotemas;
+                }) : this.Subtemas;
             } catch (error) {
-                this.tempMacrotemas = { error };
+                this.tempSubtemas = { error };
             }
         },
         async filterByPdm(pdm_id){
-            this.tempMacrotemas = { loading: true };
+            this.tempSubtemas = { loading: true };
             try {
-                if(!this.Macrotemas.length){
+                if(!this.Subtemas.length){
                     await this.getAll();
                 }
-                this.tempMacrotemas = this.Macrotemas.filter((u)=>{
+                this.tempSubtemas = this.Subtemas.filter((u)=>{
                     return u.pdm_id == pdm_id;
                 });
             } catch (error) {
-                this.tempMacrotemas = { error };
+                this.tempSubtemas = { error };
             }
         }
     }

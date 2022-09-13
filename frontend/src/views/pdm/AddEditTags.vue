@@ -1,4 +1,5 @@
 <script setup>
+import { ref, reactive, onMounted, onUpdated } from 'vue';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
@@ -6,7 +7,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useEditModalStore, useTagsStore, usePdMStore, useODSStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useTagsStore, usePdMStore, useODSStore, useMetasStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -17,22 +18,38 @@ const TagsStore = useTagsStore();
 const { tempTags } = storeToRefs(TagsStore);
 TagsStore.clear();
 
-const pdm_id = route.params.pdm_id;
-const PdMStore = usePdMStore();
-const { singlePdm } = storeToRefs(PdMStore);
-if(!singlePdm.id || singlePdm.id != pdm_id) PdMStore.getById(pdm_id);
+const ps = defineProps(['props']);
+const props = ps.props;
+
+const virtualParent = reactive({});
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
 
 const ODSStore = useODSStore();
 const { ODS } = storeToRefs(ODSStore);
 ODSStore.getAll();
 
-var virtualParent;
+var pdm_id = reactive(0);
+const PdMStore = usePdMStore();
+const { singlePdm } = storeToRefs(PdMStore);
+
+if(props.parentPage=='metas'){
+    Promise.all([
+        MetasStore.getPdM()
+    ]).then(()=>{
+        pdm_id = activePdm.value.id;
+        virtualParent.pdm_id=pdm_id;
+    });
+}else{
+    pdm_id = route.params.pdm_id;
+    if(!singlePdm.value.id || singlePdm.value.id != pdm_id) PdMStore.getById(pdm_id);
+    virtualParent.pdm_id=pdm_id;
+}
+
 let title = 'Cadastro de Tag';
 if (id) {
     title = 'Editar Tag';
     TagsStore.getById(id);
-}else{
-    virtualParent = {pdm_id: route.params.pdm_id};
 }
 
 const schema = Yup.object().shape({
@@ -54,8 +71,8 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
-            PdMStore.filterPdM();
-            await router.push('/pdm');
+            if(props.parentPage=='pdm') PdMStore.filterPdM();
+            await router.push('/'+props.parentPage);
             alertStore.success(msg);
             editModalStore.clear();
         }
@@ -65,10 +82,20 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ editModalStore.clear(); alertStore.clear(); router.push('/pdm'); });
+    alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
+        editModalStore.clear(); 
+        alertStore.clear(); 
+        router.push('/'+props.parentPage); 
+    });
 }
 async function checkDelete(id) {
-    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await TagsStore.delete(id)){PdMStore.filterPdM(); editModalStore.clear(); router.push('/pdm');}},'Remover');
+    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
+        if(await TagsStore.delete(id)){
+            if(props.parentPage=='pdm') PdMStore.filterPdM();
+            editModalStore.clear(); 
+            router.push('/'+props.parentPage);
+        }
+    },'Remover');
 }
 
 </script>
@@ -80,7 +107,7 @@ async function checkDelete(id) {
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
     <template v-if="!(tempTags?.loading || tempTags?.error)">
-        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempTags.pdm_id&&id?tempTags:virtualParent" v-slot="{ errors, isSubmitting }">
+        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?tempTags:virtualParent" v-slot="{ errors, isSubmitting }">
             <Field name="pdm_id" type="hidden" :value="pdm_id" /><div class="error-msg">{{ errors.pdm_id }}</div>
             <div class="flex g2">
                 <div class="f1">
