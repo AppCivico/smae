@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -9,6 +9,8 @@ import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.
 import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { filter } from 'rxjs';
+import { FilterObjetivoEstrategicoDto } from './dto/filter-objetivo-estrategico.dto';
 
 @ApiTags('Objetivo Estratégico (Acessa via Tema)')
 @Controller('objetivo-estrategico')
@@ -25,8 +27,8 @@ export class ObjetivoEstrategicoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListObjetivoEstrategicoDto> {
-        return { 'linhas': await this.objetivoEstrategicoService.findAll() };
+    async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
+        return { 'linhas': await this.objetivoEstrategicoService.findAll(filters) };
     }
 
     @Patch(':id')

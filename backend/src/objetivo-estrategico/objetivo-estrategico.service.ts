@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
+import { FilterObjetivoEstrategicoDto } from './dto/filter-objetivo-estrategico.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
 
 @Injectable()
@@ -22,10 +23,13 @@ export class ObjetivoEstrategicoService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterObjetivoEstrategicoDto | undefined = undefined) {
+        let pdmId = filters?.pdm_id;
+
         let listActive = await this.prisma.tema.findMany({
             where: {
                 removido_em: null,
+                pdm_id: pdmId
             },
             select: {
                 id: true,
