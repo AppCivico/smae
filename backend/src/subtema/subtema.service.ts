@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSubTemaDto } from './dto/create-subtema.dto';
+import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 
 @Injectable()
@@ -22,10 +23,13 @@ export class SubTemaService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterSubTemaDto | undefined = undefined) {
+        let pdmId = filters?.pdm_id;
+
         let listActive = await this.prisma.macroTema.findMany({
             where: {
                 removido_em: null,
+                pdm_id: pdmId,
             },
             select: {
                 id: true,

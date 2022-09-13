@@ -84,6 +84,20 @@ const PrivConfig: any = {
         ['CadastroRegiao.editar', 'Editar Regiões'],
         ['CadastroRegiao.remover', 'Remover Regiões'],
     ],
+    CadastroMeta: [
+        ['CadastroMeta.inserir', 'Inserir Metas'],
+        ['CadastroMeta.editar', 'Editar Metas'],
+        ['CadastroMeta.remover', 'Remover Metas'],
+        ['CadastroMeta.inativar', 'Inativar Metas'],
+        ['CadastroMeta.ativar', 'Ativar Metas'],
+    ],
+    CadastroIndicador: [
+        ['CadastroIndicador.inserir', 'Inserir Indicadores'],
+        ['CadastroIndicador.editar', 'Editar Indicadores'],
+        ['CadastroIndicador.remover', 'Remover Indicadores'],
+        ['CadastroIndicador.inativar', 'Inativar Indicadores'],
+        ['CadastroIndicador.ativar', 'Ativar Indicadores'],
+    ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Reponsável CP']
     ]
@@ -102,6 +116,8 @@ const ModuloDescricao: any = {
     CadastroSubTema: 'Cadastro de Sub Tema',
     CadastroTema: 'Cadastro de Tema',
     CadastroRegiao: 'Cadastro de Regiões',
+    CadastroMeta: 'Cadastro de Metas',
+    CadastroIndicador: 'Cadastro de Indicadores',
     PDM: 'Regras de Negocio do PDM',
 
 };
@@ -160,6 +176,7 @@ async function main() {
     await criar_emaildb_config();
     await atualizar_modulos_e_privilegios();
     await atualizar_perfil_acesso();
+    await atualizar_tipo_agregadores();
 
     await atualizar_superadmin();
     //await atualizar_ods();
@@ -328,6 +345,37 @@ async function upsert_privilegios(moduloId: number, codigo: string, arg2: string
     });
 }
 
+
+async function atualizar_tipo_agregadores() {
+
+    let agregadores = [
+        {
+            codigo: 'soma',
+            descricao: 'Soma'
+        },
+        {
+            codigo: 'media',
+            descricao: 'Média simples'
+        },
+        {
+            codigo: 'media_movel',
+            descricao: 'Média móvel'
+        },
+    ];
+
+    for (const agregador of agregadores) {
+        await prisma.agregador.upsert({
+            where: { codigo: agregador.codigo },
+            update: {
+                descricao: agregador.descricao
+            },
+            create: {
+                codigo: agregador.codigo,
+                descricao: agregador.descricao
+            }
+        });
+    }
+}
 
 async function atualizar_perfil_acesso() {
     let promises: any[] = [];

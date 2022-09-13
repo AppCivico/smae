@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -9,6 +9,7 @@ import { CreateSubTemaDto } from './dto/create-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 
 @ApiTags('SubTema')
 @Controller('subtema')
@@ -25,8 +26,8 @@ export class SubTemaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListSubTemaDto> {
-        return { 'linhas': await this.subTemaService.findAll() };
+    async findAll(@Query() filters: FilterSubTemaDto): Promise<ListSubTemaDto> {
+        return { 'linhas': await this.subTemaService.findAll(filters) };
     }
 
     @Patch(':id')
