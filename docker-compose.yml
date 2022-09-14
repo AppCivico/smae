@@ -30,7 +30,7 @@ services:
     ports:
       - "172.17.0.1:${SMAE_API_LISTEN}:3001"
     environment:
-      DATABASE_URL: "postgresql://smae:smae@db:5432/smae_dev_persistent?schema=public"
+      DATABASE_URL: "${DATABASE_URL}"
       SESSION_JWT_SECRET: "${SESSION_JWT_SECRET}"
       MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK: "3"
       URL_LOGIN_SMAE: "${URL_LOGIN_SMAE}"
