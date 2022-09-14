@@ -3,4 +3,5 @@ export interface JwtPessoaPayload {
     sid: number;
     iat?: number;
     exp?: number;
+    aud: string;
 }

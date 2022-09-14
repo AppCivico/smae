@@ -46,6 +46,7 @@ export class AuthService {
         const payload: JwtPessoaPayload = {
             sid: sessaoId,
             iat: Date.now(),
+            aud: 'l'
         };
 
         return {
