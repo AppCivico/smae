@@ -29,7 +29,6 @@ var pdm_id = reactive(0);
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
 
-console.log(props.parentPage);
 if(props.parentPage=='metas'){
     Promise.all([
         MetasStore.getPdM()
@@ -76,6 +75,8 @@ async function onSubmit(values) {
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
+            TemasStore.clear();
+            PdMStore.clearLoad();
             if(props.parentPage=='pdm') PdMStore.filterPdM();
             await router.push('/'+props.parentPage);
             alertStore.success(msg);
@@ -88,14 +89,16 @@ async function onSubmit(values) {
 
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
+        router.push('/'+props.parentPage);  
         editModalStore.clear(); 
         alertStore.clear(); 
-        router.push('/'+props.parentPage);  
     });
 }
 async function checkDelete(id) {
     alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
         if(await TemasStore.delete(id)){ 
+            TemasStore.clear();
+            PdMStore.clearLoad();
             if(props.parentPage=='pdm') PdMStore.filterPdM();
             editModalStore.clear(); 
             router.push('/'+props.parentPage); 

@@ -1,244 +1,91 @@
 <script setup>
-import { Dashboard} from '@/components';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
-import { useRoute } from 'vue-router';
-import { router } from '@/router';
+import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
-
-import { useAlertStore, useAuthStore, usePdMStore } from '@/stores';
-
-const alertStore = useAlertStore();
-const route = useRoute();
-const pdm_id = route.params.pdm_id;
-
-const PdMStore = usePdMStore();
-const { singlePdm } = storeToRefs(PdMStore);
-PdMStore.clear();
+import { Dashboard} from '@/components';
+import { useAuthStore, useMetasStore, usePdMStore } from '@/stores';
+import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
-let title = 'Cadastro de PdM';
-if (pdm_id) {
-    title = 'Editar PdM';
-    PdMStore.getById(pdm_id);
-}
 
-var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
+const route = useRoute();
+const id = route.params.id;
 
-const schema = Yup.object().shape({
-    nome: Yup.string().required('Preencha o nome'),
-    descricao: Yup.string().required('Preencha a descrição'),
-    
-    data_inicio: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
-    data_fim: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
-    data_publicacao: Yup.string().notRequired().matches(regx,'Formato inválido'),
-    
-    periodo_do_ciclo_participativo_inicio: Yup.string().notRequired().matches(regx,'Formato inválido'),
-    periodo_do_ciclo_participativo_fim: Yup.string().notRequired().matches(regx,'Formato inválido'),
-    prefeito: Yup.string().required('Preencha o prefeito'),
-    
-    equipe_tecnica: Yup.string().nullable(),
-    ativo: Yup.boolean().nullable(),
+const MetasStore = useMetasStore();
+const { singleMeta } = storeToRefs(MetasStore);
 
-    possui_macro_tema: Yup.boolean().nullable(),
-    rotulo_macro_tema: Yup.string().nullable().when('possui_macro_tema', (v,f)=>v=="1"?f.required("Escreva um título"):f),
-    possui_tema: Yup.boolean().nullable(),
-    rotulo_tema: Yup.string().nullable().when('possui_tema', (v,f)=>v=="1"?f.required("Escreva um título"):f),
-    possui_sub_tema: Yup.boolean().nullable(),
-    rotulo_sub_tema: Yup.string().nullable().when('possui_sub_tema', (v,f)=>v=="1"?f.required("Escreva um título"):f),
-    possui_contexto_meta: Yup.boolean().nullable(),
-    rotulo_contexto_meta: Yup.string().nullable().when('possui_contexto_meta', (v,f)=>v=="1"?f.required("Escreva um título"):f),
-    possui_complementacao_meta: Yup.boolean().nullable(),
-    rotulo_complementacao_meta: Yup.string().nullable().when('possui_complementacao_meta', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+const PdMStore = usePdMStore();
+const { singlePdm } = storeToRefs(PdMStore);
+
+Promise.all([MetasStore.getById(id)]).then(()=>{
+    PdMStore.getById(singleMeta.value.pdm_id);
 });
-
-async function onSubmit(values) {
-    try {
-        var msg;
-        var r;
-        if (pdm_id&&singlePdm.value.id) {
-            r = await PdMStore.update(singlePdm.value.id, values);
-            msg = 'Dados salvos com sucesso!';
-        } else {
-            r = await PdMStore.insert(values);
-            msg = 'Item adicionado com sucesso!';
-        }
-        if(r == true){
-            await router.push('/pdm');
-            alertStore.success(msg);
-        }
-    } catch (error) {
-        alertStore.error(error);
-    }
-}
-async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?','/pdm');
-}
-function maskDate(el){
-    var kC = event.keyCode;
-    var data = el.target.value.replace(/[^0-9/]/g,'');
-    if( kC!=8 && kC!=46 ){
-        if( data.length==2 ){
-            el.target.value = data += '/';
-        }else if( data.length==5 ){
-            el.target.value = data += '/';
-        }else{
-            el.target.value = data;
-        }
-    }
-}
 </script>
-
 <template>
     <Dashboard>
-        <div class="flex spacebetween center mb2">
-            <h1>{{title}}</h1>
-            <hr class="ml2 f1"/>
-            <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
+        <div class="breadcrumb">
+            <router-link to="/">Início</router-link>
+            <router-link to="/metas">{{singlePdm.nome}}</router-link>
+            <router-link to="/metas">{{singleMeta.titulo}}</router-link>
         </div>
-        <template v-if="!(singlePdm?.loading || singlePdm?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="singlePdm" v-slot="{ errors, isSubmitting }">
-                <div class="flex g2 mb2" v-if="pdm_id&&perm?.CadastroPdm?.inativar">
-                    <div class="f1">
-                        <label class="block mb1 interruptorcheckbox">
-                            <Field name="ativo" type="checkbox" value=1 :checked="ativo" /><span>Ativar programa</span><span>Desativar programa</span>
-                        </label>
-                        <p class="t13 tc500">Ao ativar um Programa de Metas, todos os demais programas são ativos</p>
-                    </div>
-                </div>
-                <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">Nome <span class="tvermelho">*</span></label>
-                        <Field name="nome" type="text" class="inputtext light mb1" :class="{ 'error': errors.nome }" />
-                        <div class="error-msg">{{ errors.nome }}</div>
-                    </div>
-                </div>
-                <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">Descrição <span class="tvermelho">*</span></label>
-                        <Field name="descricao" as="textarea" rows='3' class="inputtext light mb1" :class="{ 'error': errors.descricao }" />
-                        <div class="error-msg">{{ errors.descricao }}</div>
-                    </div>
-                </div>
-                <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">Início do Período <span class="tvermelho">*</span></label>
-                        <Field name="data_inicio" type="text" class="inputtext light mb1" :class="{ 'error': errors.data_inicio }" maxlength="10" @keyup="maskDate" />
-                        <div class="error-msg">{{ errors.data_inicio }}</div>
-                    </div>
-                    <div class="f1">
-                        <label class="label">Fim do Período <span class="tvermelho">*</span></label>
-                        <Field name="data_fim" type="text" class="inputtext light mb1" :class="{ 'error': errors.data_fim }" maxlength="10" @keyup="maskDate" />
-                        <div class="error-msg">{{ errors.data_fim }}</div>
-                    </div>
-                    <div class="f1">
-                        <label class="label">Data de Publicação</label>
-                        <Field name="data_publicacao" type="text" class="inputtext light mb1" :class="{ 'error': errors.data_publicacao }" maxlength="10" @keyup="maskDate" />
-                        <div class="error-msg">{{ errors.data_publicacao }}</div>
-                    </div>
-                </div>
-                <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">Inicio do ciclo participativo</label>
-                        <Field name="periodo_do_ciclo_participativo_inicio" type="text" class="inputtext light mb1" :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }" maxlength="10" @keyup="maskDate" />
-                        <div class="error-msg">{{ errors.periodo_do_ciclo_participativo_inicio }}</div>
-                    </div>
-                    <div class="f1">
-                        <label class="label">Fim do ciclo participativo</label>
-                        <Field name="periodo_do_ciclo_participativo_fim" type="text" class="inputtext light mb1" :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }" maxlength="10" @keyup="maskDate" />
-                        <div class="error-msg">{{ errors.periodo_do_ciclo_participativo_fim }}</div>
-                    </div>
-                    <div class="f1">
-                        <label class="label">Prefeito <span class="tvermelho">*</span></label>
-                        <Field name="prefeito" type="text" class="inputtext light mb1" :class="{ 'error': errors.prefeito }" />
-                        <div class="error-msg">{{ errors.prefeito }}</div>
-                    </div>
-                </div>
-                <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">Equipe técnica</label>
-                        <Field name="equipe_tecnica" type="text" class="inputtext light mb1" :class="{ 'error': errors.equipe_tecnica }" />
-                        <div class="error-msg">{{ errors.equipe_tecnica }}</div>
-                        <p class="t13 tc500">Separe os membros por vírgula ou ponto-e-vírgula</p>
-                    </div>
-                </div>
-                <div class="flex center g2">
-                    <div class="f1">
-                        <label class="label">Rótulo do Macrotema</label>
-                        <Field name="rotulo_macro_tema" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_macro_tema }" />
-                        <div class="error-msg">{{ errors.rotulo_macro_tema }}</div>
-                    </div>
-                    <div class="f0" style="flex-basis: 200px;">
-                        <label class="block mb1">
-                            <Field name="possui_macro_tema" class="inputcheckbox" :class="{ 'error': errors.possui_macro_tema }" type="checkbox" value=1 :checked="possui_macro_tema" /><span>Habilitar Macrotema</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="flex center g2">
-                    <div class="f1">
-                        <label class="label">Rótulo do Tema</label>
-                        <Field name="rotulo_tema" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_tema }" />
-                        <div class="error-msg">{{ errors.rotulo_tema }}</div>
-                    </div>
-                    <div class="f0" style="flex-basis: 200px;">
-                        <label class="block mb1">
-                            <Field name="possui_tema" class="inputcheckbox" :class="{ 'error': errors.possui_tema }" type="checkbox" value=1 :checked="possui_tema" /><span>Habilitar Tema</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="flex center g2">
-                    <div class="f1">
-                        <label class="label">Rótulo do Subtema</label>
-                        <Field name="rotulo_sub_tema" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_sub_tema }" />
-                        <div class="error-msg">{{ errors.rotulo_sub_tema }}</div>
-                    </div>
-                    <div class="f0" style="flex-basis: 200px;">
-                        <label class="block mb1">
-                            <Field name="possui_sub_tema" class="inputcheckbox" :class="{ 'error': errors.possui_sub_tema }" type="checkbox" value=1 :checked="possui_sub_tema" /><span>Habilitar Subtema</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="flex center g2">
-                    <div class="f1">
-                        <label class="label">Rótulo do Contexto da Meta</label>
-                        <Field name="rotulo_contexto_meta" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_contexto_meta }" />
-                        <div class="error-msg">{{ errors.rotulo_contexto_meta }}</div>
-                    </div>
-                    <div class="f0" style="flex-basis: 200px;">
-                        <label class="block mb1">
-                            <Field name="possui_contexto_meta" class="inputcheckbox" :class="{ 'error': errors.possui_contexto_meta }" type="checkbox" value=1 :checked="possui_contexto_meta" /><span>Habilitar Contexto</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="flex center g2">
-                    <div class="f1">
-                        <label class="label">Rótulo do Complementação da Meta</label>
-                        <Field name="rotulo_complementacao_meta" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_complementacao_meta }" />
-                        <div class="error-msg">{{ errors.rotulo_complementacao_meta }}</div>
-                    </div>
-                    <div class="f0" style="flex-basis: 200px;">
-                        <label class="block mb1">
-                            <Field name="possui_complementacao_meta" class="inputcheckbox" :class="{ 'error': errors.possui_complementacao_meta }" type="checkbox" value=1 :checked="possui_complementacao_meta" /><span>Habilitar Complementação</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="flex spacebetween center mb2">
-                    <hr class="mr2 f1"/>
-                    <button class="btn big" :disabled="isSubmitting">Salvar</button>
-                    <hr class="ml2 f1"/>
-                </div>
-            </Form>
-        </template>
+        <div class="flex spacebetween center mb2">
+            <h1>{{singleMeta.titulo}}</h1>
+            <hr class="ml2 f1"/>
+            <router-link :to="`/metas/editar/${singleMeta.id}`" class="btn big ml2">Editar</router-link>
+        </div>
         
-        <template v-if="singlePdm?.loading">
-            <span class="spinner">Carregando</span>
-        </template>
-        <template v-if="singlePdm?.error||error">
-            <div class="error p1">
-                <div class="error-msg">{{singlePdm.error??error}}</div>
-            </div>
-        </template>
+        <div class="boards">
+            <template v-if="singleMeta.id">
+                <div class="flex g2">
+                    <div class="mr2" v-if="singlePdm.possui_macro_tema">
+                        <div class="t12 uc w700 mb05 tamarelo">{{singlePdm.rotulo_macro_tema}}</div>
+                        <div class="t13">{{singleMeta.macro_tema.descricao}}</div>
+                    </div>
+                    <div class="mr2" v-if="singlePdm.possui_tema">
+                        <div class="t12 uc w700 mb05 tamarelo">{{singlePdm.rotulo_tema}}</div>
+                        <div class="t13">{{singleMeta.tema.descricao}}</div>
+                    </div>
+                    <div class="mr2" v-if="singlePdm.possui_sub_tema">
+                        <div class="t12 uc w700 mb05 tamarelo">{{singlePdm.rotulo_sub_tema}}</div>
+                        <div class="t13">{{singleMeta.sub_tema.descricao}}</div>
+                    </div>
+                </div>
+                <hr class="mt2 mb2"/>
+                <div class="flex g2">
+                    <div class="mr2" v-if="singleMeta.orgaos_participantes.filter(x=>x.responsavel)">
+                        <div class="t12 uc w700 mb05 tamarelo">Órgão(s) responsável(eis)</div>
+                        <div class="t13">{{singleMeta.orgaos_participantes.filter(x=>x.responsavel).map(x=>x.orgao.descricao).join(', ')}}</div>
+                    </div>
+                    <div class="mr2" v-if="singleMeta.orgaos_participantes.filter(x=>!x.responsavel)">
+                        <div class="t12 uc w700 mb05 tamarelo">Órgão(s) participante(s)</div>
+                        <div class="t13">{{singleMeta.orgaos_participantes.filter(x=>!x.responsavel).map(x=>x.orgao.descricao).join(', ')}}</div>
+                    </div>
+                    <div class="mr2" v-if="singleMeta.coordenadores_cp">
+                        <div class="t12 uc w700 mb05 tamarelo">Responsável na Coordenadoria de projetos</div>
+                        <div class="t13">{{singleMeta.coordenadores_cp.map(x=>x.nome_exibicao).join(', ')}}</div>
+                    </div>
+                </div>
+                <hr class="mt2 mb2"/>
+                <div class="" v-if="singlePdm.possui_contexto_meta">
+                    <h4>{{singlePdm.rotulo_contexto_meta}}</h4>
+                    <div>{{singleMeta.contexto}}</div>
+                </div>
+                <hr class="mt2 mb2"/>
+                <div class="" v-if="singlePdm.possui_complementacao_meta">
+                    <h4>{{singlePdm.rotulo_complementacao_meta}}</h4>
+                    <div>{{singleMeta.complemento}}</div>
+                </div>
+            </template>
+            <template v-else-if="singleMeta.loading">
+                <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
+            </template>
+            <template v-else-if="singleMeta.error">
+                <div class="error p1"><p class="error-msg">Error: {{singleMeta.error}}</p></div>
+            </template>
+            <template v-else>
+                <div class="error p1"><p class="error-msg">Nenhum item encontrado.</p></div>
+            </template>
+        </div>
     </Dashboard>
 </template>

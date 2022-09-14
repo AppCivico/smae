@@ -56,19 +56,11 @@ export const useMetasStore = defineStore({
             }
         },
         async insert(params) {
-            var m = {
-                pdm_id: Number(params.pdm_id),
-                descricao: params.descricao
-            };
-            if(await requestS.post(`${baseUrl}/meta`, m)) return true;
+            if(await requestS.post(`${baseUrl}/meta`, params)) return true;
             return false;
         },
         async update(id, params) {
-            var m = {
-                pdm_id: Number(params.pdm_id),
-                descricao: params.descricao
-            };
-            if(await requestS.patch(`${baseUrl}/meta/${id}`, m)) return true;
+            if(await requestS.patch(`${baseUrl}/meta/${id}`, params)) return true;
             return false;
         },
         async delete(id) {
@@ -78,6 +70,7 @@ export const useMetasStore = defineStore({
         async filterMetas(f){
             this.tempMetas = { loading: true };
             try {
+                this.groupedMetas = {loading: true };
                 await this.getAll();
                 if(!f){
                     this.tempMetas = this.Metas;
@@ -103,6 +96,7 @@ export const useMetasStore = defineStore({
                 }, {}));
             } catch (error) {
                 this.tempMetas = { error };
+                this.groupedMetas = { error };
             }
         },
     }

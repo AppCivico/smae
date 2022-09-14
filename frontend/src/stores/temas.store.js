@@ -15,12 +15,13 @@ export const useTemasStore = defineStore({
             this.tempTemas = {};
         },
         async getAll() {
-            this.Temas = { loading: true };
             try {
+                if(this.Temas.loading) return;
+                this.Temas = { loading: true };
                 let r = await requestS.get(`${baseUrl}/tema`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
-                    await PdMStore.getAll();
+                    if(!PdMStore.PdM.length)await PdMStore.getAll();
                     this.Temas = r.linhas.map(x=>{
                         x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
                         return x;
@@ -45,10 +46,10 @@ export const useTemasStore = defineStore({
             this.tempTemas = { loading: true };
             try {
                 if(!this.Temas.length){
-                    await this.getAll();
+                    await this.getAllSimple();
                 }
-                this.tempTemas = this.Temas.find((u)=>u.id == id);
-                if(!this.tempTemas) throw 'Tipo de documento não encontrado';
+                this.tempTemas = this.Temas.length?this.Temas.find((u)=>u.id == id):{};
+                if(this.Temas&&!this.tempTemas) throw 'Tipo de documento não encontrado';
             } catch (error) {
                 this.tempTemas = { error };
             }
@@ -86,7 +87,7 @@ export const useTemasStore = defineStore({
             this.tempTemas = { loading: true };
             try {
                 if(!this.Temas.length){
-                    await this.getAll();
+                    await this.getAllSimple();
                 }
                 this.tempTemas = this.Temas.filter((u)=>{
                     return u.pdm_id == pdm_id;

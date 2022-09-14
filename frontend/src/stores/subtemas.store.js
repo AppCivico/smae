@@ -15,12 +15,13 @@ export const useSubtemasStore = defineStore({
             this.tempSubtemas = {};
         },
         async getAll() {
-            this.Subtemas = { loading: true };
             try {
+                if(this.Subtemas.loading) return;
+                this.Subtemas = { loading: true };
                 let r = await requestS.get(`${baseUrl}/subtema`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
-                    await PdMStore.getAll();
+                    if(!PdMStore.PdM.length)await PdMStore.getAll();
                     this.Subtemas = r.linhas.map(x=>{
                         x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
                         return x;
@@ -45,9 +46,9 @@ export const useSubtemasStore = defineStore({
             this.tempSubtemas = { loading: true };
             try {
                 if(!this.Subtemas.length){
-                    await this.getAll();
+                    await this.getAllSimple();
                 }
-                this.tempSubtemas = this.Subtemas.find((u)=>u.id == id);
+                this.tempSubtemas = this.Subtemas.length? this.Subtemas.find((u)=>u.id == id):{};
                 if(!this.tempSubtemas) throw 'Subtemas não encontrada';
             } catch (error) {
                 this.tempSubtemas = { error };
@@ -90,7 +91,7 @@ export const useSubtemasStore = defineStore({
             this.tempSubtemas = { loading: true };
             try {
                 if(!this.Subtemas.length){
-                    await this.getAll();
+                    await this.getAllSimple();
                 }
                 this.tempSubtemas = this.Subtemas.filter((u)=>{
                     return u.pdm_id == pdm_id;

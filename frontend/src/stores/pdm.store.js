@@ -24,6 +24,9 @@ export const usePdMStore = defineStore({
             this.singlePdm = {};
             this.activePdm = {};
         },
+        clearLoad (){
+            this.PdM = {};
+        },
         dateToField(d){
             var dd=d?new Date(d):false;
             return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short'}):'';
@@ -36,8 +39,9 @@ export const usePdMStore = defineStore({
             return null;
         },
         async getAll() {
-            this.PdM = { loading: true };
             try {
+                if(this.PdM.loading) return;
+                this.PdM = { loading: true };
                 let r = await requestS.get(`${baseUrl}/pdm`);    
                 if(r.linhas.length){
                     const macrotemasStore = useMacrotemasStore();
@@ -46,10 +50,10 @@ export const usePdMStore = defineStore({
                     const tagsStore = useTagsStore();
 
                     await Promise.all([
-                        macrotemasStore.getAllSimple(),
-                        subtemasStore.getAllSimple(),
-                        TemasStore.getAllSimple(),
-                        tagsStore.getAllSimple()
+                        !macrotemasStore.Macrotemas.length && !macrotemasStore.Macrotemas.loading &&macrotemasStore.getAllSimple(),
+                        !subtemasStore.Subtemas.length && !subtemasStore.Subtemas.loading &&subtemasStore.getAllSimple(),
+                        !TemasStore.Temas.length && !TemasStore.Temas.loading &&TemasStore.getAllSimple(),
+                        !tagsStore.Tags.length && !tagsStore.Tags.loading &&tagsStore.getAllSimple()
                     ]);
 
                     this.PdM = r.linhas.map(x=>{
