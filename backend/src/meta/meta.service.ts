@@ -157,7 +157,7 @@ export class MetaService {
             for (const orgao of dbMeta.meta_orgao) {
                 orgaos[orgao.orgao.id] = {
                     orgao: orgao.orgao,
-                    responsavel: true,
+                    responsavel: orgao.responsavel,
                     participantes: []
                 };
             }
