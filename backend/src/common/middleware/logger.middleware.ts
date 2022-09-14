@@ -15,14 +15,19 @@ export class LoggerMiddleware implements NestMiddleware {
         );
 
         response.on('close', () => {
-            console.log(response)
             const { statusCode } = response;
             const contentLength = response.get('content-length');
             const took = Date.now() - startReqTime;
 
-            this.logger.log(
-                `${method} ${url} ${statusCode} returning ${contentLength} bytes in ${took} ms`
-            );
+            if (statusCode == 304 || statusCode == 204) {
+                this.logger.log(
+                    `${method} ${url} ${statusCode} NO CONTENT in ${took} ms`
+                );
+            } else {
+                this.logger.log(
+                    `${method} ${url} ${statusCode} returning ${contentLength} bytes in ${took} ms`
+                );
+            }
         });
 
         next();
