@@ -39,6 +39,14 @@ function start(){
 }
 onMounted(()=>{start()});
 onUpdated(()=>{start()});
+function groupSlug(s) {
+    switch(s){
+        case 'macro_tema': return 'macrotemas'; break;
+        case 'tema': return 'temas'; break;
+        case 'sub_tema': return 'subtemas'; break;
+        default: return s;
+    }
+}
 </script>
 <template>
     <Dashboard>
@@ -67,33 +75,31 @@ onUpdated(()=>{start()});
                     <option :selected="filters.groupBy=='macro_tema'" v-if="activePdm.possui_macro_tema" value="macro_tema">{{activePdm.rotulo_macro_tema??'Macrotema'}}</option>
                     <option :selected="filters.groupBy=='tema'" v-if="activePdm.possui_tema" value="tema">{{activePdm.rotulo_tema??'Tema'}}</option>
                     <option :selected="filters.groupBy=='sub_tema'" v-if="activePdm.possui_sub_tema" value="sub_tema">{{activePdm.rotulo_sub_tema??'Subtema'}}</option>
-                    <option :selected="filters.groupBy=='Tags'" value="Tags">Tag</option>
                 </select>
             </div>
             <div class="f2 ml1">
-                <label class="label tc300">Filtrar por</label>
-                <div class="flex center">
-                    <div class="f1">
-                        <select v-model="filters.currentFilter" @change="filterItems" class="inputtext">
-                            <option disabled value="">Selecionar {{activePdm['rotulo_'+filters.groupBy]}}</option>
-                            <option v-for="item in itemsFiltered" :key="item.id" :value="item.id">{{item.descricao}}</option>
-                        </select>
-                    </div>
-                </div>
+                
             </div>
         </div>
         
         <div class="boards">
             <template v-if="itemsFiltered.length">
-                <div v-for="item in itemsFiltered" :key="item.id" class="board">
-                    <h2>{{item.descricao}}</h2>
-                    <div class="t11 tc300 mb2">{{item.children.length}} metas</div>
-                    <ul class="metas">
-                        <li class="meta flex center">
-                            <div class="farol"></div>
-                            <div class="t13">Meta 01 - Nome da meta</div>
-                        </li>
-                    </ul>
+                <div class="flex g2">
+                    <div v-for="item in itemsFiltered" :key="item.id" class="board">
+                        <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"><h2>{{item.descricao}}</h2></router-link>
+                        <div class="t11 tc300 mb2">{{item.children.length}} meta(s)</div>
+                        <ul class="metas">
+                            <li class="meta flex center" v-for="(m,i) in item.children">
+                                <router-link :to="`/metas/${m.id}`" class="flex center f1">
+                                    <div class="farol"></div>
+                                    <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>
+                                </router-link>
+                                <router-link :to="`/metas/editar/${m.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            </li>
+                        </ul>
+                        <hr class="mt1 mb1">
+                        <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar meta</span></router-link>
+                    </div>
                 </div>
             </template>
             <template v-else-if="itemsFiltered.loading">

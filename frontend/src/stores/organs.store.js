@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import { useUsersStore } from '@/stores';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useOrgansStore = defineStore({
@@ -8,7 +10,8 @@ export const useOrgansStore = defineStore({
         organs: {},
         tempOrgans: {},
         organTypes: {},
-        tempOrganTypes: {}
+        tempOrganTypes: {},
+        organResponsibles: {}
     }),
     actions: {
         clear (){
@@ -16,10 +19,12 @@ export const useOrgansStore = defineStore({
             this.tempOrgans = {};
             this.organTypes = {};
             this.tempOrganTypes = {};
+            this.organResponsibles = {};
         },
         async getAll() {
-            this.organs = { loading: true };
             try {
+                if(this.organs.loading) return;
+                this.organs = { loading: true };
                 let r = await requestS.get(`${baseUrl}/orgao`);    
                 this.organs = r.linhas;
             } catch (error) {
@@ -69,8 +74,6 @@ export const useOrgansStore = defineStore({
                 this.tempOrgans = { error };
             }
         },
-
-
         async getAllTypes() {
             this.organTypes = { loading: true };
             try {
@@ -120,5 +123,20 @@ export const useOrgansStore = defineStore({
                 this.tempOrganTypes = { error };
             }
         },
+        async getAllOrganResponsibles(){
+            try {
+                const usersStore = useUsersStore();
+                this.organResponsibles = { loading: true };
+
+                if(!this.organs.length) await this.getAll();
+                if(!usersStore.users.length) await usersStore.getAll();
+                this.organResponsibles = this.organs.length ? this.organs.map((o)=>{
+                    o.responsible = (usersStore.users.length) ? usersStore.users.filter(u=>u.orgao_id==o.id).sort((a,b)=>a.nome_completo.localeCompare(b.nome_completo)) : null;
+                    return o;  
+                }).filter(a=>a.responsible.length).sort((a,b)=>a.descricao.localeCompare(b.descricao)) : this.organs;
+            } catch (error) {
+                this.organResponsibles = { error };
+            }
+        }
     }
 });

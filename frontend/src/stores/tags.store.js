@@ -15,20 +15,18 @@ export const useTagsStore = defineStore({
             this.tempTags = {};
         },
         async getAll() {
-            this.Tags = { loading: true };
             try {
+                if(this.Tags.loading) return;
+                this.Tags = { loading: true };
                 let r = await requestS.get(`${baseUrl}/tag`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
                     const ODSStore = useODSStore();
-                    await Promise.all([
-                        PdMStore.getAll(),
-                        ODSStore.getAll()
-                    ]);
-                    
+                    if(!PdMStore.PdM.length)await PdMStore.getAll();
+                    if(!ODSStore.ODS.length)await ODSStore.getAll();
                     this.Tags = r.linhas.map(x=>{
-                        x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
-                        x.ods = ODSStore.ODS.find(z=>z.id==x.ods_id);
+                        x.pdm = x.pdm_id&&PdMStore.PdM.length?PdMStore.PdM.find(z=>z.id==x.pdm_id):null;
+                        x.ods = x.ods_id?ODSStore.ODS.find(z=>z.id==x.ods_id):null;
                         return x;
                     });
                 }else{
@@ -73,7 +71,6 @@ export const useTagsStore = defineStore({
             return false;
         },
         async update(id, params) {
-            console.log(params.ods_id);
             var m = {
                 icone: params.icone,
                 pdm_id: params.pdm_id,

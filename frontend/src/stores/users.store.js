@@ -9,7 +9,8 @@ export const useUsersStore = defineStore({
         accessProfiles: {},
         users: {},
         user: {},
-        temp: {}
+        temp: {},
+        usersCoord: {}
     }),
     actions: {
         clear (){
@@ -17,14 +18,16 @@ export const useUsersStore = defineStore({
             this.users = {};
             this.user = {};
             this.temp = {};
+            this.usersCoord = {};
         },
         async register(user) {
             await requestS.post(`${baseUrl}/pessoa`, user);
             return true;
         },
         async getAll() {
-            this.users = { loading: true };
             try {
+                if(this.users.loading) return;
+                this.users = { loading: true };
                 let r = await requestS.get(`${baseUrl}/pessoa`);    
                 this.users = r.linhas;
             } catch (error) {
@@ -51,6 +54,16 @@ export const useUsersStore = defineStore({
                 if(!this.user) throw 'Usuário não encontrado';
             } catch (error) {
                 this.user = { error };
+            }
+        },
+        async getCoord() {
+            try {
+                if(this.usersCoord.loading) return;
+                this.usersCoord = { loading: true };
+                let r = await requestS.get(`${baseUrl}/pessoa?coorderandor_responsavel_cp=true`);    
+                this.usersCoord = r.linhas;
+            } catch (error) {
+                this.usersCoord = { error };
             }
         },
         async update(id, params) {

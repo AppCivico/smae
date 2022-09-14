@@ -15,12 +15,13 @@ export const useMacrotemasStore = defineStore({
             this.tempMacrotemas = {};
         },
         async getAll() {
-            this.Macrotemas = { loading: true };
             try {
+                if(this.Macrotemas.loading) return;
+                this.Macrotemas = { loading: true };
                 let r = await requestS.get(`${baseUrl}/macrotema`);    
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
-                    await PdMStore.getAll();
+                    if(!PdMStore.PdM.length)await PdMStore.getAll();
                     this.Macrotemas = r.linhas.map(x=>{
                         x.pdm = PdMStore.PdM.find(z=>z.id==x.pdm_id);
                         return x;
@@ -45,9 +46,9 @@ export const useMacrotemasStore = defineStore({
             this.tempMacrotemas = { loading: true };
             try {
                 if(!this.Macrotemas.length){
-                    await this.getAll();
+                    await this.getAllSimple();
                 }
-                this.tempMacrotemas = this.Macrotemas.find((u)=>u.id == id);
+                this.tempMacrotemas = this.Macrotemas.length? this.Macrotemas.find((u)=>u.id == id):{};
                 if(!this.tempMacrotemas) throw 'Macrotemas não encontrada';
             } catch (error) {
                 this.tempMacrotemas = { error };
@@ -90,7 +91,7 @@ export const useMacrotemasStore = defineStore({
             this.tempMacrotemas = { loading: true };
             try {
                 if(!this.Macrotemas.length){
-                    await this.getAll();
+                    await this.getAllSimple();
                 }
                 this.tempMacrotemas = this.Macrotemas.filter((u)=>{
                     return u.pdm_id == pdm_id;

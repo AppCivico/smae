@@ -9,7 +9,8 @@
 <template>
     <div id="submenu">
         <h2>Programa de Metas</h2>
-        
+        <div class="links-container mb2">
+        </div>
     </div>
 </template>
 <style lang="less">
