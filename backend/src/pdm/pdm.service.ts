@@ -1,21 +1,10 @@
 import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FilterEixoDto } from 'src/eixo/dto/filter-eixo.dto';
-import { EixoService } from 'src/eixo/eixo.service';
-import { FilterMetaDto } from 'src/meta/dto/filter-meta.dto';
-import { MetaService } from 'src/meta/meta.service';
-import { FilterObjetivoEstrategicoDto } from 'src/objetivo-estrategico/dto/filter-objetivo-estrategico.dto';
-import { ObjetivoEstrategicoService } from 'src/objetivo-estrategico/objetivo-estrategico.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FilterSubTemaDto } from 'src/subtema/dto/filter-subtema.dto';
-import { SubTemaService } from 'src/subtema/subtema.service';
-import { FilterTagDto } from 'src/tag/dto/filter-tag.dto';
-import { TagService } from 'src/tag/tag.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
-import { DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { PdmDocument } from './entities/pdm-document.entity';
@@ -37,12 +26,11 @@ export class PdmService {
         if (similarExists > 0)
             throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
-
         const created = await this.prisma.pdm.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
-                ...createPdmDto,
+                ...createPdmDto as any,
             },
             select: { id: true }
         });
@@ -51,7 +39,7 @@ export class PdmService {
     }
 
     async findAll(filters: FilterPdmDto | undefined = undefined) {
-        const active = filters?.ativo === 'true' ? true : (filters?.ativo === 'false' ? false : undefined);
+        const active = filters?.ativo;
 
         const listActive = await this.prisma.pdm.findMany({
             where: {
@@ -94,7 +82,7 @@ export class PdmService {
             }
         });
         if (!pdm) throw new HttpException('PDM não encontrado', 404)
-        
+
         return pdm;
     }
 

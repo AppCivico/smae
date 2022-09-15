@@ -1,2 +1,3 @@
-import { Pdm } from "src/pdm/entities/pdm.entity";
+import { Pdm } from "src/pdm/dto/pdm.dto";
+
 export class CreatePdmDto extends Pdm {}
