@@ -518,7 +518,7 @@ export class PessoaService {
         };
 
         let extraFilter: any = {};
-        if (filters?.coorderandor_responsavel_cp === 'true') {
+        if (filters?.coorderandor_responsavel_cp) {
             this.logger.log('filtrando apenas coorderandor_responsavel_cp');
             extraFilter = {
                 PessoaPerfil: {
@@ -535,7 +535,7 @@ export class PessoaService {
                     }
                 },
             }
-        } else if (filters?.coorderandor_responsavel_cp === 'false') {
+        } else if (filters?.coorderandor_responsavel_cp === false) {
             this.logger.log('filtrando quem não é coorderandor_responsavel_cp');
             extraFilter = {
                 PessoaPerfil: {

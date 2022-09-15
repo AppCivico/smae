@@ -10,7 +10,7 @@ export class FilterPessoaDto {
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
-    coorderandor_responsavel_cp?: string;
+    coorderandor_responsavel_cp?: boolean;
 
     /**
    * Filtrar por órgão?
