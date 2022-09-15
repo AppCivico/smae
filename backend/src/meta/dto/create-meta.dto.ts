@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 
 
 export class MetaOrgaoParticipante {
@@ -34,15 +34,17 @@ export class CreateMetaDto {
     /**
     * Código
     */
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(30, { message: '$property| descrição: codigo 30 caracteres' })
+    @IsString({ message: '$property| código: Precisa ser alfanumérico, campo obrigatório' })
+    @MinLength(1, { message: '$property| código: pelo menos um caractere' })
+    @MaxLength(30, { message: '$property| código: até 30 caracteres' })
     codigo: string
 
     /**
     * título
     */
-    @IsString({ message: '$property| título: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| título: codigo 250 caracteres' })
+    @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
+    @MinLength(1, { message: '$property| título: pelo menos um caractere' })
+    @MaxLength(250, { message: '$property| título: 250 caracteres' })
     titulo: string
 
 
@@ -50,23 +52,23 @@ export class CreateMetaDto {
     * contexto
     */
     @IsOptional()
-    @IsString({ message: '$property| título: Precisa ser alfanumérico' })
-    @MaxLength(1000, { message: '$property| título: codigo 1000 caracteres' })
+    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @MaxLength(10000, { message: '$property| contexto: até código 10000 caracteres' })
     contexto?: string
 
     /**
     * complemento
     */
     @IsOptional()
-    @IsString({ message: '$property| título: Precisa ser alfanumérico' })
-    @MaxLength(1000, { message: '$property| título: codigo 1000 caracteres' })
+    @IsString({ message: '$property| complemento: Precisa ser alfanumérico' })
+    @MaxLength(1000, { message: '$property| complemento: código 10000 caracteres' })
     complemento?: string
 
     /**
     * macro_tema_id
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número ou null' })
+    @IsPositive({ message: '$property| macro tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     macro_tema_id?: number
@@ -75,7 +77,7 @@ export class CreateMetaDto {
     * tema_id
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número ou null' })
+    @IsPositive({ message: '$property| tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     tema_id?: number
@@ -84,7 +86,7 @@ export class CreateMetaDto {
     * sub_tema_id
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número ou null' })
+    @IsPositive({ message: '$property| sub tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     sub_tema_id?: number
@@ -93,7 +95,7 @@ export class CreateMetaDto {
     /**
    * pdm_id
    */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsPositive({ message: '$property| pdm_id precisa ser um número' })
     @Type(() => Number)
     pdm_id: number
 
@@ -101,15 +103,15 @@ export class CreateMetaDto {
     /**
     * Quais são os orgaos participantes e seus membros responsáveis
     */
-    @IsArray({message: 'precisa ser array'})
+    @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
     orgaos_participantes?: MetaOrgaoParticipante[]
 
     /**
     * ID das pessoas que são coordenadores
     * @example "[1, 2, 3]"
     */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(1, { message: '$property| precisa ter pelo menos um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsArray({ message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório' })
+    @ArrayMinSize(1, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items' })
     coordenadores_cp?: number[]
 }
