@@ -555,7 +555,7 @@ export class PessoaService {
             }
         }
         if (filters?.orgao_id) {
-            this.logger.log(`filtrando orgão é ${filters?.orgao_id}`);
+            this.logger.log(`filtrando órgão é ${filters?.orgao_id}`);
         }
 
         const listActive = await this.prisma.pessoa.findMany({
