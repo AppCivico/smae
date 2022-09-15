@@ -83,6 +83,9 @@ export class PdmService {
         });
         if (!pdm) throw new HttpException('PDM não encontrado', 404)
 
+        if (pdm.arquivo_logo_id) {
+            pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '1 month').download_token
+        }
         return pdm;
     }
 
