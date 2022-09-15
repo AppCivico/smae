@@ -7,6 +7,7 @@ import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue'
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
+//import { default as AddEditArquivos } from '@/views/pdm/AddEditArquivos.vue';
 
 const editModalStore = useEditModalStore();
 
@@ -36,6 +37,7 @@ function start(){
     if(props.group=='subtemas') editModalStore.modal(AddEditSubtemas,props);
     if(props.group=='temas') editModalStore.modal(AddEditTemas,props);
     if(props.group=='tags') editModalStore.modal(AddEditTags,props);
+    //if(props.group=='arquivos') editModalStore.modal(AddEditArquivos,props);
 }
 onMounted(()=>{start()});
 onUpdated(()=>{start()});

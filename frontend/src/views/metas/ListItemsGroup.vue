@@ -74,12 +74,12 @@ function groupSlug(s) {
             <template v-if="itemsFiltered.length">
                 <div class="bgc50 p1">
                     <ul class="metas">
-                        <li class="meta flex center" v-for="(m,i) in itemsFiltered">
+                        <li class="meta flex center mb1" v-for="(m,i) in itemsFiltered">
                             <router-link :to="`/metas/${m.id}`" class="flex center f1">
                                 <div class="farol"></div>
                                 <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>
                             </router-link>
-                            <router-link :to="`/metas/editar/${m.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            <router-link :to="`/metas/editar/${m.id}`" class="f0 tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                         </li>
                     </ul>
                     <hr class="mt2 mb2"/>
