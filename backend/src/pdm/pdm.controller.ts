@@ -66,39 +66,22 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar')
-    async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @Query() detail: DetalhePdmDto): Promise<DetalhePdmDto> {
+    async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @Query() detail: DetalhePdmDto): Promise<Pdm | DetalhePdmDto> {
         const pdm = await this.pdmService.getDetail(+params.id, user);
 
-        let tema, sub_tema, eixo, meta, tag
-        if (detail.incluir_auxiliares) {
-            const objetivoEstrategicoFilter = new FilterObjetivoEstrategicoDto();
-            objetivoEstrategicoFilter.pdm_id = +params.id;
-            tema = await this.objetivoEstrategicoService.findAll(objetivoEstrategicoFilter);
+        if (detail.incluir_auxiliares !== 'true')
+            return pdm;
 
-            const subTemaFilter = new FilterSubTemaDto();
-            subTemaFilter.pdm_id = +params.id;
-            sub_tema = await this.subTemaService.findAll(subTemaFilter);
-            
-            const eixoFilter = new FilterEixoDto();
-            eixoFilter.pdm_id = +params.id;
-            eixo = await this.eixoService.findAll(eixoFilter);
-
-            const metaFilter = new FilterMetaDto();
-            metaFilter.pdm_id = +params.id;
-            meta = await this.metaService.findAll(metaFilter);
-
-            const tagFilter = new FilterTagDto();
-            tagFilter.pdm_id = +params.id;
-            tag = await this.tagService.findAll(tagFilter);
-        }
+        const filter_opts = { pdm_id: params.id };
+        const [tema, sub_tema, eixo, tag] = await Promise.all([
+            this.objetivoEstrategicoService.findAll(filter_opts),
+            this.subTemaService.findAll(filter_opts),
+            this.eixoService.findAll(filter_opts),
+            this.tagService.findAll(filter_opts)
+        ]);
 
         return {
-            pdm: pdm,
-            tema: tema,
-            sub_tema: sub_tema,
-            eixo: eixo,
-            meta: meta,
-            tag: tag
+            pdm, tema, sub_tema, eixo, tag,
         }
     }
 
