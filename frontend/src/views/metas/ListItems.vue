@@ -89,12 +89,12 @@ function groupSlug(s) {
                         <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"><h2>{{item.descricao}}</h2></router-link>
                         <div class="t11 tc300 mb2">{{item.children.length}} meta(s)</div>
                         <ul class="metas">
-                            <li class="meta flex center" v-for="(m,i) in item.children">
+                            <li class="meta flex center mb1" v-for="(m,i) in item.children">
                                 <router-link :to="`/metas/${m.id}`" class="flex center f1">
                                     <div class="farol"></div>
                                     <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>
                                 </router-link>
-                                <router-link :to="`/metas/editar/${m.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                <router-link :to="`/metas/editar/${m.id}`" class="ml1 tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </li>
                         </ul>
                         <hr class="mt1 mb1">

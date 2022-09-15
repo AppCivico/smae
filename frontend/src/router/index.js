@@ -69,6 +69,8 @@ export const router = createRouter({
                 { path: '', component: ListPdM, props:{submenu:SubmenuConfig} },
                 { path: 'novo', component: AddEditPdM, props:{submenu:SubmenuConfig} },
                 { path: ':pdm_id', component: AddEditPdM, props:{submenu:SubmenuConfig} },
+                { path: ':pdm_id/arquivos/novo', component: ListPdM, props:{type:"novo",group:"arquivos",submenu:SubmenuConfig, parentPage: 'pdm'} },
+                { path: ':pdm_id/arquivos/:id', component: ListPdM, props:{type:"editar",group:"arquivos",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/macrotemas/novo', component: ListPdM, props:{type:"novo",group:"macrotemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/macrotemas/:id', component: ListPdM, props:{type:"editar",group:"macrotemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/subtemas/novo', component: ListPdM, props:{type:"novo",group:"subtemas",submenu:SubmenuConfig, parentPage: 'pdm'} },
