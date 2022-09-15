@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 
 
 export class MetaOrgaoParticipante {
@@ -35,13 +35,15 @@ export class CreateMetaDto {
     * Código
     */
     @IsString({ message: '$property| código: Precisa ser alfanumérico, campo obrigatório' })
-    @MaxLength(30, { message: '$property| código: até código 30 caracteres' })
+    @MinLength(1, { message: '$property| código: pelo menos um caractere' })
+    @MaxLength(30, { message: '$property| código: até 30 caracteres' })
     codigo: string
 
     /**
     * título
     */
     @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
+    @MinLength(1, { message: '$property| título: pelo menos um caractere' })
     @MaxLength(250, { message: '$property| título: 250 caracteres' })
     titulo: string
 
@@ -66,7 +68,7 @@ export class CreateMetaDto {
     * macro_tema_id
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número ou null' })
+    @IsPositive({ message: '$property| macro tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     macro_tema_id?: number
@@ -75,7 +77,7 @@ export class CreateMetaDto {
     * tema_id
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número ou null' })
+    @IsPositive({ message: '$property| tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     tema_id?: number
@@ -84,7 +86,7 @@ export class CreateMetaDto {
     * sub_tema_id
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número ou null' })
+    @IsPositive({ message: '$property| sub tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     sub_tema_id?: number
@@ -93,7 +95,7 @@ export class CreateMetaDto {
     /**
    * pdm_id
    */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsPositive({ message: '$property| pdm_id precisa ser um número' })
     @Type(() => Number)
     pdm_id: number
 
