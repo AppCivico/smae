@@ -39,14 +39,14 @@ const schema = Yup.object().shape({
     fim_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
     
     agregador_id: Yup.string().required(), //  : 1,
-    janela_agregador: Yup.string().when('agregador_id', ([agregador_id], schema) => {
+    janela_agregador: Yup.string().nullable().when('agregador_id', ([agregador_id], schema) => {
         return agregador_id&&agregador_id==3 ? schema.required('Preencha um valor') : schema;
     }),
     meta_id: Yup.string().nullable(), //  : 1
 });
-let agregador_id_model = ref(tempIndicadores.value.agregador_id);
 
 let title = 'Adicionar Indicador';
+let agregador_id = ref(tempIndicadores.value.agregador_id);
 if (id) {
     title = 'Editar Indicador';
     IndicadoresStore.getById(meta_id,id);
@@ -68,12 +68,17 @@ async function onSubmit(values) {
         values.inicio_medicao = fieldToDate(values.inicio_medicao);
         values.fim_medicao = fieldToDate(values.fim_medicao);
         values.regionalizavel = !!values.regionalizavel;
-
+        values.meta_id = Number(values.meta_id);
+        values.janela_agregador = values.janela_agregador??null;
         if (id&&tempIndicadores.value.id) {
             r = await IndicadoresStore.update(tempIndicadores.value.id, values);
+            MetasStore.clear();
+            IndicadoresStore.clear();
             msg = 'Dados salvos com sucesso!';
         } else {
             r = await IndicadoresStore.insert(values);
+            MetasStore.clear();
+            IndicadoresStore.clear();
             msg = 'Item adicionado com sucesso!';
         }
         if(r == true){
@@ -169,12 +174,13 @@ function maskMonth(el){
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Agregador <span class="tvermelho">*</span></label>
-                        <Field name="agregador_id" @change="agregador_id_model=$event.target.value" as="select" class="inputtext light mb1" :class="{ 'error': errors.agregador_id }">
+                        <Field name="agregador_id" v-model="agregador_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.agregador_id }">
                             <option v-for="a in agregadores" :value="a.id">{{a.descricao}}</option>
                         </Field>
                         <div class="error-msg">{{ errors.agregador_id }}</div>
                     </div>
-                    <div class="f1" v-if="agregador_id_model==3">
+
+                    <div class="f1" v-if="agregador_id?agregador_id==3:tempIndicadores.agregador_id==3">
                         <label class="label">Janela (ciclos) <span class="tvermelho">*</span></label>
                         <Field name="janela_agregador" type="text" class="inputtext light mb1" :class="{ 'error': errors.janela_agregador }" />
                         <div class="error-msg">{{ errors.janela_agregador }}</div>
