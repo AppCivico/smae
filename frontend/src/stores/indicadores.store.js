@@ -82,7 +82,6 @@ export const useIndicadoresStore = defineStore({
             return false;
         },
         async filterIndicadores(m,f){
-            console.log(m,f);
             this.tempIndicadores = { loading: true };
             try {
                 if(!m) throw 'Meta incorreta';

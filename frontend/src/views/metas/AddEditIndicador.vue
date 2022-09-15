@@ -39,7 +39,7 @@ const schema = Yup.object().shape({
     fim_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
     
     agregador_id: Yup.string().required(), //  : 1,
-    janela_agregador: Yup.string().nullable().when('agregador_id', ([agregador_id], schema) => {
+    janela_agregador: Yup.string().nullable().when('agregador_id', (agregador_id, schema) => {
         return agregador_id&&agregador_id==3 ? schema.required('Preencha um valor') : schema;
     }),
     meta_id: Yup.string().nullable(), //  : 1
@@ -70,6 +70,7 @@ async function onSubmit(values) {
         values.regionalizavel = !!values.regionalizavel;
         values.meta_id = Number(values.meta_id);
         values.janela_agregador = values.janela_agregador??null;
+        console.log(values);
         if (id&&tempIndicadores.value.id) {
             r = await IndicadoresStore.update(tempIndicadores.value.id, values);
             MetasStore.clear();
