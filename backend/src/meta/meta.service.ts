@@ -213,15 +213,19 @@ export class MetaService {
                 },
                 select: { id: true }
             });
-            await Promise.all([prisma.metaOrgao.deleteMany(), prisma.metaResponsavel.deleteMany()]);
+            await Promise.all([
+                prisma.metaOrgao.deleteMany({ where: { meta_id: id } }),
+                prisma.metaResponsavel.deleteMany({ where: { meta_id: id } })]
+            );
 
-            await prisma.metaOrgao.createMany({
-                data: await this.buildOrgaosParticipantes(meta.id, op),
-            });
-
-            await prisma.metaResponsavel.createMany({
-                data: await this.buildMetaResponsaveis(meta.id, op, cp),
-            });
+            await Promise.all([
+                await prisma.metaOrgao.createMany({
+                    data: await this.buildOrgaosParticipantes(meta.id, op),
+                }),
+                await prisma.metaResponsavel.createMany({
+                    data: await this.buildMetaResponsaveis(meta.id, op, cp),
+                })
+            ]);
 
             return meta;
         });
