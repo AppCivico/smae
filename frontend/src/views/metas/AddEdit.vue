@@ -88,7 +88,7 @@ const schema = Yup.object().shape({
     codigo: Yup.string().nullable(),
     titulo: Yup.string().required('Preencha o titulo'),
     contexto: Yup.string().required(()=>{return 'Preencha o '+(activePdm.value.possui_contexto_meta?activePdm.value.rotulo_contexto_meta:'texto');}),
-    complemento: Yup.string().required(()=>{return 'Preencha o '+(activePdm.value.possui_complementacao_meta?activePdm.value.rotulo_complementacao_meta:'texto');}),
+    complemento: Yup.string().nullable(),
 
     pdm_id: Yup.string().nullable(),
     macro_tema_id: Yup.string().nullable(),
@@ -216,9 +216,9 @@ function buscaCoord(e,item) {
                 </div>
                 <hr class="mt2 mb2"/>
                 <div class="flex g2">
-                    <div class="f1">
+                    <div class="f0" style="flex-basis: 100px;">
                         <label class="label">Código</label>
-                        <Field name="codigo" type="text" class="inputtext light mb1" :class="{ 'error': errors.codigo }" />
+                        <Field name="codigo" type="text" class="inputtext light mb1" maxlength="30" :class="{ 'error': errors.codigo }" />
                         <div class="error-msg">{{ errors.codigo }}</div>
                     </div>
                     <div class="f2">
@@ -236,7 +236,7 @@ function buscaCoord(e,item) {
                 </div>
                 <div class="flex g2" v-if="activePdm.possui_complementacao_meta">
                     <div class="f1">
-                        <label class="label">{{activePdm.rotulo_complementacao_meta}} <span class="tvermelho">*</span></label>
+                        <label class="label">{{activePdm.rotulo_complementacao_meta}}</label>
                         <Field name="complemento" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.complemento }" />
                         <div class="error-msg">{{ errors.complemento }}</div>
                     </div>
@@ -275,10 +275,10 @@ function buscaCoord(e,item) {
                 
                 <hr class="mt2 mb2"/>
 
-                <label class="label">Órgãos participantes <span class="tvermelho">*</span></label>
+                <label class="label">Órgãos participantes</label>
                 <div class="flex center g2">
-                    <label class="f1 label tc300">Órgão <span class="tvermelho">*</span></label>
-                    <label class="f1 label tc300">Responsável(eis) <span class="tvermelho">*</span></label>
+                    <label class="f1 label tc300">Órgão</label>
+                    <label class="f1 label tc300">Responsável(eis)</label>
                     <div style="flex-basis: 30px;"></div>
                 </div>
                 <template v-for="(item, index) in orgaos_participantes">
@@ -302,7 +302,7 @@ function buscaCoord(e,item) {
                         </div>
                     </div>
                 </template>
-                <a @click="addOrgao(orgaos_participantes,false)" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar orgão responsável</span></a>
+                <a @click="addOrgao(orgaos_participantes,false)" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar orgão participante</span></a>
                 
                 <hr class="mt2 mb2"/>
 
