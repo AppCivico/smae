@@ -13,7 +13,7 @@ export class CreateUploadDto {
     @IsEnum(TipoUpload, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoUpload).filter((e) => isNaN(Number(e))).join(', ')
     })
-    tipo: TipoUpload
+    tipo: string
 
     /**
      * tipo_documento_id só é necessário quando tipo = DOCUMENTO
@@ -21,7 +21,7 @@ export class CreateUploadDto {
     * */
     @IsOptional()
     @IsPositive({ message: '$property| Necessário ID do Tipo Documento' })
-    @ValidateIf((object: CreateUploadDto) => object.tipo == TipoUpload.DOCUMENTO)
+    @ValidateIf((object: CreateUploadDto) => object.tipo === String(TipoUpload.DOCUMENTO))
     @Type(() => Number)
     tipo_documento_id?: number | null
 
