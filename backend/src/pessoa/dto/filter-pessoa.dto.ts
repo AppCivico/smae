@@ -1,6 +1,5 @@
-import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsPositive } from "class-validator";
-import { IsTrueFalseString } from "src/common/decorators/IsTrueFalseStr";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsOptional, IsPositive } from "class-validator";
 
 export class FilterPessoaDto {
     /**
@@ -9,7 +8,8 @@ export class FilterPessoaDto {
    * @example "true"
     */
     @IsOptional()
-    @IsTrueFalseString()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
     coorderandor_responsavel_cp?: string;
 
     /**
