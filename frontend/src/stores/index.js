@@ -13,3 +13,4 @@ export * from './subtemas.store';
 export * from './tags.store';
 export * from './regions.store';
 export * from './metas.store';
+export * from './indicadores.store';

@@ -76,6 +76,19 @@ Promise.all([MetasStore.getById(id)]).then(()=>{
                     <h4>{{singlePdm.rotulo_complementacao_meta}}</h4>
                     <div>{{singleMeta.complemento}}</div>
                 </div>
+                <hr class="mt2 mb2"/>
+
+                <div style="border: 1px solid #E3E5E8; border-top: 8px solid #F2890D;">
+                    <div class="p1">
+                        <h2 class="mt1 mb1">Evolução</h2>
+                    </div>
+                    <div class="bgc50">
+                        <div class="tc">
+                            <router-link :to="`/metas/${id}/indicadores/novo`" class="btn mt1 mb1"><span>Adicionar indicador</span></router-link>
+                        </div>
+                    </div>
+                </div>
+
             </template>
             <template v-else-if="singleMeta.loading">
                 <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
