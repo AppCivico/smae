@@ -20,7 +20,6 @@ import { SubTemaService } from 'src/subtema/subtema.service';
         ObjetivoEstrategicoService,
         SubTemaService,
         EixoService,
-        MetaService,
         TagService
     ]
 })
