@@ -1,6 +1,5 @@
-import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsPositive } from "class-validator";
-import { IsTrueFalseString } from "src/common/decorators/IsTrueFalseStr";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsOptional, IsPositive } from "class-validator";
 
 export class FilterPessoaDto {
     /**
@@ -9,8 +8,9 @@ export class FilterPessoaDto {
    * @example "true"
     */
     @IsOptional()
-    @IsTrueFalseString()
-    coorderandor_responsavel_cp?: string;
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    coorderandor_responsavel_cp?: boolean;
 
     /**
    * Filtrar por órgão?
@@ -20,5 +20,12 @@ export class FilterPessoaDto {
     @IsPositive({ message: '$property| orgao_id' })
     @Type(() => Number)
     orgao_id?: number;
+
+    /*
+    versão alternativa para aceitar números negativos, e vazio como undefined caso seja adicionado @IsOptional()
+    @IsNumber()
+    @Transform((a: any) => a.value === '' ? undefined : +a.value)
+    XXXX?: number;
+    */
 
 }
