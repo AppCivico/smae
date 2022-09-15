@@ -29,7 +29,7 @@ export const usePdMStore = defineStore({
         },
         dateToField(d){
             var dd=d?new Date(d):false;
-            return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short'}):'';
+            return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
         },
         fieldToDate(d){
             if(d){
