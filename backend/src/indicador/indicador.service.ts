@@ -13,11 +13,6 @@ export class IndicadorService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
-        // TODO: verificar se todos os membros de createIndicadorDto.coordenadores_cp estão ativos
-        // e se tem o privilegios de CP
-        // e se os *tema_id são do mesmo PDM
-        // se existe pelo menos 1 responsável=true no op
-
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const indicador = await prisma.indicador.create({
