@@ -122,6 +122,9 @@ export class MetaService {
                 removido_em: null,
                 pdm_id: pdmId,
             },
+            orderBy: [
+                { codigo: 'asc' },
+            ],
             select: {
                 id: true,
                 titulo: true,
