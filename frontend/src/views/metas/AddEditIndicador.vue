@@ -1,5 +1,5 @@
 <script setup>
-import { ref, unref } from 'vue';
+import { ref, unref,onMounted, onUpdated } from 'vue';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
@@ -19,36 +19,56 @@ const { singleMeta } = storeToRefs(MetasStore);
 MetasStore.getById(meta_id);
 
 const IndicadoresStore = useIndicadoresStore();
-const { tempIndicadores } = storeToRefs(IndicadoresStore);
+const { tempIndicadores, agregadores } = storeToRefs(IndicadoresStore);
+IndicadoresStore.getAgregadores();
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
+var regx = /^$|^(?:0[1-9]|1[0-2]|[1-9])\/(?:(?:1[9]|[2-9]\d)?\d{2})$/;
+
+const schema = Yup.object().shape({
+    codigo: Yup.string().required('Preencha o código'), //  : "string",
+    titulo: Yup.string().required('Preencha o título'), //  : "string",
+    polaridade: Yup.string().required('Selecione a polaridade'), //  : "Neutra",
+    periodicidade: Yup.string().required('Selecione a peridiocidade'), //  : "Diario",
+    regionalizavel: Yup.boolean().nullable(), //  : true,
+    
+    inicio_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
+    fim_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
+    
+    agregador_id: Yup.string().required(), //  : 1,
+    janela_agregador: Yup.string().when('agregador_id', ([agregador_id], schema) => {
+        return agregador_id&&agregador_id==3 ? schema.required('Preencha um valor') : schema;
+    }),
+    meta_id: Yup.string().nullable(), //  : 1
+});
+let agregador_id_model = ref(tempIndicadores.value.agregador_id);
+
 let title = 'Adicionar Indicador';
 if (id) {
     title = 'Editar Indicador';
-    IndicadoresStore.getById(id);
-    console.log(singleMeta.value.id,tempIndicadores.meta_id);
+    IndicadoresStore.getById(meta_id,id);
 }
 
-const schema = Yup.object().shape({
-    /*"polaridade": "Neutra",
-    "periodicidade": "Diario",
-    "codigo": "string",
-    "titulo": "string",
-    "agregador_id": 1,
-    "janela_agregador": 1,
-    "regionalizavel": true,
-    "inicio_medicao": "YYYY-MM-DD",
-    "fim_medicao": "YYYY-MM-DD",
-    "meta_id": 1*/
-});
-
+function fieldToDate(d){
+    if(d){
+        if(d.length==6){d = '01/0'+d;}
+        else if(d.length==7){d = '01/'+d;}
+        var x=d.split('/');
+        return (x.length==3) ? new Date(x[2],x[1]-1,x[0]).toISOString().substring(0, 10) : null;
+    }
+    return null;
+}
 async function onSubmit(values) {
     try {
         var msg;
         var r;
+        values.inicio_medicao = fieldToDate(values.inicio_medicao);
+        values.fim_medicao = fieldToDate(values.fim_medicao);
+        values.regionalizavel = !!values.regionalizavel;
+
         if (id&&tempIndicadores.value.id) {
             r = await IndicadoresStore.update(tempIndicadores.value.id, values);
             msg = 'Dados salvos com sucesso!';
@@ -68,6 +88,17 @@ async function onSubmit(values) {
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/metas/'+meta_id);
 }
+function maskMonth(el){
+    var kC = event.keyCode;
+    var data = el.target.value.replace(/[^0-9/]/g,'');
+    if( kC!=8 && kC!=46 ){
+        if( data.length==2 ){
+            el.target.value = data += '/';
+        }else{
+            el.target.value = data;
+        }
+    }
+}
 </script>
 
 <template>
@@ -81,7 +112,7 @@ async function checkClose() {
 
         <template v-if="!(tempIndicadores?.loading || tempIndicadores?.error)">
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempIndicadores" v-slot="{ errors, isSubmitting }">
-
+                <Field name="meta_id" type="hidden" :value="meta_id"/>
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Código <span class="tvermelho">*</span></label>
@@ -108,6 +139,7 @@ async function checkClose() {
                     <div class="f1">
                         <label class="label">Periodicidade <span class="tvermelho">*</span></label>
                         <Field name="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
+                            <option value="">Selecionar</option>
                             <option value="Diario">Diario</option>
                             <option value="Semanal">Semanal</option>
                             <option value="Mensal">Mensal</option>
@@ -125,27 +157,24 @@ async function checkClose() {
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Início da Medição <span class="tvermelho">*</span></label>
-                        <Field name="inicio_medicao" type="text" class="inputtext light mb1" :class="{ 'error': errors.inicio_medicao }" maxlength="10" @keyup="maskDate" />
+                        <Field name="inicio_medicao" type="text" class="inputtext light mb1" :class="{ 'error': errors.inicio_medicao }" maxlength="7" @keyup="maskMonth" />
                         <div class="error-msg">{{ errors.inicio_medicao }}</div>
                     </div>
                     <div class="f1">
                         <label class="label">Fim da Medição <span class="tvermelho">*</span></label>
-                        <Field name="fim_medicao" type="text" class="inputtext light mb1" :class="{ 'error': errors.fim_medicao }" maxlength="10" @keyup="maskDate" />
+                        <Field name="fim_medicao" type="text" class="inputtext light mb1" :class="{ 'error': errors.fim_medicao }" maxlength="7" @keyup="maskMonth" />
                         <div class="error-msg">{{ errors.fim_medicao }}</div>
                     </div>
                 </div>
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Agregador <span class="tvermelho">*</span></label>
-                        <Field name="agregador_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.agregador_id }">
-                            <option value="">Selecionar</option>
-                            <option value="Neutra">Neutra</option>
-                            <option value="Positiva">Positiva</option>
-                            <option value="Negativa">Negativa</option>
+                        <Field name="agregador_id" @change="agregador_id_model=$event.target.value" as="select" class="inputtext light mb1" :class="{ 'error': errors.agregador_id }">
+                            <option v-for="a in agregadores" :value="a.id">{{a.descricao}}</option>
                         </Field>
                         <div class="error-msg">{{ errors.agregador_id }}</div>
                     </div>
-                    <div class="f1">
+                    <div class="f1" v-if="agregador_id_model==3">
                         <label class="label">Janela (ciclos) <span class="tvermelho">*</span></label>
                         <Field name="janela_agregador" type="text" class="inputtext light mb1" :class="{ 'error': errors.janela_agregador }" />
                         <div class="error-msg">{{ errors.janela_agregador }}</div>
