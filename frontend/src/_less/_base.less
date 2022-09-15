@@ -88,6 +88,7 @@
 		&.spacebetween{justify-content: space-between;}
 		&.center{align-items: center;}
 		&.column{flex-direction: column;}
+		&.flexwrap{flex-wrap: wrap;}
 		&.g1{gap:1rem;}
 		&.g2{gap:2rem;}
 		>*{max-width: 100%;}
@@ -132,7 +133,7 @@
 		}
 	}
 	.board{
-		flex:0 1 50%; padding:2rem; border-left:1px solid @c100; border-top:4px solid @c100; position:relative;
+		flex:1 0 45%; max-width: ~"calc(50% - 1rem)"; padding:2rem; border-left:1px solid @c100; border-top:4px solid @c100; position:relative;
 		&:before{content: ""; position: absolute; left: -1px; top: -4px; width: 3rem; height: 4px; background: @amarelo;}
 	}
 	.breadcrumb{

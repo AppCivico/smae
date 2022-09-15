@@ -84,7 +84,7 @@ function groupSlug(s) {
         
         <div class="boards">
             <template v-if="itemsFiltered.length">
-                <div class="flex g2">
+                <div class="flex flexwrap g2">
                     <div v-for="item in itemsFiltered" :key="item.id" class="board">
                         <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"><h2>{{item.descricao}}</h2></router-link>
                         <div class="t11 tc300 mb2">{{item.children.length}} meta(s)</div>
