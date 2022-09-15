@@ -1,6 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsOptional } from "class-validator";
-import { IsTrueFalseString } from "src/common/decorators/IsTrueFalseStr";
+import { IsBoolean, IsOptional } from "class-validator";
 
 export class FilterPdmDto {
     /**
@@ -8,7 +7,7 @@ export class FilterPdmDto {
    * @example "true"
     */
     @IsOptional()
-    @IsTrueFalseString()
+    @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     ativo?: boolean;
 }
@@ -18,7 +17,7 @@ export class FilterPdmDetailDto {
    * Filtrar Pdm com Ativo?
    * @example "true"
     */
-    @IsTrueFalseString()
+    @IsBoolean()
     @IsOptional()
     @Transform(({ value }: any) => value === 'true')
     incluir_auxiliares?: boolean;
