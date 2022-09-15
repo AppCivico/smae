@@ -518,7 +518,7 @@ export class PessoaService {
         };
 
         let extraFilter: any = {};
-        if (filters?.coorderandor_responsavel_cp === 'true') {
+        if (filters?.coorderandor_responsavel_cp) {
             this.logger.log('filtrando apenas coorderandor_responsavel_cp');
             extraFilter = {
                 PessoaPerfil: {
@@ -535,7 +535,7 @@ export class PessoaService {
                     }
                 },
             }
-        } else if (filters?.coorderandor_responsavel_cp === 'false') {
+        } else if (filters?.coorderandor_responsavel_cp === false) {
             this.logger.log('filtrando quem não é coorderandor_responsavel_cp');
             extraFilter = {
                 PessoaPerfil: {
@@ -555,7 +555,7 @@ export class PessoaService {
             }
         }
         if (filters?.orgao_id) {
-            this.logger.log(`filtrando orgão é ${filters?.orgao_id}`);
+            this.logger.log(`filtrando órgão é ${filters?.orgao_id}`);
         }
 
         const listActive = await this.prisma.pessoa.findMany({
