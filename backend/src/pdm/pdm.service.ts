@@ -1,10 +1,21 @@
 import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { FilterEixoDto } from 'src/eixo/dto/filter-eixo.dto';
+import { EixoService } from 'src/eixo/eixo.service';
+import { FilterMetaDto } from 'src/meta/dto/filter-meta.dto';
+import { MetaService } from 'src/meta/meta.service';
+import { FilterObjetivoEstrategicoDto } from 'src/objetivo-estrategico/dto/filter-objetivo-estrategico.dto';
+import { ObjetivoEstrategicoService } from 'src/objetivo-estrategico/objetivo-estrategico.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { FilterSubTemaDto } from 'src/subtema/dto/filter-subtema.dto';
+import { SubTemaService } from 'src/subtema/subtema.service';
+import { FilterTagDto } from 'src/tag/dto/filter-tag.dto';
+import { TagService } from 'src/tag/tag.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
+import { DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { PdmDocument } from './entities/pdm-document.entity';
@@ -13,7 +24,7 @@ import { PdmDocument } from './entities/pdm-document.entity';
 export class PdmService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly uploadService: UploadService,
+        private readonly uploadService: UploadService
     ) { }
 
     async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
@@ -83,7 +94,7 @@ export class PdmService {
             }
         });
         if (!pdm) throw new HttpException('PDM não encontrado', 404)
-
+        
         return pdm;
     }
 
