@@ -161,7 +161,7 @@ const PerfilAcessoConfig: any = [
         ]
     },
     {
-        nome: 'Pode ser Responsável da Coordenadoria de Planejamento em Metas',
+        nome: 'Responsável por meta na CP',
         descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
         privilegios: [
             'PDM.coorderandor_responsavel_cp',
@@ -388,6 +388,16 @@ async function atualizar_perfil_acesso() {
                     nome: perfilAcessoConf.nome,
                     descricao: perfilAcessoConf.descricao,
                 }, select: { id: true }
+            });
+        }else{
+            await prisma.perfilAcesso.updateMany({
+                where: {
+                    id: perfilAcesso.id
+                },
+                data: {
+                    nome: perfilAcessoConf.nome,
+                    descricao: perfilAcessoConf.descricao,
+                }
             });
         }
 
