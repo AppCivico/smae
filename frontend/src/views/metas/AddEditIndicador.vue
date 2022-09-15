@@ -19,7 +19,7 @@ const { singleMeta } = storeToRefs(MetasStore);
 MetasStore.getById(meta_id);
 
 const IndicadoresStore = useIndicadoresStore();
-const { tempIndicadores, agregadores } = storeToRefs(IndicadoresStore);
+const { Indicadores, tempIndicadores, agregadores } = storeToRefs(IndicadoresStore);
 IndicadoresStore.getAgregadores();
 
 const authStore = useAuthStore();
@@ -50,6 +50,8 @@ let agregador_id = ref(tempIndicadores.value.agregador_id);
 if (id) {
     title = 'Editar Indicador';
     IndicadoresStore.getById(meta_id,id);
+}else{
+    IndicadoresStore.getAll(meta_id);
 }
 
 function fieldToDate(d){
@@ -116,8 +118,8 @@ function maskMonth(el){
         </div>
         <div class="t24 mb2">Meta {{singleMeta.codigo}} {{singleMeta.titulo}}</div>
 
-        <template v-if="!(tempIndicadores?.loading || tempIndicadores?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="tempIndicadores" v-slot="{ errors, isSubmitting }">
+        <template v-if="!(tempIndicadores?.loading || tempIndicadores?.error || Indicadores?.loading)&&!(!id&&Indicadores.length)">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?tempIndicadores:{}" v-slot="{ errors, isSubmitting }">
                 <Field name="meta_id" type="hidden" :value="meta_id"/>
                 <div class="flex g2">
                     <div class="f1">
@@ -196,12 +198,20 @@ function maskMonth(el){
             </Form>
         </template>
         
-        <template v-if="tempIndicadores?.loading">
+        <template v-if="tempIndicadores?.loading||Indicadores?.loading">
             <span class="spinner">Carregando</span>
         </template>
         <template v-if="tempIndicadores?.error||error">
             <div class="error p1">
                 <div class="error-msg">{{tempIndicadores.error??error}}</div>
+            </div>
+        </template>
+        <template v-if="(!id&&Indicadores.length)">
+            <div class="error p1">
+                <div class="error-msg">Somente um indicador por meta</div>
+            </div>
+            <div class="tc">
+                <router-link :to="`/metas/${meta_id}`" class="btn big mt1 mb1"><span>Voltar</span></router-link>
             </div>
         </template>
     </Dashboard>
