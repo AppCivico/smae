@@ -21,4 +21,11 @@ export class FilterPessoaDto {
     @Type(() => Number)
     orgao_id?: number;
 
+    /*
+    versão alternativa para aceitar números negativos, e vazio como undefined caso seja adicionado @IsOptional()
+    @IsNumber()
+    @Transform((a: any) => a.value === '' ? undefined : +a.value)
+    XXXX?: number;
+    */
+
 }
