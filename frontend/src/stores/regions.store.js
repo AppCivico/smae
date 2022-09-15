@@ -109,16 +109,28 @@ export const useRegionsStore = defineStore({
 
                 if(f&&f.textualSearch){
                     var b = f.textualSearch.toLowerCase();
-                    this.tempRegions =  this.regions.filter((u)=>{
-                        if(u.descricao.toLowerCase().includes(b)) return 1;
-                        if(u.children.length) for (var i = 0; i < u.children.length; i++) {
-                            if(u.children[i].descricao.toLowerCase().includes(b)) return 1;
-                            if(u.children[i].children.length) for (var j = 0; j < u.children[i].children.length; j++) {
-                                if(u.children[i].children[j].descricao.toLowerCase().includes(b)) return 1;
-                            }
-                        }
-                        return 0;
-                    });
+                    this.tempRegions = [...this.regions].reduce((a,u)=>{
+                        if(u.descricao.toLowerCase().includes(b)){ a.push(u); return a;}
+                        var ru = 0;
+                        if(u.children.length) u.children = u.children.reduce((aa,uu)=>{
+                            if(uu.descricao.toLowerCase().includes(b)){ aa.push(uu); ru=1; return aa;}
+                            var ruu = 0;
+                            if(uu.children.length) uu.children = uu.children.reduce((aaa,uuu)=>{
+                                if(uuu.descricao.toLowerCase().includes(b)){ aaa.push(uuu); ruu=1; return aaa;}
+                                var ruuu = 0;
+                                if(uuu.children.length) uuu.children = uuu.children.reduce((aaaa,uuuu)=>{
+                                    if(uuuu.descricao.toLowerCase().includes(b)){ aaaa.push(uuuu); ruuu=1; return aaaa;}
+                                    return aaaa;
+                                },[]);
+                                if(ruuu){ aaa.push(uuu); ruu=1; }
+                                return aaa;
+                            },[]);
+                            if(ruu){ aa.push(uu); ru=1; }
+                            return aa;
+                        },[]);
+                        if(ru) a.push(u);
+                        return a;
+                    },[]);
                 }else{
                     this.tempRegions = this.regions;
                 }
