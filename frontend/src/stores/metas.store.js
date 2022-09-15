@@ -34,9 +34,10 @@ export const useMetasStore = defineStore({
             return this.activePdm;
         },
         async getAll() {
-            if(!this.activePdm.id) await this.getPdM();
-            this.Metas = { loading: true };
             try {
+                if(!this.activePdm.id) await this.getPdM();
+                if(this.Metas.loading) return;
+                this.Metas = { loading: true };
                 let r = await requestS.get(`${baseUrl}/meta?pdm_id=${this.activePdm.id}`);    
                 this.Metas = r.linhas;
             } catch (error) {
