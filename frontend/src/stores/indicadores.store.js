@@ -17,7 +17,7 @@ export const useIndicadoresStore = defineStore({
         },
         dateToField(d){
             var dd=d?new Date(d):false;
-            var dx = (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short'}):'';
+            var dx = (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
             
             return dx?dx.slice(3,10):'';
         },
