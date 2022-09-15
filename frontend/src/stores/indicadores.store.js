@@ -19,7 +19,7 @@ export const useIndicadoresStore = defineStore({
             var dd=d?new Date(d):false;
             var dx = (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short'}):'';
             
-            return dx?dx:'';
+            return dx?dx.slice(3,10):'';
         },
         fieldToDate(d){
             if(d){
@@ -66,7 +66,7 @@ export const useIndicadoresStore = defineStore({
                     this.agregadores = r.linhas;
                 }
             } catch (error) {
-                this.tempIndicadores = { error };
+                this.agregadores = { error };
             }
         },
         async insert(params) {
@@ -82,12 +82,11 @@ export const useIndicadoresStore = defineStore({
             return false;
         },
         async filterIndicadores(m,f){
+            console.log(m,f);
             this.tempIndicadores = { loading: true };
             try {
                 if(!m) throw 'Meta incorreta';
-                if(!this.Indicadores.length){
-                    await this.getAll(m);
-                }
+                await this.getAll(m);
                 this.tempIndicadores = f ? this.Indicadores.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
                 }) : this.Indicadores;

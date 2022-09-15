@@ -82,8 +82,6 @@ Promise.all([MetasStore.getById(id)]).then(()=>{
                 </div>
                 <hr class="mt2 mb2"/>
 
-
-
                 <div v-if="tempIndicadores.length" v-for="ind in tempIndicadores" style="border: 1px solid #E3E5E8; border-top: 8px solid #F2890D;">
                     <div class="p1">
                         <div class="flex center g2">
