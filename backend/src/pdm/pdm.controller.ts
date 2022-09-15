@@ -72,7 +72,7 @@ export class PdmController {
         if (detail.incluir_auxiliares !== 'true')
             return pdm;
 
-        const filter_opts = { pdm_id: params.id };
+        const filter_opts = { pdm_id: +params.id };
         const [tema, sub_tema, eixo, tag] = await Promise.all([
             this.objetivoEstrategicoService.findAll(filter_opts),
             this.subTemaService.findAll(filter_opts),
