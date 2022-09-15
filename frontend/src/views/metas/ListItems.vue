@@ -21,7 +21,7 @@ const { activePdm, groupedMetas } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
 const filters = reactive({
-    groupBy: localStorage.getItem('groupBy')??"",
+    groupBy: localStorage.getItem('groupBy')??"macro_tema",
     currentFilter: ""
 });
 let itemsFiltered = ref(groupedMetas);
