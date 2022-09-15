@@ -34,14 +34,14 @@ export class CreateMetaDto {
     /**
     * Código
     */
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(30, { message: '$property| descrição: codigo 30 caracteres' })
+    @IsString({ message: '$property| código: Precisa ser alfanumérico, campo obrigatório' })
+    @MaxLength(30, { message: '$property| código: até código 30 caracteres' })
     codigo: string
 
     /**
     * título
     */
-    @IsString({ message: '$property| título: Precisa ser alfanumérico' })
+    @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
     @MaxLength(250, { message: '$property| título: 250 caracteres' })
     titulo: string
 
@@ -101,15 +101,15 @@ export class CreateMetaDto {
     /**
     * Quais são os orgaos participantes e seus membros responsáveis
     */
-    @IsArray({ message: 'precisa ser uma array' })
+    @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
     orgaos_participantes?: MetaOrgaoParticipante[]
 
     /**
     * ID das pessoas que são coordenadores
     * @example "[1, 2, 3]"
     */
-    @IsArray({ message: '$property| precisa ser uma array' })
-    @ArrayMinSize(1, { message: '$property| precisa ter pelo menos um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsArray({ message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório' })
+    @ArrayMinSize(1, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items' })
     coordenadores_cp?: number[]
 }
