@@ -1,3 +1,4 @@
+import { IsOptional } from "class-validator";
 import { IsTrueFalseString } from "src/common/decorators/IsTrueFalseStr";
 import { Eixo } from "src/eixo/entities/eixo.entity";
 import { Meta } from "src/meta/entities/meta.entity";
@@ -13,6 +14,7 @@ export class DetalhePdmDto {
    * @example "true"
     */
     @IsTrueFalseString()
+    @IsOptional()
     incluir_auxiliares?: string;
 
     /**
