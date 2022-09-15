@@ -48,8 +48,8 @@ export const useIndicadoresStore = defineStore({
             }
         },
         async getById(m,id) {
-            this.tempIndicadores = { loading: true };
             try {
+                this.tempIndicadores = { loading: true };
                 if(!this.Indicadores.length){
                     await this.getAll(m);
                 }
@@ -82,8 +82,8 @@ export const useIndicadoresStore = defineStore({
             return false;
         },
         async filterIndicadores(m,f){
-            this.tempIndicadores = { loading: true };
             try {
+                this.tempIndicadores = { loading: true };
                 if(!m) throw 'Meta incorreta';
                 await this.getAll(m);
                 this.tempIndicadores = f ? this.Indicadores.filter((u)=>{
