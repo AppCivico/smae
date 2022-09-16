@@ -28,6 +28,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SubTemaModule } from './subtema/subtema.module';
 import { MetaModule } from './meta/meta.module';
 import { IndicadorModule } from './indicador/indicador.module';
+import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 
 
 @Module({
@@ -40,7 +41,8 @@ import { IndicadorModule } from './indicador/indicador.module';
         PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule,
         SubTemaModule,
         MetaModule,
-        IndicadorModule
+        IndicadorModule,
+        UnidadeMedidaModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
