@@ -1,5 +1,6 @@
 import { Periodicidade, Serie } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
+import { IsString } from "class-validator"
 import { DateYMD } from "src/common/date2ymd"
 import { OrgaoResumo } from "src/orgao/entities/orgao.entity"
 import { Regiao } from "src/regiao/entities/regiao.entity"
@@ -22,6 +23,7 @@ export class Variavel {
     titulo: string
     acumulativa: boolean
     unidade_medida: UnidadeMedida
+    casas_decimais: number
     /**
      * numérico, vem string pra não perder precisão durante o encoding do JSON
     */
@@ -35,12 +37,25 @@ export class Variavel {
 }
 
 export class SerieValorNomimal {
+    /**
+     * categoria do batch
+     * @example "880.12359876352"
+     */
+    @IsString()
     valor_nomimal: Decimal
+    /**
+     * token para editar/criar este valor
+     * @example "token.nao-tao-grande.assim"
+     */
     referencia: string
-    data_valor: Date
+    /**
+     * referencia em data para usar caso não seja um humano consumindo a api
+     * @example "2023-01-01"
+     */
+    data_valor: DateYMD
 };
 
-export type SerieValores = Record<Serie, SerieValorNomimal[]>
+export type SerieValores = Record<Serie, SerieValorNomimal | undefined>
 
 export class SerieValorPorPeriodo {
     [periodo: DateYMD]: SerieValores;
