@@ -9,7 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { SerieUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
 import { ListPrevistoAgrupadas } from 'src/variavel/dto/list-variavel.dto';
-import { SerieValorNomimal, SerieValorPorPeriodo } from 'src/variavel/entities/variavel.entity';
+import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from 'src/variavel/entities/variavel.entity';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
@@ -183,12 +183,12 @@ export class VariavelService {
         return { id: variavelId };
     }
 
-    async getSeriePrevisto(variavelId: number) {
+    async getIndicadorViaVariavel(variavel_id: number) {
         const indicador = await this.prisma.indicador.findFirst({
             where: {
                 IndicadorVariavel: {
                     some: {
-                        variavel_id: variavelId
+                        variavel_id: variavel_id
                     }
                 },
             },
@@ -209,14 +209,16 @@ export class VariavelService {
         });
         if (!indicador)
             throw new HttpException('Indicador ou variavel não encontrada', 404);
+        return indicador
+    }
 
-        const variavel = indicador.IndicadorVariavel[0].variavel;
 
-        const currentValues = await this.prisma.serieVariavel.findMany({
+    async getValorSerieExistente(variavelId: number, series: Serie[]): Promise<ValorSerieExistente[]> {
+        return await this.prisma.serieVariavel.findMany({
             where: {
                 variavel_id: variavelId,
                 serie: {
-                    in: ['Previsto', 'PrevistoAcumulado'],
+                    in: series,
                 }
             },
             select: {
@@ -226,9 +228,12 @@ export class VariavelService {
                 serie: true,
             }
         });
+    }
 
+
+    getValorSerieExistentePorPeriodo(valoresExistentes: ValorSerieExistente[]): SerieValorPorPeriodo {
         const porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
-        for (const serieValor of currentValues) {
+        for (const serieValor of valoresExistentes) {
             if (!porPeriodo[Date2YMD.toString(serieValor.data_valor)]) {
                 porPeriodo[Date2YMD.toString(serieValor.data_valor)] = {
                     Previsto: undefined,
@@ -240,11 +245,20 @@ export class VariavelService {
 
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
-                valor_nomimal: serieValor.valor_nominal,
+                valor_nominal: serieValor.valor_nominal,
                 referencia: this.getEditExistingSerieJwt(serieValor.id),
             }
         }
 
+        return porPeriodo;
+    }
+
+    async getSeriePrevisto(variavelId: number) {
+        const indicador = await this.getIndicadorViaVariavel(variavelId);
+        const variavel = indicador.IndicadorVariavel[0].variavel;
+
+        const valoresExistentes = await this.getValorSerieExistente(variavelId, ['Previsto', 'PrevistoAcumulado']);
+        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
 
         const result: ListPrevistoAgrupadas = {
             variavel: {
@@ -253,9 +267,10 @@ export class VariavelService {
                 periodicidade: variavel.periodicidade,
             },
             previsto: [],
+            ordem_series: ['Previsto', 'PrevistoAcumulado']
         };
 
-        const todosPeriodos = await this.geraPeriodo(indicador.inicio_medicao, indicador.fim_medicao, variavel.periodicidade)
+        const todosPeriodos = await this.gerarPeriodosEntreDatas(indicador.inicio_medicao, indicador.fim_medicao, variavel.periodicidade)
         for (const periodoYMD of todosPeriodos) {
             const seriesExistentes: SerieValorNomimal[] = [];
 
@@ -278,7 +293,7 @@ export class VariavelService {
             }
 
             result.previsto.push({
-                periodo: periodoYMD,
+                periodo: periodoYMD.substring(0, 4 + 2 + 1),
                 // TODO: botar o label de acordo com a periodicidade"
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
@@ -289,11 +304,11 @@ export class VariavelService {
         return result;
     }
 
-    buildNonExistingSerieValor(periodo: string, variavelId: number, serie: Serie): SerieValorNomimal {
+    buildNonExistingSerieValor(periodo: DateYMD, variavelId: number, serie: Serie): SerieValorNomimal {
         return {
             data_valor: periodo,
             referencia: this.getEditNotExistingSerieJwt(variavelId, periodo, serie),
-            valor_nomimal: null
+            valor_nominal: null
         }
     }
 
@@ -312,7 +327,7 @@ export class VariavelService {
         });
     }
 
-    async geraPeriodo(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
+    async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
 
         const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
         const periodPg: Record<Periodicidade, string> = {

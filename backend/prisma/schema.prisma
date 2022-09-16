@@ -102,6 +102,7 @@ model Pessoa {
     UnidadeQueAtualizei UnidadeMedida[]       @relation("Atualizador")
     IndicadorVariavel   IndicadorVariavel[]   @relation("Desativador")
     VariavelResponsavel VariavelResponsavel[]
+    SerieVariavel       SerieVariavel[]
 
     @@map("pessoa")
 }
@@ -775,7 +776,11 @@ model SerieVariavel {
 
     data_valor       DateTime @db.Date()
     valor_nominal    Decimal  @db.Decimal(65, 30)
-    valor_percentual Decimal  @db.Decimal(65, 30)
+    valor_percentual Decimal  @default(0) @db.Decimal(65, 30)
+
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
 
     @@map("serie_variavel")
 }

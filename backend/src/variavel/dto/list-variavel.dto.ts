@@ -1,4 +1,4 @@
-import { Periodicidade } from "@prisma/client";
+import { Periodicidade, Serie } from "@prisma/client";
 import { SeriesAgrupadas, Variavel } from "src/variavel/entities/variavel.entity";
 
 export class ListVariavelDto {
@@ -22,5 +22,9 @@ export class VariavelResumo {
 export class ListPrevistoAgrupadas {
     previsto: SeriesAgrupadas[]
     variavel: VariavelResumo
+    /**
+     * contextualiza qual a ordem que as séries serão apresentadas dentro de SeriesAgrupadas
+    */
+    ordem_series: Serie[]
 }
 
