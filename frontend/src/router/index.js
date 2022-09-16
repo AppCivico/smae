@@ -15,7 +15,7 @@ import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import { AddEditODS, ListODS } from '@/views/ods';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
-import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, AddEditIndicador } from '@/views/metas';
+import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, AddEditIndicador, SingleMetaEvolucao } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 
 export const router = createRouter({
@@ -96,9 +96,10 @@ export const router = createRouter({
                 { path: 'temas/:id', component: ListMetasGroup, props:{type:"list",group:"tema", parentPage: 'metas'} },
                 { path: 'temas/:tema_id/novo', component: AddEditMetas, props:{type:"novo",group:"tema", parentPage: 'metas'} },
                 { path: 'tags/:id', component: ListMetasGroup, props:{type:"list",group:"tags", parentPage: 'metas'} },
-                { path: ':id', component: SingleMeta, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id', component: SingleMeta, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/novo', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/evolucao', component: SingleMetaEvolucao, props:{submenu:SubmenuMetas} },
             ]
         },
         { path: '/regioes',

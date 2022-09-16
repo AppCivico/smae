@@ -33,7 +33,6 @@ const schema = Yup.object().shape({
     titulo: Yup.string().required('Preencha o título'), //  : "string",
     polaridade: Yup.string().required('Selecione a polaridade'), //  : "Neutra",
     periodicidade: Yup.string().required('Selecione a peridiocidade'), //  : "Diario",
-    regionalizavel: Yup.boolean().nullable(), //  : true,
     
     inicio_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
     fim_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
@@ -43,10 +42,12 @@ const schema = Yup.object().shape({
         return agregador_id&&agregador_id==3 ? schema.required('Preencha um valor') : schema;
     }),
     meta_id: Yup.string().nullable(), //  : 1
+    regionalizavel: Yup.string().nullable(),
 });
 
 let title = 'Adicionar Indicador';
 let agregador_id = ref(tempIndicadores.value.agregador_id);
+let regionalizavel = ref(tempIndicadores.value.regionalizavel);
 if (id) {
     title = 'Editar Indicador';
     IndicadoresStore.getById(meta_id,id);
@@ -72,12 +73,13 @@ async function onSubmit(values) {
         values.regionalizavel = !!values.regionalizavel;
         values.meta_id = Number(values.meta_id);
         values.janela_agregador = values.janela_agregador??null;
-        console.log(values);
-        if (id&&tempIndicadores.value.id) {
-            r = await IndicadoresStore.update(tempIndicadores.value.id, values);
-            MetasStore.clear();
-            IndicadoresStore.clear();
-            msg = 'Dados salvos com sucesso!';
+        if (id) {
+            if(tempIndicadores.value.id){
+                r = await IndicadoresStore.update(tempIndicadores.value.id, values);
+                MetasStore.clear();
+                IndicadoresStore.clear();
+                msg = 'Dados salvos com sucesso!';
+            }
         } else {
             r = await IndicadoresStore.insert(values);
             MetasStore.clear();
@@ -86,11 +88,25 @@ async function onSubmit(values) {
         }
         if(r == true){
             MetasStore.clear();
-            await router.push('/metas/'+meta_id);
+            router.push('/metas/'+meta_id);
             alertStore.success(msg);
+            return;
         }
     } catch (error) {
         alertStore.error(error);
+    }
+}
+async function checkDelete(id) {
+    if (id) {
+        if(tempIndicadores.value.id){
+            alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
+                if(await IndicadoresStore.delete(id)){
+                    IndicadoresStore.clear();
+                    await router.push('/metas/'+meta_id);
+                    alertStore.success('Indicador removido.');
+                }
+            },'Remover');
+        }
     }
 }
 async function checkClose() {
@@ -182,11 +198,31 @@ function maskMonth(el){
                         </Field>
                         <div class="error-msg">{{ errors.agregador_id }}</div>
                     </div>
-
+                    {{agregador_id}}
                     <div class="f1" v-if="agregador_id?agregador_id==3:tempIndicadores.agregador_id==3">
                         <label class="label">Janela (ciclos) <span class="tvermelho">*</span></label>
                         <Field name="janela_agregador" type="text" class="inputtext light mb1" :class="{ 'error': errors.janela_agregador }" />
                         <div class="error-msg">{{ errors.janela_agregador }}</div>
+                    </div>
+                </div>
+
+                <div class="">
+                    <div class="mb1">
+                        <label class="block">
+                            <Field name="regionalizavel" :checked="regionalizavel" type="checkbox" value="1" class="inputcheckbox" /><span :class="{ 'error': errors.regionalizavel }">Indicador regionalizável</span>
+                        </label>
+                        <div class="error-msg">{{ errors.regionalizavel }}</div>
+                    </div>
+
+                    <div class="" v-if="regionalizavel?regionalizavel=='1':tempIndicadores.regionalizavel=='1'">
+                        <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
+                        <Field name="nivel_regionalizacao" v-model="nivel_regionalizacao" as="select" class="inputtext light mb1" :class="{ 'error': errors.nivel_regionalizacao }">
+                            <option value="">Selecione</option>
+                            <option value="2">Região</option>
+                            <option value="3">Subprefeitura</option>
+                            <option value="4">Distrito</option>
+                        </Field>
+                        <div class="error-msg">{{ errors.nivel_regionalizacao }}</div>
                     </div>
                 </div>
 
@@ -196,6 +232,10 @@ function maskMonth(el){
                     <hr class="ml2 f1"/>
                 </div>
             </Form>
+        </template>
+
+        <template v-if="id&&tempIndicadores.id&&id==tempIndicadores.id">
+            <button @click="checkDelete(tempIndicadores.id)" class="btn amarelo big">Remover item</button>
         </template>
         
         <template v-if="tempIndicadores?.loading||Indicadores?.loading">

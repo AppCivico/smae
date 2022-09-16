@@ -52,8 +52,10 @@ export const useMetasStore = defineStore({
                 }
                 this.singleMeta = this.Metas.find((u)=>u.id == id);
                 if(!this.singleMeta) throw 'Meta não encontrada';
+                return true;
             } catch (error) {
                 this.singleMeta = { error };
+                return true;
             }
         },
         async insert(params) {

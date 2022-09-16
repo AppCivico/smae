@@ -216,7 +216,7 @@ export const usePdMStore = defineStore({
                 this.tempPdM = f ? this.PdM.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
                 }) : this.PdM;
-                this.tempPdM.forEach(u=>{
+                this.tempPdM.sort((a,b)=>{if(!a.ativo&&!b.ativo){return a.descricao.localeCompare(b.descricao);} return b.ativo-a.ativo;}).forEach(u=>{
                     this.carregaArquivos(u.id);
                 })
             } catch (error) {

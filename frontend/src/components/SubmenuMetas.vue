@@ -1,15 +1,22 @@
 <script setup>
     import { storeToRefs } from 'pinia';
     import { useAuthStore } from '@/stores';
+    import { useRoute } from 'vue-router';
+    
     const props = defineProps(['parentPage']);
     const authStore = useAuthStore();
     const { /*user, */permissions } = storeToRefs(authStore);
     const perm = permissions.value;
+
+    const route = useRoute();
+    const meta_id = route.params.meta_id;
 </script>
 <template>
     <div id="submenu">
         <h2>Programa de Metas</h2>
         <div class="links-container mb2">
+            <router-link :to="`/metas/${meta_id}`">Resumo</router-link>
+            <router-link :to="`/metas/${meta_id}/evolucao`">Evolução</router-link>
         </div>
     </div>
 </template>
