@@ -2,13 +2,14 @@
 import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { useEditModalStore, useAuthStore, usePdMStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useAuthStore, usePdMStore } from '@/stores';
 import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue';
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
-//import { default as AddEditArquivos } from '@/views/pdm/AddEditArquivos.vue';
+import { default as AddEditArquivos } from '@/views/pdm/AddEditArquivos.vue';
 
+const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
 
 const authStore = useAuthStore();
@@ -18,7 +19,7 @@ const perm = permissions.value;
 const props = defineProps(['group','type','parentPage']);
 
 const PdMStore = usePdMStore();
-const { tempPdM } = storeToRefs(PdMStore);
+const { tempPdM, arquivos } = storeToRefs(PdMStore);
 PdMStore.filterPdM();
 
 const filters = reactive({
@@ -37,10 +38,15 @@ function start(){
     if(props.group=='subtemas') editModalStore.modal(AddEditSubtemas,props);
     if(props.group=='temas') editModalStore.modal(AddEditTemas,props);
     if(props.group=='tags') editModalStore.modal(AddEditTags,props);
-    //if(props.group=='arquivos') editModalStore.modal(AddEditArquivos,props);
+    if(props.group=='arquivos') editModalStore.modal(AddEditArquivos,props);
 }
 onMounted(()=>{start()});
 onUpdated(()=>{start()});
+function deleteArquivo(pdmid,id){
+    alertStore.confirmAction('Deseja remover o arquivo?',()=>{ 
+        let r = PdMStore.deleteArquivo(pdmid,id);
+    },'Remover');
+}
 </script>
 <template>
     <Dashboard>
@@ -176,6 +182,28 @@ onUpdated(()=>{start()});
                                     </tbody>
                                 </table>
                                 <router-link v-if="perm?.CadastroTag?.inserir" :to="`/pdm/${item.id}/tags/novo`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Tag</span></router-link>
+                                
+                                <table class="tablemain mb1">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%">Arquivos</th>
+                                            <th style="width: 60%">Descrição</th>
+                                            <th style="width: 10%"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-for="subitem in arquivos[item.id]" :key="subitem.id">
+                                            <tr>
+                                                <td>{{ subitem?.arquivo?.nome_original??'-' }}</td>
+                                                <td>{{ subitem?.arquivo?.descricao??'-' }}</td>
+                                                <td style="white-space: nowrap; text-align: right;">
+                                                    <a @click="deleteArquivo(item.id,subitem.id)" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                                <router-link :to="`/pdm/${item.id}/arquivos/novo`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar arquivo</span></router-link>
                             </td>
                         </tz>
                     </template>
