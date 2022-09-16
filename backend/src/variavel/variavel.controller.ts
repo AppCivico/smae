@@ -10,7 +10,7 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Indicador')
-@Controller('indicador/variavel')
+@Controller('indicador-variavel')
 export class VariavelController {
     constructor(private readonly variavelService: VariavelService) { }
 
@@ -18,10 +18,8 @@ export class VariavelController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.inserir')
-    async create(@Body() createVariavelDto: CreateVariavelDto, @CurrentUser() user: PessoaFromJwt) {
-        //return await this.variavelService.create(createVariavelDto, user);
-
-        return createVariavelDto
+    async create(@Body() createVariavelDto: CreateVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.variavelService.create(createVariavelDto, user);
     }
 
 }

@@ -1,26 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
 @Injectable()
 export class VariavelService {
-    create(createVariavelDto: CreateVariavelDto) {
-        return 'This action adds a new variavel';
+    create(createVariavelDto: CreateVariavelDto, user: PessoaFromJwt) {
+
+        return { id: 0 };
     }
 
-    findAll() {
-        return `This action returns all variavel`;
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} variavel`;
-    }
-
-    update(id: number, updateVariavelDto: UpdateVariavelDto) {
-        return `This action updates a #${id} variavel`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} variavel`;
-    }
 }
