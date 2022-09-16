@@ -12,6 +12,7 @@ export const usePdMStore = defineStore({
         tempPdM: {},
         singlePdm: {},
         activePdm: {},
+        arquivos: {}
     }),
     actions: {
         clear (){
@@ -19,13 +20,16 @@ export const usePdMStore = defineStore({
             this.tempPdM = {};
             this.singlePdm = {};
             this.activePdm = {};
+            this.arquivos = {};
         },
         clearEdit (){
             this.singlePdm = {};
             this.activePdm = {};
+            this.arquivos = {};
         },
         clearLoad (){
             this.PdM = {};
+            this.singleArquivo={};
         },
         dateToField(d){
             var dd=d?new Date(d):false;
@@ -212,8 +216,35 @@ export const usePdMStore = defineStore({
                 this.tempPdM = f ? this.PdM.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
                 }) : this.PdM;
+                this.tempPdM.forEach(u=>{
+                    this.carregaArquivos(u.id);
+                })
             } catch (error) {
                 this.tempPdM = { error };
+            }
+        },
+        async insertArquivo(pdm_id, params) {
+            if(await requestS.post(`${baseUrl}/pdm/${pdm_id}/documento`, params)){
+                this.PdM = {};
+                return true;
+            }
+            return false;
+        },
+        async deleteArquivo(pdm_id,id) {
+            if(await requestS.delete(`${baseUrl}/pdm/${pdm_id}/documento/${id}`)){
+                this.arquivos[pdm_id] = {};
+                this.carregaArquivos(pdm_id);
+                return true;
+            }
+            return false;
+        },
+        async carregaArquivos(pdm_id) {
+            if(!this.arquivos[pdm_id]?.length)this.arquivos[pdm_id] = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/pdm/${pdm_id}/documento`);    
+                this.arquivos[pdm_id] = r.linhas;
+            } catch (error) {
+                this.arquivos[pdm_id] = { error };
             }
         },
     }
