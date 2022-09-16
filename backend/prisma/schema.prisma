@@ -715,6 +715,7 @@ model Variavel {
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
 
     peso                 Int?
+    casas_decimais       Int                   @default(0) @db.SmallInt
     // usar para calculcar as agregações, por exemplo na média ponderada
     // acho que pode ser um valor e não uma porcentagem, e ai o sistema calcula a porcentagem sozinho
     // de acordo com o numero de variaveis

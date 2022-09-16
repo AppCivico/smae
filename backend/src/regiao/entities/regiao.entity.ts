@@ -5,3 +5,4 @@ export class Regiao {
     nivel: number
     parente_id: number | null
 }
+

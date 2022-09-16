@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade } from "@prisma/client";
-import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsNumberString, IsOptional, IsPositive, IsString, ValidateIf } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsNumber, IsNumberString, IsOptional, IsPositive, IsString, Max, Min, ValidateIf } from "class-validator";
 
 export class CreateVariavelDto {
 
@@ -47,6 +47,12 @@ export class CreateVariavelDto {
     */
     @IsNumberString({ maxDecimalPlaces: 30 }, { message: "Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String" })
     valor_base: number
+
+    @IsNumber(undefined, { message: "$property| $property inválido" })
+    @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
+    @Max(30, { message: '$property| casas_decimais tem valor máximo de 30' })
+    @Transform((a: any) => a.value === '' || a.value ? undefined : +a.value)
+    casas_decimais: number
 
     /**
      * Periodicidade da variável

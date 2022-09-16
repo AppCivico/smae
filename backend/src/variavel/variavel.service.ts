@@ -124,6 +124,8 @@ export class VariavelService {
                         id: true,
                         nivel: true,
                         descricao: true,
+                        parente_id: true,
+                        codigo: true,
                     }
                 },
                 indicador_variavel: {
