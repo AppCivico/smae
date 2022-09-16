@@ -8,6 +8,7 @@ import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
 import { default as AddEditArquivos } from '@/views/pdm/AddEditArquivos.vue';
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
@@ -194,8 +195,8 @@ function deleteArquivo(pdmid,id){
                                     <tbody>
                                         <template v-for="subitem in arquivos[item.id]" :key="subitem.id">
                                             <tr>
-                                                <td>{{ subitem?.arquivo?.nome_original??'-' }}</td>
-                                                <td>{{ subitem?.arquivo?.descricao??'-' }}</td>
+                                                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.nome_original??'-' }}</a></td>
+                                                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.descricao??'-' }}</a></td>
                                                 <td style="white-space: nowrap; text-align: right;">
                                                     <a @click="deleteArquivo(item.id,subitem.id)" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
                                                 </td>
