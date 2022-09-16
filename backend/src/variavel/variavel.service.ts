@@ -183,7 +183,7 @@ export class VariavelService {
     }
 
     async getSeriePrevisto(variavelId: number) {
-        let indicador = await this.prisma.indicador.findFirstOrThrow({
+        const indicador = await this.prisma.indicador.findFirstOrThrow({
             where: {
                 IndicadorVariavel: {
                     some: {
@@ -208,7 +208,7 @@ export class VariavelService {
         });
         const variavel = indicador.IndicadorVariavel[0].variavel;
 
-        let currentValues = await this.prisma.serieVariavel.findMany({
+        const currentValues = await this.prisma.serieVariavel.findMany({
             where: {
                 variavel_id: variavelId,
                 serie: {
@@ -223,7 +223,7 @@ export class VariavelService {
             }
         });
 
-        let porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
+        const porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
         for (const serieValor of currentValues) {
             if (!porPeriodo[Date2YMD.toString(serieValor.data_valor)]) {
                 porPeriodo[Date2YMD.toString(serieValor.data_valor)] = {
@@ -242,50 +242,73 @@ export class VariavelService {
         }
 
 
-        let result: ListPrevistoAgrupadas = {
+        const result: ListPrevistoAgrupadas = {
             variavel: {
                 id: variavelId,
                 casas_decimais: variavel.casas_decimais,
+                periodicidade: variavel.periodicidade,
             },
             previsto: [],
         };
-        let periodos = await this.geraPeriodo(indicador.inicio_medicao, indicador.fim_medicao, variavel.periodicidade)
-        for (const periodo of periodos) {
 
-            const existeValor = porPeriodo[periodo];
+        const todosPeriodos = await this.geraPeriodo(indicador.inicio_medicao, indicador.fim_medicao, variavel.periodicidade)
+        for (const periodoYMD of todosPeriodos) {
+            const seriesExistentes: SerieValorNomimal[] = [];
+
+            const existeValor = porPeriodo[periodoYMD];
             if (existeValor && (existeValor.Previsto || existeValor.PrevistoAcumulado)) {
-
-                let seriesExistentes: SerieValorNomimal[] = [];
-
                 if (existeValor.Previsto) {
                     seriesExistentes.push(existeValor.Previsto);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
                 }
 
                 if (existeValor.PrevistoAcumulado) {
                     seriesExistentes.push(existeValor.PrevistoAcumulado);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
                 }
 
-                // TODO: botar o label de acordo com a periodicidade"
-                result.previsto.push({
-                    periodo: periodo,
-                    agrupador: periodo,
-                    series: seriesExistentes,
-                })
+
+            } else {
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
             }
 
+            result.previsto.push({
+                periodo: periodoYMD,
+                // TODO: botar o label de acordo com a periodicidade"
+                agrupador: periodoYMD.substring(0, 4),
+                series: seriesExistentes,
+            })
 
         }
 
         return result;
     }
 
+    buildNonExistingSerieValor(periodo: string, variavelId: number, serie: Serie): SerieValorNomimal {
+        return {
+            data_valor: periodo,
+            referencia: this.getEditNotExistingSerieJwt(variavelId, periodo, serie),
+            valor_nomimal: null
+        }
+    }
+
 
     getEditExistingSerieJwt(id: number): string {
         return this.jwtService.sign({
             id: id,
-        }, { audience: JWT_AUD });
+        });
     }
 
+    getEditNotExistingSerieJwt(variavelId: number, period: DateYMD, serie: Serie): string {
+        return this.jwtService.sign({
+            p: period,
+            v: variavelId,
+            s: serie
+        });
+    }
 
     async geraPeriodo(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
 
