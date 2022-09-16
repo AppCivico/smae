@@ -29,6 +29,7 @@ import { SubTemaModule } from './subtema/subtema.module';
 import { MetaModule } from './meta/meta.module';
 import { IndicadorModule } from './indicador/indicador.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
+import { VariavelModule } from './variavel/variavel.module';
 
 
 @Module({
@@ -42,7 +43,8 @@ import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
         SubTemaModule,
         MetaModule,
         IndicadorModule,
-        UnidadeMedidaModule
+        UnidadeMedidaModule,
+        VariavelModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

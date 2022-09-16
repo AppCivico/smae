@@ -99,6 +99,8 @@ export class OrgaoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        // TODO
+        // verificar se há pessoas neste orgao
         const created = await this.prisma.orgao.updateMany({
             where: { id: id },
             data: {
