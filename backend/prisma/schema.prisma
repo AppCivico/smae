@@ -723,6 +723,7 @@ model Variavel {
     // quando false, o usuario precisa preencher, mas sempre via ter as 4 series, correto?
     serie_variavel       SerieVariavel[]
     variavel_responsavel VariavelResponsavel[]
+    indicador_variavel   IndicadorVariavel[]
 
     @@map("variavel")
 }
@@ -734,6 +735,9 @@ model IndicadorVariavel {
     // talvez pode ser nulo mais pra frente quando tiver iniciativa, ou sempre q tiver iniciativa
     indicador_id Int
     indicador    Indicador @relation(fields: [indicador_id], references: [id])
+
+    variavel_id Int
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
     desativado     Boolean   @default(false)
     desativado_em  DateTime?

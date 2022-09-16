@@ -10,7 +10,7 @@ export class CreateVariavelDto {
     */
     @IsPositive({ message: '$property| indicador precisa existir' })
     @Type(() => Number)
-    indicador_id: number
+    indicador_id?: number
 
     /**
     * lista dos responsáveis pelo preenchimento? pelo menos uma pessoa
