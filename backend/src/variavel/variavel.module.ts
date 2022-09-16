@@ -5,7 +5,13 @@ import { VariavelController } from './variavel.controller';
 import { VariavelService } from './variavel.service';
 
 @Module({
-    imports: [PrismaModule, JwtModule],
+    imports: [
+        PrismaModule,
+        JwtModule.register({
+            secret: process.env.SESSION_JWT_SECRET + 'for-variables',
+            signOptions: { expiresIn: '30d' },
+        })
+    ],
     controllers: [VariavelController],
     providers: [VariavelService]
 })
