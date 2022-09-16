@@ -199,15 +199,16 @@ export class VariavelService {
 
         let porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
         for (const serieValor of currentValues) {
-            console.log({ serieValor, porPeriodo: porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)] })
-
-            if (!porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)]) {
-                porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)].Previsto = [];
-                porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)].PrevistoAcumulado = [];
+            if (!porPeriodo[Date2YMD.toString(serieValor.data_valor)]) {
+                porPeriodo[Date2YMD.toString(serieValor.data_valor)] = {
+                    Previsto: [],
+                    PrevistoAcumulado: [],
+                    Realizado: [],
+                    RealizadoAcumulado: []
+                };
             }
-            console.log({ x: Date2YMD.fromUTC(serieValor.data_valor), porPeriodo: porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)] })
 
-            porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)][serieValor.serie].push({
+            porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie].push({
                 data_valor: serieValor.data_valor,
                 valor_nomimal: serieValor.valor_nominal,
                 referencia: this.getEditExistingSerieJwt(serieValor.id),
