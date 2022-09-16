@@ -336,7 +336,7 @@ export class VariavelService {
         return dados.map((e) => e.dt);
     }
 
-    async batchUpsertSerie(valores: SerieUpsert, user: PessoaFromJwt) {
+    async batchUpsertSerie(valores: SerieUpsert[], user: PessoaFromJwt) {
 
         throw new Error('Method not implemented.');
     }
