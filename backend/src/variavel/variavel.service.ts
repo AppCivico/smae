@@ -199,6 +199,12 @@ export class VariavelService {
 
         let porPeriodo: SerieValorPorPeriodo = {};
         for (const serieValor of currentValues) {
+
+            if (!porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)]) {
+                porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)].Previsto = [];
+                porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)].PrevistoAcumulado = [];
+            }
+
             porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)][serieValor.serie].push({
                 data_valor: serieValor.data_valor,
                 valor_nomimal: serieValor.valor_nominal,
