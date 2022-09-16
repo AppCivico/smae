@@ -270,7 +270,7 @@ export class VariavelService {
 
         const dados: Record<string, string>[] = await this.prisma.$queryRaw`
             select to_char(p.p, 'yyyy-mm-dd') as dt
-            from generate_series(${startStr}::date, ${endStr}::date, ${periodPg[periodicidade]}) p
+            from generate_series(${startStr}::date, ${endStr}::date, ${periodPg[periodicidade]}::interval) p
         `;
 
         return dados.map((e) => e.dt);
