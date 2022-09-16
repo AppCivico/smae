@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -68,6 +68,10 @@ export class VariavelService {
 
         let removidoStatus = filters?.remover_desativados == true ? false : undefined;
 
+        if (filters?.indicador_id && filters?.meta_id) {
+            throw new HttpException('Apenas filtrar por meta_id ou indicador_id por vez', 400);
+        }
+
         if (filters?.indicador_id) {
             filterQuery = {
                 indicador_variavel: {
@@ -129,7 +133,8 @@ export class VariavelService {
                             select: {
                                 id: true,
                                 titulo: true,
-                            }
+                                meta_id: true,
+                            },
                         }
                     }
                 },
