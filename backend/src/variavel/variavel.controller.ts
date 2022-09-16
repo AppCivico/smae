@@ -1,16 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { VariavelService } from './variavel.service';
-import { CreateVariavelDto } from './dto/create-variavel.dto';
-import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
-import { ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
-import { SerieValorPorPeriodo } from 'src/variavel/entities/variavel.entity';
+import { ListPrevistoAgrupadas, ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
+import { CreateVariavelDto } from './dto/create-variavel.dto';
+import { UpdateVariavelDto } from './dto/update-variavel.dto';
+import { VariavelService } from './variavel.service';
 
 @ApiTags('Indicador')
 @Controller('indicador-variavel')
@@ -45,8 +44,10 @@ export class VariavelController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
-    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        return await this.variavelService.getSeriePrevisto(params.id);
+    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
+        //return await this.variavelService.getSeriePrevisto(params.id);
+
+        return new ListPrevistoAgrupadas()
     }
 
 }
