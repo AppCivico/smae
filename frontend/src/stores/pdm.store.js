@@ -225,7 +225,6 @@ export const usePdMStore = defineStore({
         },
         async insertArquivo(pdm_id, params) {
             if(await requestS.post(`${baseUrl}/pdm/${pdm_id}/documento`, params)){
-                this.PdM = {};
                 return true;
             }
             return false;
