@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, Serie } from '@prisma/client';
+import { Periodicidade, Prisma, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
@@ -181,6 +181,28 @@ export class VariavelService {
     }
 
     async getSeriePrevisto(variavelId: number) {
+        let indicador = await this.prisma.indicador.findFirstOrThrow({
+            where: {
+                IndicadorVariavel: {
+                    some: {
+                        variavel_id: variavelId
+                    }
+                },
+            },
+            select: {
+                inicio_medicao: true,
+                fim_medicao: true,
+                IndicadorVariavel: {
+                    select: {
+                        variavel: {
+                            select: {
+                                periodicidade: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         let currentValues = await this.prisma.serieVariavel.findMany({
             where: {
@@ -215,7 +237,11 @@ export class VariavelService {
             })
         }
 
-        return porPeriodo;
+        let periodos = await this.geraPeriodo(indicador.inicio_medicao, indicador.fim_medicao, indicador.IndicadorVariavel[0].variavel.periodicidade)
+
+
+
+        return periodos;
     }
 
 
@@ -224,4 +250,31 @@ export class VariavelService {
             id: id,
         }, { audience: JWT_AUD });
     }
+
+
+    async geraPeriodo(start: Date, end: Date, periodicidade: Periodicidade): Promise<string[]> {
+
+        const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
+        const periodPg: Record<Periodicidade, string> = {
+            Diario: '1 day',
+            Semanal: '1 week',
+            Mensal: '1 month',
+            Bimestral: '2 months',
+            Trimestral: '3 months',
+            Quadrimestral: '4 months',
+            Semestral: '6 months',
+            Anual: '1 year',
+            Quinquenal: '5 years',
+            Secular: '10 years'
+        };
+
+        const dados: Record<string, string>[] = await this.prisma.$queryRaw`
+            select to_char(p.p, 'yyyy-mm-dd') as dt
+            from generate_series(${startStr}::date, ${endStr}::date, ${periodPg[periodicidade]}) p
+        `;
+
+        return dados.map((e) => e.dt);
+    }
+
+
 }

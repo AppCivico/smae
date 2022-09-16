@@ -45,7 +45,7 @@ export class VariavelController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
-    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<SerieValorPorPeriodo> {
+    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         return await this.variavelService.getSeriePrevisto(params.id);
     }
 
