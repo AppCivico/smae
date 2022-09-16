@@ -312,6 +312,10 @@ model Pdm {
     SubTema             SubTema[]
     Meta                Meta[]
 
+    logo            String?
+    arquivo_logo_id Int?
+    ArquivoLogo     Arquivo? @relation(fields: [arquivo_logo_id], references: [id])
+
     @@map("pdm")
 }
 
@@ -499,6 +503,7 @@ model Arquivo {
     Tag               Tag[]
     Regiao            Regiao[]
     ArquivoDocumento  ArquivoDocumento[]
+    Pdm               Pdm[]
 
     @@map("arquivo")
 }
