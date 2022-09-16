@@ -6,6 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SerieUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
 import { ListPrevistoAgrupadas } from 'src/variavel/dto/list-variavel.dto';
 import { SerieValorNomimal, SerieValorPorPeriodo } from 'src/variavel/entities/variavel.entity';
@@ -333,6 +334,11 @@ export class VariavelService {
         `;
 
         return dados.map((e) => e.dt);
+    }
+
+    async batchUpsertSerie(valores: SerieUpsert, user: PessoaFromJwt) {
+
+        throw new Error('Method not implemented.');
     }
 
 
