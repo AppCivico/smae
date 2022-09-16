@@ -1,4 +1,4 @@
-import { Periodicidade, Serie } from "@prisma/client"
+import { Periodicidade, Prisma, Serie } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
 import { IsString } from "class-validator"
 import { DateYMD } from "src/common/date2ymd"
@@ -38,16 +38,18 @@ export class Variavel {
 
 export class SerieValorNomimal {
     /**
-     * categoria do batch
+     * valor da serie lida
      * @example "880.12359876352"
      */
     @IsString()
-    valor_nomimal: Decimal | null
+    valor_nominal: Decimal | null
+
     /**
      * token para editar/criar este valor
      * @example "token.nao-tao-grande.assim"
      */
     referencia: string
+
     /**
      * referencia em data para usar caso não seja um humano consumindo a api
      * @example "2023-01-01"
@@ -75,4 +77,11 @@ export class SeriesAgrupadas {
     periodo: string
 
     series: SerieValorNomimal[]
+}
+
+export class ValorSerieExistente {
+    id: number;
+    valor_nominal: Decimal;
+    data_valor: Date;
+    serie: Serie;
 }
