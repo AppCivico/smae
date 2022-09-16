@@ -9,6 +9,7 @@ import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
+import { ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
 
 @ApiTags('Indicador')
 @Controller('indicador-variavel')
@@ -27,8 +28,8 @@ export class VariavelController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.inserir', 'CadastroIndicador.editar')
-    async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt) {
-        return await this.variavelService.findAll(filters);
+    async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
+        return { linhas: await this.variavelService.findAll(filters) };
     }
 
 }
