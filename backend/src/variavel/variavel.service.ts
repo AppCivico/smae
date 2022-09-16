@@ -146,4 +146,33 @@ export class VariavelService {
 
         return listActive;
     }
+
+
+    async update(id: number, updateVariavelDto: UpdateVariavelDto, user: PessoaFromJwt) {
+
+        // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
+
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            let responsaveis = updateVariavelDto.responsaveis!;
+            delete updateVariavelDto.responsaveis;
+
+            await prisma.variavel.updateMany({
+                where: { id: id },
+                data: {
+                    ...updateVariavelDto,
+                }
+            });
+
+            await prisma.variavelResponsavel.deleteMany({
+                where: { variavel_id: id }
+            })
+
+            await prisma.variavelResponsavel.createMany({
+                data: await this.buildVarResponsaveis(id, responsaveis),
+            });
+        });
+
+        return { id: id };
+    }
+
 }
