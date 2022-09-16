@@ -198,13 +198,13 @@ function deleteArquivo(pdmid,id){
                                                 <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.nome_original??'-' }}</a></td>
                                                 <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.descricao??'-' }}</a></td>
                                                 <td style="white-space: nowrap; text-align: right;">
-                                                    <a @click="deleteArquivo(item.id,subitem.id)" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
+                                                    <a v-if="perm?.CadastroPdm?.editar" @click="deleteArquivo(item.id,subitem.id)" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
                                                 </td>
                                             </tr>
                                         </template>
                                     </tbody>
                                 </table>
-                                <router-link :to="`/pdm/${item.id}/arquivos/novo`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar arquivo</span></router-link>
+                                <router-link v-if="perm?.CadastroPdm?.editar" :to="`/pdm/${item.id}/arquivos/novo`" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar arquivo</span></router-link>
                             </td>
                         </tz>
                     </template>

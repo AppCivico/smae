@@ -30,6 +30,7 @@
 
 /* Tipografia */
 	.t64{font-size: 64px;}
+	.t48{font-size: 48px;}
 	.t36{font-size: 36px;}
 	.t24{font-size: 24px;}
 	.t20{font-size: 20px;}
@@ -52,6 +53,7 @@
 	h6{.t11; .w700;}
 	p{line-height: 1.4;}
 	.tc{text-align: center;}
+	.lh1{line-height: 1;}
 
 /* Colors */
 	.tprimary{color: @primary;}
@@ -133,8 +135,15 @@
 		}
 	}
 	.board{
-		flex:1 0 45%; max-width: ~"calc(50% - 1rem)"; padding:2rem; border-left:1px solid @c100; border-top:4px solid @c100; position:relative;
+		flex:1 0 45%; max-width: ~"calc(50% - 1rem)"; padding:2rem; border:1px solid @c100; border-top:4px solid @c100; position:relative;
 		&:before{content: ""; position: absolute; left: -1px; top: -4px; width: 3rem; height: 4px; background: @amarelo;}
+	}
+	.board_indicador{
+		border: 1px solid @c100; border-top: 8px solid @laranja;
+	}
+	.board_variavel{
+		border:1px solid @c100; border-top:8px solid @c100; position:relative;
+		&:before{content: ""; position: absolute; left: -1px; top: -8px; width: 6rem; height: 8px; background: @verde;}
 	}
 	.breadcrumb{
 		padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid @c100;
@@ -203,6 +212,12 @@
 				+li{margin-top: .5em;}
 			}
 		}
+		&.right{
+			ul{
+				transform: translateX(2rem);
+				&:before{left: auto; right: 2rem;}
+			}
+		}
 		&:hover ul{
 			display: block;
 		}
@@ -233,11 +248,18 @@
 		}
 	}
 	.farol{
-		display: inline-block; width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; .br(500px); background: @c100; margin-right: 1rem;
+		display: inline-block; width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; .br(500px); background: @c100 center no-repeat; margin-right: 1rem;
+
+		&.i1{
+			background-color: @vermelho;
+			background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><path fill="%23FFF" d="M15,11c0,1.1,0.9,2,2,2s2-0.9,2-2c0-1.1-0.9-2-2-2S15,9.9,15,11z M9,11c0,1.1,0.9,2,2,2c1.1,0,2-0.9,2-2 c0-1.1-0.9-2-2-2C9.9,9,9,9.9,9,11z M5,13c-1.1,0-2-0.9-2-2c0-1.1,0.9-2,2-2s2,0.9,2,2C7,12.1,6.1,13,5,13z"/></svg>');
+			background-size: 80%;
+		}
 	}
 	.inputcheckbox{
 		display: none;
 		+ span{
+			cursor: pointer;
 			&:before{
 				content: ""; display: inline-block; vertical-align: middle; width: 1rem; height: 1rem; .br(2px); border: 2px solid @amarelo;
 				margin-right: .5rem;
@@ -343,7 +365,7 @@
 	}
 	.tablemain{
 		width: 100%;
-		tr,tz,ty{
+		tr,tz{
 			display: table-row; border-bottom: 1px solid @c100;
 			&:nth-of-type(even){
 				background:@c50;
@@ -359,7 +381,7 @@
 
 			.arrow{display: inline-block; vertical-align: middle; transform-origin: center; .transition; margin-right: .5em;}
 			&:not(.active){
-				+tz{display: none !important;}
+				+tz,+tbody{display: none !important;}
 				.arrow{transform: rotate(-90deg);}
 			}
 		}
@@ -367,7 +389,7 @@
 		th{.t12; .uc; .tc300; .w700; text-align: left; padding: .75em 1em;}
 		td{padding: .75em 1em;}
 		a:hover{color: @amarelo;}
-
+		&.center{vertical-align: middle;}
 		.tablemain{
 			border-left: 1px solid @c100;
 		}
@@ -376,11 +398,36 @@
 			margin: -1rem -1rem 1em -2rem;
 		}
 	}
+	.tablepreinfo{
+		padding: .75em 1em; .bgc50;
+	}
 	.tagsmall{
 		.t11; .w700; .tc600; display: inline-block;
 		background: @c50; border:1px solid; .br(4px); padding: .5em; margin-right: .5em; margin-bottom: .5em;
 		cursor: pointer;
 		svg{display: inline-block; width: .8em; height: auto; margin-left: .3rem; vertical-align: middle;}
+	}
+	.tipinfo{
+		display: inline-block; vertical-align: middle; color: #3A3A47;
+		position: relative;
+		>div{
+			position: absolute; bottom: ~"calc(100% + .5rem)"; right: 50%; transform: translateX(50%);
+		    width: max-content; max-width: 200px; background: @primary; color: white;
+			border-radius: .5rem; padding: 1rem; display: none;
+			.t11; text-align: center; line-height: 1.4;
+			animation: fadeIn .5s; z-index: 99;
+			.bs(0px 8px 16px rgba(21, 39, 65, 0.1));
+			&:before{
+				content: ""; position: absolute; left: 50%; bottom: 0; margin: -0.5rem;
+				border: .5rem solid transparent;
+				border-bottom-color: @primary;
+				border-left-color: @primary;
+				transform: rotate(-45deg);
+			}
+		}
+		&:hover{
+			>div{display: block;}
+		}
 	}
 
 /* Áreas */

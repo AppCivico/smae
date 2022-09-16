@@ -60,11 +60,11 @@ function groupSlug(s) {
             <div class="ml2 dropbtn">
                 <span class="btn">Adicionar</span>
                 <ul>
-                    <li><router-link to="/metas/novo">Nova Meta</router-link></li>
-                    <li><router-link v-if="activePdm.possui_macro_tema" to="/metas/macrotemas/novo">{{activePdm.rotulo_macro_tema??'Macrotema'}}</router-link></li>
-                    <li><router-link v-if="activePdm.possui_tema" to="/metas/temas/novo">{{activePdm.rotulo_tema??'Tema'}}</router-link></li>
-                    <li><router-link v-if="activePdm.possui_sub_tema" to="/metas/subtemas/novo">{{activePdm.rotulo_sub_tema??'Subtema'}}</router-link></li>
-                    <li><router-link to="/metas/tags/novo">Tag</router-link></li>
+                    <li><router-link v-if="perm?.CadastroMeta?.inserir" to="/metas/novo">Nova Meta</router-link></li>
+                    <li><router-link v-if="perm?.CadastroMacroTema?.inserir&&activePdm.possui_macro_tema" to="/metas/macrotemas/novo">{{activePdm.rotulo_macro_tema??'Macrotema'}}</router-link></li>
+                    <li><router-link v-if="perm?.CadastroTema?.inserir&&activePdm.possui_tema" to="/metas/temas/novo">{{activePdm.rotulo_tema??'Tema'}}</router-link></li>
+                    <li><router-link v-if="perm?.CadastroSubTema?.inserir&&activePdm.possui_sub_tema" to="/metas/subtemas/novo">{{activePdm.rotulo_sub_tema??'Subtema'}}</router-link></li>
+                    <li><router-link v-if="perm?.CadastroTag?.inserir" to="/metas/tags/novo">Tag</router-link></li>
                 </ul>
             </div>
         </div>
@@ -94,11 +94,11 @@ function groupSlug(s) {
                                     <div class="farol"></div>
                                     <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>
                                 </router-link>
-                                <router-link :to="`/metas/editar/${m.id}`" class="ml1 tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                <router-link v-if="perm?.CadastroMeta?.editar" :to="`/metas/editar/${m.id}`" class="ml1 tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </li>
                         </ul>
                         <hr class="mt1 mb1">
-                        <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar meta</span></router-link>
+                        <router-link v-if="perm?.CadastroMeta?.inserir" :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar meta</span></router-link>
                     </div>
                 </div>
             </template>

@@ -67,23 +67,23 @@ function groupSlug(s) {
         </div>
         <div class="mb2">
             <div class="label tc300">{{activePdm['rotulo_'+filters.groupBy]}}</div>
-            <h1>{{currentStore[currentStoreKey]?.descricao}}</h1>
+            <div class="t48 w700">{{currentStore[currentStoreKey]?.descricao}}</div>
         </div>
         
         <div class="boards">
             <template v-if="itemsFiltered.length">
-                <div class="bgc50 p1">
+                <div class="">
                     <ul class="metas">
                         <li class="meta flex center mb1" v-for="(m,i) in itemsFiltered">
                             <router-link :to="`/metas/${m.id}`" class="flex center f1">
                                 <div class="farol"></div>
                                 <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>
                             </router-link>
-                            <router-link :to="`/metas/editar/${m.id}`" class="f0 tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            <router-link v-if="perm?.CadastroMeta?.editar" :to="`/metas/editar/${m.id}`" class="f0 tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                         </li>
                     </ul>
                     <hr class="mt2 mb2"/>
-                    <div class="tc">
+                    <div class="tc bgc50 p1" v-if="perm?.CadastroMeta?.inserir">
                         <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${id}/novo`" class="btn big"><span>Adicionar meta</span></router-link>
                     </div>
                 </div>
