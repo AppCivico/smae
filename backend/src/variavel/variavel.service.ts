@@ -222,6 +222,6 @@ export class VariavelService {
     getEditExistingSerieJwt(id: number): string {
         return this.jwtService.sign({
             id: id,
-        }, { expiresIn: '30 d', audience: JWT_AUD });
+        }, { audience: JWT_AUD });
     }
 }
