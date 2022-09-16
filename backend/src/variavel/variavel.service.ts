@@ -14,12 +14,23 @@ export class VariavelService {
         private readonly prisma: PrismaService,
     ) { }
 
+    async buildVarResponsaveis(variableId: number, responsaveis: number[]): Promise<Prisma.VariavelResponsavelCreateManyInput[]> {
+        const arr: Prisma.VariavelResponsavelCreateManyInput[] = [];
+        for (const pessoaId of responsaveis) {
+            arr.push({
+                variavel_id: variableId,
+                pessoa_id: pessoaId
+            });
+        }
+        return arr;
+    }
+
     async create(createVariavelDto: CreateVariavelDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
         // TODO: verificar se o createVariavelDto.periodicidade é a mesma do indicador (por enquanto)
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            let r = createVariavelDto.responsaveis!;
+            let responsaveis = createVariavelDto.responsaveis!;
             delete createVariavelDto.responsaveis;
 
             const variavel = await prisma.variavel.create({
@@ -29,10 +40,12 @@ export class VariavelService {
                 select: { id: true }
             });
 
+            await prisma.variavelResponsavel.createMany({
+                data: await this.buildVarResponsaveis(variavel.id, responsaveis),
+            });
 
             return variavel;
         });
-
 
         return { id: created.id };
     }
