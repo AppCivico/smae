@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { BatchSerieUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
 import { ListPrevistoAgrupadas, ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
@@ -46,6 +47,17 @@ export class VariavelController {
     @Roles('CadastroIndicador.editar')
     async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
         return await this.variavelService.getSeriePrevisto(params.id);
+    }
+
+    @Patch(':id/serie-previsto')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async patchSeriePrevisto(@Body() params: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
+        //await this.variavelService.batchSeriePrevisto(params.id, user);
+
+        return;
     }
 
 }
