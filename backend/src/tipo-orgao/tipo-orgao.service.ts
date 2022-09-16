@@ -76,7 +76,7 @@ export class TipoOrgaoService {
         const existsDown = await this.prisma.orgao.count({
             where: { tipo_orgao_id: id, removido_em: null }
         });
-        if (existsDown > 0) throw new HttpException(`Não é possível remover: Há ${existsDown} órgão(ãos) depedentes.`, 400);
+        if (existsDown > 0) throw new HttpException(`Não é possível remover: Há ${existsDown} órgão(ãos) dependentes.`, 400);
 
         const created = await this.prisma.tipoOrgao.updateMany({
             where: { id: id },
