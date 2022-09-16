@@ -32,4 +32,12 @@ export class VariavelController {
         return { linhas: await this.variavelService.findAll(filters) };
     }
 
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.editar')
+    async update(@Param() params: FindOneParams, @Body() updateUnidadeMedidaDto: UpdateVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.variavelService.update(+params.id, updateUnidadeMedidaDto, user);
+    }
+
 }
