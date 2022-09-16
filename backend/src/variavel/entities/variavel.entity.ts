@@ -1,4 +1,4 @@
-import { Periodicidade } from "@prisma/client"
+import { Periodicidade, Serie } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
 import { OrgaoResumo } from "src/orgao/entities/orgao.entity"
 import { Regiao } from "src/regiao/entities/regiao.entity"
@@ -32,3 +32,16 @@ export class Variavel {
     indicador_variavel: IndicadorVariavel[]
 
 }
+
+export type SerieValorNomimal = {
+    valor_nomimal: Decimal,
+    data_valor: Date
+    referencia: string
+};
+
+export type SerieValores = Record<Serie, SerieValorNomimal[]>
+
+export class SerieValorPorPeriodo {
+    [ano: string]: SerieValores;
+}
+

@@ -1,12 +1,17 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '@prisma/client';
+import { Prisma, Serie } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { Date2YMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
+import { SerieValorPorPeriodo } from 'src/variavel/entities/variavel.entity';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
+
+const JWT_AUD = 'VS';
 
 @Injectable()
 export class VariavelService {
@@ -148,7 +153,7 @@ export class VariavelService {
     }
 
 
-    async update(id: number, updateVariavelDto: UpdateVariavelDto, user: PessoaFromJwt) {
+    async update(variavelId: number, updateVariavelDto: UpdateVariavelDto, user: PessoaFromJwt) {
 
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
 
@@ -157,22 +162,57 @@ export class VariavelService {
             delete updateVariavelDto.responsaveis;
 
             await prisma.variavel.updateMany({
-                where: { id: id },
+                where: { id: variavelId },
                 data: {
                     ...updateVariavelDto,
                 }
             });
 
             await prisma.variavelResponsavel.deleteMany({
-                where: { variavel_id: id }
+                where: { variavel_id: variavelId }
             })
 
             await prisma.variavelResponsavel.createMany({
-                data: await this.buildVarResponsaveis(id, responsaveis),
+                data: await this.buildVarResponsaveis(variavelId, responsaveis),
             });
         });
 
-        return { id: id };
+        return { id: variavelId };
     }
 
+    async getSeriePrevisto(variavelId: number) {
+
+        let currentValues = await this.prisma.serieVariavel.findMany({
+            where: {
+                variavel_id: variavelId,
+                serie: {
+                    in: ['Previsto', 'PrevistoAcumulado'],
+                }
+            },
+            select: {
+                valor_nominal: true,
+                id: true,
+                data_valor: true,
+                serie: true,
+            }
+        });
+
+        let porPeriodo: SerieValorPorPeriodo = {};
+        for (const serieValor of currentValues) {
+            porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)][serieValor.serie].push({
+                data_valor: serieValor.data_valor,
+                valor_nomimal: serieValor.valor_nominal,
+                referencia: this.getEditExistingSerieJwt(serieValor.id),
+            })
+        }
+
+        return porPeriodo;
+    }
+
+
+    getEditExistingSerieJwt(id: number): string {
+        return this.jwtService.sign({
+            id: id,
+        }, { expiresIn: '30 d', audience: JWT_AUD });
+    }
 }
