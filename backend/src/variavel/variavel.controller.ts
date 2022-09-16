@@ -49,13 +49,13 @@ export class VariavelController {
         return await this.variavelService.getSeriePrevisto(params.id);
     }
 
-    @Patch(':id/serie-previsto')
+    @Patch('series')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async patchSeriePrevisto(@Body() params: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
-        //await this.variavelService.batchSeriePrevisto(params.id, user);
+    async patchSeriePrevisto(@Body() series: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
+        await this.variavelService.batchUpsertSerie(series.valores, user);
 
         return;
     }
