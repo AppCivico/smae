@@ -183,7 +183,7 @@ export class VariavelService {
     }
 
     async getSeriePrevisto(variavelId: number) {
-        const indicador = await this.prisma.indicador.findFirstOrThrow({
+        const indicador = await this.prisma.indicador.findFirst({
             where: {
                 IndicadorVariavel: {
                     some: {
@@ -206,6 +206,9 @@ export class VariavelService {
                 }
             }
         });
+        if (!indicador)
+            throw new HttpException('Indicador ou variavel não encontrada', 404);
+
         const variavel = indicador.IndicadorVariavel[0].variavel;
 
         const currentValues = await this.prisma.serieVariavel.findMany({
