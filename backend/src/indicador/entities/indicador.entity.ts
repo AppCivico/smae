@@ -17,4 +17,5 @@ export class Indicador {
     regionalizavel: boolean
     inicio_medicao: Date
     fim_medicao: Date
+    nivel_regionalizacao: number | null
 }
