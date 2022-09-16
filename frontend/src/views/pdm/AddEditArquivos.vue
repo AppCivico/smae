@@ -52,7 +52,6 @@ async function onSubmit(values) {
 
         let u = await requestS.upload(`${baseUrl}/upload`, formData)
         if(u.upload_token){
-            curfile.loading = false;
             r = await PdMStore.insertArquivo(pdm_id,{upload_token: u.upload_token});
             if(r == true){
                 msg = 'Item adicionado com sucesso!';
@@ -61,6 +60,7 @@ async function onSubmit(values) {
                 editModalStore.clear();
                 if(props.parentPage=='pdm') PdMStore.filterPdM();
                 await router.push('/'+props.parentPage);
+                curfile.loading = false;
             }
         }else{
             curfile.loading = false;
