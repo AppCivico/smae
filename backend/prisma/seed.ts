@@ -92,14 +92,20 @@ const PrivConfig: any = {
         ['CadastroMeta.ativar', 'Ativar Metas'],
     ],
     CadastroIndicador: [
-        ['CadastroIndicador.inserir', 'Inserir Indicadores'],
-        ['CadastroIndicador.editar', 'Editar Indicadores'],
-        ['CadastroIndicador.remover', 'Remover Indicadores'],
-        ['CadastroIndicador.inativar', 'Inativar Indicadores'],
-        ['CadastroIndicador.ativar', 'Ativar Indicadores'],
+        // quem puder editar ou inserir indicador, vai poder gerenciar as variáveis
+        ['CadastroIndicador.inserir', 'Inserir Indicadores e variáveis'],
+        ['CadastroIndicador.editar', 'Editar Indicadores e variáveis'],
+        ['CadastroIndicador.remover', 'Remover Indicadores e variáveis'],
+        ['CadastroIndicador.inativar', 'Inativar Indicadores e variáveis'],
+        ['CadastroIndicador.ativar', 'Ativar Indicadores e variáveis'],
+    ],
+    CadastroUnidadeMedida: [
+        ['CadastroUnidadeMedida.inserir', 'Inserir Unidade de Medida'],
+        ['CadastroUnidadeMedida.editar', 'Editar Unidade de Medida'],
+        ['CadastroUnidadeMedida.remover', 'Remover Unidade de Medida'],
     ],
     PDM: [
-        ['PDM.coorderandor_responsavel_cp', 'Coordenador Reponsável CP']
+        ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP']
     ]
 };
 
@@ -118,8 +124,8 @@ const ModuloDescricao: any = {
     CadastroRegiao: 'Cadastro de Regiões',
     CadastroMeta: 'Cadastro de Metas',
     CadastroIndicador: 'Cadastro de Indicadores',
+    CadastroUnidadeMedida: 'Cadastro de Unidade de Medidas',
     PDM: 'Regras de Negocio do PDM',
-
 };
 
 let todosPrivilegios: string[] = [];
@@ -389,7 +395,7 @@ async function atualizar_perfil_acesso() {
                     descricao: perfilAcessoConf.descricao,
                 }, select: { id: true }
             });
-        }else{
+        } else {
             await prisma.perfilAcesso.updateMany({
                 where: {
                     id: perfilAcesso.id

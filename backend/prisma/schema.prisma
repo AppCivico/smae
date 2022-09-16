@@ -97,6 +97,11 @@ model Pessoa {
     IndicadorQueRemovi    Indicador[] @relation("Removedor")
     IndicadorQueAtualizei Indicador[] @relation("Atualizador")
 
+    UnidadeQueCriei     UnidadeMedida[]     @relation("Criador")
+    UnidadeQueRemovi    UnidadeMedida[]     @relation("Removedor")
+    UnidadeQueAtualizei UnidadeMedida[]     @relation("Atualizador")
+    IndicadorVariavel   IndicadorVariavel[] @relation("Desativador")
+
     @@map("pessoa")
 }
 
@@ -129,6 +134,7 @@ model Orgao {
     removedor        Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
     meta_orgao       MetaOrgao[]
     meta_responsavel MetaResponsavel[]
+    Variavel         Variavel[]
 
     @@map("orgao")
 }
@@ -479,10 +485,12 @@ model Regiao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador   Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador       Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
-    removedor     Pessoa?  @relation("Removedor", fields: [removido_por], references: [id])
-    RegioesAbaixo Regiao[] @relation("Parente")
+    atualizador    Pessoa?          @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador        Pessoa?          @relation("Criador", fields: [criado_por], references: [id])
+    removedor      Pessoa?          @relation("Removedor", fields: [removido_por], references: [id])
+    RegioesAbaixo  Regiao[]         @relation("Parente")
+    Variavel       Variavel[]
+    SerieIndicador SerieIndicador[]
 
     @@map("regiao")
 }
@@ -645,9 +653,110 @@ model Indicador {
     removido_por     Int?
     removido_em      DateTime?     @db.Timestamptz(6)
 
+    atualizador       Pessoa?             @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador           Pessoa?             @relation("Criador", fields: [criado_por], references: [id])
+    removedor         Pessoa?             @relation("Removedor", fields: [removido_por], references: [id])
+    IndicadorVariavel IndicadorVariavel[]
+    SerieIndicador    SerieIndicador[]
+
+    @@map("indicador")
+}
+
+enum Serie {
+    Previsto
+    Realizado
+    PrevistoAcumulado
+    RealizadoAcumulado
+}
+
+// create + list + edit
+// delete soft, nao valide agora se tem variavel ainda usando
+model UnidadeMedida {
+    id        Int        @id @default(autoincrement())
+    sigla     String
+    descricao String
+    Variavel  Variavel[]
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    @@map("indicador")
+    @@map("unidade_medida")
+}
+
+model Variavel {
+    id                Int           @id @default(autoincrement())
+    orgao_id          Int // ? quem vai ser responsavel pelo preenchimento?
+    orgao             Orgao         @relation(fields: [orgao_id], references: [id])
+    regiao_id         Int?
+    // se implementar com a regiao agora, o usuario precisa criar cada uma das variaveis
+    // manualmente
+    regiao            Regiao?       @relation(fields: [regiao_id], references: [id])
+    titulo            String
+    valor_base        Decimal       @db.Decimal(65, 30) // onde o grafico começa
+    periodicidade     Periodicidade
+    unidade_medida_id Int
+    unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
+
+    peso          Int? // ? mais um item que nao sei ainda como usar, talvez alguma conta diferente na hora de calular os percentuais
+    acumulativa   Boolean         @default(false) // quando true, o sistema vai calcular automaticamente a serie acumulativa
+    // quando false, o usuario precisa preencher, mas sempre via ter as 4 series, correto?
+    SerieVariavel SerieVariavel[]
+
+    @@map("variavel")
+}
+
+// cria relacionamento com um indicador (ou iniciativa que ainda nao existe) com a variavel
+
+model IndicadorVariavel {
+    id           Int       @id @default(autoincrement())
+    // talvez pode ser nulo mais pra frente quando tiver iniciativa, ou sempre q tiver iniciativa
+    indicador_id Int
+    indicador    Indicador @relation(fields: [indicador_id], references: [id])
+
+    desativado     Boolean   @default(false)
+    desativado_em  DateTime?
+    desativado_por Int?
+    desativador    Pessoa?   @relation("Desativador", fields: [desativado_por], references: [id])
+
+    @@map("indicador_variavel")
+}
+
+// valores calculados pelo sistema, deixar vazio por enquanto Lucas
+model SerieIndicador {
+    id           Int       @id @default(autoincrement())
+    indicador_id Int // mesma coisa, talvez pode ser nulo mais pra frente quando tiver iniciativa
+    indicador    Indicador @relation(fields: [indicador_id], references: [id])
+    regiao_id    Int?
+    regiao       Regiao?   @relation(fields: [regiao_id], references: [id])
+
+    serie Serie
+
+    // campo do tipo data para suportar valores diarios/mensais
+    data_valor       DateTime @db.Date()
+    valor_nominal    Decimal  @db.Decimal(65, 30)
+    valor_percentual Decimal  @db.Decimal(65, 30)
+
+    @@map("serie_indicador")
+}
+
+model SerieVariavel {
+    id          Int      @id @default(autoincrement())
+    variavel_id Int
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    serie Serie
+
+    data_valor       DateTime @db.Date()
+    valor_nominal    Decimal  @db.Decimal(65, 30)
+    valor_percentual Decimal  @db.Decimal(65, 30)
+
+    @@map("serie_variavel")
 }
