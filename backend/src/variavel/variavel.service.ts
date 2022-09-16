@@ -7,7 +7,8 @@ import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
-import { SerieValorPorPeriodo } from 'src/variavel/entities/variavel.entity';
+import { ListPrevistoAgrupadas } from 'src/variavel/dto/list-variavel.dto';
+import { SerieValorNomimal, SerieValorPorPeriodo } from 'src/variavel/entities/variavel.entity';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
@@ -107,6 +108,7 @@ export class VariavelService {
                 id: true,
                 titulo: true,
                 acumulativa: true,
+                casas_decimais: true,
                 unidade_medida: {
                     select: {
                         id: true,
@@ -196,6 +198,7 @@ export class VariavelService {
                     select: {
                         variavel: {
                             select: {
+                                casas_decimais: true,
                                 periodicidade: true
                             }
                         }
@@ -203,6 +206,7 @@ export class VariavelService {
                 }
             }
         });
+        const variavel = indicador.IndicadorVariavel[0].variavel;
 
         let currentValues = await this.prisma.serieVariavel.findMany({
             where: {
@@ -223,30 +227,56 @@ export class VariavelService {
         for (const serieValor of currentValues) {
             if (!porPeriodo[Date2YMD.toString(serieValor.data_valor)]) {
                 porPeriodo[Date2YMD.toString(serieValor.data_valor)] = {
-                    Previsto: [],
-                    PrevistoAcumulado: [],
-                    Realizado: [],
-                    RealizadoAcumulado: []
+                    Previsto: undefined,
+                    PrevistoAcumulado: undefined,
+                    Realizado: undefined,
+                    RealizadoAcumulado: undefined,
                 };
             }
 
-            porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie].push({
-                data_valor: serieValor.data_valor,
+            porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
+                data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nomimal: serieValor.valor_nominal,
                 referencia: this.getEditExistingSerieJwt(serieValor.id),
-            })
+            }
         }
 
 
-        let periodos = await this.geraPeriodo(indicador.inicio_medicao, indicador.fim_medicao, indicador.IndicadorVariavel[0].variavel.periodicidade)
+        let result: ListPrevistoAgrupadas = {
+            variavel: {
+                id: variavelId,
+                casas_decimais: variavel.casas_decimais,
+            },
+            previsto: [],
+        };
+        let periodos = await this.geraPeriodo(indicador.inicio_medicao, indicador.fim_medicao, variavel.periodicidade)
         for (const periodo of periodos) {
 
+            const existeValor = porPeriodo[periodo];
+            if (existeValor && (existeValor.Previsto || existeValor.PrevistoAcumulado)) {
 
+                let seriesExistentes: SerieValorNomimal[] = [];
+
+                if (existeValor.Previsto) {
+                    seriesExistentes.push(existeValor.Previsto);
+                }
+
+                if (existeValor.PrevistoAcumulado) {
+                    seriesExistentes.push(existeValor.PrevistoAcumulado);
+                }
+
+                // TODO: botar o label de acordo com a periodicidade"
+                result.previsto.push({
+                    periodo: periodo,
+                    agrupador: periodo,
+                    series: seriesExistentes,
+                })
+            }
 
 
         }
 
-        return periodos;
+        return result;
     }
 
 
