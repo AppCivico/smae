@@ -42,6 +42,6 @@ export type SerieValorNomimal = {
 export type SerieValores = Record<Serie, SerieValorNomimal[]>
 
 export class SerieValorPorPeriodo {
-    [ano: string]: SerieValores;
+    [periodo: string]: SerieValores;
 }
 
