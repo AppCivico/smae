@@ -197,13 +197,15 @@ export class VariavelService {
             }
         });
 
-        let porPeriodo: SerieValorPorPeriodo = {};
+        let porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
         for (const serieValor of currentValues) {
+            console.log({ serieValor, porPeriodo: porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)] })
 
             if (!porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)]) {
                 porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)].Previsto = [];
                 porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)].PrevistoAcumulado = [];
             }
+            console.log({ x: Date2YMD.fromUTC(serieValor.data_valor), porPeriodo: porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)] })
 
             porPeriodo[Date2YMD.fromUTC(serieValor.data_valor)][serieValor.serie].push({
                 data_valor: serieValor.data_valor,
