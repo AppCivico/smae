@@ -3,7 +3,7 @@ import { IsBoolean, IsOptional, IsPositive } from "class-validator";
 
 export class FilterVariavelDto {
     /**
-   * Filtrar por meta_id?
+   * Filtrar por meta_id? (Se usado, não pode filtra via indicador_id)
    * @example "1"
     */
     @IsOptional()
@@ -12,7 +12,7 @@ export class FilterVariavelDto {
     meta_id?: number;
 
     /**
-  * Filtrar por indicador_id?
+  * Filtrar por indicador_id? (Se usado, não pode filtra via meta_id)
   * @example "1"
    */
     @IsOptional()
