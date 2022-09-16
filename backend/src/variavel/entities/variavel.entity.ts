@@ -1,5 +1,6 @@
 import { Periodicidade, Serie } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
+import { DateYMD } from "src/common/date2ymd"
 import { OrgaoResumo } from "src/orgao/entities/orgao.entity"
 import { Regiao } from "src/regiao/entities/regiao.entity"
 import { UnidadeMedida } from "src/unidade-medida/entities/unidade-medida.entity"
@@ -33,15 +34,30 @@ export class Variavel {
 
 }
 
-export type SerieValorNomimal = {
-    valor_nomimal: Decimal,
-    data_valor: Date
+export class SerieValorNomimal {
+    valor_nomimal: Decimal
     referencia: string
+    data_valor: Date
 };
 
 export type SerieValores = Record<Serie, SerieValorNomimal[]>
 
 export class SerieValorPorPeriodo {
-    [periodo: string]: SerieValores;
+    [periodo: DateYMD]: SerieValores;
 }
 
+export class SeriesAgrupadas {
+    /**
+     * categoria do batch
+     * @example "2020"
+     */
+    agrupador: string
+
+    /**
+     * "Fevereiro 2021"
+     * @example "Fevereiro 2021"
+     */
+    periodo: string
+
+    series: SerieValorNomimal[]
+}

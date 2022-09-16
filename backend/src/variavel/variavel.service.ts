@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Periodicidade, Prisma, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { Date2YMD } from 'src/common/date2ymd';
+import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
@@ -237,9 +237,14 @@ export class VariavelService {
             })
         }
 
+
         let periodos = await this.geraPeriodo(indicador.inicio_medicao, indicador.fim_medicao, indicador.IndicadorVariavel[0].variavel.periodicidade)
+        for (const periodo of periodos) {
 
 
+
+
+        }
 
         return periodos;
     }
@@ -252,7 +257,7 @@ export class VariavelService {
     }
 
 
-    async geraPeriodo(start: Date, end: Date, periodicidade: Periodicidade): Promise<string[]> {
+    async geraPeriodo(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
 
         const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
         const periodPg: Record<Periodicidade, string> = {
