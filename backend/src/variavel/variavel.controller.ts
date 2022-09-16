@@ -9,8 +9,8 @@ import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
-@ApiTags('Unidade de Órgão')
-@Controller('unidade-medida')
+@ApiTags('Indicador')
+@Controller('indicador/variavel')
 export class VariavelController {
     constructor(private readonly variavelService: VariavelService) { }
 
@@ -21,7 +21,7 @@ export class VariavelController {
     async create(@Body() createVariavelDto: CreateVariavelDto, @CurrentUser() user: PessoaFromJwt) {
         //return await this.variavelService.create(createVariavelDto, user);
 
-        return 'TODO'
+        return createVariavelDto
     }
 
 }
