@@ -10,6 +10,7 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
 import { ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
+import { SerieValorPorPeriodo } from 'src/variavel/entities/variavel.entity';
 
 @ApiTags('Indicador')
 @Controller('indicador-variavel')
@@ -38,6 +39,14 @@ export class VariavelController {
     @Roles('CadastroIndicador.editar')
     async update(@Param() params: FindOneParams, @Body() updateUnidadeMedidaDto: UpdateVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.variavelService.update(+params.id, updateUnidadeMedidaDto, user);
+    }
+
+    @Get(':id/serie-previsto')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.editar')
+    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<SerieValorPorPeriodo> {
+        return await this.variavelService.getSeriePrevisto(params.id);
     }
 
 }
