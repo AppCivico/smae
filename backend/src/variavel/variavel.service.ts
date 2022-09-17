@@ -250,6 +250,7 @@ export class VariavelService {
                 toDecimalPlaces: serieValor.valor_nominal.toDecimalPlaces(),
                 toDecimalPlaces99: serieValor.valor_nominal.toDecimalPlaces(99),
                 decimalPlaces: serieValor.valor_nominal.decimalPlaces(),
+                precision: serieValor.valor_nominal.precision(),
             });
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
