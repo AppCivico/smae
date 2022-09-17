@@ -5,4 +5,17 @@ export class Date2YMD {
         const str = d.toISOString();
         return str.substring(0, 10)
     }
+
+    static fromString(data: string) {
+        try {
+            const year = +data.substring(0, 4);
+            const month = +data.substring(5, 7);
+            const day = +data.substring(8, 10);
+            return new Date(Date.UTC(year, month - 1, day));
+        } catch (error) {
+            throw `Data inválida: ${data}`
+        }
+    }
+
+
 }
