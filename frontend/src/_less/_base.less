@@ -266,6 +266,7 @@
 			}
 		}
 		&:checked + span:before{background: url("@{u}check.svg") center no-repeat @amarelo; background-size: 1.5rem;}
+		&:disabled + span:before{background-color: @c100; border-color: @c300;}
 	}
 	.inputtext{
 		display: block; width: 100%; max-width: 100%;
@@ -423,6 +424,12 @@
 				border-bottom-color: @primary;
 				border-left-color: @primary;
 				transform: rotate(-45deg);
+			}
+		}
+		&.right{
+			>div{
+				transform: translateX(2rem);
+				&:before{left: auto; right: 2rem;}
 			}
 		}
 		&:hover{

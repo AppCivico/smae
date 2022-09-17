@@ -14,3 +14,4 @@ export * from './tags.store';
 export * from './regions.store';
 export * from './metas.store';
 export * from './indicadores.store';
+export * from './variaveis.store';
