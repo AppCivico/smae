@@ -9,7 +9,7 @@ import { VariavelService } from './variavel.service';
         PrismaModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + 'for-variables',
-            signOptions: { expiresIn: '30d' },
+            signOptions: { expiresIn: '1d' },
         })
     ],
     controllers: [VariavelController],
