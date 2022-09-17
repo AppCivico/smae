@@ -245,7 +245,7 @@ export class VariavelService {
 
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
-                valor_nominal: serieValor.valor_nominal,
+                valor_nominal: serieValor.valor_nominal.toString(),
                 referencia: this.getEditExistingSerieJwt(serieValor.id),
             }
         }
@@ -308,7 +308,7 @@ export class VariavelService {
         return {
             data_valor: periodo,
             referencia: this.getEditNonExistingSerieJwt(variavelId, periodo, serie),
-            valor_nominal: null
+            valor_nominal: ''
         }
     }
 

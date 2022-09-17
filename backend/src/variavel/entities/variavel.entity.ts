@@ -42,7 +42,7 @@ export class SerieValorNomimal {
      * @example "880.12359876352"
      */
     @IsString()
-    valor_nominal: Decimal | null
+    valor_nominal: string
 
     /**
      * token para editar/criar este valor
