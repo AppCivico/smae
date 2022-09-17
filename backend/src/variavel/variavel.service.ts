@@ -354,7 +354,7 @@ export class VariavelService {
 
     validarValoresJwt(valores: SerieUpsert[]): ValidatedUpsert[] {
         const valids: ValidatedUpsert[] = [];
-
+        console.log({ log: 'validation', valores })
         for (const valor of valores) {
             let referenciaDecoded: SerieJwt | null = null;
             try {
@@ -367,7 +367,7 @@ export class VariavelService {
 
             valids.push({ valor: valor.valor, referencia: referenciaDecoded });
         }
-
+        console.log({ log: 'validation', valids })
         return valids;
     }
 
@@ -414,7 +414,7 @@ export class VariavelService {
                 }// else "não há valor" e não tem ID, ou seja, n precisa acontecer nada no banco
 
             }
-
+            console.log({ idsToBeRemoved, anySerieIsToBeCreatedOnVariable, updatePromises, createList })
             // apenas um select pra forçar o banco fazer o serialize na variavel
             // ja que o prisma não suporta 'select for update'
             if (anySerieIsToBeCreatedOnVariable)
