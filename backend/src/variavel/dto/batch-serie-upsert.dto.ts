@@ -1,5 +1,5 @@
 import { Serie } from "@prisma/client"
-import { IsNumberString, IsString, ValidateIf } from "class-validator"
+import { IsArray, isArray, IsNumberString, IsString, ValidateIf } from "class-validator"
 
 export class ExistingSerieJwt {
     id: number
@@ -42,5 +42,6 @@ export class SerieUpsert {
 }
 
 export class BatchSerieUpsert {
+    @IsArray({ message: 'Precisa ser um array'})
     valores: SerieUpsert[]
 }
