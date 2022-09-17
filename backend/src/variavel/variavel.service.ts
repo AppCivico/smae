@@ -378,7 +378,7 @@ export class VariavelService {
 
         const valoresValidos = this.validarValoresJwt(valores);
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        await this.prisma.$transaction(async (primaTnx: Prisma.TransactionClient) => {
 
             const idsToBeRemoved: number[] = [];
             const updatePromises: Promise<any>[] = [];
@@ -392,7 +392,7 @@ export class VariavelService {
                 } else if (valor.valor) {
 
                     if ("id" in valor.referencia) {
-                        updatePromises.push(this.prisma.serieVariavel.updateMany({
+                        updatePromises.push(primaTnx.serieVariavel.updateMany({
                             where: { id: valor.referencia.id },
                             data: {
                                 valor_nominal: valor.valor,
@@ -418,18 +418,18 @@ export class VariavelService {
             // apenas um select pra forçar o banco fazer o serialize na variavel
             // ja que o prisma não suporta 'select for update'
             if (anySerieIsToBeCreatedOnVariable)
-                await this.prisma.variavel.findFirst({ where: { id: anySerieIsToBeCreatedOnVariable }, select: { id: true } });
+                await primaTnx.variavel.findFirst({ where: { id: anySerieIsToBeCreatedOnVariable }, select: { id: true } });
 
             if (updatePromises.length)
                 await Promise.all(updatePromises);
 
             // TODO: maybe pode verificar aqui o resultado e fazer o excpetion caso tenha removido alguma
             if (createList.length)
-                await this.prisma.serieVariavel.deleteMany({
+                await primaTnx.serieVariavel.deleteMany({
                     where: {
                         'OR': createList.map((e) => {
                             return {
-                                data_valor: e.data_valor,
+                                data_valor: Date2YMD.fromString(e.data_valor as string),
                                 variavel_id: e.variavel_id,
                                 serie: e.serie,
                             }
