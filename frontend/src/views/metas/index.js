@@ -4,3 +4,5 @@ export { default as ListMetasGroup } from './ListItemsGroup.vue';
 export { default as SingleMeta } from './Single.vue';
 export { default as AddEditIndicador } from './AddEditIndicador.vue';
 export { default as SingleMetaEvolucao } from './SingleMetaEvolucao.vue';
+export { default as AddEditVariavel } from './AddEditVariavel.vue';
+export { default as AddEditValores } from './AddEditValores.vue';

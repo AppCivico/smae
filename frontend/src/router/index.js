@@ -99,6 +99,9 @@ export const router = createRouter({
                 { path: ':meta_id', component: SingleMeta, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/novo', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props:{group:"valores",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao', component: SingleMetaEvolucao, props:{submenu:SubmenuMetas} },
             ]
         },

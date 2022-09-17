@@ -8,7 +8,7 @@ export const useIndicadoresStore = defineStore({
     state: () => ({
         Indicadores: {},
         tempIndicadores: {},
-        agregadores: {},
+        agregadores: {}
     }),
     actions: {
         clear (){
