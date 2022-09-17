@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SerieUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
+import { ExistingSerieJwt, NonExistingSerieJwt, SerieJwt, SerieUpsert, ValidatedUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
 import { ListPrevistoAgrupadas } from 'src/variavel/dto/list-variavel.dto';
 import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from 'src/variavel/entities/variavel.entity';
@@ -307,24 +307,25 @@ export class VariavelService {
     buildNonExistingSerieValor(periodo: DateYMD, variavelId: number, serie: Serie): SerieValorNomimal {
         return {
             data_valor: periodo,
-            referencia: this.getEditNotExistingSerieJwt(variavelId, periodo, serie),
+            referencia: this.getEditNonExistingSerieJwt(variavelId, periodo, serie),
             valor_nominal: null
         }
     }
 
 
     getEditExistingSerieJwt(id: number): string {
+        // TODO opcionalmente adicionar o modificado_em aqui
         return this.jwtService.sign({
             id: id,
-        });
+        } as ExistingSerieJwt);
     }
 
-    getEditNotExistingSerieJwt(variavelId: number, period: DateYMD, serie: Serie): string {
+    getEditNonExistingSerieJwt(variavelId: number, period: DateYMD, serie: Serie): string {
         return this.jwtService.sign({
             p: period,
             v: variavelId,
             s: serie
-        });
+        } as NonExistingSerieJwt);
     }
 
     async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
@@ -351,9 +352,110 @@ export class VariavelService {
         return dados.map((e) => e.dt);
     }
 
-    async batchUpsertSerie(valores: SerieUpsert[], user: PessoaFromJwt) {
+    validarValoresJwt(valores: SerieUpsert[]): ValidatedUpsert[] {
+        const valids: ValidatedUpsert[] = [];
 
-        throw new Error('Method not implemented.');
+        for (const valor of valores) {
+            let referenciaDecoded: SerieJwt | null = null;
+            try {
+                referenciaDecoded = this.jwtService.decode(valor.referencia) as SerieJwt;
+            } catch (error) {
+                console.log(error)
+            }
+            if (!referenciaDecoded)
+                throw new HttpException('Tempo para edição dos valores já expirou. Abra em uma nova aba e faça o preenchimento novamente.', 400);
+
+            valids.push({ valor: valor.valor, referencia: referenciaDecoded });
+        }
+
+        return valids;
+    }
+
+    async batchUpsertSerie(valores: SerieUpsert[], user: PessoaFromJwt) {
+        // TODO opcionalmente verificar se o modificado_em de todas as variaveis ainda é igual
+        // em relação ao momento JWT foi assinado, pra evitar sobresecrita da informação sem aviso para o usuário
+        // da mesma forma, ao buscar os que não tem ID, não deve existir outro valor já existente no periodo
+
+        const valoresValidos = this.validarValoresJwt(valores);
+
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+
+            const idsToBeRemoved: number[] = [];
+            const updatePromises: Promise<any>[] = [];
+            const createList: Prisma.SerieVariavelUncheckedCreateInput[] = [];
+            let anySerieIsToBeCreatedOnVariable: number | undefined;
+
+            for (const valor of valoresValidos) {
+                // busca os valores vazios mas que já existem, para serem removidos
+                if (valor.valor === '' && "id" in valor.referencia) {
+                    idsToBeRemoved.push(valor.referencia.id)
+                } else if (valor.valor) {
+
+                    if ("id" in valor.referencia) {
+                        updatePromises.push(this.prisma.serieVariavel.updateMany({
+                            where: { id: valor.referencia.id },
+                            data: {
+                                valor_nominal: valor.valor,
+                                atualizado_em: new Date(Date.now()),
+                                atualizado_por: user.id,
+                            }
+                        }));
+                    } else {
+                        if (!anySerieIsToBeCreatedOnVariable)
+                            anySerieIsToBeCreatedOnVariable = valor.referencia.v;
+                        createList.push({
+                            valor_nominal: valor.valor,
+                            variavel_id: valor.referencia.v,
+                            serie: valor.referencia.s,
+                            data_valor: valor.referencia.p,
+                        });
+                    }
+
+                }// else "não há valor" e não tem ID, ou seja, n precisa acontecer nada no banco
+
+            }
+
+            // apenas um select pra forçar o banco fazer o serialize na variavel
+            // ja que o prisma não suporta 'select for update'
+            if (anySerieIsToBeCreatedOnVariable)
+                await this.prisma.variavel.findFirst({ where: { id: anySerieIsToBeCreatedOnVariable }, select: { id: true } });
+
+            if (updatePromises.length)
+                await Promise.all(updatePromises);
+
+            // TODO: maybe pode verificar aqui o resultado e fazer o excpetion caso tenha removido alguma
+            if (createList.length)
+                await this.prisma.serieVariavel.deleteMany({
+                    where: {
+                        'OR': createList.map((e) => {
+                            return {
+                                data_valor: e.data_valor,
+                                variavel_id: e.variavel_id,
+                                serie: e.serie,
+                            }
+                        })
+                    }
+                });
+
+            // ja este delete é esperado caso tenha valores pra ser removidos
+            if (idsToBeRemoved.length)
+                await this.prisma.serieVariavel.deleteMany({
+                    where: {
+                        'id': { 'in': idsToBeRemoved }
+                    }
+                });
+
+            if (createList.length)
+                await this.prisma.serieVariavel.createMany({
+                    data: createList
+                });
+
+        }, {
+            isolationLevel: 'Serializable',
+            maxWait: 15000,
+            timeout: 25000,
+        });
+
     }
 
 

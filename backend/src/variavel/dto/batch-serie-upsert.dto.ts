@@ -1,4 +1,28 @@
+import { Serie } from "@prisma/client"
 import { IsNumberString, IsString, ValidateIf } from "class-validator"
+
+export class ExistingSerieJwt {
+    id: number
+}
+
+export class NonExistingSerieJwt {
+    p: string
+    v: number
+    s: Serie
+}
+
+export type SerieJwt = ExistingSerieJwt | NonExistingSerieJwt
+
+export class ValidatedUpsert {
+    valor: string
+
+    /**
+     * referencia do valor pra ser criado/atualizado
+     * @example "token.nao-tao-grande.assim"
+     * */
+    @IsString()
+    referencia: SerieJwt
+}
 
 export class SerieUpsert {
     /**
