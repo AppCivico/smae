@@ -407,7 +407,7 @@ export class VariavelService {
                             valor_nominal: valor.valor,
                             variavel_id: valor.referencia.v,
                             serie: valor.referencia.s,
-                            data_valor: valor.referencia.p,
+                            data_valor: Date2YMD.fromString(valor.referencia.p)
                         });
                     }
 
@@ -429,7 +429,7 @@ export class VariavelService {
                     where: {
                         'OR': createList.map((e) => {
                             return {
-                                data_valor: Date2YMD.fromString(e.data_valor as string),
+                                data_valor: e.data_valor,
                                 variavel_id: e.variavel_id,
                                 serie: e.serie,
                             }
