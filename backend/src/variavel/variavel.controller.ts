@@ -13,11 +13,11 @@ import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { VariavelService } from './variavel.service';
 
 @ApiTags('Indicador')
-@Controller('indicador-variavel')
+@Controller('')
 export class VariavelController {
     constructor(private readonly variavelService: VariavelService) { }
 
-    @Post()
+    @Post('indicador-variavel')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.inserir')
@@ -25,7 +25,7 @@ export class VariavelController {
         return await this.variavelService.create(createVariavelDto, user);
     }
 
-    @Get()
+    @Get('indicador-variavel')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.inserir', 'CadastroIndicador.editar')
@@ -33,7 +33,7 @@ export class VariavelController {
         return { linhas: await this.variavelService.findAll(filters) };
     }
 
-    @Patch(':id')
+    @Patch('indicador-variavel/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
@@ -42,7 +42,7 @@ export class VariavelController {
     }
 
     // patch precisa ficar antes da rota do :id/serie-previsto
-    @Patch('series')
+    @Patch('indicador-variavel-serie')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
@@ -53,7 +53,7 @@ export class VariavelController {
         return;
     }
 
-    @Get(':id/serie-previsto')
+    @Get('indicador-variavel/:id/serie-previsto')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
