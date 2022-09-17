@@ -92,21 +92,10 @@ export class UnidadeMedidaService {
         const self = await this.prisma.unidadeMedida.findFirst({ where: { id: id }, select: { id: true } });
         if (!self) throw new HttpException('Unidade de medida não encontrada', 404);
 
+        // TODO verificar apenas em PDM ativos?
         const existsDown = await this.prisma.variavel.count({
             where: {
                 unidade_medida_id: id,
-
-                orgao: {
-                    meta_orgao: {
-                        every: {
-                            meta: {
-                                pdm: {
-                                    ativo: true
-                                }
-                            }
-                        }
-                    }
-                }
             }
         });
         if (existsDown > 0) throw new HttpException(`Não é possível remover: Há ${existsDown} variáveis dependentes.`, 400);
