@@ -1,3 +1,4 @@
 .vstags
 .env
 .vscode
+.~lock*

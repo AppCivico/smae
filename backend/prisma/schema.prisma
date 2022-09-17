@@ -97,10 +97,12 @@ model Pessoa {
     IndicadorQueRemovi    Indicador[] @relation("Removedor")
     IndicadorQueAtualizei Indicador[] @relation("Atualizador")
 
-    UnidadeQueCriei     UnidadeMedida[]     @relation("Criador")
-    UnidadeQueRemovi    UnidadeMedida[]     @relation("Removedor")
-    UnidadeQueAtualizei UnidadeMedida[]     @relation("Atualizador")
-    IndicadorVariavel   IndicadorVariavel[] @relation("Desativador")
+    UnidadeQueCriei     UnidadeMedida[]       @relation("Criador")
+    UnidadeQueRemovi    UnidadeMedida[]       @relation("Removedor")
+    UnidadeQueAtualizei UnidadeMedida[]       @relation("Atualizador")
+    IndicadorVariavel   IndicadorVariavel[]   @relation("Desativador")
+    VariavelResponsavel VariavelResponsavel[]
+    SerieVariavel       SerieVariavel[]
 
     @@map("pessoa")
 }
@@ -633,25 +635,26 @@ enum Periodicidade {
 }
 
 model Indicador {
-    id               Int           @id @default(autoincrement())
-    meta_id          Int
-    meta             Meta          @relation(fields: [meta_id], references: [id])
-    agregador_id     Int
-    agregador        Agregador     @relation(fields: [agregador_id], references: [id])
-    janela_agregador Int?
-    codigo           String
-    titulo           String
-    periodicidade    Periodicidade
-    polaridade       Polaridade    @default(Neutra)
-    regionalizavel   Boolean       @default(false)
-    inicio_medicao   DateTime      @db.Date()
-    fim_medicao      DateTime      @db.Date()
-    criado_por       Int?
-    criado_em        DateTime      @default(now()) @db.Timestamptz(6)
-    atualizado_por   Int?
-    atualizado_em    DateTime      @default(now()) @db.Timestamptz(6)
-    removido_por     Int?
-    removido_em      DateTime?     @db.Timestamptz(6)
+    id                   Int           @id @default(autoincrement())
+    meta_id              Int
+    meta                 Meta          @relation(fields: [meta_id], references: [id])
+    agregador_id         Int
+    agregador            Agregador     @relation(fields: [agregador_id], references: [id])
+    janela_agregador     Int?
+    codigo               String
+    titulo               String
+    periodicidade        Periodicidade
+    polaridade           Polaridade    @default(Neutra)
+    regionalizavel       Boolean       @default(false)
+    nivel_regionalizacao Int?
+    inicio_medicao       DateTime      @db.Date()
+    fim_medicao          DateTime      @db.Date()
+    criado_por           Int?
+    criado_em            DateTime      @default(now()) @db.Timestamptz(6)
+    atualizado_por       Int?
+    atualizado_em        DateTime      @default(now()) @db.Timestamptz(6)
+    removido_por         Int?
+    removido_em          DateTime?     @db.Timestamptz(6)
 
     atualizador       Pessoa?             @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador           Pessoa?             @relation("Criador", fields: [criado_por], references: [id])
@@ -664,13 +667,11 @@ model Indicador {
 
 enum Serie {
     Previsto
-    Realizado
     PrevistoAcumulado
+    Realizado
     RealizadoAcumulado
 }
 
-// create + list + edit
-// delete soft, nao valide agora se tem variavel ainda usando
 model UnidadeMedida {
     id        Int        @id @default(autoincrement())
     sigla     String
@@ -691,13 +692,22 @@ model UnidadeMedida {
     @@map("unidade_medida")
 }
 
+model VariavelResponsavel {
+    id Int @id @default(autoincrement())
+
+    variavel_id Int
+    pessoa_id   Int
+
+    pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
+    variavel Variavel @relation(fields: [variavel_id], references: [id])
+}
+
 model Variavel {
     id                Int           @id @default(autoincrement())
-    orgao_id          Int // ? quem vai ser responsavel pelo preenchimento?
+    orgao_id          Int
     orgao             Orgao         @relation(fields: [orgao_id], references: [id])
     regiao_id         Int?
-    // se implementar com a regiao agora, o usuario precisa criar cada uma das variaveis
-    // manualmente
+    //a regiao por agora, o usuario precisa criar cada uma das variaveis manualmente
     regiao            Regiao?       @relation(fields: [regiao_id], references: [id])
     titulo            String
     valor_base        Decimal       @db.Decimal(65, 30) // onde o grafico começa
@@ -705,10 +715,17 @@ model Variavel {
     unidade_medida_id Int
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
 
-    peso          Int? // ? mais um item que nao sei ainda como usar, talvez alguma conta diferente na hora de calular os percentuais
-    acumulativa   Boolean         @default(false) // quando true, o sistema vai calcular automaticamente a serie acumulativa
+    peso                 Int?
+    casas_decimais       Int                   @default(0) @db.SmallInt
+    // usar para calculcar as agregações, por exemplo na média ponderada
+    // acho que pode ser um valor e não uma porcentagem, e ai o sistema calcula a porcentagem sozinho
+    // de acordo com o numero de variaveis
+    acumulativa          Boolean               @default(false)
+    // quando true, o sistema vai calcular automaticamente a serie acumulativa
     // quando false, o usuario precisa preencher, mas sempre via ter as 4 series, correto?
-    SerieVariavel SerieVariavel[]
+    serie_variavel       SerieVariavel[]
+    variavel_responsavel VariavelResponsavel[]
+    indicador_variavel   IndicadorVariavel[]
 
     @@map("variavel")
 }
@@ -720,6 +737,9 @@ model IndicadorVariavel {
     // talvez pode ser nulo mais pra frente quando tiver iniciativa, ou sempre q tiver iniciativa
     indicador_id Int
     indicador    Indicador @relation(fields: [indicador_id], references: [id])
+
+    variavel_id Int
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
     desativado     Boolean   @default(false)
     desativado_em  DateTime?
@@ -756,7 +776,11 @@ model SerieVariavel {
 
     data_valor       DateTime @db.Date()
     valor_nominal    Decimal  @db.Decimal(65, 30)
-    valor_percentual Decimal  @db.Decimal(65, 30)
+    valor_percentual Decimal  @default(0) @db.Decimal(65, 30)
+
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
 
     @@map("serie_variavel")
 }

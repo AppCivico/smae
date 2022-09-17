@@ -13,3 +13,9 @@ export class Orgao {
     @ApiProperty({ description: 'Tipo do Órgão - Apenas na listagem dos órgãos', })
     tipo_orgao?: TipoOrgao;
 }
+
+export class OrgaoResumo {
+    id: number;
+    sigla: string | null;
+    descricao: string;
+}

@@ -28,7 +28,7 @@ export class CreateTagDto {
     * ID do ODS (opcional, enviar null para remover/não existir)
     */
     @IsOptional()
-    @IsPositive({ message: '$property| ODS precisa não existir (manter antigo), ser nulo (null) ou númerico' })
+    @IsPositive({ message: '$property| ODS no PATCH pode não existir (fica o antigo), se enviado precisa ser nulo ou numérico' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
     ods_id?: number

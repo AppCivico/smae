@@ -49,6 +49,7 @@ export class IndicadorService {
                 polaridade: true,
                 periodicidade: true,
                 regionalizavel: true,
+                nivel_regionalizacao: true,
                 inicio_medicao: true,
                 fim_medicao: true,
                 meta_id: true,
