@@ -41,14 +41,7 @@ export class VariavelController {
         return await this.variavelService.update(+params.id, updateUnidadeMedidaDto, user);
     }
 
-    @Get(':id/serie-previsto')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
-    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
-        return await this.variavelService.getSeriePrevisto(params.id);
-    }
-
+    // patch precisa ficar antes da rota do :id/serie-previsto
     @Patch('series')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
@@ -58,6 +51,14 @@ export class VariavelController {
         await this.variavelService.batchUpsertSerie(series.valores, user);
 
         return;
+    }
+
+    @Get(':id/serie-previsto')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.editar')
+    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
+        return await this.variavelService.getSeriePrevisto(params.id);
     }
 
 }
