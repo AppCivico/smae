@@ -243,6 +243,14 @@ export class VariavelService {
                 };
             }
 
+            console.log(serieValor.valor_nominal);
+            console.log({
+                valueOf: serieValor.valor_nominal.valueOf(),
+                toString: serieValor.valor_nominal.toString(),
+                toDecimalPlaces: serieValor.valor_nominal.toDecimalPlaces(),
+                toDecimalPlaces99: serieValor.valor_nominal.toDecimalPlaces(99),
+                decimalPlaces: serieValor.valor_nominal.decimalPlaces(),
+            });
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toPrecision(),
