@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Polaridade } from "@prisma/client";
 import { Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
+import { IsBoolean, IsEnum, IsOptional, isPositive, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateIndicadorDto {
@@ -63,6 +63,15 @@ export class CreateIndicadorDto {
     regionalizavel: boolean
 
     /**
+    * nivel_regionalizacao
+    */
+    @IsOptional()
+    @IsPositive({ message: '$property| nivel_regionalizacao precisa ser um número ou null' })
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => Number)
+    nivel_regionalizacao?: number | null
+
+    /**
     * inicio_medicao
     * @example YYYY-MM-DD
     */
@@ -87,7 +96,5 @@ export class CreateIndicadorDto {
     @IsPositive({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     meta_id: number
-
-
 
 }

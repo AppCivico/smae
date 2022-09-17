@@ -33,9 +33,26 @@ export class UploadService {
         }
 
         if (createUploadDto.tipo_documento_id) {
-            const tipoDoc = await this.prisma.tipoDocumento.count({ where: { id: createUploadDto.tipo_documento_id } });
+            const tipoDoc = await this.prisma.tipoDocumento.findFirst({
+                where: { id: createUploadDto.tipo_documento_id },
+                select: { extensoes: true }
+            });
             if (!tipoDoc) throw new HttpException('Tipo de Documento não encontrado', 404);
-            // TODO validar extensão do arquivo
+
+            const tipoDocExtensoes = tipoDoc.extensoes?.split(',') || [];
+            if (tipoDocExtensoes?.length == 0) throw new HttpException('Tipo de Documento não possui extensões suportadas cadastradas', 400);
+
+            // TODO adicionar inteligência para verificar mimetype por ext?
+            const extTestOK = tipoDocExtensoes.some(ext => {
+                const extRegex = new RegExp('\.' + ext, 'i');
+
+                if (extRegex.test(file.originalname) == true) {
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            if (!extTestOK) throw new HttpException(`Arquivo deve ser: ${tipoDoc.extensoes}`, 400);
         }
         if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
             if (/\.zip$/i.test(file.originalname) == false || file.mimetype != 'application/zip') {
