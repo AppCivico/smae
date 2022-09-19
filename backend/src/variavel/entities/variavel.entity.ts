@@ -1,8 +1,9 @@
-import { Periodicidade, Prisma, Serie } from "@prisma/client"
+import { Periodicidade, Prisma, Serie, VariavelResponsavel } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
 import { IsString } from "class-validator"
 import { DateYMD } from "src/common/date2ymd"
 import { OrgaoResumo } from "src/orgao/entities/orgao.entity"
+import { Pessoa } from "src/pessoa/entities/pessoa.entity"
 import { Regiao } from "src/regiao/entities/regiao.entity"
 import { UnidadeMedida } from "src/unidade-medida/entities/unidade-medida.entity"
 
@@ -16,6 +17,11 @@ export class IndicadorVariavel {
     // TODO...
     iniciativa?: {}
     ativiadade?: {}
+}
+
+export class IdNomeExibicao {
+    id: number
+    nome_exibicao: string
 }
 
 export class Variavel {
@@ -33,7 +39,7 @@ export class Variavel {
     orgao: OrgaoResumo
     regiao: Regiao | null
     indicador_variavel: IndicadorVariavel[]
-
+    responsaveis?: IdNomeExibicao[]
 }
 
 export class SerieValorNomimal {

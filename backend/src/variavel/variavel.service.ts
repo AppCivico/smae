@@ -9,7 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ExistingSerieJwt, NonExistingSerieJwt, SerieJwt, SerieUpsert, ValidatedUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
 import { ListPrevistoAgrupadas } from 'src/variavel/dto/list-variavel.dto';
-import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from 'src/variavel/entities/variavel.entity';
+import { IdNomeExibicao, SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente, Variavel } from 'src/variavel/entities/variavel.entity';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
@@ -145,14 +145,32 @@ export class VariavelService {
                                 titulo: true,
                                 meta_id: true,
                             },
-                        }
+                        },
                     }
                 },
+                variavel_responsavel: {
+                    select: {
+                        pessoa: { select: { id: true, nome_exibicao: true }}
+                    }
+                }
             }
         });
 
+        const ret = listActive.map(row => {
+            const responsaveis = row.variavel_responsavel.map(responsavel => {
+                return {
+                    id: responsavel.pessoa.id,
+                    nome_exibicao: responsavel.pessoa.nome_exibicao
+                }
+            });
 
-        return listActive;
+            return {
+                ...row,
+                responsaveis: responsaveis
+            }
+        })
+
+        return ret;
     }
 
 
