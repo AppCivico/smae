@@ -22,39 +22,49 @@ const ps = defineProps(['props']);
 const props = ps.props;
 
 const IndicadoresStore = useIndicadoresStore();
-const { tempIndicadores } = storeToRefs(IndicadoresStore);
-if(!tempIndicadores?.id || tempIndicadores.id!=indicador_id) IndicadoresStore.getById(meta_id,indicador_id);
+const { singleIndicadores } = storeToRefs(IndicadoresStore);
+if(!singleIndicadores?.id || singleIndicadores.id!=indicador_id) IndicadoresStore.getById(meta_id,indicador_id);
 
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
 if(!singleMeta?.id || singleMeta.id!=meta_id) MetasStore.getById(meta_id);
 
 const VariaveisStore = useVariaveisStore();
-const { singleVariaveis,Variaveis } = storeToRefs(VariaveisStore);
+const { singleVariaveis } = storeToRefs(VariaveisStore);
 
 const RegionsStore = useRegionsStore();
-const { regions } = storeToRefs(RegionsStore);
+const { regions, tempRegions } = storeToRefs(RegionsStore);
 if(!regions.length) RegionsStore.getAll();
 
 let title = 'Adicionar variável';
 const responsaveisArr = ref({participantes:[], busca:''});
 let orgao_id = ref(0);
-if(var_id){
-    title = 'Editar variável';
-    if(!singleVariaveis.value.id) Promise.all([VariaveisStore.getById(indicador_id,var_id)]).then(()=>{
-        responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis??[];
-        orgao_id.value = singleVariaveis.value?.orgao_id;
-    });
-}
-
 let level1 = ref(null);
 let level2 = ref(null);
 let level3 = ref(null);
 let regiao_id_mount = ref(null);
 
+if(var_id){
+    title = 'Editar variável';
+    if(!singleVariaveis.value.id) Promise.all([VariaveisStore.getById(indicador_id,var_id)]).then(()=>{
+        responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map(x=>x.id)??[];
+        orgao_id.value = singleVariaveis.value?.orgao_id;
+
+        if(singleVariaveis.value?.regiao_id){
+            if(singleVariaveis.value.regiao_id) (async()=>{
+                await RegionsStore.filterRegions({id: singleVariaveis.value.regiao_id});
+                level1.value = tempRegions.value[0]?.children[0].index??null;
+                level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
+                level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
+            })();
+        }
+    });
+}
+
+
 const schema = Yup.object().shape({
     orgao_id: Yup.string().required('Selecione um orgão'),
-    regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value, testContext)=>{ return tempIndicadores?.value?.regionalizavel && value; }),
+    regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value, testContext)=>{ return singleIndicadores?.value?.regionalizavel && value; }),
     unidade_medida_id: Yup.string().required('Selecione uma unidade'),
     
     titulo: Yup.string().required('Preencha o título'),
@@ -80,28 +90,31 @@ async function onSubmit(values) {
         values.indicador_id = Number(indicador_id);
 
         values.orgao_id = Number(values.orgao_id);
-        values.regiao_id = tempIndicadores.value.regionalizavel? Number(values.regiao_id):null;
+        values.regiao_id = singleIndicadores.value.regionalizavel? Number(values.regiao_id):null;
         values.unidade_medida_id = Number(values.unidade_medida_id);
         values.valor_base = values.valor_base;
         values.casas_decimais = Number(values.casas_decimais);
         values.peso = values.peso?Number(values.peso):null;
         values.responsaveis = responsaveisArr.value.participantes;
         
+        var rota = false;
         if (var_id) {
             if(singleVariaveis.value.id==var_id){
                 r = await VariaveisStore.update(var_id, values);
                 msg = 'Dados salvos com sucesso!';
+                rota = `/metas/${meta_id}/indicadores/${indicador_id}`;
             }
         } else {
             r = await VariaveisStore.insert(values);
             msg = 'Item adicionado com sucesso!';
+            rota = `/metas/${meta_id}/indicadores/${indicador_id}/variaveis/${r}/valores`;
         }
-        if(r == true){
+        if(r){
             VariaveisStore.clear();
             VariaveisStore.getAll(indicador_id);
             alertStore.success(msg);
             editModalStore.clear();
-            router.push(`/metas/${meta_id}/indicadores/${indicador_id}`);
+            if(rota)router.push(rota);
         }
 
     } catch (error) {
@@ -117,9 +130,9 @@ async function checkClose() {
 }
 function lastlevel() {
     var r;
-    if(tempIndicadores.value.nivel_regionalizacao==2&&level1.value!==null){ r= regions.value[0].children[level1.value].id; }
-    if(tempIndicadores.value.nivel_regionalizacao==3&&level1.value!==null&&level2.value!==null){ r= regions.value[0].children[level1.value].children[level2.value].id; }
-    if(tempIndicadores.value.nivel_regionalizacao==4&&level1.value!==null&&level2.value!==null&&level3.value!==null){ r= regions.value[0].children[level1.value].children[level2.value].children[level3.value].id; }
+    if(singleIndicadores.value.nivel_regionalizacao==2&&level1.value!==null){ r= regions.value[0].children[level1.value].id; }
+    if(singleIndicadores.value.nivel_regionalizacao==3&&level1.value!==null&&level2.value!==null){ r= regions.value[0].children[level1.value].children[level2.value].id; }
+    if(singleIndicadores.value.nivel_regionalizacao==4&&level1.value!==null&&level2.value!==null&&level3.value!==null){ r= regions.value[0].children[level1.value].children[level2.value].children[level3.value].id; }
     regiao_id_mount.value = r;
 }
 function pushId(e,id) {
@@ -146,7 +159,7 @@ function buscaCoord(e,parent,item) {
         <hr class="ml2 f1"/>
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
-    <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&tempIndicadores?.id">
+    <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&singleIndicadores?.id">
         <Form @submit="onSubmit" :validation-schema="schema" :initial-values="singleVariaveis" v-slot="{ errors, isSubmitting }">
             <div>
                 <label class="label">Título <span class="tvermelho">*</span></label>
@@ -236,30 +249,30 @@ function buscaCoord(e,parent,item) {
                 <input v-else class="inputtext light mb1" type="text" disabled value="Selecione um órgão">
             </div>
 
-            <div v-if="tempIndicadores.regionalizavel&&regions">
+            <div v-if="singleIndicadores.regionalizavel&&regions">
                 <label class="label">Região <span class="tvermelho">*</span></label>
 
-                <template v-if="tempIndicadores.nivel_regionalizacao>=2">
+                <template v-if="singleIndicadores.nivel_regionalizacao>=2">
                     <select class="inputtext light mb1" v-model="level1" @change="lastlevel">
                         <option value="">Selecione</option>
                         <option v-for="(r,i) in regions[0]?.children" :value="i">{{r.descricao}}</option>
                     </select>
-                    <template v-if="tempIndicadores.nivel_regionalizacao>=3&&level1!==null">
+                    <template v-if="singleIndicadores.nivel_regionalizacao>=3&&level1!==null">
                         <select class="inputtext light mb1" v-model="level2" @change="lastlevel">
                             <option value="">Selecione</option>
                             <option v-for="(rr,ii) in regions[0]?.children[level1]?.children" :value="ii">{{rr.descricao}}</option>
                         </select>
-                        <template v-if="tempIndicadores.nivel_regionalizacao==4&&level2!==null">
+                        <template v-if="singleIndicadores.nivel_regionalizacao==4&&level2!==null">
                             <select class="inputtext light mb1" v-model="level3" @change="lastlevel">
                                 <option value="">Selecione</option>
                                 <option v-for="(rrr,iii) in regions[0]?.children[level1]?.children[level2]?.children" :value="iii">{{rrr.descricao}}</option>
                             </select>
                         </template>
-                        <template v-else-if="tempIndicadores.nivel_regionalizacao==4&&level2===null">
+                        <template v-else-if="singleIndicadores.nivel_regionalizacao==4&&level2===null">
                             <input class="inputtext light mb1" type="text" disabled value="Selecione uma subprefeitura">
                         </template>
                     </template>
-                    <template v-else-if="tempIndicadores.nivel_regionalizacao>=3&&level1===null">
+                    <template v-else-if="singleIndicadores.nivel_regionalizacao>=3&&level1===null">
                         <input class="inputtext light mb1" type="text" disabled value="Selecione uma região">
                     </template>
                 </template>

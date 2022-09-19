@@ -105,34 +105,42 @@ export const useRegionsStore = defineStore({
         async filterRegions(f){
             if(!this.tempRegions.length)this.tempRegions = { loading: true };
             try {
-                await this.getAll();
+                if(!this.regions.length) await this.getAll();
 
-                if(f&&f.textualSearch){
-                    var b = f.textualSearch.toLowerCase();
-                    this.tempRegions = [...this.regions].reduce((a,u)=>{
-                        if(u.descricao.toLowerCase().includes(b)){ a.push(u); return a;}
+                if(f){
+                    var nome = f.textualSearch ? f.textualSearch.toLowerCase() : false;
+                    var rid = f.id ? f.id : false;
+                    function compareFilter(item) {
+                        var r = 0;
+                        if(rid) r = item.id==rid;
+                        if(nome) r = item.descricao.toLowerCase().includes(nome);
+                        return r;
+                    }
+                    var x = JSON.parse(JSON.stringify(this.regions));
+                    this.tempRegions = x.reduce((a,u,i)=>{
+                        if(compareFilter(u)){ u.index=i; a.push(u); return a;}
                         var ru = 0;
-                        if(u.children.length) u.children = u.children.reduce((aa,uu)=>{
-                            if(uu.descricao.toLowerCase().includes(b)){ aa.push(uu); ru=1; return aa;}
+                        if(u.children.length) u.children = u.children.reduce((aa,uu,ii)=>{
+                            if(compareFilter(uu)){ uu.index=ii; aa.push(uu); ru=1; return aa;}
                             var ruu = 0;
-                            if(uu.children.length) uu.children = uu.children.reduce((aaa,uuu)=>{
-                                if(uuu.descricao.toLowerCase().includes(b)){ aaa.push(uuu); ruu=1; return aaa;}
+                            if(uu.children.length) uu.children = uu.children.reduce((aaa,uuu,iii)=>{
+                                if(compareFilter(uuu)){ uuu.index=iii; aaa.push(uuu); ruu=1; return aaa;}
                                 var ruuu = 0;
-                                if(uuu.children.length) uuu.children = uuu.children.reduce((aaaa,uuuu)=>{
-                                    if(uuuu.descricao.toLowerCase().includes(b)){ aaaa.push(uuuu); ruuu=1; return aaaa;}
+                                if(uuu.children.length) uuu.children = uuu.children.reduce((aaaa,uuuu,iiii)=>{
+                                    if(compareFilter(uuuu)){ uuuu.index=iiii; aaaa.push(uuuu); ruuu=1; return aaaa;}
                                     return aaaa;
                                 },[]);
-                                if(ruuu){ aaa.push(uuu); ruu=1; }
+                                if(ruuu){ uuu.index=iii; aaa.push(uuu); ruu=1; }
                                 return aaa;
                             },[]);
-                            if(ruu){ aa.push(uu); ru=1; }
+                            if(ruu){ uu.index=ii; aa.push(uu); ru=1; }
                             return aa;
                         },[]);
-                        if(ru) a.push(u);
+                        if(ru){ u.index=i; a.push(u); }
                         return a;
                     },[]);
                 }else{
-                    this.tempRegions = this.regions;
+                    this.tempRegions = Object.values(this.regions);
                 }
             } catch (error) {
                 this.tempRegions = { error };

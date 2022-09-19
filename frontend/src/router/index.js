@@ -103,6 +103,9 @@ export const router = createRouter({
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props:{group:"valores",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao', component: SingleMetaEvolucao, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/evolucao/:indicador_id/variaveis/novo', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleMetaEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
             ]
         },
         { path: '/regioes',

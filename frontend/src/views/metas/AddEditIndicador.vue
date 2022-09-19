@@ -23,7 +23,7 @@ const { singleMeta } = storeToRefs(MetasStore);
 MetasStore.getById(meta_id);
 
 const IndicadoresStore = useIndicadoresStore();
-const { Indicadores, tempIndicadores, agregadores } = storeToRefs(IndicadoresStore);
+const { Indicadores, singleIndicadores, agregadores } = storeToRefs(IndicadoresStore);
 IndicadoresStore.getAgregadores();
 
 const authStore = useAuthStore();
@@ -54,8 +54,8 @@ const schema = Yup.object().shape({
 });
 
 let title = 'Adicionar Indicador';
-let agregador_id = ref(tempIndicadores.value.agregador_id);
-let regionalizavel = ref(tempIndicadores.value.regionalizavel);
+let agregador_id = ref(singleIndicadores.value.agregador_id);
+let regionalizavel = ref(singleIndicadores.value.regionalizavel);
 
 if (id) {
     title = 'Editar Indicador';
@@ -92,8 +92,8 @@ async function onSubmit(values) {
         values.nivel_regionalizacao = values.regionalizavel ? Number(values.nivel_regionalizacao) : null;
 
         if (id) {
-            if(tempIndicadores.value.id){
-                r = await IndicadoresStore.update(tempIndicadores.value.id, values);
+            if(singleIndicadores.value.id){
+                r = await IndicadoresStore.update(singleIndicadores.value.id, values);
                 MetasStore.clear();
                 IndicadoresStore.clear();
                 msg = 'Dados salvos com sucesso!';
@@ -116,7 +116,7 @@ async function onSubmit(values) {
 }
 async function checkDelete(id) {
     if (id) {
-        if(tempIndicadores.value.id){
+        if(singleIndicadores.value.id){
             alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
                 if(await IndicadoresStore.delete(id)){
                     IndicadoresStore.clear();
@@ -152,8 +152,8 @@ function maskMonth(el){
         </div>
         <div class="t24 mb2">Meta {{singleMeta.codigo}} {{singleMeta.titulo}}</div>
 
-        <template v-if="!(tempIndicadores?.loading || tempIndicadores?.error || Indicadores?.loading)&&!(!id&&Indicadores.length)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?tempIndicadores:{}" v-slot="{ errors, isSubmitting }">
+        <template v-if="!(singleIndicadores?.loading || singleIndicadores?.error || Indicadores?.loading)&&!(!id&&Indicadores.length)">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?singleIndicadores:{}" v-slot="{ errors, isSubmitting }">
                 <Field name="meta_id" type="hidden" :value="meta_id"/>
                 <div class="flex g2">
                     <div class="f1">
@@ -221,7 +221,7 @@ function maskMonth(el){
                         </Field>
                         <div class="error-msg">{{ errors.agregador_id }}</div>
                     </div>
-                    <div class="f1" v-if="agregador_id?agregador_id==3:tempIndicadores.agregador_id==3">
+                    <div class="f1" v-if="agregador_id?agregador_id==3:singleIndicadores.agregador_id==3">
                         <label class="label">Janela (ciclos) <span class="tvermelho">*</span></label>
                         <Field name="janela_agregador" type="text" class="inputtext light mb1" :class="{ 'error': errors.janela_agregador }" />
                         <div class="error-msg">{{ errors.janela_agregador }}</div>
@@ -259,7 +259,7 @@ function maskMonth(el){
                         <div class="error-msg">{{ errors.regionalizavel }}</div>
                     </div>
 
-                    <div v-if="tempIndicadores.nivel_regionalizacao">
+                    <div v-if="singleIndicadores.nivel_regionalizacao">
                         <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
                         <Field name="nivel_regionalizacao" v-model="nivel_regionalizacao" disabled as="select" class="inputtext light mb1" :class="{ 'error': errors.nivel_regionalizacao }">
                             <option value="">Selecione</option>
@@ -278,12 +278,12 @@ function maskMonth(el){
                 </div>
             </Form>
         </template>
-        <template v-if="tempIndicadores?.loading||Indicadores?.loading">
+        <template v-if="singleIndicadores?.loading||Indicadores?.loading">
             <span class="spinner">Carregando</span>
         </template>
-        <template v-if="tempIndicadores?.error||error">
+        <template v-if="singleIndicadores?.error||error">
             <div class="error p1">
-                <div class="error-msg">{{tempIndicadores.error??error}}</div>
+                <div class="error-msg">{{singleIndicadores.error??error}}</div>
             </div>
         </template>
         <template v-if="(!id&&Indicadores.length)">
@@ -328,9 +328,9 @@ function maskMonth(el){
             <router-link :to="`/metas/${meta_id}/indicadores/${id}/variaveis/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar variável</span></router-link>
         </div>
 
-        <template v-if="id&&tempIndicadores.id&&id==tempIndicadores.id">
+        <template v-if="id&&singleIndicadores.id&&id==singleIndicadores.id">
             <hr class="mt2 mb2"/>
-            <button @click="checkDelete(tempIndicadores.id)" class="btn amarelo big">Remover item</button>
+            <button @click="checkDelete(singleIndicadores.id)" class="btn amarelo big">Remover item</button>
         </template>
     </Dashboard>
 </template>

@@ -47,7 +47,8 @@ export const useVariaveisStore = defineStore({
             }
         },
         async insert(params) {
-            if(await requestS.post(`${baseUrl}/indicador-variavel`, params)) return true;
+            let r = await requestS.post(`${baseUrl}/indicador-variavel`, params);
+            if(r.id) return r.id;
             return false;
         },
         async update(id, params) {
@@ -67,10 +68,14 @@ export const useVariaveisStore = defineStore({
                 if(!id) throw "Variável inválida";
                 if(!this.Valores[id]?.length)this.Valores[id] = { loading: true };
                 let r = await requestS.get(`${baseUrl}/indicador-variavel/${id}/serie-previsto`);    
-                this.Valores[id] = r.linhas;
+                this.Valores[id] = r;
             } catch (error) {
                 this.Valores[id] = { error };
             }
         },
+        async updateValores(params){
+            if(await requestS.patch(`${baseUrl}/indicador-variavel-serie`, params)) return true;
+            return false;
+        }
     }
 });
