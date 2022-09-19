@@ -2,8 +2,13 @@
 import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { useAuthStore, useMetasStore, usePdMStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
+import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, usePdMStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
 import { useRoute } from 'vue-router';
+import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
+import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
+
+const editModalStore = useEditModalStore();
+const alertStore = useAlertStore();
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -19,16 +24,28 @@ const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis,Valores } = storeToRefs(VariaveisStore);
+const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
+
+const props = defineProps(['group']);
+function start(){
+    if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
+    if(props.group=='valores')editModalStore.modal(AddEditValores,props);
+}
+onMounted(()=>{start()});
+onUpdated(()=>{start()});
 
 (async()=>{
     if(!singleMeta.value.id||singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
     if(!singlePdm.value.id||singlePdm.value.id != singleMeta.value.pdm_id) PdMStore.getById(singleMeta.value.pdm_id);
     if(!tempIndicadores.value.length||tempIndicadores.value[0].meta_id != meta_id) await IndicadoresStore.filterIndicadores(meta_id);
-    if(tempIndicadores.value[0]?.id)VariaveisStore.getAll(tempIndicadores.value[0]?.id);
+    if(tempIndicadores.value[0]?.id) await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
+
+    Variaveis.value[tempIndicadores.value[0]?.id].forEach(x=>{
+        VariaveisStore.getValores(x.id);
+    })
 })();
 
 let groupBy = localStorage.getItem('groupBy')??"macro_tema";
@@ -87,71 +104,6 @@ function toggleAccordeon(t) {
                                 </div>
                             </div>
                         </header>
-                        <div>
-                            <div class="tablepreinfo">
-                                <div class="flex spacebetween">
-                                    <div class="flex center">
-                                        <div class="t12 lh1 w700 uc tc400">Projetado X Realizado</div>
-                                        <div class="tipinfo ml1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Indicador calculado pelo média móvel das variáveis</div></div>
-                                    </div>
-                                    <div>
-                                        <a class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Adicionar período</span></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <table class="tablemain">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 25%">Mês/Ano</th>
-                                        <th style="width: 17.5%">Projetado Mensal</th>
-                                        <th style="width: 17.5%">Realizado Mensal</th>
-                                        <th style="width: 17.5%">Projetado Acumulado</th>
-                                        <th style="width: 17.5%">Realizado Acumulado</th>
-                                        <th style="width: 5%"></th>
-                                    </tr>
-                                </thead>
-                                <tr>
-                                    <td><div class="flex center"><div class="farol i1"></div> <span>01/2020</span></div></td>
-                                    <td>5</td>
-                                    <td>10</td>
-                                    <td>15</td>
-                                    <td>20</td>
-                                    <td style="white-space: nowrap; text-align: right;">
-                                        <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                    </td>
-                                </tr>
-                                <tr class="tzaccordeon" @click="toggleAccordeon">
-                                    <td colspan="56"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>2020</span></td>
-                                </tr>
-                                <tbody>
-                                    <tr>
-                                        <td><div class="flex center"><div class="farol"></div> <span>01/2020</span></div></td>
-                                        <td>5</td>
-                                        <td>10</td>
-                                        <td>15</td>
-                                        <td>20</td>
-                                        <td style="white-space: nowrap; text-align: right;">
-                                            <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                                <tr class="tzaccordeon" @click="toggleAccordeon">
-                                    <td colspan="56"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>2021</span></td>
-                                </tr>
-                                <tbody>
-                                    <tr>
-                                        <td><div class="flex center"><div class="farol i1"></div> <span>01/2020</span></div></td>
-                                        <td>5</td>
-                                        <td>10</td>
-                                        <td>15</td>
-                                        <td>20</td>
-                                        <td style="white-space: nowrap; text-align: right;">
-                                            <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
 
                     <div class="t12 uc w700 mb05 tc300">Variáveis</div>
@@ -165,8 +117,8 @@ function toggleAccordeon(t) {
                                     <h2 class="mt1 mb1 ml1">{{v.titulo}}</h2>
                                 </div>
                                 <div class="f0">
-                                    <router-link :to="`/metas/${ind.meta_id}/indicadores/${ind.id}/variaveis/${v.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                    <router-link :to="`/metas/${ind.meta_id}/indicadores/${ind.id}/variaveis/${v.id}/valores`" class="tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></router-link>
+                                    <router-link :to="`/metas/${ind.meta_id}/evolucao/${ind.id}/variaveis/${v.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                    <router-link :to="`/metas/${ind.meta_id}/evolucao/${ind.id}/variaveis/${v.id}/valores`" class="tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></router-link>
                                 </div>
                             </div>
                         </header>
@@ -177,9 +129,9 @@ function toggleAccordeon(t) {
                                         <div class="t12 lh1 w700 uc tc400">Projetado X Realizado</div>
                                         <div class="tipinfo ml1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Indicador calculado pelo média móvel das variáveis</div></div>
                                     </div>
-                                    <div>
+                                    <!-- <div>
                                         <a class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Adicionar período</span></a>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                             <table class="tablemain">
@@ -193,17 +145,20 @@ function toggleAccordeon(t) {
                                         <th style="width: 5%"></th>
                                     </tr>
                                 </thead>
-                                <tr>
-                                    <td><div class="flex center"><div class="farol i1"></div> <span>01/2020</span></div></td>
-                                    <td>5</td>
-                                    <td>10</td>
-                                    <td>15</td>
-                                    <td>20</td>
+                                <tr v-for="val in Valores[v.id]?.previsto">
+                                    <td><div class="flex center"><div class="farol i1"></div> <span>{{val.periodo}}</span></div></td>
+                                    <td>{{val.series[Valores[v.id].ordem_series.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
+                                    <td>{{val.series[Valores[v.id].ordem_series.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
+                                    <td>{{val.series[Valores[v.id].ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
+                                    <td>{{val.series[Valores[v.id].ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
                                     <td style="white-space: nowrap; text-align: right;">
-                                        <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                        <!-- <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link> -->
                                     </td>
                                 </tr>
-                                <tr class="tzaccordeon" @click="toggleAccordeon">
+                                <tr v-if="Valores[v.id]?.loading">
+                                    <td colspan="555"><span class="spinner">Carregando</span></td>
+                                </tr>
+                                <!-- <tr class="tzaccordeon" @click="toggleAccordeon">
                                     <td colspan="56"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>2020</span></td>
                                 </tr>
                                 <tbody>
@@ -232,7 +187,7 @@ function toggleAccordeon(t) {
                                             <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                         </td>
                                     </tr>
-                                </tbody>
+                                </tbody> -->
                             </table>
                         </div>
                     </div>

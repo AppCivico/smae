@@ -1,7 +1,11 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { Nav } from '@/components';
-import { useAuthStore } from '@/stores';
+import { useEditModalStore, useAuthStore } from '@/stores';
+
+
+const editModalStore = useEditModalStore();
+const { editModal } = storeToRefs(editModalStore);
 
 const props = defineProps(['submenu','parentPage']);
 const submenuname = props?.submenu?.__name;
@@ -13,7 +17,7 @@ const { user } = storeToRefs(authStore);
 <template>
     <Nav :activate="submenuname"></Nav>
     <component :is="submenu" :parentPage="parentPage"></component>
-    <section v-if="user" id="dashboard">
+    <section v-if="user" id="dashboard" :style="{overflow: editModal?'auto':hidden}">
         <slot />
     </section>
 </template>

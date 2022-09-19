@@ -8,12 +8,14 @@ export const useIndicadoresStore = defineStore({
     state: () => ({
         Indicadores: {},
         tempIndicadores: {},
+        singleIndicadores: {},
         agregadores: {}
     }),
     actions: {
         clear (){
             this.Indicadores = {};
             this.tempIndicadores = {};
+            this.singleIndicadores = {};
         },
         dateToField(d){
             var dd=d?new Date(d):false;
@@ -49,14 +51,14 @@ export const useIndicadoresStore = defineStore({
         },
         async getById(m,id) {
             try {
-                this.tempIndicadores = { loading: true };
+                this.singleIndicadores = { loading: true };
                 if(!this.Indicadores.length){
                     await this.getAll(m);
                 }
-                this.tempIndicadores = this.Indicadores.length? this.Indicadores.find((u)=>u.id == id):{};
-                if(!this.tempIndicadores) throw 'Indicadores não encontrada';
+                this.singleIndicadores = this.Indicadores.length? this.Indicadores.find((u)=>u.id == id):{};
+                if(!this.singleIndicadores) throw 'Indicadores não encontrada';
             } catch (error) {
-                this.tempIndicadores = { error };
+                this.singleIndicadores = { error };
             }
         },
         async getAgregadores(id) {
