@@ -39,7 +39,7 @@ export class Variavel {
     orgao: OrgaoResumo
     regiao: Regiao | null
     indicador_variavel: IndicadorVariavel[]
-    responsaveis: IdNomeExibicao[]
+    responsaveis?: IdNomeExibicao[]
 }
 
 export class SerieValorNomimal {
