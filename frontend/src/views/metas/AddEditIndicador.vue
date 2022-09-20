@@ -183,16 +183,12 @@ function maskMonth(el){
 
                         <Field v-if="!id" name="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
                             <option value="">Selecionar</option>
-                            <option value="Diario">Diario</option>
-                            <option value="Semanal">Semanal</option>
                             <option value="Mensal">Mensal</option>
                             <option value="Bimestral">Bimestral</option>
                             <option value="Trimestral">Trimestral</option>
                             <option value="Quadrimestral">Quadrimestral</option>
                             <option value="Semestral">Semestral</option>
                             <option value="Anual">Anual</option>
-                            <option value="Quinquenal">Quinquenal</option>
-                            <option value="Secular">Secular</option>
                         </Field>
                         <div class="flex center" v-else>
                             <Field name="periodicidade" type="text" class="inputtext light mb1" disabled :class="{ 'error': errors.periodicidade }" />

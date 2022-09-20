@@ -313,7 +313,7 @@ function buscaCoord(e,item) {
                             <span class="tagsmall" v-for="(p,k) in filterResponsible(item.orgao_id).filter(x=>item.participantes.includes(x.id))" @click="removeParticipante(item,p.id)">{{p.nome_completo}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
                         </div>
                         <div style="flex-basis: 30px;">
-                            <a v-if="index" @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
+                            <a @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
                         </div>
                     </div>
                 </template>
