@@ -65,7 +65,7 @@ if(var_id){
 
 const schema = Yup.object().shape({
     orgao_id: Yup.string().required('Selecione um orgão'),
-    regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value, testContext)=>{ return singleIndicadores?.value?.regionalizavel && value; }),
+    regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value, testContext)=>{ return !singleIndicadores?.value?.regionalizavel || value; }),
     unidade_medida_id: Yup.string().required('Selecione uma unidade'),
     
     titulo: Yup.string().required('Preencha o título'),

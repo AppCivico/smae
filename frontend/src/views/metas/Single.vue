@@ -76,7 +76,7 @@ switch(groupBy){
                         <div class="t12 uc w700 mb05 tamarelo">Órgão(s) responsável(eis)</div>
                         <div class="t13">{{singleMeta.orgaos_participantes.filter(x=>x.responsavel).map(x=>x.orgao.descricao).join(', ')}}</div>
                     </div>
-                    <div class="mr2" v-if="singleMeta.orgaos_participantes.filter(x=>!x.responsavel)">
+                    <div class="mr2" v-if="singleMeta.orgaos_participantes.filter(x=>!x.responsavel).length">
                         <div class="t12 uc w700 mb05 tamarelo">Órgão(s) participante(s)</div>
                         <div class="t13">{{singleMeta.orgaos_participantes.filter(x=>!x.responsavel).map(x=>x.orgao.descricao).join(', ')}}</div>
                     </div>

@@ -91,9 +91,9 @@ const schema = Yup.object().shape({
     complemento: Yup.string().nullable(),
 
     pdm_id: Yup.string().nullable(),
-    macro_tema_id: Yup.string().nullable(),
-    tema_id: Yup.string().nullable(),
-    sub_tema_id: Yup.string().nullable(),
+    macro_tema_id: Yup.string().test('macro_tema_id',`Selecione um(a) ${activePdm.value?.rotulo_macro_tema}.`,(value, testContext)=>{ return !activePdm.value?.possui_macro_tema || value; }),
+    tema_id: Yup.string().test('tema_id',`Selecione um(a) ${activePdm.value?.rotulo_tema}.`,(value, testContext)=>{ return !activePdm.value?.possui_tema || value; }),
+    sub_tema_id: Yup.string().test('sub_tema_id',`Selecione um(a) ${activePdm.value?.rotulo_sub_tema}.`,(value, testContext)=>{ return !activePdm.value?.possui_sub_tema || value; }),
 });
 
 function addOrgao(obj,r) {
