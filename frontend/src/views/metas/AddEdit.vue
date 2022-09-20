@@ -85,7 +85,7 @@ Promise.all([
 });
 
 const schema = Yup.object().shape({
-    codigo: Yup.string().nullable(),
+    codigo: Yup.string().required('Preencha o código'),
     titulo: Yup.string().required('Preencha o titulo'),
     contexto: Yup.string().required(()=>{return 'Preencha o '+(activePdm.value.possui_contexto_meta?activePdm.value.rotulo_contexto_meta:'texto');}),
     complemento: Yup.string().nullable(),
@@ -107,9 +107,24 @@ function removeParticipante(item,p) {
 }
 async function onSubmit(values) {
     try {
+        var er = [];
         values.orgaos_participantes = unref(orgaos_participantes);
+        values.orgaos_participantes = values.orgaos_participantes.filter(x=>{
+            if(x.orgao_id && !x.participantes.length) er.push('Selecione pelo menos um responsável para o órgão.');
+            return x.orgao_id;
+        });
+        
+
         values.coordenadores_cp = coordenadores_cp.value.participantes;
+        if(!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+        
         if(!values.pdm_id)values.pdm_id = activePdm.value.id;
+
+        if(activePdm.value.possui_macro_tema&&!values.macro_tema_id) er.push(`Selecione um(a) ${activePdm.value.rotulo_macro_tema}.`);
+        if(activePdm.value.possui_tema&&!values.tema_id) er.push(`Selecione um(a) ${activePdm.value.rotulo_tema}.`);
+        if(activePdm.value.possui_sub_tema&&!values.sub_tema_id) er.push(`Selecione um(a) ${activePdm.value.rotulo_sub_tema}.`);
+
+        if(er.length) throw er.join('<br />');
         var msg;
         var r;
         if (id&&singleMeta.value.id) {
@@ -217,7 +232,7 @@ function buscaCoord(e,item) {
                 <hr class="mt2 mb2"/>
                 <div class="flex g2">
                     <div class="f0" style="flex-basis: 100px;">
-                        <label class="label">Código</label>
+                        <label class="label">Código <span class="tvermelho">*</span></label>
                         <Field name="codigo" type="text" class="inputtext light mb1" maxlength="30" :class="{ 'error': errors.codigo }" />
                         <div class="error-msg">{{ errors.codigo }}</div>
                     </div>

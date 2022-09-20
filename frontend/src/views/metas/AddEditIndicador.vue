@@ -235,7 +235,6 @@ function maskMonth(el){
                         </label>
                         <div class="error-msg">{{ errors.regionalizavel }}</div>
                     </div>
-
                     <div class="" v-if="regionalizavel">
                         <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
                         <Field name="nivel_regionalizacao" v-model="nivel_regionalizacao" as="select" class="inputtext light mb1" :class="{ 'error': errors.nivel_regionalizacao }">
