@@ -21,6 +21,7 @@ const var_id = route.params.var_id;
 
 const VariaveisStore = useVariaveisStore();
 const { singleVariaveis, Valores } = storeToRefs(VariaveisStore);
+VariaveisStore.clearEdit();
 VariaveisStore.getById(indicador_id,var_id);
 
 let Previsto = ref(null);

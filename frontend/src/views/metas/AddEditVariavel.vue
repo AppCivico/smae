@@ -31,6 +31,7 @@ if(!singleMeta?.id || singleMeta.id!=meta_id) MetasStore.getById(meta_id);
 
 const VariaveisStore = useVariaveisStore();
 const { singleVariaveis } = storeToRefs(VariaveisStore);
+VariaveisStore.clearEdit();
 
 const RegionsStore = useRegionsStore();
 const { regions, tempRegions } = storeToRefs(RegionsStore);
@@ -123,9 +124,9 @@ async function onSubmit(values) {
 }
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-        router.go(-1);
         editModalStore.clear();
         alertStore.clear();
+        router.go(-1);
     });
 }
 function lastlevel() {

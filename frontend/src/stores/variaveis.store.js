@@ -15,6 +15,9 @@ export const useVariaveisStore = defineStore({
             this.Valores = {};
             this.singleVariaveis = {};
         },
+        clearEdit (){
+            this.singleVariaveis = {};
+        },
         async getAll(indicador_id) {
             try {
                 if(!indicador_id) throw "Indicador inválido";
@@ -66,7 +69,7 @@ export const useVariaveisStore = defineStore({
         async getValores(id) {
             try {
                 if(!id) throw "Variável inválida";
-                if(!this.Valores[id]?.length)this.Valores[id] = { loading: true };
+                this.Valores[id] = { loading: true };
                 let r = await requestS.get(`${baseUrl}/indicador-variavel/${id}/serie-previsto`);    
                 this.Valores[id] = r;
             } catch (error) {
