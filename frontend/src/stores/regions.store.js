@@ -107,7 +107,8 @@ export const useRegionsStore = defineStore({
             try {
                 if(!this.regions.length) await this.getAll();
 
-                if(f){
+                var x = JSON.parse(JSON.stringify(this.regions));
+                if(f?.textualSearch||f?.id){
                     var nome = f.textualSearch ? f.textualSearch.toLowerCase() : false;
                     var rid = f.id ? f.id : false;
                     function compareFilter(item) {
@@ -116,7 +117,6 @@ export const useRegionsStore = defineStore({
                         if(nome) r = item.descricao.toLowerCase().includes(nome);
                         return r;
                     }
-                    var x = JSON.parse(JSON.stringify(this.regions));
                     this.tempRegions = x.reduce((a,u,i)=>{
                         if(compareFilter(u)){ u.index=i; a.push(u); return a;}
                         var ru = 0;
@@ -140,7 +140,7 @@ export const useRegionsStore = defineStore({
                         return a;
                     },[]);
                 }else{
-                    this.tempRegions = Object.values(this.regions);
+                    this.tempRegions = x;
                 }
             } catch (error) {
                 this.tempRegions = { error };
