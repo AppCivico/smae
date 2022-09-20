@@ -217,6 +217,7 @@ export class VariavelService {
                     select: {
                         variavel: {
                             select: {
+                                id: true,
                                 casas_decimais: true,
                                 periodicidade: true
                             }
@@ -282,7 +283,10 @@ export class VariavelService {
 
     async getSeriePrevisto(variavelId: number) {
         const indicador = await this.getIndicadorViaVariavel(variavelId);
-        const variavel = indicador.IndicadorVariavel[0].variavel;
+        const indicadorVariavelRelList = indicador.IndicadorVariavel.filter((v) => {
+            return v.variavel.id === variavelId
+        });
+        const variavel = indicadorVariavelRelList[0].variavel
 
         const valoresExistentes = await this.getValorSerieExistente(variavelId, ['Previsto', 'PrevistoAcumulado']);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
