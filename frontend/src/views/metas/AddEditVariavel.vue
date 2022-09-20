@@ -153,7 +153,6 @@ function buscaCoord(e,parent,item) {
     }
 }
 </script>
-
 <template>
     <div class="flex spacebetween center mb2">
         <h2>{{title}}</h2>
@@ -175,19 +174,19 @@ function buscaCoord(e,parent,item) {
 
             <div>
                 <label class="label flex center">Periodicidade <span class="tvermelho">*</span></label>
-                <Field name="periodicidade" v-model="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
+                <Field v-if="!var_id" name="periodicidade" v-model="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
                     <option value="">Selecionar</option>
-                    <option value="Diario">Diario</option>
-                    <option value="Semanal">Semanal</option>
                     <option value="Mensal">Mensal</option>
                     <option value="Bimestral">Bimestral</option>
                     <option value="Trimestral">Trimestral</option>
                     <option value="Quadrimestral">Quadrimestral</option>
                     <option value="Semestral">Semestral</option>
                     <option value="Anual">Anual</option>
-                    <option value="Quinquenal">Quinquenal</option>
-                    <option value="Secular">Secular</option>
                 </Field>
+                <div class="flex center" v-else>
+                    <Field name="periodicidade" type="text" class="inputtext light mb1" disabled :class="{ 'error': errors.periodicidade }" />
+                    <div class="tipinfo right ml1 mb1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Não é permitida a troca da periodicidade</div></div>
+                </div>
                 <div class="error-msg">{{ errors.periodicidade }}</div>
             </div>
 
@@ -251,20 +250,24 @@ function buscaCoord(e,parent,item) {
             </div>
 
             <div v-if="singleIndicadores.regionalizavel&&regions">
-                <label class="label">Região <span class="tvermelho">*</span></label>
+                    
+                <div class="flex center justifycontent">
+                    <label class="label f1">Região <span class="tvermelho">*</span></label>
+                    <div v-if="var_id" class="tipinfo ml1 mb1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Não é permitida a troca da região</div></div>
+                </div>
 
                 <template v-if="singleIndicadores.nivel_regionalizacao>=2">
-                    <select class="inputtext light mb1" v-model="level1" @change="lastlevel">
+                    <select class="inputtext light mb1" v-model="level1" @change="lastlevel" :disabled="var_id">
                         <option value="">Selecione</option>
                         <option v-for="(r,i) in regions[0]?.children" :value="i">{{r.descricao}}</option>
                     </select>
                     <template v-if="singleIndicadores.nivel_regionalizacao>=3&&level1!==null">
-                        <select class="inputtext light mb1" v-model="level2" @change="lastlevel">
+                        <select class="inputtext light mb1" v-model="level2" @change="lastlevel" :disabled="var_id">
                             <option value="">Selecione</option>
                             <option v-for="(rr,ii) in regions[0]?.children[level1]?.children" :value="ii">{{rr.descricao}}</option>
                         </select>
                         <template v-if="singleIndicadores.nivel_regionalizacao==4&&level2!==null">
-                            <select class="inputtext light mb1" v-model="level3" @change="lastlevel">
+                            <select class="inputtext light mb1" v-model="level3" @change="lastlevel" :disabled="var_id">
                                 <option value="">Selecione</option>
                                 <option v-for="(rrr,iii) in regions[0]?.children[level1]?.children[level2]?.children" :value="iii">{{rrr.descricao}}</option>
                             </select>

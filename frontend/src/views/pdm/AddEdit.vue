@@ -106,7 +106,7 @@ function maskDate(el){
                         <label class="block mb1 interruptorcheckbox">
                             <Field name="ativo" type="checkbox" value=1 :checked="ativo" /><span>Programa ativo</span><span>Programa inativo</span>
                         </label>
-                        <p class="t13 tc500">Ao ativar um Programa de Metas, todos os demais programas são ativos</p>
+                        <p class="t13 tc500">Ao ativar um Programa de Metas, todos os demais programas serão inativados</p>
                     </div>
                 </div>
                 <div class="flex g2">

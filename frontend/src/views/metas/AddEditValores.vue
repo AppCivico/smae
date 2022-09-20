@@ -44,7 +44,7 @@ async function onSubmit(el) {
         el.target.querySelectorAll('[name]').forEach(x=>{
             values.valores.push({
               referencia: x.name,
-              valor: parseFloat(x.value)?String(parseFloat(x.value.replace(',','.'))):''
+              valor: !isNaN(parseFloat(x.value))?String(parseFloat(x.value.replace(',','.'))):''
             });
         });
 
