@@ -296,10 +296,10 @@ function maskMonth(el){
 
         <div v-if="id">
             <div class="t12 uc w700 mb2">Variáveis</div>
-            <template v-if="Variaveis?.loading">
+            <template v-if="Variaveis[id]?.loading">
                 <span class="spinner">Carregando</span>
             </template>
-            <table class="tablemain mb1" v-if="!Variaveis?.loading">
+            <table class="tablemain mb1" v-if="!Variaveis[id]?.loading">
                 <thead>
                     <tr>
                         <th style="width:15%;">Título</th>
@@ -317,7 +317,7 @@ function maskMonth(el){
                     <td>{{v.unidade_medida?.sigla}}</td>
                     <td>{{v.peso}}</td>
                     <td>{{v.casas_decimais}}</td>
-                    <td>{{v.regiao?.descricao}}</td>
+                    <td>{{v.regiao?.descricao??'-'}}</td>
                     <td style="white-space: nowrap; text-align: right;">
                         <router-link :to="`/metas/${meta_id}/indicadores/${id}/variaveis/${v.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                         <router-link :to="`/metas/${meta_id}/indicadores/${id}/variaveis/${v.id}/valores`" class="tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></router-link>

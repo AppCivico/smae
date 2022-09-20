@@ -24,10 +24,11 @@ export const useVariaveisStore = defineStore({
                 if(!this.Variaveis[indicador_id]?.length)this.Variaveis[indicador_id] = { loading: true };
                 let r = await requestS.get(`${baseUrl}/indicador-variavel?remover_desativados=true&indicador_id=${indicador_id}`);    
                 this.Variaveis[indicador_id] = r.linhas.map(x=>{
+                    console.log(x);
                     
-                    x.orgao_id = x.orgao.id;
-                    x.regiao_id = x.regiao.id;
-                    x.unidade_medida_id = x.unidade_medida.id;
+                    x.orgao_id = x.orgao?.id ?? null;
+                    x.regiao_id = x.regiao?.id ?? null;
+                    x.unidade_medida_id = x.unidade_medida?.id ?? null;
                     x.acumulativa = x.acumulativa?"1":false;
                     return x;
                 });
@@ -69,6 +70,7 @@ export const useVariaveisStore = defineStore({
         async getValores(id) {
             try {
                 if(!id) throw "Variável inválida";
+                console.log(this.Valores[id]);
                 this.Valores[id] = { loading: true };
                 let r = await requestS.get(`${baseUrl}/indicador-variavel/${id}/serie-previsto`);    
                 this.Valores[id] = r;
