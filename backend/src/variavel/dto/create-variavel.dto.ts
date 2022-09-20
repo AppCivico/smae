@@ -51,7 +51,7 @@ export class CreateVariavelDto {
     @IsNumber(undefined, { message: "$property| $property inválido" })
     @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
     @Max(30, { message: '$property| casas_decimais tem valor máximo de 30' })
-    @Transform((a: any) => a.value === '' || a.value ? undefined : +a.value)
+    @Transform((a: any) => a.value === '' ? undefined : +a.value)
     casas_decimais: number
 
     /**
