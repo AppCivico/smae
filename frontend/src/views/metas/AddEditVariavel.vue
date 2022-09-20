@@ -234,8 +234,9 @@ function buscaCoord(e,parent,item) {
                 </Field>
                 <div class="error-msg">{{ errors.orgao_id }}</div>
 
+
                 <label class="label">Responsável(eis)* <span class="tvermelho">*</span></label>
-                <div class="mb1" v-if="singleMeta?.orgaos_participantes&&orgao_id">
+                <div class="mb1" v-if="singleMeta?.orgaos_participantes?.length&&orgao_id">
                     <template v-for="c in [singleMeta.orgaos_participantes.find(x=>x.orgao.id==orgao_id)]">
                         <div class="suggestion search">
                             <input type="text" v-model="responsaveisArr.busca" @keyup.enter.stop.prevent="buscaCoord($event,c.participantes,responsaveisArr)" class="inputtext light mb05">
