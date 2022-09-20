@@ -252,23 +252,20 @@ function buscaCoord(e,parent,item) {
 
             <div v-if="singleIndicadores.regionalizavel&&regions">
                     
-                <div class="flex center justifycontent">
-                    <label class="label f1">Região <span class="tvermelho">*</span></label>
-                    <div v-if="var_id" class="tipinfo ml1 mb1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Não é permitida a troca da região</div></div>
-                </div>
+                <label class="label">Região <span class="tvermelho">*</span></label>
 
                 <template v-if="singleIndicadores.nivel_regionalizacao>=2">
-                    <select class="inputtext light mb1" v-model="level1" @change="lastlevel" :disabled="var_id">
+                    <select class="inputtext light mb1" v-model="level1" @change="lastlevel">
                         <option value="">Selecione</option>
                         <option v-for="(r,i) in regions[0]?.children" :value="i">{{r.descricao}}</option>
                     </select>
                     <template v-if="singleIndicadores.nivel_regionalizacao>=3&&level1!==null">
-                        <select class="inputtext light mb1" v-model="level2" @change="lastlevel" :disabled="var_id">
+                        <select class="inputtext light mb1" v-model="level2" @change="lastlevel">
                             <option value="">Selecione</option>
                             <option v-for="(rr,ii) in regions[0]?.children[level1]?.children" :value="ii">{{rr.descricao}}</option>
                         </select>
                         <template v-if="singleIndicadores.nivel_regionalizacao==4&&level2!==null">
-                            <select class="inputtext light mb1" v-model="level3" @change="lastlevel" :disabled="var_id">
+                            <select class="inputtext light mb1" v-model="level3" @change="lastlevel">
                                 <option value="">Selecione</option>
                                 <option v-for="(rrr,iii) in regions[0]?.children[level1]?.children[level2]?.children" :value="iii">{{rrr.descricao}}</option>
                             </select>
