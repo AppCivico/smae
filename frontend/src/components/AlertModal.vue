@@ -15,7 +15,7 @@ async function callbackFn(){
     <div v-if="alert" class="alert-wrap">
         <div class="overlay" @click="alertStore.clear()"></div>
         <div class="alert" :class="alert.type">
-            <div class="mr2">{{alert.message}}</div>
+            <div class="mr2" v-html="alert.message"></div>
             <template v-if="alert.type=='confirmAction'">
                 <button @click="callbackFn" class="btn amarelo mr1">{{alert.label}}</button>
                 <button @click="alertStore.clear()" class="btn amarelo outline">Cancelar</button>
