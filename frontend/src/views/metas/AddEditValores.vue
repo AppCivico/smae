@@ -70,6 +70,20 @@ async function checkClose() {
         router.go(-1);
     });
 }
+function acumular(a,j){
+    if(!a.length) return;
+    var s = 0;
+    for (var i = 0; i <= j; i++) {
+        var x = a[i].series[Previsto.value]?.valor_nominal??'0';
+        var n = !isNaN(parseFloat(x))?parseFloat(x.replace(',','.')):0;
+        if(n)s+=n;
+    }
+    return s.toFixed(decimais.value);
+}
+function soma(a,j) {
+    var x = event.target.value;
+    a[j].series[Previsto.value].valor_nominal = x;
+}
 </script>
 
 <template>
@@ -93,11 +107,11 @@ async function checkClose() {
             <div class="flex g2" v-for="(v,i) in Valores[var_id].previsto">
                 <div class="f1">
                     <label class="label">Previsto {{v.periodo}}</label>
-                    <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1"/>
+                    <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="soma(Valores[var_id].previsto,i)"/>
                 </div>
                 <div class="f1">
                     <label class="label">Acumulado {{v.periodo}}</label>
-                    <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[PrevistoAcumulado]?.referencia" :value="v.series[PrevistoAcumulado]?.valor_nominal" class="inputtext light mb1"/>
+                    <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[PrevistoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(Valores[var_id].previsto,i):v.series[PrevistoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa" class="inputtext light mb1"/>
                 </div>
             </div>
 
