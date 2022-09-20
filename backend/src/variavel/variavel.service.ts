@@ -205,7 +205,7 @@ export class VariavelService {
         const indicador = await this.prisma.indicador.findFirst({
             where: {
                 IndicadorVariavel: {
-                    every: {
+                    some: {
                         variavel_id: variavel_id
                     }
                 },
