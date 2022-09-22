@@ -114,12 +114,20 @@ export class IniciativaService {
     }
 
     async findAll(filters: FilterIniciativaDto | undefined = undefined) {
-        // let meta_id = filters?.meta_id | undefined;
+        let meta_id = filters?.meta_id;
+
+        let cond;
+        if (meta_id) {
+            cond = {
+                removido_em: null,
+                meta_id: meta_id
+            }
+        } else {
+            cond = { removido_em: null }
+        }
 
         let listActive = await this.prisma.iniciativa.findMany({
-            where: {
-                removido_em: null,
-            },
+            where: cond,
             orderBy: [
                 { codigo: 'asc' },
             ],

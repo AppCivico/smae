@@ -9,5 +9,5 @@ export class FilterIniciativaDto {
     @IsOptional()
     @IsPositive({ message: '$property| meta_id' })
     @Type(() => Number)
-    meta_id: number;
+    meta_id?: number;
 }
