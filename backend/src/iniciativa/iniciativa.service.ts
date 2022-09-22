@@ -7,6 +7,7 @@ import { CreateIniciativaDto } from './dto/create-iniciativa.dto';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
+import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 
 @Injectable()
 export class IniciativaService {
@@ -192,6 +193,57 @@ export class IniciativaService {
         }
 
         return ret;
+    }
+
+    async update(id: number, updateIniciativaDto: UpdateIniciativaDto, user: PessoaFromJwt) {
+
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            let op = updateIniciativaDto.orgaos_participantes!;
+            let cp = updateIniciativaDto.coordenadores_cp!;
+            delete updateIniciativaDto.orgaos_participantes;
+            delete updateIniciativaDto.coordenadores_cp;
+
+            const iniciativa = await prisma.iniciativa.update({
+                where: { id: id },
+                data: {
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                    status: '',
+                    ativo: true,
+                    ...updateIniciativaDto,
+                },
+                select: { id: true }
+            });
+            await Promise.all([
+                prisma.iniciativaOrgao.deleteMany({ where: { iniciativa_id: id } }),
+                prisma.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } })]
+            );
+
+            await Promise.all([
+                await prisma.iniciativaOrgao.createMany({
+                    data: await this.buildOrgaosParticipantes(iniciativa.id, op),
+                }),
+                await prisma.iniciativaResponsavel.createMany({
+                    data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
+                })
+            ]);
+
+            return iniciativa;
+        });
+
+        return { id };
+    }
+
+    async remove(id: number, user: PessoaFromJwt) {
+        const removed = await this.prisma.iniciativa.updateMany({
+            where: { id: id },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            }
+        });
+
+        return removed;
     }
 
 }
