@@ -8,7 +8,7 @@ export class IdNomeExibicao {
     nome_exibicao: string
 }
 
-export class MetaOrgao {
+export class IniciativaOrgao {
     orgao: IdDesc
     responsavel: boolean
     participantes: IdNomeExibicao[]
@@ -21,6 +21,6 @@ export class Iniciativa {
     codigo: string
     titulo: string
     descricao: string
-    orgaos_participantes: MetaOrgao[]
+    orgaos_participantes: IniciativaOrgao[]
     coordenadores_cp: IdNomeExibicao[]
 }

@@ -97,15 +97,17 @@ model Pessoa {
     IndicadorQueRemovi    Indicador[] @relation("Removedor")
     IndicadorQueAtualizei Indicador[] @relation("Atualizador")
 
-    UnidadeQueCriei     UnidadeMedida[]       @relation("Criador")
-    UnidadeQueRemovi    UnidadeMedida[]       @relation("Removedor")
-    UnidadeQueAtualizei UnidadeMedida[]       @relation("Atualizador")
-    IndicadorVariavel   IndicadorVariavel[]   @relation("Desativador")
+    UnidadeQueCriei     UnidadeMedida[]     @relation("Criador")
+    UnidadeQueRemovi    UnidadeMedida[]     @relation("Removedor")
+    UnidadeQueAtualizei UnidadeMedida[]     @relation("Atualizador")
+    IndicadorVariavel   IndicadorVariavel[] @relation("Desativador")
 
-    IniciativasQueCriei     Iniciativa[]       @relation("Criador")
-    IniciativasQueRemovi    Iniciativa[]       @relation("Removedor")
-    IniciativasQueAtualizei Iniciativa[]       @relation("Atualizador")
-    
+    IniciativasQueCriei     Iniciativa[] @relation("Criador")
+    IniciativasQueRemovi    Iniciativa[] @relation("Removedor")
+    IniciativasQueAtualizei Iniciativa[] @relation("Atualizador")
+
+    IniciativasQueSouResp IniciativaResponsavel[] @relation("IniciativaPessoaResp")
+
     VariavelResponsavel VariavelResponsavel[]
     SerieVariavel       SerieVariavel[]
 
@@ -136,12 +138,14 @@ model Orgao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador      Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador          Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
-    removedor        Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
-    meta_orgao       MetaOrgao[]
-    meta_responsavel MetaResponsavel[]
-    Variavel         Variavel[]
+    atualizador            Pessoa?                 @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                Pessoa?                 @relation("Criador", fields: [criado_por], references: [id])
+    removedor              Pessoa?                 @relation("Removedor", fields: [removido_por], references: [id])
+    meta_orgao             MetaOrgao[]
+    meta_responsavel       MetaResponsavel[]
+    Variavel               Variavel[]
+    iniciativa_orgao       IniciativaOrgao[]
+    iniciativa_responsavel IniciativaResponsavel[]
 
     @@map("orgao")
 }
@@ -813,5 +817,35 @@ model Iniciativa {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    iniciativa_orgao       IniciativaOrgao[]
+    iniciativa_responsavel IniciativaResponsavel[]
+
     @@map("iniciativa")
+}
+
+model IniciativaOrgao {
+    id Int @id @default(autoincrement())
+
+    iniciativa_id Int
+    iniciativa    Iniciativa @relation(fields: [iniciativa_id], references: [id])
+    responsavel   Boolean
+    orgao_id      Int
+    orgao         Orgao      @relation(fields: [orgao_id], references: [id])
+
+    @@map("iniciativa_orgao")
+}
+
+model IniciativaResponsavel {
+    id Int @id @default(autoincrement())
+
+    iniciativa_id Int
+    iniciativa    Iniciativa @relation(fields: [iniciativa_id], references: [id])
+    pessoa_id     Int
+    pessoa        Pessoa     @relation("IniciativaPessoaResp", fields: [pessoa_id], references: [id])
+    orgao_id      Int
+    orgao         Orgao      @relation(fields: [orgao_id], references: [id])
+
+    coordenador_responsavel_cp Boolean
+
+    @@map("iniciativa_responsavel")
 }
