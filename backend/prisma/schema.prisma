@@ -813,6 +813,8 @@ model Iniciativa {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
+    ativo Boolean @default(false)
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
