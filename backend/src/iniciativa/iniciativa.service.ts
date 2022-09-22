@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateIniciativaDto } from './dto/create-iniciativa.dto';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
-import { IdNomeExibicao, Iniciativa, MetaOrgao } from './entities/iniciativa.entity';
+import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
 
 @Injectable()
 export class IniciativaService {
@@ -34,12 +34,12 @@ export class IniciativaService {
                 select: { id: true }
             });
 
-            await prisma.metaOrgao.createMany({
-                data: await this.buildOrgaosParticipantes(createIniciativaDto.meta_id, op),
+            await prisma.iniciativaOrgao.createMany({
+                data: await this.buildOrgaosParticipantes(iniciativa.id, op),
             });
 
-            await prisma.metaResponsavel.createMany({
-                data: await this.buildMetaResponsaveis(createIniciativaDto.meta_id, op, cp),
+            await prisma.iniciativaResponsavel.createMany({
+                data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
             });
 
             return iniciativa;
@@ -48,8 +48,8 @@ export class IniciativaService {
         return created;
     }
 
-    async buildOrgaosParticipantes(metaId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.MetaOrgaoCreateManyInput[]> {
-        const arr: Prisma.MetaOrgaoCreateManyInput[] = [];
+    async buildOrgaosParticipantes(iniciativaId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.IniciativaOrgaoCreateManyInput[]> {
+        const arr: Prisma.IniciativaOrgaoCreateManyInput[] = [];
 
         let orgaoVisto: Record<number, boolean> = {};
         // ordena por responsáveis primeiro
@@ -65,7 +65,7 @@ export class IniciativaService {
                 arr.push({
                     orgao_id: orgao.orgao_id,
                     responsavel: orgao.responsavel,
-                    meta_id: metaId
+                    iniciativa_id: iniciativaId
                 });
             }
         }
@@ -73,16 +73,16 @@ export class IniciativaService {
         return arr;
     }
 
-    async buildMetaResponsaveis(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.MetaResponsavelCreateManyInput[]> {
-        const arr: Prisma.MetaResponsavelCreateManyInput[] = [];
+    async buildIniciativaResponsaveis(iniciativaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.IniciativaResponsavelCreateManyInput[]> {
+        const arr: Prisma.IniciativaResponsavelCreateManyInput[] = [];
 
         for (const orgao of orgaos_participantes) {
             for (const participanteId of orgao.participantes) {
                 arr.push({
-                    meta_id: metaId,
+                    iniciativa_id: iniciativaId,
                     pessoa_id: participanteId,
                     orgao_id: orgao.orgao_id,
-                    coorderandor_responsavel_cp: false,
+                    coordenador_responsavel_cp: false,
                 });
             }
         }
@@ -100,10 +100,10 @@ export class IniciativaService {
             const orgaoId = pessoaFisicaOrgao?.pessoa_fisica?.orgao_id;
             if (orgaoId) {
                 arr.push({
-                    meta_id: metaId,
+                    iniciativa_id: iniciativaId,
                     pessoa_id: CoordenadoriaParticipanteId,
                     orgao_id: orgaoId,
-                    coorderandor_responsavel_cp: true,
+                    coordenador_responsavel_cp: true,
                 });
 
             }
@@ -138,21 +138,17 @@ export class IniciativaService {
                 descricao: true,
                 meta_id: true,
                 status: true,
-                meta: {
+                iniciativa_orgao: {
                     select: {
-                        meta_orgao: {
-                            select: {
-                                orgao: { select: { id: true, descricao: true } },
-                                responsavel: true
-                            }
-                        },
-                        meta_responsavel: {
-                            select: {
-                                orgao: { select: { id: true, descricao: true } },
-                                pessoa: { select: { id: true, nome_exibicao: true } },
-                                coorderandor_responsavel_cp: true,
-                            }
-                        }
+                        orgao: { select: { id: true, descricao: true } },
+                        responsavel: true
+                    }
+                },
+                iniciativa_responsavel: {
+                    select: {
+                        orgao: { select: { id: true, descricao: true } },
+                        pessoa: { select: { id: true, nome_exibicao: true } },
+                        coordenador_responsavel_cp: true,
                     }
                 }
             }
@@ -161,9 +157,9 @@ export class IniciativaService {
         let ret: Iniciativa[] = [];
         for (const dbIniciativa of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
-            const orgaos: Record<number, MetaOrgao> = {};
+            const orgaos: Record<number, IniciativaOrgao> = {};
 
-            for (const orgao of dbIniciativa.meta.meta_orgao) {
+            for (const orgao of dbIniciativa.iniciativa_orgao) {
                 orgaos[orgao.orgao.id] = {
                     orgao: orgao.orgao,
                     responsavel: orgao.responsavel,
@@ -171,8 +167,8 @@ export class IniciativaService {
                 };
             }
 
-            for (const responsavel of dbIniciativa.meta.meta_responsavel) {
-                if (responsavel.coorderandor_responsavel_cp) {
+            for (const responsavel of dbIniciativa.iniciativa_responsavel) {
+                if (responsavel.coordenador_responsavel_cp) {
                     coordenadores_cp.push({
                         id: responsavel.pessoa.id,
                         nome_exibicao: responsavel.pessoa.nome_exibicao,
