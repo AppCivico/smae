@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { IdNomeExibicao, Meta, MetaIniciativa, MetaOrgao } from './entities/meta.entity';
+import { IdNomeExibicao, Meta, MetaOrgao } from './entities/meta.entity';
 
 @Injectable()
 export class MetaService {
@@ -149,12 +149,6 @@ export class MetaService {
                         pessoa: { select: { id: true, nome_exibicao: true } },
                         coorderandor_responsavel_cp: true,
                     }
-                },
-                iniciativa: {
-                    select: {
-                        id: true,
-                        codigo: true
-                    }
                 }
             }
         });
@@ -162,7 +156,6 @@ export class MetaService {
         for (const dbMeta of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, MetaOrgao> = {};
-            const iniciativas: MetaIniciativa[] = [];
 
             for (const orgao of dbMeta.meta_orgao) {
                 orgaos[orgao.orgao.id] = {
@@ -184,14 +177,6 @@ export class MetaService {
                 }
             }
 
-            for (const iniciativa of dbMeta.iniciativa) {
-                iniciativas.push({
-                    coordenadores_cp: coordenadores_cp,
-                    orgaos_participantes: Object.values(orgaos),
-                    ...iniciativa
-                })
-            }
-
             ret.push({
                 id: dbMeta.id,
                 titulo: dbMeta.titulo,
@@ -206,7 +191,6 @@ export class MetaService {
                 ativo: dbMeta.ativo,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
-                iniciativas: iniciativas
             })
         }
 
