@@ -14,13 +14,6 @@ export class MetaOrgao {
     participantes: IdNomeExibicao[]
 }
 
-export class MetaIniciativa {
-    id: number
-    codigo: string
-    orgaos_participantes: MetaOrgao[]
-    coordenadores_cp: IdNomeExibicao[]
-}
-
 export class Meta {
     id: number
     status: string
@@ -35,5 +28,4 @@ export class Meta {
     ativo: boolean
     orgaos_participantes: MetaOrgao[]
     coordenadores_cp: IdNomeExibicao[]
-    iniciativas?: MetaIniciativa[]
 }
