@@ -104,6 +104,13 @@ const PrivConfig: any = {
         ['CadastroUnidadeMedida.editar', 'Editar Unidade de Medida'],
         ['CadastroUnidadeMedida.remover', 'Remover Unidade de Medida'],
     ],
+    CadastroIniciativa: [
+        ['CadastroIniciativa.inserir', 'Inserir Iniciativas'],
+        ['CadastroIniciativa.editar', 'Editar Iniciativas'],
+        ['CadastroIniciativa.remover', 'Remover Iniciativas'],
+        ['CadastroIniciativa.inativar', 'Inativar Iniciativas'],
+        ['CadastroIniciativa.ativar', 'Ativar Iniciativas'],
+    ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP']
     ]
@@ -125,6 +132,7 @@ const ModuloDescricao: any = {
     CadastroMeta: 'Cadastro de Metas',
     CadastroIndicador: 'Cadastro de Indicadores',
     CadastroUnidadeMedida: 'Cadastro de Unidade de Medidas',
+    CadastroIniciativa: 'Cadastro de Iniciativas',
     PDM: 'Regras de Negocio do PDM',
 };
 

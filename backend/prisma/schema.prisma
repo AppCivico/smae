@@ -101,6 +101,11 @@ model Pessoa {
     UnidadeQueRemovi    UnidadeMedida[]       @relation("Removedor")
     UnidadeQueAtualizei UnidadeMedida[]       @relation("Atualizador")
     IndicadorVariavel   IndicadorVariavel[]   @relation("Desativador")
+
+    IniciativasQueCriei     Iniciativa[]       @relation("Criador")
+    IniciativasQueRemovi    Iniciativa[]       @relation("Removedor")
+    IniciativasQueAtualizei Iniciativa[]       @relation("Atualizador")
+    
     VariavelResponsavel VariavelResponsavel[]
     SerieVariavel       SerieVariavel[]
 
@@ -575,6 +580,7 @@ model Meta {
     meta_orgao       MetaOrgao[]
     meta_responsavel MetaResponsavel[]
     indicador        Indicador[]
+    iniciativa       Iniciativa[]
 
     @@map("meta")
 }
@@ -601,6 +607,7 @@ model MetaResponsavel {
     orgao_id  Int
     orgao     Orgao  @relation(fields: [orgao_id], references: [id])
 
+    // TODO: arrumar o nome desta coluna, palavra 'coordenador'.
     coorderandor_responsavel_cp Boolean
 
     @@map("meta_responsavel")
@@ -783,4 +790,28 @@ model SerieVariavel {
     atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
 
     @@map("serie_variavel")
+}
+
+model Iniciativa {
+    id                    Int     @id @default(autoincrement())
+    meta_id               Int
+    meta                  Meta    @relation(fields: [meta_id], references: [id])
+    codigo                String  @unique
+    titulo                String
+    descricao             String
+    compoe_indicador_meta Boolean
+    status                String
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("iniciativa")
 }
