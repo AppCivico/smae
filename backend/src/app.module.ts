@@ -30,6 +30,7 @@ import { MetaModule } from './meta/meta.module';
 import { IndicadorModule } from './indicador/indicador.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { VariavelModule } from './variavel/variavel.module';
+import { IniciativaModule } from './iniciativa/iniciativa.module';
 
 
 @Module({
@@ -44,6 +45,7 @@ import { VariavelModule } from './variavel/variavel.module';
         MetaModule,
         IndicadorModule,
         UnidadeMedidaModule,
+        IniciativaModule,
         VariavelModule
     ],
     controllers: [AppController, MinhaContaController],
