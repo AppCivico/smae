@@ -15,7 +15,7 @@ import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import { AddEditODS, ListODS } from '@/views/ods';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
-import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, AddEditIndicador, SingleMetaEvolucao } from '@/views/metas';
+import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, AddEditIndicador, AddEditIniciativa, SingleMetaEvolucao } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 
 export const router = createRouter({
@@ -106,6 +106,8 @@ export const router = createRouter({
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/novo', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleMetaEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
+                { path: ':meta_id/iniciativas/novo', component: AddEditIniciativa, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/iniciativas/:iniciativa_id', component: AddEditIniciativa, props:{submenu:SubmenuMetas} },
             ]
         },
         { path: '/regioes',

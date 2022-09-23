@@ -6,3 +6,4 @@ export { default as AddEditIndicador } from './AddEditIndicador.vue';
 export { default as SingleMetaEvolucao } from './SingleMetaEvolucao.vue';
 export { default as AddEditVariavel } from './AddEditVariavel.vue';
 export { default as AddEditValores } from './AddEditValores.vue';
+export { default as AddEditIniciativa } from './AddEditIniciativa.vue';
