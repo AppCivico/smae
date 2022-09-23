@@ -95,6 +95,15 @@ export class CreateIndicadorDto {
     */
     @IsPositive({ message: '$property| precisa ser um número' })
     @Type(() => Number)
-    meta_id: number
+    @IsOptional()
+    meta_id?: number
+
+    /**
+    * iniciativa_id
+    */
+    @IsPositive({ message: '$property| precisa ser um número' })
+    @Type(() => Number)
+    @IsOptional()
+    iniciativa_id?: number
 
 }

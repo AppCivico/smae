@@ -12,7 +12,8 @@ export class IndicadorVariavel {
     indicador: {
         id: number;
         titulo: string;
-        meta_id: number;
+        meta_id: number | null;
+        iniciativa_id: number | null
     };
     // TODO...
     iniciativa?: {}
