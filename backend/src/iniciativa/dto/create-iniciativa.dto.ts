@@ -59,10 +59,18 @@ export class CreateIniciativaDto {
     titulo: string
 
     /**
-    * Código
+    * contexto
     */
-    @IsString({ message: '$property| descricao: Precisa ser alfanumérico, campo obrigatório' })
-    descricao: string
+    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @IsOptional()
+    contexto?: string
+
+    /**
+   * complemento
+   */
+    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @IsOptional()
+    complemento?: string
 
     /**
     * compoe_indicador_meta
@@ -75,8 +83,9 @@ export class CreateIniciativaDto {
     */
     @IsString({ message: '$property| status: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| status: pelo menos um caractere' })
+    @IsOptional()
     @MaxLength(250, { message: '$property| status: 250 caracteres' })
-    status: string
+    status?: string
 
     /**
     * Quais são os orgaos participantes e seus membros responsáveis
