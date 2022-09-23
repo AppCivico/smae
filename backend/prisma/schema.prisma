@@ -102,15 +102,15 @@ model Pessoa {
     UnidadeQueAtualizei UnidadeMedida[]     @relation("Atualizador")
     IndicadorVariavel   IndicadorVariavel[] @relation("Desativador")
 
-    IniciativasQueCriei     Iniciativa[] @relation("Criador")
-    IniciativasQueRemovi    Iniciativa[] @relation("Removedor")
-    IniciativasQueAtualizei Iniciativa[] @relation("Atualizador")
-    IniciativasQueSouResp IniciativaResponsavel[] @relation("IniciativaPessoaResp")
-    
-    AtividadesQueCriei     Atividade[] @relation("Criador")
-    AtividadesQueRemovi    Atividade[] @relation("Removedor")
-    AtividadesQueAtualizei Atividade[] @relation("Atualizador")
-    AtividadesQueSouResp AtividadeResponsavel[] @relation("AtividadePessoaResp")
+    IniciativasQueCriei     Iniciativa[]            @relation("Criador")
+    IniciativasQueRemovi    Iniciativa[]            @relation("Removedor")
+    IniciativasQueAtualizei Iniciativa[]            @relation("Atualizador")
+    IniciativasQueSouResp   IniciativaResponsavel[] @relation("IniciativaPessoaResp")
+
+    AtividadesQueCriei     Atividade[]            @relation("Criador")
+    AtividadesQueRemovi    Atividade[]            @relation("Removedor")
+    AtividadesQueAtualizei Atividade[]            @relation("Atualizador")
+    AtividadesQueSouResp   AtividadeResponsavel[] @relation("AtividadePessoaResp")
 
     VariavelResponsavel VariavelResponsavel[]
     SerieVariavel       SerieVariavel[]
@@ -150,8 +150,8 @@ model Orgao {
     Variavel               Variavel[]
     iniciativa_orgao       IniciativaOrgao[]
     iniciativa_responsavel IniciativaResponsavel[]
-    atividade_orgao AtividadeOrgao[]
-    atividade_responsavel AtividadeResponsavel[]
+    atividade_orgao        AtividadeOrgao[]
+    atividade_responsavel  AtividadeResponsavel[]
 
     @@map("orgao")
 }
@@ -664,8 +664,8 @@ model Indicador {
     meta                 Meta?         @relation(fields: [meta_id], references: [id])
     iniciativa_id        Int?
     iniciativa           Iniciativa?   @relation(fields: [iniciativa_id], references: [id])
-    atividade_id        Int?
-    atividade           Atividade?   @relation(fields: [atividade_id], references: [id])
+    atividade_id         Int?
+    atividade            Atividade?    @relation(fields: [atividade_id], references: [id])
     agregador_id         Int
     agregador            Agregador     @relation(fields: [agregador_id], references: [id])
     janela_agregador     Int?
@@ -874,15 +874,15 @@ model IniciativaResponsavel {
 }
 
 model Atividade {
-    id                    Int     @id @default(autoincrement())
-    iniciativa_id Int
-    iniciativa            Iniciativa @relation(fields: [iniciativa_id], references: [id])
-    codigo                String 
-    titulo                String
-    contexto              String?
-    complemento           String?
+    id                          Int        @id @default(autoincrement())
+    iniciativa_id               Int
+    iniciativa                  Iniciativa @relation(fields: [iniciativa_id], references: [id])
+    codigo                      String
+    titulo                      String
+    contexto                    String?
+    complemento                 String?
     compoe_indicador_iniciativa Boolean
-    status                String
+    status                      String
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -899,7 +899,7 @@ model Atividade {
 
     atividade_orgao       AtividadeOrgao[]
     atividade_responsavel AtividadeResponsavel[]
-    Indicador              Indicador[]
+    Indicador             Indicador[]
 
     @@map("atividade")
 }
@@ -909,9 +909,9 @@ model AtividadeOrgao {
 
     atividade_id Int
     atividade    Atividade @relation(fields: [atividade_id], references: [id])
-    responsavel   Boolean
-    orgao_id      Int
-    orgao         Orgao      @relation(fields: [orgao_id], references: [id])
+    responsavel  Boolean
+    orgao_id     Int
+    orgao        Orgao     @relation(fields: [orgao_id], references: [id])
 
     @@map("atividade_orgao")
 }
@@ -921,10 +921,10 @@ model AtividadeResponsavel {
 
     atividade_id Int
     atividade    Atividade @relation(fields: [atividade_id], references: [id])
-    pessoa_id     Int
-    pessoa        Pessoa     @relation("AtividadePessoaResp", fields: [pessoa_id], references: [id])
-    orgao_id      Int
-    orgao         Orgao      @relation(fields: [orgao_id], references: [id])
+    pessoa_id    Int
+    pessoa       Pessoa    @relation("AtividadePessoaResp", fields: [pessoa_id], references: [id])
+    orgao_id     Int
+    orgao        Orgao     @relation(fields: [orgao_id], references: [id])
 
     coordenador_responsavel_cp Boolean
 
