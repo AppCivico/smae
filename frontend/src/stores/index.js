@@ -15,3 +15,4 @@ export * from './regions.store';
 export * from './metas.store';
 export * from './indicadores.store';
 export * from './variaveis.store';
+export * from './iniciativas.store';
