@@ -811,9 +811,10 @@ model Iniciativa {
     meta                  Meta    @relation(fields: [meta_id], references: [id])
     codigo                String  @unique
     titulo                String
-    descricao             String
+    contexto              String?
+    complemento           String?
     compoe_indicador_meta Boolean
-    status                String
+    status                String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)

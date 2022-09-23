@@ -16,11 +16,12 @@ export class IniciativaOrgao {
 
 export class Iniciativa {
     id: number
-    status: string
+    status: string | null
     meta_id: number
     codigo: string
     titulo: string
-    descricao: string
+    contexto: string | null
+    complemento: string | null
     orgaos_participantes: IniciativaOrgao[]
     coordenadores_cp: IdNomeExibicao[]
 }
