@@ -19,7 +19,7 @@ export class SubTemaController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.inserir')
+    @Roles('CadastroSubTema.inserir')
     async create(@Body() createSubTemaDto: CreateSubTemaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.subTemaService.create(createSubTemaDto, user);
     }
@@ -33,7 +33,7 @@ export class SubTemaController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.editar')
+    @Roles('CadastroSubTema.editar')
     async update(@Param() params: FindOneParams, @Body() updateSubTemaDto: UpdateSubTemaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.subTemaService.update(+params.id, updateSubTemaDto, user);
     }
@@ -41,7 +41,7 @@ export class SubTemaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.remover')
+    @Roles('CadastroSubTema.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
