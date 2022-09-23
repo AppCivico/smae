@@ -138,7 +138,7 @@ switch(groupBy){
                     <router-link v-if="perm?.CadastroIniciativa?.inserir" :to="`/metas/${meta_id}/iniciativas/novo`" class="btn ml2">Adicionar iniciativa</router-link>
                 </div>
                 
-                <div class="board_variavel" v-for="ini in Iniciativas[meta_id]">
+                <div class="board_variavel mb2" v-for="ini in Iniciativas[meta_id]">
                     <header class="p1">
                         <div class="flex center g2 mb1">
                             <router-link :to="`/metas/${meta_id}/iniciativas/${ini.id}`" class="f0" style="flex-basis: 2rem;">
@@ -159,11 +159,11 @@ switch(groupBy){
                                 </div>
                                 <div class="mr1 f1">
                                     <div class="t12 uc w700 mb05 tc300">Órgão(s) participante(s)</div>
-                                    <div class="t13">{{ini.orgaos_participantes.map(x=>x.orgao.descricao).join(', ')}}</div>
+                                    <div class="t13">{{ini?.orgaos_participantes?.map(x=>x.orgao.descricao).join(', ')}}</div>
                                 </div>
                                 <div class="f1">
                                     <div class="t12 uc w700 mb05 tc300">Responsável(eis) na Coordenadoria</div>
-                                    <div class="t13">{{ini.coordenadores_cp.map(x=>x.nome_exibicao).join(', ')}}</div>
+                                    <div class="t13">{{ini?.coordenadores_cp?.map(x=>x.nome_exibicao).join(', ')}}</div>
                                 </div>
                             </div>
                         </div>

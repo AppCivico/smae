@@ -52,8 +52,8 @@ export const useIniciativasStore = defineStore({
             if(await requestS.patch(`${baseUrl}/iniciativa/${id}`, params)) return true;
             return false;
         },
-        async delete(id) {
-            if(await requestS.delete(`${baseUrl}/iniciativa/${id}`)){
+        async delete(meta_id,iniciativa_id) {
+            if(await requestS.delete(`${baseUrl}/iniciativa/${iniciativa_id}`)){
                 this.Iniciativas[meta_id] = {};
                 this.getAll(meta_id);
                 return true;
