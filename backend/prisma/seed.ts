@@ -111,6 +111,13 @@ const PrivConfig: any = {
         ['CadastroIniciativa.inativar', 'Inativar Iniciativas'],
         ['CadastroIniciativa.ativar', 'Ativar Iniciativas'],
     ],
+    CadastroAtividade: [
+        ['CadastroAtividade.inserir', 'Inserir Atividades'],
+        ['CadastroAtividade.editar', 'Editar Atividades'],
+        ['CadastroAtividade.remover', 'Remover Atividades'],
+        ['CadastroAtividade.inativar', 'Inativar Atividades'],
+        ['CadastroAtividade.ativar', 'Ativar Atividades'],
+    ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP']
     ]
@@ -133,6 +140,7 @@ const ModuloDescricao: any = {
     CadastroIndicador: 'Cadastro de Indicadores',
     CadastroUnidadeMedida: 'Cadastro de Unidade de Medidas',
     CadastroIniciativa: 'Cadastro de Iniciativas',
+    CadastroAtividade: 'Cadastro de Atividades',
     PDM: 'Regras de Negocio do PDM',
 };
 
