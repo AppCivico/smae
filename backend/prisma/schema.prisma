@@ -432,8 +432,14 @@ model Tag {
     arquivo_icone_id Int?
     ArquivoIcone     Arquivo? @relation(fields: [arquivo_icone_id], references: [id])
 
-    pdm_id Int
-    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+    pdm_id Int?
+    pdm    Pdm? @relation(fields: [pdm_id], references: [id])
+
+    meta_id Int?
+    meta    Meta? @relation(fields: [meta_id], references: [id])
+
+    iniciativa_id Int?
+    iniciativa    Iniciativa? @relation(fields: [iniciativa_id], references: [id])
 
     ods_id Int?
     ods    Ods? @relation(fields: [ods_id], references: [id])
@@ -585,6 +591,7 @@ model Meta {
     meta_responsavel MetaResponsavel[]
     indicador        Indicador[]
     iniciativa       Iniciativa[]
+    Tag              Tag[]
 
     @@map("meta")
 }
@@ -647,8 +654,10 @@ enum Periodicidade {
 
 model Indicador {
     id                   Int           @id @default(autoincrement())
-    meta_id              Int
-    meta                 Meta          @relation(fields: [meta_id], references: [id])
+    meta_id              Int?
+    meta                 Meta?         @relation(fields: [meta_id], references: [id])
+    iniciativa_id        Int?
+    iniciativa           Iniciativa?   @relation(fields: [iniciativa_id], references: [id])
     agregador_id         Int
     agregador            Agregador     @relation(fields: [agregador_id], references: [id])
     janela_agregador     Int?
@@ -802,9 +811,10 @@ model Iniciativa {
     meta                  Meta    @relation(fields: [meta_id], references: [id])
     codigo                String  @unique
     titulo                String
-    descricao             String
+    contexto              String?
+    complemento           String?
     compoe_indicador_meta Boolean
-    status                String
+    status                String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -821,6 +831,8 @@ model Iniciativa {
 
     iniciativa_orgao       IniciativaOrgao[]
     iniciativa_responsavel IniciativaResponsavel[]
+    Tag                    Tag[]
+    Indicador              Indicador[]
 
     @@map("iniciativa")
 }

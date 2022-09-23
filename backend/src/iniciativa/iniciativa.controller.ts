@@ -19,7 +19,7 @@ export class IniciativaController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('cadastroIniciativa.inserir')
+    @Roles('CadastroIniciativa.inserir')
     async create(@Body() createIniciativaDto: CreateIniciativaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.iniciativaService.create(createIniciativaDto, user);
     }

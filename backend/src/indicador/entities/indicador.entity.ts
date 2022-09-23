@@ -11,7 +11,8 @@ export class Indicador {
     periodicidade: Periodicidade
     codigo: string
     titulo: string
-    meta_id: number
+    meta_id: number | null
+    iniciativa_id: number | null
     agregador: IdCodigoDto
     janela_agregador: number | null
     regionalizavel: boolean
