@@ -99,6 +99,17 @@ export class VariavelService {
                     }
                 }
             }
+        } else if (filters?.iniciativa_id) {
+            filterQuery = {
+                indicador_variavel: {
+                    some: {
+                        indicador: {
+                            desativado: removidoStatus,
+                            iniciativa_id: filters?.iniciativa_id
+                        }
+                    }
+                }
+            }
         }
 
         let listActive = await this.prisma.variavel.findMany({
@@ -144,6 +155,7 @@ export class VariavelService {
                                 id: true,
                                 titulo: true,
                                 meta_id: true,
+                                iniciativa_id: true
                             },
                         },
                     }

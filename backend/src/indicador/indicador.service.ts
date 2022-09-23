@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -14,6 +14,9 @@ export class IndicadorService {
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+
+            if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id)
+                throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta ou Iniciativa', 400);
 
             const indicador = await prisma.indicador.create({
                 data: {
@@ -32,11 +35,13 @@ export class IndicadorService {
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined) {
         let metaId = filters?.meta_id;
+        let iniciativaId = filters?.iniciativa_id;
 
         let listActive = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
                 meta_id: metaId,
+                iniciativa_id: iniciativaId
             },
             select: {
                 id: true,
@@ -53,6 +58,7 @@ export class IndicadorService {
                 inicio_medicao: true,
                 fim_medicao: true,
                 meta_id: true,
+                iniciativa_id: true
             }
         });
 

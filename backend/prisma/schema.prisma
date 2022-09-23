@@ -654,8 +654,10 @@ enum Periodicidade {
 
 model Indicador {
     id                   Int           @id @default(autoincrement())
-    meta_id              Int
-    meta                 Meta          @relation(fields: [meta_id], references: [id])
+    meta_id              Int?
+    meta                 Meta?         @relation(fields: [meta_id], references: [id])
+    iniciativa_id        Int?
+    iniciativa           Iniciativa?   @relation(fields: [iniciativa_id], references: [id])
     agregador_id         Int
     agregador            Agregador     @relation(fields: [agregador_id], references: [id])
     janela_agregador     Int?
@@ -829,6 +831,7 @@ model Iniciativa {
     iniciativa_orgao       IniciativaOrgao[]
     iniciativa_responsavel IniciativaResponsavel[]
     Tag                    Tag[]
+    Indicador              Indicador[]
 
     @@map("iniciativa")
 }
