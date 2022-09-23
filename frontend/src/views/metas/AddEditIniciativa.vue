@@ -118,7 +118,7 @@ async function onSubmit(values) {
             r = await IniciativasStore.insert(values);
             msg = 'Item adicionado com sucesso!';
         }
-        if(r == true){
+        if(r){
             IniciativasStore.clear();
             await router.push(`/metas/${meta_id}`);
             alertStore.success(msg);
@@ -167,6 +167,19 @@ function buscaCoord(e,item) {
         var i = coordsAvailable.find(x=>!item.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(item.busca.toLowerCase()));
         if(i) pushId(item.participantes,i.id);
         item.busca="";
+    }
+}
+async function checkDelete(id) {
+    if (id) {
+        if(singleIniciativa.value.id == id){
+            alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
+                if(await IniciativasStore.delete(meta_id,id)){
+                    IniciativasStore.clear();
+                    await router.push('/metas/'+meta_id);
+                    alertStore.success('Iniciativa removida.');
+                }
+            },'Remover');
+        }
     }
 }
 </script>
@@ -272,13 +285,18 @@ function buscaCoord(e,item) {
             </Form>
         </template>
         
-        <template v-if="singleMeta?.loading||!oktogo">
+        <template v-if="singleIniciativa?.loading||!oktogo">
             <span class="spinner">Carregando</span>
         </template>
-        <template v-if="singleMeta?.error||error">
+        <template v-if="singleIniciativa?.error||error">
             <div class="error p1">
-                <div class="error-msg">{{singleMeta.error??error}}</div>
+                <div class="error-msg">{{singleIniciativa.error??error}}</div>
             </div>
+        </template>
+
+        <template v-if="iniciativa_id&&singleIniciativa.id&&iniciativa_id==singleIniciativa.id">
+            <hr class="mt2 mb2"/>
+            <button @click="checkDelete(singleIniciativa.id)" class="btn amarelo big">Remover item</button>
         </template>
     </Dashboard>
 </template>
