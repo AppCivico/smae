@@ -36,12 +36,14 @@ export class IndicadorService {
     async findAll(filters: FilterIndicadorDto | undefined = undefined) {
         let metaId = filters?.meta_id;
         let iniciativaId = filters?.iniciativa_id;
+        let atividadeId = filters?.atividade_id;
 
         let listActive = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
                 meta_id: metaId,
-                iniciativa_id: iniciativaId
+                iniciativa_id: iniciativaId,
+                atividade_id: atividadeId
             },
             select: {
                 id: true,
@@ -58,7 +60,8 @@ export class IndicadorService {
                 inicio_medicao: true,
                 fim_medicao: true,
                 meta_id: true,
-                iniciativa_id: true
+                iniciativa_id: true,
+                atividade_id: true
             }
         });
 
