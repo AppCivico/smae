@@ -31,6 +31,7 @@ import { IndicadorModule } from './indicador/indicador.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { IniciativaModule } from './iniciativa/iniciativa.module';
+import { AtividadeModule } from './atividade/atividade.module';
 
 
 @Module({
@@ -46,6 +47,7 @@ import { IniciativaModule } from './iniciativa/iniciativa.module';
         IndicadorModule,
         UnidadeMedidaModule,
         IniciativaModule,
+        AtividadeModule,
         VariavelModule
     ],
     controllers: [AppController, MinhaContaController],
