@@ -13,6 +13,7 @@ export class Indicador {
     titulo: string
     meta_id: number | null
     iniciativa_id: number | null
+    atividade_id: number | null
     agregador: IdCodigoDto
     janela_agregador: number | null
     regionalizavel: boolean
