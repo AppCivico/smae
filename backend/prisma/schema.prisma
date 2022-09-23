@@ -432,8 +432,14 @@ model Tag {
     arquivo_icone_id Int?
     ArquivoIcone     Arquivo? @relation(fields: [arquivo_icone_id], references: [id])
 
-    pdm_id Int
-    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+    pdm_id Int?
+    pdm    Pdm? @relation(fields: [pdm_id], references: [id])
+
+    meta_id Int?
+    meta    Meta? @relation(fields: [meta_id], references: [id])
+
+    iniciativa_id Int?
+    iniciativa    Iniciativa? @relation(fields: [iniciativa_id], references: [id])
 
     ods_id Int?
     ods    Ods? @relation(fields: [ods_id], references: [id])
@@ -585,6 +591,7 @@ model Meta {
     meta_responsavel MetaResponsavel[]
     indicador        Indicador[]
     iniciativa       Iniciativa[]
+    Tag              Tag[]
 
     @@map("meta")
 }
@@ -821,6 +828,7 @@ model Iniciativa {
 
     iniciativa_orgao       IniciativaOrgao[]
     iniciativa_responsavel IniciativaResponsavel[]
+    Tag                    Tag[]
 
     @@map("iniciativa")
 }
