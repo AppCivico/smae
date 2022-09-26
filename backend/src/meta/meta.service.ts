@@ -24,6 +24,8 @@ export class MetaService {
             delete createMetaDto.orgaos_participantes;
             delete createMetaDto.coordenadores_cp;
 
+            let tags = createMetaDto.tags
+
             const meta = await prisma.meta.create({
                 data: {
                     criado_por: user.id,
@@ -43,10 +45,28 @@ export class MetaService {
                 data: await this.buildMetaResponsaveis(meta.id, op, cp),
             });
 
+            await prisma.metaTag.createMany({
+                data: await this.buildTags(meta.id, tags)
+            });
+
             return meta;
         });
 
         return created;
+    }
+
+    async buildTags(metaId: number, tags: number[] | undefined): Promise<Prisma.MetaTagCreateManyInput[]> {
+        if (typeof tags === 'undefined') tags = [];
+        const arr: Prisma.MetaTagCreateManyInput[] = [];
+
+        for (const tag of tags) {
+            arr.push({
+                meta_id: metaId,
+                tag_id: tag
+            })
+        }
+
+        return arr;
     }
 
     async buildMetaResponsaveis(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.MetaResponsavelCreateManyInput[]> {

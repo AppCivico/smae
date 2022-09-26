@@ -23,23 +23,7 @@ export class CreateTagDto {
     @IsPositive({ message: '$property| Necessário ID do PDM' })
     @IsOptional()
     @Type(() => Number)
-    pdm_id?: number
-
-    /**
-    * ID da Meta
-    */
-    @IsPositive({ message: '$property| Necessário ID do PDM' })
-    @IsOptional()
-    @Type(() => Number)
-    meta_id?: number
-
-    /**
-    * ID da Iniciativa
-    */
-    @IsPositive({ message: '$property| Necessário ID do PDM' })
-    @IsOptional()
-    @Type(() => Number)
-    iniciativa_id?: number
+    pdm_id: number
 
     /**
     * ID do ODS (opcional, enviar null para remover/não existir)

@@ -114,4 +114,14 @@ export class CreateMetaDto {
     @ArrayMinSize(1, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items' })
     coordenadores_cp?: number[]
+
+    /**
+    * ID das tag que serão associadas
+    * @example "[1, 2, 3]"
+    */
+    @IsOptional()
+    @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
+    @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
+    tags?: number[]
 }

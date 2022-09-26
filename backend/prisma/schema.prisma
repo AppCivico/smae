@@ -438,14 +438,8 @@ model Tag {
     arquivo_icone_id Int?
     ArquivoIcone     Arquivo? @relation(fields: [arquivo_icone_id], references: [id])
 
-    pdm_id Int?
-    pdm    Pdm? @relation(fields: [pdm_id], references: [id])
-
-    meta_id Int?
-    meta    Meta? @relation(fields: [meta_id], references: [id])
-
-    iniciativa_id Int?
-    iniciativa    Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
 
     ods_id Int?
     ods    Ods? @relation(fields: [ods_id], references: [id])
@@ -460,6 +454,10 @@ model Tag {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    meta_tag       MetaTag[]
+    iniciativa_tag IniciativaTag[]
+    atividade_tag  AtividadeTag[]
 
     @@map("tag")
 }
@@ -597,9 +595,19 @@ model Meta {
     meta_responsavel MetaResponsavel[]
     indicador        Indicador[]
     iniciativa       Iniciativa[]
-    Tag              Tag[]
+    meta_tag         MetaTag[]
 
     @@map("meta")
+}
+
+model MetaTag {
+    id      Int  @id @default(autoincrement())
+    meta_id Int
+    meta    Meta @relation(fields: [meta_id], references: [id])
+    tag_id  Int
+    tag     Tag  @relation(fields: [tag_id], references: [id])
+    
+    @@map("meta_tag")
 }
 
 model MetaOrgao {
@@ -839,11 +847,21 @@ model Iniciativa {
 
     iniciativa_orgao       IniciativaOrgao[]
     iniciativa_responsavel IniciativaResponsavel[]
-    Tag                    Tag[]
+    iniciativa_tag         IniciativaTag[]
     Indicador              Indicador[]
     Atividade              Atividade[]
 
     @@map("iniciativa")
+}
+
+model IniciativaTag {
+    id            Int        @id @default(autoincrement())
+    iniciativa_id Int
+    iniciativa    Iniciativa @relation(fields: [iniciativa_id], references: [id])
+    tag_id        Int
+    tag           Tag        @relation(fields: [tag_id], references: [id])
+
+    @@map("iniciativa_tag")
 }
 
 model IniciativaOrgao {
@@ -899,9 +917,20 @@ model Atividade {
 
     atividade_orgao       AtividadeOrgao[]
     atividade_responsavel AtividadeResponsavel[]
+    atividade_tag         AtividadeTag[]
     Indicador             Indicador[]
 
     @@map("atividade")
+}
+
+model AtividadeTag {
+    id           Int       @id @default(autoincrement())
+    atividade_id Int
+    atividade    Atividade @relation(fields: [atividade_id], references: [id])
+    tag_id       Int
+    tag          Tag       @relation(fields: [tag_id], references: [id])
+
+    @@map("atividade_tag")
 }
 
 model AtividadeOrgao {
