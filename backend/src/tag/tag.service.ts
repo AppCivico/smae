@@ -33,8 +33,6 @@ export class TagService {
 
         console.log(createTagDto);
 
-        if (!createTagDto.iniciativa_id && !createTagDto.meta_id && !createTagDto.iniciativa_id)
-            throw new HttpException('relacionamento| Tag deve ter no mínimo 1 relacionamento: PDM, Meta ou Iniciativa', 400);
 
         const created = await this.prisma.tag.create({
             data: {
@@ -51,22 +49,16 @@ export class TagService {
 
     async findAll(filters: FilterTagDto | undefined = undefined) {
         let pdmId = filters?.pdm_id;
-        let metaId = filters?.meta_id;
-        let iniciativaId = filters?.iniciativa_id;
 
         let listActive = await this.prisma.tag.findMany({
             where: {
                 removido_em: null,
                 pdm_id: pdmId,
-                meta_id: metaId,
-                iniciativa_id: iniciativaId
             },
             select: {
                 id: true,
                 descricao: true,
                 pdm_id: true,
-                meta_id: true,
-                iniciativa_id: true,
                 ods_id: true,
                 icone: true,
                 arquivo_icone_id: true
