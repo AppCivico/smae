@@ -118,6 +118,13 @@ const PrivConfig: any = {
         ['CadastroAtividade.inativar', 'Inativar Atividades'],
         ['CadastroAtividade.ativar', 'Ativar Atividades'],
     ],
+    CadastroCronograma: [
+        ['CadastroCronograma.inserir', 'Inserir Cronogramas'],
+        ['CadastroCronograma.editar', 'Editar Cronogramas'],
+        ['CadastroCronograma.remover', 'Remover Cronogramas'],
+        ['CadastroCronograma.inativar', 'Inativar Cronogramas'],
+        ['CadastroCronograma.ativar', 'Ativar Cronogramas'],
+    ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP']
     ]
@@ -141,6 +148,7 @@ const ModuloDescricao: any = {
     CadastroUnidadeMedida: 'Cadastro de Unidade de Medidas',
     CadastroIniciativa: 'Cadastro de Iniciativas',
     CadastroAtividade: 'Cadastro de Atividades',
+    CadastroCronograma: 'Cadastro de Cronogramas',
     PDM: 'Regras de Negocio do PDM',
 };
 
