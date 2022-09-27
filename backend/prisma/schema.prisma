@@ -112,8 +112,12 @@ model Pessoa {
     AtividadesQueAtualizei Atividade[]            @relation("Atualizador")
     AtividadesQueSouResp   AtividadeResponsavel[] @relation("AtividadePessoaResp")
 
-    VariavelResponsavel VariavelResponsavel[]
-    SerieVariavel       SerieVariavel[]
+    VariavelResponsavel     VariavelResponsavel[]
+    SerieVariavel           SerieVariavel[]
+    CronogramaOrgao         CronogramaOrgao[]
+    CronogramasQueCriei     Cronograma[]          @relation("Criador")
+    CronogramasQueRemovi    Cronograma[]          @relation("Removedor")
+    CronogramasQueAtualizei Cronograma[]          @relation("Atualizador")
 
     @@map("pessoa")
 }
@@ -152,6 +156,7 @@ model Orgao {
     iniciativa_responsavel IniciativaResponsavel[]
     atividade_orgao        AtividadeOrgao[]
     atividade_responsavel  AtividadeResponsavel[]
+    CronogramaOrgao        CronogramaOrgao[]
 
     @@map("orgao")
 }
@@ -512,6 +517,7 @@ model Regiao {
     RegioesAbaixo  Regiao[]         @relation("Parente")
     Variavel       Variavel[]
     SerieIndicador SerieIndicador[]
+    Etapa          Etapa[]
 
     @@map("regiao")
 }
@@ -597,6 +603,8 @@ model Meta {
     iniciativa       Iniciativa[]
     meta_tag         MetaTag[]
 
+    cronograma Cronograma[]
+
     @@map("meta")
 }
 
@@ -606,7 +614,7 @@ model MetaTag {
     meta    Meta @relation(fields: [meta_id], references: [id])
     tag_id  Int
     tag     Tag  @relation(fields: [tag_id], references: [id])
-    
+
     @@map("meta_tag")
 }
 
@@ -850,6 +858,7 @@ model Iniciativa {
     iniciativa_tag         IniciativaTag[]
     Indicador              Indicador[]
     Atividade              Atividade[]
+    Cronograma             Cronograma[]
 
     @@map("iniciativa")
 }
@@ -919,6 +928,7 @@ model Atividade {
     atividade_responsavel AtividadeResponsavel[]
     atividade_tag         AtividadeTag[]
     Indicador             Indicador[]
+    Cronograma            Cronograma[]
 
     @@map("atividade")
 }
@@ -958,4 +968,91 @@ model AtividadeResponsavel {
     coordenador_responsavel_cp Boolean
 
     @@map("atividade_responsavel")
+}
+
+model Cronograma {
+    id Int @id @default(autoincrement())
+
+    meta_id      Int?
+    meta         Meta?       @relation(fields: [meta_id], references: [id])
+    iniciativa_id Int?
+    iniciativa   Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade_id Int?
+    atividade    Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    descricao        String?
+    observacao       String?
+    inicio_previsto  DateTime          @db.Date()
+    termino_previsto DateTime          @db.Date()
+    inicio_real      DateTime?         @db.Date()
+    termino_real     DateTime?         @db.Date()
+    por_regiao       Boolean
+    tipo_regiao      String
+    CronogramaOrgao  CronogramaOrgao[]
+    CronogramaEtapa  CronogramaEtapa[]
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    ativo Boolean @default(true)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("cronograma")
+}
+
+model Etapa {
+    id Int @id @default(autoincrement())
+
+    etapa_pai_id Int?
+    etapa_pai    Etapa?  @relation("EtapaPai", fields: [etapa_pai_id], references: [id])
+    EtapaPai     Etapa[] @relation("EtapaPai")
+    regiao_id    Int?
+    regiao       Regiao? @relation(fields: [regiao_id], references: [id])
+
+    nivel            String?
+    ordem            Int
+    descricao        String?
+    inicio_previsto  DateTime          @db.Date()
+    termino_previsto DateTime          @db.Date()
+    inicio_real      DateTime?         @db.Date()
+    termino_real     DateTime?         @db.Date()
+    prazo            DateTime          @db.Date()
+    status           String?
+    CronogramaEtapa  CronogramaEtapa[]
+
+    @@map("etapa")
+}
+
+model CronogramaOrgao {
+    id Int @id @default(autoincrement())
+
+    cronograma_id Int
+    cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
+    orgao_id      Int
+    orgao         Orgao      @relation(fields: [orgao_id], references: [id])
+    pessoa_id     Int
+    pessoa        Pessoa     @relation(fields: [pessoa_id], references: [id])
+
+    @@map("cronograma_orgao")
+}
+
+model CronogramaEtapa {
+    id Int @id @default(autoincrement())
+
+    cronograma_id Int
+    cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
+    etapa_id      Int
+    etapa         Etapa      @relation(fields: [etapa_id], references: [id])
+
+    inativo         Boolean   @default(false)
+    data_inativacao DateTime? @db.Timestamptz(6)
+
+    @@map("cronograma_etapa")
 }
