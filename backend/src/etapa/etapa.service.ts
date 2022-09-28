@@ -3,88 +3,92 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCronogramaDto } from './dto/create-cronograma.dto';
-import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
-import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
+import { CreateEtapaDto } from './dto/create-etapa.dto';
+import { FilterEtapaDto } from './dto/filter-etapa.dto';
+import { UpdateEtapaDto } from './dto/update-etapa.dto';
 
 @Injectable()
-export class CronogramaService {
+export class EtapaService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
+    async create(createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
-                throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
+            const cronogramaId = createEtapaDto.cronograma_id;
 
-            const cronograma = await prisma.cronograma.create({
+            const etapa = await prisma.etapa.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
-                    ...createCronogramaDto,
+                    ...createEtapaDto,
                 },
                 select: { id: true }
             });
 
+            await prisma.cronogramaEtapa.create({
+                data: {
+                    cronograma_id: cronogramaId,
+                    etapa_id: etapa.id
+                }
+            })
 
-            return cronograma;
+            return etapa;
         });
 
         return created;
     }
 
 
-    async findAll(filters: FilterCronogramaDto | undefined = undefined) {
-        let metaId = filters?.meta_id;
-        let atividadeId = filters?.atividade_id;
-        let iniciativaId = filters?.iniciativa_id;
+    async findAll(filters: FilterEtapaDto | undefined = undefined) {
+        let etapaPaiId = filters?.etapa_pai_id;
+        let regiaoId = filters?.regiao_id;
 
-        return await this.prisma.cronograma.findMany({
+        return await this.prisma.etapa.findMany({
             where: {
-                meta_id: metaId,
-                atividade_id: atividadeId,
-                iniciativa_id: iniciativaId,
-                ativo: true
+                etapa_pai_id: etapaPaiId,
+                regiao_id: regiaoId
             },
             select: {
                 id: true,
-                meta_id: true,
-                atividade_id: true,
-                iniciativa_id: true,
+                etapa_pai_id: true,
+                regiao_id: true,
                 descricao: true,
-                observacao: true,
+                nivel: true,
+                ordem: true,
+                prazo: true,
                 inicio_previsto: true,
                 termino_previsto: true,
                 inicio_real: true,
                 termino_real: true,
-                por_regiao: true,
-                tipo_regiao: true,
-            }
+            },
+            orderBy: [
+                { ordem: 'asc' }
+            ]
         });
     }
 
-    async update(id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
+    async update(id: number, updateEtapaDto: UpdateEtapaDto, user: PessoaFromJwt) {
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
-            const cronograma = await prisma.cronograma.update({
+            const etapa = await prisma.etapa.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
-                    ...updateCronogoramaDto,
+                    ...updateEtapaDto,
                 },
                 select: { id: true }
             });
 
-            return cronograma;
+            return etapa;
         });
 
         return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const removed = await this.prisma.cronograma.updateMany({
+        const removed = await this.prisma.etapa.updateMany({
             where: { id: id },
             data: {
                 removido_por: user.id,

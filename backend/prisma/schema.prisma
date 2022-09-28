@@ -114,10 +114,15 @@ model Pessoa {
 
     VariavelResponsavel     VariavelResponsavel[]
     SerieVariavel           SerieVariavel[]
+    
     CronogramaOrgao         CronogramaOrgao[]
     CronogramasQueCriei     Cronograma[]          @relation("Criador")
     CronogramasQueRemovi    Cronograma[]          @relation("Removedor")
     CronogramasQueAtualizei Cronograma[]          @relation("Atualizador")
+
+    EtapasQueCriei     Etapa[]          @relation("Criador")
+    EtapasQueRemovi    Etapa[]          @relation("Removedor")
+    EtapasQueAtualizei Etapa[]          @relation("Atualizador")
 
     @@map("pessoa")
 }
@@ -699,6 +704,8 @@ model Indicador {
     atualizado_em        DateTime      @default(now()) @db.Timestamptz(6)
     removido_por         Int?
     removido_em          DateTime?     @db.Timestamptz(6)
+    contexto             String?
+    observacao           String?
 
     atualizador       Pessoa?             @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador           Pessoa?             @relation("Criador", fields: [criado_por], references: [id])
@@ -982,12 +989,12 @@ model Cronograma {
 
     descricao        String?
     observacao       String?
-    inicio_previsto  DateTime          @db.Date()
-    termino_previsto DateTime          @db.Date()
+    inicio_previsto  DateTime?          @db.Date()
+    termino_previsto DateTime?          @db.Date()
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
     por_regiao       Boolean
-    tipo_regiao      String
+    tipo_regiao      String?
     CronogramaOrgao  CronogramaOrgao[]
     CronogramaEtapa  CronogramaEtapa[]
 
@@ -998,7 +1005,7 @@ model Cronograma {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    ativo Boolean @default(true)
+    ativo Boolean @default(false)
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -1026,6 +1033,17 @@ model Etapa {
     prazo            DateTime          @db.Date()
     status           String?
     CronogramaEtapa  CronogramaEtapa[]
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("etapa")
 }
