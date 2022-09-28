@@ -114,4 +114,11 @@ export class CreateIndicadorDto {
     @IsOptional()
     atividade_id?: number
 
+    @IsOptional()
+    @IsString({ message: '$property| Precisa ser uma string' })
+    contexto?: string | null
+
+    @IsOptional()
+    @IsString({ message: '$property| Precisa ser uma string' })
+    observacao?: string | null
 }
