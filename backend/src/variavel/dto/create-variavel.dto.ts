@@ -81,4 +81,9 @@ export class CreateVariavelDto {
 
     @IsBoolean({ message: 'acumulativa| Precisa ser um boolean' })
     acumulativa: boolean
+
+    @IsOptional()
+    @IsPositive({ message: '$property| ano_base precisa ser numérico' })
+    @Type(() => Number)
+    ano_base?: number
 }
