@@ -8,26 +8,59 @@ import { storeToRefs } from 'pinia';
 import { requestS } from '@/helpers';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-import { useAlertStore, useEditModalStore, useMetasStore, useIndicadoresStore, useVariaveisStore, useRegionsStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useMetasStore, useIniciativasStore, useAtividadesStore, useIndicadoresStore, useVariaveisStore, useRegionsStore } from '@/stores';
+
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 
 const route = useRoute();
 const meta_id = route.params.meta_id;
+const iniciativa_id = route.params.iniciativa_id;
+const atividade_id = route.params.atividade_id;
 const indicador_id = route.params.indicador_id;
+
 const var_id = route.params.var_id;
+const copy_id = route.params.copy_id;
+
+const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
+const currentEdit = route.path.slice(0,route.path.indexOf('/variaveis'));
 
 const ps = defineProps(['props']);
 const props = ps.props;
 
-const IndicadoresStore = useIndicadoresStore();
-const { singleIndicadores } = storeToRefs(IndicadoresStore);
-if(!singleIndicadores?.id || singleIndicadores.id!=indicador_id) IndicadoresStore.getById(meta_id,indicador_id);
-
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
 if(!singleMeta?.id || singleMeta.id!=meta_id) MetasStore.getById(meta_id);
+
+const IniciativasStore = useIniciativasStore();
+const { singleIniciativa } = storeToRefs(IniciativasStore);
+if(iniciativa_id)IniciativasStore.getById(meta_id,iniciativa_id);
+
+const AtividadesStore = useAtividadesStore();
+const { singleAtividade } = storeToRefs(AtividadesStore);
+if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
+
+const IndicadoresStore = useIndicadoresStore();
+const { singleIndicadores } = storeToRefs(IndicadoresStore);
+if(indicador_id&&(!singleIndicadores?.id || singleIndicadores.id!=indicador_id)){
+    if(atividade_id){
+        IndicadoresStore.getById(atividade_id,'atividade_id',indicador_id);
+    }else if(iniciativa_id){
+        IndicadoresStore.getById(iniciativa_id,'iniciativa_id',indicador_id);
+    }else{
+        IndicadoresStore.getById(meta_id,'meta_id',indicador_id);
+    }
+}
+
+let lastParent = ref({});
+if(atividade_id){
+    lastParent = singleAtividade.value;
+}else if(iniciativa_id){
+    lastParent = singleIniciativa.value;
+}else{
+    lastParent = singleMeta.value;
+}
 
 const VariaveisStore = useVariaveisStore();
 const { singleVariaveis } = storeToRefs(VariaveisStore);
@@ -45,6 +78,7 @@ let level2 = ref(null);
 let level3 = ref(null);
 let regiao_id_mount = ref(null);
 
+const virtualParent = ref({});
 if(var_id){
     title = 'Editar variável';
     if(!singleVariaveis.value.id) Promise.all([VariaveisStore.getById(indicador_id,var_id)]).then(()=>{
@@ -60,6 +94,29 @@ if(var_id){
             })();
         }
     });
+}else if(copy_id){
+    if(!singleVariaveis.value.id) Promise.all([VariaveisStore.getById(indicador_id,copy_id)]).then(()=>{
+        responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map(x=>x.id)??[];
+        orgao_id.value = singleVariaveis.value?.orgao_id;
+
+        if(singleVariaveis.value?.regiao_id){
+            if(singleVariaveis.value.regiao_id) (async()=>{
+                await RegionsStore.filterRegions({id: singleVariaveis.value.regiao_id});
+                level1.value = tempRegions.value[0]?.children[0].index??null;
+                level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
+                level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
+            })();
+        }
+        console.log(virtualParent);
+        virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
+        virtualParent.value.casas_decimais = singleVariaveis.value.casas_decimais;
+        virtualParent.value.orgao_id = singleVariaveis.value.orgao_id;
+        virtualParent.value.periodicidade = singleVariaveis.value.periodicidade;
+        virtualParent.value.peso = singleVariaveis.value.peso;
+        virtualParent.value.responsaveis = singleVariaveis.value.responsaveis;
+        virtualParent.value.unidade_medida_id = singleVariaveis.value.unidade_medida_id;
+        virtualParent.value.valor_base = singleVariaveis.value.valor_base;
+    });
 }
 
 
@@ -72,6 +129,7 @@ const schema = Yup.object().shape({
     periodicidade: Yup.string().required('Preencha a periodicidade'),
     
     valor_base: Yup.string().required('Preencha o valor base'),
+    ano_base: Yup.string().nullable(),
     casas_decimais: Yup.string().required('Preencha o número de casas decimais'),
     peso: Yup.string().notRequired(),
 
@@ -94,6 +152,7 @@ async function onSubmit(values) {
         values.regiao_id = singleIndicadores.value.regionalizavel? Number(values.regiao_id):null;
         values.unidade_medida_id = Number(values.unidade_medida_id);
         values.valor_base = values.valor_base;
+        values.ano_base = Number(values.ano_base);
         values.casas_decimais = Number(values.casas_decimais);
         values.peso = values.peso?Number(values.peso):null;
         values.responsaveis = responsaveisArr.value.participantes;
@@ -103,12 +162,12 @@ async function onSubmit(values) {
             if(singleVariaveis.value.id==var_id){
                 r = await VariaveisStore.update(var_id, values);
                 msg = 'Dados salvos com sucesso!';
-                rota = `/metas/${meta_id}/indicadores/${indicador_id}`;
+                rota = currentEdit;
             }
         } else {
             r = await VariaveisStore.insert(values);
             msg = 'Item adicionado com sucesso!';
-            rota = `/metas/${meta_id}/indicadores/${indicador_id}/variaveis/${r}/valores`;
+            rota = `${currentEdit}/variaveis/${r}/valores`;
         }
         if(r){
             VariaveisStore.clear();
@@ -160,16 +219,23 @@ function buscaCoord(e,parent,item) {
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
     <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&singleIndicadores?.id">
-        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="singleVariaveis" v-slot="{ errors, isSubmitting }">
+        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="var_id?singleVariaveis:virtualParent" v-slot="{ errors, isSubmitting }">
             <div>
                 <label class="label">Título <span class="tvermelho">*</span></label>
                 <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
                 <div class="error-msg">{{ errors.titulo }}</div>
             </div>
-            <div>
-                <label class="label">Valor base <span class="tvermelho">*</span></label>
-                <Field name="valor_base" type="number" class="inputtext light mb1" :class="{ 'error': errors.valor_base }" />
-                <div class="error-msg">{{ errors.valor_base }}</div>
+            <div class="flex g2">
+                <div class="f1">
+                    <label class="label">Valor base <span class="tvermelho">*</span></label>
+                    <Field name="valor_base" type="number" class="inputtext light mb1" :class="{ 'error': errors.valor_base }" />
+                    <div class="error-msg">{{ errors.valor_base }}</div>
+                </div>
+                <div class="f1">
+                    <label class="label">Ano base</label>
+                    <Field name="ano_base" type="number" class="inputtext light mb1" :class="{ 'error': errors.ano_base }" />
+                    <div class="error-msg">{{ errors.ano_base }}</div>
+                </div>
             </div>
 
             <div>
@@ -226,25 +292,24 @@ function buscaCoord(e,parent,item) {
                 </label>
                 <div class="error-msg">{{ errors.acumulativa }}</div>
             </div>
-
-            <div>
+            <div v-if="lastParent?.orgaos_participantes">
                 <label class="label">Orgão responsável <span class="tvermelho">*</span></label>
-                <Field v-if="singleMeta?.id" name="orgao_id" v-model="orgao_id" @change="responsaveisArr.participantes.splice(0,responsaveisArr.participantes.length)" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
-                    <option v-for="a in singleMeta.orgaos_participantes" :value="a.orgao.id">{{a.orgao.descricao}}</option>
+                <Field v-if="lastParent?.id" name="orgao_id" v-model="orgao_id" @change="responsaveisArr.participantes.splice(0,responsaveisArr.participantes.length)" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
+                    <option v-for="a in lastParent.orgaos_participantes" :value="a.orgao.id">{{a.orgao.descricao}}</option>
                 </Field>
                 <div class="error-msg">{{ errors.orgao_id }}</div>
 
 
                 <label class="label">Responsável(eis)* <span class="tvermelho">*</span></label>
-                <div class="mb1" v-if="singleMeta?.orgaos_participantes?.length&&orgao_id">
-                    <template v-for="c in [singleMeta.orgaos_participantes.find(x=>x.orgao.id==orgao_id)]">
+                <div class="mb1" v-if="lastParent?.orgaos_participantes?.length&&orgao_id">
+                    <template v-for="c in [lastParent.orgaos_participantes.find(x=>x.orgao.id==orgao_id)]">
                         <div class="suggestion search">
                             <input type="text" v-model="responsaveisArr.busca" @keyup.enter.stop.prevent="buscaCoord($event,c.participantes,responsaveisArr)" class="inputtext light mb05">
                             <ul>
-                                <li v-for="(r,k) in c.participantes.filter(x=>!responsaveisArr.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(responsaveisArr.busca.toLowerCase()))"><a @click="pushId(responsaveisArr.participantes,r.id)" tabindex="1">{{r.nome_exibicao}}</a></li>
+                                <li v-if="c?.participantes" v-for="(r,k) in c?.participantes.filter(x=>!responsaveisArr.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(responsaveisArr.busca.toLowerCase()))"><a @click="pushId(responsaveisArr.participantes,r.id)" tabindex="1">{{r.nome_exibicao}}</a></li>
                             </ul>
                         </div>
-                        <span class="tagsmall" v-for="(p,k) in c.participantes.filter(x=>responsaveisArr.participantes.includes(x.id))" @click="removeParticipante(responsaveisArr,p.id)">{{p.nome_exibicao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                        <span v-if="c?.participantes" class="tagsmall" v-for="(p,k) in c?.participantes.filter(x=>responsaveisArr.participantes.includes(x.id))" @click="removeParticipante(responsaveisArr,p.id)">{{p.nome_exibicao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
                     </template>
                 </div>
                 <input v-else class="inputtext light mb1" type="text" disabled value="Selecione um órgão">

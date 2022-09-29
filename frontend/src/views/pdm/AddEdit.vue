@@ -1,10 +1,13 @@
 <script setup>
+import { reactive } from 'vue';
+import { requestS } from '@/helpers';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 import { useAlertStore, useAuthStore, usePdMStore } from '@/stores';
 
@@ -22,7 +25,10 @@ const perm = permissions.value;
 let title = 'Cadastro de PdM';
 if (pdm_id) {
     title = 'Editar PdM';
-    PdMStore.getById(pdm_id);
+    (async()=>{
+        await PdMStore.getById(pdm_id);
+        curfile.name = singlePdm.value.logo;
+    })();
 }
 
 var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
@@ -52,6 +58,13 @@ const schema = Yup.object().shape({
     rotulo_contexto_meta: Yup.string().nullable().when('possui_contexto_meta', (v,f)=>v=="1"?f.required("Escreva um título"):f),
     possui_complementacao_meta: Yup.boolean().nullable(),
     rotulo_complementacao_meta: Yup.string().nullable().when('possui_complementacao_meta', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+
+    possui_iniciativa: Yup.boolean().nullable().when('possui_atividade', (v,f)=>v=="1"?f.required("Para habilitar atividade é necessário habilitar iniciativa"):f),
+    rotulo_iniciativa: Yup.string().nullable().when('possui_iniciativa', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+    possui_atividade: Yup.boolean().nullable(),
+    rotulo_atividade: Yup.string().nullable().when('possui_atividade', (v,f)=>v=="1"?f.required("Escreva um título"):f),
+
+    upload_logo: Yup.string().nullable(),
 });
 
 async function onSubmit(values) {
@@ -90,6 +103,30 @@ function maskDate(el){
         }
     }
 }
+
+const curfile = reactive({});
+function removeshape(t) {
+    curfile.name = '';
+    curfile.loading = null;
+    singlePdm.value.upload_logo = curfile.name;
+}
+async function uploadshape(e){
+    curfile.name= '';
+    curfile.loading = true;
+
+    const files = e.target.files;
+    const formData = new FormData();
+    formData.append('tipo', 'LOGO_PDM');
+    formData.append('arquivo', files[0]);
+
+    let u = await requestS.upload(`${baseUrl}/upload`, formData)
+    if(u.upload_token){
+        curfile.name= u.upload_token;
+        curfile.loading = null;
+        singlePdm.value.upload_logo = curfile.name;
+    }
+}
+
 </script>
 
 <template>
@@ -123,6 +160,20 @@ function maskDate(el){
                         <div class="error-msg">{{ errors.descricao }}</div>
                     </div>
                 </div>
+
+                <div class="mt2">
+                    <label class="label tc300">Logo do Programa de Metas</label>
+                    
+                    <label v-if="!curfile.loading&&!curfile.name" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar arquivo ( formatos SVG ou PNG até 2mb) *</span><input type="file" accept=".svg,.png" :onchange="uploadshape" style="display:none;"></label>
+                    
+                    <div v-else-if="curfile.loading" class="addlink"><span>Carregando</span> <svg width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
+                    
+                    <div v-else-if="curfile.name"><span>{{curfile?.name?.slice(0,30)}}</span> <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a></div>
+                    <Field name="upload_logo" type="hidden" :value="curfile?.name"/>
+                </div>
+
+                <hr class="mt2 mb2" />
+
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Início do Período <span class="tvermelho">*</span></label>
@@ -165,6 +216,10 @@ function maskDate(el){
                         <p class="t13 tc500">Separe os membros por vírgula ou ponto-e-vírgula</p>
                     </div>
                 </div>
+
+                <hr class="mt2 mb2" />
+
+
                 <div class="flex center g2">
                     <div class="f1">
                         <label class="label">Rótulo do Macrotema</label>
@@ -225,6 +280,36 @@ function maskDate(el){
                         </label>
                     </div>
                 </div>
+
+                <hr class="mt2 mb2" />
+                <div class="flex center g2">
+                    <div class="f1">
+                        <label class="label">Rótulo da Iniciativa</label>
+                        <Field name="rotulo_iniciativa" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_iniciativa }" />
+                        <div class="error-msg">{{ errors.rotulo_iniciativa }}</div>
+                        <div class="error-msg">{{ errors.possui_iniciativa }}</div>
+                    </div>
+                    <div class="f0" style="flex-basis: 200px;">
+                        <label class="block mb1">
+                            <Field name="possui_iniciativa" class="inputcheckbox" :class="{ 'error': errors.possui_iniciativa }" type="checkbox" value=1 v-model="possui_iniciativa" /><span>Habilitar Iniciativa</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex center g2">
+                    <div class="f1">
+                        <label class="label">Rótulo da Atividade</label>
+                        <Field name="rotulo_atividade" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_atividade }" :disabled="!possui_iniciativa" />
+                        <div class="error-msg">{{ errors.rotulo_atividade }}</div>
+                    </div>
+                    <div class="f0" style="flex-basis: 200px;">
+                        <label class="block mb1">
+                            <Field name="possui_atividade" class="inputcheckbox" :class="{ 'error': errors.possui_atividade }" type="checkbox" value=1 v-model="possui_atividade" :disabled="!possui_iniciativa" /><span>Habilitar Atividade</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="error-msg">{{ errors.possui_atividade }}</div>
+                <hr class="mt2 mb2" />
+
                 <div class="flex spacebetween center mb2">
                     <hr class="mr2 f1"/>
                     <button class="btn big" :disabled="isSubmitting">Salvar</button>

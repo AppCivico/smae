@@ -31,7 +31,7 @@ export const useIniciativasStore = defineStore({
         },
         async getById(meta_id,iniciativa_id) {
             try {
-                if(!meta_id) throw "Indicador inválido";
+                if(!meta_id) throw "Meta inválida";
                 if(!iniciativa_id) throw "Iniciativa inválida";
                 this.singleIniciativa = { loading: true };
                 if(!this.Iniciativas[meta_id]?.length){

@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
+import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, useIndicadoresStore, useIniciativasStore, useAtividadesStore, useVariaveisStore } from '@/stores';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 
@@ -14,7 +14,11 @@ const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
 const meta_id = route.params.meta_id;
-const id = route.params.indicador_id;
+const iniciativa_id = route.params.iniciativa_id;
+const atividade_id = route.params.atividade_id;
+const indicador_id = route.params.indicador_id;
+
+const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 
 const props = defineProps(['group']);
 
@@ -22,8 +26,16 @@ const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
 MetasStore.getById(meta_id);
 
+const IniciativasStore = useIniciativasStore();
+const { singleIniciativa } = storeToRefs(IniciativasStore);
+if(iniciativa_id)IniciativasStore.getById(meta_id,iniciativa_id);
+
+const AtividadesStore = useAtividadesStore();
+const { singleAtividade } = storeToRefs(AtividadesStore);
+if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
+
 const IndicadoresStore = useIndicadoresStore();
-const { Indicadores, singleIndicadores, agregadores } = storeToRefs(IndicadoresStore);
+const { singleIndicadores, agregadores } = storeToRefs(IndicadoresStore);
 IndicadoresStore.getAgregadores();
 
 const authStore = useAuthStore();
@@ -48,21 +60,38 @@ const schema = Yup.object().shape({
     janela_agregador: Yup.string().nullable().when('agregador_id', (agregador_id, schema) => {
         return agregador_id&&agregador_id==3 ? schema.required('Preencha um valor') : schema;
     }),
-    meta_id: Yup.string().nullable(), //  : 1
+
     regionalizavel: Yup.string().nullable(),
     nivel_regionalizacao: Yup.string().nullable().when('regionalizavel', (regionalizavel, field) => regionalizavel=="1" ? field.required("Selecione o nível") : field),
+
+    contexto: Yup.string().nullable(),
+    observacao: Yup.string().nullable(),
 });
 
 let title = 'Adicionar Indicador';
 let agregador_id = ref(singleIndicadores.value.agregador_id);
 let regionalizavel = ref(singleIndicadores.value.regionalizavel);
 
-if (id) {
+if (indicador_id) {
     title = 'Editar Indicador';
-    IndicadoresStore.getById(meta_id,id);
-    VariaveisStore.getAll(id);
+
+    if(atividade_id){
+        IndicadoresStore.getById(atividade_id,'atividade_id',indicador_id);
+    }else if(iniciativa_id){
+        IndicadoresStore.getById(iniciativa_id,'iniciativa_id',indicador_id);
+    }else{
+        IndicadoresStore.getById(meta_id,'meta_id',indicador_id);
+    }
+    
+    VariaveisStore.getAll(indicador_id);
 }else{
-    IndicadoresStore.getAll(meta_id);
+    if(atividade_id){
+        IndicadoresStore.getAll(atividade_id,'atividade_id');
+    }else if(iniciativa_id){
+        IndicadoresStore.getAll(iniciativa_id,'iniciativa_id');
+    }else{
+        IndicadoresStore.getAll(meta_id,'meta_id');
+    }
 }
 function start(){
     if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
@@ -86,12 +115,20 @@ async function onSubmit(values) {
         var r;
         values.inicio_medicao = fieldToDate(values.inicio_medicao);
         values.fim_medicao = fieldToDate(values.fim_medicao);
-        values.meta_id = Number(values.meta_id);
         values.janela_agregador = values.janela_agregador??null;
         values.regionalizavel = !!values.regionalizavel;
         values.nivel_regionalizacao = values.regionalizavel ? Number(values.nivel_regionalizacao) : null;
+        
+        //Parent
+        if(atividade_id){
+            values.atividade_id = Number(atividade_id);
+        }else if(iniciativa_id){
+            values.iniciativa_id = Number(iniciativa_id);
+        }else{
+            values.meta_id = Number(meta_id);
+        }
 
-        if (id) {
+        if (indicador_id) {
             if(singleIndicadores.value.id){
                 r = await IndicadoresStore.update(singleIndicadores.value.id, values);
                 MetasStore.clear();
@@ -106,7 +143,7 @@ async function onSubmit(values) {
         }
         if(r == true){
             MetasStore.clear();
-            router.push('/metas/'+meta_id);
+            router.push(parentlink);
             alertStore.success(msg);
             return;
         }
@@ -120,7 +157,7 @@ async function checkDelete(id) {
             alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
                 if(await IndicadoresStore.delete(id)){
                     IndicadoresStore.clear();
-                    await router.push('/metas/'+meta_id);
+                    await router.push(parentlink);
                     alertStore.success('Indicador removido.');
                 }
             },'Remover');
@@ -128,7 +165,7 @@ async function checkDelete(id) {
     }
 }
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?','/metas/'+meta_id);
+    alertStore.confirm('Deseja sair sem salvar as alterações?',parentlink);
 }
 function maskMonth(el){
     var kC = event.keyCode;
@@ -150,11 +187,12 @@ function maskMonth(el){
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
-        <div class="t24 mb2">Meta {{singleMeta.codigo}} {{singleMeta.titulo}}</div>
+        <div v-if="atividade_id" class="t24 mb2">Atividade {{singleAtividade.codigo}} {{singleAtividade.titulo}}</div>
+        <div v-else-if="iniciativa_id" class="t24 mb2">Iniciativa {{singleIniciativa.codigo}} {{singleIniciativa.titulo}}</div>
+        <div v-else-if="meta_id" class="t24 mb2">Meta {{singleMeta.codigo}} {{singleMeta.titulo}}</div>
 
-        <template v-if="!(singleIndicadores?.loading || singleIndicadores?.error || Indicadores?.loading)&&!(!id&&Indicadores.length)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?singleIndicadores:{}" v-slot="{ errors, isSubmitting }">
-                <Field name="meta_id" type="hidden" :value="meta_id"/>
+        <template v-if="!(singleIndicadores?.loading || singleIndicadores?.error)">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="indicador_id?singleIndicadores:{}" v-slot="{ errors, isSubmitting }">
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Código <span class="tvermelho">*</span></label>
@@ -181,7 +219,7 @@ function maskMonth(el){
                     <div class="f1">
                         <label class="label flex center">Periodicidade <span class="tvermelho">*</span></label>
 
-                        <Field v-if="!id" name="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
+                        <Field v-if="!indicador_id" name="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
                             <option value="">Selecionar</option>
                             <option value="Mensal">Mensal</option>
                             <option value="Bimestral">Bimestral</option>
@@ -224,7 +262,7 @@ function maskMonth(el){
                     </div>
                 </div>
 
-                <div class="" v-if="!id">
+                <div class="" v-if="!indicador_id">
                     <div class="mb1">
                         <label class="block">
                             <Field name="regionalizavel" v-model="regionalizavel" type="checkbox" value="1" class="inputcheckbox" /><span :class="{ 'error': errors.regionalizavel }">Indicador regionalizável</span>
@@ -265,6 +303,19 @@ function maskMonth(el){
                         <div class="error-msg">{{ errors.nivel_regionalizacao }}</div>
                     </div>
                 </div>
+                <hr class="mt2 mb2" />
+                <div class="f1">
+                    <label class="label">Contexto</label>
+                    <Field name="contexto" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.contexto }" />
+                    <div class="error-msg">{{ errors.contexto }}</div>
+                </div>
+                <div class="f2">
+                    <label class="label">Observação</label>
+                    <Field name="observacao" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.observacao }" />
+                    <div class="error-msg">{{ errors.observacao }}</div>
+                </div>
+                
+                
 
                 <div class="flex spacebetween center mb2">
                     <hr class="mr2 f1"/>
@@ -273,7 +324,7 @@ function maskMonth(el){
                 </div>
             </Form>
         </template>
-        <template v-if="singleIndicadores?.loading||Indicadores?.loading">
+        <template v-if="singleIndicadores?.loading">
             <span class="spinner">Carregando</span>
         </template>
         <template v-if="singleIndicadores?.error||error">
@@ -281,21 +332,21 @@ function maskMonth(el){
                 <div class="error-msg">{{singleIndicadores.error??error}}</div>
             </div>
         </template>
-        <template v-if="(!id&&Indicadores.length)">
+        <template v-if="(!indicador_id&&singleIndicadores.length)">
             <div class="error p1">
                 <div class="error-msg">Somente um indicador por meta</div>
             </div>
             <div class="tc">
-                <router-link :to="`/metas/${meta_id}`" class="btn big mt1 mb1"><span>Voltar</span></router-link>
+                <router-link :to="`${parentlink}`" class="btn big mt1 mb1"><span>Voltar</span></router-link>
             </div>
         </template>
 
-        <div v-if="id">
+        <div v-if="indicador_id">
             <div class="t12 uc w700 mb2">Variáveis</div>
-            <template v-if="Variaveis[id]?.loading">
+            <template v-if="Variaveis[indicador_id]?.loading">
                 <span class="spinner">Carregando</span>
             </template>
-            <table class="tablemain mb1" v-if="!Variaveis[id]?.loading">
+            <table class="tablemain mb1" v-if="!Variaveis[indicador_id]?.loading">
                 <thead>
                     <tr>
                         <th style="width:15%;">Título</th>
@@ -307,7 +358,7 @@ function maskMonth(el){
                         <th style="width:10%"></th>
                     </tr>
                 </thead>
-                <tr v-for="v in Variaveis[id]">
+                <tr v-for="v in Variaveis[indicador_id]">
                     <td>{{v.titulo}}</td>
                     <td>{{v.valor_base}}</td>
                     <td>{{v.unidade_medida?.sigla}}</td>
@@ -315,15 +366,16 @@ function maskMonth(el){
                     <td>{{v.casas_decimais}}</td>
                     <td>{{v.regiao?.descricao??'-'}}</td>
                     <td style="white-space: nowrap; text-align: right;">
-                        <router-link :to="`/metas/${meta_id}/indicadores/${id}/variaveis/${v.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                        <router-link :to="`/metas/${meta_id}/indicadores/${id}/variaveis/${v.id}/valores`" class="tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></router-link>
+                        <router-link :to="`${parentlink}/indicadores/${indicador_id}/variaveis/novo/${v.id}`" class="tipinfo tprimary"><svg width="20" height="20"><use xlink:href="#i_copy"></use></svg><div>Duplicar</div></router-link>
+                        <router-link :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}`" class="tipinfo tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg><div>Editar</div></router-link>
+                        <router-link :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/valores`" class="tipinfo right tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg><div>Valores Previstos e Acumulados</div></router-link>
                     </td>
                 </tr>
             </table>
-            <router-link :to="`/metas/${meta_id}/indicadores/${id}/variaveis/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar variável</span></router-link>
+            <router-link :to="`${parentlink}/indicadores/${indicador_id}/variaveis/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar variável</span></router-link>
         </div>
 
-        <template v-if="id&&singleIndicadores.id&&id==singleIndicadores.id">
+        <template v-if="indicador_id&&singleIndicadores.id&&indicador_id==singleIndicadores.id">
             <hr class="mt2 mb2"/>
             <button @click="checkDelete(singleIndicadores.id)" class="btn amarelo big">Remover item</button>
         </template>

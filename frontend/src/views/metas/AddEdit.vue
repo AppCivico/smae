@@ -8,11 +8,11 @@ import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
 import { useAlertStore, useAuthStore, useMetasStore, useOrgansStore, useUsersStore } from '@/stores';
-import { useMacrotemasStore, useTemasStore, useSubtemasStore } from '@/stores';
+import { useMacrotemasStore, useTemasStore, useSubtemasStore, useTagsStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
-const id = route.params.id;
+const meta_id = route.params.meta_id;
 var oktogo = ref(0);
 
 const MetasStore = useMetasStore();
@@ -28,13 +28,14 @@ const orgaos_participantes = ref([
     {orgao_id:null, responsavel:false, participantes:[], busca:''}
 ]);
 const coordenadores_cp = ref({participantes:[], busca:''});
+const m_tags = ref({participantes:[], busca:''});
 
 const virtualParent = ref({});
 let title = 'Cadastro de Meta';
-if (id) {
+if (meta_id) {
     title = 'Editar Meta';
     Promise.all([
-        MetasStore.getById(id)
+        MetasStore.getById(meta_id)
     ]).then(()=>{
         if(singleMeta.value?.tema?.id)singleMeta.value.tema_id = singleMeta.value.tema.id;
         if(singleMeta.value?.macro_tema?.id)singleMeta.value.macro_tema_id = singleMeta.value.macro_tema.id;
@@ -53,6 +54,9 @@ if (id) {
         if(singleMeta.value.coordenadores_cp){
             coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map(x=>x.id);
         }
+        if(singleMeta.value.tags){
+            m_tags.value.participantes = singleMeta.value.tags.map(x=>x.id);
+        }
     })
 }else{
     if(route.params.macro_tema_id) virtualParent.value.macro_tema_id = route.params.macro_tema_id;
@@ -68,10 +72,14 @@ const { tempTemas } = storeToRefs(TemaStore);
 const SubtemaStore = useSubtemasStore();
 const { tempSubtemas } = storeToRefs(SubtemaStore);
 
+const TagsStore = useTagsStore();
+const { tempTags } = storeToRefs(TagsStore);
+
 const OrgansStore = useOrgansStore();
 
 const UserStore = useUsersStore();
 const { usersCoord } = storeToRefs(UserStore);
+
 
 Promise.all([
     MetasStore.getPdM()
@@ -79,6 +87,7 @@ Promise.all([
     MacrotemaStore.filterByPdm(activePdm.value.id);
     TemaStore.filterByPdm(activePdm.value.id);
     SubtemaStore.filterByPdm(activePdm.value.id);
+    TagsStore.filterByPdm(activePdm.value.id);
     OrgansStore.getAllOrganResponsibles();
     UserStore.getCoord();
     oktogo.value = true;
@@ -117,6 +126,8 @@ async function onSubmit(values) {
 
         values.coordenadores_cp = coordenadores_cp.value.participantes;
         if(!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
+
+        if(m_tags.value.participantes.length)values.tags = m_tags.value.participantes;
         
         if(!values.pdm_id)values.pdm_id = activePdm.value.id;
 
@@ -127,7 +138,7 @@ async function onSubmit(values) {
         if(er.length) throw er.join('<br />');
         var msg;
         var r;
-        if (id&&singleMeta.value.id) {
+        if (meta_id&&singleMeta.value.id) {
             r = await MetasStore.update(singleMeta.value.id, values);
             msg = 'Dados salvos com sucesso!';
         } else {
@@ -141,6 +152,19 @@ async function onSubmit(values) {
         }
     } catch (error) {
         alertStore.error(error);
+    }
+}
+async function checkDelete(id) {
+    if (id) {
+        if(singleMeta.value.id){
+            alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
+                if(await MetasStore.delete(id)){
+                    MetasStore.clear();
+                    await router.push('/metas');
+                    alertStore.success('Meta removida.');
+                }
+            },'Remover');
+        }
     }
 }
 async function checkClose() {
@@ -196,7 +220,7 @@ function buscaCoord(e,item) {
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
         <template v-if="oktogo&&!(singleMeta?.loading || singleMeta?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="id?singleMeta:virtualParent" v-slot="{ errors, isSubmitting }">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="meta_id?singleMeta:virtualParent" v-slot="{ errors, isSubmitting }">
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Programa de Metas <span class="tvermelho">*</span></label>
@@ -229,6 +253,19 @@ function buscaCoord(e,item) {
                         <div class="error-msg">{{ errors.sub_tema_id }}</div>
                     </div>
                 </div>
+
+
+                <div v-if="tempTags.length">
+                    <label class="label">Tags</label>
+                    <div class="suggestion search">
+                        <input type="text" v-model="m_tags.busca" @keyup.enter.stop.prevent="buscaCoord($event,m_tags)" class="inputtext light mb05">
+                        <ul>
+                            <li v-for="(r,k) in tempTags.filter(x=>!m_tags.participantes.includes(x.id)&&x.descricao.toLowerCase().includes(m_tags.busca.toLowerCase()))"><a @click="pushId(m_tags.participantes,r.id)" tabindex="1">{{r.descricao}}</a></li>
+                        </ul>
+                    </div>
+                    <span class="tagsmall" v-for="(p,k) in tempTags.filter(x=>m_tags.participantes.includes(x.id))" @click="removeParticipante(m_tags,p.id)">{{p.descricao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                </div>
+
                 <hr class="mt2 mb2"/>
                 <div class="flex g2">
                     <div class="f0" style="flex-basis: 100px;">
@@ -349,6 +386,11 @@ function buscaCoord(e,item) {
             <div class="error p1">
                 <div class="error-msg">{{singleMeta.error??error}}</div>
             </div>
+        </template>
+
+        <template v-if="meta_id&&singleMeta.id&&meta_id==singleMeta.id">
+            <hr class="mt2 mb2"/>
+            <button @click="checkDelete(singleMeta.id)" class="btn amarelo big">Remover item</button>
         </template>
     </Dashboard>
 </template>

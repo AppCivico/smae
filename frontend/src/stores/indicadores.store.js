@@ -30,11 +30,11 @@ export const useIndicadoresStore = defineStore({
             }
             return null;
         },
-        async getAll(m) {
+        async getAll(m,parent_field) {
             try {
                 if(this.Indicadores.loading) return;
                 this.Indicadores = { loading: true };
-                let r = await requestS.get(`${baseUrl}/indicador?meta_id=${m}`);    
+                let r = await requestS.get(`${baseUrl}/indicador?${parent_field}=${m}`);    
                 if(r.linhas.length){
                     this.Indicadores = r.linhas.map(x=>{
                         x.inicio_medicao = this.dateToField(x.inicio_medicao);
@@ -49,12 +49,10 @@ export const useIndicadoresStore = defineStore({
                 this.Indicadores = { error };
             }
         },
-        async getById(m,id) {
+        async getById(m,parent_field,id) {
             try {
                 this.singleIndicadores = { loading: true };
-                if(!this.Indicadores.length){
-                    await this.getAll(m);
-                }
+                await this.getAll(m,parent_field);
                 this.singleIndicadores = this.Indicadores.length? this.Indicadores.find((u)=>u.id == id):{};
                 if(!this.singleIndicadores) throw 'Indicadores não encontrada';
             } catch (error) {
@@ -83,11 +81,11 @@ export const useIndicadoresStore = defineStore({
             if(await requestS.delete(`${baseUrl}/indicador/${id}`)) return true;
             return false;
         },
-        async filterIndicadores(m,f){
+        async filterIndicadores(p_id,parent_field,f){
             try {
                 this.tempIndicadores = { loading: true };
-                if(!m) throw 'Meta incorreta';
-                await this.getAll(m);
+                if(!p_id||!parent_field) throw 'Indicador incorreto';
+                await this.getAll(p_id,parent_field);
                 this.tempIndicadores = f ? this.Indicadores.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
                 }) : this.Indicadores;

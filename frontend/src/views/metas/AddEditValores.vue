@@ -8,7 +8,7 @@ import { storeToRefs } from 'pinia';
 import { requestS } from '@/helpers';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-import { useAlertStore, useEditModalStore, useMetasStore, useIndicadoresStore, useVariaveisStore, useRegionsStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -16,8 +16,13 @@ const alertStore = useAlertStore();
 const route = useRoute();
 
 const meta_id = route.params.meta_id;
+const iniciativa_id = route.params.iniciativa_id;
+const atividade_id = route.params.atividade_id;
 const indicador_id = route.params.indicador_id;
 const var_id = route.params.var_id;
+
+const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
+const currentEdit = route.path.slice(0,route.path.indexOf('/variaveis'));
 
 const VariaveisStore = useVariaveisStore();
 const { singleVariaveis, Valores } = storeToRefs(VariaveisStore);
@@ -52,11 +57,10 @@ async function onSubmit(el) {
             r = await VariaveisStore.updateValores(values);
             if(r){
                 msg = 'Valores salvos com sucesso!';
-                VariaveisStore.clear();
-                VariaveisStore.getAll(indicador_id);
+                VariaveisStore.getValores(var_id);
                 alertStore.success(msg);
                 editModalStore.clear();
-                router.push(`/metas/${meta_id}/indicadores/${indicador_id}`);
+                router.push(`${currentEdit}`);
             }
         }
     } catch (error) {
@@ -104,7 +108,7 @@ function soma(a,j) {
                     <label class="label tc300">Previsto Acumulado</label>
                 </div>
             </div>
-            <div class="flex g2" v-for="(v,i) in Valores[var_id].previsto">
+            <div v-if="Valores[var_id]?.previsto" class="flex g2" v-for="(v,i) in Valores[var_id].previsto">
                 <div class="f1">
                     <label class="label">Previsto {{v.periodo}}</label>
                     <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="soma(Valores[var_id].previsto,i)"/>
