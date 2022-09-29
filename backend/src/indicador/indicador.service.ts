@@ -15,8 +15,8 @@ export class IndicadorService {
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
-            if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id)
-                throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta ou Iniciativa', 400);
+            if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
+                throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
 
             const indicador = await prisma.indicador.create({
                 data: {
