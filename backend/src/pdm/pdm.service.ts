@@ -26,7 +26,6 @@ export class PdmService {
         if (similarExists > 0)
             throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
-        delete createPdmDto.upload_logo;
         const created = await this.prisma.pdm.create({
             data: {
                 criado_por: user.id,
