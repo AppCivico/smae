@@ -112,17 +112,17 @@ model Pessoa {
     AtividadesQueAtualizei Atividade[]            @relation("Atualizador")
     AtividadesQueSouResp   AtividadeResponsavel[] @relation("AtividadePessoaResp")
 
-    VariavelResponsavel     VariavelResponsavel[]
-    SerieVariavel           SerieVariavel[]
-    
-    CronogramaOrgao         CronogramaOrgao[]
-    CronogramasQueCriei     Cronograma[]          @relation("Criador")
-    CronogramasQueRemovi    Cronograma[]          @relation("Removedor")
-    CronogramasQueAtualizei Cronograma[]          @relation("Atualizador")
+    VariavelResponsavel VariavelResponsavel[]
+    SerieVariavel       SerieVariavel[]
 
-    EtapasQueCriei     Etapa[]          @relation("Criador")
-    EtapasQueRemovi    Etapa[]          @relation("Removedor")
-    EtapasQueAtualizei Etapa[]          @relation("Atualizador")
+    CronogramaOrgao         CronogramaOrgao[]
+    CronogramasQueCriei     Cronograma[]      @relation("Criador")
+    CronogramasQueRemovi    Cronograma[]      @relation("Removedor")
+    CronogramasQueAtualizei Cronograma[]      @relation("Atualizador")
+
+    EtapasQueCriei     Etapa[] @relation("Criador")
+    EtapasQueRemovi    Etapa[] @relation("Removedor")
+    EtapasQueAtualizei Etapa[] @relation("Atualizador")
 
     @@map("pessoa")
 }
@@ -980,17 +980,17 @@ model AtividadeResponsavel {
 model Cronograma {
     id Int @id @default(autoincrement())
 
-    meta_id      Int?
-    meta         Meta?       @relation(fields: [meta_id], references: [id])
+    meta_id       Int?
+    meta          Meta?       @relation(fields: [meta_id], references: [id])
     iniciativa_id Int?
-    iniciativa   Iniciativa? @relation(fields: [iniciativa_id], references: [id])
-    atividade_id Int?
-    atividade    Atividade?  @relation(fields: [atividade_id], references: [id])
+    iniciativa    Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade_id  Int?
+    atividade     Atividade?  @relation(fields: [atividade_id], references: [id])
 
     descricao        String?
     observacao       String?
-    inicio_previsto  DateTime?          @db.Date()
-    termino_previsto DateTime?          @db.Date()
+    inicio_previsto  DateTime?         @db.Date()
+    termino_previsto DateTime?         @db.Date()
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
     por_regiao       Boolean
@@ -1024,7 +1024,6 @@ model Etapa {
     regiao       Regiao? @relation(fields: [regiao_id], references: [id])
 
     nivel            String?
-    ordem            Int
     descricao        String?
     inicio_previsto  DateTime          @db.Date()
     termino_previsto DateTime          @db.Date()
@@ -1068,6 +1067,7 @@ model CronogramaEtapa {
     cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
     etapa_id      Int
     etapa         Etapa      @relation(fields: [etapa_id], references: [id])
+    ordem         Int?
 
     inativo         Boolean   @default(false)
     data_inativacao DateTime? @db.Timestamptz(6)

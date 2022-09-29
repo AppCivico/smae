@@ -90,6 +90,7 @@ export class CreateEtapaDto {
 
     @IsNumber()
     @IsPositive({ message: '$property| ordem precisa ser um número ou null' })
-    ordem: number
+    @IsOptional()
+    ordem?: number
 
 }
