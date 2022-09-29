@@ -158,6 +158,7 @@ export class AtividadeService {
                 complemento: true,
                 iniciativa_id: true,
                 status: true,
+                compoe_indicador_iniciativa: true,
                 atividade_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
@@ -209,6 +210,7 @@ export class AtividadeService {
                 status: dbAtividade.status,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
+                compoe_indicador_iniciativa: dbAtividade.compoe_indicador_iniciativa
             })
         }
 
