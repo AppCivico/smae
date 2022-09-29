@@ -24,4 +24,5 @@ export class Iniciativa {
     complemento: string | null
     orgaos_participantes: IniciativaOrgao[]
     coordenadores_cp: IdNomeExibicao[]
+    compoe_indicador_meta: boolean
 }
