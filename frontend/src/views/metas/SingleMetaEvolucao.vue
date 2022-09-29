@@ -17,6 +17,11 @@ const perm = permissions.value;
 const route = useRoute();
 const meta_id = route.params.meta_id;
 
+const parentlink = `${meta_id?'/metas/'+meta_id:''}`;
+
+const PdMStore = usePdMStore();
+const { singlePdm } = storeToRefs(PdMStore);
+
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
 
@@ -25,9 +30,6 @@ const { tempIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
 const { Variaveis, Valores } = storeToRefs(VariaveisStore);
-
-const PdMStore = usePdMStore();
-const { singlePdm } = storeToRefs(PdMStore);
 
 const props = defineProps(['group']);
 function start(){
@@ -40,7 +42,8 @@ onUpdated(()=>{start()});
 (async()=>{
     if(!singleMeta.value.id||singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
     if(!singlePdm.value.id||singlePdm.value.id != singleMeta.value.pdm_id) PdMStore.getById(singleMeta.value.pdm_id);
-    if(!tempIndicadores.value.length||tempIndicadores.value[0].meta_id != meta_id) await IndicadoresStore.filterIndicadores(meta_id);
+    
+    if(!tempIndicadores.value.length||tempIndicadores.value[0].meta_id != meta_id) await IndicadoresStore.filterIndicadores(meta_id,'meta_id');
     if(tempIndicadores.value[0]?.id) await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
 
     Variaveis.value[tempIndicadores.value[0]?.id].forEach(x=>{
@@ -99,7 +102,7 @@ function toggleAccordeon(t) {
                                 <div class="f0 dropbtn right" v-if="perm?.CadastroIndicador?.editar">
                                     <span class="tamarelo"><svg width="20" height="20"><use xlink:href="#i_more"></use></svg></span>
                                     <ul>
-                                        <li><router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`">Editar indicador</router-link></li>
+                                        <li><router-link :to="`${parentlink}/indicadores/${ind.id}`">Editar indicador</router-link></li>
                                     </ul>
                                 </div>
                             </div>
@@ -109,7 +112,7 @@ function toggleAccordeon(t) {
                     <div class="t12 uc w700 mb05 tc300">Variáveis</div>
                     <hr class="mb2">
 
-                    <div class="board_variavel" v-for="v in Variaveis[ind.id]">
+                    <div v-if="!Variaveis[ind.id].loading" class="board_variavel" v-for="v in Variaveis[ind.id]">
                         <header class="p1">
                             <div class="flex center g2">
                                 <div class="flex center f1">
@@ -152,7 +155,7 @@ function toggleAccordeon(t) {
                                     <td>{{val.series[Valores[v.id].ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
                                     <td>{{val.series[Valores[v.id].ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
                                     <td style="white-space: nowrap; text-align: right;">
-                                        <!-- <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link> -->
+                                        <!-- <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link> -->
                                     </td>
                                 </tr>
                                 <tr v-if="Valores[v.id]?.loading">
@@ -169,7 +172,7 @@ function toggleAccordeon(t) {
                                         <td>15</td>
                                         <td>20</td>
                                         <td style="white-space: nowrap; text-align: right;">
-                                            <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                            <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -184,13 +187,14 @@ function toggleAccordeon(t) {
                                         <td>15</td>
                                         <td>20</td>
                                         <td style="white-space: nowrap; text-align: right;">
-                                            <router-link :to="`/metas/${meta_id}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                            <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                         </td>
                                     </tr>
                                 </tbody> -->
                             </table>
                         </div>
                     </div>
+                    <div v-else class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
                 </template>
 
                 <div v-if="!tempIndicadores.length&&!tempIndicadores.loading" style="border: 1px solid #E3E5E8; border-top: 8px solid #F2890D;">
@@ -199,7 +203,7 @@ function toggleAccordeon(t) {
                     </div>
                     <div class="bgc50" v-if="perm?.CadastroIndicador?.inserir">
                         <div class="tc">
-                            <router-link :to="`/metas/${meta_id}/indicadores/novo`" class="btn mt1 mb1"><span>Adicionar indicador</span></router-link>
+                            <router-link :to="`${parentlink}/indicadores/novo`" class="btn mt1 mb1"><span>Adicionar indicador</span></router-link>
                         </div>
                     </div>
                 </div>

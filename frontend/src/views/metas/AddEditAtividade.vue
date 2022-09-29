@@ -7,20 +7,26 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useAuthStore, useMetasStore, useIniciativasStore, useTagsStore } from '@/stores';
+import { useAlertStore, useAuthStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
 const meta_id = route.params.meta_id;
 const iniciativa_id = route.params.iniciativa_id;
+const atividade_id = route.params.atividade_id;
 var oktogo = ref(0);
-
-const IniciativasStore = useIniciativasStore();
-const { singleIniciativa } = storeToRefs(IniciativasStore);
-IniciativasStore.clearEdit();
 
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
+MetasStore.getPdM();
+
+const IniciativasStore = useIniciativasStore();
+const { singleIniciativa } = storeToRefs(IniciativasStore);
+IniciativasStore.getById(meta_id,iniciativa_id);
+
+const AtividadesStore = useAtividadesStore();
+const { singleAtividade } = storeToRefs(AtividadesStore);
+AtividadesStore.clearEdit();
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -30,27 +36,16 @@ const orgaos_participantes = ref([
     {orgao_id:null, responsavel:true, participantes:[], busca:''}
 ]);
 const coordenadores_cp = ref({participantes:[], busca:''});
-const m_tags = ref({participantes:[], busca:''});
-
-const TagsStore = useTagsStore();
-const { tempTags } = storeToRefs(TagsStore);
-
-Promise.all([
-    MetasStore.getPdM()
-]).then(()=>{
-    TagsStore.filterByPdm(activePdm.value.id);
-    oktogo.value = true;
-});
 
 const virtualParent = ref({});
-let title = 'Cadastro de Iniciativa';
-if (iniciativa_id) {
-    title = 'Editar Iniciativa';
+let title = 'Cadastro de Atividade';
+if (atividade_id) {
+    title = 'Editar Atividade';
     (async()=>{
-        await IniciativasStore.getById(meta_id,iniciativa_id);
-        if(singleIniciativa.value.orgaos_participantes){
+        await AtividadesStore.getById(iniciativa_id,atividade_id);
+        if(singleAtividade.value.orgaos_participantes){
             orgaos_participantes.value.splice(0,orgaos_participantes.value.length);
-            singleIniciativa.value.orgaos_participantes.map(x=>{
+            singleAtividade.value.orgaos_participantes.map(x=>{
                 x.orgao_id = x.orgao.id;
                 x.busca = "";
                 x.orgao = x.orgao;
@@ -58,11 +53,8 @@ if (iniciativa_id) {
                 return x;
             }).forEach(x=>orgaos_participantes.value.push(x));
         }
-        if(singleIniciativa.value.coordenadores_cp){
-            coordenadores_cp.value.participantes = singleIniciativa.value.coordenadores_cp.map(x=>x.id);
-        }
-        if(singleIniciativa.value.tags){
-            m_tags.value.participantes = singleIniciativa.value.tags.map(x=>x.id);
+        if(singleAtividade.value.coordenadores_cp){
+            coordenadores_cp.value.participantes = singleAtividade.value.coordenadores_cp.map(x=>x.id);
         }
     })();
 }
@@ -71,15 +63,15 @@ const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
 (async()=>{
-    if(!singleMeta?.id || singleMeta.id!=meta_id) await MetasStore.getById(meta_id);
+    if(!singleIniciativa?.id || singleIniciativa.id!=iniciativa_id) await IniciativasStore.getById(meta_id,iniciativa_id);
     
-    singleMeta.value.orgaos_participantes.forEach(x=>{
+    singleIniciativa.value.orgaos_participantes.forEach(x=>{
         x.orgao_id = x.orgao.id;
         organsAvailable.value.push(x);
         if(!usersAvailable.value[x.orgao_id]) usersAvailable.value[x.orgao_id] = [];
         usersAvailable.value[x.orgao_id] = usersAvailable.value[x.orgao_id].concat(x.participantes);
     });
-    singleMeta.value.coordenadores_cp.forEach(x=>{
+    singleIniciativa.value.coordenadores_cp.forEach(x=>{
         coordsAvailable.value.push(x);
     })
 
@@ -92,8 +84,8 @@ const schema = Yup.object().shape({
     contexto: Yup.string().nullable(),
     complemento: Yup.string().nullable(),
 
-    meta_id: Yup.string().nullable(),
-    compoe_indicador_meta: Yup.string().nullable(),
+    iniciativa_id: Yup.string().nullable(),
+    compoe_indicador_iniciativa: Yup.string().nullable(),
 });
 
 function addOrgao(obj,r) {
@@ -117,27 +109,25 @@ async function onSubmit(values) {
         values.coordenadores_cp = coordenadores_cp.value.participantes;
         if(!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
         
-        if(m_tags.value.participantes.length)values.tags = m_tags.value.participantes;
-
-        if(!values.meta_id)values.meta_id = meta_id;
-        values.compoe_indicador_meta = values.compoe_indicador_meta?true:false;
+        if(!values.iniciativa_id)values.iniciativa_id = iniciativa_id;
+        values.compoe_indicador_iniciativa = values.compoe_indicador_iniciativa?true:false;
 
         if(er.length) throw er.join('<br />');
 
         var msg;
         var r;
         var rota;
-        if (iniciativa_id&&singleIniciativa.value.id) {
-            r = await IniciativasStore.update(singleIniciativa.value.id, values);
+        if (atividade_id&&singleAtividade.value.id) {
+            r = await AtividadesStore.update(singleAtividade.value.id, values);
             msg = 'Dados salvos com sucesso!';
-            rota = `/metas/${meta_id}/iniciativas/${singleIniciativa.value.id}`;
+            rota = `/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${singleAtividade.value.id}`;
         } else {
-            r = await IniciativasStore.insert(values);
+            r = await AtividadesStore.insert(values);
             msg = 'Item adicionado com sucesso!';
-            rota = `/metas/${meta_id}/iniciativas/${r.id}`;
+            rota = `/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${r}`;
         }
         if(r){
-            IniciativasStore.clear();
+            AtividadesStore.clear();
             await router.push(rota);
             alertStore.success(msg);
         }
@@ -146,7 +136,7 @@ async function onSubmit(values) {
     }
 }
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?',`/metas/${meta_id}`);
+    alertStore.confirm('Deseja sair sem salvar as alterações?',`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
 }
 function maskDate(el){
     var kC = event.keyCode;
@@ -189,11 +179,11 @@ function buscaCoord(e,item) {
 }
 async function checkDelete(id) {
     if (id) {
-        if(singleIniciativa.value.id == id){
+        if(singleAtividade.value.id == id){
             alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{
-                if(await IniciativasStore.delete(meta_id,id)){
-                    IniciativasStore.clear();
-                    await router.push('/metas/'+meta_id);
+                if(await AtividadesStore.delete(meta_id,id)){
+                    AtividadesStore.clear();
+                    await router.push(`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
                     alertStore.success('Iniciativa removida.');
                 }
             },'Remover');
@@ -207,13 +197,13 @@ async function checkDelete(id) {
         <div class="flex spacebetween center mb2">
             <div>
                 <h1>{{title}}</h1>
-                <div class="t24">Meta {{singleMeta.titulo}}</div>
+                <div class="t24">Iniciativa {{singleIniciativa.titulo}}</div>
             </div>
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
-        <template v-if="oktogo&&!(singleIniciativa?.loading || singleIniciativa?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="iniciativa_id?singleIniciativa:virtualParent" v-slot="{ errors, isSubmitting }">
+        <template v-if="oktogo&&!(singleAtividade?.loading || singleAtividade?.error)">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="atividade_id?singleAtividade:virtualParent" v-slot="{ errors, isSubmitting }">
                 <hr class="mt2 mb2"/>
                 <div class="flex g2">
                     <div class="f0" style="flex-basis: 100px;">
@@ -244,26 +234,12 @@ async function checkDelete(id) {
 
                 <div class="mb1 mt1">
                     <label class="block">
-                        <Field name="compoe_indicador_meta" v-model="compoe_indicador_meta" type="checkbox" value="1" class="inputcheckbox" /><span :class="{ 'error': errors.compoe_indicador_meta }">Compõe o Indicador da meta</span>
+                        <Field name="compoe_indicador_iniciativa" v-model="compoe_indicador_iniciativa" type="checkbox" value="1" class="inputcheckbox" /><span :class="{ 'error': errors.compoe_indicador_iniciativa }">Compõe o Indicador da iniciativa</span>
                     </label>
-                    <div class="error-msg">{{ errors.compoe_indicador_meta }}</div>
-                </div>
-
-
-                <div v-if="tempTags.length">
-                    <hr class="mt2 mb2"/>
-                    <label class="label">Tags</label>
-                    <div class="suggestion search">
-                        <input type="text" v-model="m_tags.busca" @keyup.enter.stop.prevent="buscaCoord($event,m_tags)" class="inputtext light mb05">
-                        <ul>
-                            <li v-for="(r,k) in tempTags.filter(x=>!m_tags.participantes.includes(x.id)&&x.descricao.toLowerCase().includes(m_tags.busca.toLowerCase()))"><a @click="pushId(m_tags.participantes,r.id)" tabindex="1">{{r.descricao}}</a></li>
-                        </ul>
-                    </div>
-                    <span class="tagsmall" v-for="(p,k) in tempTags.filter(x=>m_tags.participantes.includes(x.id))" @click="removeParticipante(m_tags,p.id)">{{p.descricao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                    <div class="error-msg">{{ errors.compoe_indicador_iniciativa }}</div>
                 </div>
 
                 <hr class="mt2 mb2"/>
-
 
                 <label class="label">Órgãos participantes <span class="tvermelho">*</span></label>
                 <div class="flex center g2">
@@ -317,18 +293,18 @@ async function checkDelete(id) {
             </Form>
         </template>
         
-        <template v-if="singleIniciativa?.loading||!oktogo">
+        <template v-if="singleAtividade?.loading||!oktogo">
             <span class="spinner">Carregando</span>
         </template>
-        <template v-if="singleIniciativa?.error||error">
+        <template v-if="singleAtividade?.error||error">
             <div class="error p1">
-                <div class="error-msg">{{singleIniciativa.error??error}}</div>
+                <div class="error-msg">{{singleAtividade.error??error}}</div>
             </div>
         </template>
 
-        <template v-if="iniciativa_id&&singleIniciativa.id&&iniciativa_id==singleIniciativa.id">
+        <template v-if="atividade_id&&singleAtividade.id&&atividade_id==singleAtividade.id">
             <hr class="mt2 mb2"/>
-            <button @click="checkDelete(singleIniciativa.id)" class="btn amarelo big">Remover item</button>
+            <button @click="checkDelete(singleAtividade.id)" class="btn amarelo big">Remover item</button>
         </template>
     </Dashboard>
 </template>

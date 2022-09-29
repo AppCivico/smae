@@ -15,7 +15,9 @@ import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import { AddEditODS, ListODS } from '@/views/ods';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
-import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, AddEditIndicador, AddEditIniciativa, SingleMetaEvolucao, SingleIniciativa } from '@/views/metas';
+import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleMetaEvolucao } from '@/views/metas';
+import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, SingleIniciativaEvolucao, AddEditAtividade, SingleAtividade, SingleAtividadeEvolucao } from '@/views/metas';
+import { SingleMetaCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 
 export const router = createRouter({
@@ -84,7 +86,7 @@ export const router = createRouter({
             children: [
                 { path: '', component: ListMetas },
                 { path: 'novo', component: AddEditMetas, props:{type:"novo",parentPage: 'metas'} },
-                { path: 'editar/:id', component: AddEditMetas, props:{type:"editar",parentPage: 'metas'} },
+                { path: 'editar/:meta_id', component: AddEditMetas, props:{type:"editar",parentPage: 'metas'} },
                 { path: 'macrotemas/novo', component: ListMetas, props:{type:"novo",group:"macrotemas", parentPage: 'metas'} },
                 { path: 'subtemas/novo', component: ListMetas, props:{type:"novo",group:"subtemas", parentPage: 'metas'} },
                 { path: 'temas/novo', component: ListMetas, props:{type:"novo",group:"temas", parentPage: 'metas'} },
@@ -100,15 +102,63 @@ export const router = createRouter({
                 { path: ':meta_id/indicadores/novo', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                { path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props:{group:"valores",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao', component: SingleMetaEvolucao, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/evolucao/:indicador_id', component: SingleMetaEvolucao, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/novo', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                { path: ':meta_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleMetaEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
-                { path: ':meta_id/iniciativas/novo', component: AddEditIniciativa, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/iniciativas/editar/:iniciativa_id', component: AddEditIniciativa, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/iniciativas/:iniciativa_id', component: SingleIniciativa, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma', component: SingleMetaCronograma, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/novo', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id/etapas/novo', component: SingleMetaCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleMetaCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                
+                { path: ':meta_id/iniciativas',
+                    children: [
+                        { path: '', component: SingleMeta, props:{submenu:SubmenuMetas} },
+                        { path: 'novo', component: AddEditIniciativa, props:{submenu:SubmenuMetas} },
+                        { path: 'editar/:iniciativa_id', component: AddEditIniciativa, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id', component: SingleIniciativa, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/indicadores/novo', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/indicadores/:indicador_id', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props:{group:"valores",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/evolucao', component: SingleIniciativaEvolucao, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/evolucao/:indicador_id', component: SingleIniciativaEvolucao, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo', component: SingleIniciativaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleIniciativaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleIniciativaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleIniciativaEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/atividades',
+                            children: [
+                                { path: '', component: SingleIniciativa, props:{submenu:SubmenuMetas} },
+                                { path: 'novo', component: AddEditAtividade, props:{submenu:SubmenuMetas} },
+                                { path: 'editar/:atividade_id', component: AddEditAtividade, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id', component: SingleAtividade, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/indicadores/novo', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/indicadores/:indicador_id', component: AddEditIndicador, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props:{group:"valores",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/evolucao', component: SingleAtividadeEvolucao, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/evolucao/:indicador_id', component: SingleAtividadeEvolucao, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/evolucao/:indicador_id/variaveis/novo', component: SingleAtividadeEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleAtividadeEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleAtividadeEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleAtividadeEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
+                                
+                            ]
+                        },
+                    ]
+                },
+                
             ]
         },
         { path: '/regioes',

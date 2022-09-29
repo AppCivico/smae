@@ -164,6 +164,8 @@ export const usePdMStore = defineStore({
                 rotulo_sub_tema: params.rotulo_sub_tema,
                 rotulo_contexto_meta: params.rotulo_contexto_meta,
                 rotulo_complementacao_meta: params.rotulo_complementacao_meta,
+
+                upload_logo: params.upload_logo,
             };
             if(await requestS.post(`${baseUrl}/pdm`, m)){
                 this.activePdm = {};
@@ -195,6 +197,8 @@ export const usePdMStore = defineStore({
                 rotulo_sub_tema: params.rotulo_sub_tema,
                 rotulo_contexto_meta: params.rotulo_contexto_meta,
                 rotulo_complementacao_meta: params.rotulo_complementacao_meta,
+              
+                upload_logo: params.upload_logo,
             };
             if(await requestS.patch(`${baseUrl}/pdm/${id}`, m)){
                 this.activePdm = {};
