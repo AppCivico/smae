@@ -22,8 +22,10 @@ export class IniciativaService {
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = createIniciativaDto.orgaos_participantes!;
             let cp = createIniciativaDto.coordenadores_cp!;
+            let tags = createIniciativaDto.tags!;
             delete createIniciativaDto.orgaos_participantes;
             delete createIniciativaDto.coordenadores_cp;
+            delete createIniciativaDto.tags;
 
 
             const iniciativa = await prisma.iniciativa.create({
@@ -43,10 +45,27 @@ export class IniciativaService {
                 data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
             });
 
+            await prisma.iniciativaTag.createMany({
+                data: await this.buildIniciativaTags(iniciativa.id, tags)
+            });
+
             return iniciativa;
         });
 
         return created;
+    }
+
+    async buildIniciativaTags(iniciativaId: number, tags: number[]): Promise<Prisma.IniciativaTagCreateManyInput[]> {
+        const arr: Prisma.IniciativaTagCreateManyInput[] = [];
+
+        for (const tag of tags) {
+            arr.push({
+                iniciativa_id: iniciativaId,
+                tag_id: tag
+            })
+        }
+
+        return arr;
     }
 
     async buildOrgaosParticipantes(iniciativaId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.IniciativaOrgaoCreateManyInput[]> {
@@ -202,8 +221,10 @@ export class IniciativaService {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = updateIniciativaDto.orgaos_participantes!;
             let cp = updateIniciativaDto.coordenadores_cp!;
+            let tags = updateIniciativaDto.tags!;
             delete updateIniciativaDto.orgaos_participantes;
             delete updateIniciativaDto.coordenadores_cp;
+            delete updateIniciativaDto.tags;
 
             const iniciativa = await prisma.iniciativa.update({
                 where: { id: id },
@@ -218,8 +239,9 @@ export class IniciativaService {
             });
             await Promise.all([
                 prisma.iniciativaOrgao.deleteMany({ where: { iniciativa_id: id } }),
-                prisma.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } })]
-            );
+                prisma.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } }),
+                prisma.iniciativaTag.deleteMany({ where: { iniciativa_id: id } })
+            ]);
 
             await Promise.all([
                 await prisma.iniciativaOrgao.createMany({
@@ -227,6 +249,9 @@ export class IniciativaService {
                 }),
                 await prisma.iniciativaResponsavel.createMany({
                     data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
+                }),
+                await prisma.iniciativaTag.createMany({
+                    data: await this.buildIniciativaTags(iniciativa.id, tags)
                 })
             ]);
 

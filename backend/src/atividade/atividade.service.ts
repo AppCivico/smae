@@ -25,6 +25,8 @@ export class AtividadeService {
             delete createAtividadeDto.orgaos_participantes;
             delete createAtividadeDto.coordenadores_cp;
 
+            let tags = createAtividadeDto.tags!;
+            delete createAtividadeDto.tags;
 
             const atividade = await prisma.atividade.create({
                 data: {
@@ -43,10 +45,27 @@ export class AtividadeService {
                 data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
             });
 
+            await prisma.atividadeTag.createMany({
+                data: await this.buildAtividadeTags (atividade.id, tags)
+            });
+
             return atividade;
         });
 
         return created;
+    }
+
+    async buildAtividadeTags (atividadeId: number, tags: number[]): Promise<Prisma.AtividadeTagCreateManyInput[]> {
+        const arr: Prisma.AtividadeTagCreateManyInput[] = [];
+
+        for (const tag of tags) {
+            arr.push({
+                atividade_id: atividadeId,
+                tag_id: tag
+            })
+        }
+
+        return arr;
     }
 
     async buildOrgaosParticipantes(atividadeId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.AtividadeOrgaoCreateManyInput[]> {
@@ -204,6 +223,9 @@ export class AtividadeService {
             delete updateAtividadeDto.orgaos_participantes;
             delete updateAtividadeDto.coordenadores_cp;
 
+            let tags = updateAtividadeDto.tags!;
+            delete updateAtividadeDto.tags;
+
             const atividade = await prisma.atividade.update({
                 where: { id: id },
                 data: {
@@ -217,8 +239,10 @@ export class AtividadeService {
             });
             await Promise.all([
                 prisma.atividadeOrgao.deleteMany({ where: { atividade_id: id } }),
-                prisma.atividadeResponsavel.deleteMany({ where: { atividade_id: id } })]
-            );
+                prisma.atividadeResponsavel.deleteMany({ where: { atividade_id: id } }),
+                prisma.atividadeTag.deleteMany({ where: { atividade_id: id } }),
+
+            ]);
 
             await Promise.all([
                 await prisma.atividadeOrgao.createMany({
@@ -226,6 +250,9 @@ export class AtividadeService {
                 }),
                 await prisma.atividadeResponsavel.createMany({
                     data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
+                }),
+                await prisma.atividadeTag.createMany({
+                    data: await this.buildAtividadeTags (atividade.id, tags)
                 })
             ]);
 
