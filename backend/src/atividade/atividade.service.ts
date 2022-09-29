@@ -25,7 +25,7 @@ export class AtividadeService {
             delete createAtividadeDto.orgaos_participantes;
             delete createAtividadeDto.coordenadores_cp;
 
-            let tags = createAtividadeDto.tags!;
+            let tags = createAtividadeDto.tags! || [];
             delete createAtividadeDto.tags;
 
             if (createAtividadeDto.ativo) {
@@ -58,7 +58,7 @@ export class AtividadeService {
             });
 
             await prisma.atividadeTag.createMany({
-                data: await this.buildAtividadeTags (atividade.id, tags)
+                data: await this.buildAtividadeTags(atividade.id, tags)
             });
 
             return atividade;
