@@ -159,6 +159,7 @@ export class IniciativaService {
                 complemento: true,
                 meta_id: true,
                 status: true,
+                compoe_indicador_meta: true,
                 iniciativa_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
@@ -210,6 +211,7 @@ export class IniciativaService {
                 status: dbIniciativa.status,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
+                compoe_indicador_meta: dbIniciativa.compoe_indicador_meta
             })
         }
 
