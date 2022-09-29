@@ -106,4 +106,14 @@ export class CreateAtividadeDto {
     @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     tags?: number[]
+
+    @IsString({ message: '$property| status: Precisa ser alfanumérico, campo obrigatório' })
+    @MinLength(1, { message: '$property| status: pelo menos um caractere' })
+    @IsOptional()
+    @MaxLength(250, { message: '$property| status: 250 caracteres' })
+    rotulo?: string
+
+    @IsOptional()
+    @IsBoolean({ message: 'Campo ativo precisa ser do tipo Boolean' })
+    ativo?: boolean
 }

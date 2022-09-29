@@ -765,6 +765,7 @@ model Variavel {
     periodicidade     Periodicidade
     unidade_medida_id Int
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
+    ano_base          Int?
 
     peso                 Int?
     casas_decimais       Int                   @default(0) @db.SmallInt
@@ -846,6 +847,7 @@ model Iniciativa {
     complemento           String?
     compoe_indicador_meta Boolean
     status                String?
+    rotulo                String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -917,6 +919,7 @@ model Atividade {
     complemento                 String?
     compoe_indicador_iniciativa Boolean
     status                      String?
+    rotulo                String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
