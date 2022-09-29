@@ -28,6 +28,18 @@ export class AtividadeService {
             let tags = createAtividadeDto.tags!;
             delete createAtividadeDto.tags;
 
+            if (createAtividadeDto.ativo) {
+                const iniciativaAtivaCount = await prisma.iniciativa.count({
+                    where: {
+                        id: createAtividadeDto.iniciativa_id,
+                        ativo: true
+                    }
+                });
+
+                if (iniciativaAtivaCount === 0)
+                    throw new Error('Iniciativa está desativada, ative-a antes de criar uma Atividade ativa')
+            }
+
             const atividade = await prisma.atividade.create({
                 data: {
                     criado_por: user.id,
@@ -159,6 +171,8 @@ export class AtividadeService {
                 iniciativa_id: true,
                 status: true,
                 compoe_indicador_iniciativa: true,
+                rotulo: true,
+                ativo: true,
                 atividade_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
@@ -210,7 +224,9 @@ export class AtividadeService {
                 status: dbAtividade.status,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
-                compoe_indicador_iniciativa: dbAtividade.compoe_indicador_iniciativa
+                compoe_indicador_iniciativa: dbAtividade.compoe_indicador_iniciativa,
+                rotulo: dbAtividade.rotulo,
+                ativo: dbAtividade.ativo
             })
         }
 
@@ -227,6 +243,22 @@ export class AtividadeService {
 
             let tags = updateAtividadeDto.tags!;
             delete updateAtividadeDto.tags;
+
+            if (updateAtividadeDto.ativo) {
+                const atividade = await prisma.atividade.findFirst({
+                    where: {
+                        id: id
+                    },
+                    select: {
+                        iniciativa: {
+                            select: { ativo: true }
+                        }
+                    }
+                })
+
+                if (!atividade?.iniciativa.ativo)
+                    throw new Error('Iniciativa está desativada, ative-a antes de ativar a Atividade')
+            }
 
             const atividade = await prisma.atividade.update({
                 where: { id: id },

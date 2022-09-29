@@ -25,4 +25,6 @@ export class Atividade {
     orgaos_participantes: AtividadeOrgao[]
     coordenadores_cp: IdNomeExibicao[]
     compoe_indicador_iniciativa: boolean
+    rotulo: string | null
+    ativo: boolean
 }

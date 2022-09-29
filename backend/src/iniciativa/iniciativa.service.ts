@@ -160,6 +160,8 @@ export class IniciativaService {
                 meta_id: true,
                 status: true,
                 compoe_indicador_meta: true,
+                rotulo: true,
+                ativo: true,
                 iniciativa_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
@@ -211,7 +213,9 @@ export class IniciativaService {
                 status: dbIniciativa.status,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
-                compoe_indicador_meta: dbIniciativa.compoe_indicador_meta
+                compoe_indicador_meta: dbIniciativa.compoe_indicador_meta,
+                rotulo: dbIniciativa.rotulo,
+                ativo: dbIniciativa.ativo
             })
         }
 
