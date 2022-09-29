@@ -33,6 +33,7 @@ import { VariavelModule } from './variavel/variavel.module';
 import { IniciativaModule } from './iniciativa/iniciativa.module';
 import { AtividadeModule } from './atividade/atividade.module';
 import { CronogramaModule } from './cronograma/cronograma.module';
+import { EtapaModule } from './etapa/etapa.module';
 
 
 @Module({
@@ -50,7 +51,8 @@ import { CronogramaModule } from './cronograma/cronograma.module';
         IniciativaModule,
         AtividadeModule,
         VariavelModule,
-        CronogramaModule
+        CronogramaModule,
+        EtapaModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
