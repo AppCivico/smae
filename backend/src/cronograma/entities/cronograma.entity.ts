@@ -7,10 +7,10 @@ export class Cronograma {
 
     descricao:        string | null
     observacao:       string | null
-    inicio_previsto:  Date
-    termino_previsto: Date
+    inicio_previsto:  Date | null
+    termino_previsto: Date | null
     inicio_real:      Date | null
     termino_real:     Date | null
     por_regiao:       boolean
-    tipo_regiao:      string
+    tipo_regiao:      string | null
 }

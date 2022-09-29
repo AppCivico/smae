@@ -61,7 +61,9 @@ export class IndicadorService {
                 fim_medicao: true,
                 meta_id: true,
                 iniciativa_id: true,
-                atividade_id: true
+                atividade_id: true,
+                contexto: true,
+                observacao: true
             }
         });
 

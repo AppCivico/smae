@@ -75,7 +75,7 @@ export class CreateCronogramaDto {
     por_regiao: boolean
 
     @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
-    tipo_regiao: string
+    tipo_regiao?: string
 
     /**
     * status
@@ -92,7 +92,7 @@ export class CreateCronogramaDto {
     */
     @IsOnlyDate()
     @Type(() => Date)
-    inicio_previsto: Date
+    inicio_previsto?: Date
 
     /**
    * termino_previsto
@@ -100,7 +100,7 @@ export class CreateCronogramaDto {
    */
     @IsOnlyDate()
     @Type(() => Date)
-    termino_previsto: Date
+    termino_previsto?: Date
 
 
     /**

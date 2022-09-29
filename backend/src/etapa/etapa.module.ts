@@ -1,0 +1,11 @@
+import { Module } from '@nestjs/common';
+import { PrismaModule } from 'src/prisma/prisma.module';
+import { EtapaController } from './etapa.controller';
+import { EtapaService } from './etapa.service';
+
+@Module({
+    imports: [PrismaModule],
+    controllers: [EtapaController],
+    providers: [EtapaService]
+})
+export class EtapaModule { }
