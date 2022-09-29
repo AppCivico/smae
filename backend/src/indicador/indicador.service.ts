@@ -63,7 +63,7 @@ export class IndicadorService {
                 iniciativa_id: true,
                 atividade_id: true,
                 contexto: true,
-                observacao: true
+                complemento: true
             }
         });
 
