@@ -21,5 +21,5 @@ export class Indicador {
     fim_medicao: Date
     nivel_regionalizacao: number | null
     contexto: string | null
-    observacao: string | null
+    complemento: string | null
 }
