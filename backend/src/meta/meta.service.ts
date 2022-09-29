@@ -24,7 +24,8 @@ export class MetaService {
             delete createMetaDto.orgaos_participantes;
             delete createMetaDto.coordenadores_cp;
 
-            let tags = createMetaDto.tags
+            let tags = createMetaDto.tags!;
+            delete createMetaDto.tags;
 
             const meta = await prisma.meta.create({
                 data: {
@@ -222,8 +223,10 @@ export class MetaService {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = updateMetaDto.orgaos_participantes!;
             let cp = updateMetaDto.coordenadores_cp!;
+            let tags = updateMetaDto.tags!;
             delete updateMetaDto.orgaos_participantes;
             delete updateMetaDto.coordenadores_cp;
+            delete updateMetaDto.tags;
 
             const meta = await prisma.meta.update({
                 where: { id: id },
@@ -238,8 +241,9 @@ export class MetaService {
             });
             await Promise.all([
                 prisma.metaOrgao.deleteMany({ where: { meta_id: id } }),
-                prisma.metaResponsavel.deleteMany({ where: { meta_id: id } })]
-            );
+                prisma.metaResponsavel.deleteMany({ where: { meta_id: id } }),
+                prisma.metaTag.deleteMany({ where: { meta_id: id } })
+            ]);
 
             await Promise.all([
                 await prisma.metaOrgao.createMany({
@@ -247,6 +251,9 @@ export class MetaService {
                 }),
                 await prisma.metaResponsavel.createMany({
                     data: await this.buildMetaResponsaveis(meta.id, op, cp),
+                }),
+                await prisma.metaTag.createMany({
+                    data: await this.buildTags(meta.id, tags)
                 })
             ]);
 
