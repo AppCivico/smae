@@ -32,6 +32,9 @@ export class PdmService {
             delete createPdmDto.upload_logo;
         }
 
+        if (createPdmDto.possui_atividade && !createPdmDto.possui_iniciativa)
+            throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
+
         const created = await this.prisma.pdm.create({
             data: {
                 criado_por: user.id,
@@ -64,8 +67,8 @@ export class PdmService {
                 data_publicacao: true,
                 periodo_do_ciclo_participativo_inicio: true,
                 periodo_do_ciclo_participativo_fim: true,
-
-
+                rotulo_iniciativa: true,
+                rotulo_atividade: true,
                 rotulo_macro_tema: true,
                 rotulo_tema: true,
                 rotulo_sub_tema: true,
@@ -76,6 +79,8 @@ export class PdmService {
                 possui_sub_tema: true,
                 possui_contexto_meta: true,
                 possui_complementacao_meta: true,
+                possui_atividade: true,
+                possui_iniciativa: true
             }
         });
 
@@ -130,6 +135,13 @@ export class PdmService {
         }
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            if (updatePdmDto.possui_atividade) {
+                let pdm = await this.prisma.pdm.findFirst({where: {id: id}});
+
+                if (!updatePdmDto.possui_iniciativa || !pdm?.possui_iniciativa) {
+                    throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
+                }
+            }
 
             if (updatePdmDto.ativo === true) {
                 // desativa outros planos

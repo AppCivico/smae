@@ -171,7 +171,6 @@ export class AtividadeService {
                 iniciativa_id: true,
                 status: true,
                 compoe_indicador_iniciativa: true,
-                rotulo: true,
                 ativo: true,
                 atividade_orgao: {
                     select: {
@@ -225,7 +224,6 @@ export class AtividadeService {
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
                 compoe_indicador_iniciativa: dbAtividade.compoe_indicador_iniciativa,
-                rotulo: dbAtividade.rotulo,
                 ativo: dbAtividade.ativo
             })
         }

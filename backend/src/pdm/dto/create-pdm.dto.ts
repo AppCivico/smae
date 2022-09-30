@@ -157,7 +157,19 @@ export class CreatePdmDto {
     @IsBoolean({ message: '$property| Precisa ser um boolean' })
     possui_complementacao_meta?: boolean
 
+    /**
+    * Rótulo Contexto Meta
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    possui_iniciativa?: boolean
 
+    /**
+    * Rótulo Contexto Meta
+    */
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    possui_atividade?: boolean
 
     /**
     * Upload do Logo
