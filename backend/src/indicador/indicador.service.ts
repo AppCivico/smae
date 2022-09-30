@@ -27,6 +27,61 @@ export class IndicadorService {
                 select: { id: true }
             });
 
+            // TODO: passar esta lógica para funções
+            if (createIndicadorDto.iniciativa_id) {
+                const iniciativa = await prisma.iniciativa.findFirstOrThrow({
+                    where: {
+                        id: createIndicadorDto.iniciativa_id
+                    }
+                });
+
+                if (iniciativa.compoe_indicador_meta && iniciativa.meta_id) {
+                    createIndicadorDto.meta_id = iniciativa.meta_id
+
+                    const indicadorMeta = await prisma.indicador.create({
+                        data: {
+                            criado_por: user.id,
+                            criado_em: new Date(Date.now()),
+                            ...createIndicadorDto,
+                        },
+                        select: { id: true }
+                    });
+                }
+            }
+
+            if (createIndicadorDto.atividade_id) {
+                const atividade = await prisma.atividade.findFirstOrThrow({
+                    where: { id: createIndicadorDto.atividade_id }
+                });
+
+                if (atividade.compoe_indicador_iniciativa) {
+                    const iniciativa = await prisma.iniciativa.findFirstOrThrow({
+                        where: {id: atividade.iniciativa_id}
+                    })
+
+                    createIndicadorDto.iniciativa_id = iniciativa.id;
+                    const indicadorIniciativa = await prisma.indicador.create({
+                        data: {
+                            criado_por: user.id,
+                            criado_em: new Date(Date.now()),
+                            ...createIndicadorDto,
+                        },
+                        select: { id: true }
+                    });
+
+                    if (iniciativa.compoe_indicador_meta) {
+                        const indicadorMeta = await prisma.indicador.create({
+                            data: {
+                                criado_por: user.id,
+                                criado_em: new Date(Date.now()),
+                                ...createIndicadorDto,
+                            },
+                            select: { id: true }
+                        });
+                    }
+                }
+            }
+
             return indicador;
         });
 
