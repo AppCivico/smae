@@ -4,7 +4,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
-import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
+import { RequiredFindParamsDto, UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 
 @Injectable()
 export class CronogramaEtapaService {
@@ -34,19 +34,26 @@ export class CronogramaEtapaService {
         });
     }
 
-    async update(id: number, updateCronogoramaEtapaDto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
+    async update(findParams: RequiredFindParamsDto, updateCronogoramaEtapaDto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
 
+        let id;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
-            const cronograma = await prisma.cronogramaEtapa.update({
-                where: { id: id },
+            const cronogramaEtapa = await prisma.cronogramaEtapa.update({
+                where: {
+                    CronogramaEtapaUniq: {
+                        cronograma_id: findParams.cronograma_id,
+                        etapa_id: findParams.etapa_id
+                    }
+                },
                 data: {
                     ...updateCronogoramaEtapaDto,
                 },
                 select: { id: true }
             });
 
-            return cronograma;
+            id = cronogramaEtapa.id;
+            return cronogramaEtapa;
         });
 
         return { id };
