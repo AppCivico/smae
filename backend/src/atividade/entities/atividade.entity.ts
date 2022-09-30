@@ -24,4 +24,6 @@ export class Atividade {
     complemento: string | null
     orgaos_participantes: AtividadeOrgao[]
     coordenadores_cp: IdNomeExibicao[]
+    compoe_indicador_iniciativa: boolean
+    ativo: boolean
 }

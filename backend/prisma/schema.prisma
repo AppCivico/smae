@@ -112,17 +112,17 @@ model Pessoa {
     AtividadesQueAtualizei Atividade[]            @relation("Atualizador")
     AtividadesQueSouResp   AtividadeResponsavel[] @relation("AtividadePessoaResp")
 
-    VariavelResponsavel     VariavelResponsavel[]
-    SerieVariavel           SerieVariavel[]
-    
-    CronogramaOrgao         CronogramaOrgao[]
-    CronogramasQueCriei     Cronograma[]          @relation("Criador")
-    CronogramasQueRemovi    Cronograma[]          @relation("Removedor")
-    CronogramasQueAtualizei Cronograma[]          @relation("Atualizador")
+    VariavelResponsavel VariavelResponsavel[]
+    SerieVariavel       SerieVariavel[]
 
-    EtapasQueCriei     Etapa[]          @relation("Criador")
-    EtapasQueRemovi    Etapa[]          @relation("Removedor")
-    EtapasQueAtualizei Etapa[]          @relation("Atualizador")
+    CronogramaOrgao         CronogramaOrgao[]
+    CronogramasQueCriei     Cronograma[]      @relation("Criador")
+    CronogramasQueRemovi    Cronograma[]      @relation("Removedor")
+    CronogramasQueAtualizei Cronograma[]      @relation("Atualizador")
+
+    EtapasQueCriei     Etapa[] @relation("Criador")
+    EtapasQueRemovi    Etapa[] @relation("Removedor")
+    EtapasQueAtualizei Etapa[] @relation("Atualizador")
 
     @@map("pessoa")
 }
@@ -321,12 +321,16 @@ model Pdm {
     possui_sub_tema            Boolean @default(true)
     possui_contexto_meta       Boolean @default(true)
     possui_complementacao_meta Boolean @default(true)
+    possui_iniciativa          Boolean @default(false)
+    possui_atividade           Boolean @default(false)
 
     rotulo_macro_tema          String @default("Macro Tema")
     rotulo_tema                String @default("Tema")
     rotulo_sub_tema            String @default("Sub Tema")
     rotulo_contexto_meta       String @default("Contexto")
     rotulo_complementacao_meta String @default("Complementação")
+    rotulo_iniciativa          String @default("Iniciativa")
+    rotulo_atividade           String @default("Atividade")
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -705,7 +709,7 @@ model Indicador {
     removido_por         Int?
     removido_em          DateTime?     @db.Timestamptz(6)
     contexto             String?
-    observacao           String?
+    complemento          String?
 
     atualizador       Pessoa?             @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador           Pessoa?             @relation("Criador", fields: [criado_por], references: [id])
@@ -765,6 +769,7 @@ model Variavel {
     periodicidade     Periodicidade
     unidade_medida_id Int
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
+    ano_base          Int?
 
     peso                 Int?
     casas_decimais       Int                   @default(0) @db.SmallInt
@@ -980,17 +985,17 @@ model AtividadeResponsavel {
 model Cronograma {
     id Int @id @default(autoincrement())
 
-    meta_id      Int?
-    meta         Meta?       @relation(fields: [meta_id], references: [id])
+    meta_id       Int?
+    meta          Meta?       @relation(fields: [meta_id], references: [id])
     iniciativa_id Int?
-    iniciativa   Iniciativa? @relation(fields: [iniciativa_id], references: [id])
-    atividade_id Int?
-    atividade    Atividade?  @relation(fields: [atividade_id], references: [id])
+    iniciativa    Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade_id  Int?
+    atividade     Atividade?  @relation(fields: [atividade_id], references: [id])
 
     descricao        String?
     observacao       String?
-    inicio_previsto  DateTime?          @db.Date()
-    termino_previsto DateTime?          @db.Date()
+    inicio_previsto  DateTime?         @db.Date()
+    termino_previsto DateTime?         @db.Date()
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
     por_regiao       Boolean
@@ -1024,7 +1029,6 @@ model Etapa {
     regiao       Regiao? @relation(fields: [regiao_id], references: [id])
 
     nivel            String?
-    ordem            Int
     descricao        String?
     inicio_previsto  DateTime          @db.Date()
     termino_previsto DateTime          @db.Date()
@@ -1068,9 +1072,11 @@ model CronogramaEtapa {
     cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
     etapa_id      Int
     etapa         Etapa      @relation(fields: [etapa_id], references: [id])
+    ordem         Int?
 
     inativo         Boolean   @default(false)
     data_inativacao DateTime? @db.Timestamptz(6)
 
+    @@unique([cronograma_id, etapa_id], name: "CronogramaEtapaUniq")
     @@map("cronograma_etapa")
 }

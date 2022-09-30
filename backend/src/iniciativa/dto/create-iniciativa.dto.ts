@@ -1,12 +1,7 @@
 import { Type } from "class-transformer";
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 
-/**
-* Este export é MetaOrgaoParticipante e não IniciativaOrgaoParticipante
-* pois, de acordo com o caso de uso, Iniciativa é uma abstração/granularização
-* da Meta, portanto sempre possuirá uma meta atrelada.
-*/
-export class MetaOrgaoParticipante {
+export class IniciativaOrgaoParticipante {
     /**
     * orgão participante é responsável? Pelo menos um precisa ser responsável
     * @example false
@@ -91,7 +86,7 @@ export class CreateIniciativaDto {
     * Quais são os orgaos participantes e seus membros responsáveis
     */
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
-    orgaos_participantes?: MetaOrgaoParticipante[]
+    orgaos_participantes?: IniciativaOrgaoParticipante[]
 
     /**
     * ID das pessoas que são coordenadores
@@ -111,4 +106,8 @@ export class CreateIniciativaDto {
     @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     tags?: number[]
+
+    @IsOptional()
+    @IsBoolean({ message: 'Campo ativo precisa ser do tipo Boolean' })
+    ativo?: boolean
 }

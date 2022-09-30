@@ -41,6 +41,7 @@ export class Variavel {
     regiao: Regiao | null
     indicador_variavel: IndicadorVariavel[]
     responsaveis?: IdNomeExibicao[]
+    ano_base?: number | null
 }
 
 export class SerieValorNomimal {

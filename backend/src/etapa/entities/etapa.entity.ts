@@ -5,7 +5,6 @@ export class Etapa {
 
     descricao:        string | null
     nivel:       string | null
-    ordem:       number
     inicio_previsto:  Date
     termino_previsto: Date
     inicio_real:      Date | null

@@ -14,8 +14,6 @@ export class EtapaService {
     async create(createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const cronogramaId = createEtapaDto.cronograma_id;
-
             const etapa = await prisma.etapa.create({
                 data: {
                     criado_por: user.id,
@@ -25,10 +23,14 @@ export class EtapaService {
                 select: { id: true }
             });
 
+            const cronogramaId = createEtapaDto.cronograma_id;
+            const ordem = createEtapaDto.ordem ? createEtapaDto.ordem : null ;
+
             await prisma.cronogramaEtapa.create({
                 data: {
                     cronograma_id: cronogramaId,
-                    etapa_id: etapa.id
+                    etapa_id: etapa.id,
+                    ordem: ordem
                 }
             })
 
@@ -54,16 +56,12 @@ export class EtapaService {
                 regiao_id: true,
                 descricao: true,
                 nivel: true,
-                ordem: true,
                 prazo: true,
                 inicio_previsto: true,
                 termino_previsto: true,
                 inicio_real: true,
                 termino_real: true,
-            },
-            orderBy: [
-                { ordem: 'asc' }
-            ]
+            }
         });
     }
 

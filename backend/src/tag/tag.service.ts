@@ -21,8 +21,10 @@ export class TagService {
                 removido_em: null,
             }
         });
-        if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+
+        // https://trello.com/c/BXL4THSW/165-tag-est%C3%A1-considerando-o-nome-da-tag-como-uk-mas-ela-deve-ser-unica-somente-dentro-de-um-pdm-chave-unica-deveria-ser-nome-pdmid
+        // if (similarExists > 0)
+        //     throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
 
         let uploadId: number | null = null;
@@ -92,8 +94,10 @@ export class TagService {
                     NOT: { id: id }
                 }
             });
-            if (similarExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+
+            // https://trello.com/c/BXL4THSW/165-tag-est%C3%A1-considerando-o-nome-da-tag-como-uk-mas-ela-deve-ser-unica-somente-dentro-de-um-pdm-chave-unica-deveria-ser-nome-pdmid
+            // if (similarExists > 0)
+            //     throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.tag.update({

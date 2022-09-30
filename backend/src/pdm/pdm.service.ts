@@ -26,10 +26,20 @@ export class PdmService {
         if (similarExists > 0)
             throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
+        let arquivo_logo_id;
+        if (createPdmDto.upload_logo) {
+            arquivo_logo_id = await this.uploadService.checkDownloadToken(createPdmDto.upload_logo);
+            delete createPdmDto.upload_logo;
+        }
+
+        if (createPdmDto.possui_atividade && !createPdmDto.possui_iniciativa)
+            throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
+
         const created = await this.prisma.pdm.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
+                arquivo_logo_id: arquivo_logo_id,
                 ...createPdmDto as any,
             },
             select: { id: true }
@@ -57,8 +67,8 @@ export class PdmService {
                 data_publicacao: true,
                 periodo_do_ciclo_participativo_inicio: true,
                 periodo_do_ciclo_participativo_fim: true,
-
-
+                rotulo_iniciativa: true,
+                rotulo_atividade: true,
                 rotulo_macro_tema: true,
                 rotulo_tema: true,
                 rotulo_sub_tema: true,
@@ -69,6 +79,8 @@ export class PdmService {
                 possui_sub_tema: true,
                 possui_contexto_meta: true,
                 possui_complementacao_meta: true,
+                possui_atividade: true,
+                possui_iniciativa: true
             }
         });
 
@@ -122,7 +134,20 @@ export class PdmService {
                 throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
+        let arquivo_logo_id: number | undefined;
+        if (updatePdmDto.upload_logo) {
+            arquivo_logo_id = await this.uploadService.checkDownloadToken(updatePdmDto.upload_logo);
+            delete updatePdmDto.upload_logo;
+        }
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            if (updatePdmDto.possui_atividade) {
+                let pdm = await this.prisma.pdm.findFirst({where: {id: id}});
+
+                if (!updatePdmDto.possui_iniciativa || !pdm?.possui_iniciativa) {
+                    throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
+                }
+            }
 
             if (updatePdmDto.ativo === true) {
                 // desativa outros planos
@@ -134,6 +159,7 @@ export class PdmService {
                         ativo: false,
                         desativado_em: new Date(Date.now()),
                         desativado_por: user.id,
+                        arquivo_logo_id: arquivo_logo_id
                     }
                 });
             } else if (updatePdmDto.ativo === false) {
@@ -143,6 +169,7 @@ export class PdmService {
                         ativo: false,
                         desativado_em: new Date(Date.now()),
                         desativado_por: user.id,
+                        arquivo_logo_id: arquivo_logo_id
                     },
                     select: { id: true }
                 });
@@ -154,6 +181,7 @@ export class PdmService {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                     ...updatePdmDto,
+                    arquivo_logo_id: arquivo_logo_id
                 },
                 select: { id: true }
             });
