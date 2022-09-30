@@ -1,12 +1,7 @@
 import { Type } from "class-transformer";
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 
-/**
-* Este export é MetaOrgaoParticipante e não IniciativaOrgaoParticipante
-* pois, de acordo com o caso de uso, Iniciativa é uma abstração/granularização
-* da Meta, portanto sempre possuirá uma meta atrelada.
-*/
-export class MetaOrgaoParticipante {
+export class IniciativaOrgaoParticipante {
     /**
     * orgão participante é responsável? Pelo menos um precisa ser responsável
     * @example false

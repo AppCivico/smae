@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateIniciativaDto } from './dto/create-iniciativa.dto';
+import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
@@ -93,11 +93,16 @@ export class IniciativaService {
         return arr;
     }
 
-    async buildIniciativaResponsaveis(iniciativaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.IniciativaResponsavelCreateManyInput[]> {
+    async buildIniciativaResponsaveis(iniciativaId: number, orgaos_participantes: IniciativaOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.IniciativaResponsavelCreateManyInput[]> {
         const arr: Prisma.IniciativaResponsavelCreateManyInput[] = [];
 
         for (const orgao of orgaos_participantes) {
             for (const participanteId of orgao.participantes) {
+                if (!participanteId) {
+                    console.log(orgao)
+                    continue;
+                }
+
                 arr.push({
                     iniciativa_id: iniciativaId,
                     pessoa_id: participanteId,
@@ -108,6 +113,11 @@ export class IniciativaService {
         }
 
         for (const CoordenadoriaParticipanteId of coordenadores_cp) {
+            if (!CoordenadoriaParticipanteId) {
+                console.log(coordenadores_cp)
+                continue;
+            }
+
             const pessoaFisicaOrgao = await this.prisma.pessoa.findFirst({
                 where: {
                     id: CoordenadoriaParticipanteId
