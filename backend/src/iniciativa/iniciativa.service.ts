@@ -22,7 +22,7 @@ export class IniciativaService {
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = createIniciativaDto.orgaos_participantes!;
             let cp = createIniciativaDto.coordenadores_cp!;
-            let tags = createIniciativaDto.tags!;
+            let tags = createIniciativaDto.tags || [];
             delete createIniciativaDto.orgaos_participantes;
             delete createIniciativaDto.coordenadores_cp;
             delete createIniciativaDto.tags;

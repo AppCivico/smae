@@ -25,7 +25,7 @@ export class AtividadeService {
             delete createAtividadeDto.orgaos_participantes;
             delete createAtividadeDto.coordenadores_cp;
 
-            let tags = createAtividadeDto.tags! || [];
+            let tags = createAtividadeDto.tags || [];
             delete createAtividadeDto.tags;
 
             if (createAtividadeDto.ativo) {
