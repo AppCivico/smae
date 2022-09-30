@@ -26,6 +26,8 @@ export class AtividadeService {
             delete createAtividadeDto.coordenadores_cp;
 
             let tags = createAtividadeDto.tags || [];
+            console.log(tags);
+            console.log(typeof(tags));
             delete createAtividadeDto.tags;
 
             if (createAtividadeDto.ativo) {
