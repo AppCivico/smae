@@ -25,6 +25,20 @@ export class AtividadeService {
             delete createAtividadeDto.orgaos_participantes;
             delete createAtividadeDto.coordenadores_cp;
 
+            let tags = createAtividadeDto.tags || [];
+            delete createAtividadeDto.tags;
+
+            if (createAtividadeDto.ativo) {
+                const iniciativaAtivaCount = await prisma.iniciativa.count({
+                    where: {
+                        id: createAtividadeDto.iniciativa_id,
+                        ativo: true
+                    }
+                });
+
+                if (iniciativaAtivaCount === 0)
+                    throw new Error('Iniciativa está desativada, ative-a antes de criar uma Atividade ativa')
+            }
 
             const atividade = await prisma.atividade.create({
                 data: {
@@ -43,10 +57,31 @@ export class AtividadeService {
                 data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
             });
 
+            await prisma.atividadeTag.createMany({
+                data: await this.buildAtividadeTags(atividade.id, tags)
+            });
+
             return atividade;
         });
 
         return created;
+    }
+
+    async buildAtividadeTags (atividadeId: number, tags: number[]): Promise<Prisma.AtividadeTagCreateManyInput[]> {
+        const arr: Prisma.AtividadeTagCreateManyInput[] = [];
+
+        if (typeof tags !== 'object') {
+            tags = []
+        }
+
+        for (const tag of tags) {
+            arr.push({
+                atividade_id: atividadeId,
+                tag_id: tag
+            })
+        }
+
+        return arr;
     }
 
     async buildOrgaosParticipantes(atividadeId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.AtividadeOrgaoCreateManyInput[]> {
@@ -139,6 +174,8 @@ export class AtividadeService {
                 complemento: true,
                 iniciativa_id: true,
                 status: true,
+                compoe_indicador_iniciativa: true,
+                ativo: true,
                 atividade_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
@@ -190,6 +227,8 @@ export class AtividadeService {
                 status: dbAtividade.status,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
+                compoe_indicador_iniciativa: dbAtividade.compoe_indicador_iniciativa,
+                ativo: dbAtividade.ativo
             })
         }
 
@@ -204,6 +243,25 @@ export class AtividadeService {
             delete updateAtividadeDto.orgaos_participantes;
             delete updateAtividadeDto.coordenadores_cp;
 
+            let tags = updateAtividadeDto.tags!;
+            delete updateAtividadeDto.tags;
+
+            if (updateAtividadeDto.ativo) {
+                const atividade = await prisma.atividade.findFirst({
+                    where: {
+                        id: id
+                    },
+                    select: {
+                        iniciativa: {
+                            select: { ativo: true }
+                        }
+                    }
+                })
+
+                if (!atividade?.iniciativa.ativo)
+                    throw new Error('Iniciativa está desativada, ative-a antes de ativar a Atividade')
+            }
+
             const atividade = await prisma.atividade.update({
                 where: { id: id },
                 data: {
@@ -217,8 +275,10 @@ export class AtividadeService {
             });
             await Promise.all([
                 prisma.atividadeOrgao.deleteMany({ where: { atividade_id: id } }),
-                prisma.atividadeResponsavel.deleteMany({ where: { atividade_id: id } })]
-            );
+                prisma.atividadeResponsavel.deleteMany({ where: { atividade_id: id } }),
+                prisma.atividadeTag.deleteMany({ where: { atividade_id: id } }),
+
+            ]);
 
             await Promise.all([
                 await prisma.atividadeOrgao.createMany({
@@ -226,6 +286,9 @@ export class AtividadeService {
                 }),
                 await prisma.atividadeResponsavel.createMany({
                     data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
+                }),
+                await prisma.atividadeTag.createMany({
+                    data: await this.buildAtividadeTags (atividade.id, tags)
                 })
             ]);
 

@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Periodicidade, Prisma, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime';
+import { triggerAsyncId } from 'async_hooks';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -128,6 +129,7 @@ export class VariavelService {
                         sigla: true,
                     }
                 },
+                ano_base: true,
                 valor_base: true,
                 periodicidade: true,
                 peso: true,
@@ -162,7 +164,7 @@ export class VariavelService {
                 },
                 variavel_responsavel: {
                     select: {
-                        pessoa: { select: { id: true, nome_exibicao: true }}
+                        pessoa: { select: { id: true, nome_exibicao: true } }
                     }
                 }
             }
