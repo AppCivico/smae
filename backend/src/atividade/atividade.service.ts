@@ -72,6 +72,10 @@ export class AtividadeService {
     async buildAtividadeTags (atividadeId: number, tags: number[]): Promise<Prisma.AtividadeTagCreateManyInput[]> {
         const arr: Prisma.AtividadeTagCreateManyInput[] = [];
 
+        if (typeof tags !== 'object') {
+            tags = []
+        }
+
         for (const tag of tags) {
             arr.push({
                 atividade_id: atividadeId,
