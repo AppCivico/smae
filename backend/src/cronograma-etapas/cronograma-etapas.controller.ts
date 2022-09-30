@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CronogramaEtapaService } from './cronograma-etapas.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { ListCronogramaEtapaDto } from './dto/list-cronograma-etapa.dto';
-import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
+import { RequiredFindParamsDto, UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 
 @ApiTags('Cronograma-Etapa')
 @Controller('cronograma-etapa')
@@ -21,12 +21,12 @@ export class CronogramaEtapaController {
         return { 'linhas': await this.cronogramaEtapaService.findAll(filters) };
     }
 
-    @Patch(':id')
+    @Patch()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.editar')
-    async update(@Param() params: FindOneParams, @Body() updateCronogramaEtapaDto: UpdateCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt) {
-        return await this.cronogramaEtapaService.update(+params.id, updateCronogramaEtapaDto, user);
+    async update(@Query() findParams: RequiredFindParamsDto, @Body() updateCronogramaEtapaDto: UpdateCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.cronogramaEtapaService.update(findParams, updateCronogramaEtapaDto, user);
     }
 
 }
