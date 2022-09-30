@@ -6,10 +6,6 @@ import { useEditModalStore, useAlertStore } from '@/stores';
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
 const { editModal } = storeToRefs(editModalStore);
-async function callbackFn(){
-    await editModal.value.callback();
-    editModalStore.clear();
-}
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
         router.go(-1);

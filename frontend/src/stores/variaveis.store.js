@@ -58,14 +58,6 @@ export const useVariaveisStore = defineStore({
             if(await requestS.patch(`${baseUrl}/indicador-variavel/${id}`, params)) return true;
             return false;
         },
-        async delete(id) {
-            if(await requestS.delete(`${baseUrl}/indicador-variavel/${id}`)){
-                this.Variaveis[indicador_id] = {};
-                this.carregaVariaveis(indicador_id);
-                return true;
-            }
-            return false;
-        },
         async getValores(id) {
             try {
                 if(!id) throw "Variável inválida";

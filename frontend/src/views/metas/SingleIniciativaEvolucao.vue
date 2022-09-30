@@ -1,15 +1,10 @@
 <script setup>
-import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
-import { Dashboard} from '@/components';
-import { useAuthStore, useMetasStore, usePdMStore, useIniciativasStore } from '@/stores';
-import { useEditModalStore, useAlertStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
 import { useRoute } from 'vue-router';
-import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
-import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
-
-const editModalStore = useEditModalStore();
-const alertStore = useAlertStore();
+import { Dashboard} from '@/components';
+import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
+import { default as EvolucaoIndicador } from '@/components/metas/EvolucaoIndicador.vue';
+import { useAuthStore, useIniciativasStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -19,67 +14,17 @@ const route = useRoute();
 const meta_id = route.params.meta_id;
 const iniciativa_id = route.params.iniciativa_id;
 
+const props = defineProps(['group']);
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}`;
-
-const PdMStore = usePdMStore();
-const { singlePdm } = storeToRefs(PdMStore);
-
-const MetasStore = useMetasStore();
-const { singleMeta } = storeToRefs(MetasStore);
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
 if(singleIniciativa.value.id != iniciativa_id) IniciativasStore.getById(meta_id,iniciativa_id);
-
-const IndicadoresStore = useIndicadoresStore();
-const { tempIndicadores } = storeToRefs(IndicadoresStore);
-
-const VariaveisStore = useVariaveisStore();
-const { Variaveis, Valores } = storeToRefs(VariaveisStore);
-
-const props = defineProps(['group']);
-function start(){
-    if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
-    if(props.group=='valores')editModalStore.modal(AddEditValores,props);
-    
-    (async()=>{
-        if(!singleMeta.value.id||singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
-        if(!singlePdm.value.id||singlePdm.value.id != singleMeta.value.pdm_id) PdMStore.getById(singleMeta.value.pdm_id);
-
-        if(!tempIndicadores.value.length||tempIndicadores.value[0].iniciativa_id != iniciativa_id) await IndicadoresStore.filterIndicadores(iniciativa_id,'iniciativa_id');
-        if(tempIndicadores.value[0]?.id) await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
-
-        Variaveis.value[tempIndicadores.value[0]?.id].forEach(x=>{
-            VariaveisStore.getValores(x.id);
-        });
-    })();
-}
-onMounted(()=>{start()});
-onUpdated(()=>{start()});
-
-
-let groupBy = localStorage.getItem('groupBy')??"macro_tema";
-let groupByRoute;
-switch(groupBy){
-    case 'macro_tema': 
-        groupByRoute = 'macrotemas';
-        break;
-    case 'tema': 
-        groupByRoute = 'temas';
-        break;
-    case 'sub_tema': 
-        groupByRoute = 'subtemas';
-        break;
-}
 </script>
 <template>
     <Dashboard>
-        <div class="breadcrumb">
-            <router-link to="/">Início</router-link>
-            <router-link to="/metas">{{singlePdm.nome}}</router-link>
-            <router-link :to="`/metas/${groupByRoute}/${singleMeta[groupBy]?.id}`" v-if="singlePdm['possui_'+groupBy]">{{singleMeta[groupBy]?.descricao}}</router-link>
-            <router-link :to="`${parentlink}`">{{singleMeta?.titulo}}</router-link>
-        </div>
+        <Breadcrumb />
+        
         <div class="flex spacebetween center mb2">
             <h1>{{singleIniciativa.titulo}}</h1>
             <hr class="ml2 f1"/>
@@ -88,100 +33,12 @@ switch(groupBy){
         
         <div class="boards">
             <template v-if="singleIniciativa.id">
-                <template v-if="tempIndicadores.length" v-for="ind in tempIndicadores">
-                    <div class="board_indicador mb2">
-                        <header class="p1">
-                            <div class="flex center g2">
-                                <div class="flex center f1">
-                                    <svg width="28" height="28" viewBox="0 0 28 28" color="#F2890D" xmlns="http://www.w3.org/2000/svg"> <path d="M24.9091 0.36377H3.09091C2.36759 0.36377 1.6739 0.651104 1.16244 1.16257C0.650975 1.67403 0.36364 2.36772 0.36364 3.09104V24.9092C0.36364 25.6325 0.650975 26.3262 1.16244 26.8377C1.6739 27.3492 2.36759 27.6365 3.09091 27.6365H24.9091C25.6324 27.6365 26.3261 27.3492 26.8376 26.8377C27.349 26.3262 27.6364 25.6325 27.6364 24.9092V3.09104C27.6364 2.36772 27.349 1.67403 26.8376 1.16257C26.3261 0.651104 25.6324 0.36377 24.9091 0.36377ZM24.9091 3.09104V8.54559H24.3636L22.1818 10.7274L16.5909 5.1365L11.1364 11.9547L7.18182 8.00012L3.90909 11.2729H3.09091V3.09104H24.9091ZM3.09091 24.9092V14.0001H5L7.18182 11.8183L11.4091 16.0456L16.8636 9.22741L22.1818 14.5456L25.5909 11.2729H24.9091V24.9092H3.09091Z" fill="currentColor"/> <path d="M7.18182 19.4547H4.45455V23.5456H7.18182V19.4547Z" fill="currentColor"/> <path d="M12.6364 18.091H9.90909V23.5456H12.6364V18.091Z" fill="currentColor"/> <path d="M18.0909 15.3638H15.3636V23.5456H18.0909V15.3638Z" fill="currentColor"/> <path d="M23.5455 18.091H20.8182V23.5456H23.5455V18.091Z" fill="currentColor"/> </svg>
-                                    <h2 class="mt1 mb1 ml1">{{ind.titulo}}</h2>
-                                </div>
-                                <div class="f0 dropbtn right" v-if="perm?.CadastroIndicador?.editar">
-                                    <span class="tamarelo"><svg width="20" height="20"><use xlink:href="#i_more"></use></svg></span>
-                                    <ul>
-                                        <li><router-link :to="`${parentlink}/indicadores/${ind.id}`">Editar indicador</router-link></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </header>
-                    </div>
-
-                    <template v-if="Variaveis[ind.id]?.length">
-                        <div class="t12 uc w700 mb05 tc300">Variáveis</div>
-                        <hr class="mb2">
-
-                        <div class="board_variavel" v-for="v in Variaveis[ind.id]">
-                            <header class="p1">
-                                <div class="flex center g2">
-                                    <div class="flex center f1">
-                                        <svg width="28" height="28" viewBox="0 0 28 28" color="#8EC122" xmlns="http://www.w3.org/2000/svg"> <path d="M24.9091 0.36377H3.09091C2.36759 0.36377 1.6739 0.651104 1.16244 1.16257C0.650975 1.67403 0.36364 2.36772 0.36364 3.09104V24.9092C0.36364 25.6325 0.650975 26.3262 1.16244 26.8377C1.6739 27.3492 2.36759 27.6365 3.09091 27.6365H24.9091C25.6324 27.6365 26.3261 27.3492 26.8376 26.8377C27.349 26.3262 27.6364 25.6325 27.6364 24.9092V3.09104C27.6364 2.36772 27.349 1.67403 26.8376 1.16257C26.3261 0.651104 25.6324 0.36377 24.9091 0.36377ZM24.9091 3.09104V8.54559H24.3636L22.1818 10.7274L16.5909 5.1365L11.1364 11.9547L7.18182 8.00012L3.90909 11.2729H3.09091V3.09104H24.9091ZM3.09091 24.9092V14.0001H5L7.18182 11.8183L11.4091 16.0456L16.8636 9.22741L22.1818 14.5456L25.5909 11.2729H24.9091V24.9092H3.09091Z" fill="currentColor"/> <path d="M7.18182 19.4547H4.45455V23.5456H7.18182V19.4547Z" fill="currentColor"/> <path d="M12.6364 18.091H9.90909V23.5456H12.6364V18.091Z" fill="currentColor"/> <path d="M18.0909 15.3638H15.3636V23.5456H18.0909V15.3638Z" fill="currentColor"/> <path d="M23.5455 18.091H20.8182V23.5456H23.5455V18.091Z" fill="currentColor"/> </svg>
-                                        <h2 class="mt1 mb1 ml1">{{v.titulo}}</h2>
-                                    </div>
-                                    <div class="f0">
-                                        <router-link :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                        <router-link :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/valores`" class="tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></router-link>
-                                    </div>
-                                </div>
-                            </header>
-                            <div>
-                                <div class="tablepreinfo">
-                                    <div class="flex spacebetween">
-                                        <div class="flex center">
-                                            <div class="t12 lh1 w700 uc tc400">Projetado X Realizado</div>
-                                            <div class="tipinfo ml1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Indicador calculado pelo média móvel das variáveis</div></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <table class="tablemain">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 25%">Mês/Ano</th>
-                                            <th style="width: 17.5%">Projetado Mensal</th>
-                                            <th style="width: 17.5%">Realizado Mensal</th>
-                                            <th style="width: 17.5%">Projetado Acumulado</th>
-                                            <th style="width: 17.5%">Realizado Acumulado</th>
-                                            <th style="width: 5%"></th>
-                                        </tr>
-                                    </thead>
-                                    <tr v-for="val in Valores[v.id]?.previsto">
-                                        <td><div class="flex center"><div class="farol i1"></div> <span>{{val.periodo}}</span></div></td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
-                                        <td style="white-space: nowrap; text-align: right;">
-                                            <!-- <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link> -->
-                                        </td>
-                                    </tr>
-                                    <tr v-if="Valores[v.id]?.loading">
-                                        <td colspan="555"><span class="spinner">Carregando</span></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </template>
-                    <div v-if="!Variaveis[ind.id]?.length&&!Variaveis[ind.id]?.loading" style="border: 1px solid #E3E5E8; border-top: 8px solid #F2890D;">
-                        <div class="p1">
-                            <h2 class="mt1 mb1">Variáveis</h2>
-                        </div>
-                        <div class="bgc50" v-if="perm?.CadastroIndicador?.inserir">
-                            <div class="tc">
-                                <router-link :to="`${parentlink}/evolucao/${ind.id}/variaveis/novo`" class="btn mt1 mb1"><span>Adicionar Variável</span></router-link>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <div v-if="!tempIndicadores.length&&!tempIndicadores.loading" style="border: 1px solid #E3E5E8; border-top: 8px solid #F2890D;">
-                    <div class="p1">
-                        <h2 class="mt1 mb1">Evolução</h2>
-                    </div>
-                    <div class="bgc50" v-if="perm?.CadastroIndicador?.inserir">
-                        <div class="tc">
-                            <router-link :to="`${parentlink}/indicadores/novo`" class="btn mt1 mb1"><span>Adicionar indicador</span></router-link>
-                        </div>
-                    </div>
-                </div>
+                <EvolucaoIndicador 
+                    :group="props?.group"
+                    :parentlink="parentlink"
+                    :parent_id="iniciativa_id"
+                    parent_field="iniciativa_id"
+                />
             </template>
             <template v-else-if="singleIniciativa.loading">
                 <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>

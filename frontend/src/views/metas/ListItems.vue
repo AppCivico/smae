@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
+import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
 import { useEditModalStore, useAuthStore, useMetasStore } from '@/stores';
 import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue';
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
@@ -40,20 +41,19 @@ function start(){
 onMounted(()=>{start()});
 onUpdated(()=>{start()});
 function groupSlug(s) {
+    var r;
     switch(s){
-        case 'macro_tema': return 'macrotemas'; break;
-        case 'tema': return 'temas'; break;
-        case 'sub_tema': return 'subtemas'; break;
-        default: return s;
+        case 'macro_tema': r = 'macrotemas'; break;
+        case 'tema': r = 'temas'; break;
+        case 'sub_tema': r = 'subtemas'; break;
+        default: r = s;
     }
+    return r;
 }
 </script>
 <template>
     <Dashboard>
-        <div class="breadcrumb">
-            <router-link to="/">Início</router-link>
-            <router-link to="/metas">{{activePdm.nome}}</router-link>
-        </div>
+        <Breadcrumb />
         <div class="flex spacebetween center mb2">
             <h1>{{activePdm.nome}}</h1>
             <hr class="ml2 f1"/>
@@ -89,7 +89,7 @@ function groupSlug(s) {
                         <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"><h2>{{item.descricao}}</h2></router-link>
                         <div class="t11 tc300 mb2">{{item.children.length}} meta(s)</div>
                         <ul class="metas">
-                            <li class="meta flex center mb1" v-for="(m,i) in item.children">
+                            <li class="meta flex center mb1" v-for="m in item.children" :key="m.id">
                                 <router-link :to="`/metas/${m.id}`" class="flex center f1">
                                     <div class="farol"></div>
                                     <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>

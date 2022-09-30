@@ -1,9 +1,8 @@
 <script setup>
     import { storeToRefs } from 'pinia';
     import { useAuthStore } from '@/stores';
-    const props = defineProps(['parentPage']);
     const authStore = useAuthStore();
-    const { /*user, */permissions } = storeToRefs(authStore);
+    const { permissions } = storeToRefs(authStore);
     const perm = permissions.value;
 </script>
 <template>

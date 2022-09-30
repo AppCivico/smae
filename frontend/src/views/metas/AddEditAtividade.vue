@@ -1,13 +1,14 @@
 <script setup>
 import { ref, unref } from 'vue';
 import { Dashboard} from '@/components';
+import { default as AutocompleteField} from '@/components/AutocompleteField.vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useAuthStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
+import { useAlertStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -15,10 +16,6 @@ const meta_id = route.params.meta_id;
 const iniciativa_id = route.params.iniciativa_id;
 const atividade_id = route.params.atividade_id;
 var oktogo = ref(0);
-
-const MetasStore = useMetasStore();
-const { activePdm, singleMeta } = storeToRefs(MetasStore);
-MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
@@ -28,10 +25,6 @@ const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
 AtividadesStore.clearEdit();
 
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-
 const orgaos_participantes = ref([
     {orgao_id:null, responsavel:true, participantes:[], busca:''}
 ]);
@@ -39,42 +32,43 @@ const coordenadores_cp = ref({participantes:[], busca:''});
 
 const virtualParent = ref({});
 let title = 'Cadastro de Atividade';
-if (atividade_id) {
-    title = 'Editar Atividade';
-    (async()=>{
-        await AtividadesStore.getById(iniciativa_id,atividade_id);
-        if(singleAtividade.value.orgaos_participantes){
-            orgaos_participantes.value.splice(0,orgaos_participantes.value.length);
-            singleAtividade.value.orgaos_participantes.map(x=>{
-                x.orgao_id = x.orgao.id;
-                x.busca = "";
-                x.orgao = x.orgao;
-                x.participantes = x.participantes.map(y=>y.id);
-                return x;
-            }).forEach(x=>orgaos_participantes.value.push(x));
-        }
-        if(singleAtividade.value.coordenadores_cp){
-            coordenadores_cp.value.participantes = singleAtividade.value.coordenadores_cp.map(x=>x.id);
-        }
-    })();
-}
 
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
+if (atividade_id) {
+    title = 'Editar Atividade';
+}
 (async()=>{
-    if(!singleIniciativa?.id || singleIniciativa.id!=iniciativa_id) await IniciativasStore.getById(meta_id,iniciativa_id);
-    
-    singleIniciativa.value.orgaos_participantes.forEach(x=>{
+    await IniciativasStore.getById(meta_id,iniciativa_id);
+    if (atividade_id) await AtividadesStore.getById(iniciativa_id,atividade_id);
+
+    singleIniciativa.value.orgaos_participantes?.forEach(x=>{
         x.orgao_id = x.orgao.id;
         organsAvailable.value.push(x);
         if(!usersAvailable.value[x.orgao_id]) usersAvailable.value[x.orgao_id] = [];
         usersAvailable.value[x.orgao_id] = usersAvailable.value[x.orgao_id].concat(x.participantes);
     });
-    singleIniciativa.value.coordenadores_cp.forEach(x=>{
+    singleIniciativa.value.coordenadores_cp?.forEach(x=>{
         coordsAvailable.value.push(x);
     })
 
+    if(atividade_id){
+        if(singleAtividade.value.orgaos_participantes){
+            orgaos_participantes.value.splice(0,orgaos_participantes.value.length);
+            singleAtividade.value.orgaos_participantes.forEach(x=>{
+                var z = {};
+                z.orgao_id = x.orgao.id;
+                z.busca = "";
+                z.participantes = x.participantes.map(y=>y?.id??y);
+                z.responsavel = x.responsavel;
+                orgaos_participantes.value.push(z);
+            });
+        }
+        if(singleAtividade.value.coordenadores_cp){
+            coordenadores_cp.value.participantes = singleAtividade.value.coordenadores_cp.map(x=>x?.id??x);
+        }
+    }
     oktogo.value = true;
 })();
 
@@ -88,15 +82,7 @@ const schema = Yup.object().shape({
     compoe_indicador_iniciativa: Yup.string().nullable(),
 });
 
-function addOrgao(obj,r) {
-    obj.push({orgao_id:null, responsavel:r??false, participantes:[], busca:''});
-}
-function removeOrgao(obj,i) {
-    obj.splice(i,1);
-}
-function removeParticipante(item,p) {
-    item.participantes.splice(item.participantes.indexOf(p),1);
-}
+
 async function onSubmit(values) {
     try {
         var er = [];
@@ -120,7 +106,7 @@ async function onSubmit(values) {
         if (atividade_id&&singleAtividade.value.id) {
             r = await AtividadesStore.update(singleAtividade.value.id, values);
             msg = 'Dados salvos com sucesso!';
-            rota = `/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${singleAtividade.value.id}`;
+            rota = `/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${atividade_id}`;
         } else {
             r = await AtividadesStore.insert(values);
             msg = 'Item adicionado com sucesso!';
@@ -135,48 +121,6 @@ async function onSubmit(values) {
         alertStore.error(error);
     }
 }
-async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?',`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
-}
-function maskDate(el){
-    var kC = event.keyCode;
-    var data = el.target.value.replace(/[^0-9/]/g,'');
-    if( kC!=8 && kC!=46 ){
-        if( data.length==2 ){
-            el.target.value = data += '/';
-        }else if( data.length==5 ){
-            el.target.value = data += '/';
-        }else{
-            el.target.value = data;
-        }
-    }
-}
-function pushId(e,id) {
-    e.push(id);
-    e = [...new Set(e)];
-}
-function filterResponsible(orgao_id) {
-    var r = usersAvailable.value[orgao_id] ?? [];
-    return r.length ? r : [];
-}
-function buscaResponsible(e,item) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.keyCode === 13) {
-        var i = filterResponsible(item.orgao_id).find(x=>!item.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(item.busca.toLowerCase()));
-        if(i) pushId(item.participantes,i.id);
-        item.busca="";
-    }
-}
-function buscaCoord(e,item) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.keyCode === 13) {
-        var i = coordsAvailable.find(x=>!item.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(item.busca.toLowerCase()));
-        if(i) pushId(item.participantes,i.id);
-        item.busca="";
-    }
-}
 async function checkDelete(id) {
     if (id) {
         if(singleAtividade.value.id == id){
@@ -189,6 +133,19 @@ async function checkDelete(id) {
             },'Remover');
         }
     }
+}
+async function checkClose() {
+    alertStore.confirm('Deseja sair sem salvar as alterações?',`/metas/${meta_id}/iniciativas/${iniciativa_id}`);
+}
+function addOrgao(obj,r) {
+    obj.push({orgao_id:null, responsavel:r??false, participantes:[], busca:''});
+}
+function removeOrgao(obj,i) {
+    obj.splice(i,1);
+}
+function filterResponsible(orgao_id) {
+    var r = usersAvailable.value[orgao_id] ?? [];
+    return r.length ? r : [];
 }
 </script>
 
@@ -247,21 +204,18 @@ async function checkDelete(id) {
                     <label class="f1 label tc300">Responsável(eis)</label>
                     <div style="flex-basis: 30px;"></div>
                 </div>
-                <template v-for="(item, index) in orgaos_participantes">
+                <template v-for="(item, index) in orgaos_participantes" :key="index">
                     <div class="flex mb1 g2">
                         <div class="f1">
                             <select v-model="item.orgao_id" class="inputtext" @change="item.participantes=[]" v-if="organsAvailable.length">
-                                <option v-for="(o,k) in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))" :value="o.orgao_id">{{o.orgao.descricao}}</option>
+                                <option v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))" 
+                                        :key="o.orgao_id"
+                                        :value="o.orgao_id"
+                                >{{o.orgao.descricao}}</option>
                             </select>
                         </div>
                         <div class="f1">
-                            <div class="suggestion search">
-                                <input type="text" v-model="item.busca" @keyup.enter.stop.prevent="buscaResponsible($event,item)" class="inputtext light mb05">
-                                <ul>
-                                    <li v-if="item.orgao_id" v-for="(r,k) in filterResponsible(item.orgao_id).filter(x=>!item.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(item.busca.toLowerCase()))"><a @click="pushId(item.participantes,r.id)" tabindex="1">{{r.nome_exibicao}}</a></li>
-                                </ul>
-                            </div>
-                            <span class="tagsmall" v-for="(p,k) in filterResponsible(item.orgao_id).filter(x=>item.participantes.includes(x.id))" @click="removeParticipante(item,p.id)">{{p.nome_exibicao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                            <AutocompleteField :controlador="item" :grupo="filterResponsible(item.orgao_id)" label="nome_exibicao" />
                         </div>
                         <div style="flex-basis: 30px;">
                             <a v-if="index" @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
@@ -272,16 +226,10 @@ async function checkDelete(id) {
                 
                 <hr class="mt2 mb2"/>
 
-                <label class="label">Responsável(eis) na coordenadoria de projetos da Meta* <span class="tvermelho">*</span></label>
+                <label class="label">Responsável(eis) na coordenadoria de planejamento da Meta* <span class="tvermelho">*</span></label>
                 <div class="flex">
                     <div class="f1" v-if="coordsAvailable.length">
-                        <div class="suggestion search">
-                            <input type="text" v-model="coordenadores_cp.busca" @keyup.enter.stop.prevent="buscaCoord($event,coordenadores_cp)" class="inputtext light mb05">
-                            <ul>
-                                <li v-for="(r,k) in coordsAvailable.filter(x=>!coordenadores_cp.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(coordenadores_cp.busca.toLowerCase()))"><a @click="pushId(coordenadores_cp.participantes,r.id)" tabindex="1">{{r.nome_exibicao}}</a></li>
-                            </ul>
-                        </div>
-                        <span class="tagsmall" v-for="(p,k) in coordsAvailable.filter(x=>coordenadores_cp.participantes.includes(x.id))" @click="removeParticipante(coordenadores_cp,p.id)">{{p.nome_exibicao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                        <AutocompleteField :controlador="coordenadores_cp" :grupo="coordsAvailable" label="nome_exibicao" />
                     </div>
                 </div>
 

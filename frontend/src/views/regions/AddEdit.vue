@@ -1,6 +1,5 @@
 <script setup>
-import { reactive, onServerPrefetch } from 'vue';
-import { Dashboard} from '@/components';
+import { reactive } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -11,8 +10,7 @@ import { requestS } from '@/helpers';
 import { useAlertStore, useEditModalStore, useRegionsStore } from '@/stores';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-const ps = defineProps(['props']);
-const props = ps.props;
+const props = defineProps(['props']);
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
 const route = useRoute();
@@ -29,7 +27,7 @@ const { singleTempRegions } = storeToRefs(regionsStore);
 var title1, title2, level, parentID, lastid;
 const curfile = reactive({});
 
-if(props.type=='editar'){
+if(props.props.type=='editar'){
     title1 = 'Editar';
     title2 = 'Município';
     level = 0;
@@ -60,7 +58,7 @@ if(props.type=='editar'){
         level++;
     }
 
-    if(props.type=='editar'){
+    if(props.props.type=='editar'){
         regionsStore.getById(lastid);
         curfile.name = singleTempRegions.value.shapefile;
     }
@@ -126,7 +124,7 @@ async function checkClose() {
 async function checkDelete(id) {
     alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await regionsStore.delete(id)){regionsStore.filterRegions(); editModalStore.clear(); router.push('/regioes');}},'Remover');
 }
-function removeshape(t) {
+function removeshape() {
     curfile.name = '';
     curfile.loading = null;
     singleTempRegions.value.upload_shapefile = curfile.name;

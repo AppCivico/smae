@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
-import { usePdMStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useIndicadoresStore = defineStore({
@@ -59,7 +58,7 @@ export const useIndicadoresStore = defineStore({
                 this.singleIndicadores = { error };
             }
         },
-        async getAgregadores(id) {
+        async getAgregadores() {
             try {
                 if(!this.agregadores.length){
                     let r = await requestS.get(`${baseUrl}/agregadores`);    

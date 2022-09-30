@@ -1,12 +1,8 @@
 <script setup>
-import { ref, reactive } from 'vue';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { requestS } from '@/helpers';
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 
@@ -15,13 +11,9 @@ const alertStore = useAlertStore();
 
 const route = useRoute();
 
-const meta_id = route.params.meta_id;
-const iniciativa_id = route.params.iniciativa_id;
-const atividade_id = route.params.atividade_id;
 const indicador_id = route.params.indicador_id;
 const var_id = route.params.var_id;
 
-const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 const currentEdit = route.path.slice(0,route.path.indexOf('/variaveis'));
 
 const VariaveisStore = useVariaveisStore();
@@ -108,14 +100,16 @@ function soma(a,j) {
                     <label class="label tc300">Previsto Acumulado</label>
                 </div>
             </div>
-            <div v-if="Valores[var_id]?.previsto" class="flex g2" v-for="(v,i) in Valores[var_id].previsto">
-                <div class="f1">
-                    <label class="label">Previsto {{v.periodo}}</label>
-                    <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="soma(Valores[var_id].previsto,i)"/>
-                </div>
-                <div class="f1">
-                    <label class="label">Acumulado {{v.periodo}}</label>
-                    <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[PrevistoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(Valores[var_id].previsto,i):v.series[PrevistoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa" class="inputtext light mb1"/>
+            <div v-if="Valores[var_id]?.previsto">
+                <div class="flex g2" v-for="(v,i) in Valores[var_id].previsto" :key="i">
+                    <div class="f1">
+                        <label class="label">Previsto {{v.periodo}}</label>
+                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="soma(Valores[var_id].previsto,i)"/>
+                    </div>
+                    <div class="f1">
+                        <label class="label">Acumulado {{v.periodo}}</label>
+                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[PrevistoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(Valores[var_id].previsto,i):v.series[PrevistoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa" class="inputtext light mb1"/>
+                    </div>
                 </div>
             </div>
 

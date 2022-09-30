@@ -1,6 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, onUpdated } from 'vue';
-import { Dashboard} from '@/components';
+import { ref, reactive, onMounted } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -18,8 +17,8 @@ const MacrotemasStore = useMacrotemasStore();
 const { tempMacrotemas } = storeToRefs(MacrotemasStore);
 MacrotemasStore.clear();
 
-const ps = defineProps(['props']);
-const props = ps.props;
+
+const props = defineProps(['props']);
 
 const virtualParent = reactive({});
 const MetasStore = useMetasStore();
@@ -29,7 +28,7 @@ var pdm_id = reactive(0);
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
 
-if(props.parentPage=='metas'){
+if(props.props.parentPage=='metas'){
     Promise.all([
         MetasStore.getPdM()
     ]).then(()=>{
@@ -55,7 +54,7 @@ const schema = Yup.object().shape({
 });
 
 onMounted(()=>{
-    if(props.parentPage=='metas'){
+    if(props.props.parentPage=='metas'){
         label.value = activePdm.value.rotulo_macro_tema??"Macrotema";
     }else{
         label.value = singlePdm.value.rotulo_macro_tema??"Macrotema";
@@ -76,8 +75,8 @@ async function onSubmit(values) {
         if(r == true){
             MacrotemasStore.clear();
             PdMStore.clearLoad();
-            if(props.parentPage=='pdm') PdMStore.filterPdM();
-            await router.push('/'+props.parentPage);
+            if(props.props.parentPage=='pdm') PdMStore.filterPdM();
+            await router.push('/'+props.props.parentPage);
             alertStore.success(msg);
             editModalStore.clear();
         }
@@ -87,7 +86,7 @@ async function onSubmit(values) {
 }
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-        router.push('/'+props.parentPage);  
+        router.push('/'+props.props.parentPage);  
         editModalStore.clear(); 
         alertStore.clear(); 
     });
@@ -97,9 +96,9 @@ async function checkDelete(id) {
         if(await MacrotemasStore.delete(id)){
             MacrotemasStore.clear();
             PdMStore.clearLoad();
-            if(props.parentPage=='pdm') PdMStore.filterPdM();
+            if(props.props.parentPage=='pdm') PdMStore.filterPdM();
             editModalStore.clear(); 
-            router.push('/'+props.parentPage);
+            router.push('/'+props.props.parentPage);
         }
     },'Remover');
 }

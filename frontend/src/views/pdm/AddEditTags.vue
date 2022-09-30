@@ -1,11 +1,12 @@
 <script setup>
-import { ref, reactive, onMounted, onUpdated } from 'vue';
-import { Dashboard} from '@/components';
+import { reactive } from 'vue';
+import { requestS } from '@/helpers';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 import { useAlertStore, useEditModalStore, useTagsStore, usePdMStore, useODSStore, useMetasStore } from '@/stores';
 
@@ -18,8 +19,7 @@ const TagsStore = useTagsStore();
 const { tempTags } = storeToRefs(TagsStore);
 TagsStore.clear();
 
-const ps = defineProps(['props']);
-const props = ps.props;
+const props = defineProps(['props']);
 
 const virtualParent = reactive({});
 const MetasStore = useMetasStore();
@@ -33,7 +33,9 @@ var pdm_id = reactive(0);
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
 
-if(props.parentPage=='metas'){
+const curfile = reactive({});
+
+if(props.props.parentPage=='metas'){
     Promise.all([
         MetasStore.getPdM()
     ]).then(()=>{
@@ -42,8 +44,11 @@ if(props.parentPage=='metas'){
     });
 }else{
     pdm_id = route.params.pdm_id;
-    if(!singlePdm.value.id || singlePdm.value.id != pdm_id) PdMStore.getById(pdm_id);
     virtualParent.pdm_id=pdm_id;
+    (async()=>{
+        if(!singlePdm.value.id || singlePdm.value.id != pdm_id) await PdMStore.getById(pdm_id);
+        if(singlePdm.value.icone) curfile.name = singlePdm.value.icone;
+    })();
 }
 
 let title = 'Cadastro de Tag';
@@ -56,6 +61,7 @@ const schema = Yup.object().shape({
     descricao: Yup.string().required('Preencha a descrição'),
     pdm_id: Yup.string(),
     ods_id: Yup.string().nullable(),
+    upload_icone: Yup.string().nullable(),
 });
 
 
@@ -73,8 +79,8 @@ async function onSubmit(values) {
         if(r == true){
             TagsStore.clear();
             PdMStore.clearLoad();
-            if(props.parentPage=='pdm') PdMStore.filterPdM();
-            await router.push('/'+props.parentPage);
+            if(props.props.parentPage=='pdm') PdMStore.filterPdM();
+            await router.push('/'+props.props.parentPage);
             alertStore.success(msg);
             editModalStore.clear();
         }
@@ -85,7 +91,7 @@ async function onSubmit(values) {
 
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-        router.push('/'+props.parentPage);  
+        router.push('/'+props.props.parentPage);  
         editModalStore.clear(); 
         alertStore.clear(); 
     });
@@ -95,11 +101,32 @@ async function checkDelete(id) {
         if(await TagsStore.delete(id)){
             TagsStore.clear();
             PdMStore.clearLoad();
-            if(props.parentPage=='pdm') PdMStore.filterPdM();
+            if(props.props.parentPage=='pdm') PdMStore.filterPdM();
             editModalStore.clear(); 
-            router.push('/'+props.parentPage);
+            router.push('/'+props.props.parentPage);
         }
     },'Remover');
+}
+function removeshape() {
+    curfile.name = '';
+    curfile.loading = null;
+    singlePdm.value.upload_icone = curfile.name;
+}
+async function uploadshape(e){
+    curfile.name= '';
+    curfile.loading = true;
+
+    const files = e.target.files;
+    const formData = new FormData();
+    formData.append('tipo', 'LOGO_PDM');
+    formData.append('arquivo', files[0]);
+
+    let u = await requestS.upload(`${baseUrl}/upload`, formData)
+    if(u.upload_token){
+        curfile.name= u.upload_token;
+        curfile.loading = null;
+        singlePdm.value.upload_icone = curfile.name;
+    }
 }
 
 </script>
@@ -132,6 +159,18 @@ async function checkDelete(id) {
                     <div class="error-msg">{{ errors.descricao }}</div>
                 </div>
             </div>
+
+            <div class="mt1 mb2">
+                <label class="label tc300">Ícone</label>
+                
+                <label v-if="!curfile.loading&&!curfile.name" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar arquivo ( formatos SVG ou PNG até 2mb) *</span><input type="file" accept=".svg,.png" :onchange="uploadshape" style="display:none;"></label>
+                
+                <div v-else-if="curfile.loading" class="addlink"><span>Carregando</span> <svg width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
+                
+                <div v-else-if="curfile.name"><span>{{curfile?.name?.slice(0,30)}}</span> <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a></div>
+                <Field name="upload_icone" type="hidden" :value="curfile?.name"/>
+            </div>
+
             <div class="flex spacebetween center mb2">
                 <hr class="mr2 f1"/>
                 <button class="btn big" :disabled="isSubmitting">Salvar</button>
