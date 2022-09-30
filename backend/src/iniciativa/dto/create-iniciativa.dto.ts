@@ -86,7 +86,7 @@ export class CreateIniciativaDto {
     * Quais são os orgaos participantes e seus membros responsáveis
     */
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
-    orgaos_participantes?: MetaOrgaoParticipante[]
+    orgaos_participantes?: IniciativaOrgaoParticipante[]
 
     /**
     * ID das pessoas que são coordenadores
