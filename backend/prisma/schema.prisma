@@ -321,12 +321,16 @@ model Pdm {
     possui_sub_tema            Boolean @default(true)
     possui_contexto_meta       Boolean @default(true)
     possui_complementacao_meta Boolean @default(true)
+    possui_iniciativa          Boolean @default(false)
+    possui_atividade           Boolean @default(false)
 
     rotulo_macro_tema          String @default("Macro Tema")
     rotulo_tema                String @default("Tema")
     rotulo_sub_tema            String @default("Sub Tema")
     rotulo_contexto_meta       String @default("Contexto")
     rotulo_complementacao_meta String @default("Complementação")
+    rotulo_iniciativa          String @default("Iniciativa")
+    rotulo_atividade           String @default("Atividade")
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -847,7 +851,6 @@ model Iniciativa {
     complemento           String?
     compoe_indicador_meta Boolean
     status                String?
-    rotulo                String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -919,7 +922,6 @@ model Atividade {
     complemento                 String?
     compoe_indicador_iniciativa Boolean
     status                      String?
-    rotulo                String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)

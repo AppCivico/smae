@@ -25,6 +25,5 @@ export class Iniciativa {
     orgaos_participantes: IniciativaOrgao[]
     coordenadores_cp: IdNomeExibicao[]
     compoe_indicador_meta: boolean
-    rotulo: string | null
     ativo: boolean
 }
