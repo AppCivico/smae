@@ -58,6 +58,10 @@ export class IniciativaService {
     async buildIniciativaTags(iniciativaId: number, tags: number[]): Promise<Prisma.IniciativaTagCreateManyInput[]> {
         const arr: Prisma.IniciativaTagCreateManyInput[] = [];
 
+        if (typeof tags !== 'object') {
+            tags = []
+        }
+
         for (const tag of tags) {
             arr.push({
                 iniciativa_id: iniciativaId,
