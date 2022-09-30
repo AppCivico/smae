@@ -1,15 +1,11 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { requestS } from '@/helpers';
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
 import { useAlertStore, useEditModalStore, useMetasStore, useIniciativasStore, useAtividadesStore, useIndicadoresStore, useVariaveisStore, useRegionsStore } from '@/stores';
-
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -23,11 +19,7 @@ const indicador_id = route.params.indicador_id;
 const var_id = route.params.var_id;
 const copy_id = route.params.copy_id;
 
-const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 const currentEdit = route.path.slice(0,route.path.indexOf('/variaveis'));
-
-const ps = defineProps(['props']);
-const props = ps.props;
 
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
@@ -107,7 +99,6 @@ if(var_id){
                 level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
             })();
         }
-        console.log(virtualParent);
         virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
         virtualParent.value.casas_decimais = singleVariaveis.value.casas_decimais;
         virtualParent.value.orgao_id = singleVariaveis.value.orgao_id;
@@ -122,7 +113,7 @@ if(var_id){
 
 const schema = Yup.object().shape({
     orgao_id: Yup.string().required('Selecione um orgão'),
-    regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value, testContext)=>{ return !singleIndicadores?.value?.regionalizavel || value; }),
+    regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value)=>{ return !singleIndicadores?.value?.regionalizavel || value; }),
     unidade_medida_id: Yup.string().required('Selecione uma unidade'),
     
     titulo: Yup.string().required('Preencha o título'),
@@ -131,7 +122,7 @@ const schema = Yup.object().shape({
     valor_base: Yup.string().required('Preencha o valor base'),
     ano_base: Yup.string().nullable(),
     casas_decimais: Yup.string().required('Preencha o número de casas decimais'),
-    peso: Yup.string().notRequired(),
+    peso: Yup.string().nullable(),
 
     acumulativa: Yup.string().nullable(),
 
@@ -151,7 +142,6 @@ async function onSubmit(values) {
         values.orgao_id = Number(values.orgao_id);
         values.regiao_id = singleIndicadores.value.regionalizavel? Number(values.regiao_id):null;
         values.unidade_medida_id = Number(values.unidade_medida_id);
-        values.valor_base = values.valor_base;
         values.ano_base = Number(values.ano_base);
         values.casas_decimais = Number(values.casas_decimais);
         values.peso = values.peso?Number(values.peso):null;
@@ -295,21 +285,23 @@ function buscaCoord(e,parent,item) {
             <div v-if="lastParent?.orgaos_participantes">
                 <label class="label">Orgão responsável <span class="tvermelho">*</span></label>
                 <Field v-if="lastParent?.id" name="orgao_id" v-model="orgao_id" @change="responsaveisArr.participantes.splice(0,responsaveisArr.participantes.length)" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
-                    <option v-for="a in lastParent.orgaos_participantes" :value="a.orgao.id">{{a.orgao.descricao}}</option>
+                    <option v-for="a in lastParent.orgaos_participantes" :key="a.orgao.id" :value="a.orgao.id">{{a.orgao.descricao}}</option>
                 </Field>
                 <div class="error-msg">{{ errors.orgao_id }}</div>
 
 
                 <label class="label">Responsável(eis)* <span class="tvermelho">*</span></label>
                 <div class="mb1" v-if="lastParent?.orgaos_participantes?.length&&orgao_id">
-                    <template v-for="c in [lastParent.orgaos_participantes.find(x=>x.orgao.id==orgao_id)]">
+                    <template v-for="c in [lastParent.orgaos_participantes.find(x=>x.orgao.id==orgao_id)]" :key="c.orgao.id">
                         <div class="suggestion search">
                             <input type="text" v-model="responsaveisArr.busca" @keyup.enter.stop.prevent="buscaCoord($event,c.participantes,responsaveisArr)" class="inputtext light mb05">
-                            <ul>
-                                <li v-if="c?.participantes" v-for="(r,k) in c?.participantes.filter(x=>!responsaveisArr.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(responsaveisArr.busca.toLowerCase()))"><a @click="pushId(responsaveisArr.participantes,r.id)" tabindex="1">{{r.nome_exibicao}}</a></li>
+                            <ul v-if="c?.participantes">
+                                <li v-for="r in c?.participantes.filter(x=>!responsaveisArr.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(responsaveisArr.busca.toLowerCase()))" :key="r.id"><a @click="pushId(responsaveisArr.participantes,r.id)" tabindex="1">{{r.nome_exibicao}}</a></li>
                             </ul>
                         </div>
-                        <span v-if="c?.participantes" class="tagsmall" v-for="(p,k) in c?.participantes.filter(x=>responsaveisArr.participantes.includes(x.id))" @click="removeParticipante(responsaveisArr,p.id)">{{p.nome_exibicao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                        <div v-if="c?.participantes">
+                            <span class="tagsmall" v-for="p in c?.participantes.filter(x=>responsaveisArr.participantes.includes(x.id))" :key="p.id" @click="removeParticipante(responsaveisArr,p.id)">{{p.nome_exibicao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                        </div>
                     </template>
                 </div>
                 <input v-else class="inputtext light mb1" type="text" disabled value="Selecione um órgão">
@@ -322,17 +314,17 @@ function buscaCoord(e,parent,item) {
                 <template v-if="singleIndicadores.nivel_regionalizacao>=2">
                     <select class="inputtext light mb1" v-model="level1" @change="lastlevel">
                         <option value="">Selecione</option>
-                        <option v-for="(r,i) in regions[0]?.children" :value="i">{{r.descricao}}</option>
+                        <option v-for="(r,i) in regions[0]?.children" :key="i" :value="i">{{r.descricao}}</option>
                     </select>
                     <template v-if="singleIndicadores.nivel_regionalizacao>=3&&level1!==null">
                         <select class="inputtext light mb1" v-model="level2" @change="lastlevel">
                             <option value="">Selecione</option>
-                            <option v-for="(rr,ii) in regions[0]?.children[level1]?.children" :value="ii">{{rr.descricao}}</option>
+                            <option v-for="(rr,ii) in regions[0]?.children[level1]?.children" :key="ii" :value="ii">{{rr.descricao}}</option>
                         </select>
                         <template v-if="singleIndicadores.nivel_regionalizacao==4&&level2!==null">
                             <select class="inputtext light mb1" v-model="level3" @change="lastlevel">
                                 <option value="">Selecione</option>
-                                <option v-for="(rrr,iii) in regions[0]?.children[level1]?.children[level2]?.children" :value="iii">{{rrr.descricao}}</option>
+                                <option v-for="(rrr,iii) in regions[0]?.children[level1]?.children[level2]?.children" :key="iii" :value="iii">{{rrr.descricao}}</option>
                             </select>
                         </template>
                         <template v-else-if="singleIndicadores.nivel_regionalizacao==4&&level2===null">

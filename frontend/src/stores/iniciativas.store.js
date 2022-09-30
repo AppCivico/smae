@@ -23,6 +23,7 @@ export const useIniciativasStore = defineStore({
                 let r = await requestS.get(`${baseUrl}/iniciativa?meta_id=${meta_id}`);    
                 
                 this.Iniciativas[meta_id] = r.linhas.map(x=>{
+                    x.compoe_indicador_meta = x.compoe_indicador_meta?'1':false;
                     return x;
                 });
             } catch (error) {

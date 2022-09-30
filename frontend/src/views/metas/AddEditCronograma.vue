@@ -1,13 +1,13 @@
 <script setup>
-import { ref, unref,onMounted, onUpdated } from 'vue';
+import { ref, onMounted, onUpdated } from 'vue';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore } from '@/stores';
-//import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
+import { useEditModalStore, useAlertStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore } from '@/stores';
+import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -36,11 +36,6 @@ if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
 
-
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-
 const schema = Yup.object().shape({
     descricao: Yup.string().required('Preencha o código'), //  : "string",
     observacao: Yup.string().nullable(), //  : "string",
@@ -53,11 +48,9 @@ let regionalizavel = ref(1);
 
 if (cronograma_id) {
     title = 'Editar Cronograma';
-}else{
-    
 }
 function start(){
-    //if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
+    if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
 }
 onMounted(()=>{start()});
 onUpdated(()=>{start()});

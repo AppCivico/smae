@@ -1,8 +1,8 @@
 <script setup>
-import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { useAuthStore, useMetasStore, usePdMStore, useIniciativasStore } from '@/stores';
+import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
+import { useAuthStore, useMetasStore, useIniciativasStore } from '@/stores';
 import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -21,35 +21,15 @@ const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
 if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
 
-const PdMStore = usePdMStore();
-const { singlePdm } = storeToRefs(PdMStore);
-
 (async()=>{
     if(!singleMeta.value.id||singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
-    if(!singlePdm.value.id||singlePdm.value.id != singleMeta.value.pdm_id) PdMStore.getById(singleMeta.value.pdm_id);
 })();
 
-let groupBy = localStorage.getItem('groupBy')??"macro_tema";
-let groupByRoute;
-switch(groupBy){
-    case 'macro_tema': 
-        groupByRoute = 'macrotemas';
-        break;
-    case 'tema': 
-        groupByRoute = 'temas';
-        break;
-    case 'sub_tema': 
-        groupByRoute = 'subtemas';
-        break;
-}
 </script>
 <template>
     <Dashboard>
-        <div class="breadcrumb">
-            <router-link to="/">Início</router-link>
-            <router-link to="/metas">{{singlePdm.nome}}</router-link>
-            <router-link :to="`/metas/${groupByRoute}/${singleMeta[groupBy]?.id}`" v-if="singlePdm['possui_'+groupBy]">{{singleMeta[groupBy]?.descricao}}</router-link>
-        </div>
+        <Breadcrumb />
+        
         <div class="flex spacebetween center mb2">
             <h1>Cronograma</h1>
             <hr class="ml2 f1"/>

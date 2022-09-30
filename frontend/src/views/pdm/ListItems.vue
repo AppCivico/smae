@@ -45,7 +45,7 @@ onMounted(()=>{start()});
 onUpdated(()=>{start()});
 function deleteArquivo(pdmid,id){
     alertStore.confirmAction('Deseja remover o arquivo?',()=>{ 
-        let r = PdMStore.deleteArquivo(pdmid,id);
+        PdMStore.deleteArquivo(pdmid,id);
     },'Remover');
 }
 </script>

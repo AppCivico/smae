@@ -1,13 +1,14 @@
 <script setup>
 import { ref, unref } from 'vue';
 import { Dashboard} from '@/components';
+import { default as AutocompleteField} from '@/components/AutocompleteField.vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useAlertStore, useAuthStore, useMetasStore, useOrgansStore, useUsersStore } from '@/stores';
+import { useAlertStore, useMetasStore, useOrgansStore, useUsersStore } from '@/stores';
 import { useMacrotemasStore, useTemasStore, useSubtemasStore, useTagsStore } from '@/stores';
 
 const alertStore = useAlertStore();
@@ -19,10 +20,6 @@ const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.clear();
 
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-
 const orgaos_participantes = ref([
     {orgao_id:null, responsavel:true, participantes:[], busca:''},
     {orgao_id:null, responsavel:false, participantes:[], busca:''}
@@ -30,39 +27,16 @@ const orgaos_participantes = ref([
 const coordenadores_cp = ref({participantes:[], busca:''});
 const m_tags = ref({participantes:[], busca:''});
 
-const virtualParent = ref({});
+const virtualParent = ref({
+    macro_tema_id: route.params.macro_tema_id,
+    sub_tema_id: route.params.sub_tema_id,
+    tema_id: route.params.tema_id,
+});
 let title = 'Cadastro de Meta';
 if (meta_id) {
     title = 'Editar Meta';
-    Promise.all([
-        MetasStore.getById(meta_id)
-    ]).then(()=>{
-        if(singleMeta.value?.tema?.id)singleMeta.value.tema_id = singleMeta.value.tema.id;
-        if(singleMeta.value?.macro_tema?.id)singleMeta.value.macro_tema_id = singleMeta.value.macro_tema.id;
-        if(singleMeta.value?.sub_tema?.id)singleMeta.value.sub_tema_id = singleMeta.value.sub_tema.id;
-
-        if(singleMeta.value.orgaos_participantes){
-            orgaos_participantes.value.splice(0,orgaos_participantes.value.length);
-            singleMeta.value.orgaos_participantes.map(x=>{
-                x.orgao_id = x.orgao.id;
-                x.busca = "";
-                x.orgao = x.orgao.id;
-                x.participantes = x.participantes.map(y=>y.id);
-                return x;
-            }).forEach(x=>orgaos_participantes.value.push(x));
-        }
-        if(singleMeta.value.coordenadores_cp){
-            coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map(x=>x.id);
-        }
-        if(singleMeta.value.tags){
-            m_tags.value.participantes = singleMeta.value.tags.map(x=>x.id);
-        }
-    })
-}else{
-    if(route.params.macro_tema_id) virtualParent.value.macro_tema_id = route.params.macro_tema_id;
-    if(route.params.sub_tema_id) virtualParent.value.sub_tema_id = route.params.sub_tema_id;
-    if(route.params.tema_id) virtualParent.value.tema_id = route.params.tema_id;
 }
+
 const MacrotemaStore = useMacrotemasStore();
 const { tempMacrotemas } = storeToRefs(MacrotemaStore);
 
@@ -80,18 +54,44 @@ const OrgansStore = useOrgansStore();
 const UserStore = useUsersStore();
 const { usersCoord } = storeToRefs(UserStore);
 
+(async()=>{
+    if(meta_id) await MetasStore.getById(meta_id);
+    await MetasStore.getPdM();
 
-Promise.all([
-    MetasStore.getPdM()
-]).then(()=>{
     MacrotemaStore.filterByPdm(activePdm.value.id);
     TemaStore.filterByPdm(activePdm.value.id);
     SubtemaStore.filterByPdm(activePdm.value.id);
     TagsStore.filterByPdm(activePdm.value.id);
     OrgansStore.getAllOrganResponsibles();
     UserStore.getCoord();
+
+    if(singleMeta.value.id) {
+        if(singleMeta.value?.tema?.id) singleMeta.value.tema_id = singleMeta.value.tema.id;
+        if(singleMeta.value?.macro_tema?.id) singleMeta.value.macro_tema_id = singleMeta.value.macro_tema.id;
+        if(singleMeta.value?.sub_tema?.id) singleMeta.value.sub_tema_id = singleMeta.value.sub_tema.id;
+
+        if(singleMeta.value.orgaos_participantes){
+            orgaos_participantes.value.splice(0,orgaos_participantes.value.length);
+            singleMeta.value.orgaos_participantes.forEach(x=>{
+                var z = {};
+                z.orgao_id = x.orgao.id;
+                z.busca = "";
+                z.responsavel = x.responsavel;
+                z.participantes = x.participantes.map(y=>y?.id??y);
+                orgaos_participantes.value.push(z);
+            });
+        }
+        if(singleMeta.value.coordenadores_cp){
+            coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map(x=>x.id);
+        }
+        if(singleMeta.value.tags){
+            m_tags.value.participantes = singleMeta.value.tags.map(x=>x.id);
+        }
+    }
+
     oktogo.value = true;
-});
+})();
+
 
 const schema = Yup.object().shape({
     codigo: Yup.string().required('Preencha o código'),
@@ -100,20 +100,11 @@ const schema = Yup.object().shape({
     complemento: Yup.string().nullable(),
 
     pdm_id: Yup.string().nullable(),
-    macro_tema_id: Yup.string().test('macro_tema_id',`Selecione um(a) ${activePdm.value?.rotulo_macro_tema}.`,(value, testContext)=>{ return !activePdm.value?.possui_macro_tema || value; }),
-    tema_id: Yup.string().test('tema_id',`Selecione um(a) ${activePdm.value?.rotulo_tema}.`,(value, testContext)=>{ return !activePdm.value?.possui_tema || value; }),
-    sub_tema_id: Yup.string().test('sub_tema_id',`Selecione um(a) ${activePdm.value?.rotulo_sub_tema}.`,(value, testContext)=>{ return !activePdm.value?.possui_sub_tema || value; }),
+    macro_tema_id: Yup.string().test('macro_tema_id',`Selecione um(a) ${activePdm.value?.rotulo_macro_tema}.`,(value)=>{ return !activePdm.value?.possui_macro_tema || value; }),
+    tema_id: Yup.string().test('tema_id',`Selecione um(a) ${activePdm.value?.rotulo_tema}.`,(value)=>{ return !activePdm.value?.possui_tema || value; }),
+    sub_tema_id: Yup.string().test('sub_tema_id',`Selecione um(a) ${activePdm.value?.rotulo_sub_tema}.`,(value)=>{ return !activePdm.value?.possui_sub_tema || value; }),
 });
 
-function addOrgao(obj,r) {
-    obj.push({orgao_id:null, responsavel:r??false, participantes:[], busca:''});
-}
-function removeOrgao(obj,i) {
-    obj.splice(i,1);
-}
-function removeParticipante(item,p) {
-    item.participantes.splice(item.participantes.indexOf(p),1);
-}
 async function onSubmit(values) {
     try {
         var er = [];
@@ -170,45 +161,17 @@ async function checkDelete(id) {
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?','/metas');
 }
-function maskDate(el){
-    var kC = event.keyCode;
-    var data = el.target.value.replace(/[^0-9/]/g,'');
-    if( kC!=8 && kC!=46 ){
-        if( data.length==2 ){
-            el.target.value = data += '/';
-        }else if( data.length==5 ){
-            el.target.value = data += '/';
-        }else{
-            el.target.value = data;
-        }
-    }
+function addOrgao(obj,r) {
+    obj.push({orgao_id:null, responsavel:r??false, participantes:[], busca:''});
 }
-function pushId(e,id) {
-    e.push(id);
-    e = [...new Set(e)];
+function removeOrgao(obj,i) {
+    obj.splice(i,1);
 }
+
 function filterResponsible(orgao_id) {
     var r = OrgansStore.organResponsibles;
     var v = r.length ? r.find(x=>x.id==orgao_id) : false;
     return v?.responsible??[];
-}
-function buscaResponsible(e,item) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.keyCode === 13) {
-        var i = filterResponsible(item.orgao_id).find(x=>!item.participantes.includes(x.id)&&x.nome_completo.toLowerCase().includes(item.busca.toLowerCase()));
-        if(i) pushId(item.participantes,i.id);
-        item.busca="";
-    }
-}
-function buscaCoord(e,item) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.keyCode === 13) {
-        var i = usersCoord.find(x=>!item.participantes.includes(x.id)&&x.nome_completo.toLowerCase().includes(item.busca.toLowerCase()));
-        if(i) pushId(item.participantes,i.id);
-        item.busca="";
-    }
 }
 </script>
 
@@ -257,13 +220,7 @@ function buscaCoord(e,item) {
 
                 <div v-if="tempTags.length">
                     <label class="label">Tags</label>
-                    <div class="suggestion search">
-                        <input type="text" v-model="m_tags.busca" @keyup.enter.stop.prevent="buscaCoord($event,m_tags)" class="inputtext light mb05">
-                        <ul>
-                            <li v-for="(r,k) in tempTags.filter(x=>!m_tags.participantes.includes(x.id)&&x.descricao.toLowerCase().includes(m_tags.busca.toLowerCase()))"><a @click="pushId(m_tags.participantes,r.id)" tabindex="1">{{r.descricao}}</a></li>
-                        </ul>
-                    </div>
-                    <span class="tagsmall" v-for="(p,k) in tempTags.filter(x=>m_tags.participantes.includes(x.id))" @click="removeParticipante(m_tags,p.id)">{{p.descricao}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                    <AutocompleteField :controlador="m_tags" :grupo="tempTags" label="descricao" />
                 </div>
 
                 <hr class="mt2 mb2"/>
@@ -302,21 +259,15 @@ function buscaCoord(e,item) {
                     <label class="f1 label tc300">Responsável(eis) <span class="tvermelho">*</span></label>
                     <div style="flex-basis: 30px;"></div>
                 </div>
-                <template v-for="(item, index) in orgaos_participantes">
+                <template v-for="(item, index) in orgaos_participantes" :key="index">
                     <div v-if="item.responsavel" class="flex mb1 g2">
                         <div class="f1">
                             <select v-model="item.orgao_id" class="inputtext" @change="item.participantes=[]" v-if="OrgansStore.organResponsibles.length">
-                                <option v-for="(o,k) in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))" :value="o.id">{{o.descricao}}</option>
+                                <option v-for="(o,k) in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))" :key="k" :value="o.id">{{o.descricao}}</option>
                             </select>
                         </div>
                         <div class="f1">
-                            <div class="suggestion search">
-                                <input type="text" v-model="item.busca" @keyup.enter.stop.prevent="buscaResponsible($event,item)" class="inputtext light mb05">
-                                <ul>
-                                    <li v-if="item.orgao_id" v-for="(r,k) in filterResponsible(item.orgao_id).filter(x=>!item.participantes.includes(x.id)&&x.nome_completo.toLowerCase().includes(item.busca.toLowerCase()))"><a @click="pushId(item.participantes,r.id)" tabindex="1">{{r.nome_completo}}</a></li>
-                                </ul>
-                            </div>
-                            <span class="tagsmall" v-for="(p,k) in filterResponsible(item.orgao_id).filter(x=>item.participantes.includes(x.id))" @click="removeParticipante(item,p.id)">{{p.nome_completo}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                            <AutocompleteField :controlador="item" :grupo="filterResponsible(item.orgao_id)" label="nome_exibicao" />
                         </div>
                         <div style="flex-basis: 30px;">
                             <a v-if="index" @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
@@ -333,21 +284,15 @@ function buscaCoord(e,item) {
                     <label class="f1 label tc300">Responsável(eis)</label>
                     <div style="flex-basis: 30px;"></div>
                 </div>
-                <template v-for="(item, index) in orgaos_participantes">
+                <template v-for="(item, index) in orgaos_participantes" :key="index">
                     <div v-if="!item.responsavel" class="flex mb1 g2">
                         <div class="f1">
                             <select v-model="item.orgao_id" class="inputtext" @change="item.participantes=[]" v-if="OrgansStore.organResponsibles.length">
-                                <option v-for="(o,k) in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))" :value="o.id">{{o.descricao}}</option>
+                                <option v-for="o in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))" :key="o.id" :value="o.id">{{o.descricao}}</option>
                             </select>
                         </div>
                         <div class="f1">
-                            <div class="suggestion search">
-                                <input type="text" v-model="item.busca" @keyup.enter.stop.prevent="buscaResponsible($event,item)" class="inputtext light mb05">
-                                <ul>
-                                    <li v-if="item.orgao_id" v-for="(r,k) in filterResponsible(item.orgao_id).filter(x=>!item.participantes.includes(x.id)&&x.nome_completo.toLowerCase().includes(item.busca.toLowerCase()))"><a @click="pushId(item.participantes,r.id)" tabindex="1">{{r.nome_completo}}</a></li>
-                                </ul>
-                            </div>
-                            <span class="tagsmall" v-for="(p,k) in filterResponsible(item.orgao_id).filter(x=>item.participantes.includes(x.id))" @click="removeParticipante(item,p.id)">{{p.nome_completo}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                            <AutocompleteField :controlador="item" :grupo="filterResponsible(item.orgao_id)" label="nome_exibicao" />
                         </div>
                         <div style="flex-basis: 30px;">
                             <a @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
@@ -358,16 +303,10 @@ function buscaCoord(e,item) {
                 
                 <hr class="mt2 mb2"/>
 
-                <label class="label">Responsável(eis) na coordenadoria de projetos* <span class="tvermelho">*</span></label>
+                <label class="label">Responsável(eis) na coordenadoria de planejamento* <span class="tvermelho">*</span></label>
                 <div class="flex">
                     <div class="f1" v-if="usersCoord.length">
-                        <div class="suggestion search">
-                            <input type="text" v-model="coordenadores_cp.busca" @keyup.enter.stop.prevent="buscaCoord($event,coordenadores_cp)" class="inputtext light mb05">
-                            <ul>
-                                <li v-for="(r,k) in usersCoord.filter(x=>!coordenadores_cp.participantes.includes(x.id)&&x.nome_completo.toLowerCase().includes(coordenadores_cp.busca.toLowerCase()))"><a @click="pushId(coordenadores_cp.participantes,r.id)" tabindex="1">{{r.nome_completo}}</a></li>
-                            </ul>
-                        </div>
-                        <span class="tagsmall" v-for="(p,k) in usersCoord.filter(x=>coordenadores_cp.participantes.includes(x.id))" @click="removeParticipante(coordenadores_cp,p.id)">{{p.nome_completo}}<svg width="12" height="12"><use xlink:href="#i_x"></use></svg></span>
+                        <AutocompleteField :controlador="coordenadores_cp" :grupo="usersCoord" label="nome_completo" />
                     </div>
                 </div>
 

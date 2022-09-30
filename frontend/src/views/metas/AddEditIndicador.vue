@@ -1,12 +1,12 @@
 <script setup>
-import { ref, unref,onMounted, onUpdated } from 'vue';
+import { ref, onMounted, onUpdated } from 'vue';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, useIndicadoresStore, useIniciativasStore, useAtividadesStore, useVariaveisStore } from '@/stores';
+import { useEditModalStore, useAlertStore, useMetasStore, useIndicadoresStore, useIniciativasStore, useAtividadesStore, useVariaveisStore } from '@/stores';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 
@@ -38,12 +38,8 @@ const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores, agregadores } = storeToRefs(IndicadoresStore);
 IndicadoresStore.getAgregadores();
 
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-
 const VariaveisStore = useVariaveisStore();
-const { Variaveis,Valores } = storeToRefs(VariaveisStore);
+const { Variaveis } = storeToRefs(VariaveisStore);
 
 var regx = /^$|^(?:0[1-9]|1[0-2]|[1-9])\/(?:(?:1[9]|[2-9]\d)?\d{2})$/;
 
@@ -65,7 +61,7 @@ const schema = Yup.object().shape({
     nivel_regionalizacao: Yup.string().nullable().when('regionalizavel', (regionalizavel, field) => regionalizavel=="1" ? field.required("Selecione o nível") : field),
 
     contexto: Yup.string().nullable(),
-    observacao: Yup.string().nullable(),
+    complemento: Yup.string().nullable(),
 });
 
 let title = 'Adicionar Indicador';
@@ -100,15 +96,6 @@ function start(){
 onMounted(()=>{start()});
 onUpdated(()=>{start()});
 
-function fieldToDate(d){
-    if(d){
-        if(d.length==6){d = '01/0'+d;}
-        else if(d.length==7){d = '01/'+d;}
-        var x=d.split('/');
-        return (x.length==3) ? new Date(x[2],x[1]-1,x[0]).toISOString().substring(0, 10) : null;
-    }
-    return null;
-}
 async function onSubmit(values) {
     try {
         var msg;
@@ -177,6 +164,15 @@ function maskMonth(el){
             el.target.value = data;
         }
     }
+}
+function fieldToDate(d){
+    if(d){
+        if(d.length==6){d = '01/0'+d;}
+        else if(d.length==7){d = '01/'+d;}
+        var x=d.split('/');
+        return (x.length==3) ? new Date(x[2],x[1]-1,x[0]).toISOString().substring(0, 10) : null;
+    }
+    return null;
 }
 </script>
 
@@ -251,7 +247,7 @@ function maskMonth(el){
                     <div class="f1">
                         <label class="label">Agregador <span class="tvermelho">*</span></label>
                         <Field name="agregador_id" v-model="agregador_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.agregador_id }">
-                            <option v-for="a in agregadores" :value="a.id">{{a.descricao}}</option>
+                            <option v-for="a in agregadores" :key="a.id" :value="a.id">{{a.descricao}}</option>
                         </Field>
                         <div class="error-msg">{{ errors.agregador_id }}</div>
                     </div>
@@ -310,9 +306,9 @@ function maskMonth(el){
                     <div class="error-msg">{{ errors.contexto }}</div>
                 </div>
                 <div class="f2">
-                    <label class="label">Observação</label>
-                    <Field name="observacao" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.observacao }" />
-                    <div class="error-msg">{{ errors.observacao }}</div>
+                    <label class="label">Complemento</label>
+                    <Field name="complemento" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.complemento }" />
+                    <div class="error-msg">{{ errors.complemento }}</div>
                 </div>
                 
                 
@@ -358,7 +354,7 @@ function maskMonth(el){
                         <th style="width:10%"></th>
                     </tr>
                 </thead>
-                <tr v-for="v in Variaveis[indicador_id]">
+                <tr v-for="v in Variaveis[indicador_id]" :key="v.id">
                     <td>{{v.titulo}}</td>
                     <td>{{v.valor_base}}</td>
                     <td>{{v.unidade_medida?.sigla}}</td>

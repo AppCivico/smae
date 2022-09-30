@@ -98,6 +98,8 @@ export const usePdMStore = defineStore({
                         x.possui_sub_tema = x.possui_sub_tema?'1':false;
                         x.possui_contexto_meta = x.possui_contexto_meta?'1':false;
                         x.possui_complementacao_meta = x.possui_complementacao_meta?'1':false;
+                        x.possui_iniciativa = x.possui_iniciativa?'1':false;
+                        x.possui_atividade = x.possui_atividade?'1':false;
 
                         return x;
                     })(r);
@@ -126,6 +128,8 @@ export const usePdMStore = defineStore({
                         x.possui_sub_tema = x.possui_sub_tema?'1':false;
                         x.possui_contexto_meta = x.possui_contexto_meta?'1':false;
                         x.possui_complementacao_meta = x.possui_complementacao_meta?'1':false;
+                        x.possui_iniciativa = x.possui_iniciativa?'1':false;
+                        x.possui_atividade = x.possui_atividade?'1':false;
 
                         return x;
                     })(r.linhas[0]);
@@ -158,12 +162,16 @@ export const usePdMStore = defineStore({
                 possui_sub_tema: params.possui_sub_tema?true:false,
                 possui_contexto_meta: params.possui_contexto_meta?true:false,
                 possui_complementacao_meta: params.possui_complementacao_meta?true:false,
+                possui_iniciativa: params.possui_iniciativa?true:false,
+                possui_atividade: params.possui_atividade?true:false,
 
                 rotulo_macro_tema: params.rotulo_macro_tema,
                 rotulo_tema: params.rotulo_tema,
                 rotulo_sub_tema: params.rotulo_sub_tema,
                 rotulo_contexto_meta: params.rotulo_contexto_meta,
                 rotulo_complementacao_meta: params.rotulo_complementacao_meta,
+                rotulo_iniciativa: params.rotulo_iniciativa,
+                rotulo_atividade: params.rotulo_atividade,
 
                 upload_logo: params.upload_logo,
             };
@@ -191,12 +199,16 @@ export const usePdMStore = defineStore({
                 possui_sub_tema: params.possui_sub_tema?true:false,
                 possui_contexto_meta: params.possui_contexto_meta?true:false,
                 possui_complementacao_meta: params.possui_complementacao_meta?true:false,
+                possui_iniciativa: params.possui_iniciativa?true:false,
+                possui_atividade: params.possui_atividade?true:false,
 
                 rotulo_macro_tema: params.rotulo_macro_tema,
                 rotulo_tema: params.rotulo_tema,
                 rotulo_sub_tema: params.rotulo_sub_tema,
                 rotulo_contexto_meta: params.rotulo_contexto_meta,
                 rotulo_complementacao_meta: params.rotulo_complementacao_meta,
+                rotulo_iniciativa: params.rotulo_iniciativa,
+                rotulo_atividade: params.rotulo_atividade,
               
                 upload_logo: params.upload_logo,
             };

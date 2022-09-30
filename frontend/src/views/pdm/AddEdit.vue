@@ -105,7 +105,7 @@ function maskDate(el){
 }
 
 const curfile = reactive({});
-function removeshape(t) {
+function removeshape() {
     curfile.name = '';
     curfile.loading = null;
     singlePdm.value.upload_logo = curfile.name;
@@ -211,7 +211,7 @@ async function uploadshape(e){
                 <div class="flex g2">
                     <div class="f1">
                         <label class="label">Equipe técnica</label>
-                        <Field name="equipe_tecnica" type="text" class="inputtext light mb1" :class="{ 'error': errors.equipe_tecnica }" />
+                        <Field name="equipe_tecnica" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.equipe_tecnica }" />
                         <div class="error-msg">{{ errors.equipe_tecnica }}</div>
                         <p class="t13 tc500">Separe os membros por vírgula ou ponto-e-vírgula</p>
                     </div>

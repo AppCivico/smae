@@ -1,6 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, onUpdated } from 'vue';
-import { Dashboard} from '@/components';
+import { reactive } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -16,8 +15,7 @@ const alertStore = useAlertStore();
 const route = useRoute();
 const pdm_id = route.params.pdm_id;
 
-const ps = defineProps(['props']);
-const props = ps.props;
+const props = defineProps(['props']);
 
 const documentTypesStore = useDocumentTypesStore();
 const { tempDocumentTypes } = storeToRefs(documentTypesStore);
@@ -58,8 +56,8 @@ async function onSubmit(values) {
                 PdMStore.clearLoad();
                 alertStore.success(msg);
                 editModalStore.clear();
-                if(props.parentPage=='pdm') PdMStore.filterPdM();
-                await router.push('/'+props.parentPage);
+                if(props.props.parentPage=='pdm') PdMStore.filterPdM();
+                await router.push('/'+props.props.parentPage);
                 curfile.loading = false;
             }
         }else{
@@ -68,11 +66,12 @@ async function onSubmit(values) {
 
     } catch (error) {
         alertStore.error(error);
+        curfile.loading = false;
     }
 }
 async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-        router.push('/'+props.parentPage);  
+        router.push('/'+props.props.parentPage);  
         editModalStore.clear(); 
         alertStore.clear(); 
     });
@@ -102,7 +101,7 @@ function addFile(e) {
                     <label class="label">Tipo de Documento <span class="tvermelho">*</span></label>
                     <Field name="tipo_documento_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.tipo_documento_id }">
                         <option value="">Selecione</option>
-                        <option v-for="d in tempDocumentTypes" :value="d.id">{{d.titulo}}</option>
+                        <option v-for="d in tempDocumentTypes" :key="d.id" :value="d.id">{{d.titulo}}</option>
                     </Field>
                     <div class="error-msg">{{ errors.tipo_documento_id }}</div>
                 </div>

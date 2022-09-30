@@ -50,7 +50,7 @@ export const useMetasStore = defineStore({
                 if(!this.Metas.length){
                     await this.getAll();
                 }
-                this.singleMeta = this.Metas.find((u)=>u.id == id);
+                if(this.Metas.length) this.singleMeta = this.Metas.find((u)=>u.id == id);
                 if(!this.singleMeta) throw 'Meta não encontrada';
                 return true;
             } catch (error) {

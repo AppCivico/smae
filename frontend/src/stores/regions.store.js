@@ -19,6 +19,12 @@ export const useRegionsStore = defineStore({
         clearEdit (){
             this.singleTempRegions = {};
         },
+        compareFilter (item,nome,rid){
+            var r = 0;
+            if(rid) r = item.id==rid;
+            if(nome) r = item.descricao.toLowerCase().includes(nome);
+            return r;
+        },
         async getAll() {
             this.regions = { loading: true };
             try {
@@ -111,23 +117,18 @@ export const useRegionsStore = defineStore({
                 if(f?.textualSearch||f?.id){
                     var nome = f.textualSearch ? f.textualSearch.toLowerCase() : false;
                     var rid = f.id ? f.id : false;
-                    function compareFilter(item) {
-                        var r = 0;
-                        if(rid) r = item.id==rid;
-                        if(nome) r = item.descricao.toLowerCase().includes(nome);
-                        return r;
-                    }
+                    
                     this.tempRegions = x.reduce((a,u,i)=>{
-                        if(compareFilter(u)){ u.index=i; a.push(u); return a;}
+                        if(this.compareFilter(u,nome,rid)){ u.index=i; a.push(u); return a;}
                         var ru = 0;
                         if(u.children.length) u.children = u.children.reduce((aa,uu,ii)=>{
-                            if(compareFilter(uu)){ uu.index=ii; aa.push(uu); ru=1; return aa;}
+                            if(this.compareFilter(uu,nome,rid)){ uu.index=ii; aa.push(uu); ru=1; return aa;}
                             var ruu = 0;
                             if(uu.children.length) uu.children = uu.children.reduce((aaa,uuu,iii)=>{
-                                if(compareFilter(uuu)){ uuu.index=iii; aaa.push(uuu); ruu=1; return aaa;}
+                                if(this.compareFilter(uuu,nome,rid)){ uuu.index=iii; aaa.push(uuu); ruu=1; return aaa;}
                                 var ruuu = 0;
                                 if(uuu.children.length) uuu.children = uuu.children.reduce((aaaa,uuuu,iiii)=>{
-                                    if(compareFilter(uuuu)){ uuuu.index=iiii; aaaa.push(uuuu); ruuu=1; return aaaa;}
+                                    if(this.compareFilter(uuuu,nome,rid)){ uuuu.index=iiii; aaaa.push(uuuu); ruuu=1; return aaaa;}
                                     return aaaa;
                                 },[]);
                                 if(ruuu){ uuu.index=iii; aaa.push(uuu); ruu=1; }

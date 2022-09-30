@@ -1,13 +1,6 @@
 <script setup>
-    import { storeToRefs } from 'pinia';
-    import { useAuthStore } from '@/stores';
     import { useRoute } from 'vue-router';
     
-    const props = defineProps(['parentPage']);
-    const authStore = useAuthStore();
-    const { /*user, */permissions } = storeToRefs(authStore);
-    const perm = permissions.value;
-
     const route = useRoute();
     const meta_id = route.params.meta_id;
     const iniciativa_id = route.params.iniciativa_id;

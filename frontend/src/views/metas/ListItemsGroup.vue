@@ -1,11 +1,11 @@
 <script setup>
-import { ref, reactive, onMounted, onUpdated  } from 'vue';
+import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { useEditModalStore, useAuthStore, useMetasStore } from '@/stores';
+import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
+import { useAuthStore, useMetasStore } from '@/stores';
 import { useMacrotemasStore, useTemasStore, useSubtemasStore } from '@/stores';
 import { useRoute } from 'vue-router';
-const editModalStore = useEditModalStore();
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -51,20 +51,20 @@ function filterItems(){
 }
 filterItems();
 function groupSlug(s) {
+    var r;
     switch(s){
-        case 'macro_tema': return 'macrotemas'; break;
-        case 'tema': return 'temas'; break;
-        case 'sub_tema': return 'subtemas'; break;
-        default: return s;
+        case 'macro_tema': r = 'macrotemas'; break;
+        case 'tema': r = 'temas'; break;
+        case 'sub_tema': r = 'subtemas'; break;
+        default: r = s;
     }
+    return r;
 }
 </script>
 <template>
     <Dashboard>
-        <div class="breadcrumb">
-            <router-link to="/">Início</router-link>
-            <router-link to="/metas">{{activePdm.nome}}</router-link>
-        </div>
+        <Breadcrumb />
+        
         <div class="mb2">
             <div class="label tc300">{{activePdm['rotulo_'+filters.groupBy]}}</div>
             <div class="t48 w700">{{currentStore[currentStoreKey]?.descricao}}</div>
@@ -74,7 +74,7 @@ function groupSlug(s) {
             <template v-if="itemsFiltered.length">
                 <div class="">
                     <ul class="metas">
-                        <li class="meta flex center mb1" v-for="(m,i) in itemsFiltered">
+                        <li class="meta flex center mb1" v-for="m in itemsFiltered" :key="m.id">
                             <router-link :to="`/metas/${m.id}`" class="flex center f1">
                                 <div class="farol"></div>
                                 <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>
