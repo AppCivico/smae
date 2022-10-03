@@ -149,7 +149,7 @@ export class PdmService {
                 }
             }
 
-            if (updatePdmDto.ativo === true) {
+            if (updatePdmDto.ativo) {
                 // desativa outros planos
                 prisma.pdm.updateMany({
                     where: {
@@ -159,7 +159,6 @@ export class PdmService {
                         ativo: false,
                         desativado_em: new Date(Date.now()),
                         desativado_por: user.id,
-                        arquivo_logo_id: arquivo_logo_id
                     }
                 });
             } else if (updatePdmDto.ativo === false) {
@@ -169,7 +168,6 @@ export class PdmService {
                         ativo: false,
                         desativado_em: new Date(Date.now()),
                         desativado_por: user.id,
-                        arquivo_logo_id: arquivo_logo_id
                     },
                     select: { id: true }
                 });
