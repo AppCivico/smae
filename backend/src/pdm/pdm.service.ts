@@ -149,7 +149,7 @@ export class PdmService {
                 }
             }
 
-            if (updatePdmDto.ativo) {
+            if (updatePdmDto.ativo == true) {
                 // desativa outros planos
                 prisma.pdm.updateMany({
                     where: {
