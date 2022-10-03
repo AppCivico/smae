@@ -142,16 +142,17 @@ export class PdmService {
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             if (updatePdmDto.possui_atividade) {
-                let pdm = await this.prisma.pdm.findFirst({where: {id: id}});
+                let pdm = await this.prisma.pdm.findFirst({ where: { id: id } });
 
                 if (!updatePdmDto.possui_iniciativa || !pdm?.possui_iniciativa) {
                     throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
                 }
             }
-
-            if (updatePdmDto.ativo == true) {
+            let ativo: boolean | undefined = undefined;
+            if (updatePdmDto.ativo === true) {
+                ativo = true;
                 // desativa outros planos
-                prisma.pdm.updateMany({
+                await prisma.pdm.updateMany({
                     where: {
                         ativo: true
                     },
@@ -162,6 +163,7 @@ export class PdmService {
                     }
                 });
             } else if (updatePdmDto.ativo === false) {
+                ativo = false;
                 await prisma.pdm.update({
                     where: { id: id },
                     data: {
@@ -172,6 +174,7 @@ export class PdmService {
                     select: { id: true }
                 });
             }
+            delete updatePdmDto.ativo;
 
             await prisma.pdm.update({
                 where: { id: id },
@@ -179,6 +182,7 @@ export class PdmService {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                     ...updatePdmDto,
+                    ativo: ativo,
                     arquivo_logo_id: arquivo_logo_id
                 },
                 select: { id: true }
