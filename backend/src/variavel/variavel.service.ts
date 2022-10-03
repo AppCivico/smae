@@ -157,7 +157,8 @@ export class VariavelService {
                                 id: true,
                                 titulo: true,
                                 meta_id: true,
-                                iniciativa_id: true
+                                iniciativa_id: true,
+                                atividade_id: true
                             },
                         },
                     }
