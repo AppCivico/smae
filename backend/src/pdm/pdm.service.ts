@@ -28,7 +28,7 @@ export class PdmService {
 
         let arquivo_logo_id;
         if (createPdmDto.upload_logo) {
-            arquivo_logo_id = await this.uploadService.checkDownloadToken(createPdmDto.upload_logo);
+            arquivo_logo_id = await this.uploadService.checkUploadToken(createPdmDto.upload_logo);
             delete createPdmDto.upload_logo;
         }
 
@@ -136,7 +136,7 @@ export class PdmService {
 
         let arquivo_logo_id: number | undefined;
         if (updatePdmDto.upload_logo) {
-            arquivo_logo_id = await this.uploadService.checkDownloadToken(updatePdmDto.upload_logo);
+            arquivo_logo_id = await this.uploadService.checkUploadToken(updatePdmDto.upload_logo);
             delete updatePdmDto.upload_logo;
         }
 
