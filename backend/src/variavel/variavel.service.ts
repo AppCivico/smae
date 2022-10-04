@@ -106,15 +106,12 @@ export class VariavelService {
                     some: {
                         indicador: {
                             desativado: removidoStatus,
-                            iniciativa_id: filters?.iniciativa_id,
-
-                            // iniciativa: {
-                            //     Atividade: {
-                            //         every: {
-                            //             compoe_indicador_iniciativa: true
-                            //         }
-                            //     }
-                            // }
+                            iniciativa: {
+                                id: filters?.iniciativa_id
+                            },
+                            atividade: {
+                                iniciativa_id: filters?.iniciativa_id
+                            }
                         }
                     }
                 }
