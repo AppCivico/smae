@@ -75,6 +75,7 @@ function groupSlug(s) {
                     <option :selected="filters.groupBy=='macro_tema'" v-if="activePdm.possui_macro_tema" value="macro_tema">{{activePdm.rotulo_macro_tema??'Macrotema'}}</option>
                     <option :selected="filters.groupBy=='tema'" v-if="activePdm.possui_tema" value="tema">{{activePdm.rotulo_tema??'Tema'}}</option>
                     <option :selected="filters.groupBy=='sub_tema'" v-if="activePdm.possui_sub_tema" value="sub_tema">{{activePdm.rotulo_sub_tema??'Subtema'}}</option>
+                    <option :selected="filters.groupBy=='todas'" value="todas">Todas as metas</option>
                 </select>
             </div>
             <div class="f2 ml1">
@@ -86,7 +87,9 @@ function groupSlug(s) {
             <template v-if="itemsFiltered.length">
                 <div class="flex flexwrap g2">
                     <div v-for="item in itemsFiltered" :key="item.id" class="board">
-                        <router-link :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"><h2>{{item.descricao}}</h2></router-link>
+                        <router-link v-if="filters.groupBy!='todas'" :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"><h2>{{item.descricao}}</h2></router-link>
+                        <h2 v-else>{{item.descricao}}</h2>
+
                         <div class="t11 tc300 mb2">{{item.children.length}} meta(s)</div>
                         <ul class="metas">
                             <li class="meta flex center mb1" v-for="m in item.children" :key="m.id">
@@ -98,7 +101,8 @@ function groupSlug(s) {
                             </li>
                         </ul>
                         <hr class="mt1 mb1">
-                        <router-link v-if="perm?.CadastroMeta?.inserir" :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar meta</span></router-link>
+                        <router-link v-if="perm?.CadastroMeta?.inserir&&filters.groupBy!='todas'" :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar meta</span></router-link>
+                        <router-link v-else-if="perm?.CadastroMeta?.inserir" :to="`/metas/novo`" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar meta</span></router-link>
                     </div>
                 </div>
             </template>

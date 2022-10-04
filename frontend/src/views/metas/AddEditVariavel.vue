@@ -121,7 +121,7 @@ const schema = Yup.object().shape({
     
     valor_base: Yup.string().required('Preencha o valor base'),
     ano_base: Yup.string().nullable(),
-    casas_decimais: Yup.string().required('Preencha o número de casas decimais'),
+    casas_decimais: Yup.string().nullable(),
     peso: Yup.string().nullable(),
 
     acumulativa: Yup.string().nullable(),

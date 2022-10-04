@@ -12,7 +12,7 @@ export { default as SingleIniciativa } from './SingleIniciativa.vue';
 export { default as SingleIniciativaEvolucao } from './SingleIniciativaEvolucao.vue';
 export { default as SingleAtividade } from './SingleAtividade.vue';
 export { default as SingleAtividadeEvolucao } from './SingleAtividadeEvolucao.vue';
-export { default as SingleMetaCronograma } from './SingleMetaCronograma.vue';
+export { default as SingleCronograma } from './SingleCronograma.vue';
 export { default as AddEditCronograma } from './AddEditCronograma.vue';
 
 

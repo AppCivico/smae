@@ -71,6 +71,7 @@
 
 	.bgc50{background: @c50;}
 	.bgc100{background: @c100;}
+	.bgc300{background: @c300;}
 
 /* Margins */
 	.p1{padding: 1rem;}
@@ -194,10 +195,15 @@
 			cursor: wait;
 			opacity: .5;
 		}
+		&.disabled{
+			.bgc50;
+			.tc300;
+			cursor: default;
+		}
 	}
 	.dropbtn{
 		position: relative;
-		padding: 1rem 0;
+		padding: .5rem 0;
 		ul{
 			position: absolute; top: 100%; right: 50%; transform: translateX(50%);
 		    width: max-content; max-width: 200px; background: white; border-top: 4px solid @amarelo;
@@ -257,6 +263,18 @@
 			width: 80%;
 			max-width: 665px;
 			margin: auto;
+		}
+	}
+	.etapa{
+		padding: 0 0 .5rem 4rem; margin-bottom: 1rem; position: relative;
+		.title{
+			min-height: 3rem; display: flex; align-items: center;
+			h3{margin: 0; line-height: 1;}
+		}
+		.status{
+			position: absolute; left: 1.5rem; top: 1.5rem; bottom: 0;
+			span{position: absolute; left: -1.5rem; width: 3rem; top: -1.5rem; width: 3rem; .br(200px); text-align: center; line-height: 3rem; .t20; .w700; color: white; .bgc300;}
+			&:before{content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 4px; .bgc300;}
 		}
 	}
 	.farol{

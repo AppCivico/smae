@@ -89,14 +89,23 @@ export const useMetasStore = defineStore({
                     });
                 }
                 var g = f.groupBy??'macro_tema';
-                this.groupedMetas = Object.values(this.tempMetas.reduce((r, u) => {
-                    if(!r[u[g].id]){
-                        r[u[g].id] = u[g];
-                        r[u[g].id].children = [];
-                    }
-                    r[u[g].id].children.push(u);
-                    return r;
-                }, {}));
+                if(this.activePdm['possui_'+g]){
+                    this.groupedMetas = Object.values(this.tempMetas.reduce((r, u) => {
+                        if(!r[u[g].id]){
+                            r[u[g].id] = u[g];
+                            r[u[g].id].children = [];
+                        }
+                        r[u[g].id].children.push(u);
+                        return r;
+                    }, {}));
+                }else{
+                    f.groupBy = 'todas';
+                    this.groupedMetas = [{
+                        id:0,
+                        descricao:'Todas as metas',
+                        children: this.tempMetas
+                    }];
+                }
             } catch (error) {
                 this.tempMetas = { error };
                 this.groupedMetas = { error };
