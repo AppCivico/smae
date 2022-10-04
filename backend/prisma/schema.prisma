@@ -1030,11 +1030,11 @@ model Etapa {
 
     nivel            String?
     descricao        String?
-    inicio_previsto  DateTime          @db.Date()
-    termino_previsto DateTime          @db.Date()
+    inicio_previsto  DateTime?          @db.Date()
+    termino_previsto DateTime?          @db.Date()
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
-    prazo            DateTime          @db.Date()
+    prazo            Int?
     status           String?
     CronogramaEtapa  CronogramaEtapa[]
 
