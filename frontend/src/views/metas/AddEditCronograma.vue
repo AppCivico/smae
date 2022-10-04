@@ -6,10 +6,8 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useEditModalStore, useAlertStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore } from '@/stores';
-import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
+import { useAlertStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore } from '@/stores';
 
-const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
 const meta_id = route.params.meta_id;
@@ -49,11 +47,6 @@ let regionalizavel = ref(1);
 if (cronograma_id) {
     title = 'Editar Cronograma';
 }
-function start(){
-    if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
-}
-onMounted(()=>{start()});
-onUpdated(()=>{start()});
 
 async function onSubmit(values) {
     try {

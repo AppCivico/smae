@@ -17,7 +17,7 @@ import { AddEditODS, ListODS } from '@/views/ods';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
 import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleMetaEvolucao } from '@/views/metas';
 import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, SingleIniciativaEvolucao, AddEditAtividade, SingleAtividade, SingleAtividadeEvolucao } from '@/views/metas';
-import { SingleMetaCronograma, AddEditCronograma } from '@/views/metas';
+import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 
 export const router = createRouter({
@@ -111,11 +111,14 @@ export const router = createRouter({
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleMetaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleMetaEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
-                { path: ':meta_id/cronograma', component: SingleMetaCronograma, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma', component: SingleCronograma, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/cronograma/novo', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/cronograma/:cronograma_id', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/cronograma/:cronograma_id/etapas/novo', component: SingleMetaCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
-                { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleMetaCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id/etapas/novo', component: SingleCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id/monitorar/iniciativa', component: SingleCronograma, props:{group:"monitorar",recorte:"iniciativa",submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id/monitorar/atividade', component: SingleCronograma, props:{group:"monitorar",recorte:"atividade",submenu:SubmenuMetas} },
+                { path: ':meta_id/cronograma/:cronograma_id/monitorar/:etapa_id', component: SingleCronograma, props:{group:"monitorar",submenu:SubmenuMetas} },
                 
                 { path: ':meta_id/iniciativas',
                     children: [
@@ -135,6 +138,13 @@ export const router = createRouter({
                         { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleIniciativaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                         { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleIniciativaEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                         { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleIniciativaEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/cronograma', component: SingleCronograma, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/cronograma/novo', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/cronograma/:cronograma_id', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/novo', component: SingleCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/atividade', component: SingleCronograma, props:{group:"monitorar",recorte:"atividade",submenu:SubmenuMetas} },
+                        { path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/:etapa_id', component: SingleCronograma, props:{group:"monitorar",submenu:SubmenuMetas} },
                         { path: ':iniciativa_id/atividades',
                             children: [
                                 { path: '', component: SingleIniciativa, props:{submenu:SubmenuMetas} },
@@ -153,7 +163,11 @@ export const router = createRouter({
                                 { path: ':atividade_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleAtividadeEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                                 { path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleAtividadeEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
                                 { path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleAtividadeEvolucao, props:{group:"valores",submenu:SubmenuMetas} },
-                                
+                                { path: ':atividade_id/cronograma', component: SingleCronograma, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/cronograma/novo', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/cronograma/:cronograma_id', component: AddEditCronograma, props:{submenu:SubmenuMetas} },
+                                { path: ':atividade_id/cronograma/:cronograma_id/etapas/novo', component: SingleCronograma, props:{group:"etapas",submenu:SubmenuMetas} },
+                                { path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleCronograma, props:{group:"etapas",submenu:SubmenuMetas} }
                             ]
                         },
                     ]

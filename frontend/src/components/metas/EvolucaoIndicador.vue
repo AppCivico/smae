@@ -74,8 +74,8 @@
                                 <h2 class="mt1 mb1 ml1">{{v.titulo}}</h2>
                             </div>
                             <div class="f0">
-                                <router-link :to="`/metas/${ind.meta_id}/evolucao/${ind.id}/variaveis/${v.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                <router-link :to="`/metas/${ind.meta_id}/evolucao/${ind.id}/variaveis/${v.id}/valores`" class="tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></router-link>
+                                <router-link :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                <router-link :to="`${parentlink}/evolucao/${ind.id}/variaveis/${v.id}/valores`" class="tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></router-link>
                             </div>
                         </div>
                     </header>
