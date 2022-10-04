@@ -83,8 +83,8 @@ export class VariavelService {
         if (filters?.indicador_id) {
             filterQuery = {
                 indicador_variavel: {
+                    desativado: removidoStatus,
                     some: {
-                        desativado: removidoStatus,
                         indicador_id: filters?.indicador_id
                     }
                 }
@@ -93,8 +93,8 @@ export class VariavelService {
             filterQuery = {
                 indicador_variavel: {
                     some: {
+                        desativado: removidoStatus,
                         indicador: {
-                            desativado: removidoStatus,
                             meta_id: filters?.meta_id
                         }
                     }
@@ -106,8 +106,8 @@ export class VariavelService {
                     {
                         indicador_variavel: {
                             some: {
+                                desativado: removidoStatus,
                                 indicador: {
-                                    desativado: removidoStatus,
                                     iniciativa_id: filters?.iniciativa_id
                                 }
                             }
@@ -116,8 +116,8 @@ export class VariavelService {
                     {
                         indicador_variavel: {
                             some: {
+                                desativado: removidoStatus,
                                 indicador: {
-                                    desativado: removidoStatus,
                                     atividade: {
                                         compoe_indicador_iniciativa: true,
                                         iniciativa_id: filters?.iniciativa_id
@@ -132,8 +132,8 @@ export class VariavelService {
             filterQuery = {
                 indicador_variavel: {
                     some: {
+                        desativado: removidoStatus,
                         indicador: {
-                            desativado: removidoStatus,
                             atividade_id: filters?.atividade_id
                         }
                     }
