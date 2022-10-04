@@ -77,48 +77,5 @@ export class CreateCronogramaDto {
     @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
     tipo_regiao?: string
 
-    /**
-    * status
-    */
-    @IsString({ message: '$property| status: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| status: pelo menos um caractere' })
-    @IsOptional()
-    @MaxLength(250, { message: '$property| status: 250 caracteres' })
-    status?: string
-
-    /**
-    * inicio_previsto
-    * @example YYYY-MM-DD
-    */
-    @IsOnlyDate()
-    @Type(() => Date)
-    inicio_previsto?: Date
-
-    /**
-   * termino_previsto
-   * @example YYYY-MM-DD
-   */
-    @IsOnlyDate()
-    @Type(() => Date)
-    termino_previsto?: Date
-
-
-    /**
-  * inicio_real
-  * @example YYYY-MM-DD
-  */
-    @IsOnlyDate()
-    @Type(() => Date)
-    inicio_real?: Date
-
-
-    /**
- * termino_real
- * @example YYYY-MM-DD
- */
-    @IsOnlyDate()
-    @Type(() => Date)
-    termino_real?: Date
-
 
 }
