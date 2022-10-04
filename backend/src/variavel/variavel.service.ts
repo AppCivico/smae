@@ -103,18 +103,18 @@ export class VariavelService {
         } else if (filters?.iniciativa_id) {
             filterQuery = {
                 indicador_variavel: {
-                    every: {
+                    some: {
                         indicador: {
                             desativado: removidoStatus,
                             iniciativa_id: filters?.iniciativa_id,
 
-                            iniciativa: {
-                                Atividade: {
-                                    every: {
-                                        compoe_indicador_iniciativa: true
-                                    }
-                                }
-                            }
+                            // iniciativa: {
+                            //     Atividade: {
+                            //         every: {
+                            //             compoe_indicador_iniciativa: true
+                            //         }
+                            //     }
+                            // }
                         }
                     }
                 }
