@@ -21,6 +21,15 @@ export class FilterVariavelDto {
     iniciativa_id?: number;
 
     /**
+  * Filtrar por iniciativa_id? (Se usado, não pode filtra via indicador_id)
+  * @example "1"
+   */
+    @IsOptional()
+    @IsPositive({ message: '$property| atividade_id' })
+    @Type(() => Number)
+    atividade_id?: number;
+
+    /**
   * Filtrar por indicador_id? (Se usado, não pode filtra via meta_id)
   * @example "1"
    */
