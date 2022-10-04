@@ -109,7 +109,6 @@ export class VariavelService {
                             iniciativa_id: filters?.iniciativa_id,
 
                             iniciativa: {
-                                compoe_indicador_meta: true,
                                 Atividade: {
                                     some: {
                                         compoe_indicador_iniciativa: true
