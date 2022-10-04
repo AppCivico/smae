@@ -28,4 +28,5 @@ export class Meta {
     ativo: boolean
     orgaos_participantes: MetaOrgao[]
     coordenadores_cp: IdNomeExibicao[]
+    tags: number[]
 }
