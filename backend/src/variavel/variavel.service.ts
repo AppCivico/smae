@@ -110,8 +110,8 @@ export class VariavelService {
 
                             iniciativa: {
                                 compoe_indicador_meta: true,
-                                some: {
-                                    atividade: {
+                                atividade: {
+                                    some: {
                                         compoe_indicador_iniciativa: true
                                     }
                                 }
