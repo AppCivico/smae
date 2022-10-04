@@ -21,7 +21,7 @@ export class FilterVariavelDto {
     iniciativa_id?: number;
 
     /**
-  * Filtrar por iniciativa_id? (Se usado, não pode filtra via indicador_id)
+  * Filtrar por atividade_id?
   * @example "1"
    */
     @IsOptional()
