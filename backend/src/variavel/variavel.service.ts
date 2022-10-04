@@ -106,7 +106,30 @@ export class VariavelService {
                     some: {
                         indicador: {
                             desativado: removidoStatus,
-                            iniciativa_id: filters?.iniciativa_id
+                            iniciativa_id: filters?.iniciativa_id,
+
+                            iniciativa: {
+                                compoe_indicador_meta: true
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (filters?.atividade_id) {
+            filterQuery = {
+                indicador_variavel: {
+                    some: {
+                        indicador: {
+                            desativado: removidoStatus,
+                            atividade_id: filters?.atividade_id,
+
+                            atividade: {
+                                compoe_indicador_iniciativa: true,
+
+                                iniciativa: {
+                                    compoe_indicador_meta: true
+                                }
+                            }
                         }
                     }
                 }
@@ -158,7 +181,25 @@ export class VariavelService {
                                 titulo: true,
                                 meta_id: true,
                                 iniciativa_id: true,
-                                atividade_id: true
+                                atividade_id: true,
+
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        meta_id: true,
+                                        titulo: true,
+                                        codigo: true
+                                    }
+                                },
+
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        iniciativa_id: true,
+                                        titulo: true,
+                                        codigo: true
+                                    }
+                                }
                             },
                         },
                     }
