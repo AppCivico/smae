@@ -102,19 +102,30 @@ export class VariavelService {
             }
         } else if (filters?.iniciativa_id) {
             filterQuery = {
-                indicador_variavel: {
-                    some: {
-                        indicador: {
-                            desativado: removidoStatus,
-                            iniciativa: {
-                                id: filters?.iniciativa_id
-                            },
-                            atividade: {
-                                iniciativa_id: filters?.iniciativa_id
+                OR: [
+                    {
+                        indicador_variavel: {
+                            some: {
+                                indicador: {
+                                    desativado: removidoStatus,
+                                    iniciativa_id: filters?.iniciativa_id
+                                }
                             }
                         }
-                    }
-                }
+                    },
+                    {
+                        indicador_variavel: {
+                            some: {
+                                indicador: {
+                                    desativado: removidoStatus,
+                                    atividade: {
+                                        iniciativa_id: filters?.iniciativa_id
+                                    }
+                                }
+                            }
+                        }
+                    },
+                ]
             }
         } else if (filters?.atividade_id) {
             filterQuery = {
