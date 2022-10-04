@@ -33,7 +33,7 @@ if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
-/*if(cronograma_id&&(!singleCronograma?.id || singleCronograma.id!=cronograma_id)){
+if(cronograma_id&&(!singleCronograma?.id || singleCronograma.id!=cronograma_id)){
     if(atividade_id){
         CronogramasStore.getById(atividade_id,'atividade_id',cronograma_id);
     }else if(iniciativa_id){
@@ -41,8 +41,8 @@ const { singleCronograma } = storeToRefs(CronogramasStore);
     }else{
         CronogramasStore.getById(meta_id,'meta_id',cronograma_id);
     }
-}*/
-CronogramasStore.getFakeData();
+}
+//CronogramasStore.getFakeData();
 
 let lastParent = ref({});
 if(atividade_id){

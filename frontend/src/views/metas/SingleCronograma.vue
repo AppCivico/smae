@@ -31,8 +31,8 @@ if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
-//if(!singleCronograma.value.meta_id||singleCronograma.value.meta_id != meta_id) CronogramasStore.getActiveByParent(meta_id,'meta_id');
-CronogramasStore.getFakeData();
+if(!singleCronograma.value.meta_id||singleCronograma.value.meta_id != meta_id) CronogramasStore.getActiveByParent(meta_id,'meta_id');
+//CronogramasStore.getFakeData();
 
 
 const editModalStore = useEditModalStore();
