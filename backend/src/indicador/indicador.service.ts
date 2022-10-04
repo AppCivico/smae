@@ -18,6 +18,22 @@ export class IndicadorService {
             if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
                 throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
 
+            if (createIndicadorDto.iniciativa_id) {
+                const iniciativa = await prisma.iniciativa.findFirstOrThrow({ where: { id: createIndicadorDto.iniciativa_id } });
+                if (iniciativa.compoe_indicador_meta && iniciativa.meta_id) createIndicadorDto.meta_id = iniciativa.meta_id
+            }
+
+            if (createIndicadorDto.atividade_id) {
+                const atividade = await prisma.atividade.findFirstOrThrow({ where: { id: createIndicadorDto.atividade_id } });
+
+                if (atividade.compoe_indicador_iniciativa) {
+                    const iniciativa = await prisma.iniciativa.findFirstOrThrow({ where: { id: atividade.iniciativa_id } })
+
+                    createIndicadorDto.iniciativa_id = iniciativa.id;
+                    if (iniciativa.compoe_indicador_meta) createIndicadorDto.meta_id = iniciativa.meta_id
+                }
+            }
+
             const indicador = await prisma.indicador.create({
                 data: {
                     criado_por: user.id,
@@ -26,61 +42,6 @@ export class IndicadorService {
                 },
                 select: { id: true }
             });
-
-            // TODO: passar esta lógica para funções
-            if (createIndicadorDto.iniciativa_id) {
-                const iniciativa = await prisma.iniciativa.findFirstOrThrow({
-                    where: {
-                        id: createIndicadorDto.iniciativa_id
-                    }
-                });
-
-                if (iniciativa.compoe_indicador_meta && iniciativa.meta_id) {
-                    createIndicadorDto.meta_id = iniciativa.meta_id
-
-                    const indicadorMeta = await prisma.indicador.create({
-                        data: {
-                            criado_por: user.id,
-                            criado_em: new Date(Date.now()),
-                            ...createIndicadorDto,
-                        },
-                        select: { id: true }
-                    });
-                }
-            }
-
-            if (createIndicadorDto.atividade_id) {
-                const atividade = await prisma.atividade.findFirstOrThrow({
-                    where: { id: createIndicadorDto.atividade_id }
-                });
-
-                if (atividade.compoe_indicador_iniciativa) {
-                    const iniciativa = await prisma.iniciativa.findFirstOrThrow({
-                        where: {id: atividade.iniciativa_id}
-                    })
-
-                    createIndicadorDto.iniciativa_id = iniciativa.id;
-                    const indicadorIniciativa = await prisma.indicador.create({
-                        data: {
-                            criado_por: user.id,
-                            criado_em: new Date(Date.now()),
-                            ...createIndicadorDto,
-                        },
-                        select: { id: true }
-                    });
-
-                    if (iniciativa.compoe_indicador_meta) {
-                        const indicadorMeta = await prisma.indicador.create({
-                            data: {
-                                criado_por: user.id,
-                                criado_em: new Date(Date.now()),
-                                ...createIndicadorDto,
-                            },
-                            select: { id: true }
-                        });
-                    }
-                }
-            }
 
             return indicador;
         });

@@ -119,6 +119,22 @@ export class CreatePdmDto {
     @MaxLength(30, { message: '$property| Rótulo Complemento Meta: Máximo 30 caracteres' })
     rotulo_complementacao_meta?: string | undefined
 
+    /**
+    * Rótulo Iniciativa
+    */
+    @IsOptional()
+    @IsString({ message: '$property| Rótulo Iniciativa: Precisa ser alfanumérico' })
+    @MaxLength(30, { message: '$property| Rótulo Iniciativa: Máximo 30 caracteres' })
+    rotulo_iniciativa?: string | undefined
+
+    /**
+    * Rótulo Atividade
+    */
+    @IsOptional()
+    @IsString({ message: '$property| Rótulo Iniciativa: Precisa ser alfanumérico' })
+    @MaxLength(30, { message: '$property| Rótulo Iniciativa: Máximo 30 caracteres' })
+    rotulo_atividade?: string | undefined
+
 
     /**
     * Rótulo Macro Tema
