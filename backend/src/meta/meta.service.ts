@@ -170,6 +170,11 @@ export class MetaService {
                         pessoa: { select: { id: true, nome_exibicao: true } },
                         coorderandor_responsavel_cp: true,
                     }
+                },
+                meta_tag: {
+                    select: {
+                        tag_id: true
+                    }
                 }
             }
         });
@@ -177,6 +182,7 @@ export class MetaService {
         for (const dbMeta of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, MetaOrgao> = {};
+            const tags: number[] = []
 
             for (const orgao of dbMeta.meta_orgao) {
                 orgaos[orgao.orgao.id] = {
@@ -198,6 +204,10 @@ export class MetaService {
                 }
             }
 
+            for (const tag of dbMeta.meta_tag) {
+                tags.push(tag.tag_id)
+            }
+
             ret.push({
                 id: dbMeta.id,
                 titulo: dbMeta.titulo,
@@ -212,6 +222,7 @@ export class MetaService {
                 ativo: dbMeta.ativo,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
+                tags: tags
             })
         }
 
