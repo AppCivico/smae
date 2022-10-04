@@ -103,7 +103,7 @@ export class VariavelService {
         } else if (filters?.iniciativa_id) {
             filterQuery = {
                 indicador_variavel: {
-                    some: {
+                    every: {
                         indicador: {
                             desativado: removidoStatus,
                             iniciativa_id: filters?.iniciativa_id,
