@@ -85,7 +85,7 @@ const { usersCoord } = storeToRefs(UserStore);
             coordenadores_cp.value.participantes = singleMeta.value.coordenadores_cp.map(x=>x.id);
         }
         if(singleMeta.value.tags){
-            m_tags.value.participantes = singleMeta.value.tags.map(x=>x.id);
+            m_tags.value.participantes = singleMeta.value.tags.map(x=>x?.id??x);
         }
     }
 
