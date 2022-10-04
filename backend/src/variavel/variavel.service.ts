@@ -119,6 +119,7 @@ export class VariavelService {
                                 indicador: {
                                     desativado: removidoStatus,
                                     atividade: {
+                                        compoe_indicador_iniciativa: true,
                                         iniciativa_id: filters?.iniciativa_id
                                     }
                                 }
@@ -133,15 +134,7 @@ export class VariavelService {
                     some: {
                         indicador: {
                             desativado: removidoStatus,
-                            atividade_id: filters?.atividade_id,
-
-                            atividade: {
-                                compoe_indicador_iniciativa: true,
-
-                                iniciativa: {
-                                    compoe_indicador_meta: true
-                                }
-                            }
+                            atividade_id: filters?.atividade_id
                         }
                     }
                 }
