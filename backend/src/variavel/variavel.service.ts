@@ -110,7 +110,7 @@ export class VariavelService {
 
                             iniciativa: {
                                 Atividade: {
-                                    some: {
+                                    every: {
                                         compoe_indicador_iniciativa: true
                                     }
                                 }
