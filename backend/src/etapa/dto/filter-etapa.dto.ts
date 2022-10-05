@@ -19,4 +19,13 @@ export class FilterEtapaDto {
     @IsPositive({ message: '$property| regiao_id' })
     @Type(() => Number)
     regiao_id?: number;
+
+    /**
+    * Filtrar por cronograma_id?
+    * @example "1"
+    */
+    @IsOptional()
+    @IsPositive({ message: '$property| cronograma_id' })
+    @Type(() => Number)
+    cronograma_id?: number;
 }
