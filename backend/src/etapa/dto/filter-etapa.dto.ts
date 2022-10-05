@@ -28,4 +28,14 @@ export class FilterEtapaDto {
     @IsPositive({ message: '$property| cronograma_id' })
     @Type(() => Number)
     cronograma_id?: number;
+
+    /**
+  * Filtrar por cronograma_id?
+  * @example "1"
+   */
+    @IsOptional()
+    @IsPositive({ message: '$property| cronograma_pai_id' })
+    @Type(() => Number)
+    cronograma_pai_id?: number;
+
 }
