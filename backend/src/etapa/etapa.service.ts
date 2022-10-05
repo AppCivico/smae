@@ -46,6 +46,7 @@ export class EtapaService {
     async findAll(filters: FilterEtapaDto | undefined = undefined) {
         let ret: Etapa[] = [];
 
+        let cronogramaPaiId = filters?.cronograma_pai_id;
         let etapaPaiId = filters?.etapa_pai_id;
         let regiaoId = filters?.regiao_id;
         let cronogramaId = filters?.cronograma_id;
@@ -61,6 +62,7 @@ export class EtapaService {
             where: {
                 etapa_pai_id: etapaPaiId,
                 regiao_id: regiaoId,
+                cronograma_id: cronogramaPaiId,
                 ...cronogramaRelationFilter,
             },
             include: {
