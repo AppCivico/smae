@@ -43,8 +43,7 @@ export class CronogramaService {
             where: {
                 meta_id: metaId,
                 atividade_id: atividadeId,
-                iniciativa_id: iniciativaId,
-                ativo: true
+                iniciativa_id: iniciativaId
             },
             select: {
                 id: true,
