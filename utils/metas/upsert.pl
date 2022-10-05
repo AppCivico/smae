@@ -13,11 +13,65 @@ my $pdm_id   = $ENV{PDM_ID} || die 'missing PDM_ID';
 
 my $ua = Mojo::UserAgent->new;
 
-my ($temas_ids)      = &upsert_temas('tema.utf8.csv', 'tema');
-my ($macrotemas_ids) = &upsert_temas('macro_tema.utf8.csv', 'macrotema');
-my ($ods_ids)        = &upsert_ods('ods.utf8.csv');
+do {
+    my ($temas_ids)      = &upsert_temas('tema.utf8.csv', 'tema');
+    my ($ods_ids)        = &upsert_ods('ods.utf8.csv');
+    my ($macrotemas_ids) = &upsert_temas('macro_tema.utf8.csv', 'macrotema');
+    my ($tags_ids)       = &upsert_tags('tag.csv', $ods_ids);
+};
 
 exit;
+
+sub upsert_tags {
+    my $fn = shift;
+    my $ods_ids = shift;
+
+    my $current_tags = [
+        $ua->get(
+            $enpdoint . "/tag?pdm_id=$pdm_id" => {authorization => "Bearer $apikey"},
+        )->result->json->{linhas}->@*
+    ];
+
+    my $exists_by_name = {};
+    $exists_by_name->{$_->{descricao}} = $_ for @$current_tags;
+use DDP; p $exists_by_name;
+    my $aoh = csv(
+        in      => $fn,
+        headers => "auto",
+        binary  => 1,
+        sep     => ';',
+    );
+
+    my $backref = {};
+    foreach my $csv (@$aoh) {
+        $csv->{descricao} = trim($csv->{descricao});
+        $csv->{ods_id} = trim($csv->{ods_id});
+
+        $csv->{descricao} ||= 'vazio ' . $csv->{id};
+
+        if ($exists_by_name->{$csv->{descricao}}) {
+            $backref->{$csv->{id}} = $exists_by_name->{$csv->{descricao}}{id};
+        }
+        else {
+            my $res = $ua->post(
+                $enpdoint . "/tag" => {authorization => "Bearer $apikey"},
+                json               => {
+                    pdm_id    => $pdm_id,
+                    ods_id    => $ods_ids->{$csv->{ods_id}},
+                    descricao => $csv->{descricao}
+                }
+            )->result->json;
+            use DDP;
+            p $res;
+            my $id = $res->{id} || die 'missing id';
+
+            $backref->{$csv->{id}} = $exists_by_name->{$csv->{descricao}}{id} = $id;
+        }
+    }
+use DDP; p $backref;
+
+    return ($backref);
+}
 
 
 sub upsert_ods {
@@ -113,13 +167,16 @@ sub upsert_temas {
             $backref->{$csv->{id}} = $exists_by_name->{$csv->{descricao}}{id};
         }
         else {
-            my $id = $ua->post(
+            my $res = $ua->post(
                 $enpdoint . "/$ed" => {authorization => "Bearer $apikey"},
                 json               => {
                     pdm_id    => $pdm_id,
                     descricao => $csv->{descricao}
                 }
-            )->result->json->{id};
+            )->result->json;
+            use DDP;
+            p $res;
+            my $id = $res->{id} || die 'missing id';
 
             $backref->{$csv->{id}} = $exists_by_name->{$csv->{descricao}}{id} = $id;
         }
