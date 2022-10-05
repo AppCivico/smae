@@ -107,7 +107,7 @@ async function onSubmit(values) {
             r = await EtapasStore.insert(values);
             msg = 'Item adicionado com sucesso!';
             rota = currentEdit;
-            etapa_id_gen = r?.id;
+            etapa_id_gen = r;
         }
 
 
