@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia';
 import { useEditModalStore, useAlertStore, useMetasStore, useIndicadoresStore, useIniciativasStore, useAtividadesStore, useVariaveisStore } from '@/stores';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
+import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -92,6 +93,8 @@ if (indicador_id) {
 function start(){
     if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
     if(props.group=='valores')editModalStore.modal(AddEditValores,props);
+    if(props.group=='realizado')editModalStore.modal(AddEditValores,props);
+    if(props.group=='realizadocorrente')editModalStore.modal(AddEditValores,props);
 }
 onMounted(()=>{start()});
 onUpdated(()=>{start()});
