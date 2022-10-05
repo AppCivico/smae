@@ -45,11 +45,13 @@ export class EtapaService {
     async findAll(filters: FilterEtapaDto | undefined = undefined) {
         let etapaPaiId = filters?.etapa_pai_id;
         let regiaoId = filters?.regiao_id;
+        let cronogramaId = filters?.cronograma_id;
 
         const etapa = await this.prisma.etapa.findMany({
             where: {
                 etapa_pai_id: etapaPaiId,
-                regiao_id: regiaoId
+                regiao_id: regiaoId,
+                cronograma_id: cronogramaId
             },
             select: {
                 id: true,
