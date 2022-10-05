@@ -21,7 +21,7 @@ export class CronogramaEtapaController {
         return { 'linhas': await this.cronogramaEtapaService.findAll(filters) };
     }
 
-    @Patch()
+    @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.editar')
