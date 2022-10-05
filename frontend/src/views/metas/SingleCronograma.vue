@@ -128,10 +128,10 @@ onUpdated(()=>{start()});
                         </div>
                     </div>
                     <hr class="mb05" />
-                    <div class="flex center t11 w700 tc600">
+                    <!-- <div class="flex center t11 w700 tc600">
                         <svg class="mr1" width="12" height="14" viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg"><use xlink:href="#i_atividade"></use></svg>
                         <span>Etapa via Atividade XX. Nome da Ativadade</span>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <template v-else-if="singleCronogramaEtapas.loading">
