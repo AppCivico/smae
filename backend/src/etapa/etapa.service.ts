@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEtapaDto } from './dto/create-etapa.dto';
 import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
+import { Etapa } from './entities/etapa.entity';
 
 @Injectable()
 export class EtapaService {
@@ -43,33 +44,55 @@ export class EtapaService {
 
 
     async findAll(filters: FilterEtapaDto | undefined = undefined) {
+        let ret: Etapa[] = [];
+
         let etapaPaiId = filters?.etapa_pai_id;
         let regiaoId = filters?.regiao_id;
         let cronogramaId = filters?.cronograma_id;
 
-        const etapa = await this.prisma.etapa.findMany({
+        let cronogramaRelationFilter;
+        if (cronogramaId) {
+            cronogramaRelationFilter = {
+                CronogramaEtapa: { some: { cronograma_id: cronogramaId } }
+            }
+        }
+
+        const etapas = await this.prisma.etapa.findMany({
             where: {
                 etapa_pai_id: etapaPaiId,
                 regiao_id: regiaoId,
-                cronograma_id: cronogramaId
+                cronograma_id: cronogramaId,
+                ...cronogramaRelationFilter,
             },
-            select: {
-                id: true,
-                etapa_pai_id: true,
-                regiao_id: true,
-                cronograma_id: true,
-                titulo: true,
-                descricao: true,
-                nivel: true,
-                prazo: true,
-                inicio_previsto: true,
-                termino_previsto: true,
-                inicio_real: true,
-                termino_real: true,
+            include: {
+                CronogramaEtapa: {
+                    orderBy: {
+                        ordem: 'asc'
+                    }
+                }
             }
         });
 
-        return etapa
+        for (const etapa of etapas) {
+            const cronogramaEtapa = etapa.CronogramaEtapa[0];
+            ret.push({
+                id: etapa.id,
+                etapa_pai_id: etapa.etapa_pai_id,
+                regiao_id: etapa.regiao_id,
+                cronograma_id: etapa.cronograma_id,
+                titulo: etapa.titulo,
+                descricao: etapa.descricao,
+                nivel: etapa.nivel,
+                prazo: etapa.prazo,
+                inicio_previsto: etapa.inicio_previsto,
+                termino_previsto: etapa.termino_previsto,
+                inicio_real: etapa.inicio_real,
+                termino_real: etapa.termino_real,
+                ordem: cronogramaEtapa.ordem || null
+            })
+        }
+
+        return ret
     }
 
     async update(id: number, updateEtapaDto: UpdateEtapaDto, user: PessoaFromJwt) {
