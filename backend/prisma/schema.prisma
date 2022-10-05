@@ -771,6 +771,8 @@ model Variavel {
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
     ano_base          Int?
 
+    codigo String
+
     peso                 Int?
     casas_decimais       Int                   @default(0) @db.SmallInt
     // usar para calculcar as agregações, por exemplo na média ponderada
