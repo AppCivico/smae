@@ -50,18 +50,18 @@ export class EtapaService {
         let regiaoId = filters?.regiao_id;
         let cronogramaId = filters?.cronograma_id;
 
-        // let cronogramaRelationFilter;
-        // if (cronogramaId) {
-        //     cronogramaRelationFilter = {
-        //         CronogramaEtapa: { every: { cronograma_id: cronogramaId } }
-        //     }
-        // }
+        let cronogramaRelationFilter;
+        if (cronogramaId) {
+            cronogramaRelationFilter = {
+                CronogramaEtapa: { every: { cronograma_id: cronogramaId } }
+            }
+        }
 
         const etapas = await this.prisma.etapa.findMany({
             where: {
                 etapa_pai_id: etapaPaiId,
                 regiao_id: regiaoId,
-                cronograma_id: cronogramaId,
+                ...cronogramaRelationFilter,
             },
             include: {
                 CronogramaEtapa: {
