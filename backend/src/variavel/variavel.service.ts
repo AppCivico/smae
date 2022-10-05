@@ -93,8 +93,8 @@ export class VariavelService {
             filterQuery = {
                 indicador_variavel: {
                     some: {
+                        desativado: removidoStatus,
                         indicador: {
-                            desativado: removidoStatus,
                             meta_id: filters?.meta_id
                         }
                     }
@@ -102,11 +102,39 @@ export class VariavelService {
             }
         } else if (filters?.iniciativa_id) {
             filterQuery = {
+                OR: [
+                    {
+                        indicador_variavel: {
+                            some: {
+                                desativado: removidoStatus,
+                                indicador: {
+                                    iniciativa_id: filters?.iniciativa_id
+                                }
+                            }
+                        }
+                    },
+                    {
+                        indicador_variavel: {
+                            some: {
+                                desativado: removidoStatus,
+                                indicador: {
+                                    atividade: {
+                                        compoe_indicador_iniciativa: true,
+                                        iniciativa_id: filters?.iniciativa_id
+                                    }
+                                }
+                            }
+                        }
+                    },
+                ]
+            }
+        } else if (filters?.atividade_id) {
+            filterQuery = {
                 indicador_variavel: {
                     some: {
+                        desativado: removidoStatus,
                         indicador: {
-                            desativado: removidoStatus,
-                            iniciativa_id: filters?.iniciativa_id
+                            atividade_id: filters?.atividade_id
                         }
                     }
                 }
@@ -158,7 +186,25 @@ export class VariavelService {
                                 titulo: true,
                                 meta_id: true,
                                 iniciativa_id: true,
-                                atividade_id: true
+                                atividade_id: true,
+
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        meta_id: true,
+                                        titulo: true,
+                                        codigo: true
+                                    }
+                                },
+
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        iniciativa_id: true,
+                                        titulo: true,
+                                        codigo: true
+                                    }
+                                }
                             },
                         },
                     }

@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 // export class MetaOrgaoParticipante {
@@ -42,7 +42,7 @@ export class CreateCronogramaDto {
     /**
     * iniciativa_id
     */
-    @IsPositive({ message: '$property| meta precisa ser um número ou null' })
+    @IsPositive({ message: '$property| iniciativa precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -51,7 +51,7 @@ export class CreateCronogramaDto {
     /**
     * atividade_id
     */
-    @IsPositive({ message: '$property| meta precisa ser um número ou null' })
+    @IsPositive({ message: '$property| atividade precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -60,65 +60,25 @@ export class CreateCronogramaDto {
     /**
     * descricao
     */
-    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @IsString({ message: '$property| descricao: Precisa ser alfanumérico' })
     @IsOptional()
     descricao?: string
 
     /**
     * observacao
     */
-    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @IsString({ message: '$property| observacao: Precisa ser alfanumérico' })
     @IsOptional()
     observacao?: string
 
-    @IsBoolean({ message: '$property| precisa ser um número' })
-    por_regiao: boolean
+    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    regionalizavel: boolean
 
-    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
-    tipo_regiao?: string
-
-    /**
-    * status
-    */
-    @IsString({ message: '$property| status: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| status: pelo menos um caractere' })
+    @IsPositive({ message: '$property| atividade precisa ser um número ou null' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null)
     @IsOptional()
-    @MaxLength(250, { message: '$property| status: 250 caracteres' })
-    status?: string
-
-    /**
-    * inicio_previsto
-    * @example YYYY-MM-DD
-    */
-    @IsOnlyDate()
-    @Type(() => Date)
-    inicio_previsto?: Date
-
-    /**
-   * termino_previsto
-   * @example YYYY-MM-DD
-   */
-    @IsOnlyDate()
-    @Type(() => Date)
-    termino_previsto?: Date
-
-
-    /**
-  * inicio_real
-  * @example YYYY-MM-DD
-  */
-    @IsOnlyDate()
-    @Type(() => Date)
-    inicio_real?: Date
-
-
-    /**
- * termino_real
- * @example YYYY-MM-DD
- */
-    @IsOnlyDate()
-    @Type(() => Date)
-    termino_real?: Date
+    nivel_regionalizacao?: number
 
 
 }

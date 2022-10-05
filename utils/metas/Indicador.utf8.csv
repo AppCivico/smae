@@ -1,0 +1,311 @@
+id;meta_id;codigo;titulo;descricao;compoe_indicador_meta;status
+1;1;1.a;"Atender 1.250.000 pessoas em programas de transferência de renda e/ou apoio nutricional de caráter provisório;";NULL;NULL;NULL
+2;1;1.b;"Atender 450.000 pessoas em programas de transferência de renda e/ou apoio nutricional de caráter permanente;";NULL;NULL;NULL
+3;1;1.c;Aprimorar e racionalizar os cadastros dos beneficiários das políticas sociais.;NULL;NULL;NULL
+4;2;2.a;"Adquirir equipamentos para implantação do prontuário eletrônico;";NULL;NULL;NULL
+5;2;2.b;"Implantar infraestrutura de tecnologia da informação nas UBS;";NULL;NULL;NULL
+6;2;2.c;Implantar e monitorar o Prontuário Eletrônico em todas as UBS.;NULL;NULL;NULL
+7;3;3.a;Implantar 30 equipamentos de saúde;NULL;NULL;NULL
+8;4;4.a;"Reformar 100 equipamentos de saúde;";NULL;NULL;NULL
+9;4;4.b;"Reequipar 80 equipamentos de saúde;";NULL;NULL;NULL
+10;4;4.c;Reformar sete Hospitais Municipais.;NULL;NULL;NULL
+11;5;5.a;"Ampliar para 100% das UBS o serviço de oferta de próteses dentárias;";NULL;NULL;NULL
+12;5;5.b;"Ampliar o atendimento em saúde bucal com a implantação de centros odontológicos
+com horário expandido;";NULL;NULL;NULL
+13;5;5.c;"Ofertar aos profissionais da Saúde capacitação em prótese odontológica;";NULL;NULL;NULL
+14;5;5.d;"Adquirir instrumentos para atendimento das necessidades de próteses;";NULL;NULL;NULL
+15;5;5.e;"Implantar 6 Centros de Referência em Saúde Bucal;";NULL;NULL;NULL
+16;5;5.f;"Intensificar as ações educativas de saúde bucal nas CEIs e EMEIs e em grupos de pais e responsáveis;";NULL;NULL;NULL
+17;5;5.g;Realizar levantamento epidemiológico sobre crianças na primeira infância.;NULL;NULL;NULL
+18;6;6.a;"Sensibilizar profissionais sobre registro adequado de doses aplicadas e estimular a vacinação oportuna, por meio da avaliação da caderneta de saúde, visitas domiciliares e visitas às escolas;";NULL;NULL;NULL
+19;6;6.b;"Promover ações de busca ativa, postos extra-muros, vacinação em bolsões de susceptíveis, sobretudo, em relação às crianças na primeira infância;";NULL;NULL;NULL
+20;6;6.c;"Aprimorar as condições de conservação e distribuição de imunobiológicos disponibilizados pelo Ministério da Saúde nas unidades de saúde;";NULL;NULL;NULL
+21;6;6.d;Adquirir tablets e condições de acesso para registro em tempo real das informações de vacinação.;NULL;NULL;NULL
+22;7;7.a;Organizar os serviços de referência para atendimento integral às pessoas com dores crônicas.;NULL;NULL;NULL
+23;8;8.a;"Referenciar o atendimento em saúde mental para 100% das UBS do Município, ampliando o acolhimento e atenção à saúde da população em sofrimento psíquico;";NULL;NULL;NULL
+24;8;8.b;"Reclassificar seis CAPS (de CAPS II para CAPS III);";NULL;NULL;NULL
+25;8;8.c;Implantar seis novos CAPS.;NULL;NULL;NULL
+26;9;9.a;Implantar 40 novas equipes da Estratégia Saúde da Família, priorizando os distritos mais vulneráveis no âmbito da primeira infância.;NULL;NULL;NULL
+27;10;10.a;"Identificar a demanda por vaga em CEI/creche, antes mesmo do nascimento da criança, em articulação com a Rede de Proteção Mãe Paulistana;";NULL;NULL;NULL
+28;10;10.b;"Realizar busca ativa de crianças em idade da pré-escola e fora da escola;";NULL;NULL;NULL
+29;10;10.c;Criar vagas em creches em resposta à demanda identificada.;NULL;NULL;NULL
+30;11;11.a;"Implementar os instrumentos previstos no Protocolo de Atenção à Primeiríssima Infância;";NULL;NULL;NULL
+31;11;11.b;"Definir e implementar protocolos de busca ativa para a identificação das crianças fora da escola;";NULL;NULL;NULL
+32;11;11.c;"Criar e implementar protocolos territoriais de atuação em rede, que envolvam a comunidade, para a realização da busca ativa de gestantes e crianças que não acessam os serviços públicos;";NULL;NULL;NULL
+33;11;11.d;"Capacitar 100% das equipes de atendimento direto e abordagem para atuarem de acordo com os protocolos de busca ativa e atendimento da população na primeira infância e suas famílias;";NULL;NULL;NULL
+34;11;11.e;"Garantir nos protocolos intersetoriais procedimentos para a detecção de situações que requerem atenção especializada, para o encaminhamento e para o atendimento adequado das famílias de crianças com deficiência, transtornos globais do desenvolvimento e altas habilidades ou superdotação e outras situações que requerem atenção especializada;";NULL;NULL;NULL
+35;11;11.f;"Integrar os programas de combate à pobreza aos protocolos de atendimento na primeira infância, a fim de reduzir a vulnerabilidade das crianças de 0 a 6 anos e suas famílias;";NULL;NULL;NULL
+36;11;11.g;"Integrar os programas de habitação aos protocolos de atendimento na primeira infância, a fim de reduzir a vulnerabilidade das crianças de 0 a 6 anos e suas famílias;";NULL;NULL;NULL
+37;11;11.h;Integrar os programas de prevenção e tratamento do abuso de drogas e álcool aos protocolos de atendimento na primeira infância, a fim de reduzir a vulnerabilidade das crianças de 0 a 6 anos e suas famílias.;NULL;NULL;NULL
+38;12;12.a;"Revisar as normativas de atendimento provisório e definitivo;";NULL;NULL;NULL
+39;12;12.b;"Revisar a regulamentação de locação social;";NULL;NULL;NULL
+40;12;12.c;"Contratar unidades habitacionais nas modalidades de construção direta, aquisição, locação social e carta de crédito;";NULL;NULL;NULL
+41;12;12.d;"Entregar unidades habitacionais nas modalidades de construção direta, aquisição, locação social e carta de crédito;";NULL;NULL;NULL
+42;12;12.e;Assegurar áreas de lazer para crianças nos novos conjuntos habitacionais, considerando as especificidades da primeira infância.;NULL;NULL;NULL
+43;13;13.a;"Urbanizar assentamentos precários, garantindo a seus moradores o acesso à cidade formal, com especial atenção às áreas de mananciais sujeitas à regulamentação específica;";NULL;NULL;NULL
+44;13;13.b;Aprimorar o sistema habitacional (HabitaSampa).;NULL;NULL;NULL
+45;14;14.a;"Beneficiar famílias por procedimentos de regularização fundiária em assentamentos precários;";NULL;NULL;NULL
+46;14;14.b;Beneficiar famílias por procedimentos de regularização de conjuntos habitacionais.;NULL;NULL;NULL
+47;15;15.a;"Implementar sistema eletrônico para unificação dos dados e melhoramento dos fluxos de processos no âmbito da SMUL, tornando-os mais céleres, transparentes e simples;";NULL;NULL;NULL
+48;15;15.b;Aprimorar a modalidade auto declaratória para os processos de licenciamento.;NULL;NULL;NULL
+49;16;16.a;"Revisar a Política Municipal de Atendimento à População em situação de rua, a partir da criação do Programa Reencontro;";NULL;NULL;NULL
+50;16;16.b;"Revisar as normas técnicas dos serviços de acolhimento e abordagem;";NULL;NULL;NULL
+51;16;16.c;"Informatizar a coleta e o registro de informações dos serviços de abordagem;";NULL;NULL;NULL
+52;16;16.d;"Elaborar a Política Municipal para Crianças e Adolescentes em situação de rua;";NULL;NULL;NULL
+53;16;16.e;"Elaborar o protocolo municipal de atendimento à população em situação de rua;";NULL;NULL;NULL
+54;16;16.f;"Implantar Núcleos de Convivência para adultos em situação de rua nas Subprefeituras desprovidas deste serviço e com maior concentração de população não acolhida;";NULL;NULL;NULL
+55;16;16.g;"Implantar Centros de Acolhida e Centros de Acolhida Especiais, reordenando serviços com mais de 200 vagas e respeitando o perfil dos usuários;";NULL;NULL;NULL
+56;16;16.h;Implantar seis equipes de Consultório na Rua.;NULL;NULL;NULL
+57;17;17.a;"Efetuar diagnóstico da rede e da territorialização dos serviços específicos para população idosa;";NULL;NULL;NULL
+58;17;17.b;"Garantir a existência de ao menos um Núcleo de Convivência do Idoso ou Centro de Convivência Intergeracional (CCInter)por Distrito (44 novos serviços);";NULL;NULL;NULL
+59;17;17.c;"Garantir a existência de ao menos um Centro Dia para Idosos por Subprefeitura (16 novos serviços);";NULL;NULL;NULL
+60;17;17.d;Inaugurar Casa Segura e Acessível.;NULL;NULL;NULL
+61;18;18.a;"Transferir da administração direta para a administração indireta a gestão de dois Centros de Referência da Mulher, para ampliar o número de atendimentos;";NULL;NULL;NULL
+62;18;18.b;"Transferir da administração direta para a administração indireta a gestão de cinco Centros de Cidadania da Mulher, para ampliar o número de atendimentos;";NULL;NULL;NULL
+63;18;18.c;"Estabelecer Central de Vagas para os equipamentos de atendimento de mulheres, a fim de otimizar os atendimentos;";NULL;NULL;NULL
+64;18;18.d;"Transferir dois Centros de Acolhimento da Secretaria Municipal de Direitos Humanos e Cidadania (SMDHC) para a Secretaria Municipal de Desenvolvimento e Assistência Social (SMADS), com vistas a organizar os atendimentos na rede;";NULL;NULL;NULL
+65;18;18.e;Transferir 15 Centros de Defesa e de Convivência da Mulher da Secretaria Municipal de Desenvolvimento e Assistência Social (SMADS) para Secretaria Municipal de Direitos Humanos e Cidadania (SMDHC), com vistas a organizar os atendimentos na rede.;NULL;NULL;NULL
+66;19;19.a;"Certificar 320 iniciativas de empresas, entidades do terceiro setor e órgãos públicos com o Selo Municipal de Direitos Humanos e Diversidade (SMDHC);";NULL;NULL;NULL
+67;19;19.b;"Certificar 80 organizações de direito privado com o Selo de Igualdade Racial (SMDHC);";NULL;NULL;NULL
+68;19;19.c;"Instituir e manter o Comitê de Prevenção e Combate ao Racismo Institucional em funcionamento (SMDHC);";NULL;NULL;NULL
+69;19;19.d;"Inaugurar o Memorial dos Aflitos, destinado à preservação da memória dos negros e negras que viveram em São Paulo, durante o período da escravidão (SMC);";NULL;NULL;NULL
+70;19;19.e;"Ofertar capacitação sobre racismo institucional para profissionais de todos os níveis e equipamentos de saúde da SMS, em cumprimento da Lei 17.406, que institui o Programa Municipal de Saúde Integral da População Negra (SMS);";NULL;NULL;NULL
+71;19;19.f;"Implementar a vigilância de gestantes negras de risco e as faltosas realizando busca ativa e monitoramento (SMS);";NULL;NULL;NULL
+72;19;19.g;"Implantar Centro de Atendimento para Hemoglobinopatias/Anemia Falciforme no Hospital Integrado Santo Amaro (HISA) como referência para o MSP (SMS);";NULL;NULL;NULL
+73;19;19.h;"Ampliar em 70% a oferta de cursos na temática étnico racial para educadores da Rede Municipal de Ensino (SME/SMRI);";NULL;NULL;NULL
+74;19;19.i;Participar e realizar eventos nacionais e internacionais com foco no tema de combate ao racismo (SMRI).;NULL;NULL;NULL
+75;20;20.a;Dobrar o número de pessoas beneficiárias do Programa Transcidadania, expandindo o público-alvo.;NULL;NULL;NULL
+76;21;21.a;"Criar 1º Centro Municipal para Pessoas com Transtorno do Espectro Autista;";NULL;NULL;NULL
+77;21;21.b;"Capacitar e atualizar 500 profissionais sobre a temática do autismo;";NULL;NULL;NULL
+78;21;21.c;"Realizar anualmente a Semana Municipal de Conscientização do Autismo;";NULL;NULL;NULL
+79;21;21.d;Adquirir equipamentos de saúde e educação para fortalecimento do atendimento da pessoa com TEA na rede municipal.;NULL;NULL;NULL
+80;22;22.a;"Realizar Avaliação Diagnóstica, bimestralmente;";NULL;NULL;NULL
+81;22;22.b;"Realizar Provinha São Paulo, anualmente;";NULL;NULL;NULL
+82;22;22.c;"Prover estagiária(o) em todas as turmas do 1º ano do Ensino Fundamental;";NULL;NULL;NULL
+83;22;22.d;Formar professores e Coordenadores Pedagógicos que atuam no Ciclo de Alfabetização de 100% das Escolas com Ensino Fundamental I.;NULL;NULL;NULL
+84;23;23.a;"Realizar a Prova São Paulo, anualmente;";NULL;NULL;NULL
+85;23;23.b;"Acompanhar a taxa de reprovação e evasão escolar (busca ativa);";NULL;NULL;NULL
+86;23;23.c;"Publicar os resultados da avaliação por unidade escolar;";NULL;NULL;NULL
+87;23;23.d;"Implantar Programa de Recuperação das Aprendizagens;";NULL;NULL;NULL
+88;23;23.e;Conceder 50 bolsas de mestrado para professores dos anos iniciais do Ensino Fundamental.;NULL;NULL;NULL
+89;24;24.a;"Realizar a Prova São Paulo, anualmente;";NULL;NULL;NULL
+90;24;24.b;"Acompanhar a taxa de reprovação e evasão escolar (busca ativa);";NULL;NULL;NULL
+91;24;24.c;"Publicar os resultados da avaliação por unidade educacional;";NULL;NULL;NULL
+92;24;24.d;"Implantar Programa de Recuperação das Aprendizagens;";NULL;NULL;NULL
+93;24;24.e;Conceder 50 bolsas de mestrado para professores dos anos finais do Ensino Fundamental.;NULL;NULL;NULL
+94;25;25.a;"Implantar 12 novos CEUs;";NULL;NULL;NULL
+95;25;25.b;Reformar ou adequar 46 CEUs.;NULL;NULL;NULL
+96;26;26.a;"Construir 45 novas unidades escolares entre CEIs, EMEIs e EMEFs;";NULL;NULL;NULL
+97;26;26.b;Reformar, ampliar ou adequar 1.915 unidades escolares.;NULL;NULL;NULL
+98;27;27.a;"Publicar normativa do programa;";NULL;NULL;NULL
+99;27;27.b;Ofertar cursos de idiomas para os estudantes da Rede Municipal em todos os CEUs.;NULL;NULL;NULL
+100;28;28.a;"Adequar estruturas existentes para implantar 6 Polos Regionais de Esportes para atletas de alto rendimento e/ou de esporte de base;";NULL;NULL;NULL
+101;28;28.b;"Conceder bolsa auxílio municipal para até 150 atletas do COTP (Centro Olímpico de Treinamento e Pesquisa) e atletas paralímpicos;";NULL;NULL;NULL
+102;28;28.c;"Implantar mais quatro modalidades olímpicas do COTP;";NULL;NULL;NULL
+103;28;28.d;Estruturar equipes com representatividade em competições locais, regionais, nacionais e mundiais.;NULL;NULL;NULL
+104;29;29.a;"Ampliar a presença de policiamento GCM na cidade de São Paulo até 2024;";NULL;NULL;NULL
+105;29;29.b;"Recompor o efetivo da Guarda Civil Metropolitana;";NULL;NULL;NULL
+106;29;29.c;Renovação da frota de viaturas da GCM.;NULL;NULL;NULL
+107;30;30.a;"Desenvolver modelo de contratação para captação e armazenamento de imagens digitais de videomonitoramento;";NULL;NULL;NULL
+108;30;30.b;Implantar Sistema de Informações em Segurança Urbana.;NULL;NULL;NULL
+109;31;31.a;"Criar Cadastro Municipal Unificado de Vítimas de Violência na Cidade de São Paulo;";NULL;NULL;NULL
+110;31;31.b;"Capacitar guardas civis metropolitanos para a atuação operacional em proteção a pessoas em situação de vulnerabilidade e risco pessoal;";NULL;NULL;NULL
+111;31;31.c;Ampliar a carga horária mínima de conteúdos de políticas públicas de Direitos Humanos na formação inicial para guardas civis metropolitanos.;NULL;NULL;NULL
+112;32;32.a;"Construir 14 novos piscinões;";NULL;NULL;NULL
+113;32;32.b;"Realizar obras de macrodrenagem na bacia dos córregos;";NULL;NULL;NULL
+114;32;32.c;"Ampliar o número de jardins de chuva e outras soluções verdes para drenagem;";NULL;NULL;NULL
+115;32;32.d;"Ampliar a rede de postos telemétricos nos reservatórios e corpos d'água, aprimorando o uso de tecnologia no combate às enchentes;";NULL;NULL;NULL
+116;32;32.e;"Retirar 820.000 toneladas de detritos dos piscinões;";NULL;NULL;NULL
+117;32;32.f;"Realizar manutenção de 114.000 metros de extensão de galerias;";NULL;NULL;NULL
+118;32;32.g;"Manter 40 equipamentos de hidrojato para a limpeza de galerias e atendimentos emergenciais nos pontos de alagamento;";NULL;NULL;NULL
+119;32;32.h;Reformar 770.000 metros de guias e sarjetas.;NULL;NULL;NULL
+120;33;33.a;Limpar 8,2 milhões de metros de extensão de córregos.;NULL;NULL;NULL
+121;34;34.a;Recuperar 20.000.000 de metros quadrados de vias públicas utilizando recapeamento, micro pavimentação e manutenção de pavimento rígido.;NULL;NULL;NULL
+122;35;35.a;Reduzir o Tempo Médio de Atendimento do serviço de Tapa Buraco para 10 dias.;NULL;NULL;NULL
+123;36;36.a;Pavimentar 480.000 metros quadrados de vias sem asfalto.;NULL;NULL;NULL
+124;37;37.a;"Inspeções especiais em pontes, viadutos e/ou túneis;";NULL;NULL;NULL
+125;37;37.b;"Obras de manutenção e recuperação em pontes, viadutos e/ou túneis;";NULL;NULL;NULL
+126;37;37.c;Inspeções visuais em pontes, viadutos e/ou túneis.;NULL;NULL;NULL
+127;38;38.a;"Instalar 30.000 novas luminárias utilizando lâmpadas LED;";NULL;NULL;NULL
+128;38;38.b;Substituir 270.000 lâmpadas de vapor de sódio por lâmpadas LED.;NULL;NULL;NULL
+129;39;39.a;"Implantar dez projetos de redesenho urbano para promoção da segurança viária;";NULL;NULL;NULL
+130;39;39.b;"Conduzir campanhas de comunicação e ações de educação de trânsito anualmente;";NULL;NULL;NULL
+131;39;39.c;"Intervir em pontos críticos de mortes no trânsito em conjunto com as demais obras de intervenção no viário realizadas pela Prefeitura;";NULL;NULL;NULL
+132;39;39.d;"Garantir que 100% dos ônibus do sistema de transporte público municipal tenham adesivos indicando locais de pouca visibilidade (pontos cegos) para o condutor;";NULL;NULL;NULL
+133;39;39.e;"Intensificar a fiscalização eletrônica e implementar projeto de fiscalização por videomonitoramento;";NULL;NULL;NULL
+134;39;39.f;"Implementar programa de renovação de semáforos em 16 vias com alto índice de mortes no trânsito;";NULL;NULL;NULL
+135;39;39.g;"Ampliar o serviço DSV Digital da Prefeitura, permitindo a solicitação de recursos de multas de trânsito à JARI, com vistas à redução do tempo transcorrido entre a prática da infração e a aplicação das penalidades de trânsito;";NULL;NULL;NULL
+136;39;39.h;"Implementar programa de incentivo à regularização do serviço de motofrete, com o objetivo de aumentar a capacidade de direção segura pelos condutores desses veículos;";NULL;NULL;NULL
+137;39;39.i;"Implantar 100 minirrotatórias, com o objetivo de induzir o desenvolvimento de menores velocidades pelos veículos;";NULL;NULL;NULL
+138;39;39.j;"Implantar 2.800 novas faixas de travessia para pedestres;";NULL;NULL;NULL
+139;39;39.k;"Enviar mensagens educativas quanto aos efeitos do excesso de velocidade aos motoristas que respeitam a velocidade regulamentada apenas nas proximidades dos equipamentos de fiscalização eletrônica;";NULL;NULL;NULL
+140;39;39.l;"Implantar ou ampliar 300 Frentes Seguras (boxes de espera) em semáforos para aumentar a segurança de motociclistas e pedestres;";NULL;NULL;NULL
+141;39;39.m;"Implementar ações de aumento do tempo de travessia para os pedestres nos semáforos e intensificação da fiscalização de trânsito;";NULL;NULL;NULL
+142;39;39.n;"Implementar mecanismo de fiscalização para excesso de peso de cargas transportadas em caminhões;";NULL;NULL;NULL
+143;39;39.o;"Reduzir a velocidade máxima regulamentada de 50 km/h para 40 km/h em 24 vias;";NULL;NULL;NULL
+144;39;39.p;"Implantar 200 projetos de avanço de calçada ou construção de ilhas e refúgios em locais de travessia de pedestres, com o objetivo de reduzir a distância da travessia e, com isso, a exposição a atropelamentos;";NULL;NULL;NULL
+145;39;39.q;"Instituir regulamentação sobre a prestação de serviços de entregas com motocicleta e bicicleta por empresas que operam com aplicativos;";NULL;NULL;NULL
+146;39;39.r;Capacitar os operadores do transporte público municipal, com foco na promoção de comportamentos mais seguros no trânsito e na qualidade do atendimento prestado.;NULL;NULL;NULL
+147;40;40.a;Realizar a manutenção de 1.500.000 metros quadrados de calçadas.;NULL;NULL;NULL
+148;41;41.a;"Implantar 2 projetos de Rotas Escolares Seguras;";NULL;NULL;NULL
+149;41;41.b;"Implantar 2 projetos de Ruas Completas;";NULL;NULL;NULL
+150;41;41.c;Implantar 5 projetos de Rotas Acessíveis para pessoas com deficiência ou mobilidade reduzida.;NULL;NULL;NULL
+151;42;42.a;"Instituir mecanismo de participação em cada território selecionado;";NULL;NULL;NULL
+152;42;42.b;"Instituir planejamento operacional por território com priorização conjunta intersecretarial;";NULL;NULL;NULL
+153;42;42.c;"Elaborar Plano Urbano Integrado e Programa Social Integrado dos serviços públicos;";NULL;NULL;NULL
+154;42;42.d;"Elaborar os projetos específicos, realizar as obras e instalar mobiliário e equipamentos, implementar as ações de integração das políticas públicas no território;";NULL;NULL;NULL
+155;42;42.e;Realizar o monitoramento de indicadores de resultado de forma permanente.;NULL;NULL;NULL
+156;43;43.a;"Assegurar que mais de 80% das Subprefeituras tenham estruturas cicloviárias conectadas com a rede cicloviária do centro expandido da cidade;";NULL;NULL;NULL
+157;43;43.b;"Implantar seis transposições cicloviárias por pontes sobre os rios Pinheiros e Tietê;";NULL;NULL;NULL
+158;43;43.c;"Implantar três transposições cicloviárias por passarelas existentes;";NULL;NULL;NULL
+159;43;43.d;"Implantar sete transposições cicloviárias por viadutos;";NULL;NULL;NULL
+160;43;43.e;"Implantar uma ciclopassarela nova;";NULL;NULL;NULL
+161;43;43.f;Implantar bicicletários em todos os terminais urbanos de ônibus municipais.;NULL;NULL;NULL
+162;44;44.a;"Conduzir estudos econômico-financeiros de viabilidade do modelo;";NULL;NULL;NULL
+163;44;44.b;"Conduzir estudos técnicos de navegabilidade da represa e definir os modelos de embarcação mais adequados;";NULL;NULL;NULL
+164;44;44.c;"Revisar o contrato de concessão do serviço de transporte público para previsão da operação do transporte hidroviário;";NULL;NULL;NULL
+165;44;44.d;"Obter as licenças ambientais necessárias;";NULL;NULL;NULL
+166;44;44.e;"Executar as compensações ambientais necessárias;";NULL;NULL;NULL
+167;44;44.f;"Construir viário de acesso no entorno dos terminais e atracadouros;";NULL;NULL;NULL
+168;44;44.g;Construir atracadouros integrados a terminais de ônibus para embarque e desembarque na rede de transporte público hidroviário.;NULL;NULL;NULL
+169;45;45.a;"BRT Aricanduva;";NULL;NULL;NULL
+170;45;45.b;BRT Radial Leste.;NULL;NULL;NULL
+171;46;46.a;"Corredor Itaquera-Líder;";NULL;NULL;NULL
+172;46;46.b;"Corredor Celso Garcia;";NULL;NULL;NULL
+173;46;46.c;"Corredor Itaim - São Mateus;";NULL;NULL;NULL
+174;46;46.d;"Corredor Miguel Yunes;";NULL;NULL;NULL
+175;46;46.e;Corredor Nossa Senhora do Sabará.;NULL;NULL;NULL
+176;47;47.a;"Terminal Jardim Miriam;";NULL;NULL;NULL
+177;47;47.b;"Novo Terminal São Mateus;";NULL;NULL;NULL
+178;47;47.c;"Novo Terminal Itaquera;";NULL;NULL;NULL
+179;47;47.d;Terminal Itaim.;NULL;NULL;NULL
+180;48;48.a;Implantar 50 quilômetros de faixas exclusivas de ônibus.;NULL;NULL;NULL
+181;49;49.a;"Aumentar em 420 quilômetros a extensão de vias atendidas pelo sistema de ônibus;";NULL;NULL;NULL
+182;49;49.b;"Construir a conexão de transporte público João Paulo I;";NULL;NULL;NULL
+183;49;49.c;"Construir a conexão de transporte público Jaçanã;";NULL;NULL;NULL
+184;49;49.d;"Construir a conexão de transporte público Tremembé;";NULL;NULL;NULL
+185;49;49.e;"Construir a conexão de transporte público Mandaqui;";NULL;NULL;NULL
+186;49;49.f;Construir a conexão de transporte público Praça Acuri.;NULL;NULL;NULL
+187;50;50.a;Entregar 4.000 novos ônibus para a frota do transporte público municipal, sendo ao menos 2.600 elétricos.;NULL;NULL;NULL
+188;51;51.a;Contratar artistas para realização dos novos grafites em muros e empenas da cidade por meio do Projeto Museu de Arte de Rua (MAR).;NULL;NULL;NULL
+189;51;51.b;Publicar os novos painéis na Plataforma MAR 360º, site que permite a visualização online de todos os grafites que integram o Projeto Museu de Arte de Rua (MAR).;NULL;NULL;NULL
+190;52;52.a;Implantar nove Centros de Referência do Novo Modernismo.;NULL;NULL;NULL
+191;53;53.a;Implantar 10 salas de cinema nos CEUs.;NULL;NULL;NULL
+192;54;54.a;Inaugurar a Casa de Cultura Cidade Ademar.;NULL;NULL;NULL
+193;55;55.a;"Selecionar áreas para implantar os quatro Estúdios Criativos da Juventude;";NULL;NULL;NULL
+194;55;55.b;"Elaborar projeto básico;";NULL;NULL;NULL
+195;55;55.c;"Reformar e adaptar os espaços para implantar a Rede;";NULL;NULL;NULL
+196;55;55.d;Selecionar os cursos e atividades que serão desenvolvidas.;NULL;NULL;NULL
+197;56;56.a;"Definir um modelo de incentivo à economia criativa por meio de ações integradas de fomento, gestão, sinalização e divulgação;";NULL;NULL;NULL
+198;56;56.b;"Implantar um Distrito Criativo no Centro, região que já apresenta um conjunto de iniciativas de diferentes órgãos do poder público municipal, do setor privado e terceiro setor;";NULL;NULL;NULL
+199;56;56.c;Identificar outros três territórios com potencial para desenvolver a economia criativa, de forma coordenada com os polos de desenvolvimento econômico da cidade;NULL;NULL;NULL
+200;57;57.a;"Desenvolver ações de intermediação de mão de obra;";NULL;NULL;NULL
+201;57;57.b;"Cursos de qualificação profissional;";NULL;NULL;NULL
+202;57;57.c;"Programa Operação Trabalho;";NULL;NULL;NULL
+203;57;57.d;"Programa Bolsa Trabalho;";NULL;NULL;NULL
+204;57;57.e;"Programa Tem Saída;";NULL;NULL;NULL
+205;57;57.f;"Criar e implementar o SP+Tech, programa de qualificação profissional voltado às atividades do setor de tecnologia da informação;";NULL;NULL;NULL
+206;57;57.g;Realizar oito edições do Contrata SP - Pessoa com Deficiência.;NULL;NULL;NULL
+207;58;58.a;"Realizar atendimentos a microempreendedores individuais (MEI);";NULL;NULL;NULL
+208;58;58.b;"Realizar capacitações a empreendedores;";NULL;NULL;NULL
+209;58;58.c;"Realizar atendimentos ligados a microcrédito para empreendedores;";NULL;NULL;NULL
+210;58;58.d;"Implantar dez novos Teias e promover a manutenção dos dez existentes;";NULL;NULL;NULL
+211;58;58.e;"Implantar duas lojas sociais para artesãs e artesãos no Município;";NULL;NULL;NULL
+212;58;58.f;"Aprimorar o Programa Mãos e Mentes Paulistanas;";NULL;NULL;NULL
+213;58;58.g;Implementar o Programa SP Coopera.;NULL;NULL;NULL
+214;59;59.a;"Unificar e definir padrões mínimos para as iniciativas de Wi-Fi Público das Secretarias;";NULL;NULL;NULL
+215;59;59.b;"Realizar diagnóstico e elaborar plano de revisão e expansão do Programa WiFI Livre SP;";NULL;NULL;NULL
+216;59;59.c;"Sinalizar com placas indicativas todas as localidades do Programa Wi-Fi Livre SP;";NULL;NULL;NULL
+217;59;59.d;Estruturar e realizar ações de divulgação para expandir o número de usuários do Programa Wi-fi Livre SP.;NULL;NULL;NULL
+218;60;60.a;"Modernizar os Telecentros;";NULL;NULL;NULL
+219;60;60.b;"Adquirir 100 kits multimídia para ofertar capacitações a 300 mil usuários dos Telecentros;";NULL;NULL;NULL
+220;60;60.c;Publicar anualmente o número de acessos nos Telecentros.;NULL;NULL;NULL
+221;61;61.a;"Publicar o Plano Municipal de Agroecologia e Desenvolvimento Rural Sustentável e Solidário (PMADRSS);";NULL;NULL;NULL
+222;61;61.b;"Beneficiar produtores rurais com assistência técnica;";NULL;NULL;NULL
+223;61;61.c;"Reativar e readequar cinco escolas estufa;";NULL;NULL;NULL
+224;61;61.d;"Qualificar beneficiários do POT - Hortas e Viveiros da Comunidade;";NULL;NULL;NULL
+225;61;61.e;Realizar capacitações em temáticas relacionadas a economia verde (Programa Green Sampa).;NULL;NULL;NULL
+226;62;62.a;"Implantar oito novos parques municipais;";NULL;NULL;NULL
+227;62;62.b;"Criar os Conselhos Gestores dos novos parques durante sua fase de implantação;";NULL;NULL;NULL
+228;62;62.c;Elaborar os Planos de Gestão dos novos parques.;NULL;NULL;NULL
+229;63;63.a;"Implantar duas Unidades de Conservação;";NULL;NULL;NULL
+230;63;63.b;"Abrir em tempo integral cinco parques naturais (Unidades de Conservação);";NULL;NULL;NULL
+231;63;63.c;Revisar e/ou elaborar os Planos de Manejo das Unidades de Conservação.;NULL;NULL;NULL
+232;64;64.a;"Plantar 180.000 novas árvores no município;";NULL;NULL;NULL
+233;64;64.b;"Criar o Sistema de Gestão da Arborização;";NULL;NULL;NULL
+234;64;64.c;"Elaborar e disponibilizar o inventário arbóreo do município;";NULL;NULL;NULL
+235;64;64.d;"Criar o Portal da Arborização e desenvolver seu aplicativo, aberto para consulta e registro de ações da população;";NULL;NULL;NULL
+236;64;64.e;"Elaborar e divulgar o relatório anual de gestão da arborização;";NULL;NULL;NULL
+237;64;64.f;"Implantar quatro viveiros estacionais descentralizados para recebimento de mudas;";NULL;NULL;NULL
+238;64;64.g;"Cultivar seis espécies nativas da Mata Atlântica em extinção;";NULL;NULL;NULL
+239;64;64.h;"Realizar o manejo de 550.000 árvores na cidade;";NULL;NULL;NULL
+240;64;64.i;"Enviar à Câmara dos Vereadores, Projeto de Lei de Manejo Arbóreo visando a atualização e adequação da Legislação;";NULL;NULL;NULL
+241;64;64.j;Ampliar número de jardins de chuva na cidade.;NULL;NULL;NULL
+242;65;65.a;"Implantar um novo hospital veterinário municipal;";NULL;NULL;NULL
+243;65;65.b;"Realizar o levantamento de dados da população canina e felina do município de forma associada ao Inquérito de Saúde;";NULL;NULL;NULL
+244;65;65.c;"Implantar o Registro Geral Animal eletrônico (e-RGA) com emissão de documento digital personalizado com foto;";NULL;NULL;NULL
+245;65;65.d;"Ampliar o Programa Permanente de Controle Reprodutivo de Cães e Gatos (PPCRCG);";NULL;NULL;NULL
+246;65;65.e;Instituir o Programa de Reabilitação Comportamental de cães agressores removidos pela Prefeitura.;NULL;NULL;NULL
+247;66;66.a;"Dar continuidade ao atendimento dos animais silvestres;";NULL;NULL;NULL
+248;66;66.b;"Realizar inventários de monitoramento da fauna silvestre;";NULL;NULL;NULL
+249;66;66.c;"Desenvolver Manual Técnico da Cidade Amiga da Fauna.;";NULL;NULL;NULL
+250;66;66.d;Publicar anualmente lista de fauna da cidade.;NULL;NULL;NULL
+251;67;67.a;"Formar grupo de trabalho entre Prefeitura de São Paulo e Governo do Estado de São Paulo com o objetivo de desenvolver modelagem para monitoramento da carga orgânica;";NULL;NULL;NULL
+252;67;67.b;"Realizar a fiscalização integrada das áreas verdes para estancar novas ocupações irregulares e preservar faixa mínima entre as ocupações irregulares e a linha d´água dos mananciais (parques lineares);";NULL;NULL;NULL
+253;67;67.c;"Implementar programas de saneamento (redes de água de coleta) e tratamento de cargas difusas;";NULL;NULL;NULL
+254;67;67.d;"Realizar serviços de drenagem de águas pluviais e de córregos;";NULL;NULL;NULL
+255;68;68.a;"Reduzir em 25% a emissão estimada de óxidos de nitrogênio pelo sistema de transporte público municipal;";NULL;NULL;NULL
+256;68;68.b;"Reduzir em 40% a emissão estimada de material particulado pelo sistema de transporte público municipal;";NULL;NULL;NULL
+257;68;68.c;"Reduzir em 12% a emissão estimada de dióxido de carbono pelo sistema de transporte público municipal;";NULL;NULL;NULL
+258;68;68.d;"Publicar três versões do inventário de emissões e remoções antrópicas de gases de efeito estufa;";NULL;NULL;NULL
+259;68;68.e;Publicar relatórios técnicos anuais sobre a implementação do Plano de Ação Climática de São Paulo (PlanClima-SP).;NULL;NULL;NULL
+260;69;69.a;"Implantar 40 novos Ecopontos;";NULL;NULL;NULL
+261;69;69.b;"Permitir o recolhimento de quatro outros tipos de resíduos na rede de Ecopontos;";NULL;NULL;NULL
+262;69;69.c;"Implementar Ecopontos Móveis de grande e pequeno porte;";NULL;NULL;NULL
+263;69;69.d;"Eliminar 900 pontos viciados de descarte ilegal de lixo na cidade;";NULL;NULL;NULL
+264;69;69.e;"Implantar 3.000 novos Pontos de Entregas Voluntárias (PEVs)de material reciclável;";NULL;NULL;NULL
+265;69;69.f;"Implantar três novos pátios de compostagem e ampliar os projetos de compostagem doméstica;";NULL;NULL;NULL
+266;69;69.g;"Integrar 5.000 catadores ao programa de melhoria de zeladoria e limpeza;";NULL;NULL;NULL
+267;69;69.h;"Atingir 600 feiras livres com o Projeto de Compostagem;";NULL;NULL;NULL
+268;69;69.i;"Regulamentar lei específica que verse sobre o fornecimento de plásticos de uso único e promover campanhas de conscientização sobre o tema;";NULL;NULL;NULL
+269;69;69.j;Buscar novas tecnologias para destinação adequada dos resíduos sólidos.;NULL;NULL;NULL
+270;70;70.a;"Captar, por meio de parcerias internacionais, recursos para as políticas públicas municipais;";NULL;NULL;NULL
+271;70;70.b;"Assinar acordos e compromissos internacionais alinhados diretamente aos Objetivos de Desenvolvimento Sustentável (ODS) da Agenda 2030, da ONU;";NULL;NULL;NULL
+272;70;70.c;"Estabelecer parcerias com foco na preservação do meio ambiente, sobretudo, no que se refere às mudanças climáticas e economia circular;";NULL;NULL;NULL
+273;70;70.d;"Estabelecer parcerias internacionais com foco no avanço das políticas municipais de saneamento básico;";NULL;NULL;NULL
+274;70;70.e;"Estabelecer parcerias internacionais com foco em melhoria da infraestrutura rural e na promoção da segurança alimentar;";NULL;NULL;NULL
+275;70;70.f;"Estabelecer parcerias internacionais com foco nos temas de economia criativa, tecnologia e inovação;";NULL;NULL;NULL
+276;70;70.g;"Realizar campanhas de comunicação que promovam a cidade de São Paulo e suas políticas;";NULL;NULL;NULL
+277;70;70.h;"Realizar missões internacionais e participar de eventos promovidos por redes de cidades e instituições do Sistema ONU;";NULL;NULL;NULL
+278;70;70.i;"Realizar eventos internacionais com foco nos temas de desenvolvimento sustentável e direitos humanos;";NULL;NULL;NULL
+279;70;70.j;"Apresentar relatórios internacionais referentes às iniciativas e políticas públicas da cidade de São Paulo que contribuam para a efetivação das agendas globais;";NULL;NULL;NULL
+280;70;70.k;"Captar, por meio de parcerias internacionais, recursos para as políticas públicas municipais;";NULL;NULL;NULL
+281;71;71.a;Implementar 60% do Plano de Turismo Municipal - Perspectiva 2030.;NULL;NULL;NULL
+282;72;72.a;"Adequar o padrão de atendimento a fim de garantir excelência na prestação de serviços aos cidadãos;";NULL;NULL;NULL
+283;72;72.b;"Atualizar e modernizar o parque tecnológico dos equipamentos existentes;";NULL;NULL;NULL
+284;72;72.c;"Padronizar a comunicação visual para torná-la mais simples e acessível;";NULL;NULL;NULL
+285;72;72.d;Realizar a adequação básica do layout físico das praças para otimização dos atendimentos.;NULL;NULL;NULL
+286;73;73.a;"Estruturar projetos e acompanhar a execução das parcerias municipais com a iniciativa privada com vistas a possibilitar a ampliação do investimento nas atividades essenciais do Estado e melhorar a prestação dos serviços públicos municipais;";NULL;NULL;NULL
+287;73;73.b;"Realizar ações de prospecção de novos investidores e atração de investimentos, com destaque à promoção do pacote municipal de desestatização;";NULL;NULL;NULL
+288;73;73.c;"Promover rodadas de negócios, inclusive internacionais, e ampliação do número de empresas participantes do Programa de Apoio à Internacionalização de Empresas Paulistanas;";NULL;NULL;NULL
+289;73;73.d;Contabilizar empregos (diretos e indiretos) gerados a partir dos negócios atraídos para a cidade de São Paulo.;NULL;NULL;NULL
+290;74;74.a;"Desenvolver projeto de inovação tecnológica para aprimoramento da gestão da dívida ativa municipal e promoção de sua cobrança baseada em dados, de modo a conferir maior efetividade e eficiência na recuperação de créditos, bem como para racionalização do contencioso e adoção de medidas de desjudicialização por meio de jurimetria;";NULL;NULL;NULL
+291;74;74.b;"Executar projeto de ampliação, diversificação e racionalização de instrumentos de cobrança extrajudicial da Dívida Ativa;";NULL;NULL;NULL
+292;74;74.c;"Adquirir os equipamentos necessários para a instalação do Centro de Solução de Conflitos;";NULL;NULL;NULL
+293;74;74.d;"Ampliar a quantidade de casos processuais e pré-processuais encaminhados para o CEJUSC da Fazenda Pública;";NULL;NULL;NULL
+294;74;74.e;"Intensificar a atuação da Câmara de Prevenção e Resolução Administrativa de Conflitos;";NULL;NULL;NULL
+295;74;74.f;"Criar novos mecanismos online para recebimento e solução de demandas (ODR);";NULL;NULL;NULL
+296;74;74.g;Ampliar a quantidade de matérias litigiosas resolvidas por autocomposição pela Administração Municipal.;NULL;NULL;NULL
+297;75;75.a;"Realizar campanha semestral de divulgação do Índice de Integridade;";NULL;NULL;NULL
+298;75;75.b;"Implementar Selo CGM de Transparência e Boas Práticas de Gestão;";NULL;NULL;NULL
+299;75;75.c;"Aperfeiçoar auditorias por meio da implementação da metodologia IA-CM (Modelo de Capacidade de Auditoria Interna);";NULL;NULL;NULL
+300;75;75.d;"Implementar o Programa de Integridade e Boas Práticas nos órgãos da Administração Direta;";NULL;NULL;NULL
+301;75;75.e;Realizar oficinas de capacitação sobre as temáticas de controle interno e de transparência ativa e passiva.;NULL;NULL;NULL
+302;76;76.a;"Realizar estudos de aperfeiçoamento dos processos e criar/editar normativos necessários ao funcionamento do Portal;";NULL;NULL;NULL
+303;76;76.b;"Contratar o desenvolvimento do sistema;";NULL;NULL;NULL
+304;76;76.c;"Parametrizar os assuntos e elaborar cronograma para implantação;";NULL;NULL;NULL
+305;76;76.d;Integrar cada procedimento ao Portal.;NULL;NULL;NULL
+306;77;77.a;"Desenvolver metodologia de cadastro e classificação fiscal dos contribuintes;";NULL;NULL;NULL
+307;77;77.b;"Desenvolver e implantar Sistema de Cadastro e Classificação do Contribuinte;";NULL;NULL;NULL
+308;77;77.c;"Adequação normativa para a implementação da transação tributária em âmbito municipal;";NULL;NULL;NULL
+309;77;77.d;Projeto de implementação de transação tributária no âmbito municipal para apoiar devedores eventuais no equacionamento de sua dívida com vistas à preservação da atividade econômica.;NULL;NULL;NULL

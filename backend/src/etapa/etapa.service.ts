@@ -45,7 +45,7 @@ export class EtapaService {
         let etapaPaiId = filters?.etapa_pai_id;
         let regiaoId = filters?.regiao_id;
 
-        return await this.prisma.etapa.findMany({
+        const etapa = await this.prisma.etapa.findMany({
             where: {
                 etapa_pai_id: etapaPaiId,
                 regiao_id: regiaoId
@@ -54,6 +54,8 @@ export class EtapaService {
                 id: true,
                 etapa_pai_id: true,
                 regiao_id: true,
+                cronograma_id: true,
+                titulo: true,
                 descricao: true,
                 nivel: true,
                 prazo: true,
@@ -63,6 +65,8 @@ export class EtapaService {
                 termino_real: true,
             }
         });
+
+        return etapa
     }
 
     async update(id: number, updateEtapaDto: UpdateEtapaDto, user: PessoaFromJwt) {

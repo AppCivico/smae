@@ -16,8 +16,8 @@ export class IndicadorVariavel {
         iniciativa_id: number | null
     };
     // TODO...
-    iniciativa?: {}
-    ativiadade?: {}
+    iniciativa?: Iniciativa
+    ativiadade?: Atividade
 }
 
 export class IdNomeExibicao {
@@ -92,4 +92,17 @@ export class ValorSerieExistente {
     valor_nominal: Decimal;
     data_valor: Date;
     serie: Serie;
+}
+
+export class Iniciativa {
+    id: number
+    meta_id: number
+    codigo: string
+    titulo: string
+}
+export class Atividade {
+    id: number
+    iniciativa_id: number
+    codigo: string
+    titulo: string
 }

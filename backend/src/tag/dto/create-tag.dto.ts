@@ -6,7 +6,7 @@ export class CreateTagDto {
     * Descrição
     */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| descrição: Máximo 250 caracteres' })
+    @MaxLength(1000, { message: '$property| descrição: Máximo 1000 caracteres' })
     descricao: string
 
     /**
