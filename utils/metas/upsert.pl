@@ -13,9 +13,9 @@ my $pdm_id   = $ENV{PDM_ID} || die 'missing PDM_ID';
 
 my $ua = Mojo::UserAgent->new;
 
-my ($temas_ids) = &upsert_temas('tema.utf8.csv');
-my ($ods_ids) = &upsert_ods('ods.utf8.csv');
-exit;
+my ($temas_ids)      = &upsert_temas('tema.utf8.csv', 'tema');
+my ($macrotemas_ids) = &upsert_temas('macro_tema.utf8.csv', 'macrotema');
+my ($ods_ids)        = &upsert_ods('ods.utf8.csv');
 
 exit;
 
@@ -55,8 +55,8 @@ sub upsert_ods {
                 || $csv->{descricao} ne $exists_by_number->{$csv->{numero}}{descricao})
             {
                 my $res = $ua->patch(
-                    $enpdoint . "/ods/".$backref->{$csv->{id}} => {authorization => "Bearer $apikey"},
-                    json               => {
+                    $enpdoint . "/ods/" . $backref->{$csv->{id}} => {authorization => "Bearer $apikey"},
+                    json                                         => {
                         titulo    => $csv->{titulo},
                         descricao => $csv->{descricao}
                     }
@@ -88,10 +88,11 @@ sub upsert_ods {
 
 sub upsert_temas {
     my $fn = shift;
+    my $ed = shift;
 
     my $current_temas = [
         $ua->get(
-            $enpdoint . "/objetivo-estrategico?pdm_id=$pdm_id" => {authorization => "Bearer $apikey"},
+            $enpdoint . "/$ed?pdm_id=$pdm_id" => {authorization => "Bearer $apikey"},
         )->result->json->{linhas}->@*
     ];
 
@@ -113,8 +114,8 @@ sub upsert_temas {
         }
         else {
             my $id = $ua->post(
-                $enpdoint . "/tema" => {authorization => "Bearer $apikey"},
-                json                => {
+                $enpdoint . "/$ed" => {authorization => "Bearer $apikey"},
+                json               => {
                     pdm_id    => $pdm_id,
                     descricao => $csv->{descricao}
                 }
