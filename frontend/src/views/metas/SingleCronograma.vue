@@ -20,6 +20,8 @@ const iniciativa_id = route.params.iniciativa_id;
 const atividade_id = route.params.atividade_id;
 
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
+const parentVar = atividade_id??iniciativa_id??meta_id??false;
+const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
@@ -31,9 +33,7 @@ if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
-if(!singleCronograma.value.meta_id||singleCronograma.value.meta_id != meta_id) CronogramasStore.getActiveByParent(meta_id,'meta_id');
-//CronogramasStore.getFakeData();
-
+if(!singleCronograma.value[parentField]||singleCronograma.value[parentField] != parentVar) CronogramasStore.getActiveByParent(parentVar,parentField);
 
 const editModalStore = useEditModalStore();
 function start(){
@@ -47,11 +47,11 @@ onUpdated(()=>{start()});
 <template>
     <Dashboard>
         <Breadcrumb />
-        
+
         <div class="flex spacebetween center mb2">
             <h1>Cronograma</h1>
             <hr class="ml2 f1"/>
-            <div class="ml2 dropbtn" v-if="!singleCronograma?.loading&&singleCronograma.meta_id">
+            <div class="ml2 dropbtn" v-if="!singleCronograma?.loading&&singleCronograma.id">
                 <span class="btn">Nova etapa</span>
                 <ul>
                     <li><router-link v-if="perm?.CadastroEtapa?.inserir" :to="`${parentlink}/cronograma/${singleCronograma.id}/etapas/novo`">Etapa da Meta</router-link></li>
@@ -64,7 +64,7 @@ onUpdated(()=>{start()});
             </div>
         </div>
 
-        <template v-if="!singleCronograma?.loading&&singleCronograma.meta_id">
+        <template v-if="!singleCronograma?.loading&&singleCronograma.id">
             <div class="boards">
                 <div class="flex g2">
                     <div class="mr2">

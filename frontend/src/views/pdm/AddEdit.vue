@@ -23,11 +23,14 @@ const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 let title = 'Cadastro de PdM';
+let hab_atividade = reactive(false);
 if (pdm_id) {
     title = 'Editar PdM';
     (async()=>{
         await PdMStore.getById(pdm_id);
         curfile.name = singlePdm.value.logo;
+        hab_atividade = singlePdm.value.possui_iniciativa;
+        console.log(hab_atividade);
     })();
 }
 
@@ -291,19 +294,23 @@ async function uploadshape(e){
                     </div>
                     <div class="f0" style="flex-basis: 200px;">
                         <label class="block mb1">
-                            <Field name="possui_iniciativa" class="inputcheckbox" :class="{ 'error': errors.possui_iniciativa }" type="checkbox" value=1 v-model="possui_iniciativa" /><span>Habilitar Iniciativa</span>
+                            <Field name="possui_iniciativa" class="inputcheckbox" :class="{ 'error': errors.possui_iniciativa }" type="checkbox" 
+                                v-model="hab_atividade" value="1"
+                            />
+                            <span>Habilitar Iniciativa</span>
                         </label>
                     </div>
                 </div>
                 <div class="flex center g2">
                     <div class="f1">
                         <label class="label">Rótulo da Atividade</label>
-                        <Field name="rotulo_atividade" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_atividade }" :disabled="!possui_iniciativa" />
+                        <Field name="rotulo_atividade" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_atividade }" :disabled="!hab_atividade" />
                         <div class="error-msg">{{ errors.rotulo_atividade }}</div>
                     </div>
                     <div class="f0" style="flex-basis: 200px;">
+                        {{hab_atividade}}
                         <label class="block mb1">
-                            <Field name="possui_atividade" class="inputcheckbox" :class="{ 'error': errors.possui_atividade }" type="checkbox" value=1 v-model="possui_atividade" :disabled="!possui_iniciativa" /><span>Habilitar Atividade</span>
+                            <Field name="possui_atividade" class="inputcheckbox" :class="{ 'error': errors.possui_atividade }" type="checkbox" value="1" :disabled="!hab_atividade" /><span>Habilitar Atividade</span>
                         </label>
                     </div>
                 </div>

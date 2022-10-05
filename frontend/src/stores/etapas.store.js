@@ -35,7 +35,7 @@ export const useEtapasStore = defineStore({
         async getAll(cronograma_id) {
             try {
                 this.Etapas[cronograma_id] = { loading: true };
-                let r = await requestS.get(`${baseUrl}/etapa?etapa_pai_id=${cronograma_id}`);    
+                let r = await requestS.get(`${baseUrl}/etapa?cronograma_id=${cronograma_id}`);    
                 this.Etapas[cronograma_id] = r.linhas.length ? r.linhas.map(x=>{
                     x.inicio_previsto = this.dateToField(x.inicio_previsto);
                     x.termino_previsto = this.dateToField(x.termino_previsto);
@@ -62,11 +62,19 @@ export const useEtapasStore = defineStore({
             }
         },
         async insert(params) {
+            if(params.inicio_previsto) params.inicio_previsto = this.fieldToDate(params.inicio_previsto);
+            if(params.termino_previsto) params.termino_previsto = this.fieldToDate(params.termino_previsto);
+            if(params.inicio_real) params.inicio_real = this.fieldToDate(params.inicio_real);
+            if(params.termino_real) params.termino_real = this.fieldToDate(params.termino_real);
             let r = await requestS.post(`${baseUrl}/etapa`, params);
             if(r.id) return r.id;
             return false;
         },
         async update(id, params) {
+            if(params.inicio_previsto) params.inicio_previsto = this.fieldToDate(params.inicio_previsto);
+            if(params.termino_previsto) params.termino_previsto = this.fieldToDate(params.termino_previsto);
+            if(params.inicio_real) params.inicio_real = this.fieldToDate(params.inicio_real);
+            if(params.termino_real) params.termino_real = this.fieldToDate(params.termino_real);
             if(await requestS.patch(`${baseUrl}/etapa/${id}`, params)) return true;
             return false;
         },

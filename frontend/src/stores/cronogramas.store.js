@@ -51,12 +51,21 @@ export const useCronogramasStore = defineStore({
             try {
                 this.singleCronograma = { loading: true };
                 this.singleCronogramaEtapas = { loading: true };
-                await this.getAll(p_id,parent_field);
-                this.singleCronograma = this.Cronogramas[parent_field][p_id].length? this.Cronogramas[parent_field][p_id][0]:{};
+                
+                this.singleCronograma = await this.getItemByParent(p_id,parent_field);
                 this.getEtapasByCron(this.singleCronograma?.id);
                 return true;
             } catch (error) {
                 this.singleCronograma = { error };
+            }
+        },
+        async getItemByParent(p_id,parent_field) {
+            try {
+                await this.getAll(p_id,parent_field);
+                let r = this.Cronogramas[parent_field][p_id].length? this.Cronogramas[parent_field][p_id][0]:{};
+                return r;
+            } catch (error) {
+                return {error};
             }
         },
         async getById(p_id,parent_field,cronograma_id) {
@@ -82,9 +91,9 @@ export const useCronogramasStore = defineStore({
             return false;
         },
         async delete(cronograma_id) {
-            if(await requestS.delete(`${baseUrl}/cronograma/${cronograma_id}`)){
-                return true;
-            }
+            let r = await requestS.delete(`${baseUrl}/cronograma/${cronograma_id}`);
+            if(r) return true;
+            console.log(r);
             return false;
         },
         async getEtapasByCron(cronograma_id){

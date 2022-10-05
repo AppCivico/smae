@@ -116,6 +116,7 @@ const schema = Yup.object().shape({
     regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value)=>{ return !singleIndicadores?.value?.regionalizavel || value; }),
     unidade_medida_id: Yup.string().required('Selecione uma unidade'),
     
+    codigo: Yup.string().required('Preencha o código'),
     titulo: Yup.string().required('Preencha o título'),
     periodicidade: Yup.string().required('Preencha a periodicidade'),
     
@@ -210,10 +211,17 @@ function buscaCoord(e,parent,item) {
     </div>
     <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&singleIndicadores?.id">
         <Form @submit="onSubmit" :validation-schema="schema" :initial-values="var_id?singleVariaveis:virtualParent" v-slot="{ errors, isSubmitting }">
-            <div>
-                <label class="label">Título <span class="tvermelho">*</span></label>
-                <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
-                <div class="error-msg">{{ errors.titulo }}</div>
+            <div class="flex g2">
+                <div class="f1">
+                    <label class="label">Título <span class="tvermelho">*</span></label>
+                    <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
+                    <div class="error-msg">{{ errors.titulo }}</div>
+                </div>
+                <div class="f0">
+                    <label class="label">Código <span class="tvermelho">*</span></label>
+                    <Field name="codigo" type="text" class="inputtext light mb1" :class="{ 'error': errors.codigo }" />
+                    <div class="error-msg">{{ errors.codigo }}</div>
+                </div>
             </div>
             <div class="flex g2">
                 <div class="f1">
@@ -270,7 +278,7 @@ function buscaCoord(e,parent,item) {
                     <div class="error-msg">{{ errors.peso }}</div>
                 </div>
                 <div class="f1">
-                    <label class="label">Casas decimais <span class="tvermelho">*</span></label>
+                    <label class="label">Casas decimais</label>
                     <Field name="casas_decimais" type="number" class="inputtext light mb1" :class="{ 'error': errors.casas_decimais }" />
                     <div class="error-msg">{{ errors.casas_decimais }}</div>
                 </div>

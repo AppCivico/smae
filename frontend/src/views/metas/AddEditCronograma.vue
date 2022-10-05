@@ -16,6 +16,8 @@ const atividade_id = route.params.atividade_id;
 const cronograma_id = route.params.cronograma_id;
 
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
+const parentVar = atividade_id??iniciativa_id??meta_id??false;
+const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 
 const props = defineProps(['group']);
 
@@ -46,6 +48,7 @@ let regionalizavel = ref(1);
 
 if (cronograma_id) {
     title = 'Editar Cronograma';
+    CronogramasStore.getById(parentVar,parentField,cronograma_id);
 }
 
 async function onSubmit(values) {
@@ -56,13 +59,7 @@ async function onSubmit(values) {
         values.nivel_regionalizacao = values.regionalizavel ? Number(values.nivel_regionalizacao) : null;
         
         //Parent
-        if(atividade_id){
-            values.atividade_id = Number(atividade_id);
-        }else if(iniciativa_id){
-            values.iniciativa_id = Number(iniciativa_id);
-        }else{
-            values.meta_id = Number(meta_id);
-        }
+        values[parentField] = Number(parentVar);
 
         if (cronograma_id) {
             if(singleCronograma.value.id){
@@ -75,7 +72,7 @@ async function onSubmit(values) {
             CronogramasStore.clear();
             msg = 'Item adicionado com sucesso!';
         }
-        if(r == true){
+        if(r){
             router.push(`${parentlink}/cronograma`);
             alertStore.success(msg);
             return;

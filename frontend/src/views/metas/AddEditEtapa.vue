@@ -17,6 +17,8 @@ const atividade_id = route.params.atividade_id;
 const cronograma_id = route.params.cronograma_id;
 const etapa_id = route.params.etapa_id;
 
+const parentVar = atividade_id??iniciativa_id??meta_id??false;
+const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 const currentEdit = route.path.slice(0,route.path.indexOf('/etapas'));
 
 const MetasStore = useMetasStore();
@@ -34,23 +36,7 @@ if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
 if(cronograma_id&&(!singleCronograma?.id || singleCronograma.id!=cronograma_id)){
-    if(atividade_id){
-        CronogramasStore.getById(atividade_id,'atividade_id',cronograma_id);
-    }else if(iniciativa_id){
-        CronogramasStore.getById(iniciativa_id,'iniciativa_id',cronograma_id);
-    }else{
-        CronogramasStore.getById(meta_id,'meta_id',cronograma_id);
-    }
-}
-//CronogramasStore.getFakeData();
-
-let lastParent = ref({});
-if(atividade_id){
-    lastParent = singleAtividade.value;
-}else if(iniciativa_id){
-    lastParent = singleIniciativa.value;
-}else{
-    lastParent = singleMeta.value;
+    CronogramasStore.getById(parentVar,parentField,cronograma_id);
 }
 
 const EtapasStore = useEtapasStore();
@@ -88,12 +74,10 @@ var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1
 const schema = Yup.object().shape({
     regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value)=>{ return !singleCronograma?.value?.regionalizavel || value; }),
     
-    nome: Yup.string().required('Preencha o nome'),
+    titulo: Yup.string().required('Preencha o título'),
     descricao: Yup.string().required('Preencha a descrição'),
     ordem: Yup.string().nullable(),
     
-    acumulativa: Yup.string().nullable(),
-
     inicio_previsto: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     termino_previsto: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     inicio_real: Yup.string().nullable().matches(regx,'Formato inválido'),
@@ -105,23 +89,54 @@ async function onSubmit(values) {
         var msg;
         var r;
 
-        values.etapa_pai_id = Number(cronograma_id);
-
+        values.cronograma_id = Number(cronograma_id);
         values.regiao_id = singleCronograma.value.regionalizavel? Number(values.regiao_id):null;
+        values.ordem = Number(values.ordem)??null;
+        values.etapa_pai_id = 1;
         
         var rota = false;
+        var etapa_id_gen = false;
         if (etapa_id) {
             if(singleEtapa.value.id==etapa_id){
                 r = await EtapasStore.update(etapa_id, values);
                 msg = 'Dados salvos com sucesso!';
                 rota = currentEdit;
+                etapa_id_gen = etapa_id;
             }
         } else {
             r = await EtapasStore.insert(values);
             msg = 'Item adicionado com sucesso!';
             rota = currentEdit;
+            etapa_id_gen = r?.id;
         }
+
+
+
         if(r){
+            if(etapa_id_gen){
+                if(values.acumulativa_iniciativa){
+                    var ri = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
+                    if(ri.id){
+                        await EtapasStore.monitorar(ri.id,etapa_id_gen,{
+                            inativo: !!values.acumulativa_iniciativa,
+                            ordem: values.acumulativa_iniciativa_o??null
+                        });
+                    }
+                }
+                if(values.acumulativa_meta){
+                    var rm = await CronogramasStore.getItemByParent(meta_id,'meta_id');
+                    if(rm.id){
+                        await EtapasStore.monitorar(rm.id,etapa_id_gen,{
+                            inativo: !!values.acumulativa_meta,
+                            ordem: values.acumulativa_meta_o??null
+                        });
+                    }
+                }
+            }else{
+                console.log(r);
+                throw 'Ocorreu um erro inesperado.';
+            }
+
             EtapasStore.clear();
             EtapasStore.getAll(cronograma_id);
             alertStore.success(msg);
@@ -172,8 +187,8 @@ function maskDate(el){
             <div class="flex g2">
                 <div class="f2">
                     <label class="label">Nome <span class="tvermelho">*</span></label>
-                    <Field name="nome" type="text" class="inputtext light mb1" :class="{ 'error': errors.nome }" />
-                    <div class="error-msg">{{ errors.nome }}</div>
+                    <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
+                    <div class="error-msg">{{ errors.titulo }}</div>
                 </div>
                 <div class="f1">
                     <label class="label">Ordem</label>
@@ -235,12 +250,12 @@ function maskDate(el){
             </div>
             <div class="flex g2">
                 <div class="f1">
-                    <label class="label">Início real <span class="tvermelho">*</span></label>
+                    <label class="label">Início real</label>
                     <Field name="inicio_real" type="text" class="inputtext light mb1" :class="{ 'error': errors.inicio_real }" maxlength="10" @keyup="maskDate" />
                     <div class="error-msg">{{ errors.inicio_real }}</div>
                 </div>
                 <div class="f1">
-                    <label class="label">Término real <span class="tvermelho">*</span></label>
+                    <label class="label">Término real</label>
                     <Field name="termino_real" type="text" class="inputtext light mb1" :class="{ 'error': errors.termino_real }" maxlength="10" @keyup="maskDate" />
                     <div class="error-msg">{{ errors.termino_real }}</div>
                 </div>
@@ -249,28 +264,28 @@ function maskDate(el){
             <div class="flex center g2 mb2 mt1" v-if="atividade_id">
                 <div class="f2">
                     <label class="block">
-                        <Field name="acumulativa_1" v-model="acumulativa_1" type="checkbox" value="1" class="inputcheckbox" />
-                        <span :class="{ 'error': errors.acumulativa_1 }">Etapa monitorada no cronograma da iniciativa</span>
+                        <Field name="acumulativa_iniciativa" v-model="acumulativa_iniciativa" type="checkbox" value="1" class="inputcheckbox" />
+                        <span :class="{ 'error': errors.acumulativa_iniciativa }">Etapa monitorada no cronograma da iniciativa</span>
                     </label>
-                    <div class="error-msg">{{ errors.acumulativa_1 }}</div>
+                    <div class="error-msg">{{ errors.acumulativa_iniciativa }}</div>
                 </div>
                 <div class="f1">
-                    <label class="label">Ordem <span class="tvermelho">*</span></label>
-                    <Field name="acumulativa_1_o" type="number" class="inputtext light mb1"/>
+                    <label class="label">Ordem</label>
+                    <Field name="acumulativa_iniciativa_o" type="number" class="inputtext light mb1"/>
                 </div>
             </div>
 
             <div class="flex center g2 mb2 mt1" v-if="iniciativa_id">
                 <div class="f2">
                     <label class="block">
-                        <Field name="acumulativa_1" v-model="acumulativa_0" type="checkbox" value="1" class="inputcheckbox" />
-                        <span :class="{ 'error': errors.acumulativa_0 }">Etapa monitorada no cronograma da meta</span>
+                        <Field name="acumulativa_meta" v-model="acumulativa_meta" type="checkbox" value="1" class="inputcheckbox" />
+                        <span :class="{ 'error': errors.acumulativa_meta }">Etapa monitorada no cronograma da meta</span>
                     </label>
-                    <div class="error-msg">{{ errors.acumulativa_0 }}</div>
+                    <div class="error-msg">{{ errors.acumulativa_meta }}</div>
                 </div>
                 <div class="f1">
-                    <label class="label">Ordem <span class="tvermelho">*</span></label>
-                    <Field name="acumulativa_0_o" type="number" class="inputtext light mb1"/>
+                    <label class="label">Ordem</label>
+                    <Field name="acumulativa_meta_o" type="number" class="inputtext light mb1"/>
                 </div>
             </div>
 
