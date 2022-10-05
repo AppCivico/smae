@@ -19,7 +19,7 @@ const etapa_id = route.params.etapa_id;
 
 const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
-const currentEdit = route.path.slice(0,route.path.indexOf('/etapas'));
+const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
 
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);

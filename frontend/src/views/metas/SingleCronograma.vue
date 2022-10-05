@@ -100,7 +100,7 @@ onUpdated(()=>{start()});
             <div class="etapas" v-if="!singleCronogramaEtapas?.loading&&singleCronogramaEtapas.length">
                 <div class="etapa" v-for="(etapa, index) in singleCronogramaEtapas" :key="etapa.id">
                     <div class="status"><span>{{index+1}}</span></div>
-                    <div class="title mb1"><h3>{{etapa.descricao}}</h3></div>
+                    <div class="title mb1"><h3>{{etapa.titulo}}</h3></div>
                     <div class="flex center mb05 tc300 w700 t12 uc">
                         <div class="f1">Início Prev.</div>
                         <div class="ml1 f1">Término Prev.</div>
