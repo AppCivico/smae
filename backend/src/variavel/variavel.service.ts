@@ -83,8 +83,8 @@ export class VariavelService {
         if (filters?.indicador_id) {
             filterQuery = {
                 indicador_variavel: {
-                    desativado: removidoStatus,
                     some: {
+                        desativado: removidoStatus,
                         indicador_id: filters?.indicador_id
                     }
                 }
