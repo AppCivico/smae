@@ -51,4 +51,13 @@ export class CreateEtapaDto {
     @IsOptional()
     ordem?: number
 
+    /**
+    * titulo
+    */
+    @IsString({ message: '$property| titulo: Precisa ser alfanumérico' })
+    @MinLength(1, { message: '$property| titulo: pelo menos um caractere' })
+    @IsOptional()
+    @MaxLength(250, { message: '$property| titulo: 250 caracteres' })
+    titulo?: string
+
 }

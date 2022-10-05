@@ -1016,6 +1016,8 @@ model Cronograma {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    etapa Etapa[]
+
     @@map("cronograma")
 }
 
@@ -1027,7 +1029,10 @@ model Etapa {
     EtapaPai     Etapa[] @relation("EtapaPai")
     regiao_id    Int?
     regiao       Regiao? @relation(fields: [regiao_id], references: [id])
+    cronograma_id Int
+    cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
 
+    titulo           String?
     nivel            String?
     descricao        String?
     inicio_previsto  DateTime?         @db.Date()
