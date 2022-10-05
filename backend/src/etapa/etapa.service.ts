@@ -53,7 +53,7 @@ export class EtapaService {
         let cronogramaRelationFilter;
         if (cronogramaId) {
             cronogramaRelationFilter = {
-                CronogramaEtapa: { some: { cronograma_id: cronogramaId } }
+                CronogramaEtapa: { every: { cronograma_id: cronogramaId } }
             }
         }
 
