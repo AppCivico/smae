@@ -60,4 +60,40 @@ export class CreateEtapaDto {
     @MaxLength(250, { message: '$property| titulo: 250 caracteres' })
     titulo?: string
 
+    /**
+    * inicio_previsto
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    inicio_previsto?: Date
+
+    /**
+    * termino_previsto
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    termino_previsto?: Date
+
+    /**
+    * inicio_real
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    inicio_real?: Date
+
+    /**
+    * termino_real
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    termino_real?: Date
+
 }
