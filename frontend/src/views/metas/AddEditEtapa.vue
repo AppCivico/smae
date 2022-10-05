@@ -53,6 +53,11 @@ let level2 = ref(null);
 let level3 = ref(null);
 let regiao_id_mount = ref(null);
 
+let acumulativa_iniciativa = ref(0);
+let acumulativa_iniciativa_o = ref(0);
+let acumulativa_meta = ref(0);
+let acumulativa_meta_o = ref(0);
+
 const virtualParent = ref({});
 if(etapa_id){
     title = 'Editar etapa';
@@ -66,6 +71,24 @@ if(etapa_id){
             })();
         }
     });
+    (async()=>{
+        if(atividade_id){
+            var p_cron = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
+            var mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
+            if(mon){
+                acumulativa_iniciativa.value = !mon.inativo;
+                acumulativa_iniciativa_o.value = mon.ordem;
+            }
+        }
+        if(iniciativa_id){
+            var p_cron = await CronogramasStore.getItemByParent(meta_id,'meta_id');
+            var mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
+            if(mon){
+                acumulativa_meta.value = !mon.inativo;
+                acumulativa_meta_o.value = mon.ordem;
+            }
+        }
+    })();
 }
 
 
@@ -118,8 +141,8 @@ async function onSubmit(values) {
                     var ri = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
                     if(ri.id){
                         await EtapasStore.monitorar(ri.id,etapa_id_gen,{
-                            inativo: !!values.acumulativa_iniciativa,
-                            ordem: values.acumulativa_iniciativa_o??null
+                            inativo: !values.acumulativa_iniciativa,
+                            ordem: Number(values.acumulativa_iniciativa_o)??null
                         });
                     }
                 }
@@ -127,8 +150,8 @@ async function onSubmit(values) {
                     var rm = await CronogramasStore.getItemByParent(meta_id,'meta_id');
                     if(rm.id){
                         await EtapasStore.monitorar(rm.id,etapa_id_gen,{
-                            inativo: !!values.acumulativa_meta,
-                            ordem: values.acumulativa_meta_o??null
+                            inativo: !values.acumulativa_meta,
+                            ordem: Number(values.acumulativa_meta_o)??null
                         });
                     }
                 }
@@ -136,7 +159,7 @@ async function onSubmit(values) {
                 console.log(r);
                 throw 'Ocorreu um erro inesperado.';
             }
-
+            CronogramasStore.clear();
             EtapasStore.clear();
             EtapasStore.getAll(cronograma_id);
             alertStore.success(msg);
@@ -271,7 +294,7 @@ function maskDate(el){
                 </div>
                 <div class="f1">
                     <label class="label">Ordem</label>
-                    <Field name="acumulativa_iniciativa_o" type="number" class="inputtext light mb1"/>
+                    <Field name="acumulativa_iniciativa_o" v-model="acumulativa_iniciativa_o" type="number" class="inputtext light mb1"/>
                 </div>
             </div>
 
@@ -285,7 +308,7 @@ function maskDate(el){
                 </div>
                 <div class="f1">
                     <label class="label">Ordem</label>
-                    <Field name="acumulativa_meta_o" type="number" class="inputtext light mb1"/>
+                    <Field name="acumulativa_meta_o" v-model="acumulativa_meta_o" type="number" class="inputtext light mb1"/>
                 </div>
             </div>
 
