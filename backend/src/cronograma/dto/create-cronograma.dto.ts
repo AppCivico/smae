@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 // export class MetaOrgaoParticipante {
@@ -74,7 +74,10 @@ export class CreateCronogramaDto {
     @IsBoolean({ message: '$property| precisa ser um boolean' })
     regionalizavel: boolean
 
-    @IsString({ message: '$property| tipo_regiao: Precisa ser alfanumérico' })
+    @IsPositive({ message: '$property| atividade precisa ser um número ou null' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null)
+    @IsOptional()
     nivel_regionalizacao?: number
 
 
