@@ -992,16 +992,16 @@ model Cronograma {
     atividade_id  Int?
     atividade     Atividade?  @relation(fields: [atividade_id], references: [id])
 
-    descricao            String?
-    observacao           String?
-    inicio_previsto      DateTime?         @db.Date()
-    termino_previsto     DateTime?         @db.Date()
-    inicio_real          DateTime?         @db.Date()
-    termino_real         DateTime?         @db.Date()
-    regionalizavel       Boolean
-    nivel_regionalizacao Int?
-    CronogramaOrgao      CronogramaOrgao[]
-    CronogramaEtapa      CronogramaEtapa[]
+    descricao        String?
+    observacao       String?
+    inicio_previsto  DateTime?         @db.Date()
+    termino_previsto DateTime?         @db.Date()
+    inicio_real      DateTime?         @db.Date()
+    termino_real     DateTime?         @db.Date()
+    por_regiao       Boolean
+    tipo_regiao      String?
+    CronogramaOrgao  CronogramaOrgao[]
+    CronogramaEtapa  CronogramaEtapa[]
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -1030,8 +1030,8 @@ model Etapa {
 
     nivel            String?
     descricao        String?
-    inicio_previsto  DateTime?         @db.Date()
-    termino_previsto DateTime?         @db.Date()
+    inicio_previsto  DateTime?          @db.Date()
+    termino_previsto DateTime?          @db.Date()
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
     prazo            Int?

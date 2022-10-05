@@ -72,10 +72,10 @@ export class CreateCronogramaDto {
     observacao?: string
 
     @IsBoolean({ message: '$property| precisa ser um boolean' })
-    regionalizavel: boolean
+    por_regiao: boolean
 
-    @IsString({ message: '$property| tipo_regiao: Precisa ser número inteiro' })
-    nivel_regionalizacao?: number
+    @IsString({ message: '$property| tipo_regiao: Precisa ser alfanumérico' })
+    tipo_regiao?: string
 
 
 }
