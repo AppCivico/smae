@@ -3,7 +3,7 @@ import { onMounted, onUpdated } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
 import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
-import { useEditModalStore, useAuthStore, useMetasStore, useIniciativasStore, useCronogramasStore } from '@/stores';
+import { useEditModalStore, useAuthStore, useCronogramasStore } from '@/stores';
 import { useRoute } from 'vue-router';
 import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
@@ -23,20 +23,14 @@ const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas
 const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 
-const MetasStore = useMetasStore();
-const { singleMeta } = storeToRefs(MetasStore);
-if(!singleMeta.value.id||singleMeta.value.id != meta_id) MetasStore.getById(meta_id);
-
-const IniciativasStore = useIniciativasStore();
-const { Iniciativas } = storeToRefs(IniciativasStore);
-if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
-
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
-if(!singleCronograma.value[parentField]||singleCronograma.value[parentField] != parentVar) CronogramasStore.getActiveByParent(parentVar,parentField);
 
 const editModalStore = useEditModalStore();
 function start(){
+    CronogramasStore.clear();
+    if(!singleCronograma.value[parentField]||singleCronograma.value[parentField] != parentVar) CronogramasStore.getActiveByParent(parentVar,parentField);
+
     if(props.group=='etapas')editModalStore.modal(AddEditEtapa,props);
     if(props.group=='monitorar')editModalStore.modal(AddEditMonitorar,props);
 }
@@ -51,7 +45,8 @@ onUpdated(()=>{start()});
         <div class="flex spacebetween center mb2">
             <h1>Cronograma</h1>
             <hr class="ml2 f1"/>
-            <div class="ml2 dropbtn" v-if="!singleCronograma?.loading&&singleCronograma.id">
+            <router-link v-if="perm?.CadastroCronograma?.editar" :to="`${parentlink}/cronograma/${singleCronograma.id}`" class="btn ml2">Editar Cronograma</router-link>
+            <div class="ml1 dropbtn" v-if="!singleCronograma?.loading&&singleCronograma.id">
                 <span class="btn">Nova etapa</span>
                 <ul>
                     <li><router-link v-if="perm?.CadastroEtapa?.inserir" :to="`${parentlink}/cronograma/${singleCronograma.id}/etapas/novo`">Etapa da Meta</router-link></li>

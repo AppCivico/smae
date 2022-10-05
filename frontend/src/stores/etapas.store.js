@@ -92,12 +92,10 @@ export const useEtapasStore = defineStore({
             try {
                 if(!cronograma_id) throw "Cronograma inválido";
                 if(!etapa_id) throw "Etapa inválida";
-                this.singleMonitoramento = { loading: true };
                 let r = await requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);    
-                this.singleMonitoramento = r.linhas.length?r.linhas[0]:{};
-                return true;
+                return r.linhas.length?r.linhas[0]:{};
             } catch (error) {
-                this.singleMonitoramento = { error };
+                return { error };
             }
         },
     }

@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useEditModalStore, useAlertStore, useMetasStore, useIndicadoresStore, useIniciativasStore, useAtividadesStore, useVariaveisStore } from '@/stores';
+import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, useIndicadoresStore, useIniciativasStore, useAtividadesStore, useVariaveisStore } from '@/stores';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
@@ -20,8 +20,11 @@ const atividade_id = route.params.atividade_id;
 const indicador_id = route.params.indicador_id;
 
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
-
 const props = defineProps(['group']);
+
+const authStore = useAuthStore();
+const { permissions } = storeToRefs(authStore);
+const perm = permissions.value;
 
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
@@ -93,8 +96,7 @@ if (indicador_id) {
 function start(){
     if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
     if(props.group=='valores')editModalStore.modal(AddEditValores,props);
-    if(props.group=='realizado')editModalStore.modal(AddEditValores,props);
-    if(props.group=='realizadocorrente')editModalStore.modal(AddEditValores,props);
+    if(props.group=='retroativos')editModalStore.modal(AddEditRealizado,props);
 }
 onMounted(()=>{start()});
 onUpdated(()=>{start()});
@@ -348,13 +350,13 @@ function fieldToDate(d){
             <table class="tablemain mb1" v-if="!Variaveis[indicador_id]?.loading">
                 <thead>
                     <tr>
-                        <th style="width:15%;">Título</th>
-                        <th style="width:15%;">Valor base</th>
-                        <th style="width:15%;">Unidade</th>
-                        <th style="width:15%;">Peso</th>
-                        <th style="width:15%;">Casas decimais</th>
-                        <th style="width:15%;">Região</th>
-                        <th style="width:10%"></th>
+                        <th style="width:13.3%;">Título</th>
+                        <th style="width:13.3%;">Valor base</th>
+                        <th style="width:13.3%;">Unidade</th>
+                        <th style="width:13.3%;">Peso</th>
+                        <th style="width:13.3%;">Casas decimais</th>
+                        <th style="width:13.3%;">Região</th>
+                        <th style="width:20%"></th>
                     </tr>
                 </thead>
                 <tr v-for="v in Variaveis[indicador_id]" :key="v.id">
@@ -368,6 +370,7 @@ function fieldToDate(d){
                         <router-link :to="`${parentlink}/indicadores/${indicador_id}/variaveis/novo/${v.id}`" class="tipinfo tprimary"><svg width="20" height="20"><use xlink:href="#i_copy"></use></svg><div>Duplicar</div></router-link>
                         <router-link :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}`" class="tipinfo tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg><div>Editar</div></router-link>
                         <router-link :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/valores`" class="tipinfo right tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg><div>Valores Previstos e Acumulados</div></router-link>
+                        <router-link v-if="perm.CadastroPessoa?.administrador" :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/retroativos`" class="tipinfo right tprimary ml1"><svg width="20" height="20"><use xlink:href="#i_check"></use></svg><div>Valores Realizados Retroativos</div></router-link>
                     </td>
                 </tr>
             </table>

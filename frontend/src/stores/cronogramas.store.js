@@ -14,6 +14,7 @@ export const useCronogramasStore = defineStore({
         clear (){
             this.Cronogramas = {};
             this.singleCronograma = {};
+            this.singleCronogramaEtapas = {};
         },
         clearEdit (){
             this.singleCronograma = {};
