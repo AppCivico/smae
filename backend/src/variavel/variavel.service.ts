@@ -148,6 +148,7 @@ export class VariavelService {
             select: {
                 id: true,
                 titulo: true,
+                codigo: true,
                 acumulativa: true,
                 casas_decimais: true,
                 unidade_medida: {
