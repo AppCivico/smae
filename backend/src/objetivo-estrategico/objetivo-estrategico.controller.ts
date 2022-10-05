@@ -51,7 +51,7 @@ export class ObjetivoEstrategicoController {
     }
 }
 
-@ApiTags('Tema (ex Objetivo Estratégico)')
+@ApiTags('Tema (Antigo Objetivo Estratégico)')
 @Controller('tema')
 export class ObjetivoEstrategicoController2 {
     constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) { }
@@ -66,8 +66,8 @@ export class ObjetivoEstrategicoController2 {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListObjetivoEstrategicoDto> {
-        return { 'linhas': await this.objetivoEstrategicoService.findAll() };
+    async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
+        return { 'linhas': await this.objetivoEstrategicoService.findAll(filters) };
     }
 
     @Patch(':id')

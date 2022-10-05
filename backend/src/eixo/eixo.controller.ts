@@ -50,7 +50,7 @@ export class EixoController {
     }
 }
 
-@ApiTags('Macro Tema')
+@ApiTags('Macro Tema (Antigo Eixo)')
 @Controller('macrotema')
 export class EixoController2 {
     constructor(private readonly eixoService: EixoService) { }
@@ -65,8 +65,8 @@ export class EixoController2 {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListEixoDto> {
-        return { 'linhas': await this.eixoService.findAll() };
+    async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
+        return { 'linhas': await this.eixoService.findAll(filters) };
     }
 
     @Patch(':id')
