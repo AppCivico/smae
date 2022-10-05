@@ -992,16 +992,16 @@ model Cronograma {
     atividade_id  Int?
     atividade     Atividade?  @relation(fields: [atividade_id], references: [id])
 
-    descricao        String?
-    observacao       String?
-    inicio_previsto  DateTime?         @db.Date()
-    termino_previsto DateTime?         @db.Date()
-    inicio_real      DateTime?         @db.Date()
-    termino_real     DateTime?         @db.Date()
-    por_regiao       Boolean
-    tipo_regiao      String?
-    CronogramaOrgao  CronogramaOrgao[]
-    CronogramaEtapa  CronogramaEtapa[]
+    descricao            String?
+    observacao           String?
+    inicio_previsto      DateTime?         @db.Date()
+    termino_previsto     DateTime?         @db.Date()
+    inicio_real          DateTime?         @db.Date()
+    termino_real         DateTime?         @db.Date()
+    regionalizavel       Boolean
+    nivel_regionalizacao Int?
+    CronogramaOrgao      CronogramaOrgao[]
+    CronogramaEtapa      CronogramaEtapa[]
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -1016,6 +1016,8 @@ model Cronograma {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    etapa Etapa[]
+
     @@map("cronograma")
 }
 
@@ -1027,14 +1029,17 @@ model Etapa {
     EtapaPai     Etapa[] @relation("EtapaPai")
     regiao_id    Int?
     regiao       Regiao? @relation(fields: [regiao_id], references: [id])
+    cronograma_id Int
+    cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
 
+    titulo           String?
     nivel            String?
     descricao        String?
-    inicio_previsto  DateTime          @db.Date()
-    termino_previsto DateTime          @db.Date()
+    inicio_previsto  DateTime?         @db.Date()
+    termino_previsto DateTime?         @db.Date()
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
-    prazo            DateTime          @db.Date()
+    prazo            Int?
     status           String?
     CronogramaEtapa  CronogramaEtapa[]
 

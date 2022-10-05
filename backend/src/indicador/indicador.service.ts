@@ -18,22 +18,6 @@ export class IndicadorService {
             if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
                 throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
 
-            if (createIndicadorDto.iniciativa_id) {
-                const iniciativa = await prisma.iniciativa.findFirstOrThrow({ where: { id: createIndicadorDto.iniciativa_id } });
-                if (iniciativa.compoe_indicador_meta && iniciativa.meta_id) createIndicadorDto.meta_id = iniciativa.meta_id
-            }
-
-            if (createIndicadorDto.atividade_id) {
-                const atividade = await prisma.atividade.findFirstOrThrow({ where: { id: createIndicadorDto.atividade_id } });
-
-                if (atividade.compoe_indicador_iniciativa) {
-                    const iniciativa = await prisma.iniciativa.findFirstOrThrow({ where: { id: atividade.iniciativa_id } })
-
-                    createIndicadorDto.iniciativa_id = iniciativa.id;
-                    if (iniciativa.compoe_indicador_meta) createIndicadorDto.meta_id = iniciativa.meta_id
-                }
-            }
-
             const indicador = await prisma.indicador.create({
                 data: {
                     criado_por: user.id,

@@ -14,6 +14,11 @@ export class MetaOrgao {
     participantes: IdNomeExibicao[]
 }
 
+export class MetaTag {
+    id: number
+    descricao: string
+}
+
 export class Meta {
     id: number
     status: string
@@ -28,5 +33,5 @@ export class Meta {
     ativo: boolean
     orgaos_participantes: MetaOrgao[]
     coordenadores_cp: IdNomeExibicao[]
-    tags: number[]
+    tags: MetaTag[]
 }

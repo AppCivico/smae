@@ -46,51 +46,54 @@ export class CreateEtapaDto {
     @MaxLength(250, { message: '$property| status: 250 caracteres' })
     status?: string
 
-    /**
-    * inicio_previsto
-    * @example YYYY-MM-DD
-    */
-    @IsOnlyDate()
-    @Type(() => Date)
-    inicio_previsto: Date
-
-    /**
-   * termino_previsto
-   * @example YYYY-MM-DD
-   */
-    @IsOnlyDate()
-    @Type(() => Date)
-    termino_previsto: Date
-
-
-    /**
-  * inicio_real
-  * @example YYYY-MM-DD
-  */
-    @IsOnlyDate()
-    @Type(() => Date)
-    inicio_real?: Date
-
-
-    /**
- * termino_real
- * @example YYYY-MM-DD
- */
-    @IsOnlyDate()
-    @Type(() => Date)
-    termino_real?: Date
-
-    /**
- * prazo
- * @example YYYY-MM-DD
- */
-    @IsOnlyDate()
-    @Type(() => Date)
-    prazo: Date
-
     @IsNumber()
     @IsPositive({ message: '$property| ordem precisa ser um número ou null' })
     @IsOptional()
     ordem?: number
+
+    /**
+    * titulo
+    */
+    @IsString({ message: '$property| titulo: Precisa ser alfanumérico' })
+    @MinLength(1, { message: '$property| titulo: pelo menos um caractere' })
+    @IsOptional()
+    @MaxLength(250, { message: '$property| titulo: 250 caracteres' })
+    titulo?: string
+
+    /**
+    * inicio_previsto
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    inicio_previsto?: Date
+
+    /**
+    * termino_previsto
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    termino_previsto?: Date
+
+    /**
+    * inicio_real
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    inicio_real?: Date
+
+    /**
+    * termino_real
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    termino_real?: Date
 
 }

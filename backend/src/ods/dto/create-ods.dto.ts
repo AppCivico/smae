@@ -16,7 +16,7 @@ export class CreateOdsDto {
     */
     @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| Título: Mínimo de 1 caracteres' })
-    @MaxLength(30, { message: '$property| Título: Máximo 30 caracteres' })
+    @MaxLength(60, { message: '$property| Título: Máximo 60 caracteres' })
     titulo: string;
 
 
