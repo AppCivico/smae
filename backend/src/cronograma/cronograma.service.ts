@@ -57,8 +57,8 @@ export class CronogramaService {
                 termino_previsto: true,
                 inicio_real: true,
                 termino_real: true,
-                por_regiao: true,
-                tipo_regiao: true,
+                regionalizavel: true,
+                nivel_regionalizacao: true,
             }
         });
     }
