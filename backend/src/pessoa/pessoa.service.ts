@@ -394,7 +394,7 @@ export class PessoaService {
                 });
 
                 for (const perm of updatePessoaDto.perfil_acesso_ids) {
-                    promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: perm, pessoa_id: pessoaId } }))
+                    promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } }))
                 }
                 await Promise.all(promises);
             }
@@ -477,7 +477,7 @@ export class PessoaService {
 
             let promises = [];
             for (const perm of createPessoaDto.perfil_acesso_ids) {
-                promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: perm, pessoa_id: created.id } }))
+                promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } }))
             }
             promises.push(this.enviaPrimeiraSenha(created, newPass, prisma));
             await Promise.all(promises);
