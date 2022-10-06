@@ -6,17 +6,21 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { RequiredFindParamsDto, UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
+import { CronogramaEtapa } from './entities/cronograma-etapa.entity';
 
 @Injectable()
 export class CronogramaEtapaService {
     constructor(private readonly prisma: PrismaService) { }
 
     async findAll(filters: FilterCronogramaEtapaDto | undefined = undefined) {
-        let cronogramaId = filters?.cronograma_id;
+        let cronogramaId = filters!.cronograma_id;
+
         let etapaId = filters?.etapa_id;
         let inativo = filters?.inativo;
 
-        return await this.prisma.cronogramaEtapa.findMany({
+        let ret: CronogramaEtapa[] = [];
+
+        const cronogramaEtapas = await this.prisma.cronogramaEtapa.findMany({
             where: {
                 cronograma_id: cronogramaId,
                 etapa_id: etapaId,
@@ -27,12 +31,48 @@ export class CronogramaEtapaService {
                 cronograma_id: true,
                 etapa_id: true,
                 inativo: true,
-                ordem: true
+                ordem: true,
+
+                etapa: {
+                    select: {
+                        cronograma: {
+                            select: {
+                                id: true,
+                                descricao: true
+                            }
+                        }
+                    }
+                }
             },
             orderBy: [
                 { ordem: 'asc' }
             ]
         });
+
+        let lastOrdemVal = 0;
+        for (const cronogramaEtapa of cronogramaEtapas) {
+            let ordem;
+            if (cronogramaEtapa.ordem) {
+                lastOrdemVal = ordem = cronogramaEtapa.ordem;
+            } else {
+                lastOrdemVal = ordem = lastOrdemVal + 1;
+            }
+    
+            ret.push({
+                id: cronogramaEtapa.id,
+                cronograma_id: cronogramaEtapa.cronograma_id,
+                etapa_id: cronogramaEtapa.etapa_id,
+                inativo: cronogramaEtapa.inativo,
+                ordem: ordem,
+
+                cronograma_origem_etapa: {
+                    id: cronogramaEtapa.etapa.cronograma.id,
+                    descricao: cronogramaEtapa.etapa.cronograma.descricao
+                }
+            })
+        }
+
+        return ret;
     }
 
     async update(findParams: RequiredFindParamsDto, updateCronogoramaEtapaDto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {

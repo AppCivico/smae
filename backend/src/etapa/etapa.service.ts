@@ -89,7 +89,6 @@ export class EtapaService {
                 termino_previsto: etapa.termino_previsto,
                 inicio_real: etapa.inicio_real,
                 termino_real: etapa.termino_real,
-                ordem: cronogramaEtapa.ordem || null
             })
         }
 
