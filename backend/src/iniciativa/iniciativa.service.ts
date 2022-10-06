@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -8,10 +8,15 @@ import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
+import { VariavelService } from 'src/variavel/variavel.service';
 
 @Injectable()
 export class IniciativaService {
-    constructor(private readonly prisma: PrismaService) { }
+    private readonly logger = new Logger(IniciativaService.name);
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService,
+    ) { }
 
     async create(createIniciativaDto: CreateIniciativaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -26,7 +31,6 @@ export class IniciativaService {
             delete createIniciativaDto.orgaos_participantes;
             delete createIniciativaDto.coordenadores_cp;
             delete createIniciativaDto.tags;
-
 
             const iniciativa = await prisma.iniciativa.create({
                 data: {
@@ -262,16 +266,41 @@ export class IniciativaService {
             ]);
 
             await Promise.all([
-                await prisma.iniciativaOrgao.createMany({
+                prisma.iniciativaOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(iniciativa.id, op),
                 }),
-                await prisma.iniciativaResponsavel.createMany({
+                prisma.iniciativaResponsavel.createMany({
                     data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
                 }),
-                await prisma.iniciativaTag.createMany({
+                prisma.iniciativaTag.createMany({
                     data: await this.buildIniciativaTags(iniciativa.id, tags)
                 })
             ]);
+
+            const indicador = await prisma.indicador.findFirst({
+                where: {
+                    removido_em: null,
+                    iniciativa_id: iniciativa.id
+                },
+                select: {
+                    id: true,
+                    iniciativa_id: true,
+                    atividade_id: true,
+                    meta_id: true,
+                    IndicadorVariavel: {
+                        where: { desativado: false },
+                        select: { variavel_id: true }
+                    }
+                }
+            });
+
+            if (!indicador) {
+                this.logger.log('não há indicador para a iniciativa')
+            } else {
+                for (const variavel of indicador.IndicadorVariavel) {
+                    await this.variavelService.recalcIndicadorVariavel(indicador, variavel.variavel_id, prisma)
+                }
+            }
 
             return iniciativa;
         });

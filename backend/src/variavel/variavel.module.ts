@@ -13,6 +13,7 @@ import { VariavelService } from './variavel.service';
         })
     ],
     controllers: [VariavelController],
-    providers: [VariavelService]
+    providers: [VariavelService],
+    exports: [VariavelService],
 })
 export class VariavelModule { }
