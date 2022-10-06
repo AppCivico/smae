@@ -35,6 +35,18 @@ export class CronogramaEtapaService {
 
                 etapa: {
                     select: {
+                        id: true,
+                        etapa_pai_id: true,
+                        regiao_id: true,
+                        nivel: true,
+                        descricao: true,
+                        inicio_previsto: true,
+                        termino_previsto: true,
+                        inicio_real: true,
+                        termino_real: true,
+                        prazo: true,
+                        titulo: true,
+                   
                         cronograma: {
                             select: {
                                 id: true,
@@ -113,6 +125,20 @@ export class CronogramaEtapaService {
                 etapa_id: cronogramaEtapa.etapa_id,
                 inativo: cronogramaEtapa.inativo,
                 ordem: ordem,
+                
+                etapa: {
+                    id: cronogramaEtapa.etapa.id,
+                    etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,
+                    regiao_id: cronogramaEtapa.etapa.regiao_id,
+                    nivel: cronogramaEtapa.etapa.nivel,
+                    descricao: cronogramaEtapa.etapa.descricao,
+                    inicio_previsto: cronogramaEtapa.etapa.inicio_previsto,
+                    termino_previsto: cronogramaEtapa.etapa.termino_previsto,
+                    inicio_real: cronogramaEtapa.etapa.inicio_real,
+                    termino_real: cronogramaEtapa.etapa.termino_real,
+                    prazo: cronogramaEtapa.etapa.prazo,
+                    titulo: cronogramaEtapa.etapa.titulo,
+                },
 
                 cronograma_origem_etapa: {
                     // id: cronogramaEtapa.etapa.cronograma.id,
