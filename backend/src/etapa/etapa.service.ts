@@ -46,36 +46,19 @@ export class EtapaService {
     async findAll(filters: FilterEtapaDto | undefined = undefined) {
         let ret: Etapa[] = [];
 
-        let cronogramaPaiId = filters?.cronograma_pai_id;
         let etapaPaiId = filters?.etapa_pai_id;
         let regiaoId = filters?.regiao_id;
         let cronogramaId = filters?.cronograma_id;
-
-        let cronogramaRelationFilter;
-        if (cronogramaId) {
-            cronogramaRelationFilter = {
-                CronogramaEtapa: { every: { cronograma_id: cronogramaId } }
-            }
-        }
 
         const etapas = await this.prisma.etapa.findMany({
             where: {
                 etapa_pai_id: etapaPaiId,
                 regiao_id: regiaoId,
-                cronograma_id: cronogramaPaiId,
-                ...cronogramaRelationFilter,
+                cronograma_id: cronogramaId,
             },
-            include: {
-                CronogramaEtapa: {
-                    orderBy: {
-                        ordem: 'asc'
-                    }
-                }
-            }
         });
 
         for (const etapa of etapas) {
-            const cronogramaEtapa = etapa.CronogramaEtapa[0];
             ret.push({
                 id: etapa.id,
                 etapa_pai_id: etapa.etapa_pai_id,
@@ -89,7 +72,6 @@ export class EtapaService {
                 termino_previsto: etapa.termino_previsto,
                 inicio_real: etapa.inicio_real,
                 termino_real: etapa.termino_real,
-                ordem: cronogramaEtapa.ordem || null
             })
         }
 

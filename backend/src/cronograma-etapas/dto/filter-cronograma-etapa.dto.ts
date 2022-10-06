@@ -6,10 +6,9 @@ export class FilterCronogramaEtapaDto {
    * Filtrar por cronograma_id?
    * @example "1"
     */
-    @IsOptional()
     @IsPositive({ message: '$property| cronograma_id' })
     @Type(() => Number)
-    cronograma_id?: number;
+    cronograma_id: number;
 
     /**
     * Filtrar por etapa_id?
