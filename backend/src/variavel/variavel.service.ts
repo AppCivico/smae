@@ -350,14 +350,14 @@ export class VariavelService {
         return porPeriodo;
     }
 
-    async getSeriePrevisto(variavelId: number) {
+    async getSeriePrevistoRealizado(variavelId: number) {
         const indicador = await this.getIndicadorViaVariavel(variavelId);
         const indicadorVariavelRelList = indicador.IndicadorVariavel.filter((v) => {
             return v.variavel.id === variavelId
         });
         const variavel = indicadorVariavelRelList[0].variavel
 
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, ['Previsto', 'PrevistoAcumulado']);
+        const valoresExistentes = await this.getValorSerieExistente(variavelId, ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
 
         const result: ListPrevistoAgrupadas = {
