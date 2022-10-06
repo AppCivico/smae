@@ -183,6 +183,7 @@ export class VariavelService {
                 indicador_variavel: {
                     select: {
                         desativado: true,
+                        id: true,
                         indicador_origem: {
                             select: {
                                 id: true,
@@ -235,6 +236,7 @@ export class VariavelService {
 
             return {
                 ...row,
+                variavel_responsavel: undefined,
                 responsaveis: responsaveis
             }
         })
