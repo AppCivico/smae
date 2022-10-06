@@ -25,12 +25,3 @@ export class UpdateCronogramaEtapaDto {
     @IsNumber()
     etapa_id: number
 }
-
-export class RequiredFindParamsDto {
-
-    @IsNumber()
-    cronograma_id: number
-
-    @IsNumber()
-    etapa_id: number
-}
