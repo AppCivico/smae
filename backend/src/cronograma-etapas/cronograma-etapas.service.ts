@@ -41,7 +41,53 @@ export class CronogramaEtapaService {
                                 meta_id: true,
                                 iniciativa_id: true,
                                 atividade_id: true,
-                                descricao: true
+                                descricao: true,
+
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                        codigo: true
+                                    }
+                                },
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                        codigo: true,
+
+                                        meta: {
+                                            select: {
+                                                id: true,
+                                                titulo: true,
+                                                codigo: true,
+                                            }
+                                        }
+                                    }
+                                },
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                        codigo: true,
+
+                                        iniciativa: {
+                                            select: {
+                                                id: true,
+                                                titulo: true,
+                                                codigo: true,
+
+                                                meta: {
+                                                    select: {
+                                                        id: true,
+                                                        titulo: true,
+                                                        codigo: true,
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -69,11 +115,13 @@ export class CronogramaEtapaService {
                 ordem: ordem,
 
                 cronograma_origem_etapa: {
-                    id: cronogramaEtapa.etapa.cronograma.id,
-                    meta_id: cronogramaEtapa.etapa.cronograma.meta_id,
-                    iniciativa_id: cronogramaEtapa.etapa.cronograma.iniciativa_id,
-                    atividade_id: cronogramaEtapa.etapa.cronograma.atividade_id,
-                    descricao: cronogramaEtapa.etapa.cronograma.descricao
+                    // id: cronogramaEtapa.etapa.cronograma.id,
+                    // meta_id: cronogramaEtapa.etapa.cronograma.meta_id,
+                    // iniciativa_id: cronogramaEtapa.etapa.cronograma.iniciativa_id,
+                    // atividade_id: cronogramaEtapa.etapa.cronograma.atividade_id,
+                    // descricao: cronogramaEtapa.etapa.cronograma.descricao,
+
+                    ...cronogramaEtapa.etapa.cronograma
                 }
             })
         }
