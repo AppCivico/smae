@@ -101,7 +101,7 @@ export class VariavelService {
             }
         });
 
-        this.logger.warn(`recalcIndicadorVariavel: variavel ${variavel_id}, indicador: ${JSON.stringify(indicador)}`);
+        this.logger.log(`recalcIndicadorVariavel: variavel ${variavel_id}, indicador: ${JSON.stringify(indicador)}`);
 
         // se o indicador é uma atividade, precisamos testar se essa atividade tem herança para a
         // iniciativa
@@ -128,26 +128,26 @@ export class VariavelService {
                     }
                 }
             });
-            this.logger.warn(`recalcIndicadorVariavel: atividade encontrada ${JSON.stringify(atividade)}`);
+            this.logger.log(`recalcIndicadorVariavel: atividade encontrada ${JSON.stringify(atividade)}`);
             if (atividade.compoe_indicador_iniciativa) {
                 const indicadorDaIniciativa = atividade.iniciativa.Indicador[0];
 
                 if (!indicadorDaIniciativa) {
                     this.logger.warn(`recalcIndicadorVariavel: Atividade ID=${indicador.atividade_id} compoe_indicador_iniciativa mas não tem indicador ativo`);
                 } else {
-                    await prisma.indicadorVariavel.create({
-                        data: {
-                            indicador_id: indicadorDaIniciativa.id,
-                            variavel_id: variavel_id,
-                            indicador_origem_id: indicador.id
-                        }
-                    });
+                    const data = {
+                        indicador_id: indicadorDaIniciativa.id,
+                        variavel_id: variavel_id,
+                        indicador_origem_id: indicador.id
+                    };
+                    this.logger.log(`recalcIndicadorVariavel: criando ${data}`);
+                    await prisma.indicadorVariavel.create({ data: data });
                 }
 
                 // atividade tbm compoe a meta, então precisa levar essa variavel para lá também
                 // 'recursão' manual
                 if (atividade.iniciativa.compoe_indicador_meta) {
-                    this.logger.warn(`recalcIndicadorVariavel: iniciativa da atividade compoe_indicador_meta, buscando indicador da meta`);
+                    this.logger.log(`recalcIndicadorVariavel: iniciativa da atividade compoe_indicador_meta, buscando indicador da meta`);
                     const indicadorDaMeta = await this.prisma.indicador.findFirst({
                         where: {
                             removido_em: null,
@@ -160,12 +160,14 @@ export class VariavelService {
                     if (!indicadorDaMeta) {
                         this.logger.warn(`recalcIndicadorVariavel: indicador da meta ${atividade.iniciativa.meta_id} não foi encontrado!`);
                     } else {
+                        const data = {
+                            indicador_id: indicadorDaMeta.id,
+                            variavel_id: variavel_id,
+                            indicador_origem_id: indicadorDaIniciativa.id
+                        };
+                        this.logger.log(`recalcIndicadorVariavel: criando ${data}`);
                         await prisma.indicadorVariavel.create({
-                            data: {
-                                indicador_id: indicadorDaMeta.id,
-                                variavel_id: variavel_id,
-                                indicador_origem_id: indicadorDaIniciativa.id
-                            }
+                            data: data
                         });
                     }
                 }
@@ -189,7 +191,7 @@ export class VariavelService {
                     }
                 }
             });
-            this.logger.warn(`recalcIndicadorVariavel: iniciativa encontrada ${JSON.stringify(iniciativa)}`);
+            this.logger.log(`recalcIndicadorVariavel: iniciativa encontrada ${JSON.stringify(iniciativa)}`);
 
             if (iniciativa.compoe_indicador_meta) {
                 const indicadorDaIniciativa = iniciativa.Indicador[0];
@@ -197,19 +199,16 @@ export class VariavelService {
                 if (!indicadorDaIniciativa) {
                     this.logger.warn(`recalcIndicadorVariavel: Iniciativa ${indicador.iniciativa_id} compoe_indicador_meta mas não tem indicador ativo`);
                 } else {
-                    await prisma.indicadorVariavel.create({
-                        data: {
-                            indicador_id: indicadorDaIniciativa.id,
-                            variavel_id: variavel_id,
-                            indicador_origem_id: indicador.id
-                        }
-                    });
+                    const data = {
+                        indicador_id: indicadorDaIniciativa.id,
+                        variavel_id: variavel_id,
+                        indicador_origem_id: indicador.id
+                    };
+                    this.logger.log(`recalcIndicadorVariavel: criando ${data}`);
+                    await prisma.indicadorVariavel.create({ data: data });
                 }
-
             }
         }
-
-
     }
 
     async findAll(filters: FilterVariavelDto | undefined = undefined) {
