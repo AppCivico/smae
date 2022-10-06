@@ -83,7 +83,7 @@ export class VariavelService {
         if (filters?.indicador_id) {
             filterQuery = {
                 indicador_variavel: {
-                    every: {
+                    some: {
                         desativado: removidoStatus,
                         indicador_id: filters?.indicador_id
                     }
@@ -92,7 +92,7 @@ export class VariavelService {
         } else if (filters?.meta_id) {
             filterQuery = {
                 indicador_variavel: {
-                    every: {
+                    some: {
                         desativado: removidoStatus,
                         indicador: {
                             meta_id: filters?.meta_id
@@ -102,33 +102,30 @@ export class VariavelService {
             }
         } else if (filters?.iniciativa_id) {
             filterQuery = {
-                OR: [
-                    {
-                        indicador_variavel: {
-                            every: {
-                                desativado: removidoStatus,
-                                indicador: {
-                                    iniciativa_id: filters?.iniciativa_id
-                                }
-                            }
+                indicador_variavel: {
+                    some: {
+                        desativado: removidoStatus,
+                        indicador: {
+                            iniciativa_id: filters?.iniciativa_id
                         }
-                    },
-                    // Comentado pq automaticamente quando a compoe_indicador_iniciativa já
-                    // vai existir um relacionamento na indicador_variavel com o indicador da iniciativa
-                    //~                    {
-                    //~                        indicador_variavel: {
-                    //~                            some: {
-                    //~                                desativado: removidoStatus,
-                    //~                                indicador: {
-                    //~                                    atividade: {
-                    //~                                        compoe_indicador_iniciativa: true,
-                    //~                                        iniciativa_id: filters?.iniciativa_id
-                    //~                                    }
-                    //~                                }
-                    //~                            }
-                    //~                        }
-                    //~                    },
-                ]
+                    }
+                }
+                // Comentado pq automaticamente quando a compoe_indicador_iniciativa já
+                // vai existir um relacionamento na indicador_variavel com o indicador da iniciativa
+                //~                    {
+                //~                        indicador_variavel: {
+                //~                            some: {
+                //~                                desativado: removidoStatus,
+                //~                                indicador: {
+                //~                                    atividade: {
+                //~                                        compoe_indicador_iniciativa: true,
+                //~                                        iniciativa_id: filters?.iniciativa_id
+                //~                                    }
+                //~                                }
+                //~                            }
+                //~                        }
+                //~                    },
+
             }
         } else if (filters?.atividade_id) {
             filterQuery = {
@@ -234,9 +231,27 @@ export class VariavelService {
                 }
             });
 
+            let indicador_variavel: typeof row.indicador_variavel = [];
+            // filtra as variaveis novamente caso tiver filtros por indicador ou atividade
+            if (filters?.indicador_id || filters?.iniciativa_id || filters?.atividade_id) {
+
+                for (const iv of row.indicador_variavel) {
+                    if (filters?.atividade_id && filters?.atividade_id === iv.indicador.atividade_id) {
+                        indicador_variavel.push(iv)
+                    } else if (filters?.indicador_id && filters?.indicador_id === iv.indicador.id) {
+                        indicador_variavel.push(iv)
+                    } else if (filters?.iniciativa_id && filters?.iniciativa_id === iv.indicador.iniciativa_id) {
+                        indicador_variavel.push(iv)
+                    }
+                }
+            } else {
+                indicador_variavel = row.indicador_variavel;
+            }
+
             return {
                 ...row,
                 variavel_responsavel: undefined,
+                indicador_variavel: indicador_variavel,
                 responsaveis: responsaveis
             }
         })
