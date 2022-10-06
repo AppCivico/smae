@@ -216,6 +216,7 @@ export class VariavelService {
 
         let removidoStatus = filters?.remover_desativados == true ? false : undefined;
 
+        // TODO alterar pra testar todos os casos de exclusividade
         if (filters?.indicador_id && filters?.meta_id) {
             throw new HttpException('Apenas filtrar por meta_id ou indicador_id por vez', 400);
         }
@@ -250,22 +251,6 @@ export class VariavelService {
                         }
                     }
                 }
-                // Comentado pq automaticamente quando a compoe_indicador_iniciativa já
-                // vai existir um relacionamento na indicador_variavel com o indicador da iniciativa
-                //~                    {
-                //~                        indicador_variavel: {
-                //~                            some: {
-                //~                                desativado: removidoStatus,
-                //~                                indicador: {
-                //~                                    atividade: {
-                //~                                        compoe_indicador_iniciativa: true,
-                //~                                        iniciativa_id: filters?.iniciativa_id
-                //~                                    }
-                //~                                }
-                //~                            }
-                //~                        }
-                //~                    },
-
             }
         } else if (filters?.atividade_id) {
             filterQuery = {

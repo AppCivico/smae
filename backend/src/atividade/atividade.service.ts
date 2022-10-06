@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { VariavelService } from 'src/variavel/variavel.service';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
@@ -11,7 +12,11 @@ import { Atividade, AtividadeOrgao, IdNomeExibicao } from './entities/atividade.
 
 @Injectable()
 export class AtividadeService {
-    constructor(private readonly prisma: PrismaService) { }
+    private readonly logger = new Logger(AtividadeService.name);
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService
+    ) { }
 
     async create(createAtividadeDto: CreateAtividadeDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -67,7 +72,7 @@ export class AtividadeService {
         return created;
     }
 
-    async buildAtividadeTags (atividadeId: number, tags: number[]): Promise<Prisma.AtividadeTagCreateManyInput[]> {
+    async buildAtividadeTags(atividadeId: number, tags: number[]): Promise<Prisma.AtividadeTagCreateManyInput[]> {
         const arr: Prisma.AtividadeTagCreateManyInput[] = [];
 
         if (typeof tags !== 'object') {
@@ -281,16 +286,41 @@ export class AtividadeService {
             ]);
 
             await Promise.all([
-                await prisma.atividadeOrgao.createMany({
+                prisma.atividadeOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(atividade.id, op),
                 }),
-                await prisma.atividadeResponsavel.createMany({
+                prisma.atividadeResponsavel.createMany({
                     data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
                 }),
-                await prisma.atividadeTag.createMany({
-                    data: await this.buildAtividadeTags (atividade.id, tags)
+                prisma.atividadeTag.createMany({
+                    data: await this.buildAtividadeTags(atividade.id, tags)
                 })
             ]);
+
+            const indicador = await prisma.indicador.findFirst({
+                where: {
+                    removido_em: null,
+                    atividade_id: atividade.id
+                },
+                select: {
+                    id: true,
+                    iniciativa_id: true,
+                    atividade_id: true,
+                    meta_id: true,
+                    IndicadorVariavel: {
+                        where: { desativado: false },
+                        select: { variavel_id: true }
+                    }
+                }
+            });
+
+            if (!indicador) {
+                this.logger.log('não há indicador para a atividade')
+            } else {
+                for (const variavel of indicador.IndicadorVariavel) {
+                    await this.variavelService.recalcIndicadorVariavel(indicador, variavel.variavel_id, prisma)
+                }
+            }
 
             return atividade;
         });
