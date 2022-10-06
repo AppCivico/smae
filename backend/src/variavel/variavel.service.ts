@@ -83,7 +83,7 @@ export class VariavelService {
         if (filters?.indicador_id) {
             filterQuery = {
                 indicador_variavel: {
-                    some: {
+                    every: {
                         desativado: removidoStatus,
                         indicador_id: filters?.indicador_id
                     }
@@ -92,7 +92,7 @@ export class VariavelService {
         } else if (filters?.meta_id) {
             filterQuery = {
                 indicador_variavel: {
-                    some: {
+                    every: {
                         desativado: removidoStatus,
                         indicador: {
                             meta_id: filters?.meta_id
@@ -105,7 +105,7 @@ export class VariavelService {
                 OR: [
                     {
                         indicador_variavel: {
-                            some: {
+                            every: {
                                 desativado: removidoStatus,
                                 indicador: {
                                     iniciativa_id: filters?.iniciativa_id
