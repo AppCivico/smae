@@ -35,15 +35,16 @@ export const useEtapasStore = defineStore({
         async getAll(cronograma_id) {
             try {
                 this.Etapas[cronograma_id] = { loading: true };
-                let r = await requestS.get(`${baseUrl}/etapa?cronograma_id=${cronograma_id}`);    
+                let r = await requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}`);    
                 this.Etapas[cronograma_id] = r.linhas.length ? r.linhas.map(x=>{
-                    x.inicio_previsto = this.dateToField(x.inicio_previsto);
-                    x.termino_previsto = this.dateToField(x.termino_previsto);
-                    x.inicio_real = this.dateToField(x.inicio_real);
-                    x.termino_real = this.dateToField(x.termino_real);
-                    x.prazo = this.dateToField(x.prazo);
+                    if(x.cronograma_origem_etapa&&x.cronograma_origem_etapa.id==cronograma_id) delete x.cronograma_origem_etapa;
+                    x.etapa.inicio_previsto = this.dateToField(x.etapa.inicio_previsto);
+                    x.etapa.termino_previsto = this.dateToField(x.etapa.termino_previsto);
+                    x.etapa.inicio_real = this.dateToField(x.etapa.inicio_real);
+                    x.etapa.termino_real = this.dateToField(x.etapa.termino_real);
+                    x.etapa.prazo = this.dateToField(x.etapa.prazo);
                     return x;
-                }) : r.linhas;
+                }).sort((a,b)=>{return a.ordem-b.ordem;}) : r.linhas;
                 return true;
             } catch (error) {
                 this.Etapas[cronograma_id] = { error };
@@ -55,18 +56,18 @@ export const useEtapasStore = defineStore({
                 if(!etapa_id) throw "Etapa inválida";
                 this.singleEtapa = { loading: true };
                 await this.getAll(cronograma_id);
-                this.singleEtapa = this.Etapas[cronograma_id].length? this.Etapas[cronograma_id].find((u)=>u.id == etapa_id):{};
+                this.singleEtapa = this.Etapas[cronograma_id].length? this.Etapas[cronograma_id].find((u)=>u.etapa_id == etapa_id):{};
                 return true;
             } catch (error) {
                 this.singleEtapa = { error };
             }
         },
-        async insert(params) {
+        async insert(cronograma_id,params) {
             params.inicio_previsto = this.fieldToDate(params.inicio_previsto);
             params.termino_previsto = this.fieldToDate(params.termino_previsto);
             params.inicio_real = this.fieldToDate(params.inicio_real);
             params.termino_real = this.fieldToDate(params.termino_real);
-            let r = await requestS.post(`${baseUrl}/etapa`, params);
+            let r = await requestS.post(`${baseUrl}/cronograma/${cronograma_id}/etapa`, params);
             if(r.id) return r.id;
             return false;
         },
@@ -84,8 +85,8 @@ export const useEtapasStore = defineStore({
             }
             return false;
         },
-        async monitorar(cronograma_id,etapa_id,params) {
-            if(await requestS.post(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`, params)) return true;
+        async monitorar(params) {
+            if(await requestS.post(`${baseUrl}/cronograma-etapa`, params)) return true;
             return false;
         },
         async getMonitoramento(cronograma_id,etapa_id) {

@@ -229,10 +229,10 @@ export const usePdMStore = defineStore({
             if(!this.tempPdM.length)this.tempPdM = { loading: true };
             try {
                 await this.getAll();
-                this.tempPdM = f ? this.PdM.filter((u)=>{
+                this.tempPdM = f&&this.PdM.length ? this.PdM.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
                 }) : this.PdM;
-                this.tempPdM.sort((a,b)=>{if(!a.ativo&&!b.ativo){return a.descricao.localeCompare(b.descricao);} return b.ativo-a.ativo;}).forEach(u=>{
+                if(this.tempPdM.length)this.tempPdM.sort((a,b)=>{if(!a.ativo&&!b.ativo){return a.descricao.localeCompare(b.descricao);} return b.ativo-a.ativo;}).forEach(u=>{
                     this.carregaArquivos(u.id);
                 })
             } catch (error) {
