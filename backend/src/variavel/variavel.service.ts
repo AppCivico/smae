@@ -113,21 +113,21 @@ export class VariavelService {
                             }
                         }
                     },
-// Comentado pq automaticamente quando a compoe_indicador_iniciativa já
-// vai existir um relacionamento na indicador_variavel com o indicador da iniciativa
-//~                    {
-//~                        indicador_variavel: {
-//~                            some: {
-//~                                desativado: removidoStatus,
-//~                                indicador: {
-//~                                    atividade: {
-//~                                        compoe_indicador_iniciativa: true,
-//~                                        iniciativa_id: filters?.iniciativa_id
-//~                                    }
-//~                                }
-//~                            }
-//~                        }
-//~                    },
+                    // Comentado pq automaticamente quando a compoe_indicador_iniciativa já
+                    // vai existir um relacionamento na indicador_variavel com o indicador da iniciativa
+                    //~                    {
+                    //~                        indicador_variavel: {
+                    //~                            some: {
+                    //~                                desativado: removidoStatus,
+                    //~                                indicador: {
+                    //~                                    atividade: {
+                    //~                                        compoe_indicador_iniciativa: true,
+                    //~                                        iniciativa_id: filters?.iniciativa_id
+                    //~                                    }
+                    //~                                }
+                    //~                            }
+                    //~                        }
+                    //~                    },
                 ]
             }
         } else if (filters?.atividade_id) {
@@ -186,9 +186,24 @@ export class VariavelService {
                         indicador_origem: {
                             select: {
                                 id: true,
-                                iniciativa_id: true,
-                                meta_id: true,
-                                atividade_id: true
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                }
                             }
                         },
                         indicador: {
@@ -198,24 +213,6 @@ export class VariavelService {
                                 meta_id: true,
                                 iniciativa_id: true,
                                 atividade_id: true,
-
-                                iniciativa: {
-                                    select: {
-                                        id: true,
-                                        meta_id: true,
-                                        titulo: true,
-                                        codigo: true
-                                    }
-                                },
-
-                                atividade: {
-                                    select: {
-                                        id: true,
-                                        iniciativa_id: true,
-                                        titulo: true,
-                                        codigo: true
-                                    }
-                                }
                             },
                         },
                     }
@@ -370,7 +367,7 @@ export class VariavelService {
                 periodicidade: variavel.periodicidade,
             },
             previsto: [],
-            ordem_series: ['Previsto', 'PrevistoAcumulado']
+            ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']
         };
 
         const todosPeriodos = await this.gerarPeriodosEntreDatas(indicador.inicio_medicao, indicador.fim_medicao, variavel.periodicidade)
@@ -378,7 +375,12 @@ export class VariavelService {
             const seriesExistentes: SerieValorNomimal[] = [];
 
             const existeValor = porPeriodo[periodoYMD];
-            if (existeValor && (existeValor.Previsto || existeValor.PrevistoAcumulado)) {
+            if (existeValor && (
+                existeValor.Previsto
+                || existeValor.PrevistoAcumulado
+                || existeValor.Realizado
+                || existeValor.RealizadoAcumulado
+            )) {
                 if (existeValor.Previsto) {
                     seriesExistentes.push(existeValor.Previsto);
                 } else {
@@ -390,9 +392,23 @@ export class VariavelService {
                 } else {
                     seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
                 }
+
+                if (existeValor.Realizado) {
+                    seriesExistentes.push(existeValor.Realizado);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
+                }
+
+                if (existeValor.RealizadoAcumulado) {
+                    seriesExistentes.push(existeValor.RealizadoAcumulado);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
+                }
             } else {
                 seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
                 seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
             }
 
             result.previsto.push({
