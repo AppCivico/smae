@@ -107,48 +107,5 @@ export const useCronogramasStore = defineStore({
                 this.singleCronogramaEtapas = { error };
             }
         },
-        async getFakeData(){
-            this.singleCronograma = {
-              "id": 1,
-              "iniciativa_id": 1,
-              "meta_id": 1,
-              "atividade_id": 1,
-              "descricao": "Nome do Cronograma",
-              "observacao": "string",
-              "inicio_previsto": this.dateToField("2022-10-04T03:58:11.408Z"),
-              "termino_previsto": this.dateToField("2022-10-04T03:58:11.408Z"),
-              "inicio_real": this.dateToField("2022-10-04T03:58:11.408Z"),
-              "termino_real": this.dateToField("2022-10-04T03:58:11.408Z"),
-              "por_regiao": true,
-              "tipo_regiao": "string"
-            };
-
-            this.singleCronogramaEtapas = [
-                {
-                  "id": 1,
-                  "etapa_pai_id": 1,
-                  "regiao_id": 1,
-                  "descricao": "Nome da Etapa",
-                  "nivel": "string",
-                  "inicio_previsto": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "termino_previsto": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "inicio_real": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "termino_real": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "prazo": this.dateToField("2022-10-04T03:58:11.390Z"),
-                },
-                {
-                  "id": 1,
-                  "etapa_pai_id": 1,
-                  "regiao_id": 1,
-                  "descricao": "Nome da Etapa",
-                  "nivel": "string",
-                  "inicio_previsto": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "termino_previsto": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "inicio_real": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "termino_real": this.dateToField("2022-10-04T03:58:11.390Z"),
-                  "prazo": this.dateToField("2022-10-04T03:58:11.390Z"),
-                }
-            ];
-        },
     }
 });

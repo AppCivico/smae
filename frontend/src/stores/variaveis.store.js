@@ -62,7 +62,7 @@ export const useVariaveisStore = defineStore({
             try {
                 if(!id) throw "Variável inválida";
                 this.Valores[id] = { loading: true };
-                let r = await requestS.get(`${baseUrl}/indicador-variavel/${id}/serie-previsto`);    
+                let r = await requestS.get(`${baseUrl}/indicador-variavel/${id}/serie`);    
                 this.Valores[id] = r;
             } catch (error) {
                 this.Valores[id] = { error };

@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useAlertStore, useEditModalStore, useRegionsStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore, useEtapasStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore, useEtapasStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -42,7 +42,6 @@ if(cronograma_id&&(!singleCronograma?.id || singleCronograma.id!=cronograma_id))
         CronogramasStore.getById(meta_id,'meta_id',cronograma_id);
     }
 }
-//CronogramasStore.getFakeData();
 
 let lastParent = ref({});
 if(atividade_id){

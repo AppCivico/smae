@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useAlertStore, useEditModalStore, useRegionsStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore, useEtapasStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useRegionsStore, useCronogramasStore, useEtapasStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -20,18 +20,6 @@ const etapa_id = route.params.etapa_id;
 const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
-
-const MetasStore = useMetasStore();
-const { singleMeta } = storeToRefs(MetasStore);
-if(!singleMeta?.id || singleMeta.id!=meta_id) MetasStore.getById(meta_id);
-
-const IniciativasStore = useIniciativasStore();
-const { singleIniciativa } = storeToRefs(IniciativasStore);
-if(iniciativa_id)IniciativasStore.getById(meta_id,iniciativa_id);
-
-const AtividadesStore = useAtividadesStore();
-const { singleAtividade } = storeToRefs(AtividadesStore);
-if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
@@ -73,16 +61,16 @@ if(etapa_id){
     });
     (async()=>{
         if(atividade_id){
-            var p_cron = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
-            var mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
+            let p_cron = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
+            let mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
             if(mon){
                 acumulativa_iniciativa.value = !mon.inativo;
                 acumulativa_iniciativa_o.value = mon.ordem;
             }
         }
         if(iniciativa_id){
-            var p_cron = await CronogramasStore.getItemByParent(meta_id,'meta_id');
-            var mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
+            let p_cron = await CronogramasStore.getItemByParent(meta_id,'meta_id');
+            let mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
             if(mon){
                 acumulativa_meta.value = !mon.inativo;
                 acumulativa_meta_o.value = mon.ordem;
@@ -112,7 +100,6 @@ async function onSubmit(values) {
         var msg;
         var r;
 
-        values.cronograma_id = Number(cronograma_id);
         values.regiao_id = singleCronograma.value.regionalizavel? Number(values.regiao_id):null;
         values.ordem = Number(values.ordem)??null;
         values.etapa_pai_id = 1;
@@ -127,20 +114,20 @@ async function onSubmit(values) {
                 etapa_id_gen = etapa_id;
             }
         } else {
-            r = await EtapasStore.insert(values);
+            r = await EtapasStore.insert(Number(cronograma_id),values);
             msg = 'Item adicionado com sucesso!';
             rota = currentEdit;
             etapa_id_gen = r;
         }
-
-
 
         if(r){
             if(etapa_id_gen){
                 if(values.acumulativa_iniciativa){
                     var ri = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
                     if(ri.id){
-                        await EtapasStore.monitorar(ri.id,etapa_id_gen,{
+                        await EtapasStore.monitorar({
+                            cronograma_id: ri.id,
+                            etapa_id: etapa_id_gen,
                             inativo: !values.acumulativa_iniciativa,
                             ordem: Number(values.acumulativa_iniciativa_o)??null
                         });
@@ -149,7 +136,9 @@ async function onSubmit(values) {
                 if(values.acumulativa_meta){
                     var rm = await CronogramasStore.getItemByParent(meta_id,'meta_id');
                     if(rm.id){
-                        await EtapasStore.monitorar(rm.id,etapa_id_gen,{
+                        await EtapasStore.monitorar({
+                            cronograma_id: rm.id,
+                            etapa_id: etapa_id_gen,
                             inativo: !values.acumulativa_meta,
                             ordem: Number(values.acumulativa_meta_o)??null
                         });

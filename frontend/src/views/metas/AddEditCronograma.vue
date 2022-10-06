@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUpdated } from 'vue';
+import { ref } from 'vue';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
@@ -18,8 +18,7 @@ const cronograma_id = route.params.cronograma_id;
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
-
-const props = defineProps(['group']);
+const parentLabel = atividade_id?'Atividade':iniciativa_id?'Iniciativa':meta_id?'Meta':false;
 
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
@@ -32,6 +31,8 @@ if(iniciativa_id)IniciativasStore.getById(meta_id,iniciativa_id);
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
 if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
+
+const parentItem = atividade_id?singleAtividade:iniciativa_id?singleIniciativa:meta_id?singleMeta:false;
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
@@ -106,9 +107,7 @@ async function checkClose() {
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
-        <div v-if="atividade_id" class="t24 mb2">Atividade {{singleAtividade.codigo}} {{singleAtividade.titulo}}</div>
-        <div v-else-if="iniciativa_id" class="t24 mb2">Iniciativa {{singleIniciativa.codigo}} {{singleIniciativa.titulo}}</div>
-        <div v-else-if="meta_id" class="t24 mb2">Meta {{singleMeta.codigo}} {{singleMeta.titulo}}</div>
+        <div v-if="parentItem" class="t24 mb2">{{parentLabel}} {{parentItem.codigo}} {{parentItem.titulo}}</div>
 
         <template v-if="!(singleCronograma?.loading || singleCronograma?.error)">
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="cronograma_id?singleCronograma:{}" v-slot="{ errors, isSubmitting }">
