@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { requestS } from '@/helpers';
 import { Dashboard} from '@/components';
 import { Form, Field } from 'vee-validate';
@@ -23,14 +23,13 @@ const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 let title = 'Cadastro de PdM';
-let hab_atividade = reactive(false);
+let possui_iniciativa = ref(singlePdm.value.possui_iniciativa);
 if (pdm_id) {
     title = 'Editar PdM';
     (async()=>{
         await PdMStore.getById(pdm_id);
         curfile.name = singlePdm.value.logo;
-        hab_atividade = singlePdm.value.possui_iniciativa;
-        console.log(hab_atividade);
+        possui_iniciativa.value = singlePdm.value.possui_iniciativa;
     })();
 }
 
@@ -74,6 +73,7 @@ async function onSubmit(values) {
     try {
         var msg;
         var r;
+
         if (pdm_id&&singlePdm.value.id) {
             r = await PdMStore.update(singlePdm.value.id, values);
             msg = 'Dados salvos com sucesso!';
@@ -171,7 +171,10 @@ async function uploadshape(e){
                     
                     <div v-else-if="curfile.loading" class="addlink"><span>Carregando</span> <svg width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
                     
-                    <div v-else-if="curfile.name"><span>{{curfile?.name?.slice(0,30)}}</span> <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a></div>
+                    <div v-else-if="curfile.name">
+                        <!-- <img :src="`${baseUrl}/download/${singlePdm.logo}`" v-if="singlePdm.logo"> -->
+                        <span>{{curfile?.name?.slice(0,30)}}</span> <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
+                    </div>
                     <Field name="upload_logo" type="hidden" :value="curfile?.name"/>
                 </div>
 
@@ -295,7 +298,7 @@ async function uploadshape(e){
                     <div class="f0" style="flex-basis: 200px;">
                         <label class="block mb1">
                             <Field name="possui_iniciativa" class="inputcheckbox" :class="{ 'error': errors.possui_iniciativa }" type="checkbox" 
-                                v-model="hab_atividade" value="1"
+                                v-model="possui_iniciativa" value="1"
                             />
                             <span>Habilitar Iniciativa</span>
                         </label>
@@ -304,13 +307,12 @@ async function uploadshape(e){
                 <div class="flex center g2">
                     <div class="f1">
                         <label class="label">Rótulo da Atividade</label>
-                        <Field name="rotulo_atividade" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_atividade }" :disabled="!hab_atividade" />
+                        <Field name="rotulo_atividade" type="text" class="inputtext light mb1" :class="{ 'error': errors.rotulo_atividade }" :disabled="!possui_iniciativa" />
                         <div class="error-msg">{{ errors.rotulo_atividade }}</div>
                     </div>
                     <div class="f0" style="flex-basis: 200px;">
-                        {{hab_atividade}}
                         <label class="block mb1">
-                            <Field name="possui_atividade" class="inputcheckbox" :class="{ 'error': errors.possui_atividade }" type="checkbox" value="1" :disabled="!hab_atividade" /><span>Habilitar Atividade</span>
+                            <Field name="possui_atividade" class="inputcheckbox" :class="{ 'error': errors.possui_atividade }" type="checkbox" value="1" :disabled="!possui_iniciativa" /><span>Habilitar Atividade</span>
                         </label>
                     </div>
                 </div>
