@@ -36,6 +36,7 @@ let title = 'Cadastro de Atividade';
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
+let compoe_indicador_iniciativa = ref(singleAtividade.value.compoe_indicador_iniciativa);
 if (atividade_id) {
     title = 'Editar Atividade';
 }

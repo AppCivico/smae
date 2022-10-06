@@ -23,6 +23,7 @@ export const useAtividadesStore = defineStore({
                 let r = await requestS.get(`${baseUrl}/atividade?iniciativa_id=${iniciativa_id}`);    
                 
                 this.Atividades[iniciativa_id] = r.linhas.map(x=>{
+                    x.compoe_indicador_iniciativa = x.compoe_indicador_iniciativa?"1":false;
                     return x;
                 });
             } catch (error) {
