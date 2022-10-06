@@ -22,6 +22,7 @@ const atividade_id = route.params.atividade_id;
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
+const parent_label = atividade_id?'atividade':iniciativa_id?'iniciativa':meta_id?'meta':false;
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
@@ -45,11 +46,11 @@ onUpdated(()=>{start()});
         <div class="flex spacebetween center mb2">
             <h1>Cronograma</h1>
             <hr class="ml2 f1"/>
-            <router-link v-if="perm?.CadastroCronograma?.editar" :to="`${parentlink}/cronograma/${singleCronograma.id}`" class="btn ml2">Editar Cronograma</router-link>
+            <router-link v-if="perm?.CadastroCronograma?.editar&&!singleCronograma?.loading&&singleCronograma.id" :to="`${parentlink}/cronograma/${singleCronograma.id}`" class="btn ml2">Editar Cronograma</router-link>
             <div class="ml1 dropbtn" v-if="!singleCronograma?.loading&&singleCronograma.id">
                 <span class="btn">Nova etapa</span>
                 <ul>
-                    <li><router-link v-if="perm?.CadastroEtapa?.inserir" :to="`${parentlink}/cronograma/${singleCronograma.id}/etapas/novo`">Etapa da Meta</router-link></li>
+                    <li><router-link v-if="perm?.CadastroEtapa?.inserir" :to="`${parentlink}/cronograma/${singleCronograma.id}/etapas/novo`">Etapa da {{parent_label}}</router-link></li>
                     <li><router-link v-if="perm?.CadastroEtapa?.inserir&&meta_id&&!iniciativa_id" :to="`${parentlink}/cronograma/${singleCronograma.id}/monitorar/iniciativa`">A partir de Iniciativa</router-link></li>
                     <li><router-link v-if="perm?.CadastroEtapa?.inserir&&iniciativa_id&&!atividade_id" :to="`${parentlink}/cronograma/${singleCronograma.id}/monitorar/atividade`">A partir de Atividade</router-link></li>
                 </ul>

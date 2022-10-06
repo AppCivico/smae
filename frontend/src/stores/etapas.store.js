@@ -85,7 +85,7 @@ export const useEtapasStore = defineStore({
             return false;
         },
         async monitorar(cronograma_id,etapa_id,params) {
-            if(await requestS.patch(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`, params)) return true;
+            if(await requestS.post(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`, params)) return true;
             return false;
         },
         async getMonitoramento(cronograma_id,etapa_id) {
