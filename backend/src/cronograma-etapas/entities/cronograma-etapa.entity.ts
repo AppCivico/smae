@@ -1,5 +1,8 @@
 export class CronogramaWithIdAndDesc {
     id: number
+    meta_id: number | null
+    iniciativa_id: number | null
+    atividade_id: number | null
     descricao: string | null
 }
 

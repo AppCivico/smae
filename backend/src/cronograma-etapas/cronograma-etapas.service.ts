@@ -38,6 +38,9 @@ export class CronogramaEtapaService {
                         cronograma: {
                             select: {
                                 id: true,
+                                meta_id: true,
+                                iniciativa_id: true,
+                                atividade_id: true,
                                 descricao: true
                             }
                         }
@@ -67,6 +70,9 @@ export class CronogramaEtapaService {
 
                 cronograma_origem_etapa: {
                     id: cronogramaEtapa.etapa.cronograma.id,
+                    meta_id: cronogramaEtapa.etapa.cronograma.meta_id,
+                    iniciativa_id: cronogramaEtapa.etapa.cronograma.iniciativa_id,
+                    atividade_id: cronogramaEtapa.etapa.cronograma.atividade_id,
                     descricao: cronogramaEtapa.etapa.cronograma.descricao
                 }
             })

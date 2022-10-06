@@ -1,3 +1,4 @@
+import { ApiHideProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
@@ -10,6 +11,7 @@ export class CreateEtapaDto {
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
+    @ApiHideProperty()
     cronograma_id: number
 
     /**
