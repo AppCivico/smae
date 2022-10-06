@@ -53,12 +53,22 @@ export class VariavelController {
         return;
     }
 
+    @ApiTags('Indicador (deprecated)')
     @Get('indicador-variavel/:id/serie-previsto')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
     async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
-        return await this.variavelService.getSeriePrevisto(params.id);
+        return await this.variavelService.getSeriePrevistoRealizado(params.id);
+    }
+
+    @ApiTags('Indicador')
+    @Get('indicador-variavel/:id/serie')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.editar')
+    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
+        return await this.variavelService.getSeriePrevistoRealizado(params.id);
     }
 
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { create } from 'domain';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -39,14 +40,18 @@ export class CronogramaEtapaService {
         let id;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
-            const cronogramaEtapa = await prisma.cronogramaEtapa.update({
+            const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
                 where: {
                     CronogramaEtapaUniq: {
                         cronograma_id: findParams.cronograma_id,
                         etapa_id: findParams.etapa_id
                     }
                 },
-                data: {
+                update: {
+                    ordem: updateCronogoramaEtapaDto.ordem,
+                    inativo: updateCronogoramaEtapaDto.inativo
+                },
+                create: {
                     ...updateCronogoramaEtapaDto,
                 },
                 select: { id: true }

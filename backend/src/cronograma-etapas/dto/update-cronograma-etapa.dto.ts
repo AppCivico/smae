@@ -19,6 +19,11 @@ export class UpdateCronogramaEtapaDto {
     @IsOptional()
     ordem?: number
 
+    @IsNumber()
+    cronograma_id: number
+
+    @IsNumber()
+    etapa_id: number
 }
 
 export class RequiredFindParamsDto {

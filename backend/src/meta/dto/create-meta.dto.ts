@@ -61,7 +61,7 @@ export class CreateMetaDto {
     */
     @IsOptional()
     @IsString({ message: '$property| complemento: Precisa ser alfanumérico' })
-    @MaxLength(1000, { message: '$property| complemento: código 10000 caracteres' })
+    @MaxLength(10000, { message: '$property| complemento: código 10000 caracteres' })
     complemento?: string
 
     /**

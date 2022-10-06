@@ -42,6 +42,7 @@ export class Variavel {
     indicador_variavel: IndicadorVariavel[]
     responsaveis?: IdNomeExibicao[]
     ano_base?: number | null
+    codigo: string
 }
 
 export class SerieValorNomimal {

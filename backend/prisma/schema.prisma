@@ -711,11 +711,12 @@ model Indicador {
     contexto             String?
     complemento          String?
 
-    atualizador       Pessoa?             @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador           Pessoa?             @relation("Criador", fields: [criado_por], references: [id])
-    removedor         Pessoa?             @relation("Removedor", fields: [removido_por], references: [id])
-    IndicadorVariavel IndicadorVariavel[]
-    SerieIndicador    SerieIndicador[]
+    atualizador             Pessoa?             @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                 Pessoa?             @relation("Criador", fields: [criado_por], references: [id])
+    removedor               Pessoa?             @relation("Removedor", fields: [removido_por], references: [id])
+    IndicadorVariavelOrigem IndicadorVariavel[] @relation("Origem")
+    IndicadorVariavel       IndicadorVariavel[] @relation("FK")
+    SerieIndicador          SerieIndicador[]
 
     @@map("indicador")
 }
@@ -771,6 +772,8 @@ model Variavel {
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
     ano_base          Int?
 
+    codigo String
+
     peso                 Int?
     casas_decimais       Int                   @default(0) @db.SmallInt
     // usar para calculcar as agregações, por exemplo na média ponderada
@@ -789,13 +792,16 @@ model Variavel {
 // cria relacionamento com um indicador (ou iniciativa que ainda nao existe) com a variavel
 
 model IndicadorVariavel {
-    id           Int       @id @default(autoincrement())
-    // talvez pode ser nulo mais pra frente quando tiver iniciativa, ou sempre q tiver iniciativa
+    id Int @id @default(autoincrement())
+
     indicador_id Int
-    indicador    Indicador @relation(fields: [indicador_id], references: [id])
+    indicador    Indicador @relation("FK", fields: [indicador_id], references: [id])
 
     variavel_id Int
     variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    indicador_origem_id Int?
+    indicador_origem    Indicador? @relation("Origem", fields: [indicador_origem_id], references: [id])
 
     desativado     Boolean   @default(false)
     desativado_em  DateTime?
@@ -1024,11 +1030,11 @@ model Cronograma {
 model Etapa {
     id Int @id @default(autoincrement())
 
-    etapa_pai_id Int?
-    etapa_pai    Etapa?  @relation("EtapaPai", fields: [etapa_pai_id], references: [id])
-    EtapaPai     Etapa[] @relation("EtapaPai")
-    regiao_id    Int?
-    regiao       Regiao? @relation(fields: [regiao_id], references: [id])
+    etapa_pai_id  Int?
+    etapa_pai     Etapa?     @relation("EtapaPai", fields: [etapa_pai_id], references: [id])
+    EtapaPai      Etapa[]    @relation("EtapaPai")
+    regiao_id     Int?
+    regiao        Regiao?    @relation(fields: [regiao_id], references: [id])
     cronograma_id Int
     cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
 
