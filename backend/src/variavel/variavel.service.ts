@@ -113,19 +113,21 @@ export class VariavelService {
                             }
                         }
                     },
-                    {
-                        indicador_variavel: {
-                            some: {
-                                desativado: removidoStatus,
-                                indicador: {
-                                    atividade: {
-                                        compoe_indicador_iniciativa: true,
-                                        iniciativa_id: filters?.iniciativa_id
-                                    }
-                                }
-                            }
-                        }
-                    },
+// Comentado pq automaticamente quando a compoe_indicador_iniciativa já
+// vai existir um relacionamento na indicador_variavel com o indicador da iniciativa
+//~                    {
+//~                        indicador_variavel: {
+//~                            some: {
+//~                                desativado: removidoStatus,
+//~                                indicador: {
+//~                                    atividade: {
+//~                                        compoe_indicador_iniciativa: true,
+//~                                        iniciativa_id: filters?.iniciativa_id
+//~                                    }
+//~                                }
+//~                            }
+//~                        }
+//~                    },
                 ]
             }
         } else if (filters?.atividade_id) {
@@ -181,6 +183,14 @@ export class VariavelService {
                 indicador_variavel: {
                     select: {
                         desativado: true,
+                        indicador_origem: {
+                            select: {
+                                id: true,
+                                iniciativa_id: true,
+                                meta_id: true,
+                                atividade_id: true
+                            }
+                        },
                         indicador: {
                             select: {
                                 id: true,
