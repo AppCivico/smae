@@ -875,7 +875,7 @@ model Iniciativa {
     iniciativa_responsavel IniciativaResponsavel[]
     iniciativa_tag         IniciativaTag[]
     Indicador              Indicador[]
-    Atividade              Atividade[]
+    atividade              Atividade[]
     Cronograma             Cronograma[]
 
     @@map("iniciativa")
