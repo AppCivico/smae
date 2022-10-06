@@ -44,7 +44,7 @@ const schema = Yup.object().shape({
 });
 
 let title = 'Adicionar Cronograma';
-let regionalizavel = ref(1);
+let regionalizavel = ref(singleCronograma.value.regionalizavel);
 
 if (cronograma_id) {
     title = 'Editar Cronograma';
