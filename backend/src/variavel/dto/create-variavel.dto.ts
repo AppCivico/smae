@@ -86,4 +86,7 @@ export class CreateVariavelDto {
     @IsPositive({ message: '$property| ano_base precisa ser numérico' })
     @Type(() => Number)
     ano_base?: number
+
+    @IsString()
+    codigo: string
 }
