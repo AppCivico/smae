@@ -140,7 +140,7 @@ export class VariavelService {
                         variavel_id: variavel_id,
                         indicador_origem_id: indicador.id
                     };
-                    this.logger.log(`recalcIndicadorVariavel: criando ${data}`);
+                    this.logger.log(`recalcIndicadorVariavel: criando ${JSON.stringify(data)}`);
                     await prisma.indicadorVariavel.create({ data: data });
                 }
 
@@ -165,7 +165,7 @@ export class VariavelService {
                             variavel_id: variavel_id,
                             indicador_origem_id: indicadorDaIniciativa.id
                         };
-                        this.logger.log(`recalcIndicadorVariavel: criando ${data}`);
+                        this.logger.log(`recalcIndicadorVariavel: criando ${JSON.stringify(data)}`);
                         await prisma.indicadorVariavel.create({
                             data: data
                         });
@@ -204,7 +204,7 @@ export class VariavelService {
                         variavel_id: variavel_id,
                         indicador_origem_id: indicador.id
                     };
-                    this.logger.log(`recalcIndicadorVariavel: criando ${data}`);
+                    this.logger.log(`recalcIndicadorVariavel: criando ${JSON.stringify(data)}`);
                     await prisma.indicadorVariavel.create({ data: data });
                 }
             }
