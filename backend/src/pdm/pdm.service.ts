@@ -141,13 +141,7 @@ export class PdmService {
         }
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-            if (updatePdmDto.possui_atividade) {
-                let pdm = await this.prisma.pdm.findFirst({ where: { id: id } });
 
-                if (!updatePdmDto.possui_iniciativa || !pdm?.possui_iniciativa) {
-                    throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
-                }
-            }
             let ativo: boolean | undefined = undefined;
             if (updatePdmDto.ativo === true) {
                 ativo = true;

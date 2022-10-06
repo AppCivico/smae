@@ -16,20 +16,6 @@ import { EtapaService } from './etapa.service';
 export class EtapaController {
     constructor(private readonly etapaService: EtapaService) { }
 
-    @Post()
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroEtapa.inserir')
-    async create(@Body() createEtapaDto: CreateEtapaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.etapaService.create(createEtapaDto, user);
-    }
-
-    @ApiBearerAuth('access-token')
-    @Get()
-    async findAll(@Query() filters: FilterEtapaDto): Promise<ListEtapaDto> {
-        return { 'linhas': await this.etapaService.findAll(filters) };
-    }
-
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
