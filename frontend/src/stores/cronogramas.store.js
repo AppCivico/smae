@@ -35,15 +35,18 @@ export const useCronogramasStore = defineStore({
         async getAll(p_id,parent_field) {
             try {
                 if(!this.Cronogramas[parent_field]) this.Cronogramas[parent_field] = [];
-                this.Cronogramas[parent_field][p_id] = { loading: true };
-                let r = await requestS.get(`${baseUrl}/cronograma?${parent_field}=${p_id}`);    
-                this.Cronogramas[parent_field][p_id] = r.linhas.map(x=>{
-                    x.inicio_previsto = this.dateToField(x.inicio_previsto);
-                    x.termino_previsto = this.dateToField(x.termino_previsto);
-                    x.inicio_real = this.dateToField(x.inicio_real);
-                    x.termino_real = this.dateToField(x.termino_real);
-                    return x;
-                });
+                if(!this.Cronogramas[parent_field][p_id]){
+                    this.Cronogramas[parent_field][p_id] = { loading: true };
+                    let r = await requestS.get(`${baseUrl}/cronograma?${parent_field}=${p_id}`);    
+                    this.Cronogramas[parent_field][p_id] = r.linhas.map(x=>{
+                        x.inicio_previsto = this.dateToField(x.inicio_previsto);
+                        x.termino_previsto = this.dateToField(x.termino_previsto);
+                        x.inicio_real = this.dateToField(x.inicio_real);
+                        x.termino_real = this.dateToField(x.termino_real);
+                        return x;
+                    });
+                }
+                return true;
             } catch (error) {
                 this.Cronogramas[parent_field][p_id] = { error };
             }

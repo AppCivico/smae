@@ -34,17 +34,19 @@ export const useEtapasStore = defineStore({
         },
         async getAll(cronograma_id) {
             try {
-                this.Etapas[cronograma_id] = { loading: true };
-                let r = await requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}`);    
-                this.Etapas[cronograma_id] = r.linhas.length ? r.linhas.map(x=>{
-                    if(x.cronograma_origem_etapa&&x.cronograma_origem_etapa.id==cronograma_id) delete x.cronograma_origem_etapa;
-                    x.etapa.inicio_previsto = this.dateToField(x.etapa.inicio_previsto);
-                    x.etapa.termino_previsto = this.dateToField(x.etapa.termino_previsto);
-                    x.etapa.inicio_real = this.dateToField(x.etapa.inicio_real);
-                    x.etapa.termino_real = this.dateToField(x.etapa.termino_real);
-                    x.etapa.prazo = this.dateToField(x.etapa.prazo);
-                    return x;
-                }).sort((a,b)=>{return a.ordem-b.ordem;}) : r.linhas;
+                if(!this.Etapas[cronograma_id]){
+                    this.Etapas[cronograma_id] = { loading: true };
+                    let r = await requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}`);    
+                    this.Etapas[cronograma_id] = r.linhas.length ? r.linhas.map(x=>{
+                        if(x.cronograma_origem_etapa&&x.cronograma_origem_etapa.id==cronograma_id) delete x.cronograma_origem_etapa;
+                        x.etapa.inicio_previsto = this.dateToField(x.etapa.inicio_previsto);
+                        x.etapa.termino_previsto = this.dateToField(x.etapa.termino_previsto);
+                        x.etapa.inicio_real = this.dateToField(x.etapa.inicio_real);
+                        x.etapa.termino_real = this.dateToField(x.etapa.termino_real);
+                        x.etapa.prazo = this.dateToField(x.etapa.prazo);
+                        return x;
+                    }).sort((a,b)=>{return a.ordem-b.ordem;}) : r.linhas;
+                }
                 return true;
             } catch (error) {
                 this.Etapas[cronograma_id] = { error };
@@ -55,7 +57,7 @@ export const useEtapasStore = defineStore({
                 if(!cronograma_id) throw "Cronograma inválido";
                 if(!etapa_id) throw "Etapa inválida";
                 this.singleEtapa = { loading: true };
-                await this.getAll(cronograma_id);
+                if(!this.Etapas[cronograma_id])await this.getAll(cronograma_id);
                 this.singleEtapa = this.Etapas[cronograma_id].length? this.Etapas[cronograma_id].find((u)=>u.etapa_id == etapa_id):{};
                 return true;
             } catch (error) {

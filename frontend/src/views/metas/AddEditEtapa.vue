@@ -23,7 +23,7 @@ const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
-if(cronograma_id&&(!singleCronograma?.id || singleCronograma.id!=cronograma_id)){
+if(cronograma_id&&(!singleCronograma?.value?.id || singleCronograma?.value.id!=cronograma_id)){
     CronogramasStore.getById(parentVar,parentField,cronograma_id);
 }
 
@@ -50,9 +50,9 @@ const virtualParent = ref({});
 if(etapa_id){
     title = 'Editar etapa';
     if(!singleEtapa.value.id) Promise.all([EtapasStore.getById(cronograma_id,etapa_id)]).then(()=>{
-        if(singleEtapa.value?.regiao_id){
-            if(singleEtapa.value.regiao_id) (async()=>{
-                await RegionsStore.filterRegions({id: singleEtapa.value.regiao_id});
+        if(singleEtapa.value?.etapa.regiao_id){
+            if(singleEtapa.value.etapa.regiao_id) (async()=>{
+                await RegionsStore.filterRegions({id: singleEtapa.value.etapa.regiao_id});
                 level1.value = tempRegions.value[0]?.children[0].index??null;
                 level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
                 level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
@@ -60,19 +60,23 @@ if(etapa_id){
         }
     });
     (async()=>{
+        var p_cron, mon;
+        if(atividade_id) acumulativa_iniciativa.value = {loading:true};
+        if(iniciativa_id) acumulativa_meta.value = {loading:true};
+
         if(atividade_id){
-            let p_cron = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
-            let mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
+            p_cron = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
+            mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
             if(mon){
-                acumulativa_iniciativa.value = !mon.inativo;
+                acumulativa_iniciativa.value = !mon.inativo?"1":false;
                 acumulativa_iniciativa_o.value = mon.ordem;
             }
         }
         if(iniciativa_id){
-            let p_cron = await CronogramasStore.getItemByParent(meta_id,'meta_id');
-            let mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
+            p_cron = await CronogramasStore.getItemByParent(meta_id,'meta_id');
+            mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
             if(mon){
-                acumulativa_meta.value = !mon.inativo;
+                acumulativa_meta.value = !mon.inativo?"1":false;
                 acumulativa_meta_o.value = mon.ordem;
             }
         }
@@ -103,15 +107,24 @@ async function onSubmit(values) {
         values.regiao_id = singleCronograma.value.regionalizavel? Number(values.regiao_id):null;
         values.ordem = Number(values.ordem)??null;
         values.etapa_pai_id = 1;
-        
+
         var rota = false;
         var etapa_id_gen = false;
         if (etapa_id) {
-            if(singleEtapa.value.id==etapa_id){
+            if(singleEtapa.value.etapa_id==etapa_id){
                 r = await EtapasStore.update(etapa_id, values);
                 msg = 'Dados salvos com sucesso!';
                 rota = currentEdit;
                 etapa_id_gen = etapa_id;
+
+                if(values.ordem!=singleEtapa.value.ordem){
+                    EtapasStore.monitorar({
+                        cronograma_id: Number(cronograma_id),
+                        etapa_id: Number(etapa_id_gen),
+                        inativo: false,
+                        ordem: Number(values.ordem)??null
+                    });
+                }
             }
         } else {
             r = await EtapasStore.insert(Number(cronograma_id),values);
@@ -127,7 +140,7 @@ async function onSubmit(values) {
                     if(ri.id){
                         await EtapasStore.monitorar({
                             cronograma_id: ri.id,
-                            etapa_id: etapa_id_gen,
+                            etapa_id: Number(etapa_id_gen),
                             inativo: !values.acumulativa_iniciativa,
                             ordem: Number(values.acumulativa_iniciativa_o)??null
                         });
@@ -138,7 +151,7 @@ async function onSubmit(values) {
                     if(rm.id){
                         await EtapasStore.monitorar({
                             cronograma_id: rm.id,
-                            etapa_id: etapa_id_gen,
+                            etapa_id: Number(etapa_id_gen),
                             inativo: !values.acumulativa_meta,
                             ordem: Number(values.acumulativa_meta_o)??null
                         });
@@ -148,9 +161,10 @@ async function onSubmit(values) {
                 console.log(r);
                 throw 'Ocorreu um erro inesperado.';
             }
-            CronogramasStore.clear();
             EtapasStore.clear();
+            CronogramasStore.clear();
             EtapasStore.getAll(cronograma_id);
+            CronogramasStore.getById(parentVar,parentField,cronograma_id);
             alertStore.success(msg);
             editModalStore.clear();
             if(rota)router.push(rota);
@@ -195,7 +209,7 @@ function maskDate(el){
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
     <template v-if="!(singleEtapa?.loading || singleEtapa?.error)&&singleCronograma?.id">
-        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="etapa_id?singleEtapa:virtualParent" v-slot="{ errors, isSubmitting }">
+        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="etapa_id?singleEtapa.etapa:virtualParent" v-slot="{ errors, isSubmitting }">
             <div class="flex g2">
                 <div class="f2">
                     <label class="label">Nome <span class="tvermelho">*</span></label>
@@ -204,7 +218,7 @@ function maskDate(el){
                 </div>
                 <div class="f1">
                     <label class="label">Ordem</label>
-                    <Field name="ordem" type="text" class="inputtext light mb1" :class="{ 'error': errors.ordem }" />
+                    <Field name="ordem" type="text" class="inputtext light mb1" :value="etapa_id?singleEtapa?.ordem:ordem" :class="{ 'error': errors.ordem }" />
                     <div class="error-msg">{{ errors.ordem }}</div>
                 </div>
             </div>
@@ -273,7 +287,7 @@ function maskDate(el){
                 </div>
             </div>
 
-            <div class="flex center g2 mb2 mt1" v-if="atividade_id">
+            <div class="flex center g2 mb2 mt1" v-if="atividade_id && !acumulativa_iniciativa?.loading">
                 <div class="f2">
                     <label class="block">
                         <Field name="acumulativa_iniciativa" v-model="acumulativa_iniciativa" type="checkbox" value="1" class="inputcheckbox" />
@@ -286,8 +300,11 @@ function maskDate(el){
                     <Field name="acumulativa_iniciativa_o" v-model="acumulativa_iniciativa_o" type="number" class="inputtext light mb1"/>
                 </div>
             </div>
+            <template v-else-if="acumulativa_iniciativa?.loading">
+                <div class="spinner">Carregando</div>
+            </template>
 
-            <div class="flex center g2 mb2 mt1" v-if="iniciativa_id">
+            <div class="flex center g2 mb2 mt1" v-if="iniciativa_id && !acumulativa_meta?.loading">
                 <div class="f2">
                     <label class="block">
                         <Field name="acumulativa_meta" v-model="acumulativa_meta" type="checkbox" value="1" class="inputcheckbox" />
@@ -300,6 +317,9 @@ function maskDate(el){
                     <Field name="acumulativa_meta_o" v-model="acumulativa_meta_o" type="number" class="inputtext light mb1"/>
                 </div>
             </div>
+            <template v-else-if="acumulativa_meta?.loading">
+                <div class="spinner">Carregando</div>
+            </template>
 
             <div class="flex spacebetween center mb2">
                 <hr class="mr2 f1"/>
