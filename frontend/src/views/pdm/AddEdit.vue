@@ -172,8 +172,9 @@ async function uploadshape(e){
                     <div v-else-if="curfile.loading" class="addlink"><span>Carregando</span> <svg width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
                     
                     <div v-else-if="curfile.name">
-                        <!-- <img :src="`${baseUrl}/download/${singlePdm.logo}`" v-if="singlePdm.logo"> -->
-                        <span>{{curfile?.name?.slice(0,30)}}</span> <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
+                        <img :src="`${baseUrl}/download/${singlePdm.logo}?inline=true`" width="100" class="ib mr1" v-if="singlePdm.logo==curfile?.name">
+                        <span v-else>{{curfile?.name?.slice(0,30)}}</span>
+                        <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
                     </div>
                     <Field name="upload_logo" type="hidden" :value="curfile?.name"/>
                 </div>

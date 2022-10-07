@@ -8,6 +8,7 @@ import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue'
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const editModalStore = useEditModalStore();
 
@@ -55,7 +56,8 @@ function groupSlug(s) {
     <Dashboard>
         <Breadcrumb />
         <div class="flex spacebetween center mb2">
-            <h1>{{activePdm.nome}}</h1>
+            <img :src="`${baseUrl}/download/${activePdm.logo}?inline=true`" width="100" class="ib mr1" v-if="activePdm.logo">
+            <h1 v-else>{{activePdm.nome}}</h1>
             <hr class="ml2 f1"/>
             <div class="ml2 dropbtn">
                 <span class="btn">Adicionar</span>

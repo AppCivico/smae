@@ -102,12 +102,19 @@ export const useCronogramasStore = defineStore({
         },
         async getEtapasByCron(cronograma_id){
             try{
+                this.singleCronogramaEtapas = await this.getEtapasItemsByCron(cronograma_id);
+            }catch(error){
+                this.singleCronogramaEtapas = { error };
+            }
+        },
+        async getEtapasItemsByCron(cronograma_id){
+            try{
                 if(!cronograma_id) throw "Cronograma inválido";
                 const EtapasStore = useEtapasStore();
                 await EtapasStore.getAll(cronograma_id);
-                this.singleCronogramaEtapas = EtapasStore.Etapas[cronograma_id];
+                return EtapasStore.Etapas[cronograma_id];
             }catch(error){
-                this.singleCronogramaEtapas = { error };
+                return { error };
             }
         },
     }

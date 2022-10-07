@@ -52,7 +52,7 @@ onUpdated(()=>{start()});
                 <ul>
                     <li><router-link v-if="perm?.CadastroEtapa?.inserir" :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`">Etapa da {{parent_label}}</router-link></li>
                     <li><router-link v-if="perm?.CadastroEtapa?.inserir&&meta_id&&!iniciativa_id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`">A partir de Iniciativa</router-link></li>
-                    <li><router-link v-if="perm?.CadastroEtapa?.inserir&&iniciativa_id&&!atividade_id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`">A partir de Atividade</router-link></li>
+                    <li><router-link v-if="perm?.CadastroEtapa?.inserir&&meta_id&&!atividade_id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`">A partir de Atividade</router-link></li>
                 </ul>
             </div>
             <div class="ml2" v-else>
@@ -94,7 +94,7 @@ onUpdated(()=>{start()});
             </div>
 
             <div class="etapas" v-if="!singleCronogramaEtapas?.loading&&singleCronogramaEtapas.length">
-                <div class="etapa" v-for="(r, index) in singleCronogramaEtapas" :key="r.etapa.id">
+                <div class="etapa" v-for="(r, index) in singleCronogramaEtapas?.filter(x=>!x.inativo).sort((a,b)=>a.ordem-b.ordem)" :key="r.etapa.id">
                     <div class="status"><span>{{index+1}}</span></div>
                     <div class="title mb1"><h3>{{r.etapa.titulo}}</h3></div>
                     <div class="flex center mb05 tc300 w700 t12 uc">
@@ -115,10 +115,11 @@ onUpdated(()=>{start()});
                         <div class="ml1 f1">{{r.etapa.termino_real}}</div>
                         <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
                         <div class="ml1 f0" style="flex-basis:20px; height: calc(20px + 1rem);">
-                            <div class="dropbtn right" v-if="perm?.CadastroEtapa?.editar&&(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)">
+                            <div class="dropbtn right" v-if="perm?.CadastroEtapa?.editar">
                                 <span class=""><svg width="20" height="20"><use xlink:href="#i_more"></use></svg></span>
                                 <ul>
-                                    <li><router-link :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`">Editar Etapa</router-link></li>
+                                    <li><router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)" :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`">Editar Etapa</router-link></li>
+                                    <li><router-link v-if="r.cronograma_origem_etapa&&r.cronograma_origem_etapa?.id!=singleCronograma?.id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`">Editar Monitoramento</router-link></li>
                                 </ul>
                             </div>
                         </div>
@@ -143,6 +144,7 @@ onUpdated(()=>{start()});
                 </div>
             </div>
             <template v-else-if="singleCronogramaEtapas?.loading">
+                singleCronogramaEtapas
                 <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
             </template>
             <div class="p1 bgc50" v-else>
@@ -152,6 +154,7 @@ onUpdated(()=>{start()});
             </div>
         </template>
         <template v-else-if="singleCronograma?.loading">
+            singleCronograma
             <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
         </template>
         <div class="p1 bgc50 mb2" v-else>
