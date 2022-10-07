@@ -80,11 +80,27 @@ export class PdmService {
                 possui_contexto_meta: true,
                 possui_complementacao_meta: true,
                 possui_atividade: true,
-                possui_iniciativa: true
+                possui_iniciativa: true,
+                arquivo_logo_id: true
             }
         });
 
-        return listActive;
+        type tmp = Omit<typeof listActive[0], 'arquivo_logo_id'> & { logo: string | null };
+
+        const listActiveTmp: tmp[] = listActive.map(pdm => {
+            let logo = null;
+            if (pdm.arquivo_logo_id) {
+                logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token
+            }
+
+            return {
+                ...pdm,
+                arquivo_logo_id: undefined,
+                logo: logo
+            }
+        });
+
+        return listActiveTmp;
     }
 
     async getDetail(id: number, user: PessoaFromJwt) {
