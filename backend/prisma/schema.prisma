@@ -540,6 +540,7 @@ model Arquivo {
     criado_em         DateTime           @default(now()) @db.Timestamptz(6)
     caminho           String
     nome_original     String
+    mime_type         String?
     tamanho_bytes     Int
     descricao         String?
     tipo_documento_id Int?
