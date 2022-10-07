@@ -7,6 +7,8 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+import { IniciativaAtiva } from '@/helpers/IniciativaAtiva.js';
+IniciativaAtiva();
 
 import { useAlertStore, useMetasStore, useIniciativasStore, useTagsStore } from '@/stores';
 
@@ -40,12 +42,12 @@ Promise.all([
 });
 
 const virtualParent = ref({});
-let title = 'Cadastro de Iniciativa';
+let title = 'Cadastro de';
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
 if (iniciativa_id) {
-    title = 'Editar Iniciativa';
+    title = 'Editar';
 }
 (async()=>{
     await MetasStore.getById(meta_id);
@@ -164,7 +166,7 @@ function filterResponsible(orgao_id) {
     <Dashboard>
         <div class="flex spacebetween center mb2">
             <div>
-                <h1>{{title}}</h1>
+                <h1>{{title}} {{activePdm.rotulo_iniciativa}}</h1>
                 <div class="t24">Meta {{singleMeta.titulo}}</div>
             </div>
             <hr class="ml2 f1"/>

@@ -1,13 +1,12 @@
 <script setup>
-import { reactive, onMounted, onUpdated } from 'vue';
+import { ref, reactive, onMounted, onUpdated } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
 import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
-import { useEditModalStore, useAuthStore, useCronogramasStore } from '@/stores';
+import { useEditModalStore, useAuthStore, useMetasStore, useCronogramasStore } from '@/stores';
 import { useRoute } from 'vue-router';
 import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
-
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -19,10 +18,20 @@ let meta_id = reactive(route.params.meta_id);
 let iniciativa_id = reactive(route.params.iniciativa_id);
 let atividade_id = reactive(route.params.atividade_id);
 
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
+MetasStore.getPdM();
+
 let parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 let parentVar = atividade_id??iniciativa_id??meta_id??false;
 let parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
-let parent_label = atividade_id?'atividade':iniciativa_id?'iniciativa':meta_id?'meta':false;
+let parentLabel = ref(atividade_id?'-':iniciativa_id?'-':meta_id?'Meta':false);
+(async()=>{
+    await MetasStore.getPdM();
+    if(atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
+    else if(iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
+})();
+
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
@@ -50,9 +59,9 @@ onUpdated(()=>{start()});
             <div class="ml1 dropbtn" v-if="!singleCronograma?.loading&&singleCronograma?.id">
                 <span class="btn">Nova etapa</span>
                 <ul>
-                    <li><router-link v-if="perm?.CadastroEtapa?.inserir" :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`">Etapa da {{parent_label}}</router-link></li>
-                    <li><router-link v-if="perm?.CadastroEtapa?.inserir&&meta_id&&!iniciativa_id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`">A partir de Iniciativa</router-link></li>
-                    <li><router-link v-if="perm?.CadastroEtapa?.inserir&&meta_id&&!atividade_id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`">A partir de Atividade</router-link></li>
+                    <li><router-link v-if="perm?.CadastroEtapa?.inserir" :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`">Etapa da {{parentLabel}}</router-link></li>
+                    <li><router-link v-if="activePdm.possui_iniciativa&&perm?.CadastroEtapa?.inserir&&meta_id&&!iniciativa_id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`">A partir de {{activePdm.rotulo_iniciativa}}</router-link></li>
+                    <li><router-link v-if="activePdm.possui_atividade&&perm?.CadastroEtapa?.inserir&&meta_id&&!atividade_id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`">A partir de {{activePdm.rotulo_atividade}}</router-link></li>
                 </ul>
             </div>
             <div class="ml2" v-else>
@@ -144,7 +153,6 @@ onUpdated(()=>{start()});
                 </div>
             </div>
             <template v-else-if="singleCronogramaEtapas?.loading">
-                singleCronogramaEtapas
                 <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
             </template>
             <div class="p1 bgc50" v-else>
@@ -154,7 +162,6 @@ onUpdated(()=>{start()});
             </div>
         </template>
         <template v-else-if="singleCronograma?.loading">
-            singleCronograma
             <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
         </template>
         <div class="p1 bgc50 mb2" v-else>

@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useAlertStore, useEditModalStore, useRegionsStore, useCronogramasStore, useEtapasStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useRegionsStore, useMetasStore, useCronogramasStore, useEtapasStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -20,6 +20,10 @@ const etapa_id = route.params.etapa_id;
 const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
+
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
+MetasStore.getPdM();
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
@@ -291,38 +295,42 @@ function maskDate(el){
                 </div>
             </div>
 
-            <div class="flex center g2 mb2 mt1" v-if="atividade_id && !acumulativa_iniciativa?.loading">
-                <div class="f2">
-                    <label class="block">
-                        <Field name="acumulativa_iniciativa" v-model="acumulativa_iniciativa" type="checkbox" value="1" class="inputcheckbox" />
-                        <span :class="{ 'error': errors.acumulativa_iniciativa }">Etapa monitorada no cronograma da iniciativa</span>
-                    </label>
-                    <div class="error-msg">{{ errors.acumulativa_iniciativa }}</div>
+            <template v-if="activePdm.possui_atividade">
+                <div class="flex center g2 mb2 mt1" v-if="atividade_id && !acumulativa_iniciativa?.loading">
+                    <div class="f2">
+                        <label class="block">
+                            <Field name="acumulativa_iniciativa" v-model="acumulativa_iniciativa" type="checkbox" value="1" class="inputcheckbox" />
+                            <span :class="{ 'error': errors.acumulativa_iniciativa }">Etapa monitorada no cronograma de {{activePdm.rotulo_iniciativa}}</span>
+                        </label>
+                        <div class="error-msg">{{ errors.acumulativa_iniciativa }}</div>
+                    </div>
+                    <div class="f1">
+                        <label class="label">Ordem</label>
+                        <Field name="acumulativa_iniciativa_o" v-model="acumulativa_iniciativa_o" type="number" class="inputtext light mb1"/>
+                    </div>
                 </div>
-                <div class="f1">
-                    <label class="label">Ordem</label>
-                    <Field name="acumulativa_iniciativa_o" v-model="acumulativa_iniciativa_o" type="number" class="inputtext light mb1"/>
-                </div>
-            </div>
-            <template v-else-if="acumulativa_iniciativa?.loading">
-                <div class="spinner">Carregando</div>
+                <template v-else-if="acumulativa_iniciativa?.loading">
+                    <div class="spinner">Carregando</div>
+                </template>
             </template>
 
-            <div class="flex center g2 mb2 mt1" v-if="iniciativa_id && !acumulativa_meta?.loading">
-                <div class="f2">
-                    <label class="block">
-                        <Field name="acumulativa_meta" v-model="acumulativa_meta" type="checkbox" value="1" class="inputcheckbox" />
-                        <span :class="{ 'error': errors.acumulativa_meta }">Etapa monitorada no cronograma da meta</span>
-                    </label>
-                    <div class="error-msg">{{ errors.acumulativa_meta }}</div>
+            <template v-if="activePdm.possui_iniciativa">
+                <div class="flex center g2 mb2 mt1" v-if="iniciativa_id && !acumulativa_meta?.loading">
+                    <div class="f2">
+                        <label class="block">
+                            <Field name="acumulativa_meta" v-model="acumulativa_meta" type="checkbox" value="1" class="inputcheckbox" />
+                            <span :class="{ 'error': errors.acumulativa_meta }">Etapa monitorada no cronograma da meta</span>
+                        </label>
+                        <div class="error-msg">{{ errors.acumulativa_meta }}</div>
+                    </div>
+                    <div class="f1">
+                        <label class="label">Ordem</label>
+                        <Field name="acumulativa_meta_o" v-model="acumulativa_meta_o" type="number" class="inputtext light mb1"/>
+                    </div>
                 </div>
-                <div class="f1">
-                    <label class="label">Ordem</label>
-                    <Field name="acumulativa_meta_o" v-model="acumulativa_meta_o" type="number" class="inputtext light mb1"/>
-                </div>
-            </div>
-            <template v-else-if="acumulativa_meta?.loading">
-                <div class="spinner">Carregando</div>
+                <template v-else-if="acumulativa_meta?.loading">
+                    <div class="spinner">Carregando</div>
+                </template>
             </template>
 
             <div class="flex spacebetween center mb2">

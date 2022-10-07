@@ -7,8 +7,10 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
+AtividadeAtiva();
 
-import { useAlertStore, useIniciativasStore, useAtividadesStore } from '@/stores';
+import { useAlertStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -16,6 +18,10 @@ const meta_id = route.params.meta_id;
 const iniciativa_id = route.params.iniciativa_id;
 const atividade_id = route.params.atividade_id;
 var oktogo = ref(0);
+
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
+MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
@@ -31,14 +37,14 @@ const orgaos_participantes = ref([
 const coordenadores_cp = ref({participantes:[], busca:''});
 
 const virtualParent = ref({});
-let title = 'Cadastro de Atividade';
+let title = 'Cadastro de';
 
 const organsAvailable = ref([]);
 const usersAvailable = ref({});
 const coordsAvailable = ref([]);
 let compoe_indicador_iniciativa = ref(singleAtividade.value.compoe_indicador_iniciativa);
 if (atividade_id) {
-    title = 'Editar Atividade';
+    title = 'Editar';
 }
 (async()=>{
     await IniciativasStore.getById(meta_id,iniciativa_id);
@@ -154,8 +160,8 @@ function filterResponsible(orgao_id) {
     <Dashboard>
         <div class="flex spacebetween center mb2">
             <div>
-                <h1>{{title}}</h1>
-                <div class="t24">Iniciativa {{singleIniciativa.titulo}}</div>
+                <h1>{{title}} {{activePdm.rotulo_atividade}}</h1>
+                <div class="t24">{{activePdm.rotulo_iniciativa}} {{singleIniciativa.titulo}}</div>
             </div>
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>

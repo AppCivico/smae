@@ -22,14 +22,20 @@ const etapa_id = route.params.etapa_id;
 const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
 if(!cronograma_id) router.push(currentEdit);
 
+const MetasStore = useMetasStore();
+const { activePdm ,singleMeta } = storeToRefs(MetasStore);
+
 let parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 let parentVar = atividade_id??iniciativa_id??meta_id??false;
 let parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
-let parent_label = atividade_id?'atividade':iniciativa_id?'iniciativa':meta_id?'meta':false;
-
-
-const MetasStore = useMetasStore();
-const { singleMeta } = storeToRefs(MetasStore);
+let parentLabel = ref(recorte.value);
+let subtitle = ref('A partir de '+parentLabel.value);
+(async()=>{
+    await MetasStore.getPdM();
+    if(recorte.value=='atividade'){ parentLabel.value = activePdm.value.rotulo_atividade;}
+    else if(recorte.value=='iniciativa'){ parentLabel.value = activePdm.value.rotulo_iniciativa;}
+    subtitle.value = 'A partir de '+parentLabel.value;
+})();
 
 const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
@@ -51,7 +57,6 @@ let level_ati = ref(0);
 if(iniciativa_id){ level_ini.value=iniciativa_id; }
 
 let title = 'Monitorar etapa';
-let subtitle = ref('A partir de '+recorte.value);
 let inativo = ref(singleMonitoramento.value.inativo);
 const virtualParent = ref({});
 if(etapa_id){
@@ -189,7 +194,7 @@ lastlevel();
                     <option value="0">Selecione</option>
                     <option v-for="r in Atividades[level_ini]" :key="r.id" :value="r.id">{{r.titulo}}</option>
                 </select>
-                <input v-else class="inputtext light mb1" type="text" disabled :value="'Selecionar iniciativa'">
+                <input v-else class="inputtext light mb1" type="text" disabled :value="'Selecionar '+activePdm.rotulo_atividade">
             </template>
 
 

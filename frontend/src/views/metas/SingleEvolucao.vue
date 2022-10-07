@@ -25,7 +25,12 @@ const atividade_id = route.params.atividade_id;
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 const parent_id = atividade_id??iniciativa_id??meta_id??false;
 const parent_field = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
-const parent_label = atividade_id?'atividade':iniciativa_id?'iniciativa':meta_id?'meta':false;
+let parentLabel = ref(atividade_id?'-':iniciativa_id?'-':meta_id?'Meta':false);
+(async()=>{
+    await MetasStore.getPdM();
+    if(atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
+    else if(iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
+})();
 
 const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores } = storeToRefs(IndicadoresStore);
@@ -56,7 +61,7 @@ onUpdated(()=>{start()});
         <Breadcrumb />
         
         <div class="flex spacebetween center mb2">
-            <h1>Evolução da {{parent_label}}</h1>
+            <h1>Evolução da {{parentLabel}}</h1>
             <hr class="ml2 f1"/>
         </div>
         
