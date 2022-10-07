@@ -78,6 +78,13 @@ export class UploadService {
 
         const arquivoId = Number(nextVal[0].id);
 
+        let originalname = file.originalname;
+        // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
+        // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
+        if (!/[^\u0000-\u00ff]/.test(originalname)) {
+            originalname = Buffer.from(originalname, 'latin1').toString('utf8')
+        }
+
         let key = [
             'uploads',
             String(createUploadDto.tipo).toLocaleLowerCase(),
@@ -85,7 +92,7 @@ export class UploadService {
             String(user.id),
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            file.originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
+            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
         ].join('/');
 
         createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id &&
@@ -106,7 +113,7 @@ export class UploadService {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 caminho: key,
-                nome_original: file.originalname,
+                nome_original: originalname,
                 tamanho_bytes: file.size,
                 descricao: createUploadDto.descricao,
                 tipo: String(createUploadDto.tipo),
