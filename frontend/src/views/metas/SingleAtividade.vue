@@ -5,6 +5,8 @@ import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { useAuthStore, useAtividadesStore } from '@/stores';
 import { useRoute } from 'vue-router';
+import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
+AtividadeAtiva();
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);

@@ -15,14 +15,19 @@ const iniciativa_id = route.params.iniciativa_id;
 const atividade_id = route.params.atividade_id;
 const cronograma_id = route.params.cronograma_id;
 
+const MetasStore = useMetasStore();
+const { activePdm ,singleMeta } = storeToRefs(MetasStore);
+MetasStore.getById(meta_id);
+
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
-const parentLabel = atividade_id?'Atividade':iniciativa_id?'Iniciativa':meta_id?'Meta':false;
-
-const MetasStore = useMetasStore();
-const { singleMeta } = storeToRefs(MetasStore);
-MetasStore.getById(meta_id);
+let parentLabel = ref(atividade_id?'-':iniciativa_id?'-':meta_id?'Meta':false);
+(async()=>{
+    await MetasStore.getPdM();
+    if(atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
+    else if(iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
+})();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);

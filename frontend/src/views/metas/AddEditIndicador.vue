@@ -27,8 +27,9 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const MetasStore = useMetasStore();
-const { singleMeta } = storeToRefs(MetasStore);
+const { activePdm ,singleMeta } = storeToRefs(MetasStore);
 MetasStore.getById(meta_id);
+MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
@@ -188,8 +189,8 @@ function fieldToDate(d){
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
-        <div v-if="atividade_id" class="t24 mb2">Atividade {{singleAtividade.codigo}} {{singleAtividade.titulo}}</div>
-        <div v-else-if="iniciativa_id" class="t24 mb2">Iniciativa {{singleIniciativa.codigo}} {{singleIniciativa.titulo}}</div>
+        <div v-if="atividade_id" class="t24 mb2">{{activePdm.rotulo_atividade}} {{singleAtividade.codigo}} {{singleAtividade.titulo}}</div>
+        <div v-else-if="iniciativa_id" class="t24 mb2">{{activePdm.rotulo_iniciativa}} {{singleIniciativa.codigo}} {{singleIniciativa.titulo}}</div>
         <div v-else-if="meta_id" class="t24 mb2">Meta {{singleMeta.codigo}} {{singleMeta.titulo}}</div>
 
         <template v-if="!(singleIndicadores?.loading || singleIndicadores?.error)">
