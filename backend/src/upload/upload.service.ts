@@ -187,7 +187,7 @@ export class UploadService {
         return {
             stream: await this.storage.getStream(arquivo.caminho),
             nome: arquivo.nome_original,
-            mime_type: arquivo.mime_type,
+            mime_type: arquivo.mime_type || 'application/octet-stream',
         };
 
     }

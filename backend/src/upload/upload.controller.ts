@@ -54,7 +54,7 @@ export class UploadController {
             });
         }
         res.set({
-            'Content-Type': data.mime_type || 'application/octet-stream'
+            'Content-Type': data.mime_type
         });
 
         data.stream.pipe(res);
