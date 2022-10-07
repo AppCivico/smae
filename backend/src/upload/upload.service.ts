@@ -14,6 +14,7 @@ import { TipoUpload } from './entities/tipo-upload';
 interface TokenResponse {
     stream: NodeJS.ReadableStream
     nome: string
+    mime_type: string
 }
 
 const DOWNLOAD_AUD = 'dl';
@@ -78,6 +79,13 @@ export class UploadService {
 
         const arquivoId = Number(nextVal[0].id);
 
+        let originalname = file.originalname;
+        // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
+        // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
+        if (!/[^\u0000-\u00ff]/.test(originalname)) {
+            originalname = Buffer.from(originalname, 'latin1').toString('utf8')
+        }
+
         let key = [
             'uploads',
             String(createUploadDto.tipo).toLocaleLowerCase(),
@@ -85,7 +93,7 @@ export class UploadService {
             String(user.id),
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            file.originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
+            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
         ].join('/');
 
         createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id &&
@@ -106,7 +114,8 @@ export class UploadService {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 caminho: key,
-                nome_original: file.originalname,
+                nome_original: originalname,
+                mime_type: file.mimetype || 'application/octet-stream',
                 tamanho_bytes: file.size,
                 descricao: createUploadDto.descricao,
                 tipo: String(createUploadDto.tipo),
@@ -170,7 +179,7 @@ export class UploadService {
     async getBufferByToken(downloadToken: string): Promise<TokenResponse> {
         const arquivo = await this.prisma.arquivo.findFirst({
             where: { id: this.checkDownloadToken(downloadToken) },
-            select: { caminho: true, nome_original: true }
+            select: { caminho: true, nome_original: true, mime_type: true }
         });
 
         if (!arquivo) throw new HttpException('Arquivo não encontrado', 400);
@@ -178,6 +187,7 @@ export class UploadService {
         return {
             stream: await this.storage.getStream(arquivo.caminho),
             nome: arquivo.nome_original,
+            mime_type: arquivo.mime_type || 'application/octet-stream',
         };
 
     }
