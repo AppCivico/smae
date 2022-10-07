@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, StreamableFile, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, StreamableFile, Res, Query } from '@nestjs/common';
 import { UploadService } from './upload.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -11,6 +11,7 @@ import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 import { Stream } from 'stream';
 import { createReadStream } from 'fs';
 import { Response } from 'express';
+import { DownloadOptions } from './dto/download-options';
 
 @Controller('')
 @ApiTags('Upload')
@@ -41,15 +42,17 @@ export class UploadController {
         type: ''
     })
     async get(
-        @CurrentUser() user: PessoaFromJwt,
+        @Query() filters: DownloadOptions,
         @Param('token') dlToken: string,
         @Res() res: Response
     ) {
         const data = await this.uploadService.getBufferByToken(dlToken);
 
-        res.set({
-            'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"'
-        });
+        if (!filters.inline) {
+            res.set({
+                'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"'
+            });
+        }
 
         data.stream.pipe(res);
     }
