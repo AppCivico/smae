@@ -23,7 +23,7 @@ export class IndicadorVariavel {
     };
     indicador_origem: {
         id: number;
-        titulo: true;
+        titulo: string;
         meta: IdTitulo | null;
         iniciativa: IdTitulo | null;
         atividade: IdTitulo | null;
