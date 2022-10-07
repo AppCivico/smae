@@ -180,13 +180,17 @@ export class VariavelService {
                 },
                 select: {
                     compoe_indicador_meta: true,
-                    meta_id: true,
-                    Indicador: {
-                        where: {
-                            removido_em: null,
-                        },
+                    meta: {
                         select: {
-                            id: true
+                            id: true,
+                            indicador: {
+                                where: {
+                                    removido_em: null,
+                                },
+                                select: {
+                                    id: true
+                                }
+                            }
                         }
                     }
                 }
@@ -194,13 +198,13 @@ export class VariavelService {
             this.logger.log(`recalcIndicadorVariavel: iniciativa encontrada ${JSON.stringify(iniciativa)}`);
 
             if (iniciativa.compoe_indicador_meta) {
-                const indicadorDaIniciativa = iniciativa.Indicador[0];
+                const indicadorDaMeta = iniciativa.meta.indicador[0];
 
-                if (!indicadorDaIniciativa) {
-                    this.logger.warn(`recalcIndicadorVariavel: Iniciativa ${indicador.iniciativa_id} compoe_indicador_meta mas não tem indicador ativo`);
+                if (!indicadorDaMeta) {
+                    this.logger.warn(`recalcIndicadorVariavel: Iniciativa ${indicador.iniciativa_id} compoe_indicador_meta mas não tem indicador ativo na meta`);
                 } else {
                     const data = {
-                        indicador_id: indicadorDaIniciativa.id,
+                        indicador_id: indicadorDaMeta.id,
                         variavel_id: variavel_id,
                         indicador_origem_id: indicador.id
                     };
