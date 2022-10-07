@@ -61,6 +61,7 @@ export class ListPdm {
     possui_complementacao_meta: boolean
     possui_iniciativa: boolean
     possui_atividade: boolean
+    logo: string | null
 
 
 }
