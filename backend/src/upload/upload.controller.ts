@@ -53,6 +53,9 @@ export class UploadController {
                 'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"'
             });
         }
+        res.set({
+            'Content-Type': data.mime_type || 'application/octet-stream'
+        });
 
         data.stream.pipe(res);
     }

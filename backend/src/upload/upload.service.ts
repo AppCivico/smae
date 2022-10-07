@@ -14,6 +14,7 @@ import { TipoUpload } from './entities/tipo-upload';
 interface TokenResponse {
     stream: NodeJS.ReadableStream
     nome: string
+    mime_type: string
 }
 
 const DOWNLOAD_AUD = 'dl';
@@ -114,6 +115,7 @@ export class UploadService {
                 criado_em: new Date(Date.now()),
                 caminho: key,
                 nome_original: originalname,
+                mime_type: file.mimetype || 'application/octet-stream',
                 tamanho_bytes: file.size,
                 descricao: createUploadDto.descricao,
                 tipo: String(createUploadDto.tipo),
@@ -177,7 +179,7 @@ export class UploadService {
     async getBufferByToken(downloadToken: string): Promise<TokenResponse> {
         const arquivo = await this.prisma.arquivo.findFirst({
             where: { id: this.checkDownloadToken(downloadToken) },
-            select: { caminho: true, nome_original: true }
+            select: { caminho: true, nome_original: true, mime_type: true }
         });
 
         if (!arquivo) throw new HttpException('Arquivo não encontrado', 400);
@@ -185,6 +187,7 @@ export class UploadService {
         return {
             stream: await this.storage.getStream(arquivo.caminho),
             nome: arquivo.nome_original,
+            mime_type: arquivo.mime_type,
         };
 
     }
