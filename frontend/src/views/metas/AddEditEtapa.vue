@@ -161,10 +161,14 @@ async function onSubmit(values) {
                 console.log(r);
                 throw 'Ocorreu um erro inesperado.';
             }
+
             EtapasStore.clear();
             CronogramasStore.clear();
-            EtapasStore.getAll(cronograma_id);
-            CronogramasStore.getById(parentVar,parentField,cronograma_id);
+            (async()=>{
+                await EtapasStore.getAll(cronograma_id);
+                CronogramasStore.getById(parentVar,parentField,cronograma_id);
+            })();
+            
             alertStore.success(msg);
             editModalStore.clear();
             if(rota)router.push(rota);
