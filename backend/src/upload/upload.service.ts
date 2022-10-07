@@ -81,7 +81,8 @@ export class UploadService {
         let originalname = file.originalname;
         // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
         // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
-        originalname = Buffer.from(originalname, 'utf8').toString('utf8')
+        originalname = Buffer.from(originalname, 'latin1').toString('utf8')
+        originalname = Buffer.from(originalname, 'latin1').toString('utf8')// double!
 
         let key = [
             'uploads',
