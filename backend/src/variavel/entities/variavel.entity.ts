@@ -7,17 +7,27 @@ import { Pessoa } from "src/pessoa/entities/pessoa.entity"
 import { Regiao } from "src/regiao/entities/regiao.entity"
 import { UnidadeMedida } from "src/unidade-medida/entities/unidade-medida.entity"
 
+export class IdTitulo {
+    id: number
+    titulo: string
+}
+
 export class IndicadorVariavel {
     desativado: boolean;
     indicador: {
         id: number;
         titulo: string;
-        meta_id: number | null;
-        iniciativa_id: number | null
+        meta: IdTitulo | null;
+        iniciativa: IdTitulo | null;
+        atividade: IdTitulo | null;
     };
-    // TODO...
-    iniciativa?: Iniciativa
-    ativiadade?: Atividade
+    indicador_origem: {
+        id: number;
+        titulo: string;
+        meta: IdTitulo | null;
+        iniciativa: IdTitulo | null;
+        atividade: IdTitulo | null;
+    } | null
 }
 
 export class IdNomeExibicao {
@@ -101,6 +111,7 @@ export class Iniciativa {
     codigo: string
     titulo: string
 }
+
 export class Atividade {
     id: number
     iniciativa_id: number
