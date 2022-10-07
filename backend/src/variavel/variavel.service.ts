@@ -313,13 +313,14 @@ export class VariavelService {
                         indicador_origem: {
                             select: {
                                 id: true,
-                                iniciativa: {
+                                titulo: true,
+                                meta: {
                                     select: {
                                         id: true,
                                         titulo: true,
                                     }
                                 },
-                                meta: {
+                                iniciativa: {
                                     select: {
                                         id: true,
                                         titulo: true,
@@ -337,9 +338,24 @@ export class VariavelService {
                             select: {
                                 id: true,
                                 titulo: true,
-                                meta_id: true,
-                                iniciativa_id: true,
-                                atividade_id: true,
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                }
                             },
                         },
                     }
@@ -365,11 +381,11 @@ export class VariavelService {
             if (filters?.indicador_id || filters?.iniciativa_id || filters?.atividade_id) {
 
                 for (const iv of row.indicador_variavel) {
-                    if (filters?.atividade_id && filters?.atividade_id === iv.indicador.atividade_id) {
+                    if (filters?.atividade_id && filters?.atividade_id === iv.indicador.atividade?.id) {
                         indicador_variavel.push(iv)
                     } else if (filters?.indicador_id && filters?.indicador_id === iv.indicador.id) {
                         indicador_variavel.push(iv)
-                    } else if (filters?.iniciativa_id && filters?.iniciativa_id === iv.indicador.iniciativa_id) {
+                    } else if (filters?.iniciativa_id && filters?.iniciativa_id === iv.indicador.iniciativa?.id) {
                         indicador_variavel.push(iv)
                     }
                 }
