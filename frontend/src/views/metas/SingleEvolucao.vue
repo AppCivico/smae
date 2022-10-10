@@ -1,10 +1,10 @@
 <script setup>
-import { onMounted, onUpdated  } from 'vue';
+import { ref, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { Dashboard} from '@/components';
 import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
-import { useEditModalStore, useAuthStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
+import { useEditModalStore, useAuthStore, useMetasStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
@@ -22,10 +22,13 @@ const meta_id = route.params.meta_id;
 const iniciativa_id = route.params.iniciativa_id;
 const atividade_id = route.params.atividade_id;
 
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 const parent_id = atividade_id??iniciativa_id??meta_id??false;
 const parent_field = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 let parentLabel = ref(atividade_id?'-':iniciativa_id?'-':meta_id?'Meta':false);
+
 (async()=>{
     await MetasStore.getPdM();
     if(atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
