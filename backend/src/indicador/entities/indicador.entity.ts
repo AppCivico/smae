@@ -1,9 +1,5 @@
 import { Periodicidade, Polaridade } from "@prisma/client"
-
-class IdCodigoDto {
-    id: number
-    codigo: string
-}
+import { FormulaVariaveis } from "src/indicador/dto/create-indicador.dto"
 
 export class Indicador {
     id: number
@@ -14,12 +10,13 @@ export class Indicador {
     meta_id: number | null
     iniciativa_id: number | null
     atividade_id: number | null
-    agregador: IdCodigoDto
-    janela_agregador: number | null
     regionalizavel: boolean
     inicio_medicao: Date
     fim_medicao: Date
     nivel_regionalizacao: number | null
     contexto: string | null
     complemento: string | null
+    formula: string | null
+    calcular_acumulado: boolean | null
+    indicador_formula_variavel: FormulaVariaveis[]
 }

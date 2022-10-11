@@ -635,8 +635,6 @@ export class VariavelService {
 
         const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
         const periodPg: Record<Periodicidade, string> = {
-            Diario: '1 day',
-            Semanal: '1 week',
             Mensal: '1 month',
             Bimestral: '2 months',
             Trimestral: '3 months',

@@ -1,23 +1,48 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Polaridade } from "@prisma/client";
-import { Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsOptional, isPositive, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+
+
+export class FormulaVariaveis {
+
+    /**
+     * referência da variavel, único por indicador - de 1 até 5 chars [A-Z] em upper-case
+    */
+    @IsString({ message: '$property| precisa ser uma string' })
+    @Matches(/^[A-Z]{1,5}$/, { message: '$property| Inválido, use apenas A-Z de 1 até 5 chars' })
+    referencia: string
+
+    /**
+    * janela - 1 para periodo corrente, > 1 para buscar o mês retroativo, < 0 para fazer média dos valores
+    * 0 será convertido para 1 automaticamente
+    */
+    @IsNumber(undefined, { message: '$property| descrição: Precisa ser um número' })
+    @Transform((a: any) => a.value === 0 ? 1 : +a.value)
+    janela: number
+
+    /**
+     * ID da variavel
+    */
+    @IsPositive({ message: '$property| precisa ser um número' })
+    variavel_id: number
+}
 
 export class CreateIndicadorDto {
 
     /**
     * Código
     */
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(30, { message: '$property| descrição: codigo 30 caracteres' })
+    @IsString({ message: '$property| Precisa ser alfanumérico' })
+    @MaxLength(30, { message: '$property| código 30 caracteres' })
     codigo: string
 
     /**
     * título
     */
-    @IsString({ message: '$property| título: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| título: codigo 250 caracteres' })
+    @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
+    @MaxLength(250, { message: '$property| Título: 250 caracteres' })
     titulo: string
 
     /**
@@ -40,26 +65,38 @@ export class CreateIndicadorDto {
     periodicidade: Periodicidade
 
     /**
-    * agregador_id
-    */
-    @IsPositive({ message: '$property| precisa ser um número' })
-    @Type(() => Number)
-    agregador_id: number
-
-
-    /**
-    * janela_agregador
+    * Expressão para montar calcular as series do indicador
+    *
+    * Funções: CEIL, FLOOR, POWER, LOG
+    *
+    * Operações: + - / *
+    *
+    * Referencias das variáveis: $REFERENCIA
+    *
+    * @example "CEIL($A + $B) / 100.4 * power( $B + LOG( $A ) ) * FLOOR( 1 - 1 / 2 )"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número ou nulo' })
+    @IsString({ message: '$property| Precisa ser um texto de formula válido' })
     @ValidateIf((object, value) => value !== null)
-    @Type(() => Number)
-    janela_agregador?: number | null
+    formula?: string | null
+
+    /**
+    * Variáveis para usar na expressão
+    */
+    @IsOptional()
+    formula_variaveis?: FormulaVariaveis[]
+
+    /**
+    * calcular_acumulado - se é para usar o acumulado tbm nas series da formula
+    */
+    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @ValidateIf((object, value) => value !== null)
+    calcular_acumulado?: boolean | null
 
     /**
     * regionalizavel
     */
-    @IsBoolean({ message: '$property| precisa ser um número' })
+    @IsBoolean({ message: '$property| precisa ser um boolean' })
     regionalizavel: boolean
 
     /**
