@@ -33,7 +33,7 @@ export class IndicadorService {
             });
 
             if (formula_variaveis && formula_variaveis.length > 0) {
-                await this.prisma.indicadorFormulaVariavel.createMany({
+                await prisma.indicadorFormulaVariavel.createMany({
                     data: formula_variaveis.map((fv) => {
                         return {
                             indicador_id: indicador.id,
@@ -127,10 +127,10 @@ export class IndicadorService {
             });
 
             if (formula_variaveis) {
-                await this.prisma.indicadorFormulaVariavel.deleteMany({
+                await prisma.indicadorFormulaVariavel.deleteMany({
                     where: { indicador_id: indicador.id }
                 })
-                await this.prisma.indicadorFormulaVariavel.createMany({
+                await prisma.indicadorFormulaVariavel.createMany({
                     data: formula_variaveis.map((fv) => {
                         return {
                             indicador_id: indicador.id,
