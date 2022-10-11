@@ -30,7 +30,7 @@ async function bootstrap() {
     app.useGlobalPipes(
         new TrimPipe(),
         new ValidationPipe({
-            dismissDefaultMessages: true,
+            dismissDefaultMessages: false,
             transform: true,
             whitelist: true,
             forbidNonWhitelisted: false, // conferir com o pessoal do frontend, talvez seja muito strict essa config!
