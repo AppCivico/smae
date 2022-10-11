@@ -116,6 +116,7 @@ onUpdated(()=>{start()});
                         <div class="ml1 f0" style="flex-basis:20px;"></div>
                     </div>
                     <hr/>
+                    
                     <div class="flex center t13">
                         <div class="f1">{{r.etapa.inicio_previsto}}</div>
                         <div class="ml1 f1">{{r.etapa.termino_previsto}}</div>
@@ -150,7 +151,112 @@ onUpdated(()=>{start()});
                             <span>Etapa via iniciativa {{r.cronograma_origem_etapa.iniciativa.codigo}} {{r.cronograma_origem_etapa.iniciativa.titulo}}</span>
                         </router-link>
                     </div>
+
+                        <!--SUB LIST -->
+                        <div class="etapa sub" v-for="(r, index) in singleCronogramaEtapas?.filter(x=>!x.inativo).sort((a,b)=>a.ordem-b.ordem)" :key="r.etapa.id">
+                            <div class="status"><span>1.2</span></div>
+                            <div class="title"><h4>{{r.etapa.titulo}}</h4></div>
+                            <div class="flex center mb05 tc300 w700 t12 uc">
+                                <div class="f1">Início Prev.</div>
+                                <div class="ml1 f1">Término Prev.</div>
+                                <div class="ml1 f1">Duração</div>
+                                <div class="ml1 f1">Início Real</div>
+                                <div class="ml1 f1">Término Real</div>
+                                <div class="ml1 f1">Atraso</div>
+                                <div class="ml1 f0" style="flex-basis:20px;"></div>
+                            </div>
+                            <hr/>
+                            
+                            <div class="flex center t13">
+                                <div class="f1">{{r.etapa.inicio_previsto}}</div>
+                                <div class="ml1 f1">{{r.etapa.termino_previsto}}</div>
+                                <div class="ml1 f1">{{r.etapa.duracao??'-'}}</div>
+                                <div class="ml1 f1">{{r.etapa.inicio_real}}</div>
+                                <div class="ml1 f1">{{r.etapa.termino_real}}</div>
+                                <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
+                                <div class="ml1 f0" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                    <div class="dropbtn right" v-if="perm?.CadastroEtapa?.editar">
+                                        <span class=""><svg width="20" height="20"><use xlink:href="#i_more"></use></svg></span>
+                                        <ul>
+                                            <li><router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)" :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`">Editar Etapa</router-link></li>
+                                            <li><router-link v-if="r.cronograma_origem_etapa&&r.cronograma_origem_etapa?.id!=singleCronograma?.id" :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`">Editar Monitoramento</router-link></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="mb3" />
+                            
+                            <!-- SUB LIST -->
+                            <div class="list mt2">
+                                <div class="flex center mb05 tc300 w700 t12 uc ">
+                                    <div class="f1">SUBFASE</div>
+                                    <div class="ml1 f1">início prev.</div>
+                                    <div class="ml1 f1">Término Prev.</div>
+                                    <div class="ml1 f1">Duração</div>
+                                    <div class="ml1 f1">Início Real</div>
+                                    <div class="ml1 f1">Término Real</div>
+                                    <div class="ml1 f1">Atraso</div>
+                                    <div class="ml1 f0" style="flex-basis:20px;"></div>
+
+                                </div>
+                                <hr/>
+                              
+                                <div class="flex center t13">
+                                    <div class="f1"><span  class="farol">x</span> Solicitar Licenças</div>
+                                    <div class="ml1 f1">{{r.etapa.inicio_previsto}}</div>
+                                    <div class="ml1 f1">{{r.etapa.termino_previsto}}</div>
+                                    <div class="ml1 f1">{{r.etapa.duracao??'-'}}</div>
+                                    <div class="ml1 f1">{{r.etapa.inicio_real}}</div>
+                                    <div class="ml1 f1">{{r.etapa.termino_real}}</div>
+                                    <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
+                                    <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                        <a href="/regioes/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                    </div>
+                                </div>
+                                <hr class="mb05" />
+
+                                <div class="flex center t13">
+                                    <div class="f1"><span  class="farol">x</span> Solicitar Licenças</div>
+                                    <div class="ml1 f1">{{r.etapa.inicio_previsto}}</div>
+                                    <div class="ml1 f1">{{r.etapa.termino_previsto}}</div>
+                                    <div class="ml1 f1">{{r.etapa.duracao??'-'}}</div>
+                                    <div class="ml1 f1">{{r.etapa.inicio_real}}</div>
+                                    <div class="ml1 f1">{{r.etapa.termino_real}}</div>
+                                    <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
+                                    <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                        <a href="/regioes/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                    </div>
+                                </div>
+                                <hr class="mb05" />
+                                
+                                <div class="flex center t13">
+                                    <div class="f1"><span  class="farol">x</span> Solicitar Licenças</div>
+                                    <div class="ml1 f1">{{r.etapa.inicio_previsto}}</div>
+                                    <div class="ml1 f1">{{r.etapa.termino_previsto}}</div>
+                                    <div class="ml1 f1">{{r.etapa.duracao??'-'}}</div>
+                                    <div class="ml1 f1">{{r.etapa.inicio_real}}</div>
+                                    <div class="ml1 f1">{{r.etapa.termino_real}}</div>
+                                    <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
+                                    <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                        <a href="/regioes/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                    </div>
+                                </div>
+                                <hr class="mb05" />
+
+
+                            </div>
+                  
+                      
+
+
+
+
+                  
+                        </div>
+
+
                 </div>
+
             </div>
             <template v-else-if="singleCronogramaEtapas?.loading">
                 <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
