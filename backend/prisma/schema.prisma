@@ -656,11 +656,11 @@ model MetaResponsavel {
     @@map("meta_responsavel")
 }
 
+// vaio ser dropped
 model Agregador {
-    id        Int         @id @default(autoincrement())
-    codigo    String      @unique
+    id        Int    @id @default(autoincrement())
+    codigo    String @unique
     descricao String
-    indicador Indicador[]
 
     @@map("agregador")
 }
@@ -672,8 +672,6 @@ enum Polaridade {
 }
 
 enum Periodicidade {
-    Diario
-    Semanal
     Mensal
     Bimestral
     Trimestral
@@ -692,9 +690,8 @@ model Indicador {
     iniciativa           Iniciativa?   @relation(fields: [iniciativa_id], references: [id])
     atividade_id         Int?
     atividade            Atividade?    @relation(fields: [atividade_id], references: [id])
-    agregador_id         Int
-    agregador            Agregador     @relation(fields: [agregador_id], references: [id])
-    janela_agregador     Int?
+    formula              String?
+    calcular_acumulado   Boolean       @default(false)
     codigo               String
     titulo               String
     periodicidade        Periodicidade
@@ -712,14 +709,28 @@ model Indicador {
     contexto             String?
     complemento          String?
 
-    atualizador             Pessoa?             @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador                 Pessoa?             @relation("Criador", fields: [criado_por], references: [id])
-    removedor               Pessoa?             @relation("Removedor", fields: [removido_por], references: [id])
-    IndicadorVariavelOrigem IndicadorVariavel[] @relation("Origem")
-    IndicadorVariavel       IndicadorVariavel[] @relation("FK")
-    SerieIndicador          SerieIndicador[]
+    atualizador                Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                    Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
+    removedor                  Pessoa?                    @relation("Removedor", fields: [removido_por], references: [id])
+    IndicadorVariavelOrigem    IndicadorVariavel[]        @relation("Origem")
+    IndicadorVariavel          IndicadorVariavel[]        @relation("FK")
+    SerieIndicador             SerieIndicador[]
+    indicador_formula_variavel IndicadorFormulaVariavel[]
 
     @@map("indicador")
+}
+
+model IndicadorFormulaVariavel {
+    id           Int       @id @default(autoincrement())
+    referencia   String
+    indicador_id Int
+    indicador    Indicador @relation(fields: [indicador_id], references: [id])
+    variavel_id  Int
+    variavel     Variavel  @relation(fields: [variavel_id], references: [id])
+    janela       Int
+
+    @@unique([indicador_id, referencia])
+    @@map("indicador_formula_variavel")
 }
 
 enum Serie {
@@ -775,17 +786,18 @@ model Variavel {
 
     codigo String
 
-    peso                 Int?
-    casas_decimais       Int                   @default(0) @db.SmallInt
+    peso                       Int?
+    casas_decimais             Int                        @default(0) @db.SmallInt
     // usar para calculcar as agregações, por exemplo na média ponderada
     // acho que pode ser um valor e não uma porcentagem, e ai o sistema calcula a porcentagem sozinho
     // de acordo com o numero de variaveis
-    acumulativa          Boolean               @default(false)
+    acumulativa                Boolean                    @default(false)
     // quando true, o sistema vai calcular automaticamente a serie acumulativa
     // quando false, o usuario precisa preencher, mas sempre via ter as 4 series, correto?
-    serie_variavel       SerieVariavel[]
-    variavel_responsavel VariavelResponsavel[]
-    indicador_variavel   IndicadorVariavel[]
+    serie_variavel             SerieVariavel[]
+    variavel_responsavel       VariavelResponsavel[]
+    indicador_variavel         IndicadorVariavel[]
+    indicador_formula_variavel IndicadorFormulaVariavel[]
 
     @@map("variavel")
 }

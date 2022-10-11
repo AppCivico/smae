@@ -3,34 +3,65 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateIndicadorDto } from './dto/create-indicador.dto';
+import { CreateIndicadorDto, FormulaVariaveis } from './dto/create-indicador.dto';
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
-import { Indicador } from './entities/indicador.entity';
 
 @Injectable()
 export class IndicadorService {
+
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
+        if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
+            throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
+
+        const formula_variaveis = createIndicadorDto.formula_variaveis;
+        delete createIndicadorDto.formula_variaveis;
+        this.#validateVariaveis(formula_variaveis);
+
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-
-            if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
-                throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
-
             const indicador = await prisma.indicador.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     ...createIndicadorDto,
+                    calcular_acumulado: createIndicadorDto.calcular_acumulado === null ? undefined : createIndicadorDto.calcular_acumulado,
                 },
                 select: { id: true }
             });
+
+            if (formula_variaveis && formula_variaveis.length > 0) {
+                this.prisma.indicadorFormulaVariavel.createMany({
+                    data: formula_variaveis.map((fv) => {
+                        return {
+                            indicador_id: indicador.id,
+                            janela: fv.janela,
+                            variavel_id: fv.variavel_id,
+                            referencia: fv.referencia,
+                        }
+                    })
+                });
+            }
 
             return indicador;
         });
 
         return created;
+    }
+
+    #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined) {
+        let uniqueRef: Record<string, boolean> = {};
+
+        if (formula_variaveis && formula_variaveis.length > 0) {
+            for (const fv of formula_variaveis) {
+                if (!uniqueRef[fv.referencia]) {
+                    uniqueRef[fv.referencia] = true;
+                } else {
+                    throw new HttpException(`referencia| ${fv.referencia} duplicada, utilize apenas uma vez!`, 400);
+                }
+            }
+        }
     }
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined) {
@@ -49,10 +80,6 @@ export class IndicadorService {
                 id: true,
                 titulo: true,
                 codigo: true,
-                agregador: {
-                    select: { id: true, codigo: true }
-                },
-                janela_agregador: true,
                 polaridade: true,
                 periodicidade: true,
                 regionalizavel: true,
@@ -63,7 +90,16 @@ export class IndicadorService {
                 iniciativa_id: true,
                 atividade_id: true,
                 contexto: true,
-                complemento: true
+                complemento: true,
+                indicador_formula_variavel: {
+                    select: {
+                        referencia: true,
+                        variavel_id: true,
+                        janela: true
+                    }
+                },
+                formula: true,
+                calcular_acumulado: true
             }
         });
 
@@ -72,6 +108,10 @@ export class IndicadorService {
 
     async update(id: number, updateIndicadorDto: UpdateIndicadorDto, user: PessoaFromJwt) {
 
+        const formula_variaveis = updateIndicadorDto.formula_variaveis;
+        delete updateIndicadorDto.formula_variaveis;
+        this.#validateVariaveis(formula_variaveis);
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const indicador = await prisma.indicador.update({
@@ -79,11 +119,29 @@ export class IndicadorService {
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
-
                     ...updateIndicadorDto,
+
+                    calcular_acumulado: updateIndicadorDto.calcular_acumulado === null ? undefined : updateIndicadorDto.calcular_acumulado,
                 },
                 select: { id: true }
             });
+
+            if (formula_variaveis) {
+                this.prisma.indicadorFormulaVariavel.deleteMany({
+                    where: { indicador_id: indicador.id }
+                })
+                this.prisma.indicadorFormulaVariavel.createMany({
+                    data: formula_variaveis.map((fv) => {
+                        return {
+                            indicador_id: indicador.id,
+                            janela: fv.janela,
+                            variavel_id: fv.variavel_id,
+                            referencia: fv.referencia,
+                        }
+                    })
+                });
+            }
+
 
             return indicador;
         });
@@ -101,15 +159,5 @@ export class IndicadorService {
         });
 
         return created;
-    }
-
-    async agregadores() {
-        return await this.prisma.agregador.findMany({
-            select: {
-                id: true,
-                codigo: true,
-                descricao: true
-            }
-        });
     }
 }
