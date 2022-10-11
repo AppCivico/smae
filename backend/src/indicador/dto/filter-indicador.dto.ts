@@ -28,4 +28,13 @@ export class FilterIndicadorDto {
     @IsPositive({ message: '$property| atividade_id' })
     @Type(() => Number)
     atividade_id?: number;
+
+    /**
+    * Filtrar por id
+    * @example "1"
+   */
+    @IsOptional()
+    @IsPositive({ message: '$property| id' })
+    @Type(() => Number)
+    id?: number;
 }

@@ -13,6 +13,7 @@ export class IndicadorService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
+        console.log({ createIndicadorDto });
         if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
             throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
 
@@ -65,16 +66,13 @@ export class IndicadorService {
     }
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined) {
-        let metaId = filters?.meta_id;
-        let iniciativaId = filters?.iniciativa_id;
-        let atividadeId = filters?.atividade_id;
-
         let listActive = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
-                meta_id: metaId,
-                iniciativa_id: iniciativaId,
-                atividade_id: atividadeId
+                id: filters?.id,
+                meta_id: filters?.meta_id,
+                iniciativa_id: filters?.iniciativa_id,
+                atividade_id: filters?.atividade_id,
             },
             select: {
                 id: true,
@@ -107,6 +105,7 @@ export class IndicadorService {
     }
 
     async update(id: number, updateIndicadorDto: UpdateIndicadorDto, user: PessoaFromJwt) {
+        console.log({ updateIndicadorDto });
 
         const formula_variaveis = updateIndicadorDto.formula_variaveis;
         delete updateIndicadorDto.formula_variaveis;
