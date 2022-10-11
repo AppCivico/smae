@@ -110,6 +110,7 @@ export class IndicadorService {
         const formula_variaveis = updateIndicadorDto.formula_variaveis;
         delete updateIndicadorDto.formula_variaveis;
         this.#validateVariaveis(formula_variaveis);
+        console.log({ formula_variaveis });
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
