@@ -12,4 +12,5 @@ export class Etapa {
     inicio_real: Date | null
     termino_real: Date | null
     prazo: number | null
+    etapa_filha: any | null
 }
