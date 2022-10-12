@@ -17,9 +17,6 @@ export class IndicadorService {
         if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
             throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
 
-        const formula_variaveis = createIndicadorDto.formula_variaveis;
-        delete createIndicadorDto.formula_variaveis;
-        this.#validateVariaveis(formula_variaveis);
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const indicador = await prisma.indicador.create({
@@ -27,23 +24,9 @@ export class IndicadorService {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     ...createIndicadorDto,
-                    calcular_acumulado: createIndicadorDto.calcular_acumulado === null ? undefined : createIndicadorDto.calcular_acumulado,
                 },
                 select: { id: true }
             });
-
-            if (formula_variaveis && formula_variaveis.length > 0) {
-                await prisma.indicadorFormulaVariavel.createMany({
-                    data: formula_variaveis.map((fv) => {
-                        return {
-                            indicador_id: indicador.id,
-                            janela: fv.janela,
-                            variavel_id: fv.variavel_id,
-                            referencia: fv.referencia,
-                        }
-                    })
-                });
-            }
 
             return indicador;
         });
@@ -51,8 +34,9 @@ export class IndicadorService {
         return created;
     }
 
-    #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined) {
+    async #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined, indicador_id: number) {
         let uniqueRef: Record<string, boolean> = {};
+        let variables: number[] = [];
 
         if (formula_variaveis && formula_variaveis.length > 0) {
             for (const fv of formula_variaveis) {
@@ -61,8 +45,38 @@ export class IndicadorService {
                 } else {
                     throw new HttpException(`referencia| ${fv.referencia} duplicada, utilize apenas uma vez!`, 400);
                 }
+
+                if (variables.includes(fv.variavel_id) == false)
+                    variables.push(+fv.variavel_id)
             }
+
+            const count = await this.prisma.indicadorVariavel.count({
+                where: {
+                    desativado: false,
+                    indicador_id: indicador_id,
+                    variavel_id: {
+                        in: variables
+                    }
+                }
+            });
+
+            if (count !== variables.length) {
+
+                const found = await this.prisma.indicadorVariavel.findMany({
+                    where: {
+                        indicador_id: indicador_id,
+                        desativado: false
+                    },
+                    select: { variavel_id: true }
+                });
+
+                throw new HttpException(`referencia| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(variables)}, Existentes: ${JSON.stringify(found.map(e => e.variavel_id))}`, 400);
+            }
+
         }
+
+
+
     }
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined) {
@@ -109,7 +123,7 @@ export class IndicadorService {
 
         const formula_variaveis = updateIndicadorDto.formula_variaveis;
         delete updateIndicadorDto.formula_variaveis;
-        this.#validateVariaveis(formula_variaveis);
+        await this.#validateVariaveis(formula_variaveis, id);
         console.log({ formula_variaveis });
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
