@@ -6,8 +6,6 @@ RUN npm install -g npm@8.19.2
 
 COPY package*.json ./
 
-COPY prisma ./prisma/
-
 RUN npm install
 
 COPY . .
