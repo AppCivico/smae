@@ -6,6 +6,8 @@ DECLARE
     _dadoValido int;
     _valores_debug json[];
     _valor numeric(95, 60);
+    _referencias varchar[];
+    _referencias_count int;
     r record;
 BEGIN
     --
@@ -18,6 +20,26 @@ BEGIN
     IF _formula IS NULL OR _formula = '' THEN
         RETURN NULL;
     END IF;
+
+    -- extrai as variaveis (apenas as referencias unicas)
+    WITH cte AS (
+        SELECT DISTINCT unnest(regexp_matches(_formula, '\$[A-Z]+\y', 'g')) AS x
+    )
+    SELECT
+        array_agg(replace(x, '$', '')) INTO _referencias
+    FROM cte;
+
+    SELECT count(1) into _referencias_count from indicador_formula_variavel ifv
+    WHERE ifv.indicador_id = pIndicador_id AND ifv.referencia = ANY(_referencias);
+
+    IF (_referencias_count != array_length(_referencias, 1)) THEN
+        RAISE NOTICE 'Formula inválida, há referencias faltando na indicador_formula_variavel, referencias = %', _referencias::text || ', existentes ' || (
+            SELECT ARRAY_AGG(referencia) from indicador_formula_variavel ifv
+                WHERE ifv.indicador_id = pIndicador_id
+        )::text;
+        RETURN null;
+    END IF;
+
     --
     FOR r IN
         WITH cte AS (
@@ -34,6 +56,7 @@ BEGIN
                 JOIN variavel v ON v.id = ifv.variavel_id
             WHERE
                 ifv.indicador_id = pIndicador_id
+             AND ifv.referencia = ANY(_referencias) -- carrega apenas variaveis se existir necessidade
         ) SELECT
             cte.*,
             CASE WHEN (cte.janela < cte.periodicidade_dias) THEN
@@ -103,7 +126,7 @@ BEGIN
 
             RAISE NOTICE 'resultado referencia %', r.referencia || '=' || _valor || ' valores referencia '||_valores_debug::text || ' pPeriodo=' || pPeriodo ;
 
-            _formula := replace(_formula, '$' || r.referencia , 'round(' || _valor::text || ', ' || r.casas_decimais || ')');
+            _formula := regexp_replace(_formula, '\$' || r.referencia || '\y' , 'round(' || _valor::text || ', ' || r.casas_decimais || ')', 'g');
 
         END IF;
 
