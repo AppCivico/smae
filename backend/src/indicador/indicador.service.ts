@@ -148,7 +148,7 @@ export class IndicadorService {
                     data: formula_variaveis.map((fv) => {
                         return {
                             indicador_id: indicador.id,
-                            janela: fv.janela,
+                            janela: fv.janela === 0 ? 1 : fv.janela,
                             variavel_id: fv.variavel_id,
                             referencia: fv.referencia,
                         }
