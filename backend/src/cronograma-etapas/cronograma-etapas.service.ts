@@ -101,6 +101,38 @@ export class CronogramaEtapaService {
                                     }
                                 }
                             }
+                        },
+
+                        etapa_filha: {
+                            select: {
+                                id: true,
+                                etapa_pai_id: true,
+                                regiao_id: true,
+                                nivel: true,
+                                descricao: true,
+                                inicio_previsto: true,
+                                termino_previsto: true,
+                                inicio_real: true,
+                                termino_real: true,
+                                prazo: true,
+                                titulo: true,
+
+                                etapa_filha: {
+                                    select: {
+                                        id: true,
+                                        etapa_pai_id: true,
+                                        regiao_id: true,
+                                        nivel: true,
+                                        descricao: true,
+                                        inicio_previsto: true,
+                                        termino_previsto: true,
+                                        inicio_real: true,
+                                        termino_real: true,
+                                        prazo: true,
+                                        titulo: true,
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -138,6 +170,7 @@ export class CronogramaEtapaService {
                     termino_real: cronogramaEtapa.etapa.termino_real,
                     prazo: cronogramaEtapa.etapa.prazo,
                     titulo: cronogramaEtapa.etapa.titulo,
+                    etapa_filha: cronogramaEtapa.etapa.etapa_filha
                 },
 
                 cronograma_origem_etapa: {

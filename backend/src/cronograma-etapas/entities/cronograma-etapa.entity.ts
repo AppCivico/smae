@@ -38,6 +38,5 @@ export class CronogramaEtapa {
     inativo: boolean
 
     etapa: any
-
     cronograma_origem_etapa?: CronogramaWithParents
 }
