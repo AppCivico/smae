@@ -19,7 +19,7 @@ export class FormulaVariaveis {
     * 0 será convertido para 1 automaticamente
     */
     @IsNumber(undefined, { message: '$property| descrição: Precisa ser um número' })
-    @Transform((a: any) => a.value === 0 ? 1 : +a.value)
+    @Transform((a: any) => +a.value)
     janela: number
 
     /**

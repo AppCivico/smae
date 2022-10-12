@@ -37,8 +37,9 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     /**
     * calcular_acumulado - se é para usar o acumulado tbm nas series da formula
     */
+    @IsOptional()
     @IsBoolean({ message: '$property| precisa ser um boolean' })
     @ValidateIf((object, value) => value !== null)
-    calcular_acumulado?: boolean | null
+    calcular_acumulado?: boolean | null;
 
 }
