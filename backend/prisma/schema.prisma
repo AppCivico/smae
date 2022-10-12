@@ -1045,7 +1045,7 @@ model Etapa {
 
     etapa_pai_id  Int?
     etapa_pai     Etapa?     @relation("EtapaPai", fields: [etapa_pai_id], references: [id])
-    EtapaPai      Etapa[]    @relation("EtapaPai")
+    etapa_filha   Etapa[]    @relation("EtapaPai")
     regiao_id     Int?
     regiao        Regiao?    @relation(fields: [regiao_id], references: [id])
     cronograma_id Int

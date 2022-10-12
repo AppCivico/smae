@@ -56,6 +56,13 @@ export class EtapaService {
                 regiao_id: regiaoId,
                 cronograma_id: cronogramaId,
             },
+            include: {
+                etapa_filha: {
+                    include: {
+                        etapa_filha: true
+                    }
+                }
+            }
         });
 
         for (const etapa of etapas) {
@@ -72,6 +79,7 @@ export class EtapaService {
                 termino_previsto: etapa.termino_previsto,
                 inicio_real: etapa.inicio_real,
                 termino_real: etapa.termino_real,
+                etapa_filha: etapa.etapa_filha
             })
         }
 
