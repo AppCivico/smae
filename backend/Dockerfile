@@ -2,7 +2,7 @@ FROM node:16.14-alpine
 
 WORKDIR /usr/src/app
 
-RUN npm install -g npm@8.18.0
+RUN npm install -g npm@8.19.2
 
 COPY package*.json ./
 
