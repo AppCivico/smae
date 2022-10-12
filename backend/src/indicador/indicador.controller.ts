@@ -58,7 +58,11 @@ export class IndicadorController {
     @ApiResponse({ description: 'Não há mais agregadores, sempre retorna vazio' })
     agregadores() {
         return {
-            linhas: []
+            linhas: [{
+                id: 1,
+                codigo: 'deprecated',
+                descricao: 'deprecated',
+            }]
         };
     }
 
