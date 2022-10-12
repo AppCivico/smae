@@ -22,7 +22,6 @@ services:
 
   smae_api:
     container_name: "${API_CONTAINER_NAME}"
-    command: sh run-api.sh
     build:
       context: ./backend/
       dockerfile: Dockerfile
