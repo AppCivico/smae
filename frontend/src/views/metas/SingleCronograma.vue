@@ -154,7 +154,7 @@ onUpdated(()=>{start()});
 
                         <!--SUB LIST -->
                         <div class="etapa sub" v-for="(r, index) in singleCronogramaEtapas?.filter(x=>!x.inativo).sort((a,b)=>a.ordem-b.ordem)" :key="r.etapa.id">
-                            <div class="status"><span>1.2</span></div>
+                            <div class="status"><span>X</span></div>
                             <div class="title"><h4>{{r.etapa.titulo}}</h4></div>
                             <div class="flex center mb05 tc300 w700 t12 uc">
                                 <div class="f1">Início Prev.</div>
@@ -210,7 +210,7 @@ onUpdated(()=>{start()});
                                     <div class="ml1 f1">{{r.etapa.termino_real}}</div>
                                     <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
                                     <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                        <a href="/regioes/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                        <a href="/metas/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
                                     </div>
                                 </div>
                                 <hr class="mb05" />
@@ -224,7 +224,7 @@ onUpdated(()=>{start()});
                                     <div class="ml1 f1">{{r.etapa.termino_real}}</div>
                                     <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
                                     <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                        <a href="/regioes/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                        <a href="/metas/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
                                     </div>
                                 </div>
                                 <hr class="mb05" />
@@ -238,7 +238,7 @@ onUpdated(()=>{start()});
                                     <div class="ml1 f1">{{r.etapa.termino_real}}</div>
                                     <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
                                     <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                        <a href="/regioes/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                        <a href="/metas/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
                                     </div>
                                 </div>
                                 <hr class="mb05" />
