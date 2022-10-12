@@ -43,7 +43,7 @@ export class IndicadorService {
                 if (!uniqueRef[fv.referencia]) {
                     uniqueRef[fv.referencia] = true;
                 } else {
-                    throw new HttpException(`referencia| ${fv.referencia} duplicada, utilize apenas uma vez!`, 400);
+                    throw new HttpException(`formula_variaveis| ${fv.referencia} duplicada, utilize apenas uma vez!`, 400);
                 }
 
                 if (variables.includes(fv.variavel_id) == false)
@@ -70,7 +70,7 @@ export class IndicadorService {
                     select: { variavel_id: true }
                 });
 
-                throw new HttpException(`referencia| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(variables)}, Existentes: ${JSON.stringify(found.map(e => e.variavel_id))}`, 400);
+                throw new HttpException(`formula_variaveis| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(variables)}, Existentes: ${JSON.stringify(found.map(e => e.variavel_id))}`, 400);
             }
 
         }
