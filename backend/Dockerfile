@@ -10,6 +10,8 @@ RUN npm install
 
 COPY . .
 
+RUN npm install
+
 RUN npm run build
 
 ARG NODE_ENV=production
