@@ -56,6 +56,9 @@ if (cronograma_id) {
     title = 'Editar Cronograma';
     CronogramasStore.getById(parentVar,parentField,cronograma_id);
 }
+function toggleAccordeon(t) {
+    t.target.closest('.tzaccordeon').classList.toggle('active');
+}
 
 async function onSubmit(values) {
     try {
@@ -199,5 +202,126 @@ async function checkClose() {
             <hr class="mt2 mb2"/>
             <button @click="checkDelete(singleCronograma.id)" class="btn amarelo big">Remover item</button>
         </template>
+
+    <!-- CODIGO NOVO -->
+        <hr class="mt2 mb2"/>
+        <template v-if="cronograma_id&&singleCronograma.id&&cronograma_id==singleCronograma.id">
+          
+            <h5 class="tc600 uppercase">SUB-ETAPAS E ATIVIDADES</h5>
+            <div class="etapa-edit">
+                    <!--SUB LIST -->
+                    <div class="etapa-edit sub">
+                      
+                      
+                        <div class="tzaccordeon"  @click="toggleAccordeon">
+                            <div class="flex">
+                            <svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg>
+                            <div class="title "><span class="status ">2.1</span> Execução da obras de telecomunicação</div>
+                            </div>
+
+                            <div class="content">
+                              
+                          
+                                <div class="flex center mb05 tc300 w700 t12 uc">
+                                    <div class="ml2 f1">Início Prev.</div>
+                                    <div class="ml1 f1">Término Prev.</div>
+                                    <div class="ml1 f1">Duração</div>
+                                    <div class="ml1 f1">Início Real</div>
+                                    <div class="ml1 f1">Término Real</div>
+                                    <div class="ml1 f1">Atraso</div>
+                                    <div class="ml1 f0" style="flex-basis:20px;"></div>
+                                </div>
+                                <hr/>
+                                
+                                <div class="flex center t13">
+                                    <div class="ml2 f1">05/05/2022</div>
+                                    <div class="ml1 f1">05/08/2022</div>
+                                    <div class="ml1 f1">120 dias</div>
+                                    <div class="ml1 f1">05/05/2022</div>
+                                    <div class="ml1 f1">-</div>
+                                    <div class="ml1 f1">-</div>
+                                    <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                        <a href="/metas/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                    </div>
+                                </div>
+                                <hr class="mb3" />
+                                
+                                
+                                <!-- SUB LIST -->
+                                <div class="list mt2">
+                                    <div class="flex center mb05 tc300 w700 t12 uc ">
+                                        <div class="ml2 f1">SUBFASE</div>
+                                        <div class="ml1 f1">início prev.</div>
+                                        <div class="ml1 f1">Término Prev.</div>
+                                        <div class="ml1 f1">Duração</div>
+                                        <div class="ml1 f1">Início Real</div>
+                                        <div class="ml1 f1">Término Real</div>
+                                        <div class="ml1 f1">Atraso</div>
+                                        <div class="ml1 f0" style="flex-basis:20px;"></div>
+
+                                    </div>
+                                    <hr/>
+                                    
+                                    <div class="flex center t13">
+                                        <div class="ml2 f1"><span  class="farol">x</span> Solicitar Licenças</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                            <a href="/metas/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                        </div>
+                                    </div>
+                                    <hr class="mb05" />
+
+                                    <div class="flex center t13">
+                                        <div class="ml2 f1"><span  class="farol">x</span> Solicitar Licenças</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f1">LIST</div>
+                                        <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                            <a href="/metas/editar/40/44" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                                        </div>
+                                    </div>
+                                    <hr class="mb1" />
+                                    
+                                    <div class="flex ml2 center t12 w700">
+                                    <a href="#" ><svg width="20" height="20" class="flex" style="margin-top: -0.2rem;margin-right: 0.2rem;"><use xlink:href="#i_+"></use></svg> ADICIONAR ATIVIDADE</a>
+                                    </div>
+                                    <hr class="mt1" />
+
+                                </div>
+
+                                 
+                            </div>
+                            <div class="flex mt2 center t12 w700">
+                              <a href="#" ><svg width="20" height="20" class="flex" style="margin-top: -0.2rem;margin-right: 0.2rem;display: inline-flex;"><use xlink:href="#i_+"></use></svg> ADICIONAR SUB-ETAPA</a>
+                            </div>
+                                  
+                        </div>
+                    
+                    </div>
+            </div>
+        
+          <div class="flex spacebetween center mb2 mt2">
+                    <hr class="mr2 f1"/>
+                    <button class="btn big" :disabled="isSubmitting">SALVAR ALTERAÇÕES</button>
+                    <hr class="ml2 f1"/>
+                </div>
+        </template>
+   
+
+ 
+
+
+
+
+
+
     </Dashboard>
 </template>
