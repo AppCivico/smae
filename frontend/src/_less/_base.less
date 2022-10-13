@@ -71,6 +71,7 @@
 
 	.bgc50{background: @c50;}
 	.bgc100{background: @c100;}
+	.bgc200{background: @c200;}
 	.bgc300{background: @c300;}
 
 /* Margins */
@@ -155,11 +156,21 @@
 		border-top: 1px solid @c100;
 	}
 	.breadcrumb{
-		padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid @c100;
+		padding: 1rem; .bgc50;
 		a{
-			display: inline-block; .w700; .t12; .uc;
-			&:not(:last-child):after{content:"\005C"; display: inline-block; margin: 0 7px; color: @c300; font-weight: 700;}
-			&:hover{color: @amarelo;}
+			display: block; max-width:100%; .br(4px); padding: .4rem .4rem .3rem; .w400; .t11; background: #FFF4E9; 
+			margin-bottom: .5em; 
+			position: relative;
+			span{display: block; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
+			&:not(:first-child):before{content: ""; position: absolute; left: -1em; top: -.4rem; height: 1.1rem; width: .5rem; border-left: 1px solid @c200; border-bottom: 1px solid @c200;}
+			&:hover{background: white;}
+			&:last-child{background: @amarelo; color:@primary;}
+			&:nth-child(2){margin-left: 1rem;}
+			&:nth-child(3){margin-left: 2rem;}
+			&:nth-child(4){margin-left: 3rem;}
+			&:nth-child(5){margin-left: 4rem;}
+			&:nth-child(6){margin-left: 5rem;}
+			&:nth-child(7){margin-left: 6rem;}
 		}
 	}
 	.btn{
@@ -260,10 +271,10 @@
 			display: block;
 			justify-content: space-between;
 			gap: 1em;
-			width: 80%;
 			max-width: 665px;
 			margin: auto;
 		}
+		.minimodal{max-width: 400px;}
 	}
 	.etapa{
 		padding: 0 0 .5rem 4rem; margin-bottom: 1rem; position: relative;
