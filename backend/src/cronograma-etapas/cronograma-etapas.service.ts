@@ -147,8 +147,7 @@ export class CronogramaEtapaService {
 
             if (cronogramaEtapa.etapa.etapa_pai_id) {
                 const firstLevelParentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
-                console.log(firstLevelParentIndex);
-                if (firstLevelParentIndex) continue;
+                if (firstLevelParentIndex >= 0) continue;
 
                 // let secondLevelParentIndex;
                 // const foo = cronogramaEtapas.filter(e => {
