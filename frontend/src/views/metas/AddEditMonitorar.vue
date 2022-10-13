@@ -23,9 +23,8 @@ const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
 if(!cronograma_id) router.push(currentEdit);
 
 const MetasStore = useMetasStore();
-const { activePdm ,singleMeta } = storeToRefs(MetasStore);
+const { activePdm } = storeToRefs(MetasStore);
 
-let parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 let parentVar = atividade_id??iniciativa_id??meta_id??false;
 let parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 let parentLabel = ref(recorte.value);

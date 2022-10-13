@@ -6,7 +6,7 @@
     const perm = permissions.value;
 </script>
 <template>
-    <div id="submenu">
+    <div id="submenuConfig">
         <h2>Entrada de dados</h2>
         <div class="links-container mb2">
             <router-link v-if="perm?.CadastroPessoa" to="/usuarios">Gerenciar usuários</router-link>
@@ -24,7 +24,7 @@
 </template>
 <style lang="less">
     @import '@/_less/variables.less';
-    #submenu{
+    #submenuConfig{
         position: fixed; left: 70px; top: 0; bottom: 0; background: white; z-index: 8; padding: 50px; width: 280px; overflow: auto; .transition(); .bs(0 0 40px 20px fadeOut(black,93%));
         h2{color: @c300; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 1em; padding-bottom: 10px; border-bottom: 1px solid @c100;}
         a{
