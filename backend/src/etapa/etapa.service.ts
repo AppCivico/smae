@@ -55,6 +55,17 @@ export class EtapaService {
                 etapa_pai_id: etapaPaiId,
                 regiao_id: regiaoId,
                 cronograma_id: cronogramaId,
+
+                etapa_filha: {
+                    some: {
+                        cronograma_id: cronogramaId,
+                        etapa_filha: {
+                            some: {
+                                cronograma_id: cronogramaId
+                            }
+                        }
+                    }
+                }
             },
             include: {
                 etapa_filha: {
