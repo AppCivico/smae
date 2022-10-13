@@ -13,15 +13,37 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
 
 
     /**
-    * Expressão para montar calcular as series do indicador
+    * Expressão para montar calcular as series do indicador. Para funções, siga o manual do PostgreSQL para entender o funcionamento.
     *
-    * Funções: CEIL, FLOOR, POWER, LOG
+    * Contantes:
+    *   PI
     *
-    * Operações: + - / *
+    *
+    * Funções com 1 parâmetro (sempre obrigatórios):
+    *   FACTORIAL, ABS, DIV, MOD, EXP, LN, FLOOR, CEIL
+    *
+    *
+    * Funções com 2 parâmetros (sempre obrigatórios):
+    *   ROUND, POWER, LOG
+    *
+    *
+    * Operações:
+    *
+    * * multiplicação
+    *
+    * / divisão
+    *
+    * - subtração
+    *
+    * + soma
+    *
+    * ^ exponencial (precedência esquerda pra direita)
+    *
     *
     * Referencias das variáveis: $REFERENCIA
+    *   de 1 até 5 letras em UPPERCASE, não repetidos
     *
-    * @example "CEIL($A + $B) / 100.4 * power( $B + LOG( $A ) ) * FLOOR( 1 - 1 / 2 )"
+    * @example "CEIL($A + $B) / 100.4 * power( $B + LN( $A ) , 1 ) * FLOOR( 1 - 1 / 2 ) + LOG(2,4)"
     */
     @IsOptional()
     @IsString({ message: '$property| Precisa ser um texto de formula válido' })
