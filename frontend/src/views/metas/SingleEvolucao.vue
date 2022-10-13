@@ -3,7 +3,6 @@ import { ref, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { Dashboard} from '@/components';
-import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
 import { useEditModalStore, useAuthStore, useMetasStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
@@ -61,8 +60,6 @@ onUpdated(()=>{start()});
 </script>
 <template>
     <Dashboard>
-        <Breadcrumb />
-        
         <div class="flex spacebetween center mb2">
             <h1>Evolução da {{parentLabel}}</h1>
             <hr class="ml2 f1"/>

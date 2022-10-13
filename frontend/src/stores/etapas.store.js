@@ -28,7 +28,7 @@ export const useEtapasStore = defineStore({
         fieldToDate(d){
             if(d){
                 var x=d.split('/');
-                return (x.length==3) ? new Date(x[2],x[1]-1,x[0]).toISOString().substring(0, 10) : null;
+                return (x.length==3) ? new Date(Date.UTC(x[2],x[1]-1,x[0])).toISOString().substring(0, 10) : null;
             }
             return null;
         },

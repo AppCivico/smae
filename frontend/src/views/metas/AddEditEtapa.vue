@@ -110,7 +110,7 @@ async function onSubmit(values) {
 
         values.regiao_id = singleCronograma.value.regionalizavel? Number(values.regiao_id):null;
         values.ordem = Number(values.ordem)??null;
-        values.etapa_pai_id = 1;
+        values.etapa_pai_id = null;
 
         var rota = false;
         var etapa_id_gen = false;

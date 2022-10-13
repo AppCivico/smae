@@ -2,7 +2,6 @@
 import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
 import { useAuthStore, useMetasStore } from '@/stores';
 import { useMacrotemasStore, useTemasStore, useSubtemasStore } from '@/stores';
 import { useRoute } from 'vue-router';
@@ -63,8 +62,6 @@ function groupSlug(s) {
 </script>
 <template>
     <Dashboard>
-        <Breadcrumb />
-        
         <div class="mb2">
             <div class="label tc300">{{activePdm['rotulo_'+filters.groupBy]}}</div>
             <div class="t48 w700">{{currentStore[currentStoreKey]?.descricao}}</div>

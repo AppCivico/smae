@@ -1,7 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { useAuthStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 import { useRoute } from 'vue-router';
@@ -33,8 +32,6 @@ if(!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
 </script>
 <template>
     <Dashboard>
-        <Breadcrumb />
-        
         <div class="flex spacebetween center mb2">
             <h1>{{singleIniciativa.titulo}}</h1>
             <hr class="ml2 f1"/>

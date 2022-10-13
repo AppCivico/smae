@@ -1,7 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { useAuthStore, useMetasStore, useIniciativasStore } from '@/stores';
 import { useRoute } from 'vue-router';
@@ -26,8 +25,6 @@ if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
 </script>
 <template>
     <Dashboard>
-        <Breadcrumb />
-        
         <div class="flex spacebetween center mb2">
             <h1>{{singleMeta.titulo}}</h1>
             <hr class="ml2 f1"/>
@@ -39,15 +36,15 @@ if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
                 <div class="flex g2">
                     <div class="mr2" v-if="activePdm.possui_macro_tema">
                         <div class="t12 uc w700 mb05 tamarelo">{{activePdm.rotulo_macro_tema}}</div>
-                        <div class="t13">{{singleMeta.macro_tema.descricao}}</div>
+                        <div class="t13">{{singleMeta?.macro_tema?.descricao}}</div>
                     </div>
                     <div class="mr2" v-if="activePdm.possui_tema">
                         <div class="t12 uc w700 mb05 tamarelo">{{activePdm.rotulo_tema}}</div>
-                        <div class="t13">{{singleMeta.tema.descricao}}</div>
+                        <div class="t13">{{singleMeta?.tema?.descricao}}</div>
                     </div>
                     <div class="mr2" v-if="activePdm.possui_sub_tema">
                         <div class="t12 uc w700 mb05 tamarelo">{{activePdm.rotulo_sub_tema}}</div>
-                        <div class="t13">{{singleMeta.sub_tema.descricao}}</div>
+                        <div class="t13">{{singleMeta?.sub_tema?.descricao}}</div>
                     </div>
                 </div>
                 <hr class="mt2 mb2"/>

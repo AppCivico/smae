@@ -2,7 +2,6 @@
 import { ref, reactive, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
-import { default as Breadcrumb } from '@/components/metas/BreadCrumb.vue';
 import { useEditModalStore, useAuthStore, useMetasStore } from '@/stores';
 import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue';
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
@@ -54,7 +53,6 @@ function groupSlug(s) {
 </script>
 <template>
     <Dashboard>
-        <Breadcrumb />
         <div class="flex spacebetween center mb2">
             <img :src="`${baseUrl}/download/${activePdm.logo}?inline=true`" width="100" class="ib mr1" v-if="activePdm.logo">
             <h1 v-else>{{activePdm.nome}}</h1>
