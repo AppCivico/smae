@@ -146,8 +146,17 @@ export class CronogramaEtapaService {
         for (const cronogramaEtapa of cronogramaEtapas) {
 
             if (cronogramaEtapa.etapa.etapa_pai_id) {
-                const parentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
-                if (parentIndex) continue;
+                const firstLevelParentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
+                console.log(firstLevelParentIndex);
+                if (firstLevelParentIndex) continue;
+
+                // let secondLevelParentIndex;
+                // const foo = cronogramaEtapas.filter(e => {
+                //     return e.etapa.etapa_filha.length
+                // })
+                // if (cronogramaEtapa.etapa.etapa_filha.length > 0) {
+                    
+                // }
             }
         
             let ordem;
