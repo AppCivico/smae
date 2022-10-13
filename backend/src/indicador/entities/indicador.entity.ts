@@ -17,6 +17,6 @@ export class Indicador {
     contexto: string | null
     complemento: string | null
     formula: string | null
-    calcular_acumulado: boolean | null
+    acumulado_usa_formula: boolean | null
     indicador_formula_variavel: FormulaVariaveis[]
 }
