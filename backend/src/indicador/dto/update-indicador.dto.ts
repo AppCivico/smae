@@ -19,11 +19,11 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     *
     *
     * Funções com 1 parâmetro (sempre obrigatórios):
-    *   `FACTORIAL`, `ABS`, `DIV`, `MOD`, `EXP`, `LN`, `FLOOR`, `CEIL`
+    *   `FACTORIAL(expr)`, `ABS(expr)`, `LN(expr)`, `FLOOR(expr)`, `CEIL(expr)`, `EXP(expr)`
     *
     *
     * Funções com 2 parâmetros (sempre obrigatórios):
-    *   `ROUND`, `POWER`, `LOG`
+    *   `ROUND(expr, precision)`, `POWER(a, raisedToPower)`, `LOG(base, toLogOfBase)`, `NULLIF(expr, ifNullValue)`, `DIV(expr, expr)`, `MOD(expr, expr)`
     *
     *
     * Operações:
@@ -37,10 +37,6 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     * `+` soma
     *
     * `^` exponencial (precedência esquerda pra direita)
-    *
-    *
-    * Contantes:
-    *   `PI`
     *
     *
     * Referências das variáveis enviar "$" + entre 1 até 5 caracteres em uppercase
@@ -61,11 +57,11 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     formula_variaveis?: FormulaVariaveis[]
 
     /**
-    * calcular_acumulado - se é para usar o acumulado tbm nas series da formula
+    * acumulado_usa_formula - Se é pra calcular o acumulado usando a formula ou é pra fazer a conta automaticamente pelos valores resultantes
     */
     @IsOptional()
     @IsBoolean({ message: '$property| precisa ser um boolean' })
     @ValidateIf((object, value) => value !== null)
-    calcular_acumulado?: boolean | null;
+    acumulado_usa_formula?: boolean | null;
 
 }

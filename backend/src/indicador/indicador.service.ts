@@ -7,7 +7,7 @@ import { CreateIndicadorDto, FormulaVariaveis } from './dto/create-indicador.dto
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 // @ts-ignore
-import * as FP from "../../js/formula_parser.js";
+import * as FP from "../../public/js/formula_parser.js";
 
 @Injectable()
 export class IndicadorService {
@@ -129,11 +129,12 @@ export class IndicadorService {
                     select: {
                         referencia: true,
                         variavel_id: true,
-                        janela: true
+                        janela: true,
+                        usar_serie_acumulada: true,
                     }
                 },
                 formula: true,
-                calcular_acumulado: true
+                acumulado_usa_formula: true
             }
         });
 
@@ -178,7 +179,7 @@ export class IndicadorService {
                     ...updateIndicadorDto,
                     formula_compilada: formula_compilada,
 
-                    calcular_acumulado: updateIndicadorDto.calcular_acumulado === null ? undefined : updateIndicadorDto.calcular_acumulado,
+                    acumulado_usa_formula: updateIndicadorDto.acumulado_usa_formula === null ? undefined : updateIndicadorDto.acumulado_usa_formula,
                 },
                 select: { id: true }
             });
