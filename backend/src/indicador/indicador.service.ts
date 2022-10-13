@@ -38,11 +38,18 @@ export class IndicadorService {
 
     async #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined, indicador_id: number, formula: string): Promise<string> {
         let formula_compilada = '';
+        let neededRefs: Record<string, number> = {};
         if (formula) {
             try {
                 formula_compilada = FP.parse(formula.toLocaleUpperCase());
             } catch (error) {
                 throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
+            }
+
+            for (const match of formula_compilada.matchAll(/\$[A-Z]+\b/g)) {
+                let referencia = match[0].replace('$', '');
+                if (!neededRefs[referencia]) neededRefs[referencia] = 0;
+                neededRefs[referencia]++;
             }
         }
 
@@ -83,7 +90,12 @@ export class IndicadorService {
 
                 throw new HttpException(`formula_variaveis| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(variables)}, Existentes: ${JSON.stringify(found.map(e => e.variavel_id))}`, 400);
             }
+        }
 
+        for (const neededRef of Object.values(neededRefs)) {
+            if (!uniqueRef[neededRef]) {
+                throw new HttpException(`formula_variaveis| Referencia ${neededRef} enviada na formula não foi declarada nas variáveis.`, 400);
+            }
         }
 
         return formula_compilada;
@@ -145,6 +157,12 @@ export class IndicadorService {
         let antigaFormulaCompilada = indicador.formula_compilada || '';
         if (updateIndicadorDto.formula_variaveis && !updateIndicadorDto.formula) {
             formula = antigaFormulaCompilada;
+        }
+
+        if (formula && !formula_variaveis) {
+            throw new HttpException(`É necessário enviar o parâmetro formula_variaveis quando enviar formula`, 400);
+        } else if (!formula && formula_variaveis) {
+            throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
         }
 
         let formula_compilada: string = await this.#validateVariaveis(formula_variaveis, id, formula);
