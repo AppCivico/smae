@@ -85,7 +85,7 @@ var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
  typeof console !== 'undefined' ? console.log($$[$0-1]) : print($$[$0-1]);
-          return $$[$0-1];
+          return $$[$0-1]; 
 break;
 case 2:
 this.$ = $$[$0-2] + " + "+ $$[$0];
@@ -97,10 +97,14 @@ case 4:
 this.$ = $$[$0-2] + " * " + $$[$0];
 break;
 case 5:
-this.$ = $$[$0-2] + " / nullif(" + $$[$0] + ", 0)";
+this.$ =
+            /^-[0-9]+("."[0-9]+)?$/.test("$$[$0]") && 1*$$[$0] !== 0
+            ? $$[$0-2] + " / " + $$[$0]
+            : $$[$0-2] + " / NULLIF(" + $$[$0] + ", 0)"
+        ;
 break;
 case 6:
-this.$ = "POWER( " + $$[$0-2] + ", " + $$[$0] + ")";
+this.$ = "POWER( " + $$[$0-2] + ", " + $$[$0] + ")"; 
 break;
 case 7:
 this.$ = "-" + $$[$0];
@@ -112,7 +116,7 @@ case 9:
 this.$ = yytext;
 break;
 case 10:
-this.$ = yytext;
+this.$ = yytext; 
 break;
 case 11:
 this.$ = $$[$0] + "()";
@@ -120,7 +124,7 @@ break;
 case 12:
 
             this.$ = $$[$0-4] + $$[$0-3] + ", " + $$[$0-1] + ")";
-
+        
 break;
 case 13:
 this.$ = $$[$0-2] + $$[$0-1] + ")";

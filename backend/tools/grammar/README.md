@@ -8,5 +8,5 @@ E então compile o script de grammar
 
 Copie o arquivo formula_parser.js para src/coomon
 
-    cp formula_parser.js  ../../src/common/
+    cp formula_parser.js  ../../src/js/
 
