@@ -39,12 +39,21 @@
 <template>
     <div id="submenu">
         <div class="breadcrumb">
-            <router-link to="/">Início</router-link>
-            <router-link v-if="activePdm.id" to="/metas">{{activePdm.nome}}</router-link>
-            <router-link v-if="meta_id&&activePdm.id&&activePdm['possui_'+groupBy]&&singleMeta[groupBy]" :to="`/metas/${groupByRoute}/${singleMeta[groupBy]?.id}`">{{singleMeta[groupBy]?.descricao}}</router-link>
-            <router-link v-if="meta_id&&singleMeta.id" :to="`/metas/${meta_id}`">{{singleMeta?.titulo}}</router-link>
-            <router-link v-if="iniciativa_id&&singleIniciativa.id" :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}`">{{singleIniciativa?.titulo}}</router-link>
-            <router-link v-if="atividade_id&&singleAtividade.id" :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${atividade_id}`">{{singleAtividade?.titulo}}</router-link>
+            <router-link v-if="activePdm.id" to="/metas">
+                <span>{{activePdm.nome}}</span>
+            </router-link>
+            <router-link v-if="meta_id&&activePdm.id&&activePdm['possui_'+groupBy]&&singleMeta[groupBy]" :to="`/metas/${groupByRoute}/${singleMeta[groupBy]?.id}`">
+                <span>{{activePdm['rotulo_'+groupBy]}} {{singleMeta[groupBy]?.descricao}}</span>
+            </router-link>
+            <router-link v-if="meta_id&&singleMeta.id" :to="`/metas/${meta_id}`">
+                <span>Meta {{singleMeta?.codigo}} {{singleMeta?.titulo}}</span>
+            </router-link>
+            <router-link v-if="iniciativa_id&&activePdm.possui_iniciativa&&singleIniciativa.id" :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}`">
+                <span>{{activePdm.rotulo_iniciativa}} {{singleIniciativa?.codigo}} {{singleIniciativa?.titulo}}</span>
+            </router-link>
+            <router-link v-if="atividade_id&&activePdm.possui_atividade&&singleAtividade.id" :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/${atividade_id}`">
+                <span>{{activePdm.rotulo_atividade}} {{singleAtividade?.codigo}} {{singleAtividade?.titulo}}</span>
+            </router-link>
         </div>
         <div class="subpadding">
             <h2>Programa de Metas</h2>
@@ -62,15 +71,15 @@
         position: fixed; left: 70px; top: 0; bottom: 0; background: white; z-index: 8; width: 280px; overflow: auto; .transition(); .bs(0 0 40px 20px fadeOut(black,93%));
         .subpadding{
             padding: 50px;
+            h2{color: @c300; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 1em; padding-bottom: 10px; border-bottom: 1px solid @c100;}
+            a{
+                display: block; padding: 10px 0; border-bottom: 1px solid @c100; font-weight: 700; .transition();
+                &:hover{padding-left:10px; color: @amarelo;}
+                &:active, &.active{color: @amarelo; border-width: 5px; border-color: @amarelo;}
+            }
+            label{display: block; font-size: 14px; font-weight: 700; padding: 6px 0; cursor: pointer;}
+            form{margin-top: 50px; padding-top: 10px; }
         }
-        h2{color: @c300; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 1em; padding-bottom: 10px; border-bottom: 1px solid @c100;}
-        a{
-            display: block; padding: 10px 0; border-bottom: 1px solid @c100; font-weight: 700; .transition();
-            &:hover{padding-left:10px; color: @amarelo;}
-            &:active, &.active{color: @amarelo; border-width: 5px; border-color: @amarelo;}
-        }
-        label{display: block; font-size: 14px; font-weight: 700; padding: 6px 0; cursor: pointer;}
-        form{margin-top: 50px; padding-top: 10px; }
         + #dashboard{margin-left: 350px;}
     }
 </style>
