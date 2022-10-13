@@ -6,6 +6,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateIndicadorDto, FormulaVariaveis } from './dto/create-indicador.dto';
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
+// @ts-ignore
+import * as FP from "../../js/formula_parser.js";
 
 @Injectable()
 export class IndicadorService {
@@ -34,7 +36,16 @@ export class IndicadorService {
         return created;
     }
 
-    async #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined, indicador_id: number) {
+    async #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined, indicador_id: number, formula: string): Promise<string> {
+        let formula_compilada = '';
+        if (formula) {
+            try {
+                formula_compilada = FP.parse(formula);
+            } catch (error) {
+                throw new HttpException(`formula| formula não foi entendida: ${formula}`, 400);
+            }
+        }
+
         let uniqueRef: Record<string, boolean> = {};
         let variables: number[] = [];
 
@@ -75,8 +86,7 @@ export class IndicadorService {
 
         }
 
-
-
+        return formula_compilada;
     }
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined) {
@@ -119,11 +129,25 @@ export class IndicadorService {
     }
 
     async update(id: number, updateIndicadorDto: UpdateIndicadorDto, user: PessoaFromJwt) {
-        console.log({ updateIndicadorDto });
+        let indicador = await this.prisma.indicador.findFirst({
+            where: { id: id },
+            select: {
+                formula_compilada: true
+            }
+        });
+        if (!indicador) throw new HttpException('indicador não encontrado', 400);
+
+        console.log('updateIndicadorDto', updateIndicadorDto);
 
         const formula_variaveis = updateIndicadorDto.formula_variaveis;
         delete updateIndicadorDto.formula_variaveis;
-        await this.#validateVariaveis(formula_variaveis, id);
+        let formula: string = updateIndicadorDto.formula ? updateIndicadorDto.formula : '';
+        let antigaFormulaCompilada = indicador.formula_compilada || '';
+        if (updateIndicadorDto.formula_variaveis && !updateIndicadorDto.formula) {
+            formula = antigaFormulaCompilada;
+        }
+
+        let formula_compilada: string = await this.#validateVariaveis(formula_variaveis, id, formula);
         console.log({ formula_variaveis });
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -134,6 +158,7 @@ export class IndicadorService {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                     ...updateIndicadorDto,
+                    formula_compilada: formula_compilada,
 
                     calcular_acumulado: updateIndicadorDto.calcular_acumulado === null ? undefined : updateIndicadorDto.calcular_acumulado,
                 },
@@ -156,6 +181,9 @@ export class IndicadorService {
                 });
             }
 
+            if (formula_compilada != antigaFormulaCompilada) {
+                // TODO recalcular tudo
+            }
 
             return indicador;
         });

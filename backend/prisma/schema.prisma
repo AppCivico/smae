@@ -691,6 +691,7 @@ model Indicador {
     atividade_id         Int?
     atividade            Atividade?    @relation(fields: [atividade_id], references: [id])
     formula              String?
+    formula_compilada    String?
     calcular_acumulado   Boolean       @default(false)
     codigo               String
     titulo               String
@@ -857,6 +858,7 @@ model SerieVariavel {
     atualizado_por Int?
     atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
 
+    @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@map("serie_variavel")
 }
 
