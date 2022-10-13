@@ -13,37 +13,41 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
 
 
     /**
-    * Expressão para montar calcular as series do indicador. Para funções, siga o manual do PostgreSQL para entender o funcionamento.
+    * Expressão para montar calcular as series do indicador.
     *
-    * Contantes:
-    *   PI
+    * Para funções, veja o [manual do PostgreSQL](https://www.postgresql.org/docs/14/functions-math.html) para entender o funcionamento.
     *
     *
     * Funções com 1 parâmetro (sempre obrigatórios):
-    *   FACTORIAL, ABS, DIV, MOD, EXP, LN, FLOOR, CEIL
+    *   `FACTORIAL`, `ABS`, `DIV`, `MOD`, `EXP`, `LN`, `FLOOR`, `CEIL`
     *
     *
     * Funções com 2 parâmetros (sempre obrigatórios):
-    *   ROUND, POWER, LOG
+    *   `ROUND`, `POWER`, `LOG`
     *
     *
     * Operações:
     *
-    * * multiplicação
+    *  `*` multiplicação
     *
-    * / divisão
+    *  `/` divisão
     *
-    * - subtração
+    * `-` subtração
     *
-    * + soma
+    * `+` soma
     *
-    * ^ exponencial (precedência esquerda pra direita)
+    * `^` exponencial (precedência esquerda pra direita)
     *
     *
-    * Referencias das variáveis: $REFERENCIA
-    *   de 1 até 5 letras em UPPERCASE, não repetidos
+    * Contantes:
+    *   `PI`
     *
-    * @example "CEIL($A + $B) / 100.4 * power( $B + LN( $A ) , 1 ) * FLOOR( 1 - 1 / 2 ) + LOG(2,4)"
+    *
+    * Referências das variáveis enviar "$" + entre 1 até 5 caracteres em uppercase
+    *
+    * A referência não pode ser repetida entre o mesmo indicador.
+    *
+    * @example "CEIL($A + $SHIN) / 100.4 * POWER($SHIN + LN($A), 1) * FLOOR(1- 1 / 2) + LOG(2, 4)"
     */
     @IsOptional()
     @IsString({ message: '$property| Precisa ser um texto de formula válido' })
