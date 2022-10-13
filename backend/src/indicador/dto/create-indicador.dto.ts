@@ -27,6 +27,12 @@ export class FormulaVariaveis {
     */
     @IsPositive({ message: '$property| precisa ser um número' })
     variavel_id: number
+
+    /**
+     * Usar serie acumulada
+    */
+    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    usar_serie_acumulada: boolean
 }
 
 export class CreateIndicadorDto {

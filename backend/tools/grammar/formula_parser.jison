@@ -17,10 +17,8 @@
 "("                   return '('
 ")"                   return ')'
 "PI"                  return 'FUNC0'
-"ROUND("              return 'FUNC2'
-"POWER("              return 'FUNC2'
-"LOG("                return 'FUNC2'
-(FACTORIAL|ABS|DIV|MOD|EXP|LN|FLOOR|CEIL)\(              return 'FUNC1'
+(FACTORIAL|ABS|LN|FLOOR|CEIL|EXP)\(  return 'FUNC1'
+(LOG|DIV|MOD|NULLIF|POWER|ROUND)\(   return 'FUNC2'
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
 

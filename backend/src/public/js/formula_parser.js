@@ -631,22 +631,18 @@ case 10:return 12
 break;
 case 11:return 15
 break;
-case 12:return 16
+case 12:return 18
 break;
 case 13:return 16
 break;
-case 14:return 16
+case 14:return 5
 break;
-case 15:return 18
-break;
-case 16:return 5
-break;
-case 17:return 'INVALID'
+case 15:return 'INVALID'
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:[0-9]+(\.[0-9]+)?\b)/,/^(?:\$[A-Z]{1,5}?\b)/,/^(?:\*)/,/^(?:\/)/,/^(?:-)/,/^(?:\+)/,/^(?:\^)/,/^(?:,)/,/^(?:\()/,/^(?:\))/,/^(?:PI\b)/,/^(?:ROUND\()/,/^(?:POWER\()/,/^(?:LOG\()/,/^(?:(FACTORIAL|ABS|DIV|MOD|EXP|LN|FLOOR|CEIL)\()/,/^(?:$)/,/^(?:.)/],
-conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],"inclusive":true}}
+rules: [/^(?:\s+)/,/^(?:[0-9]+(\.[0-9]+)?\b)/,/^(?:\$[A-Z]{1,5}?\b)/,/^(?:\*)/,/^(?:\/)/,/^(?:-)/,/^(?:\+)/,/^(?:\^)/,/^(?:,)/,/^(?:\()/,/^(?:\))/,/^(?:PI\b)/,/^(?:(FACTORIAL|ABS|LN|FLOOR|CEIL|EXP)\()/,/^(?:(LOG|DIV|MOD|NULLIF|POWER|ROUND)\()/,/^(?:$)/,/^(?:.)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"inclusive":true}}
 });
 return lexer;
 })();

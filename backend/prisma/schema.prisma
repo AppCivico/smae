@@ -683,32 +683,32 @@ enum Periodicidade {
 }
 
 model Indicador {
-    id                   Int           @id @default(autoincrement())
-    meta_id              Int?
-    meta                 Meta?         @relation(fields: [meta_id], references: [id])
-    iniciativa_id        Int?
-    iniciativa           Iniciativa?   @relation(fields: [iniciativa_id], references: [id])
-    atividade_id         Int?
-    atividade            Atividade?    @relation(fields: [atividade_id], references: [id])
-    formula              String?
-    formula_compilada    String?
-    calcular_acumulado   Boolean       @default(false)
-    codigo               String
-    titulo               String
-    periodicidade        Periodicidade
-    polaridade           Polaridade    @default(Neutra)
-    regionalizavel       Boolean       @default(false)
-    nivel_regionalizacao Int?
-    inicio_medicao       DateTime      @db.Date()
-    fim_medicao          DateTime      @db.Date()
-    criado_por           Int?
-    criado_em            DateTime      @default(now()) @db.Timestamptz(6)
-    atualizado_por       Int?
-    atualizado_em        DateTime      @default(now()) @db.Timestamptz(6)
-    removido_por         Int?
-    removido_em          DateTime?     @db.Timestamptz(6)
-    contexto             String?
-    complemento          String?
+    id                    Int           @id @default(autoincrement())
+    meta_id               Int?
+    meta                  Meta?         @relation(fields: [meta_id], references: [id])
+    iniciativa_id         Int?
+    iniciativa            Iniciativa?   @relation(fields: [iniciativa_id], references: [id])
+    atividade_id          Int?
+    atividade             Atividade?    @relation(fields: [atividade_id], references: [id])
+    formula               String?
+    formula_compilada     String?
+    acumulado_usa_formula Boolean       @default(false)
+    codigo                String
+    titulo                String
+    periodicidade         Periodicidade
+    polaridade            Polaridade    @default(Neutra)
+    regionalizavel        Boolean       @default(false)
+    nivel_regionalizacao  Int?
+    inicio_medicao        DateTime      @db.Date()
+    fim_medicao           DateTime      @db.Date()
+    criado_por            Int?
+    criado_em             DateTime      @default(now()) @db.Timestamptz(6)
+    atualizado_por        Int?
+    atualizado_em         DateTime      @default(now()) @db.Timestamptz(6)
+    removido_por          Int?
+    removido_em           DateTime?     @db.Timestamptz(6)
+    contexto              String?
+    complemento           String?
 
     atualizador                Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador                    Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
@@ -722,13 +722,14 @@ model Indicador {
 }
 
 model IndicadorFormulaVariavel {
-    id           Int       @id @default(autoincrement())
-    referencia   String
-    indicador_id Int
-    indicador    Indicador @relation(fields: [indicador_id], references: [id])
-    variavel_id  Int
-    variavel     Variavel  @relation(fields: [variavel_id], references: [id])
-    janela       Int
+    id                   Int       @id @default(autoincrement())
+    referencia           String
+    indicador_id         Int
+    indicador            Indicador @relation(fields: [indicador_id], references: [id])
+    variavel_id          Int
+    variavel             Variavel  @relation(fields: [variavel_id], references: [id])
+    janela               Int
+    usar_serie_acumulada Boolean   @default(false)
 
     @@unique([indicador_id, referencia])
     @@map("indicador_formula_variavel")
