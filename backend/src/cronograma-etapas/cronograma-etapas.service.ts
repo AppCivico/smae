@@ -144,6 +144,12 @@ export class CronogramaEtapaService {
 
         let lastOrdemVal = 0;
         for (const cronogramaEtapa of cronogramaEtapas) {
+
+            if (cronogramaEtapa.etapa.etapa_pai_id) {
+                const parentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
+                if (parentIndex) continue;
+            }
+        
             let ordem;
             if (cronogramaEtapa.ordem) {
                 lastOrdemVal = ordem = cronogramaEtapa.ordem;
