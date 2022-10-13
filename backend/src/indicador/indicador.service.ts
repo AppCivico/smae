@@ -92,7 +92,7 @@ export class IndicadorService {
             }
         }
 
-        for (const neededRef of Object.values(neededRefs)) {
+        for (const neededRef of Object.keys(neededRefs)) {
             if (!uniqueRef[neededRef]) {
                 throw new HttpException(`formula_variaveis| Referencia ${neededRef} enviada na formula não foi declarada nas variáveis.`, 400);
             }
