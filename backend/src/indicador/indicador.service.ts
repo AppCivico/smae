@@ -40,9 +40,9 @@ export class IndicadorService {
         let formula_compilada = '';
         if (formula) {
             try {
-                formula_compilada = FP.parse(formula);
+                formula_compilada = FP.parse(formula.toLocaleUpperCase());
             } catch (error) {
-                throw new HttpException(`formula| formula não foi entendida: ${formula}`, 400);
+                throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
             }
         }
 
