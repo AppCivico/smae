@@ -89,7 +89,7 @@ function soma(a,j) {
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
     <template v-if="!(Valores[var_id]?.loading || Valores[var_id]?.error)&&var_id">
-        <div class="label">Valores previstos e previstos acumulados para cada período <span class="tvermelho">*</span></div>
+        <div class="label">Valores realizados e realizados acumulados para cada período <span class="tvermelho">*</span></div>
         <hr class="mb2">
         <form @submit="onSubmit">
             <div class="flex g2">
