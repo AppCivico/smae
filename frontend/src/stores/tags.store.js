@@ -71,13 +71,7 @@ export const useTagsStore = defineStore({
             return false;
         },
         async update(id, params) {
-            var m = {
-                icone: params.icone,
-                pdm_id: params.pdm_id,
-                ods_id: params.ods_id?params.ods_id:null,
-                descricao: params.descricao,
-            };
-            if(await requestS.patch(`${baseUrl}/tag/${id}`, m)) return true;
+            if(await requestS.patch(`${baseUrl}/tag/${id}`, params)) return true;
             return false;
         },
         async delete(id) {
@@ -90,7 +84,7 @@ export const useTagsStore = defineStore({
                 if(!this.Tags.length){
                     await this.getAll();
                 }
-                this.tempTags = f ? this.Tags.filter((u)=>{
+                this.tempTags = f&&this.Tags.length ? this.Tags.filter((u)=>{
                     return f.textualSearch ? (u.descricao+u.titulo+u.numero).toLowerCase().includes(f.textualSearch.toLowerCase()) : 1;
                 }) : this.Tags;
             } catch (error) {
@@ -103,9 +97,9 @@ export const useTagsStore = defineStore({
                 if(!this.Tags.length){
                     await this.getAll();
                 }
-                this.tempTags = this.Tags.filter((u)=>{
+                this.tempTags = this.Tags.length ? this.Tags.filter((u)=>{
                     return u.pdm_id == pdm_id;
-                });
+                }):[];
             } catch (error) {
                 this.tempTags = { error };
             }

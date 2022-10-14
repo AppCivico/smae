@@ -45,16 +45,16 @@ if(props.props.parentPage=='metas'){
 }else{
     pdm_id = route.params.pdm_id;
     virtualParent.pdm_id=pdm_id;
-    (async()=>{
-        if(!singlePdm.value.id || singlePdm.value.id != pdm_id) await PdMStore.getById(pdm_id);
-        if(singlePdm.value.icone) curfile.name = singlePdm.value.icone;
-    })();
+    if(!singlePdm.value.id || singlePdm.value.id != pdm_id) PdMStore.getById(pdm_id);
 }
 
 let title = 'Cadastro de Tag';
 if (id) {
     title = 'Editar Tag';
-    TagsStore.getById(id);
+    (async()=>{
+        await TagsStore.getById(id);
+        if(tempTags.value.icone) curfile.name = tempTags.value.icone;
+    })();
 }
 
 const schema = Yup.object().shape({
@@ -69,6 +69,9 @@ async function onSubmit(values) {
     try {
         var msg;
         var r;
+
+        values.ods_id = values.ods_id??null;
+
         if (id&&tempTags.value.id) {
             r = await TagsStore.update(tempTags.value.id, values);
             msg = 'Dados salvos com sucesso!';
@@ -110,7 +113,7 @@ async function checkDelete(id) {
 function removeshape() {
     curfile.name = '';
     curfile.loading = null;
-    singlePdm.value.upload_icone = curfile.name;
+    tempTags.value.upload_icone = curfile.name;
 }
 async function uploadshape(e){
     curfile.name= '';
@@ -118,14 +121,14 @@ async function uploadshape(e){
 
     const files = e.target.files;
     const formData = new FormData();
-    formData.append('tipo', 'LOGO_PDM');
+    formData.append('tipo', 'ICONE_TAG');
     formData.append('arquivo', files[0]);
 
     let u = await requestS.upload(`${baseUrl}/upload`, formData)
     if(u.upload_token){
         curfile.name= u.upload_token;
         curfile.loading = null;
-        singlePdm.value.upload_icone = curfile.name;
+        tempTags.value.upload_icone = curfile.name;
     }
 }
 
@@ -167,7 +170,11 @@ async function uploadshape(e){
                 
                 <div v-else-if="curfile.loading" class="addlink"><span>Carregando</span> <svg width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
                 
-                <div v-else-if="curfile.name"><span>{{curfile?.name?.slice(0,30)}}</span> <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a></div>
+                <div v-else-if="curfile.name">
+                    <img :src="`${baseUrl}/download/${tempTags.icone}?inline=true`" width="100" class="ib mr1" v-if="tempTags.icone==curfile?.name">
+                    <span v-else>{{curfile?.name?.slice(0,30)}}</span>
+                    <a :onclick="removeshape" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
+                </div>
                 <Field name="upload_icone" type="hidden" :value="curfile?.name"/>
             </div>
 
