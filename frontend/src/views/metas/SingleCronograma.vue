@@ -48,13 +48,6 @@ function start(){
 }
 onMounted(()=>{start()});
 onUpdated(()=>{start()});
-
-function dateToField(d){
-    var dd=d?new Date(d):false;
-    var dx = (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
-    
-    return dx??'';
-}
 </script>
 <template>
     <Dashboard>
@@ -112,7 +105,7 @@ function dateToField(d){
                 <div class="etapa" v-for="(r, index) in singleCronogramaEtapas?.filter(x=>!x.inativo).sort((a,b)=>a.ordem-b.ordem)" :key="r.etapa.id">
                     <div class="status"><span>{{index+1}}</span></div>
                     <div class="title mb1"><h3>{{r.etapa.titulo}}</h3></div>
-                    <div class="flex center mb05 tc300 w700 t12 uc">
+                    <div class="pl3 flex center mb05 tc300 w700 t12 uc">
                         <div class="f1">Início Prev.</div>
                         <div class="ml1 f1">Término Prev.</div>
                         <div class="ml1 f1">Duração</div>
@@ -123,7 +116,7 @@ function dateToField(d){
                     </div>
                     <hr/>
                     
-                    <div class="flex center t13">
+                    <div class="pl3 flex center t13">
                         <div class="f1">{{r.etapa.inicio_previsto}}</div>
                         <div class="ml1 f1">{{r.etapa.termino_previsto}}</div>
                         <div class="ml1 f1">{{r.etapa.duracao??'-'}}</div>
@@ -141,7 +134,7 @@ function dateToField(d){
                         </div>
                     </div>
                     <hr class="mb05" />
-                    <div class="flex center t11 w700 tc600" v-if="r.cronograma_origem_etapa&&r.cronograma_origem_etapa?.id!=singleCronograma?.id">
+                    <div class="pl3 flex center t11 w700 tc600" v-if="r.cronograma_origem_etapa&&r.cronograma_origem_etapa?.id!=singleCronograma?.id">
                         <router-link 
                             v-if="r.cronograma_origem_etapa.atividade" 
                             :to="`/metas/${r.cronograma_origem_etapa.atividade.iniciativa.meta.id}/iniciativas/${r.cronograma_origem_etapa.atividade.iniciativa.id}/atividades/${r.cronograma_origem_etapa.atividade.id}/cronograma`"
@@ -161,7 +154,7 @@ function dateToField(d){
                     <div class="etapa sub" v-for="(rr, rrindex) in r.etapa.etapa_filha" :key="rr.id">
                         <div class="status"><span>{{rrindex+1}}</span></div>
                         <div class="title"><h4>{{rr.titulo}}</h4></div>
-                        <div class="flex center mb05 tc300 w700 t12 uc">
+                        <div class="pl3 flex center mb05 tc300 w700 t12 uc">
                             <div class="f1">Início Prev.</div>
                             <div class="ml1 f1">Término Prev.</div>
                             <div class="ml1 f1">Duração</div>
@@ -171,12 +164,12 @@ function dateToField(d){
                             <div class="ml1 f0" style="flex-basis:20px;"></div>
                         </div>
                         <hr/>
-                        <div class="flex center t13">
-                            <div class="f1">{{dateToField(rr.inicio_previsto)}}</div>
-                            <div class="ml1 f1">{{dateToField(rr.termino_previsto)}}</div>
+                        <div class="pl3 flex center t13">
+                            <div class="f1">{{rr.inicio_previsto}}</div>
+                            <div class="ml1 f1">{{rr.termino_previsto}}</div>
                             <div class="ml1 f1">{{rr.duracao??'-'}}</div>
-                            <div class="ml1 f1">{{dateToField(rr.inicio_real)}}</div>
-                            <div class="ml1 f1">{{dateToField(rr.termino_real)}}</div>
+                            <div class="ml1 f1">{{rr.inicio_real}}</div>
+                            <div class="ml1 f1">{{rr.termino_real}}</div>
                             <div class="ml1 f1">{{rr.atraso??'-'}}</div>
                             <div class="ml1 f0" style="flex-basis:20px; height: calc(20px + 1rem);">
                                 <router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)" :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
@@ -185,7 +178,7 @@ function dateToField(d){
                         <hr class="mb3" />
                         
                         <div class="list mt2" v-if="rr?.etapa_filha?.length">
-                            <div class="flex center mb05 tc300 w700 t12 uc ">
+                            <div class="pl3 flex center mb05 tc300 w700 t12 uc ">
                                 <div class="f2">SUBFASE</div>
                                 <div class="ml1 f1">início prev.</div>
                                 <div class="ml1 f1">Término Prev.</div>
@@ -198,21 +191,34 @@ function dateToField(d){
                             </div>
                             <hr/>
                             <template v-for="(rrr, rrrindex) in rr.etapa_filha" :key="rrr.id">
-                                <div class="flex center t13">
+                                <div class="pl3 flex center t13">
                                     <div class="f2 flex center"><span class="farol f0">{{rrrindex+1}}</span> <span>{{rrr.titulo}}</span></div>
-                                    <div class="ml1 f1">{{dateToField(rrr.inicio_previsto)}}</div>
-                                    <div class="ml1 f1">{{dateToField(rrr.termino_previsto)}}</div>
+                                    <div class="ml1 f1">{{rrr.inicio_previsto}}</div>
+                                    <div class="ml1 f1">{{rrr.termino_previsto}}</div>
                                     <div class="ml1 f1">{{rrr.duracao??'-'}}</div>
-                                    <div class="ml1 f1">{{dateToField(rrr.inicio_real)}}</div>
-                                    <div class="ml1 f1">{{dateToField(rrr.termino_real)}}</div>
+                                    <div class="ml1 f1">{{rrr.inicio_real}}</div>
+                                    <div class="ml1 f1">{{rrr.termino_real}}</div>
                                     <div class="ml1 f1">{{rrr.atraso??'-'}}</div>
                                     <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                        <router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)" :to="`${parentlink}/cronograma/${singleCronograma?.id}/    etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                        <router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)" :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                     </div>
                                 </div>
-                                <hr class="mb05" />
+                                <hr/>
                             </template>
                         </div>
+                        <div class="pl3">
+                            <router-link 
+                                v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)" 
+                                :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`" 
+                                class="addlink mt05 mb05"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Subfase</span></router-link>
+                        </div>
+                        <hr class="mb1" />
+                    </div>
+                    <div class="pl1">
+                        <router-link 
+                        v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==singleCronograma?.id)" 
+                        :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`" 
+                        class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Fase</span></router-link>
                     </div>
                 </div>
             </div>

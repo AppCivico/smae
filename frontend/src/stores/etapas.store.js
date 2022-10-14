@@ -7,6 +7,7 @@ export const useEtapasStore = defineStore({
     state: () => ({
         Etapas: {},
         singleEtapa: {},
+        singleFase: {},
         singleMonitoramento: {}
     }),
     actions: {
@@ -44,6 +45,26 @@ export const useEtapasStore = defineStore({
                         x.etapa.inicio_real = this.dateToField(x.etapa.inicio_real);
                         x.etapa.termino_real = this.dateToField(x.etapa.termino_real);
                         x.etapa.prazo = this.dateToField(x.etapa.prazo);
+                        if(x.etapa.etapa_filha){
+                            x.etapa.etapa_filha.map(xx=>{
+                                xx.inicio_previsto = this.dateToField(xx.inicio_previsto);
+                                xx.termino_previsto = this.dateToField(xx.termino_previsto);
+                                xx.inicio_real = this.dateToField(xx.inicio_real);
+                                xx.termino_real = this.dateToField(xx.termino_real);
+                                xx.prazo = this.dateToField(xx.prazo);
+                                if(xx.etapa_filha){
+                                    xx.etapa_filha.map(xxx=>{
+                                        xxx.inicio_previsto = this.dateToField(xxx.inicio_previsto);
+                                        xxx.termino_previsto = this.dateToField(xxx.termino_previsto);
+                                        xxx.inicio_real = this.dateToField(xxx.inicio_real);
+                                        xxx.termino_real = this.dateToField(xxx.termino_real);
+                                        xxx.prazo = this.dateToField(xxx.prazo);
+                                        return xxx;
+                                    })
+                                }
+                                return xx;
+                            });
+                        }
                         return x;
                     }).sort((a,b)=>{return a.ordem-b.ordem;}) : r.linhas;
                 }
