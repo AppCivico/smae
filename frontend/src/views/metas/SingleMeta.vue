@@ -26,7 +26,10 @@ if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>{{singleMeta.titulo}}</h1>
+            <div>
+                <div class="t12 uc w700 tamarelo">Meta</div>
+                <h1>{{singleMeta.titulo}}</h1>
+            </div>
             <hr class="ml2 f1"/>
             <router-link v-if="perm?.CadastroMeta?.editar" :to="`/metas/editar/${singleMeta.id}`" class="btn big ml2">Editar</router-link>
         </div>

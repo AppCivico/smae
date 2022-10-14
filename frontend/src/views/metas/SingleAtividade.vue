@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import { useAuthStore, useAtividadesStore } from '@/stores';
+import { useAuthStore, useMetasStore, useAtividadesStore } from '@/stores';
 import { useRoute } from 'vue-router';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
 AtividadeAtiva();
@@ -16,6 +16,10 @@ const meta_id = route.params.meta_id;
 const iniciativa_id = route.params.iniciativa_id;
 const atividade_id = route.params.atividade_id;
 
+const MetasStore = useMetasStore();
+const { activePdm } = storeToRefs(MetasStore);
+MetasStore.getPdM();
+
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
 
 const AtividadesStore = useAtividadesStore();
@@ -26,7 +30,10 @@ if(singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa_
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>{{singleAtividade.titulo}}</h1>
+            <div>
+                <div class="t12 uc w700 tamarelo">{{activePdm.rotulo_atividade}}</div>
+                <h1>{{singleAtividade.titulo}}</h1>
+            </div>
             <hr class="ml2 f1"/>
             <router-link v-if="perm?.CadastroAtividade?.editar" :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`" class="btn big ml2">Editar</router-link>
         </div>
