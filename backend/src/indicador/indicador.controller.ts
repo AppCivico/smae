@@ -49,6 +49,14 @@ export class IndicadorController {
         return '';
     }
 
+    @ApiTags('Indicador')
+    @Get('indicador/:id/serie')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.editar')
+    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
+        return await this.indicadorService.getSeriesIndicador(params.id);
+    }
 
     @ApiTags('default')
     @Get('agregadores')
