@@ -7,6 +7,7 @@ import { useEditModalStore, useAuthStore, useMetasStore, useIndicadoresStore, us
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
+import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 
 
 const authStore = useAuthStore();
@@ -112,6 +113,7 @@ onUpdated(()=>{start()});
                                         </ul>
                                     </div>
                                 </div>
+                                <EvolucaoGraph :dataserie="Valores[v.id]" />
                             </header>
                             <div>
                                 <div class="tablepreinfo">
