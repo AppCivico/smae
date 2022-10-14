@@ -24,7 +24,7 @@ export class ListPrevistoAgrupadas {
     variavel: VariavelResumo
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro de SeriesAgrupadas
-     * @example "["Previsto", "PrevistoAcumlado", "Realizado", "RealizadoAcumulado"]"
+     * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
     */
     ordem_series: Serie[]
 }
