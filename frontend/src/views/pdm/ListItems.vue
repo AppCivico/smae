@@ -165,7 +165,8 @@ function deleteArquivo(pdmid,id){
                                 <table class="tablemain mb1">
                                     <thead>
                                         <tr>
-                                            <th style="width: 90%">Tag</th>
+                                            <th style="width: 60%">Tag</th>
+                                            <th style="width: 30%">Icone</th>
                                             <th style="width: 10%"></th>
                                         </tr>
                                     </thead>
@@ -173,6 +174,9 @@ function deleteArquivo(pdmid,id){
                                         <template v-for="subitem in item.tags" :key="subitem.id">
                                             <tr>
                                                 <td>{{ subitem.descricao }}</td>
+                                                <td><a :href="baseUrl+'/download/'+subitem?.icone" v-if="subitem.icone" download>
+                                                    <img :src="`${baseUrl}/download/${subitem.icone}?inline=true`" width="15" class="ib mr1">
+                                                </a></td>
                                                 <td style="white-space: nowrap; text-align: right;">
                                                     <template v-if="perm?.CadastroTag?.editar">
                                                         <router-link :to="`/pdm/${item.id}/tags/${subitem.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
