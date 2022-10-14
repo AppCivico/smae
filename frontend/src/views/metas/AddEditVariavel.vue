@@ -212,15 +212,15 @@ function buscaCoord(e,parent,item) {
     <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&singleIndicadores?.id">
         <Form @submit="onSubmit" :validation-schema="schema" :initial-values="var_id?singleVariaveis:virtualParent" v-slot="{ errors, isSubmitting }">
             <div class="flex g2">
-                <div class="f1">
-                    <label class="label">Título <span class="tvermelho">*</span></label>
-                    <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
-                    <div class="error-msg">{{ errors.titulo }}</div>
-                </div>
                 <div class="f0">
                     <label class="label">Código <span class="tvermelho">*</span></label>
                     <Field name="codigo" type="text" class="inputtext light mb1" :class="{ 'error': errors.codigo }" />
                     <div class="error-msg">{{ errors.codigo }}</div>
+                </div>
+                <div class="f1">
+                    <label class="label">Título <span class="tvermelho">*</span></label>
+                    <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
+                    <div class="error-msg">{{ errors.titulo }}</div>
                 </div>
             </div>
             <div class="flex g2">
