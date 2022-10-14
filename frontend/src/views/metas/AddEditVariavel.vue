@@ -143,7 +143,7 @@ async function onSubmit(values) {
         values.orgao_id = Number(values.orgao_id);
         values.regiao_id = singleIndicadores.value.regionalizavel? Number(values.regiao_id):null;
         values.unidade_medida_id = Number(values.unidade_medida_id);
-        values.ano_base = Number(values.ano_base);
+        values.ano_base = Number(values.ano_base)??null;
         values.casas_decimais = Number(values.casas_decimais);
         values.peso = values.peso?Number(values.peso):null;
         values.responsaveis = responsaveisArr.value.participantes;

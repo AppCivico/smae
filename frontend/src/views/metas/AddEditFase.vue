@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useAlertStore, useEditModalStore, useRegionsStore, useMetasStore, useCronogramasStore, useEtapasStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useRegionsStore, useCronogramasStore, useEtapasStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -26,10 +26,6 @@ const parentVar = atividade_id??iniciativa_id??meta_id??false;
 const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
 
-const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
-MetasStore.getPdM();
-
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
 if(cronograma_id&&(!singleCronograma?.value?.id || singleCronograma?.value.id!=cronograma_id)){
@@ -49,11 +45,6 @@ let level2 = ref(null);
 let level3 = ref(null);
 let regiao_id_mount = ref(null);
 
-let acumulativa_iniciativa = ref(0);
-let acumulativa_iniciativa_o = ref(0);
-let acumulativa_meta = ref(0);
-let acumulativa_meta_o = ref(0);
-
 let currentParent = group.value=='subfase' ? fase_id : etapa_id;
 let currentId = group.value=='subfase' ? subfase_id : fase_id;
 let currentFase = ref({});
@@ -61,9 +52,10 @@ let oktogo = ref(0);
 
 (async()=>{
     await EtapasStore.getById(cronograma_id,etapa_id);
+    var p1;
     if(group.value=='subfase'&&subfase_id){
         title.value = `Editar subfase`;
-        var p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
         var p2 = p1?.etapa_filha?.find(x=>x.id==subfase_id)??{};
         currentFase.value = p2.id ? p2 : {error: 'Subfase não encontrada'};
 
@@ -72,7 +64,7 @@ let oktogo = ref(0);
 
     }else if(group.value=='fase'&&fase_id){
         title.value = `Editar ${group.value}`;
-        var p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
         currentFase.value = p1.id ? p1 : {error: 'Fase não encontrada'};
 
     }else{

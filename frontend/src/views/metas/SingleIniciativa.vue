@@ -33,7 +33,10 @@ if(!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>{{singleIniciativa.titulo}}</h1>
+            <div>
+                <div class="t12 uc w700 tamarelo">{{activePdm.rotulo_iniciativa}}</div>
+                <h1>{{singleIniciativa.titulo}}</h1>
+            </div>
             <hr class="ml2 f1"/>
             <router-link v-if="perm?.CadastroIniciativa?.editar" :to="`/metas/${meta_id}/iniciativas/editar/${iniciativa_id}`" class="btn big ml2">Editar</router-link>
         </div>
