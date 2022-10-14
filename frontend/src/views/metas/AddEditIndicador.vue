@@ -40,7 +40,7 @@ const { singleAtividade } = storeToRefs(AtividadesStore);
 if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
 
 const IndicadoresStore = useIndicadoresStore();
-const { singleIndicadores, agregadores } = storeToRefs(IndicadoresStore);
+const { singleIndicadores } = storeToRefs(IndicadoresStore);
 IndicadoresStore.getAgregadores();
 
 const VariaveisStore = useVariaveisStore();
@@ -57,11 +57,6 @@ const schema = Yup.object().shape({
     inicio_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
     fim_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
     
-    agregador_id: Yup.string().required(), //  : 1,
-    janela_agregador: Yup.string().nullable().when('agregador_id', (agregador_id, schema) => {
-        return agregador_id&&agregador_id==3 ? schema.required('Preencha um valor') : schema;
-    }),
-
     regionalizavel: Yup.string().nullable(),
     nivel_regionalizacao: Yup.string().nullable().when('regionalizavel', (regionalizavel, field) => regionalizavel=="1" ? field.required("Selecione o nível") : field),
 
@@ -70,7 +65,6 @@ const schema = Yup.object().shape({
 });
 
 let title = 'Adicionar Indicador';
-let agregador_id = ref(singleIndicadores.value.agregador_id);
 let regionalizavel = ref(singleIndicadores.value.regionalizavel);
 
 if (indicador_id) {
@@ -108,7 +102,6 @@ async function onSubmit(values) {
         var r;
         values.inicio_medicao = fieldToDate(values.inicio_medicao);
         values.fim_medicao = fieldToDate(values.fim_medicao);
-        values.janela_agregador = values.janela_agregador??null;
         values.regionalizavel = !!values.regionalizavel;
         values.nivel_regionalizacao = values.regionalizavel ? Number(values.nivel_regionalizacao) : null;
         
@@ -247,20 +240,6 @@ function fieldToDate(d){
                         <label class="label">Fim da Medição <span class="tvermelho">*</span></label>
                         <Field name="fim_medicao" type="text" class="inputtext light mb1" :class="{ 'error': errors.fim_medicao }" maxlength="7" @keyup="maskMonth" />
                         <div class="error-msg">{{ errors.fim_medicao }}</div>
-                    </div>
-                </div>
-                <div class="flex g2">
-                    <div class="f1">
-                        <label class="label">Agregador <span class="tvermelho">*</span></label>
-                        <Field name="agregador_id" v-model="agregador_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.agregador_id }">
-                            <option v-for="a in agregadores" :key="a.id" :value="a.id">{{a.descricao}}</option>
-                        </Field>
-                        <div class="error-msg">{{ errors.agregador_id }}</div>
-                    </div>
-                    <div class="f1" v-if="agregador_id?agregador_id==3:singleIndicadores.agregador_id==3">
-                        <label class="label">Janela (ciclos) <span class="tvermelho">*</span></label>
-                        <Field name="janela_agregador" type="text" class="inputtext light mb1" :class="{ 'error': errors.janela_agregador }" />
-                        <div class="error-msg">{{ errors.janela_agregador }}</div>
                     </div>
                 </div>
 

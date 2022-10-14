@@ -1,12 +1,16 @@
 <script setup>
-	import * from 'd3';
-	
+	import { ref, onMounted, onUpdated } from 'vue';
+	import * as d3 from 'd3';
+
+	const props = defineProps(['dataserie']);
+	const evolucao = ref(null);
+	const tooltipEl = ref(null);
+
 	class smaeChart {
-		constructor(locale, ratio, sizes, transitionDuration){
-			this.ratio = 16/9;
+		constructor(ratio, sizes, transitionDuration, locale){
 			this.sizes = {
-				width: el.getBoundingClientRect().width,
-				height: Math.pow(this.ratio, -1) * el.getBoundingClientRect().width,
+				width: 1000,
+				height: 400,
 				margin: {
 					top: 50,
 					right: 0,
@@ -32,7 +36,7 @@
 
 			/*UPDATING SIZE*/
 			this.sizes.width = el.getBoundingClientRect().width;
-			this.sizes.height = Math.pow(this.ratio, -1) * el.getBoundingClientRect().width;
+			this.sizes.height = 350;
 
 			/*SVG*/
 			const svg = d3.select(el);
@@ -157,21 +161,6 @@
 						.attr("y2", sizes.height - sizes.margin.bottom);
 			const guideLine = svg.select("line.guideline");
 
-			//Creating foreignObject and div#tooltip
-			const gTip = svg.selectAll("g.foreign").data([true]);
-			gTip.enter()
-				.append("g")
-					.attr("class", 'foreign')
-						.append('foreignObject')
-							.attr("x", 0)
-							.attr("y", 0)
-							.attr("width", '100%')
-							.attr("height", '100%')
-							.attr("class", 'foreignobj')
-								.html(`<div id="tooltip"></div>`);
-			
-			let tooltipEl = d3.select(".foreignobj #tooltip");
-
 			//Prepare new data for tooltips
 			let tipArray = this.mergeDataForTooltips(data, X);
 
@@ -193,8 +182,9 @@
 							.attr('height', sizes.height - sizes.margin.bottom - sizes.margin.top )
 							.attr('fill', 'black')
 							.attr('opacity', 0)
-							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, tooltipEl, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcum, d.projetadoAcum]) ) } ) )
-							.on("mouseleave", () => this.hideTooltip(tooltipEl, guideLine) );
+							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcum, d.projetadoAcum]) ) } ) )
+							.on("mouseleave", () => this.hideTooltip(guideLine) )
+							.on("mousemove", (e) => this.moveTooltip(e) );
 					tipsRects.exit().remove();
 					break;
 
@@ -210,16 +200,17 @@
 							.attr('y2', sizes.height - sizes.margin.bottom )
 							.attr('stroke', 'transparent')
 							.attr('stroke-width', 10)
-							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, tooltipEl, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcum, d.projetadoAcum]) ) } ) )
-							.on("mouseleave", () => this.hideTooltip(tooltipEl, guideLine) );
+							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcum, d.projetadoAcum]) ) } ) )
+							.on("mouseleave", () => this.hideTooltip(guideLine) )
+							.on("mousemove", (e) => this.moveTooltip(e) );
 					tipsLines.exit().remove();
 					break;
 			}
 		}
 
 		/*SHOW TOOLTIP*/
-		showTooltip(event, d, metaVal, el, guideLine, pos){
-			
+		showTooltip(event, d, metaVal, guideLine, pos){
+			let el = d3.select(tooltipEl.value);
 			el.classed("on", true)
 				.style("left", pos.x + "px")
 	    		.style("top", pos.y + "px");
@@ -229,24 +220,34 @@
 				.attr("x2", pos.x);
 
 			//Creating tooltip element
-			let tipHtml = `<p class="data cazul">${this.locale.format("%B/%Y")(d.date)}</p>
-				<p class="meta ccinza">Meta: <span class="cazul">${metaVal || '-'}</span></p>
-				<p class="re ccinza">
-					Realizado acumulado até Junho: <span class="camarelo">${d.realizadoAcum || '-'}</span><br>
-					Relizado Junho: <span class="camarelo">${d.realizado || '-'}</span>
+			let tipHtml = `<p class="data tprimary">${this.locale.format("%B/%Y")(d.date)}</p>
+				<p class="meta tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>
+				<p class="tc300">
+					Previsto Junho: <span>${d.projetado || '-'}</span><br />
+					Relizado Junho: <span class="tamarelo">${d.realizado || '-'}</span>
 				</p>
-				<p class="proj ccinza">
-					Projetado acumulado até Junho: <span>${d.projetadoAcum || '-'}</span><br>
-					Projetado Junho: <span>${d.projetado || '-'}</span>
+				<p class="tc300">
+					Previsto acumulado até Junho: <span>${d.projetadoAcum || '-'}</span><br />
+					Realizado acumulado até Junho: <span class="tamarelo">${d.realizadoAcum || '-'}</span>
 				</p>`;
 
 			el.html(tipHtml);
 		}
 
 		/*HIDE TOOLTIP*/
-		hideTooltip(el, guideLine){
+		hideTooltip(guideLine){
+			let el = d3.select(tooltipEl.value);
 			el.classed("on", false);
 			guideLine.classed("on", false);
+		}
+
+		moveTooltip(e){
+			let el = d3.select(tooltipEl.value);
+			el.classed("on", true)
+				.classed("after", false)
+				//.style("transition", "opacity 200ms ease-in-out, visibility 200ms ease-in-out")
+				//.style("left", e.offsetX + "px")
+	    		.style("top", e.offsetY + "px");
 		}
 
 		/*MERGE DATA FOR TOOLTIPS PATTERN*/
@@ -437,16 +438,28 @@
 		}
 	}
 
-	/*SVG ELEMENT*/
-	let el = document.getElementById('evolucao');
-
 	const chart = new smaeChart();
-	chart.drawChart(dataset, el);
 
-	window.addEventListener('resize', function(){ chart.drawChart(dataset, el); });
+	function start(){
+		if(props.dataserie?.previsto && evolucao.value){
+			let data = {};
+
+			let iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
+			let iRealizadoAcumulado = props.dataserie.ordem_series.indexOf('RealizadoAcumulado');
+			data.projetado = props.dataserie.previsto.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
+			data.realizado = props.dataserie.previsto.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
+			chart.drawChart(data,evolucao.value);
+		}
+	}
+	onMounted(start);
+	onUpdated(start);
+	window.addEventListener('resize', start);
 </script>
 <template>
-	<svg class="lineGraph" id="evolucao" xmlns:xhtml="http://www.w3.org/1999/xhtml"></svg>
+	<div style="position: relative;">
+		<svg class="lineGraph" ref="evolucao" xmlns:xhtml="http://www.w3.org/1999/xhtml"></svg>
+		<div class="tooltipEvolucao" ref="tooltipEl"></div>
+	</div>
 </template>
 <style lang="less">
     @import '@/_less/variables.less';
@@ -526,13 +539,15 @@
 			stroke: #E3E5E8;
 		}
 	}
-	#tooltip{
+	.tooltipEvolucao{
 		transition: all 200ms ease-in-out;
 		visibility: hidden; opacity: 0; width: max-content;
 		position: absolute; left: 0px; top: 0px;
+		pointer-events: none;
 		background: white; padding: 20px; border-radius: 8px;
 		box-shadow: 5px 5px 15px 10px fade(black, 8);
 		transform: translateX(-50%) translateY( calc(-100% - 12px ) );
+		z-index: 999;
 		p{
 			font-family: sans-serif;
 			font-size: 14px;
