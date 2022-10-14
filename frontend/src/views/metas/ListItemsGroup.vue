@@ -5,6 +5,7 @@ import { Dashboard} from '@/components';
 import { useAuthStore, useMetasStore } from '@/stores';
 import { useMacrotemasStore, useTemasStore, useSubtemasStore } from '@/stores';
 import { useRoute } from 'vue-router';
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -62,6 +63,21 @@ function groupSlug(s) {
 </script>
 <template>
     <Dashboard>
+        <div class="flex spacebetween center mb2">
+            <img :src="`${baseUrl}/download/${activePdm.logo}?inline=true`" width="100" class="ib mr1" v-if="activePdm.logo">
+            <h1 v-else>{{activePdm.nome}}</h1>
+            <hr class="ml2 f1"/>
+            <div class="ml2 dropbtn">
+                <span class="btn">Adicionar</span>
+                <ul>
+                    <li><router-link v-if="perm?.CadastroMeta?.inserir" to="/metas/novo">Nova Meta</router-link></li>
+                    <li><router-link v-if="perm?.CadastroMacroTema?.inserir&&activePdm.possui_macro_tema" to="/metas/macrotemas/novo">{{activePdm.rotulo_macro_tema??'Macrotema'}}</router-link></li>
+                    <li><router-link v-if="perm?.CadastroTema?.inserir&&activePdm.possui_tema" to="/metas/temas/novo">{{activePdm.rotulo_tema??'Tema'}}</router-link></li>
+                    <li><router-link v-if="perm?.CadastroSubTema?.inserir&&activePdm.possui_sub_tema" to="/metas/subtemas/novo">{{activePdm.rotulo_sub_tema??'Subtema'}}</router-link></li>
+                    <li><router-link v-if="perm?.CadastroTag?.inserir" to="/metas/tags/novo">Tag</router-link></li>
+                </ul>
+            </div>
+        </div>
         <div class="mb2">
             <div class="label tc300">{{activePdm['rotulo_'+filters.groupBy]}}</div>
             <div class="t48 w700">{{currentStore[currentStoreKey]?.descricao}}</div>
