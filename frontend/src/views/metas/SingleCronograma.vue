@@ -52,7 +52,10 @@ onUpdated(()=>{start()});
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Cronograma</h1>
+            <div>
+                <div class="t12 uc w700 tamarelo">{{parentLabel}}</div>
+                <h1>Cronograma</h1>
+            </div>
             <hr class="ml2 f1"/>
             <router-link v-if="perm?.CadastroCronograma?.editar&&!singleCronograma?.loading&&singleCronograma?.id" :to="`${parentlink}/cronograma/${singleCronograma?.id}`" class="btn ml2">Editar Cronograma</router-link>
             <div class="ml1 dropbtn" v-if="!singleCronograma?.loading&&singleCronograma?.id">

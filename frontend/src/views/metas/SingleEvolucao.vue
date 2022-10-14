@@ -61,7 +61,10 @@ onUpdated(()=>{start()});
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Evolução da {{parentLabel}}</h1>
+            <div>
+                <div class="t12 uc w700 tamarelo">{{parentLabel}}</div>
+                <h1>Evolução da {{parentLabel}}</h1>
+            </div>
             <hr class="ml2 f1"/>
         </div>
         
