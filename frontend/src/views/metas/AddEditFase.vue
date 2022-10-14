@@ -103,19 +103,19 @@ const schema = Yup.object().shape({
 
 async function getRegionByParent(r_id,cur){
     await RegionsStore.filterRegions({id: r_id});
-    level1.value = tempRegions.value[0]?.children[0].index?tempRegions.value[0]?.children[0].id:'';
+    level1.value = tempRegions.value[0]?.children[0].index!==undefined?tempRegions.value[0]?.children[0].id:'';
     if(level1.value){ 
         minLevel.value = 1; 
     }else if(cur){
         level1.value=cur;
     }
-    level2.value = tempRegions.value[0]?.children[0]?.children[0].index?tempRegions.value[0]?.children[0]?.children[0].id:'';
+    level2.value = tempRegions.value[0]?.children[0]?.children[0].index!==undefined?tempRegions.value[0]?.children[0]?.children[0].id:'';
     if(level2.value){ 
         minLevel.value = 2; 
     }else if(cur&&cur!=level1.value){
         level2.value=cur;
     }
-    level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index?tempRegions.value[0]?.children[0]?.children[0]?.children[0].id:'';
+    level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index!==undefined?tempRegions.value[0]?.children[0]?.children[0]?.children[0].id:'';
     if(level3.value){ 
         minLevel.value = 3; 
     }else if(cur&&cur!=level2.value){
