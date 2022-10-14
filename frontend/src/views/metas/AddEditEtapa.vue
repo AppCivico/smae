@@ -94,8 +94,9 @@ const schema = Yup.object().shape({
     regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value)=>{ return !singleCronograma?.value?.regionalizavel || value; }),
     
     titulo: Yup.string().required('Preencha o título'),
-    descricao: Yup.string().required('Preencha a descrição'),
+    descricao: Yup.string().nullable(),
     ordem: Yup.string().nullable(),
+    peso: Yup.string().nullable(),
     
     inicio_previsto: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     termino_previsto: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
@@ -109,6 +110,7 @@ async function onSubmit(values) {
         var r;
 
         values.regiao_id = singleCronograma.value.regionalizavel? Number(values.regiao_id):null;
+        values.peso = Number(values.peso)??null;
         values.ordem = Number(values.ordem)??null;
         values.etapa_pai_id = null;
 
@@ -218,18 +220,24 @@ function maskDate(el){
     </div>
     <template v-if="!(singleEtapa?.loading || singleEtapa?.error)&&singleCronograma?.id">
         <Form @submit="onSubmit" :validation-schema="schema" :initial-values="etapa_id?singleEtapa.etapa:virtualParent" v-slot="{ errors, isSubmitting }">
+            <div>
+                <label class="label">Nome <span class="tvermelho">*</span></label>
+                <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
+                <div class="error-msg">{{ errors.titulo }}</div>
+            </div>
             <div class="flex g2">
-                <div class="f2">
-                    <label class="label">Nome <span class="tvermelho">*</span></label>
-                    <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
-                    <div class="error-msg">{{ errors.titulo }}</div>
+                <div class="f1">
+                    <label class="label">Peso</label>
+                    <Field name="peso" type="number" class="inputtext light mb1" :class="{ 'error': errors.peso }" />
+                    <div class="error-msg">{{ errors.peso }}</div>
                 </div>
                 <div class="f1">
                     <label class="label">Ordem</label>
-                    <Field name="ordem" type="text" class="inputtext light mb1" :value="etapa_id?singleEtapa?.ordem:ordem" :class="{ 'error': errors.ordem }" />
+                    <Field name="ordem" type="number" class="inputtext light mb1" :value="etapa_id?singleEtapa?.ordem:ordem" :class="{ 'error': errors.ordem }" />
                     <div class="error-msg">{{ errors.ordem }}</div>
                 </div>
             </div>
+
             <div class="">
                 <label class="label">Descrição</label>
                 <Field name="descricao" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.descricao }" />

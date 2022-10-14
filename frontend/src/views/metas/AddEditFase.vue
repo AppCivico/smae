@@ -36,8 +36,7 @@ const EtapasStore = useEtapasStore();
 const { singleEtapa } = storeToRefs(EtapasStore);
 
 const RegionsStore = useRegionsStore();
-const { regions, tempRegions } = storeToRefs(RegionsStore);
-if(!regions.length) RegionsStore.getAll();
+const { tempRegions } = storeToRefs(RegionsStore);
 
 let title = ref(`Adicionar ${group.value}`);
 let level1 = ref(null);
@@ -49,27 +48,39 @@ let currentParent = group.value=='subfase' ? fase_id : etapa_id;
 let currentId = group.value=='subfase' ? subfase_id : fase_id;
 let currentFase = ref({});
 let oktogo = ref(0);
-
+let minLevel = ref(0);
 (async()=>{
     await EtapasStore.getById(cronograma_id,etapa_id);
     var p1;
+    var noregion = true;
     if(group.value=='subfase'&&subfase_id){
         title.value = `Editar subfase`;
         p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
         var p2 = p1?.etapa_filha?.find(x=>x.id==subfase_id)??{};
         currentFase.value = p2.id ? p2 : {error: 'Subfase não encontrada'};
+        if(p1?.regiao_id){
+            getRegionByParent(p1.regiao_id,p2?.regiao_id);
+            noregion = false;
+        }
 
     }else if(group.value=='subfase'){
         title.value = `Adicionar subfase`;
+        p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        if(p1?.regiao_id){
+            getRegionByParent(p1.regiao_id);
+            noregion = false;
+        }
 
     }else if(group.value=='fase'&&fase_id){
         title.value = `Editar ${group.value}`;
         p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
         currentFase.value = p1.id ? p1 : {error: 'Fase não encontrada'};
-
-    }else{
-        if(singleEtapa.value?.etapa?.regiao_id) getRegionByParent(singleEtapa.value.etapa.regiao_id);
+        if(p1?.regiao_id){
+            getRegionByParent(singleEtapa.value.etapa.regiao_id,p1?.regiao_id);
+            noregion = false;
+        }
     }
+    if(noregion && singleEtapa.value?.etapa?.regiao_id) getRegionByParent(singleEtapa.value.etapa.regiao_id);
     oktogo.value = 1;
 })();
 
@@ -80,8 +91,9 @@ const schema = Yup.object().shape({
     regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value)=>{ return !singleCronograma?.value?.regionalizavel || value; }),
     
     titulo: Yup.string().required('Preencha o título'),
-    descricao: Yup.string().required('Preencha a descrição'),
+    descricao: Yup.string().nullable(),
     ordem: Yup.string().nullable(),
+    peso: Yup.string().nullable(),
     
     inicio_previsto: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
     termino_previsto: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'),
@@ -89,11 +101,27 @@ const schema = Yup.object().shape({
     termino_real: Yup.string().nullable().matches(regx,'Formato inválido'),
 });
 
-async function getRegionByParent(r_id){
+async function getRegionByParent(r_id,cur){
     await RegionsStore.filterRegions({id: r_id});
-    level1.value = tempRegions.value[0]?.children[0].index??null;
-    level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
-    level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
+    level1.value = tempRegions.value[0]?.children[0].index?tempRegions.value[0]?.children[0].id:'';
+    if(level1.value){ 
+        minLevel.value = 1; 
+    }else if(cur){
+        level1.value=cur;
+    }
+    level2.value = tempRegions.value[0]?.children[0]?.children[0].index?tempRegions.value[0]?.children[0]?.children[0].id:'';
+    if(level2.value){ 
+        minLevel.value = 2; 
+    }else if(cur&&cur!=level1.value){
+        level2.value=cur;
+    }
+    level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index?tempRegions.value[0]?.children[0]?.children[0]?.children[0].id:'';
+    if(level3.value){ 
+        minLevel.value = 3; 
+    }else if(cur&&cur!=level2.value){
+        level3.value=cur;
+    }
+    lastlevel();
 }
 
 async function onSubmit(values) {
@@ -104,6 +132,7 @@ async function onSubmit(values) {
 
         values.regiao_id = singleCronograma.value.regionalizavel? Number(values.regiao_id):null;
         values.ordem = Number(values.ordem)??null;
+        values.peso = Number(values.peso)??null;
         values.etapa_pai_id = currentParent;
 
         var rota = false;
@@ -157,9 +186,9 @@ async function checkClose() {
 }
 function lastlevel() {
     var r;
-    if(singleCronograma.value.nivel_regionalizacao==2&&level1.value!==null){ r= regions.value[0].children[level1.value].id; }
-    if(singleCronograma.value.nivel_regionalizacao==3&&level1.value!==null&&level2.value!==null){ r= regions.value[0].children[level1.value].children[level2.value].id; }
-    if(singleCronograma.value.nivel_regionalizacao==4&&level1.value!==null&&level2.value!==null&&level3.value!==null){ r= regions.value[0].children[level1.value].children[level2.value].children[level3.value].id; }
+    if(level1.value){ r= tempRegions.value[0]?.children.find(x=>x.id==level1.value)?.id; }
+    if(level1.value&&level2.value){ r= tempRegions.value[0]?.children.find(x=>x.id==level1.value)?.children.find(x=>x.id==level2.value)?.id; }
+    if(level1.value&&level2.value&&level3.value){ r= tempRegions.value[0]?.children.find(x=>x.id==level1.value)?.children.find(x=>x.id==level2.value)?.children.find(x=>x.id==level3.value)?.id; }
     regiao_id_mount.value = r;
 }
 function maskDate(el){
@@ -190,40 +219,49 @@ function maskDate(el){
                     <Field name="titulo" type="text" class="inputtext light mb1" :class="{ 'error': errors.titulo }" />
                     <div class="error-msg">{{ errors.titulo }}</div>
                 </div>
+                <div class="flex g2">
+                    <div class="f1">
+                        <label class="label">Peso</label>
+                        <Field name="peso" type="number" class="inputtext light mb1" :class="{ 'error': errors.peso }" />
+                        <div class="error-msg">{{ errors.peso }}</div>
+                    </div>
+                    <div class="f1">
+                        <label class="label">Ordem</label>
+                    <Field name="ordem" type="text" class="inputtext light mb1" :class="{ 'error': errors.ordem }" />
+                        <div class="error-msg">{{ errors.ordem }}</div>
+                    </div>
+                </div>
                 <div>
                     <label class="label">Descrição</label>
                     <Field name="descricao" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.descricao }" />
                     <div class="error-msg">{{ errors.descricao }}</div>
                 </div>
 
-                <div v-if="singleCronograma.regionalizavel&&regions">
+                <div v-if="singleCronograma.regionalizavel&&tempRegions.length">
                         
                     <label class="label">Região <span class="tvermelho">*</span></label>
-
-                    <template v-if="singleCronograma.nivel_regionalizacao>=2">
-                        <select class="inputtext light mb1" v-model="level1" @change="lastlevel">
+                        <select class="inputtext light mb1" v-model="level1" @change="lastlevel" :disabled="minLevel>=1">
                             <option value="">Selecione</option>
-                            <option v-for="(r,i) in regions[0]?.children" :key="i" :value="i">{{r.descricao}}</option>
+                            <option v-for="(r) in tempRegions[0]?.children" :key="r.id" :value="r.id">{{r.descricao}}</option>
                         </select>
-                        <template v-if="singleCronograma.nivel_regionalizacao>=3&&level1!==null">
-                            <select class="inputtext light mb1" v-model="level2" @change="lastlevel">
+                        <template v-if="level1!==null">
+                            <select class="inputtext light mb1" v-model="level2" @change="lastlevel" :disabled="minLevel>=2">
                                 <option value="">Selecione</option>
-                                <option v-for="(rr,ii) in regions[0]?.children[level1]?.children" :key="ii" :value="ii">{{rr.descricao}}</option>
+                                <option v-for="(rr) in tempRegions[0]?.children.find(x=>x.id==level1)?.children" :key="rr.id" :value="rr.id">{{rr.descricao}}</option>
                             </select>
-                            <template v-if="singleCronograma.nivel_regionalizacao==4&&level2!==null">
-                                <select class="inputtext light mb1" v-model="level3" @change="lastlevel">
+                            <template v-if="level2!==null">
+                                <select class="inputtext light mb1" v-model="level3" @change="lastlevel" :disabled="minLevel>=3">
                                     <option value="">Selecione</option>
-                                    <option v-for="(rrr,iii) in regions[0]?.children[level1]?.children[level2]?.children" :key="iii" :value="iii">{{rrr.descricao}}</option>
+                                    <option v-for="(rrr) in tempRegions[0]?.children.find(x=>x.id==level1)?.children.find(x=>x.id==level2)?.children" :key="rrr.id" :value="rrr.id">{{rrr.descricao}}</option>
                                 </select>
                             </template>
-                            <template v-else-if="singleCronograma.nivel_regionalizacao==4&&level2===null">
+                            <template v-else>
                                 <input class="inputtext light mb1" type="text" disabled value="Selecione uma subprefeitura">
                             </template>
                         </template>
-                        <template v-else-if="singleCronograma.nivel_regionalizacao>=3&&level1===null">
+                        <template v-else>
                             <input class="inputtext light mb1" type="text" disabled value="Selecione uma região">
                         </template>
-                    </template>
                     <Field name="regiao_id" v-model="regiao_id_mount" type="hidden" :class="{ 'error': errors.regiao_id }"/>
                     <div class="error-msg">{{ errors.regiao_id }}</div>
                 </div>
