@@ -9,6 +9,8 @@ import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 // @ts-ignore
 import * as FP from "../../public/js/formula_parser.js";
 import { SerieIndicadorDto } from 'src/indicador/dto/serie-indicador.dto';
+import e from 'express';
+import { Date2YMD } from 'src/common/date2ymd';
 
 @Injectable()
 export class IndicadorService {
@@ -234,7 +236,12 @@ export class IndicadorService {
             }
         });
 
-        return created;
+        return created.map((r) => {
+            return {
+                ...r,
+                data_valor: Date2YMD.toString(r.data_valor),
+            }
+        });
     }
 
 }
