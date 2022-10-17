@@ -9,6 +9,7 @@ DECLARE
     vTipoSerie "Serie";
     vAcumuladoUsaFormula boolean;
     vPeriodicidade interval;
+    vIndicadorBase numeric;
     -- resultado em double precision pq já passou por toda a conta
     resultado double precision;
 BEGIN
@@ -21,12 +22,14 @@ BEGIN
             when eh_serie_realizado is null then null
             when eh_serie_realizado then 'Realizado'::"Serie" else 'Previsto'::"Serie"
             end as tipo_serie,
-            i.acumulado_usa_formula
+            i.acumulado_usa_formula,
+            i.acumulado_valor_base
         INTO vPeriodicidade,
         vInicio,
         vFim,
         vTipoSerie,
-        vAcumuladoUsaFormula
+        vAcumuladoUsaFormula,
+        vIndicadorBase
     FROM
         indicador i
     WHERE
@@ -82,8 +85,8 @@ BEGIN
 
                 IF (r.formula IS NOT NULL) THEN
                     EXECUTE 'SELECT ' || r.formula INTO resultado;
-                    INSERT INTO serie_indicador (indicador_id, regiao_id, serie, data_valor, valor_nominal, valor_percentual)
-                        VALUES (pIndicador_id, NULL, r.serie, r.data_serie, resultado, 0);
+                    INSERT INTO serie_indicador (indicador_id, regiao_id, serie, data_valor, valor_nominal)
+                        VALUES (pIndicador_id, NULL, r.serie, r.data_serie, resultado);
                 END IF;
 
                 RAISE NOTICE 'r %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
@@ -97,7 +100,7 @@ BEGIN
                 AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie"
                 AND regiao_id IS NULL;
 
-            INSERT INTO serie_indicador(indicador_id, regiao_id, serie, data_valor, valor_nominal, valor_percentual)
+            INSERT INTO serie_indicador(indicador_id, regiao_id, serie, data_valor, valor_nominal)
             WITH indData AS (
                 SELECT
                     periodicidade_intervalo (i.periodicidade) as periodicidade,
@@ -113,8 +116,7 @@ BEGIN
                 si.regiao_id,
                 (serieRecord.serie::text || 'Acumulado')::"Serie",
                 gs.gs as data_serie,
-                coalesce(sum(si.valor_nominal) OVER (PARTITION BY si.regiao_id order by gs.gs),0) as valor_acc, -- coalesce ou entao precisa pular o que for null
-                0
+                coalesce(sum(si.valor_nominal) OVER (PARTITION BY si.regiao_id order by gs.gs), vIndicadorBase) as valor_acc
             FROM
                 generate_series(
                 (select inicio_medicao from indData),
@@ -126,7 +128,7 @@ BEGIN
                 AND si.indicador_id = pIndicador_id
                 AND data_valor = gs.gs::date
                 AND si.serie = serieRecord.serie
-            ;
+            HAVING coalesce(sum(si.valor_nominal) OVER (PARTITION BY si.regiao_id order by gs.gs), vIndicadorBase) is not null;
 
         END IF ;
     END LOOP; -- loop resultados das series
