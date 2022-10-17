@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -14,6 +14,7 @@ import { Date2YMD } from 'src/common/date2ymd';
 
 @Injectable()
 export class IndicadorService {
+    private readonly logger = new Logger(IndicadorService.name);
 
     constructor(private readonly prisma: PrismaService) { }
 
@@ -148,7 +149,11 @@ export class IndicadorService {
         let indicador = await this.prisma.indicador.findFirst({
             where: { id: id },
             select: {
-                formula_compilada: true
+                formula_compilada: true,
+                inicio_medicao: true,
+                fim_medicao: true,
+                acumulado_usa_formula: true,
+                periodicidade: true
             }
         });
         if (!indicador) throw new HttpException('indicador não encontrado', 400);
@@ -172,6 +177,14 @@ export class IndicadorService {
         let formula_compilada: string = await this.#validateVariaveis(formula_variaveis, id, formula);
         console.log({ formula_variaveis });
 
+        const oldVersion = [
+            indicador.formula_compilada,
+            Date2YMD.toString(indicador.inicio_medicao),
+            Date2YMD.toString(indicador.fim_medicao),
+            indicador.periodicidade,
+            indicador.acumulado_usa_formula
+        ].join(',');
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const indicador = await prisma.indicador.update({
@@ -184,7 +197,14 @@ export class IndicadorService {
 
                     acumulado_usa_formula: updateIndicadorDto.acumulado_usa_formula === null ? undefined : updateIndicadorDto.acumulado_usa_formula,
                 },
-                select: { id: true }
+                select: {
+                    id: true,
+                    formula_compilada: true,
+                    inicio_medicao: true,
+                    fim_medicao: true,
+                    acumulado_usa_formula: true,
+                    periodicidade: true
+                }
             });
 
             if (formula_variaveis) {
@@ -203,8 +223,17 @@ export class IndicadorService {
                 });
             }
 
-            if (formula_compilada != antigaFormulaCompilada) {
-                // TODO recalcular tudo
+            const newVersion = [
+                indicador.formula_compilada,
+                Date2YMD.toString(indicador.inicio_medicao),
+                Date2YMD.toString(indicador.fim_medicao),
+                indicador.periodicidade,
+                indicador.acumulado_usa_formula
+            ].join(',');
+
+            if (newVersion != oldVersion) {
+                this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`)
+                await this.prisma.$queryRaw`select monta_serie_indicador(${indicador.id}, null, null, null)`;
             }
 
             return indicador;
