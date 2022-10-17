@@ -8,6 +8,7 @@ import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 // @ts-ignore
 import * as FP from "../../public/js/formula_parser.js";
+import { SerieIndicadorDto } from 'src/indicador/dto/serie-indicador.dto';
 
 @Injectable()
 export class IndicadorService {
@@ -221,4 +222,19 @@ export class IndicadorService {
 
         return created;
     }
+
+    async getSeriesIndicador(id: number, user: PessoaFromJwt): Promise<SerieIndicadorDto[]> {
+        const created = await this.prisma.serieIndicador.findMany({
+            where: { indicador_id: +id },
+            select: {
+                serie: true,
+                data_valor: true,
+                regiao_id: true,
+                valor_nominal: true
+            }
+        });
+
+        return created;
+    }
+
 }
