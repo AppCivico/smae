@@ -86,6 +86,7 @@ export class EtapaService {
                 descricao: etapa.descricao,
                 nivel: etapa.nivel,
                 prazo: etapa.prazo,
+                peso: etapa.peso,
                 inicio_previsto: etapa.inicio_previsto,
                 termino_previsto: etapa.termino_previsto,
                 inicio_real: etapa.inicio_real,
