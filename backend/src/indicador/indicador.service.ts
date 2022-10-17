@@ -232,7 +232,7 @@ export class IndicadorService {
 
             if (newVersion != oldVersion) {
                 this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`)
-                await this.prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
+                await prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
             }
 
             return indicador;
