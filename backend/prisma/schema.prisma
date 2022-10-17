@@ -692,6 +692,7 @@ model Indicador {
     atividade             Atividade?    @relation(fields: [atividade_id], references: [id])
     formula               String?
     formula_compilada     String?
+    acumulado_valor_base  Decimal?      @db.Decimal(65, 30)
     acumulado_usa_formula Boolean       @default(false)
     codigo                String
     titulo                String
@@ -710,13 +711,13 @@ model Indicador {
     contexto              String?
     complemento           String?
 
-    atualizador                Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador                    Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
-    removedor                  Pessoa?                    @relation("Removedor", fields: [removido_por], references: [id])
-    IndicadorVariavelOrigem    IndicadorVariavel[]        @relation("Origem")
-    IndicadorVariavel          IndicadorVariavel[]        @relation("FK")
-    SerieIndicador             SerieIndicador[]
-    indicador_formula_variavel IndicadorFormulaVariavel[]
+    atualizador             Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                 Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
+    removedor               Pessoa?                    @relation("Removedor", fields: [removido_por], references: [id])
+    IndicadorVariavelOrigem IndicadorVariavel[]        @relation("Origem")
+    IndicadorVariavel       IndicadorVariavel[]        @relation("FK")
+    SerieIndicador          SerieIndicador[]
+    formula_variaveis       IndicadorFormulaVariavel[]
 
     @@map("indicador")
 }
@@ -837,9 +838,8 @@ model SerieIndicador {
     serie Serie
 
     // campo do tipo data para suportar valores diarios/mensais
-    data_valor       DateTime @db.Date()
-    valor_nominal    Decimal  @db.Decimal(65, 30)
-    valor_percentual Decimal  @db.Decimal(65, 30)
+    data_valor    DateTime @db.Date()
+    valor_nominal Float    @db.DoublePrecision
 
     @@map("serie_indicador")
 }
@@ -851,9 +851,8 @@ model SerieVariavel {
 
     serie Serie
 
-    data_valor       DateTime @db.Date()
-    valor_nominal    Decimal  @db.Decimal(65, 30)
-    valor_percentual Decimal  @default(0) @db.Decimal(65, 30)
+    data_valor    DateTime @db.Date()
+    valor_nominal Decimal  @db.Decimal(65, 30)
 
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?

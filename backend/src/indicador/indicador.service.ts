@@ -129,7 +129,7 @@ export class IndicadorService {
                 atividade_id: true,
                 contexto: true,
                 complemento: true,
-                indicador_formula_variavel: {
+                formula_variaveis: {
                     select: {
                         referencia: true,
                         variavel_id: true,
@@ -192,9 +192,8 @@ export class IndicadorService {
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
-                    ...updateIndicadorDto,
+                    ...updateIndicadorDto as any, // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
                     formula_compilada: formula_compilada,
-
                     acumulado_usa_formula: updateIndicadorDto.acumulado_usa_formula === null ? undefined : updateIndicadorDto.acumulado_usa_formula,
                 },
                 select: {
