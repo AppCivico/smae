@@ -3,11 +3,12 @@ import { IsArray, isArray, IsNumberString, IsString, ValidateIf } from "class-va
 
 export class ExistingSerieJwt {
     id: number
+    v: number // variable_id
 }
 
 export class NonExistingSerieJwt {
-    p: string
-    v: number
+    p: string // variable_id
+    v: number // variable_id
     s: Serie
 }
 

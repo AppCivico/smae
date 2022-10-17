@@ -503,7 +503,7 @@ export class VariavelService {
     }
 
 
-    getValorSerieExistentePorPeriodo(valoresExistentes: ValorSerieExistente[]): SerieValorPorPeriodo {
+    getValorSerieExistentePorPeriodo(valoresExistentes: ValorSerieExistente[], variavel_id: number): SerieValorPorPeriodo {
         const porPeriodo: SerieValorPorPeriodo = new SerieValorPorPeriodo();
         for (const serieValor of valoresExistentes) {
             if (!porPeriodo[Date2YMD.toString(serieValor.data_valor)]) {
@@ -515,19 +515,10 @@ export class VariavelService {
                 };
             }
 
-            console.log(serieValor.valor_nominal);
-            console.log({
-                valueOf: serieValor.valor_nominal.valueOf(),
-                toString: serieValor.valor_nominal.toString(),
-                toDecimalPlaces: serieValor.valor_nominal.toDecimalPlaces(),
-                toDecimalPlaces99: serieValor.valor_nominal.toDecimalPlaces(99),
-                decimalPlaces: serieValor.valor_nominal.decimalPlaces(),
-                precision: serieValor.valor_nominal.precision(),
-            });
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toPrecision(),
-                referencia: this.getEditExistingSerieJwt(serieValor.id),
+                referencia: this.getEditExistingSerieJwt(serieValor.id, variavel_id),
             }
         }
 
@@ -542,7 +533,7 @@ export class VariavelService {
         const variavel = indicadorVariavelRelList[0].variavel
 
         const valoresExistentes = await this.getValorSerieExistente(variavelId, ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']);
-        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
+        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
         const result: ListPrevistoAgrupadas = {
             variavel: {
@@ -616,10 +607,11 @@ export class VariavelService {
     }
 
 
-    getEditExistingSerieJwt(id: number): string {
+    getEditExistingSerieJwt(id: number, variable_id: number): string {
         // TODO opcionalmente adicionar o modificado_em aqui
         return this.jwtService.sign({
             id: id,
+            v: variable_id
         } as ExistingSerieJwt);
     }
 
@@ -666,20 +658,25 @@ export class VariavelService {
             if (!referenciaDecoded)
                 throw new HttpException('Tempo para edição dos valores já expirou. Abra em uma nova aba e faça o preenchimento novamente.', 400);
 
-            valids.push({ valor: valor.valor, referencia: referenciaDecoded });
+            valids.push({
+                valor: valor.valor,
+                referencia: referenciaDecoded,
+            });
         }
         console.log({ log: 'validation', valids })
         return valids;
     }
 
     async batchUpsertSerie(valores: SerieUpsert[], user: PessoaFromJwt) {
-        // TODO opcionalmente verificar se o modificado_em de todas as variaveis ainda é igual
-        // em relação ao momento JWT foi assinado, pra evitar sobresecrita da informação sem aviso para o usuário
+        // TODO opcionalmente verificar se o modificado_em de todas as variáveis ainda é igual
+        // em relação ao momento JWT foi assinado, pra evitar sobrescrita da informação sem aviso para o usuário
         // da mesma forma, ao buscar os que não tem ID, não deve existir outro valor já existente no periodo
 
         const valoresValidos = this.validarValoresJwt(valores);
 
-        await this.prisma.$transaction(async (primaTnx: Prisma.TransactionClient) => {
+        const variaveisModificadas: Record<number, boolean> = {};
+
+        await this.prisma.$transaction(async (prismaTnx: Prisma.TransactionClient) => {
 
             const idsToBeRemoved: number[] = [];
             const updatePromises: Promise<any>[] = [];
@@ -690,10 +687,18 @@ export class VariavelService {
                 // busca os valores vazios mas que já existem, para serem removidos
                 if (valor.valor === '' && "id" in valor.referencia) {
                     idsToBeRemoved.push(valor.referencia.id)
+
+                    if (!variaveisModificadas[valor.referencia.v]) {
+                        variaveisModificadas[valor.referencia.v] = true;
+                    }
+
                 } else if (valor.valor) {
+                    if (!variaveisModificadas[valor.referencia.v]) {
+                        variaveisModificadas[valor.referencia.v] = true;
+                    }
 
                     if ("id" in valor.referencia) {
-                        updatePromises.push(primaTnx.serieVariavel.updateMany({
+                        updatePromises.push(prismaTnx.serieVariavel.updateMany({
                             where: { id: valor.referencia.id },
                             data: {
                                 valor_nominal: valor.valor,
@@ -719,14 +724,14 @@ export class VariavelService {
             // apenas um select pra forçar o banco fazer o serialize na variavel
             // ja que o prisma não suporta 'select for update'
             if (anySerieIsToBeCreatedOnVariable)
-                await primaTnx.variavel.findFirst({ where: { id: anySerieIsToBeCreatedOnVariable }, select: { id: true } });
+                await prismaTnx.variavel.findFirst({ where: { id: anySerieIsToBeCreatedOnVariable }, select: { id: true } });
 
             if (updatePromises.length)
                 await Promise.all(updatePromises);
 
-            // TODO: maybe pode verificar aqui o resultado e fazer o excpetion caso tenha removido alguma
+            // TODO: maybe pode verificar aqui o resultado e fazer o exception caso tenha removido alguma
             if (createList.length)
-                await primaTnx.serieVariavel.deleteMany({
+                await prismaTnx.serieVariavel.deleteMany({
                     where: {
                         'OR': createList.map((e) => {
                             return {
@@ -751,12 +756,37 @@ export class VariavelService {
                     data: createList
                 });
 
+            const variaveisMod = Object.keys(variaveisModificadas).map(e => +e);
+            this.logger.log(`Variáveis modificadas: ${JSON.stringify(variaveisMod)}`);
+            await this.recalc_variaveis_acumulada(variaveisMod, prismaTnx);
+            await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTnx);
+
         }, {
             isolationLevel: 'Serializable',
             maxWait: 15000,
             timeout: 25000,
         });
 
+    }
+
+    async recalc_variaveis_acumulada(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
+
+    }
+
+    async recalc_indicador_usando_variaveis(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
+        const indicadores = await prismaTnx.indicadorFormulaVariavel.findMany({
+            where: {
+                variavel_id: { 'in': variaveis },
+            },
+            distinct: ['indicador_id'],
+            select: {
+                indicador_id: true
+            }
+        });
+        for (const row of indicadores) {
+            this.logger.log(`Recalculando indicador ... ${row.indicador_id}`)
+            await prismaTnx.$queryRaw`select monta_serie_indicador(${row.indicador_id}::int, null, null, null)`;
+        }
     }
 
 
