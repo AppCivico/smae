@@ -233,7 +233,11 @@ export class IndicadorService {
                 data_valor: true,
                 regiao_id: true,
                 valor_nominal: true
-            }
+            },
+            orderBy: [
+                { serie: 'asc' },
+                { data_valor: 'asc' },
+            ]
         });
 
         return created.map((r) => {
