@@ -262,34 +262,35 @@ BEGIN
                 AND regiao_id IS NULL;
 
             INSERT INTO serie_indicador(indicador_id, regiao_id, serie, data_valor, valor_nominal)
-            WITH indData AS (
+            WITH theData AS (
+                WITH indData AS (
+                    SELECT
+                        periodicidade_intervalo (i.periodicidade) as periodicidade,
+                        i.inicio_medicao as inicio_medicao,
+                        i.fim_medicao as fim_medicao
+                    FROM
+                        indicador i
+                    WHERE
+                        i.id = pIndicador_id
+                )
                 SELECT
-                    periodicidade_intervalo (i.periodicidade) as periodicidade,
-                    i.inicio_medicao as inicio_medicao,
-                    i.fim_medicao as fim_medicao
+                    pIndicador_id,
+                    si.regiao_id,
+                    (serieRecord.serie::text || 'Acumulado')::"Serie",
+                    gs.gs as data_serie,
+                    coalesce(sum(si.valor_nominal) OVER (PARTITION BY si.regiao_id order by gs.gs), vIndicadorBase) as valor_acc
                 FROM
-                    indicador i
-                WHERE
-                    i.id = pIndicador_id
-            )
-            SELECT
-                pIndicador_id,
-                si.regiao_id,
-                (serieRecord.serie::text || 'Acumulado')::"Serie",
-                gs.gs as data_serie,
-                coalesce(sum(si.valor_nominal) OVER (PARTITION BY si.regiao_id order by gs.gs), vIndicadorBase) as valor_acc
-            FROM
-                generate_series(
-                (select inicio_medicao from indData),
-                (select fim_medicao from indData),
-                (select periodicidade from indData)
-            ) gs
-            LEFT JOIN serie_indicador si
-                ON si.regiao_id is null
-                AND si.indicador_id = pIndicador_id
-                AND data_valor = gs.gs::date
-                AND si.serie = serieRecord.serie
-            HAVING coalesce(sum(si.valor_nominal) OVER (PARTITION BY si.regiao_id order by gs.gs), vIndicadorBase) is not null;
+                    generate_series(
+                    (select inicio_medicao from indData),
+                    (select fim_medicao from indData),
+                    (select periodicidade from indData)
+                ) gs
+                LEFT JOIN serie_indicador si
+                    ON si.regiao_id is null
+                    AND si.indicador_id = pIndicador_id
+                    AND data_valor = gs.gs::date
+                    AND si.serie = serieRecord.serie
+            ) SELECT * from theData where theData.valor_acc is not null;
 
         END IF ;
     END LOOP; -- loop resultados das series
