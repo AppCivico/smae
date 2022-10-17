@@ -98,4 +98,9 @@ export class CreateEtapaDto {
     @Type(() => Date)
     termino_real?: Date
 
+    @IsOptional()
+    @IsPositive({ message: '$property| Peso precisa ser um número ou null' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null)
+    peso?: number
 }

@@ -1062,6 +1062,7 @@ model Etapa {
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
     prazo            Int?
+    peso             Int?
     status           String?
     CronogramaEtapa  CronogramaEtapa[]
 
