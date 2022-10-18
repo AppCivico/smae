@@ -35,7 +35,7 @@ export class AuthController {
     @ApiBody({ type: LoginRequestBody })
     @ApiExtraModels(AccessToken, ReducedAccessToken)
     @ApiOkResponse({
-        schema: { anyOf: refs(AccessToken, ReducedAccessToken) },
+        schema: { oneOf: refs(AccessToken, ReducedAccessToken) },
     })
     async login(@Request() req: AuthRequestLogin): Promise<AccessToken | ReducedAccessToken> {
         return this.authService.login(req.user);

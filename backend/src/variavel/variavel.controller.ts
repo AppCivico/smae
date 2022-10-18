@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -8,6 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
 import { ListSeriesAgrupadas, ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
+import { SerieIndicadorValorNominal, SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { VariavelService } from './variavel.service';
@@ -53,6 +54,7 @@ export class VariavelController {
         return;
     }
 
+    @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
     @ApiTags('Indicador')
     @Get('indicador-variavel/:id/serie')
     @ApiBearerAuth('access-token')
