@@ -336,7 +336,8 @@ BEGIN
         JOIN indicador_variavel iv on IV.variavel_id = v.id AND iv.indicador_origem_id IS NULL
         JOIN indicador i on Iv.indicador_id = i.id
     WHERE
-        v.id = pVariavelId;
+        v.id = pVariavelId and acumulativa; -- double check
+        -- se a pessoa ligou, o sistema fez a conta, e entao remover a opção, os valores já calculados vão ficar
     IF vInicio IS NULL THEN
         RETURN 'Variavel não encontrada';
     END IF;
