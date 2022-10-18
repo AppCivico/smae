@@ -153,6 +153,7 @@ export class IndicadorService {
             fim_medicao: true,
             acumulado_usa_formula: true,
             periodicidade: true,
+            acumulado_valor_base: true,
             formula_variaveis: {
                 select: {
                     variavel_id: true,
@@ -240,6 +241,7 @@ export class IndicadorService {
                 janela: number;
                 usar_serie_acumulada: boolean;
             }[];
+            acumulado_valor_base: Prisma.Decimal | null;
             formula_compilada: string | null;
             acumulado_usa_formula: boolean;
             periodicidade: Periodicidade;
@@ -248,16 +250,17 @@ export class IndicadorService {
         }): string {
 
         let str = [
-            indicador.formula_compilada || '(null)',
+            indicador.formula_compilada || '()',
             Date2YMD.toString(indicador.inicio_medicao),
             Date2YMD.toString(indicador.fim_medicao),
+            indicador.acumulado_valor_base || '()',
             indicador.periodicidade,
             indicador.acumulado_usa_formula,
             indicador.formula_variaveis.length,
         ].join(',');
         indicador.formula_variaveis.sort((a, b) => ('' + a.referencia).localeCompare(b.referencia));
         for (const fv of indicador.formula_variaveis) {
-            str += [fv.referencia, fv.janela, fv.variavel_id, fv.usar_serie_acumulada].join(',')
+            str += '-' + [fv.referencia, fv.janela, fv.variavel_id, fv.usar_serie_acumulada].join(',')
         }
         return str;
     }

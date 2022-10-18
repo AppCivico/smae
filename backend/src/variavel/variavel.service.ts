@@ -459,12 +459,13 @@ export class VariavelService {
             where: {
                 IndicadorVariavel: {
                     some: {
-                        variavel_id: variavel_id
+                        variavel_id: variavel_id,
+                        indicador_origem_id: null, // fix - nao era necessário antes de existir essa coluna
                     }
                 },
             },
             select: {
-                inicio_medicao: true,
+                inicio_medicao: true, // -- pegando a data de inicio do indicador "original" -- verificar monta_serie_acumulada.pgsql para mais comentários
                 fim_medicao: true,
                 IndicadorVariavel: {
                     select: {
@@ -770,7 +771,19 @@ export class VariavelService {
     }
 
     async recalc_variaveis_acumulada(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
-
+        const afetadas = await prismaTnx.variavel.findMany({
+            where: {
+                id: { 'in': variaveis },
+                acumulativa: true
+            },
+            select: {
+                id: true
+            }
+        });
+        for (const row of afetadas) {
+            this.logger.log(`Recalculando serie acumulada variavel ... ${row.id}`)
+            await prismaTnx.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
+        }
     }
 
     async recalc_indicador_usando_variaveis(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
