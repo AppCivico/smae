@@ -1,16 +1,17 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Periodicidade, Prisma } from '@prisma/client';
+import { Periodicidade, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ListSeriesAgrupadas } from 'src/variavel/dto/list-variavel.dto';
+import { SerieIndicadorValorPorPeriodo, SerieIndicadorValorNominal, ValorSerieExistente } from 'src/variavel/entities/variavel.entity';
 import { CreateIndicadorDto, FormulaVariaveis } from './dto/create-indicador.dto';
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
+
 // @ts-ignore
 import * as FP from "../../public/js/formula_parser.js";
-import { SerieIndicadorDto } from 'src/indicador/dto/serie-indicador.dto';
-import e from 'express';
-import { Date2YMD } from 'src/common/date2ymd';
 
 @Injectable()
 export class IndicadorService {
@@ -277,13 +278,49 @@ export class IndicadorService {
         return created;
     }
 
-    async getSeriesIndicador(id: number, user: PessoaFromJwt): Promise<SerieIndicadorDto[]> {
-        const created = await this.prisma.serieIndicador.findMany({
-            where: { indicador_id: +id },
+    getValorSerieExistentePorPeriodo(valoresExistentes: ValorSerieExistente[]): SerieIndicadorValorPorPeriodo {
+        const porPeriodo = new SerieIndicadorValorPorPeriodo();
+        for (const serieValor of valoresExistentes) {
+            if (!porPeriodo[Date2YMD.toString(serieValor.data_valor)]) {
+                porPeriodo[Date2YMD.toString(serieValor.data_valor)] = {
+                    Previsto: undefined,
+                    PrevistoAcumulado: undefined,
+                    Realizado: undefined,
+                    RealizadoAcumulado: undefined,
+                };
+            }
+
+            porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
+                data_valor: Date2YMD.toString(serieValor.data_valor),
+                valor_nominal: serieValor.valor_nominal.toPrecision(),
+            }
+        }
+
+        return porPeriodo;
+    }
+
+    async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
+        const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
+
+        const dados: Record<string, string>[] = await this.prisma.$queryRaw`
+            select to_char(p.p, 'yyyy-mm-dd') as dt
+            from generate_series(${startStr}::date, ${endStr}::date, (select periodicidade_intervalo(${periodicidade}::text))) p
+        `;
+        return dados.map((e) => e.dt);
+    }
+
+    async getValorSerieExistente(indicadorId: number, series: Serie[]): Promise<ValorSerieExistente[]> {
+        return await this.prisma.serieIndicador.findMany({
+            where: {
+                indicador_id: +indicadorId,
+                serie: {
+                    in: series,
+                }
+            },
             select: {
+                id: true,
                 serie: true,
                 data_valor: true,
-                regiao_id: true,
                 valor_nominal: true
             },
             orderBy: [
@@ -291,13 +328,84 @@ export class IndicadorService {
                 { data_valor: 'asc' },
             ]
         });
+    }
 
-        return created.map((r) => {
-            return {
-                ...r,
-                data_valor: Date2YMD.toString(r.data_valor),
-            }
+    async getSeriesIndicador(id: number, user: PessoaFromJwt): Promise<ListSeriesAgrupadas> {
+        const indicador = await this.prisma.indicador.findFirst({
+            where: { id: +id },
+            select: { id: true, inicio_medicao: true, fim_medicao: true, periodicidade: true }
         });
+        if (!indicador) throw new HttpException('Indicador não encontrado', 404);
+
+        const result: ListSeriesAgrupadas = {
+            variavel: undefined,
+            linhas: [],
+            ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']
+        };
+
+        const valoresExistentes = await this.getValorSerieExistente(indicador.id, ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']);
+        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
+
+        const todosPeriodos = await this.gerarPeriodosEntreDatas(indicador.inicio_medicao, indicador.fim_medicao, indicador.periodicidade);
+
+        for (const periodoYMD of todosPeriodos) {
+            const seriesExistentes: SerieIndicadorValorNominal[] = [];
+
+            const existeValor = porPeriodo[periodoYMD];
+            if (existeValor && (
+                existeValor.Previsto
+                || existeValor.PrevistoAcumulado
+                || existeValor.Realizado
+                || existeValor.RealizadoAcumulado
+            )) {
+                if (existeValor.Previsto) {
+                    seriesExistentes.push(existeValor.Previsto);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Previsto'));
+                }
+
+                if (existeValor.PrevistoAcumulado) {
+                    seriesExistentes.push(existeValor.PrevistoAcumulado);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'PrevistoAcumulado'));
+                }
+
+                if (existeValor.Realizado) {
+                    seriesExistentes.push(existeValor.Realizado);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Realizado'));
+                }
+
+                if (existeValor.RealizadoAcumulado) {
+                    seriesExistentes.push(existeValor.RealizadoAcumulado);
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'RealizadoAcumulado'));
+                }
+            } else {
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Previsto'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'PrevistoAcumulado'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Realizado'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'RealizadoAcumulado'));
+            }
+
+            result.linhas.push({
+                periodo: periodoYMD.substring(0, 4 + 2 + 1),
+                // TODO: botar o label de acordo com a periodicidade"
+                agrupador: periodoYMD.substring(0, 4),
+                series: seriesExistentes,
+            })
+
+        }
+
+
+        return result;
+    }
+
+    buildNonExistingSerieValor(periodo: DateYMD, serie: Serie): SerieIndicadorValorNominal {
+        return {
+            data_valor: periodo,
+            valor_nominal: ''
+        }
     }
 
 }
