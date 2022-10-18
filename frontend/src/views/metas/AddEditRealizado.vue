@@ -100,15 +100,15 @@ function soma(a,j) {
                     <label class="label tc300">Realizado Acumulado</label>
                 </div>
             </div>
-            <div v-if="Valores[var_id]?.previsto">
-                <div class="flex g2" v-for="(v,i) in Valores[var_id].previsto" :key="i">
+            <div v-if="Valores[var_id]?.linhas">
+                <div class="flex g2" v-for="(v,i) in Valores[var_id].linhas" :key="i">
                     <div class="f1">
                         <label class="label">Realizado {{v.periodo}}</label>
-                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Realizado]?.referencia" :disabled="!v.series[Realizado]?.referencia" :value="v.series[Realizado]?.valor_nominal" class="inputtext light mb1" @input="soma(Valores[var_id].previsto,i)"/>
+                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Realizado]?.referencia" :disabled="!v.series[Realizado]?.referencia" :value="v.series[Realizado]?.valor_nominal" class="inputtext light mb1" @input="soma(Valores[var_id].linhas,i)"/>
                     </div>
                     <div class="f1">
                         <label class="label">Acumulado {{v.periodo}}</label>
-                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[RealizadoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(Valores[var_id].previsto,i):v.series[RealizadoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa||!v.series[RealizadoAcumulado]?.referencia" class="inputtext light mb1"/>
+                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[RealizadoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(Valores[var_id].linhas,i):v.series[RealizadoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa||!v.series[RealizadoAcumulado]?.referencia" class="inputtext light mb1"/>
                     </div>
                 </div>
             </div>
