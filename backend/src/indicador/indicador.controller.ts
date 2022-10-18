@@ -1,11 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ListSeriesAgrupadas } from 'src/variavel/dto/list-variavel.dto';
+import { SerieIndicadorValorNominal, SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { ListIndicadorDto } from './dto/list-indicador.dto';
@@ -50,6 +51,7 @@ export class IndicadorController {
         return '';
     }
 
+    @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
     @ApiTags('Indicador')
     @Get('indicador/:id/serie')
     @ApiBearerAuth('access-token')

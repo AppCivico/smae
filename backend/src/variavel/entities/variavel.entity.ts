@@ -1,3 +1,4 @@
+import { ApiExtraModels, ApiHideProperty, ApiOkResponse, ApiProperty, OmitType, PartialType, refs } from "@nestjs/swagger"
 import { Periodicidade, Prisma, Serie, VariavelResponsavel } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
 import { IsString } from "class-validator"
@@ -45,6 +46,7 @@ export class Variavel {
      * numérico, vem string pra não perder precisão durante o encoding do JSON
     */
     valor_base: Decimal
+    @ApiProperty({ type: String })
     periodicidade: Periodicidade
     peso: number | null
     orgao: OrgaoResumo
@@ -82,7 +84,7 @@ export class SerieValorPorPeriodo {
     [periodo: DateYMD]: SerieIndicadorValorNomimal;
 }
 
-export type SerieIndicadorValorNominal = Omit<SerieValorNomimal, 'referencia'>;
+export class SerieIndicadorValorNominal extends OmitType(SerieValorNomimal, ['referencia'] as const) { }
 
 export class SeriesAgrupadas {
     /**
@@ -97,6 +99,17 @@ export class SeriesAgrupadas {
      */
     periodo: string
 
+    @ApiProperty({
+        type: 'array',
+        allOf: [
+            {
+                type: 'array',
+                items: {
+                    oneOf: refs(SerieValorNomimal, SerieIndicadorValorNominal)
+                }
+            }
+        ],
+    })
     series: SerieValorNomimal[] | SerieIndicadorValorNominal[]
 }
 
@@ -108,7 +121,7 @@ export class SerieIndicadorValorPorPeriodo {
 
 export class ValorSerieExistente {
     id: number;
-    valor_nominal: Decimal|number;
+    valor_nominal: Decimal | number;
     data_valor: Date;
     serie: Serie;
 }

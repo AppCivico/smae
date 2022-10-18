@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Serie } from "@prisma/client";
 import { SeriesAgrupadas, Variavel } from "src/variavel/entities/variavel.entity";
 
@@ -16,6 +17,10 @@ export class VariavelResumo {
      * @example "11"
     */
     casas_decimais: number
+    /**
+    * @example "Mensal"
+    */
+    @ApiProperty({ type: String })
     periodicidade: Periodicidade
 }
 
