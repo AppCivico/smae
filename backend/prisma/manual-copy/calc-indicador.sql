@@ -50,7 +50,16 @@ BEGIN
                 periodicidade_intervalo (v.periodicidade) AS periodicidade_intervalo,
                 (extract(epoch FROM periodicidade_intervalo (v.periodicidade)) / 86400)::int
                     AS periodicidade_dias,
-                v.casas_decimais
+                v.casas_decimais,
+                case when ifv.usar_serie_acumulada then
+                    case
+                        when pSerie = 'Previsto'::"Serie" then 'PrevistoAcumulado'::"Serie"
+                        when pSerie = 'Realizado'::"Serie" then 'RealizadoAcumulado'::"Serie"
+                        else pSerie
+                    end
+                else
+                    pSerie
+                end as serie_escolhida
             FROM
                 indicador_formula_variavel ifv
                 JOIN variavel v ON v.id = ifv.variavel_id
@@ -85,7 +94,7 @@ BEGIN
                 FROM
                     serie_variavel sv
                 WHERE
-                    sv.serie = pSerie
+                    sv.serie = r.serie_escolhida
                     AND sv.variavel_id = r.variavel_id
                     AND sv.data_valor <= pPeriodo
                     AND sv.data_valor >= pPeriodo - r.periodicidade_intervalo + '1 month'::interval
@@ -112,7 +121,7 @@ BEGIN
                 FROM
                     serie_variavel sv
                 WHERE
-                    sv.serie = pSerie
+                    sv.serie = r.serie_escolhida
                     AND sv.variavel_id = r.variavel_id
                     AND sv.data_valor >= pPeriodo - r.periodicidade_intervalo - (abs(r.janela)-1 || ' mon')::interval
                     AND sv.data_valor < pPeriodo - r.periodicidade_intervalo - (abs(r.janela)-1 || ' mon')::interval + '1 mon'::interval
@@ -126,7 +135,7 @@ BEGIN
 
             RAISE NOTICE 'resultado referencia %', r.referencia || '=' || _valor || ' valores referencia '||_valores_debug::text || ' pPeriodo=' || pPeriodo ;
 
-            _formula := regexp_replace(_formula, '\$' || r.referencia || '\y' , 'round(' || _valor::text || ', ' || r.casas_decimais || ')', 'g');
+            _formula := regexp_replace(_formula, '\$' || r.referencia || '\y' , 'round(' || _valor::text || '::numeric, ' || r.casas_decimais || ')', 'g');
 
         END IF;
 
@@ -136,5 +145,3 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
-commit;
