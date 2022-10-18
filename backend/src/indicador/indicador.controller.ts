@@ -5,6 +5,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { ListSerieIndicadorDto } from 'src/indicador/dto/serie-indicador.dto';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { ListIndicadorDto } from './dto/list-indicador.dto';
@@ -49,6 +50,14 @@ export class IndicadorController {
         return '';
     }
 
+    @ApiTags('Indicador')
+    @Get('indicador/:id/serie')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.editar')
+    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListSerieIndicadorDto> {
+        return { linhas: await this.indicadorService.getSeriesIndicador(params.id, user) };
+    }
 
     @ApiTags('default')
     @Get('agregadores')

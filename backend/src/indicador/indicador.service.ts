@@ -1,5 +1,5 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { Periodicidade, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,9 +8,13 @@ import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 // @ts-ignore
 import * as FP from "../../public/js/formula_parser.js";
+import { SerieIndicadorDto } from 'src/indicador/dto/serie-indicador.dto';
+import e from 'express';
+import { Date2YMD } from 'src/common/date2ymd';
 
 @Injectable()
 export class IndicadorService {
+    private readonly logger = new Logger(IndicadorService.name);
 
     constructor(private readonly prisma: PrismaService) { }
 
@@ -125,7 +129,7 @@ export class IndicadorService {
                 atividade_id: true,
                 contexto: true,
                 complemento: true,
-                indicador_formula_variavel: {
+                formula_variaveis: {
                     select: {
                         referencia: true,
                         variavel_id: true,
@@ -142,11 +146,26 @@ export class IndicadorService {
     }
 
     async update(id: number, updateIndicadorDto: UpdateIndicadorDto, user: PessoaFromJwt) {
+        const indicadorSelectData = {
+            id: true,
+            formula_compilada: true,
+            inicio_medicao: true,
+            fim_medicao: true,
+            acumulado_usa_formula: true,
+            periodicidade: true,
+            acumulado_valor_base: true,
+            formula_variaveis: {
+                select: {
+                    variavel_id: true,
+                    janela: true,
+                    referencia: true,
+                    usar_serie_acumulada: true
+                }
+            }
+        };
         let indicador = await this.prisma.indicador.findFirst({
             where: { id: id },
-            select: {
-                formula_compilada: true
-            }
+            select: indicadorSelectData
         });
         if (!indicador) throw new HttpException('indicador não encontrado', 400);
 
@@ -162,12 +181,14 @@ export class IndicadorService {
 
         if (formula && !formula_variaveis) {
             throw new HttpException(`É necessário enviar o parâmetro formula_variaveis quando enviar formula`, 400);
-        } else if (!formula && formula_variaveis) {
+        } else if (!formula && formula_variaveis && formula_variaveis.length > 0) {
             throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
         }
 
         let formula_compilada: string = await this.#validateVariaveis(formula_variaveis, id, formula);
         console.log({ formula_variaveis });
+
+        const oldVersion = IndicadorService.getIndicadorHash(indicador);
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
@@ -176,15 +197,16 @@ export class IndicadorService {
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
-                    ...updateIndicadorDto,
+                    ...updateIndicadorDto as any, // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
                     formula_compilada: formula_compilada,
-
                     acumulado_usa_formula: updateIndicadorDto.acumulado_usa_formula === null ? undefined : updateIndicadorDto.acumulado_usa_formula,
                 },
-                select: { id: true }
+                select: indicadorSelectData
             });
 
-            if (formula_variaveis) {
+            const newVersion = IndicadorService.getIndicadorHash(indicador);
+
+            if (formula_variaveis && !(oldVersion === newVersion)) {
                 await prisma.indicadorFormulaVariavel.deleteMany({
                     where: { indicador_id: indicador.id }
                 })
@@ -200,14 +222,47 @@ export class IndicadorService {
                 });
             }
 
-            if (formula_compilada != antigaFormulaCompilada) {
-                // TODO recalcular tudo
+            if (!(oldVersion === newVersion)) {
+                this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`)
+                await prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
             }
 
             return indicador;
         });
 
         return { id };
+    }
+
+    static getIndicadorHash(
+        indicador: {
+            formula_variaveis: {
+                variavel_id: number;
+                referencia: string;
+                janela: number;
+                usar_serie_acumulada: boolean;
+            }[];
+            acumulado_valor_base: Prisma.Decimal | null;
+            formula_compilada: string | null;
+            acumulado_usa_formula: boolean;
+            periodicidade: Periodicidade;
+            inicio_medicao: Date;
+            fim_medicao: Date;
+        }): string {
+
+        let str = [
+            indicador.formula_compilada || '()',
+            Date2YMD.toString(indicador.inicio_medicao),
+            Date2YMD.toString(indicador.fim_medicao),
+            indicador.acumulado_valor_base || '()',
+            indicador.periodicidade,
+            indicador.acumulado_usa_formula,
+            indicador.formula_variaveis.length,
+        ].join(',');
+        indicador.formula_variaveis.sort((a, b) => ('' + a.referencia).localeCompare(b.referencia));
+        for (const fv of indicador.formula_variaveis) {
+            str += '-' + [fv.referencia, fv.janela, fv.variavel_id, fv.usar_serie_acumulada].join(',')
+        }
+        return str;
     }
 
     async remove(id: number, user: PessoaFromJwt) {
@@ -221,4 +276,28 @@ export class IndicadorService {
 
         return created;
     }
+
+    async getSeriesIndicador(id: number, user: PessoaFromJwt): Promise<SerieIndicadorDto[]> {
+        const created = await this.prisma.serieIndicador.findMany({
+            where: { indicador_id: +id },
+            select: {
+                serie: true,
+                data_valor: true,
+                regiao_id: true,
+                valor_nominal: true
+            },
+            orderBy: [
+                { serie: 'asc' },
+                { data_valor: 'asc' },
+            ]
+        });
+
+        return created.map((r) => {
+            return {
+                ...r,
+                data_valor: Date2YMD.toString(r.data_valor),
+            }
+        });
+    }
+
 }
