@@ -20,7 +20,7 @@ export class VariavelResumo {
 }
 
 export class ListPrevistoAgrupadas {
-    previsto: SeriesAgrupadas[]
+    linhas: SeriesAgrupadas[]
     variavel: VariavelResumo
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro de SeriesAgrupadas

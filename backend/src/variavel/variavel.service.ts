@@ -542,7 +542,7 @@ export class VariavelService {
                 casas_decimais: variavel.casas_decimais,
                 periodicidade: variavel.periodicidade,
             },
-            previsto: [],
+            linhas: [],
             ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']
         };
 
@@ -587,7 +587,7 @@ export class VariavelService {
                 seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
             }
 
-            result.previsto.push({
+            result.linhas.push({
                 periodo: periodoYMD.substring(0, 4 + 2 + 1),
                 // TODO: botar o label de acordo com a periodicidade"
                 agrupador: periodoYMD.substring(0, 4),
