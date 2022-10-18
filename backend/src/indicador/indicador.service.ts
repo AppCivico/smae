@@ -304,7 +304,7 @@ export class IndicadorService {
 
         const dados: Record<string, string>[] = await this.prisma.$queryRaw`
             select to_char(p.p, 'yyyy-mm-dd') as dt
-            from generate_series(${startStr}::date, ${endStr}::date, (select periodicidade_intervalo(${periodicidade}::text))) p
+            from generate_series(${startStr}::date, ${endStr}::date, (select periodicidade_intervalo(${periodicidade}::"Periodicidade"))) p
         `;
         return dados.map((e) => e.dt);
     }
