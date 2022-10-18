@@ -546,7 +546,8 @@ export class VariavelService {
             ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']
         };
 
-        const todosPeriodos = await this.gerarPeriodosEntreDatas(indicador.inicio_medicao, indicador.fim_medicao, variavel.periodicidade)
+
+        const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id)
         for (const periodoYMD of todosPeriodos) {
             const seriesExistentes: SerieValorNomimal[] = [];
 
@@ -608,11 +609,11 @@ export class VariavelService {
     }
 
 
-    getEditExistingSerieJwt(id: number, variable_id: number): string {
+    getEditExistingSerieJwt(id: number, variavelId: number): string {
         // TODO opcionalmente adicionar o modificado_em aqui
         return this.jwtService.sign({
             id: id,
-            v: variable_id
+            v: variavelId
         } as ExistingSerieJwt);
     }
 
@@ -624,23 +625,11 @@ export class VariavelService {
         } as NonExistingSerieJwt);
     }
 
-    async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
-
-        const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
-        const periodPg: Record<Periodicidade, string> = {
-            Mensal: '1 month',
-            Bimestral: '2 months',
-            Trimestral: '3 months',
-            Quadrimestral: '4 months',
-            Semestral: '6 months',
-            Anual: '1 year',
-            Quinquenal: '5 years',
-            Secular: '10 years'
-        };
-
+    async gerarPeriodoVariavelEntreDatas(variavelId: number): Promise<DateYMD[]> {
         const dados: Record<string, string>[] = await this.prisma.$queryRaw`
+            WITH func as (select * from busca_periodos_variavel(${variavelId}::int) as g(p, inicio, fim))
             select to_char(p.p, 'yyyy-mm-dd') as dt
-            from generate_series(${startStr}::date, ${endStr}::date, ${periodPg[periodicidade]}::interval) p
+            from generate_series((select inicio from func), (select fim from func), (select p from func)) p
         `;
 
         return dados.map((e) => e.dt);
