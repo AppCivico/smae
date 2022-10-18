@@ -74,7 +74,7 @@ export class VariavelService {
                 select: { id: true }
             });
 
-            await this.recalcIndicadorVariavel(indicador, variavel.id, prisma);
+            await this.resyncIndicadorVariavel(indicador, variavel.id, prisma);
 
             await prisma.variavelResponsavel.createMany({
                 data: await this.buildVarResponsaveis(variavel.id, responsaveis),
@@ -86,7 +86,7 @@ export class VariavelService {
         return { id: created.id };
     }
 
-    async recalcIndicadorVariavel(
+    async resyncIndicadorVariavel(
         indicador: {
             id: number;
             iniciativa_id: number | null;
@@ -101,7 +101,7 @@ export class VariavelService {
             }
         });
 
-        this.logger.log(`recalcIndicadorVariavel: variavel ${variavel_id}, indicador: ${JSON.stringify(indicador)}`);
+        this.logger.log(`resyncIndicadorVariavel: variavel ${variavel_id}, indicador: ${JSON.stringify(indicador)}`);
 
         // se o indicador é uma atividade, precisamos testar se essa atividade tem herança para a
         // iniciativa
@@ -128,26 +128,26 @@ export class VariavelService {
                     }
                 }
             });
-            this.logger.log(`recalcIndicadorVariavel: atividade encontrada ${JSON.stringify(atividade)}`);
+            this.logger.log(`resyncIndicadorVariavel: atividade encontrada ${JSON.stringify(atividade)}`);
             if (atividade.compoe_indicador_iniciativa) {
                 const indicadorDaIniciativa = atividade.iniciativa.Indicador[0];
 
                 if (!indicadorDaIniciativa) {
-                    this.logger.warn(`recalcIndicadorVariavel: Atividade ID=${indicador.atividade_id} compoe_indicador_iniciativa mas não tem indicador ativo`);
+                    this.logger.warn(`resyncIndicadorVariavel: Atividade ID=${indicador.atividade_id} compoe_indicador_iniciativa mas não tem indicador ativo`);
                 } else {
                     const data = {
                         indicador_id: indicadorDaIniciativa.id,
                         variavel_id: variavel_id,
                         indicador_origem_id: indicador.id
                     };
-                    this.logger.log(`recalcIndicadorVariavel: criando ${JSON.stringify(data)}`);
+                    this.logger.log(`resyncIndicadorVariavel: criando ${JSON.stringify(data)}`);
                     await prisma.indicadorVariavel.create({ data: data });
                 }
 
                 // atividade tbm compoe a meta, então precisa levar essa variavel para lá também
                 // 'recursão' manual
                 if (atividade.iniciativa.compoe_indicador_meta) {
-                    this.logger.log(`recalcIndicadorVariavel: iniciativa da atividade compoe_indicador_meta, buscando indicador da meta`);
+                    this.logger.log(`resyncIndicadorVariavel: iniciativa da atividade compoe_indicador_meta, buscando indicador da meta`);
                     const indicadorDaMeta = await this.prisma.indicador.findFirst({
                         where: {
                             removido_em: null,
@@ -158,14 +158,14 @@ export class VariavelService {
                         }
                     });
                     if (!indicadorDaMeta) {
-                        this.logger.warn(`recalcIndicadorVariavel: indicador da meta ${atividade.iniciativa.meta_id} não foi encontrado!`);
+                        this.logger.warn(`resyncIndicadorVariavel: indicador da meta ${atividade.iniciativa.meta_id} não foi encontrado!`);
                     } else {
                         const data = {
                             indicador_id: indicadorDaMeta.id,
                             variavel_id: variavel_id,
                             indicador_origem_id: indicadorDaIniciativa.id
                         };
-                        this.logger.log(`recalcIndicadorVariavel: criando ${JSON.stringify(data)}`);
+                        this.logger.log(`resyncIndicadorVariavel: criando ${JSON.stringify(data)}`);
                         await prisma.indicadorVariavel.create({
                             data: data
                         });
@@ -195,20 +195,20 @@ export class VariavelService {
                     }
                 }
             });
-            this.logger.log(`recalcIndicadorVariavel: iniciativa encontrada ${JSON.stringify(iniciativa)}`);
+            this.logger.log(`resyncIndicadorVariavel: iniciativa encontrada ${JSON.stringify(iniciativa)}`);
 
             if (iniciativa.compoe_indicador_meta) {
                 const indicadorDaMeta = iniciativa.meta.indicador[0];
 
                 if (!indicadorDaMeta) {
-                    this.logger.warn(`recalcIndicadorVariavel: Iniciativa ${indicador.iniciativa_id} compoe_indicador_meta mas não tem indicador ativo na meta`);
+                    this.logger.warn(`resyncIndicadorVariavel: Iniciativa ${indicador.iniciativa_id} compoe_indicador_meta mas não tem indicador ativo na meta`);
                 } else {
                     const data = {
                         indicador_id: indicadorDaMeta.id,
                         variavel_id: variavel_id,
                         indicador_origem_id: indicador.id
                     };
-                    this.logger.log(`recalcIndicadorVariavel: criando ${JSON.stringify(data)}`);
+                    this.logger.log(`resyncIndicadorVariavel: criando ${JSON.stringify(data)}`);
                     await prisma.indicadorVariavel.create({ data: data });
                 }
             }
@@ -412,10 +412,11 @@ export class VariavelService {
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
-            select: { indicador_id: true }
+            select: { indicador_id: true, variavel: {select: {valor_base: true}} }
         });
         if (!selfIdicadorVariavel) throw new HttpException('Variavel não encontrada', 400);
 
+        const oldValorBase = selfIdicadorVariavel.variavel.valor_base;
         // e com o indicador verdadeiro, temos os dados para recalcular os niveis
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: selfIdicadorVariavel.indicador_id },
@@ -429,26 +430,32 @@ export class VariavelService {
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
 
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        await this.prisma.$transaction(async (prismaTnx: Prisma.TransactionClient) => {
             let responsaveis = updateVariavelDto.responsaveis!;
             delete updateVariavelDto.responsaveis;
 
-            await prisma.variavel.updateMany({
+            const updated = await prismaTnx.variavel.update({
                 where: { id: variavelId },
                 data: {
                     ...updateVariavelDto,
+                },
+                select: {
+                    valor_base: true
                 }
             });
 
-            await this.recalcIndicadorVariavel(indicador, variavelId, prisma);
-
-            await prisma.variavelResponsavel.deleteMany({
+            await this.resyncIndicadorVariavel(indicador, variavelId, prismaTnx);
+            await prismaTnx.variavelResponsavel.deleteMany({
                 where: { variavel_id: variavelId }
             })
 
-            await prisma.variavelResponsavel.createMany({
+            await prismaTnx.variavelResponsavel.createMany({
                 data: await this.buildVarResponsaveis(variavelId, responsaveis),
             });
+
+            if (Number(oldValorBase).toString() !== Number(updated.valor_base).toString()){
+                await this.recalc_variaveis_acumulada([variavelId], prismaTnx);
+            }
         });
 
         return { id: variavelId };

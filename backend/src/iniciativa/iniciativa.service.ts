@@ -298,7 +298,7 @@ export class IniciativaService {
                 this.logger.log('não há indicador para a iniciativa')
             } else {
                 for (const variavel of indicador.IndicadorVariavel) {
-                    await this.variavelService.recalcIndicadorVariavel(indicador, variavel.variavel_id, prisma)
+                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prisma)
                 }
             }
 
