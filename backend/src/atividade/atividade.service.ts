@@ -318,7 +318,7 @@ export class AtividadeService {
                 this.logger.log('não há indicador para a atividade')
             } else {
                 for (const variavel of indicador.IndicadorVariavel) {
-                    await this.variavelService.recalcIndicadorVariavel(indicador, variavel.variavel_id, prisma)
+                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prisma)
                 }
             }
 
