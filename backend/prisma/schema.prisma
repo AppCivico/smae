@@ -656,15 +656,6 @@ model MetaResponsavel {
     @@map("meta_responsavel")
 }
 
-// vaio ser dropped
-model Agregador {
-    id        Int    @id @default(autoincrement())
-    codigo    String @unique
-    descricao String
-
-    @@map("agregador")
-}
-
 enum Polaridade {
     Neutra
     Positiva
