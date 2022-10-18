@@ -1,16 +1,14 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Periodicidade, Prisma, Serie } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime';
-import { triggerAsyncId } from 'async_hooks';
+import { Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ExistingSerieJwt, NonExistingSerieJwt, SerieJwt, SerieUpsert, ValidatedUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
-import { ListPrevistoAgrupadas } from 'src/variavel/dto/list-variavel.dto';
-import { IdNomeExibicao, SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente, Variavel } from 'src/variavel/entities/variavel.entity';
+import { ListSeriesAgrupadas } from 'src/variavel/dto/list-variavel.dto';
+import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from 'src/variavel/entities/variavel.entity';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
@@ -543,7 +541,7 @@ export class VariavelService {
         const valoresExistentes = await this.getValorSerieExistente(variavelId, ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
-        const result: ListPrevistoAgrupadas = {
+        const result: ListSeriesAgrupadas = {
             variavel: {
                 id: variavelId,
                 casas_decimais: variavel.casas_decimais,
