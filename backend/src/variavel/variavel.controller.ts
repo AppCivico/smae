@@ -53,15 +53,6 @@ export class VariavelController {
         return;
     }
 
-    @Get('indicador-variavel/:id/serie-previsto')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
-    @ApiOperation({deprecated: true})
-    async getSeriePrevisto(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
-        return await this.variavelService.getSeriePrevistoRealizado(params.id);
-    }
-
     @ApiTags('Indicador')
     @Get('indicador-variavel/:id/serie')
     @ApiBearerAuth('access-token')

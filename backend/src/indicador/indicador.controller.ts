@@ -59,20 +59,4 @@ export class IndicadorController {
         return { linhas: await this.indicadorService.getSeriesIndicador(params.id, user) };
     }
 
-    @ApiTags('default')
-    @Get('agregadores')
-    @ApiBearerAuth('access-token')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ deprecated: true })
-    @ApiResponse({ description: 'Não há mais agregadores, sempre retorna vazio' })
-    agregadores() {
-        return {
-            linhas: [{
-                id: 1,
-                codigo: 'deprecated',
-                descricao: 'deprecated',
-            }]
-        };
-    }
-
 }

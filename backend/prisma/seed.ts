@@ -214,7 +214,6 @@ async function main() {
     await criar_emaildb_config();
     await atualizar_modulos_e_privilegios();
     await atualizar_perfil_acesso();
-    await atualizar_tipo_agregadores();
 
     await atualizar_superadmin();
     //await atualizar_ods();
@@ -383,37 +382,6 @@ async function upsert_privilegios(moduloId: number, codigo: string, arg2: string
     });
 }
 
-
-async function atualizar_tipo_agregadores() {
-
-    let agregadores = [
-        {
-            codigo: 'soma',
-            descricao: 'Soma'
-        },
-        {
-            codigo: 'media',
-            descricao: 'Média simples'
-        },
-        {
-            codigo: 'media_movel',
-            descricao: 'Média móvel'
-        },
-    ];
-
-    for (const agregador of agregadores) {
-        await prisma.agregador.upsert({
-            where: { codigo: agregador.codigo },
-            update: {
-                descricao: agregador.descricao
-            },
-            create: {
-                codigo: agregador.codigo,
-                descricao: agregador.descricao
-            }
-        });
-    }
-}
 
 async function atualizar_perfil_acesso() {
     let promises: any[] = [];
