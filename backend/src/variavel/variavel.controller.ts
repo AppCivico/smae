@@ -7,7 +7,7 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
 import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
-import { ListPrevistoAgrupadas, ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
+import { ListSeriesAgrupadas, ListVariavelDto } from 'src/variavel/dto/list-variavel.dto';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { VariavelService } from './variavel.service';
@@ -58,7 +58,7 @@ export class VariavelController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
-    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPrevistoAgrupadas> {
+    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(params.id);
     }
 

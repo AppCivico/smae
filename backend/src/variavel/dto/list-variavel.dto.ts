@@ -19,9 +19,10 @@ export class VariavelResumo {
     periodicidade: Periodicidade
 }
 
-export class ListPrevistoAgrupadas {
+export class ListSeriesAgrupadas {
     linhas: SeriesAgrupadas[]
-    variavel: VariavelResumo
+    /* opcional - nao volta na serie de indicadores */
+    variavel?: VariavelResumo
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro de SeriesAgrupadas
      * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"

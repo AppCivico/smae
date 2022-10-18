@@ -1,5 +1,7 @@
-import { Periodicidade, Polaridade } from "@prisma/client"
+import { Periodicidade, Polaridade, Serie } from "@prisma/client"
+import { DateYMD } from "src/common/date2ymd"
 import { FormulaVariaveis } from "src/indicador/dto/create-indicador.dto"
+import { SerieValorNomimal } from "src/variavel/entities/variavel.entity"
 
 export class Indicador {
     id: number

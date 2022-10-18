@@ -76,11 +76,13 @@ export class SerieValorNomimal {
     data_valor: DateYMD
 };
 
-export type SerieValores = Record<Serie, SerieValorNomimal | undefined>
+export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>
 
 export class SerieValorPorPeriodo {
-    [periodo: DateYMD]: SerieValores;
+    [periodo: DateYMD]: SerieIndicadorValorNomimal;
 }
+
+export type SerieIndicadorValorNominal = Omit<SerieValorNomimal, 'referencia'>;
 
 export class SeriesAgrupadas {
     /**
@@ -95,12 +97,18 @@ export class SeriesAgrupadas {
      */
     periodo: string
 
-    series: SerieValorNomimal[]
+    series: SerieValorNomimal[] | SerieIndicadorValorNominal[]
+}
+
+export type SerieIndicadorValores = Record<Serie, SerieIndicadorValorNominal | undefined>;
+
+export class SerieIndicadorValorPorPeriodo {
+    [periodo: DateYMD]: SerieIndicadorValores;
 }
 
 export class ValorSerieExistente {
     id: number;
-    valor_nominal: Decimal;
+    valor_nominal: Decimal|number;
     data_valor: Date;
     serie: Serie;
 }
