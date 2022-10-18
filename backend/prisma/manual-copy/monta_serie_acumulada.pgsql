@@ -11,73 +11,79 @@ DECLARE
 BEGIN
     --
     SELECT
-        periodicidade_intervalo (i.periodicidade) as periodicidade,
-        case
-            when eh_serie_realizado is null then null
-            when eh_serie_realizado then 'Realizado'::"Serie" else 'Previsto'::"Serie"
-        end as tipo_serie,
-            v.valor_base,
-            i.inicio_medicao,
-            i.fim_medicao
-        INTO
-            vPeriodicidade,
-            vTipoSerie,
-            vVariavelBase,
-            vInicio,
-            vFim
+        CASE WHEN eh_serie_realizado IS NULL THEN
+            NULL
+        WHEN eh_serie_realizado THEN
+            'Realizado'::"Serie"
+        ELSE
+            'Previsto'::"Serie"
+        END AS tipo_serie,
+        v.valor_base,
+        bv.periodicidade,
+        bv.inicio_medicao,
+        bv.fim_medicao INTO vTipoSerie,
+        vVariavelBase,
+        vPeriodicidade,
+        vInicio,
+        vFim
     FROM
         variavel v
-        -- busca o periodo do indicador original, mas claramente isso mostra uma falha no modelo de dados,
+        -- na primeira versao, buscava-se pelo periodo do indicador original, mas claramente isso mostra uma falha no modelo de dados,
         -- pois os indicadores auxiliares desta forma não conseguem ter dados de serie, pra resolver isso,
-        -- cada relacionamento precisaria ter o proprio inicio/fim de acordo com indicador, e ajustar o endpoins pra passar
-        -- qual o indicador de interesse na hr de buscar a serie
-        JOIN indicador_variavel iv on IV.variavel_id = v.id AND iv.indicador_origem_id IS NULL
-        JOIN indicador i on Iv.indicador_id = i.id
-    WHERE
-        v.id = pVariavelId and acumulativa; -- double check
-        -- se a pessoa ligou, o sistema fez a conta, e entao remover a opção, os valores já calculados vão ficar
+        -- vamos pegar o menor periodo de preenchimento, junto com os limites extremos de inicio/fim dos indicadores onde a variavel foi utilizada
+    CROSS JOIN busca_periodos_variavel (v.id) AS bv (periodicidade,
+        inicio_medicao,
+        fim_medicao)
+WHERE
+    v.id = pVariavelId
+        AND acumulativa;
+    -- double check
+    -- se a pessoa ligou, o sistema fez a conta, e entao remover a opção, os valores já calculados vão ficar
     IF vInicio IS NULL THEN
         RETURN 'Variavel não encontrada';
     END IF;
-
-
-    FOR serieRecord IN
-
-        WITH series AS ( -- series 'base' para o calculo da Acumulada
-            SELECT 'Realizado'::"Serie" as serie
-            UNION ALL
-            SELECT 'Previsto'::"Serie"
-        )
-        SELECT s.serie
-        FROM series s
-        WHERE
+    FOR serieRecord IN WITH series AS (
+        -- series 'base' para o calculo da Acumulada
+        SELECT
+            'Realizado'::"Serie" AS serie
+        UNION ALL
+        SELECT
+            'Previsto'::"Serie"
+)
+    SELECT
+        s.serie
+    FROM
+        series s
+    WHERE
         -- filtra apenas as series do tipo escolhido para recalcular, ou todas se for null
-        ((vTipoSerie is null) OR ( s.serie::text like vTipoSerie::text || '%' ))
-        LOOP
-            -- apaga o periodo escolhido
-            DELETE FROM serie_variavel
-            WHERE variavel_id = pVariavelId
-                AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
-
-            INSERT INTO serie_variavel(variavel_id, serie, data_valor, valor_nominal)
-            WITH theData AS (
+        ((vTipoSerie IS NULL)
+            OR (s.serie::text LIKE vTipoSerie::text || '%'))
+            LOOP
+                -- apaga o periodo escolhido
+                DELETE FROM serie_variavel
+                WHERE variavel_id = pVariavelId
+                    AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
+                INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
+                WITH theData AS (
+                    SELECT
+                        pVariavelId,
+                        (serieRecord.serie::text || 'Acumulado')::"Serie",
+                        gs.gs AS data_serie,
+                        coalesce(sum(sv.valor_nominal) OVER (ORDER BY gs.gs), vVariavelBase) AS valor_acc
+                    FROM
+                        generate_series(vInicio, vFim, vPeriodicidade) gs
+                    LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
+                        AND data_valor = gs.gs::date
+                        AND sv.serie = serieRecord.serie
+)
                 SELECT
-                    pVariavelId,
-                    (serieRecord.serie::text || 'Acumulado')::"Serie",
-                    gs.gs as data_serie,
-                    coalesce(sum(sv.valor_nominal) OVER (order by gs.gs), vVariavelBase) as valor_acc
-                FROM generate_series(
-                        vInicio,
-                        vFim,
-                        vPeriodicidade
-                ) gs
-                LEFT JOIN serie_variavel sv
-                    ON  sv.variavel_id = pVariavelId
-                    AND data_valor = gs.gs::date
-                    AND sv.serie = serieRecord.serie
-            ) SELECT * from theData where theData.valor_acc is not null;
-
-    END LOOP; -- loop resultados das series
+                    *
+                FROM
+                    theData
+            WHERE
+                theData.valor_acc IS NOT NULL;
+            END LOOP;
+    -- loop resultados das series
     --
     RETURN '';
 END
