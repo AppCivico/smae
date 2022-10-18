@@ -441,13 +441,13 @@
 	const chart = new smaeChart();
 
 	function start(){
-		if(props.dataserie?.previsto && evolucao.value){
+		if(props.dataserie?.linhas && evolucao.value){
 			let data = {};
 
 			let iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
 			let iRealizadoAcumulado = props.dataserie.ordem_series.indexOf('RealizadoAcumulado');
-			data.projetado = props.dataserie.previsto.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
-			data.realizado = props.dataserie.previsto.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
+			data.projetado = props.dataserie.linhas.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
+			data.realizado = props.dataserie.linhas.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
 			chart.drawChart(data,evolucao.value);
 		}
 	}

@@ -138,7 +138,7 @@ onUpdated(()=>{start()});
                                             <th style="width: 5%"></th>
                                         </tr>
                                     </thead>
-                                    <tr v-for="val in Valores[v.id]?.previsto" :key="val.id">
+                                    <tr v-for="val in Valores[v.id]?.linhas" :key="val.id">
                                         <td><div class="flex center"><div class="farol i1"></div> <span>{{val.periodo}}</span></div></td>
                                         <td>{{val.series[Valores[v.id].ordem_series.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
                                         <td>{{val.series[Valores[v.id].ordem_series.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
