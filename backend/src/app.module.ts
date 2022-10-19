@@ -35,6 +35,7 @@ import { AtividadeModule } from './atividade/atividade.module';
 import { CronogramaModule } from './cronograma/cronograma.module';
 import { EtapaModule } from './etapa/etapa.module';
 import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
+import { CicloFisicoModule } from './ciclo-fisico/ciclo-fisico.module';
 
 
 @Module({
@@ -54,7 +55,8 @@ import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.mod
         VariavelModule,
         CronogramaModule,
         EtapaModule,
-        CronogramaEtapaModule
+        CronogramaEtapaModule,
+        CicloFisicoModule
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
