@@ -132,6 +132,13 @@ const PrivConfig: any = {
         ['CadastroEtapa.inativar', 'Inativar Etapas'],
         ['CadastroEtapa.ativar', 'Ativar Etapas'],
     ],
+    CadastroCicloFisico: [
+        ['CadastroCicloFisico.inserir', 'Inserir Ciclos Físicos'],
+        ['CadastroCicloFisico.editar', 'Editar Ciclos Físicos'],
+        ['CadastroCicloFisico.remover', 'Remover Ciclos Físicos'],
+        ['CadastroCicloFisico.inativar', 'Inativar Ciclos Físicos'],
+        ['CadastroCicloFisico.ativar', 'Ativar Ciclos Físicos'],
+    ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP']
     ]
@@ -157,6 +164,7 @@ const ModuloDescricao: any = {
     CadastroAtividade: 'Cadastro de Atividades',
     CadastroCronograma: 'Cadastro de Cronogramas',
     CadastroEtapa: 'Cadastro de Etapas',
+    CadastroCicloFisico: 'Cadastro de Ciclos Físicos',
     PDM: 'Regras de Negocio do PDM',
 };
 
