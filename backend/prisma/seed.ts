@@ -139,6 +139,13 @@ const PrivConfig: any = {
         ['CadastroCicloFisico.inativar', 'Inativar Ciclos Físicos'],
         ['CadastroCicloFisico.ativar', 'Ativar Ciclos Físicos'],
     ],
+    CadastroPainel: [
+        ['CadastroPainel.inserir', 'Inserir Painéis'],
+        ['CadastroPainel.editar', 'Editar Painéis'],
+        ['CadastroPainel.remover', 'Remover Painéis'],
+        ['CadastroPainel.inativar', 'Inativar Painéis'],
+        ['CadastroPainel.ativar', 'Ativar Painéis'],
+    ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP']
     ]
@@ -165,6 +172,7 @@ const ModuloDescricao: any = {
     CadastroCronograma: 'Cadastro de Cronogramas',
     CadastroEtapa: 'Cadastro de Etapas',
     CadastroCicloFisico: 'Cadastro de Ciclos Físicos',
+    CadastroPainel: 'Cadastro de Painéis',
     PDM: 'Regras de Negocio do PDM',
 };
 
