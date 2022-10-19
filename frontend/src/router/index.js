@@ -20,6 +20,9 @@ import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 
+import { ListPainel, AddEditPainel } from '@/views/paineis';
+
+
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     linkActiveClass: 'active',
@@ -80,6 +83,13 @@ export const router = createRouter({
                 { path: ':pdm_id/temas/:id', component: ListPdM, props:{type:"editar",group:"temas",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/tags/novo', component: ListPdM, props:{type:"novo",group:"tags",submenu:SubmenuConfig, parentPage: 'pdm'} },
                 { path: ':pdm_id/tags/:id', component: ListPdM, props:{type:"editar",group:"tags",submenu:SubmenuConfig, parentPage: 'pdm'} },
+            ]
+        },
+        { path: '/paineis',
+            children: [
+                { path: '', component: ListPainel, },
+                { path: 'novo', component: AddEditPainel,  },
+                { path: 'editar/:painel_id', component: AddEditPainel, },
             ]
         },
         { path: '/metas',
