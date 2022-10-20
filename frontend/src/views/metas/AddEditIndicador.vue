@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, onUpdated } from 'vue';
-import { Dashboard} from '@/components';
+import { ref, unref, onMounted, onUpdated } from 'vue';
+import { Dashboard, SmallModal} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -41,7 +41,6 @@ if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
 
 const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
-IndicadoresStore.getAgregadores();
 
 const VariaveisStore = useVariaveisStore();
 const { Variaveis } = storeToRefs(VariaveisStore);
@@ -115,6 +114,17 @@ async function onSubmit(values) {
         }
 
         if (indicador_id) {
+
+            values.formula = formula.value;
+            values.formula_variaveis = Object.values(variaveisFormula).map(x=>{
+                return {
+                    referencia:x.id,
+                    janela: x.periodo==0 ? x.meses : x.periodo==-1 ? x.meses*-1 : 1,
+                    variavel_id:x.variavel,
+                    usar_serie_acumulada:!!x.acumulado,
+                };
+            });
+
             if(singleIndicadores.value.id){
                 r = await IndicadoresStore.update(singleIndicadores.value.id, values);
                 MetasStore.clear();
@@ -172,6 +182,93 @@ function fieldToDate(d){
         return (x.length==3) ? new Date(Date.UTC(x[2],x[1]-1,x[0])).toISOString().substring(0, 10) : null;
     }
     return null;
+}
+
+
+//Formula
+let formula = ref("");
+let formulaInput = ref(null);
+const variaveisFormula = {};
+let variaveisFormulaModal = ref(0);
+let fieldsVariaveis = ref({});
+function getCaretPosition(editableDiv) {
+  var caretPos = 0,
+    sel, range;
+  if (window.getSelection) {
+    sel = window.getSelection();
+    if (sel.rangeCount) {
+      range = sel.getRangeAt(0);
+      if (range.commonAncestorContainer.parentNode == editableDiv) {
+        caretPos = range.endOffset;
+      }
+    }
+  } else if (document.selection && document.selection.createRange) {
+    range = document.selection.createRange();
+    if (range.parentElement() == editableDiv) {
+      var tempEl = document.createElement("span");
+      editableDiv.insertBefore(tempEl, editableDiv.firstChild);
+      var tempRange = range.duplicate();
+      tempRange.moveToElementText(tempEl);
+      tempRange.setEndPoint("EndToEnd", range);
+      caretPos = tempRange.text.length;
+    }
+  }
+  return caretPos;
+}
+function setCaret(el,p) {
+    var range = document.createRange();
+    var sel = window.getSelection();
+    
+    sel.removeAllRanges();
+    range.selectNodeContents(el);
+    //range.setStart(el.childNodes[0], p);
+    range.collapse(false);
+    sel.addRange(range);
+    el.focus();
+}
+function formatFormula(p){
+    var regex = /\$\_[\d]{0,5}/gm;
+    formulaInput.value.innerHTML = formula.value.replace(regex,(m,g1)=>{ return variaveisFormula[m] ? `<span class="v" contenteditable="false" data-id="${m}" data-var="${variaveisFormula[m].variavel}">${m}</span>`: m;});
+    
+    let i = Array.from(formulaInput.value.childNodes).findIndex(x=>{return x?.dataset?.id == p; });
+    setCaret(formulaInput.value,i+1);
+}
+function editFormula(e) {
+    let f = e.target;
+    let v = f.innerText;
+    var p = getCaretPosition(f);
+    formula.value = v;
+    if(e.data=='$'){
+        document.execCommand("insertText", false, "xxx")
+        v = f.innerText;
+        formula.value = v;
+        newVariavel();
+        return;
+    }
+}
+function newVariavel() {
+    let vs = variaveisFormula?Object.keys(variaveisFormula):[];
+    let next = vs.length? '$_'+(Number(vs[vs.length-1].replace('$_',''))+1) : '$_1';
+    let v = formula.value;
+    let i = v.indexOf('$xxx');
+    formula.value = [v.slice(0, i), next, v.slice(i+4)].join('');
+    fieldsVariaveis.value = {
+        id: next
+    };
+    formatFormula(next);
+    variaveisFormulaModal.value = 1;
+}
+function editVariavel(m) {
+    if(variaveisFormula[fieldsVariaveis.value.id]){
+        fieldsVariaveis = variaveisFormula[fieldsVariaveis.value.id];
+        variaveisFormulaModal.value = 1;
+    }
+}
+function saveVar(e) {
+    e.preventDefault();
+    variaveisFormula[fieldsVariaveis.value.id] = fieldsVariaveis.value;
+    variaveisFormulaModal.value = 0;
+    formatFormula(fieldsVariaveis.value.id);
 }
 </script>
 
@@ -296,7 +393,23 @@ function fieldToDate(d){
                     <div class="error-msg">{{ errors.complemento }}</div>
                 </div>
                 
-                
+                <hr class="mt2 mb2">
+
+                <div v-if="indicador_id&&!Variaveis[indicador_id]?.loading">
+                    <label class="label">Fórmula do Agregador <span class="tvermelho">*</span></label>
+                    <div class="inputtext light mb1">
+                        <div class="formula" contenteditable="true" ref="formulaInput" @input="editFormula"></div>
+                    </div>
+                    <p class="tc300 mb1">Passe o mouse sobre as variáves para detalhes sobre o período e operação</p>
+
+                    <label class="label">Adicionar operadores </label>
+                    <div class="formula">
+                        <span class="v" @click="newVariavel">Variável</span>
+                    </div>
+                </div>
+                <div v-else-if="Variaveis[indicador_id]?.loading">
+                    <span class="spinner">Carregando</span>
+                </div>
 
                 <div class="flex spacebetween center mb2">
                     <hr class="mr2 f1"/>
@@ -304,6 +417,34 @@ function fieldToDate(d){
                     <hr class="ml2 f1"/>
                 </div>
             </Form>
+            <template v-if="indicador_id&&!Variaveis[indicador_id]?.loading">
+                <SmallModal :active="variaveisFormulaModal" @close="()=>{variaveisFormulaModal=!variaveisFormulaModal;}">
+                    <form @submit="saveVar">
+                        <h2 class="mb2">Adicionar Variável</h2>
+                        <input type="hidden" name="id" v-model="fieldsVariaveis.id" class="inputtext light mb1" />
+                        <label class="label">Variável</label>
+                        <select class="inputtext light mb1" name="variavel" v-model="fieldsVariaveis.variavel">
+                            <option value :selected="!fieldsVariaveis.variavel">Selecionar</option>
+                            <option v-for="v in Variaveis[indicador_id]" :key="v.id" :value="v.id">{{v.codigo}} - {{v.titulo}}</option>
+                        </select>
+                        <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="1"><span>Mês corrente</span></label>
+                        <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="-1"><span>Média</span></label>
+                        <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="0"><span>Mês anterior</span></label>
+
+                        <label class="block mt2 mb2"><input type="checkbox" class="inputcheckbox" value="1" v-model="fieldsVariaveis.acumulado"><span>Utilizar valores acumulados</span></label>
+                        
+                        <label class="label">Meses</label>
+                        <input type="number" name="meses" v-model="fieldsVariaveis.meses" min="1" required class="inputtext light mb1" />
+
+                        <p class="t300 tc500">Para média, deixar o campo acima em branco considera todo o período. <br>Para uma média móvel, insira o numero de meses considerados.<br>Para ”mes anterior”, indique quantos meses atrás em relação ao mês corrente está o valor da variável.</p>
+
+                        <div class="tc">
+                            <button class="btn outline bgnone tcprimary" @click="variaveisFormulaModal=0;">Cancelar</button>
+                            <button class="ml1 btn" @click="">Salvar</button>
+                        </div>
+                    </form>
+                </SmallModal>
+            </template>
         </template>
         <template v-if="singleIndicadores?.loading">
             <span class="spinner">Carregando</span>
