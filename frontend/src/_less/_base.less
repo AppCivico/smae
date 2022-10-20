@@ -19,6 +19,9 @@
 	ul, li{list-style: none; margin: 0; padding: 0;}
 	hr{display: block; float: none; clear: both; border: 0; height: 1px; background: @c100; margin: 0;}
 	a svg{ display: inline-block; vertical-align: middle; .transition; }
+	svg{ 
+		&.blue{fill:#3A3A47;}
+		}
 	b, strong{font-weight: 900;}
 	.uc{text-transform: uppercase;}
 	.vhidden{color: transparent; position: absolute; left: -2000px; }
@@ -85,6 +88,7 @@
 	.mt1{margin-top: 1rem;}
 	.mt2{margin-top: 2rem;}
 	.mt4{margin-top: 4rem;}
+	.mr05{margin-right: 0.5rem;}
 	.mr1{margin-right: 1rem;}
 	.mr2{margin-right: 2rem;}
 	.ml1{margin-left: 1rem;}
@@ -177,6 +181,7 @@
 			&:nth-child(7){margin-left: 6rem;}
 		}
 	}
+	.no-border{border: none !important;}
 	.btn{
 		.t12; line-height:1; .w900; .uc; .br(200px); display: inline-block;
 		padding: .75em 1.5em; text-align: center;
@@ -491,6 +496,16 @@
 				.arrow{transform: rotate(-90deg);}
 			}
 		}
+		.subtable{
+			th{width: 100%;
+				.tc600;align-items: center; svg {fill:@c600;};border-bottom: 1px solid #E3E5E8;
+				&.pl2{padding-left: 2rem !important;}
+			}
+			td{
+			&.pl2{padding-left: 2rem !important;}
+			}
+
+		}
 
 		th{.t12; .uc; .tc300; .w700; text-align: left; padding: .75em 1em;}
 		td{padding: .75em 1em;}
@@ -498,6 +513,7 @@
 		&.center{vertical-align: middle;}
 		.tablemain{
 			border-left: 1px solid @c100;
+			
 		}
 		.tlink{
 			.block; .tprimary; .t12; letter-spacing: .05em; background: @c100; .uc; .w900; .tc; .p1;
