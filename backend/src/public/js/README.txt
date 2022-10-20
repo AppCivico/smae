@@ -1,0 +1,1 @@
+link simbólico apenas pra matar o cache da cloudflare, mas só precisa ter 1 arquivo

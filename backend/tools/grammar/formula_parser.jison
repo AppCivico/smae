@@ -7,7 +7,7 @@
 
 \s+                   /* skip whitespace */
 [0-9]+("."[0-9]+)?\b  return 'NUMBER'
-\$[A-Z]{1,5}?\b       return 'VARIABLE'
+\$\_[0-9]{1,8}\b      return 'VARIABLE'
 "*"                   return '*'
 "/"                   return '/'
 "-"                   return '-'
