@@ -118,7 +118,7 @@ async function onSubmit(values) {
             values.formula = formula.value;
             values.formula_variaveis = Object.values(variaveisFormula).map(x=>{
                 return {
-                    referencia:x.id,
+                    referencia:x.id.substring(1),
                     janela: x.periodo==0 ? x.meses : x.periodo==-1 ? x.meses*-1 : 1,
                     variavel_id:x.variavel,
                     usar_serie_acumulada:!!x.acumulado,
