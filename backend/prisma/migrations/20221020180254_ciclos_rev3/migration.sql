@@ -1,3 +1,24 @@
+begin;
+
+-- AlterTable
+ALTER TABLE "ciclo_fisico" ALTER COLUMN "acordar_ciclo_em" DROP NOT NULL,
+ALTER COLUMN "ciclo_fase_atual" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "meta" ADD COLUMN     "ciclo_fase_id" INTEGER,
+ADD COLUMN     "ciclo_fisico_id" INTEGER;
+
+-- AlterTable
+ALTER TABLE "serie_variavel" ADD COLUMN     "aguardando_aprovacao_cp" BOOLEAN,
+ADD COLUMN     "ciclo_fisico_id" INTEGER,
+ADD COLUMN     "ha_pedido_de_complementacao" BOOLEAN;
+
+-- AddForeignKey
+ALTER TABLE "meta" ADD CONSTRAINT "meta_ciclo_fisico_id_fkey" FOREIGN KEY ("ciclo_fisico_id") REFERENCES "ciclo_fisico"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "meta" ADD CONSTRAINT "meta_ciclo_fase_id_fkey" FOREIGN KEY ("ciclo_fase_id") REFERENCES "ciclo_fisico_fase"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
 CREATE OR REPLACE FUNCTION monta_ciclos_pdm (pPdmId int, pApagarCiclo boolean)
     RETURNS varchar
     AS $$
@@ -119,3 +140,6 @@ END
 $$
 LANGUAGE plpgsql;
 
+
+
+commit;
