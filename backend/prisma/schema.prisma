@@ -799,6 +799,7 @@ model Variavel {
     variavel_responsavel       VariavelResponsavel[]
     indicador_variavel         IndicadorVariavel[]
     indicador_formula_variavel IndicadorFormulaVariavel[]
+    PainelConteudoDetalhe      PainelConteudoDetalhe[]
 
     @@map("variavel")
 }
@@ -888,6 +889,7 @@ model Iniciativa {
     Indicador              Indicador[]
     atividade              Atividade[]
     Cronograma             Cronograma[]
+    PainelConteudoDetalhe  PainelConteudoDetalhe[]
 
     @@map("iniciativa")
 }
@@ -958,6 +960,7 @@ model Atividade {
     atividade_tag         AtividadeTag[]
     Indicador             Indicador[]
     Cronograma            Cronograma[]
+    PainelConteudoDetalhe PainelConteudoDetalhe[]
 
     @@map("atividade")
 }
@@ -1107,9 +1110,13 @@ model CronogramaEtapa {
 model Painel {
     id Int @id @default(autoincrement())
 
-    nome    String
-    periodo String
-    ativo   Boolean @default(true)
+    nome          String
+    periodicidade Periodicidade
+    ativo         Boolean       @default(true)
+
+    mostrar_planejado_por_padrao Boolean @default(true)
+    mostrar_acumulado_por_padrao Boolean @default(true)
+    mostrar_indicador_por_padrao Boolean @default(true)
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -1122,43 +1129,66 @@ model Painel {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    PainelVersao PainelVersao[]
-
     @@map("painel")
 }
 
-model PainelVersao {
-    id Int @id @default(autoincrement())
-
-    painel_id Int
-    painel    Painel @relation(fields: [painel_id], references: [id])
-
-    versao Int
-
-    painel_conteudo PainelConteudo[]
-
-    @@map("painel_versao")
+enum Periodo {
+    Corrente
+    Anteriores
+    Todos
+    EntreDatas
 }
 
 model PainelConteudo {
     id Int @id @default(autoincrement())
 
-    meta_id          Int
-    meta             Meta         @relation(fields: [meta_id], references: [id])
-    indicador_id     Int
-    indicador        Indicador    @relation(fields: [indicador_id], references: [id])
-    painel_versao_id Int
-    painel_versao    PainelVersao @relation(fields: [painel_versao_id], references: [id])
+    meta_id Int
+    meta    Meta @relation(fields: [meta_id], references: [id])
 
-    peridiocidade     String
-    periodo           String
-    mostra_planejado  Boolean?
-    mostra_acumulado  Boolean?
-    acumulado_periodo String?
-    ordem             Int
+    periodicidade  Periodicidade
+    periodo        Periodo
+    periodo_valor  Int?
+    periodo_inicio DateTime?     @db.Date
+    periodo_fim    DateTime?     @db.Date
 
-    @@unique([painel_versao_id, ordem], name: "PainelOrdemUniq")
+    mostrar_planejado     Boolean
+    mostrar_acumulado     Boolean
+    mostrar_indicador     Boolean
+    ordem                 Int
+    PainelConteudoDetalhe PainelConteudoDetalhe[]
+    Indicador             Indicador?              @relation(fields: [indicadorId], references: [id])
+    indicadorId           Int?
+
     @@map("painel_conteudo")
+}
+
+enum PainelConteudoTipoDetalhe {
+    Variavel
+    Iniciativa
+    Atividade
+}
+
+model PainelConteudoDetalhe {
+    id Int @id @default(autoincrement())
+
+    variavel_id        Int?
+    variavel           Variavel?              @relation(fields: [variavel_id], references: [id])
+    iniciativa_id      Int?
+    iniciativa         Iniciativa?            @relation(fields: [iniciativa_id], references: [id])
+    atividade_id       Int?
+    atividade          Atividade?             @relation(fields: [atividade_id], references: [id])
+    painel_conteudo_id Int
+    painel_conteudo    PainelConteudo         @relation(fields: [painel_conteudo_id], references: [id])
+    pai_id             Int?
+    pai                PainelConteudoDetalhe? @relation("fk", fields: [pai_id], references: [id])
+
+    mostrar_indicador Boolean
+
+    ordem  Int
+    tipo   PainelConteudoTipoDetalhe
+    filhos PainelConteudoDetalhe[]   @relation("fk")
+
+    @@map("painel_conteudo_detalhe")
 }
 
 enum CicloFase {
@@ -1174,8 +1204,8 @@ model CicloFasesBase {
 
     ciclo_fase CicloFase @unique
 
-    n_dias_do_inicio_mes       Int
-    duracao Int // quando negativo, vai subtrair do final do mes
+    n_dias_do_inicio_mes Int
+    duracao              Int // quando negativo, vai subtrair do final do mes
 
     @@map("ciclo_fases_base")
 }
@@ -1188,8 +1218,8 @@ model CicloFasesPdmConfig {
 
     ciclo_fase CicloFase
 
-    n_dias_do_inicio_mes       Int
-    duracao Int
+    n_dias_do_inicio_mes Int
+    duracao              Int
 
     @@map("ciclo_fases_pdm_config")
 }
