@@ -20,4 +20,7 @@ export class CreatePainelDto {
 
     @IsBoolean()
     mostrar_indicador_por_padrao: boolean
+
+    @IsBoolean()
+    ativo: boolean
 }

@@ -5,6 +5,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePainelDto } from './dto/create-painel.dto';
+import { FilterPainelDto } from './dto/filter-painel.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 
 @Injectable()
@@ -31,11 +32,15 @@ export class PainelService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterPainelDto | undefined = undefined) {
+        let ativo = filters?.ativo;
+        if (typeof ativo === undefined) {
+            ativo = true;
+        }
 
         return await this.prisma.painel.findMany({
             where: {
-                ativo: true
+                ativo: ativo
             },
         });
     }
