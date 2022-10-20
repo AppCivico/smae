@@ -206,6 +206,9 @@
 		&.bgnone{
 			background: none;
 		}
+		&.tcprimary{
+			color: @primary;
+		}
 		&:disabled{
 			cursor: wait;
 			opacity: .5;
@@ -278,6 +281,9 @@
 			width: 80%;
 			max-width: 665px;
 			margin: auto;
+			&.small{
+				max-width: 500px;
+			}
 		}
 	}
 	.etapa{
@@ -361,17 +367,37 @@
 			background-size: 80%;
 		}
 	}
+	.formula{
+		.t13; .w400; outline: 0;
+		input{border: 0; outline: 0; display: inline-block;}
+		span{
+			display: inline-block; padding: .5rem; background: @c50; margin: .2rem;
+			&.op{background: #F7F2FC;}
+			&.v{
+				background: #ECF6F0; cursor: pointer;
+				&[data-var]{
+					font-size: 0;
+					&:after{content: attr(data-var); .t13;}
+				}
+			}
+		}
+
+	}
 	.inputcheckbox{
 		display: none;
 		+ span{
 			cursor: pointer;
 			&:before{
 				content: ""; display: inline-block; vertical-align: middle; width: 1rem; height: 1rem; .br(2px); border: 2px solid @amarelo;
-				margin-right: .5rem;
+				margin-right: .5rem; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
 			}
 		}
 		&:checked + span:before{background: url("@{u}check.svg") center no-repeat @amarelo; background-size: 1.5rem;}
 		&:disabled + span:before{background-color: @c100; border-color: @c300;}
+		&[type="radio"]{
+			+span:before{border-radius: 100px; border:2px solid @c300; width: 1.3rem; height: 1.3rem; background: none !important;}
+			&:checked + span:before{border: 6px solid @amarelo;}
+		}
 	}
 	.inputtext{
 		display: block; width: 100%; max-width: 100%;

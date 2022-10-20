@@ -8,7 +8,6 @@ export const useIndicadoresStore = defineStore({
         Indicadores: {},
         tempIndicadores: {},
         singleIndicadores: {},
-        agregadores: {}
     }),
     actions: {
         clear (){
@@ -56,16 +55,6 @@ export const useIndicadoresStore = defineStore({
                 if(!this.singleIndicadores) throw 'Indicadores não encontrada';
             } catch (error) {
                 this.singleIndicadores = { error };
-            }
-        },
-        async getAgregadores() {
-            try {
-                if(!this.agregadores.length){
-                    let r = await requestS.get(`${baseUrl}/agregadores`);    
-                    this.agregadores = r.linhas;
-                }
-            } catch (error) {
-                this.agregadores = { error };
             }
         },
         async insert(params) {
