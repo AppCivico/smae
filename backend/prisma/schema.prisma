@@ -124,12 +124,8 @@ model Pessoa {
     EtapasQueRemovi    Etapa[] @relation("Removedor")
     EtapasQueAtualizei Etapa[] @relation("Atualizador")
 
-    CiclosFisicosQueCriei CicloFisico[] @relation("Criador")
-    CiclosFisicosQueRemovi CicloFisico[] @relation("Removedor")
-    CiclosFisicosQueAtualizei CicloFisico[] @relation("Atualizador")
-
-    PaineisQueCriei Painel[] @relation("Criador")
-    PaineisQueRemovi Painel[] @relation("Removedor")
+    PaineisQueCriei     Painel[] @relation("Criador")
+    PaineisQueRemovi    Painel[] @relation("Removedor")
     PaineisQueAtualizei Painel[] @relation("Atualizador")
 
     @@map("pessoa")
@@ -356,11 +352,12 @@ model Pdm {
     ArquivoDocumento    ArquivoDocumento[]
     SubTema             SubTema[]
     Meta                Meta[]
-    CicloFisico         CicloFisico[]
 
-    logo            String?
-    arquivo_logo_id Int?
-    ArquivoLogo     Arquivo? @relation(fields: [arquivo_logo_id], references: [id])
+    logo                String?
+    arquivo_logo_id     Int?
+    ArquivoLogo         Arquivo?              @relation(fields: [arquivo_logo_id], references: [id])
+    CicloFasesPdmConfig CicloFasesPdmConfig[]
+    CicloFisico         CicloFisico[]
 
     @@map("pdm")
 }
@@ -529,13 +526,12 @@ model Regiao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador    Pessoa?          @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador        Pessoa?          @relation("Criador", fields: [criado_por], references: [id])
-    removedor      Pessoa?          @relation("Removedor", fields: [removido_por], references: [id])
-    RegioesAbaixo  Regiao[]         @relation("Parente")
-    Variavel       Variavel[]
-    SerieIndicador SerieIndicador[]
-    Etapa          Etapa[]
+    atualizador   Pessoa?    @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador       Pessoa?    @relation("Criador", fields: [criado_por], references: [id])
+    removedor     Pessoa?    @relation("Removedor", fields: [removido_por], references: [id])
+    RegioesAbaixo Regiao[]   @relation("Parente")
+    Variavel      Variavel[]
+    Etapa         Etapa[]
 
     @@map("regiao")
 }
@@ -613,6 +609,12 @@ model Meta {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
+    ciclo_fisico_id Int?
+    ciclo_fisico    CicloFisico? @relation(fields: [ciclo_fisico_id], references: [id])
+
+    ciclo_fase_id Int?
+    ciclo_fase    CicloFisicoFase? @relation(fields: [ciclo_fase_id], references: [id])
+
     atualizador      Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador          Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
     reovedor         Pessoa?           @relation("Desativador", fields: [removido_por], references: [id])
@@ -622,7 +624,7 @@ model Meta {
     iniciativa       Iniciativa[]
     meta_tag         MetaTag[]
 
-    cronograma Cronograma[]
+    cronograma      Cronograma[]
     painel_conteudo PainelConteudo[]
 
     @@map("meta")
@@ -803,6 +805,7 @@ model Variavel {
     variavel_responsavel       VariavelResponsavel[]
     indicador_variavel         IndicadorVariavel[]
     indicador_formula_variavel IndicadorFormulaVariavel[]
+    PainelConteudoDetalhe      PainelConteudoDetalhe[]
 
     @@map("variavel")
 }
@@ -832,17 +835,15 @@ model IndicadorVariavel {
 // valores calculados pelo sistema, deixar vazio por enquanto Lucas
 model SerieIndicador {
     id           Int       @id @default(autoincrement())
-    indicador_id Int // mesma coisa, talvez pode ser nulo mais pra frente quando tiver iniciativa
+    indicador_id Int
     indicador    Indicador @relation(fields: [indicador_id], references: [id])
-    regiao_id    Int?
-    regiao       Regiao?   @relation(fields: [regiao_id], references: [id])
 
     serie Serie
 
-    // campo do tipo data para suportar valores diarios/mensais
     data_valor    DateTime @db.Date()
     valor_nominal Float    @db.DoublePrecision
 
+    @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
     @@map("serie_indicador")
 }
 
@@ -859,6 +860,10 @@ model SerieVariavel {
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
+
+    ciclo_fisico_id             Int?
+    aguardando_aprovacao_cp     Boolean?
+    ha_pedido_de_complementacao Boolean?
 
     @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@map("serie_variavel")
@@ -894,6 +899,7 @@ model Iniciativa {
     Indicador              Indicador[]
     atividade              Atividade[]
     Cronograma             Cronograma[]
+    PainelConteudoDetalhe  PainelConteudoDetalhe[]
 
     @@map("iniciativa")
 }
@@ -964,6 +970,7 @@ model Atividade {
     atividade_tag         AtividadeTag[]
     Indicador             Indicador[]
     Cronograma            Cronograma[]
+    PainelConteudoDetalhe PainelConteudoDetalhe[]
 
     @@map("atividade")
 }
@@ -1110,38 +1117,16 @@ model CronogramaEtapa {
     @@map("cronograma_etapa")
 }
 
-model CicloFisico {
-    id Int @id @default(autoincrement())
-
-    pdm_id Int
-    pdm    Pdm @relation(fields: [pdm_id], references: [id])
-    ano    Int
-    mes    Int
-    ativo  Boolean @default(true)
-    fase_atual String?
-
-    criado_por     Int?
-    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
-    atualizado_por Int?
-    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
-    removido_por   Int?
-    removido_em    DateTime? @db.Timestamptz(6)
-
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
-
-    PainelVersao PainelVersao[]
-
-    @@map("ciclo_fisico")
-}
-
 model Painel {
     id Int @id @default(autoincrement())
 
-    nome String
-    periodo String
-    ativo Boolean @default(true)
+    nome          String
+    periodicidade Periodicidade
+    ativo         Boolean       @default(true)
+
+    mostrar_planejado_por_padrao Boolean @default(true)
+    mostrar_acumulado_por_padrao Boolean @default(true)
+    mostrar_indicador_por_padrao Boolean @default(true)
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -1150,48 +1135,138 @@ model Painel {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
-
-    PainelVersao PainelVersao[]
+    atualizador     Pessoa?          @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador         Pessoa?          @relation("Criador", fields: [criado_por], references: [id])
+    removedor       Pessoa?          @relation("Removedor", fields: [removido_por], references: [id])
+    painel_conteudo PainelConteudo[]
 
     @@map("painel")
 }
 
-model PainelVersao {
-    id Int @id @default(autoincrement())
-
-    ciclo_fisico_id Int
-    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
-
-    painel_id Int
-    painel    Painel @relation(fields: [painel_id], references: [id])
-
-    versao Int
-
-    painel_conteudo PainelConteudo[]
-
-    @@map("painel_versao")
+enum Periodo {
+    Corrente
+    Anteriores
+    Todos
+    EntreDatas
 }
 
 model PainelConteudo {
     id Int @id @default(autoincrement())
 
+    painel_id Int
+    painel    Painel @relation(fields: [painel_id], references: [id])
+
     meta_id Int
     meta    Meta @relation(fields: [meta_id], references: [id])
-    indicador_id Int
-    indicador Indicador @relation(fields: [indicador_id], references: [id])
-    painel_versao_id Int
-    painel_versao    PainelVersao @relation(fields: [painel_versao_id], references: [id])
 
-    peridiocidade String
-    periodo       String
-    mostra_planejado Boolean?
-    mostra_acumulado Boolean?
-    acumulado_periodo String?
-    ordem Int
+    periodicidade  Periodicidade
+    periodo        Periodo?
+    periodo_valor  Int?
+    periodo_inicio DateTime?     @db.Date
+    periodo_fim    DateTime?     @db.Date
 
-    @@unique([painel_versao_id, ordem], name: "PainelOrdemUniq")
+    mostrar_planejado     Boolean
+    mostrar_acumulado     Boolean
+    mostrar_indicador     Boolean
+    ordem                 Int?
+    PainelConteudoDetalhe PainelConteudoDetalhe[]
+    indicador             Indicador?              @relation(fields: [indicador_id], references: [id])
+    indicador_id          Int?
+
     @@map("painel_conteudo")
+}
+
+enum PainelConteudoTipoDetalhe {
+    Variavel
+    Iniciativa
+    Atividade
+}
+
+model PainelConteudoDetalhe {
+    id Int @id @default(autoincrement())
+
+    variavel_id        Int?
+    variavel           Variavel?              @relation(fields: [variavel_id], references: [id])
+    iniciativa_id      Int?
+    iniciativa         Iniciativa?            @relation(fields: [iniciativa_id], references: [id])
+    atividade_id       Int?
+    atividade          Atividade?             @relation(fields: [atividade_id], references: [id])
+    painel_conteudo_id Int
+    painel_conteudo    PainelConteudo         @relation(fields: [painel_conteudo_id], references: [id])
+    pai_id             Int?
+    pai                PainelConteudoDetalhe? @relation("fk", fields: [pai_id], references: [id])
+
+    mostrar_indicador Boolean
+
+    ordem  Int
+    tipo   PainelConteudoTipoDetalhe
+    filhos PainelConteudoDetalhe[]   @relation("fk")
+
+    @@map("painel_conteudo_detalhe")
+}
+
+enum CicloFase {
+    Coleta
+    Analise
+    Risco
+    Fechamento
+}
+
+// tabela de origem dos intervalos padrões
+model CicloFasesBase {
+    id Int @id @default(autoincrement())
+
+    ciclo_fase CicloFase @unique
+
+    n_dias_do_inicio_mes Int
+    duracao              Int // quando negativo, vai subtrair do final do mes
+
+    @@map("ciclo_fases_base")
+}
+
+// se um dia quiser sobre-escrever em um PDM
+model CicloFasesPdmConfig {
+    id     Int @id @default(autoincrement())
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ciclo_fase CicloFase
+
+    n_dias_do_inicio_mes Int
+    duracao              Int
+
+    @@map("ciclo_fases_pdm_config")
+}
+
+// ciclos após abertura
+model CicloFisico {
+    id Int @id @default(autoincrement())
+
+    pdm_id           Int
+    pdm              Pdm        @relation(fields: [pdm_id], references: [id])
+    data_ciclo       DateTime   @db.Date()
+    ciclo_fase_atual CicloFase?
+    ativo            Boolean    @default(false)
+
+    acordar_ciclo_em          DateTime?
+    acordar_ciclo_errmsg      String?
+    acordar_ciclo_executou_em DateTime?
+    CicloFisicoFases          CicloFisicoFase[]
+    Meta                      Meta[]
+
+    @@map("ciclo_fisico")
+}
+
+// data de cada uma das fases
+model CicloFisicoFase {
+    id              Int         @id @default(autoincrement())
+    ciclo_fisico_id Int
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+
+    data_inicio DateTime  @db.Date()
+    data_fim    DateTime  @db.Date()
+    ciclo_fase  CicloFase
+    metas       Meta[]
+
+    @@map("ciclo_fisico_fase")
 }
