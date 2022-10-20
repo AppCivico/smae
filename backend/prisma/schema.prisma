@@ -609,6 +609,12 @@ model Meta {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
+    ciclo_fisico_id Int?
+    ciclo_fisico    CicloFisico? @relation(fields: [ciclo_fisico_id], references: [id])
+
+    ciclo_fase_id Int?
+    ciclo_fase    CicloFisicoFase? @relation(fields: [ciclo_fase_id], references: [id])
+
     atualizador      Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador          Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
     reovedor         Pessoa?           @relation("Desativador", fields: [removido_por], references: [id])
@@ -854,6 +860,10 @@ model SerieVariavel {
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
+
+    ciclo_fisico_id             Int?
+    aguardando_aprovacao_cp     Boolean?
+    ha_pedido_de_complementacao Boolean?
 
     @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@map("serie_variavel")
@@ -1229,15 +1239,16 @@ model CicloFisico {
     id Int @id @default(autoincrement())
 
     pdm_id           Int
-    pdm              Pdm       @relation(fields: [pdm_id], references: [id])
-    data_ciclo       DateTime  @db.Date()
-    ciclo_fase_atual CicloFase
-    ativo            Boolean   @default(false)
+    pdm              Pdm        @relation(fields: [pdm_id], references: [id])
+    data_ciclo       DateTime   @db.Date()
+    ciclo_fase_atual CicloFase?
+    ativo            Boolean    @default(false)
 
-    acordar_ciclo_em          DateTime
+    acordar_ciclo_em          DateTime?
     acordar_ciclo_errmsg      String?
     acordar_ciclo_executou_em DateTime?
     CicloFisicoFases          CicloFisicoFase[]
+    Meta                      Meta[]
 
     @@map("ciclo_fisico")
 }
@@ -1251,6 +1262,7 @@ model CicloFisicoFase {
     data_inicio DateTime  @db.Date()
     data_fim    DateTime  @db.Date()
     ciclo_fase  CicloFase
+    metas       Meta[]
 
     @@map("ciclo_fisico_fase")
 }
