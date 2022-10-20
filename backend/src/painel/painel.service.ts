@@ -4,8 +4,11 @@ import { create } from 'domain';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
+import { FilterPainelDto } from './dto/filter-painel.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
+import { PainelConteudo } from './entities/painel-conteudo-entity';
 
 @Injectable()
 export class PainelService {
@@ -31,12 +34,41 @@ export class PainelService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterPainelDto | undefined = undefined) {
+        let ativo = filters?.ativo;
+        if (typeof ativo === undefined) {
+            ativo = true;
+        }
 
         return await this.prisma.painel.findMany({
             where: {
-                ativo: true
+                ativo: ativo
             },
+            select: {
+                id: true,
+                nome: true,
+                periodicidade: true,
+                mostrar_planejado_por_padrao: true,
+                mostrar_acumulado_por_padrao: true,
+                mostrar_indicador_por_padrao: true,
+
+                // TODO: adicionar order by pela coluna 'ordem'
+                painel_conteudo: {
+                    select: {
+                        id: true,
+                        meta_id: true,
+                        indicador_id: true,
+                        mostrar_planejado: true,
+                        mostrar_acumulado: true,
+                        mostrar_indicador: true,
+                        periodicidade: true,
+                        periodo: true,
+                        periodo_fim: true,
+                        periodo_inicio: true,
+                        periodo_valor: true,
+                    }
+                }
+            }
         });
     }
 
@@ -70,6 +102,45 @@ export class PainelService {
         });
 
         return removed;
+    }
+
+    
+    async createConteudo(painel_id: number, createConteudoDto: CreateParamsPainelConteudoDto, user: PessoaFromJwt) {
+        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId[]>=> {
+            const painel = await this.prisma.painel.findFirstOrThrow({
+                where: {id: painel_id},
+                select: {
+                    mostrar_acumulado_por_padrao: true,
+                    mostrar_indicador_por_padrao: true,
+                    mostrar_planejado_por_padrao: true,
+
+                    periodicidade: true
+                }
+            });
+
+            // const conteudos: CreatePainelConteudoDto[] = []
+            const conteudos = [];
+
+            for (const meta of createConteudoDto.metas) {
+                conteudos.push(
+                    prisma.painelConteudo.create({
+                        data: {
+                            painel_id: painel_id,
+                            meta_id: meta,
+                            mostrar_acumulado: painel.mostrar_acumulado_por_padrao,
+                            mostrar_indicador: painel.mostrar_indicador_por_padrao,
+                            mostrar_planejado: painel.mostrar_planejado_por_padrao,
+                            periodicidade: painel.periodicidade
+                        },
+                        select: {id: true}
+                    })
+                )
+            }
+
+            return await Promise.all(conteudos)
+        });
+        
+        return ret
     }
 
 }

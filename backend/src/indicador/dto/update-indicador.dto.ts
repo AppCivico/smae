@@ -39,11 +39,11 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     * `^` exponencial (precedência esquerda pra direita)
     *
     *
-    * Referências das variáveis enviar "$" + entre 1 até 5 caracteres em uppercase
+    * Referências das variáveis enviar "$_" + entre 1 até 8 números
     *
     * A referência não pode ser repetida entre o mesmo indicador.
     *
-    * @example "CEIL($A + $SHIN) / 100.4 * POWER($SHIN + LN($A), 1) * FLOOR(1- 1 / 2) + LOG(2, 4)"
+    * @example "CEIL($_1 + $_2) / 100.4 * POWER($_2 + LN($_1), 1) * FLOOR(1- 1 / 2) + LOG(2, 4)"
     */
     @IsOptional()
     @IsString({ message: '$property| Precisa ser um texto de formula válido' })

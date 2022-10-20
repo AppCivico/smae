@@ -8,10 +8,11 @@ import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 export class FormulaVariaveis {
 
     /**
-     * referência da variavel, único por indicador - de 1 até 5 chars [A-Z] em upper-case
+     * referência da variavel, único por indicador - Regexp: ^_[0-9]{1,8}$
+     * @example "_1159"
     */
     @IsString({ message: '$property| precisa ser uma string' })
-    @Matches(/^[A-Z]{1,5}$/, { message: '$property| Inválido, use apenas A-Z de 1 até 5 chars' })
+    @Matches(/^_[0-9]{1,8}$/, { message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 números' })
     referencia: string
 
     /**

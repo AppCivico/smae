@@ -1,11 +1,26 @@
-import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { ApiProperty } from "@nestjs/swagger";
+import { Periodicidade } from "@prisma/client";
+import { IsBoolean, IsEnum, IsString } from "class-validator";
 
 export class CreatePainelDto {
     @IsString()
     nome: string
 
-    @IsString()
-    periodo: string
+    @ApiProperty({ enum: Periodicidade, enumName: 'Periodicidade' })
+    @IsEnum(Periodicidade, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', ')
+    })
+    periodicidade: Periodicidade
+
+    @IsBoolean()
+    mostrar_planejado_por_padrao: boolean
+
+    @IsBoolean()
+    mostrar_acumulado_por_padrao: boolean
+
+    @IsBoolean()
+    mostrar_indicador_por_padrao: boolean
+
+    @IsBoolean()
+    ativo: boolean
 }
