@@ -1135,9 +1135,10 @@ model Painel {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador     Pessoa?          @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador         Pessoa?          @relation("Criador", fields: [criado_por], references: [id])
+    removedor       Pessoa?          @relation("Removedor", fields: [removido_por], references: [id])
+    painel_conteudo PainelConteudo[]
 
     @@map("painel")
 }
@@ -1152,11 +1153,14 @@ enum Periodo {
 model PainelConteudo {
     id Int @id @default(autoincrement())
 
+    painel_id Int
+    painel    Painel @relation(fields: [painel_id], references: [id])
+
     meta_id Int
     meta    Meta @relation(fields: [meta_id], references: [id])
 
     periodicidade  Periodicidade
-    periodo        Periodo
+    periodo        Periodo?
     periodo_valor  Int?
     periodo_inicio DateTime?     @db.Date
     periodo_fim    DateTime?     @db.Date
@@ -1164,10 +1168,10 @@ model PainelConteudo {
     mostrar_planejado     Boolean
     mostrar_acumulado     Boolean
     mostrar_indicador     Boolean
-    ordem                 Int
+    ordem                 Int?
     PainelConteudoDetalhe PainelConteudoDetalhe[]
-    Indicador             Indicador?              @relation(fields: [indicadorId], references: [id])
-    indicadorId           Int?
+    indicador             Indicador?              @relation(fields: [indicador_id], references: [id])
+    indicador_id          Int?
 
     @@map("painel_conteudo")
 }

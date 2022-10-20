@@ -10,6 +10,7 @@ import { ListPainelDto } from './dto/list-painel.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
+import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 
 @ApiTags('Painel')
 @Controller('painel')
@@ -48,4 +49,13 @@ export class PainelController {
         await this.painelService.remove(+params.id, user);
         return '';
     }
+
+    @Post(':id/conteudo')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroPainel.inserir')
+    async createConteudo(@Param() params: FindOneParams, @Body() createConteudoDto: CreateParamsPainelConteudoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId[]> {
+        return await this.painelService.createConteudo(+params.id, createConteudoDto, user);
+    }
+
 }
