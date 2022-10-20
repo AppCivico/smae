@@ -81,13 +81,11 @@ BEGIN
         1
     ),
     ciclo_fisicos_registros AS (
-    INSERT INTO ciclo_fisico (pdm_id, ativo, data_ciclo, acordar_ciclo_em, ciclo_fase_atual)
+    INSERT INTO ciclo_fisico (pdm_id, ativo, data_ciclo)
         SELECT
             pPdmId,
             FALSE,
-            data_ciclo,
-            data_ciclo,
-            ciclo_fase_atual
+            data_ciclo
         FROM
             dt_ciclo_fisicos
         RETURNING

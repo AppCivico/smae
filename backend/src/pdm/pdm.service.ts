@@ -1,4 +1,4 @@
-import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -11,6 +11,7 @@ import { PdmDocument } from './entities/pdm-document.entity';
 
 @Injectable()
 export class PdmService {
+    private readonly logger = new Logger(PdmService.name);
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService
@@ -26,23 +27,30 @@ export class PdmService {
         if (similarExists > 0)
             throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
-        let arquivo_logo_id;
+        let arquivo_logo_id: undefined | number;
         if (createPdmDto.upload_logo) {
-            arquivo_logo_id = await this.uploadService.checkUploadToken(createPdmDto.upload_logo);
+            arquivo_logo_id = this.uploadService.checkUploadToken(createPdmDto.upload_logo);
             delete createPdmDto.upload_logo;
         }
 
         if (createPdmDto.possui_atividade && !createPdmDto.possui_iniciativa)
             throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
 
-        const created = await this.prisma.pdm.create({
-            data: {
-                criado_por: user.id,
-                criado_em: new Date(Date.now()),
-                arquivo_logo_id: arquivo_logo_id,
-                ...createPdmDto as any,
-            },
-            select: { id: true }
+        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            const c = await prisma.pdm.create({
+                data: {
+                    criado_por: user.id,
+                    criado_em: new Date(Date.now()),
+                    arquivo_logo_id: arquivo_logo_id,
+                    ...createPdmDto as any,
+                },
+                select: { id: true }
+            });
+
+            this.logger.log(`chamando monta_ciclos_pdm...`)
+            await prisma.$queryRaw`select monta_ciclos_pdm(${c.id}::int, false)`;
+
+            return c;
         });
 
         return created;
@@ -152,7 +160,7 @@ export class PdmService {
 
         let arquivo_logo_id: number | undefined;
         if (updatePdmDto.upload_logo) {
-            arquivo_logo_id = await this.uploadService.checkUploadToken(updatePdmDto.upload_logo);
+            arquivo_logo_id = this.uploadService.checkUploadToken(updatePdmDto.upload_logo);
             delete updatePdmDto.upload_logo;
         }
 
@@ -197,6 +205,9 @@ export class PdmService {
                 },
                 select: { id: true }
             });
+
+            this.logger.log(`chamando monta_ciclos_pdm...`)
+            this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${updatePdmDto.id}::int, false)`));
 
         });
 
