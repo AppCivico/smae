@@ -529,8 +529,10 @@ async function addFunction(f){
 
                         <label class="block mt2 mb2"><input type="checkbox" class="inputcheckbox" value="1" v-model="fieldsVariaveis.usar_serie_acumulada"><span>Utilizar valores acumulados</span></label>
                         
-                        <label class="label">Meses</label>
-                        <input type="number" name="meses" v-model="fieldsVariaveis.meses" min="1" required class="inputtext light mb1" />
+                        <template v-if="fieldsVariaveis.periodo!=1">
+                            <label class="label">Meses</label>
+                            <input type="number" name="meses" v-model="fieldsVariaveis.meses" min="1" required class="inputtext light mb1" />
+                        </template>
 
                         <p class="t300 tc500">Para média, deixar o campo acima em branco considera todo o período. <br>Para uma média móvel, insira o numero de meses considerados.<br>Para ”mes anterior”, indique quantos meses atrás em relação ao mês corrente está o valor da variável.</p>
 
