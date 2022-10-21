@@ -28,7 +28,7 @@ export class PainelController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterPainelDto): Promise<ListPainelDto> {
-        return { 'linhas': await this.painelService.findAll() };
+        return { 'linhas': await this.painelService.findAll(filters) };
     }
 
     @Patch(':id')
