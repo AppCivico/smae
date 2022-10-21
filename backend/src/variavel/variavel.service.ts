@@ -58,9 +58,9 @@ export class VariavelService {
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+        const created = await this.prisma.$transaction(async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
 
-            const variavel = await prisma.variavel.create({
+            const variavel = await prismaThx.variavel.create({
                 data: {
                     ...createVariavelDto,
                     indicador_variavel: {
@@ -72,11 +72,13 @@ export class VariavelService {
                 select: { id: true }
             });
 
-            await this.resyncIndicadorVariavel(indicador, variavel.id, prisma);
+            await this.resyncIndicadorVariavel(indicador, variavel.id, prismaThx);
 
-            await prisma.variavelResponsavel.createMany({
+            await prismaThx.variavelResponsavel.createMany({
                 data: await this.buildVarResponsaveis(variavel.id, responsaveis),
             });
+
+            await this.recalc_variaveis_acumulada([variavel.id], prismaThx);
 
             return variavel;
         });
@@ -410,7 +412,7 @@ export class VariavelService {
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
-            select: { indicador_id: true, variavel: {select: {valor_base: true}} }
+            select: { indicador_id: true, variavel: { select: { valor_base: true } } }
         });
         if (!selfIdicadorVariavel) throw new HttpException('Variavel não encontrada', 400);
 
@@ -451,7 +453,7 @@ export class VariavelService {
                 data: await this.buildVarResponsaveis(variavelId, responsaveis),
             });
 
-            if (Number(oldValorBase).toString() !== Number(updated.valor_base).toString()){
+            if (Number(oldValorBase).toString() !== Number(updated.valor_base).toString()) {
                 await this.recalc_variaveis_acumulada([variavelId], prismaTnx);
             }
         });
@@ -765,6 +767,7 @@ export class VariavelService {
     }
 
     async recalc_variaveis_acumulada(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
+        this.logger.log(`called recalc_variaveis_acumulada (${JSON.stringify(variaveis)})`);
         const afetadas = await prismaTnx.variavel.findMany({
             where: {
                 id: { 'in': variaveis },
@@ -774,13 +777,15 @@ export class VariavelService {
                 id: true
             }
         });
+        this.logger.log(`query.afetadas => ${JSON.stringify(afetadas)}`);
         for (const row of afetadas) {
-            this.logger.log(`Recalculando serie acumulada variavel ... ${row.id}`)
+            this.logger.debug(`Recalculando serie acumulada variavel ${row.id}...`);
             await prismaTnx.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
         }
     }
 
     async recalc_indicador_usando_variaveis(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
+        this.logger.log(`called recalc_indicador_usando_variaveis (${JSON.stringify(variaveis)})`);
         const indicadores = await prismaTnx.indicadorFormulaVariavel.findMany({
             where: {
                 variavel_id: { 'in': variaveis },
@@ -790,6 +795,7 @@ export class VariavelService {
                 indicador_id: true
             }
         });
+        this.logger.log(`query.indicadores => ${JSON.stringify(indicadores)}`);
         for (const row of indicadores) {
             this.logger.log(`Recalculando indicador ... ${row.indicador_id}`)
             await prismaTnx.$queryRaw`select monta_serie_indicador(${row.indicador_id}::int, null, null, null)`;
