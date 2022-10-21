@@ -190,6 +190,7 @@ export class IndicadorService {
         console.log({ formula_variaveis });
 
         const oldVersion = IndicadorService.getIndicadorHash(indicador);
+        this.logger.debug({oldVersion});
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
@@ -206,8 +207,9 @@ export class IndicadorService {
             });
 
             const newVersion = IndicadorService.getIndicadorHash(indicador);
+            this.logger.debug({oldVersion ,  newVersion});
 
-            if (formula_variaveis && !(oldVersion === newVersion)) {
+            if (formula_variaveis ) {
                 await prisma.indicadorFormulaVariavel.deleteMany({
                     where: { indicador_id: indicador.id }
                 })
@@ -223,10 +225,10 @@ export class IndicadorService {
                 });
             }
 
-            if (!(oldVersion === newVersion)) {
-                this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`)
-                await prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
-            }
+            //if (!(oldVersion === newVersion)) {
+            this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`)
+            await prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
+            //}
 
             return indicador;
         });
