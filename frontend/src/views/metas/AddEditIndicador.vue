@@ -10,6 +10,7 @@ import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, useIndic
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -20,6 +21,8 @@ const atividade_id = route.params.atividade_id;
 const indicador_id = route.params.indicador_id;
 
 const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
+const parentVar = atividade_id??iniciativa_id??meta_id??false;
+const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 const props = defineProps(['group']);
 
 const authStore = useAuthStore();
@@ -66,18 +69,37 @@ const schema = Yup.object().shape({
 let title = 'Adicionar Indicador';
 let regionalizavel = ref(singleIndicadores.value.regionalizavel);
 
+let formula = ref("");
+let formulaInput = ref(null);
+let variaveisFormulaModal = ref(0);
+let fieldsVariaveis = ref({});
+let variaveisFormula = {};
+let currentCaretPos = -1;
+let errFormula = ref("");
 if (indicador_id) {
     title = 'Editar Indicador';
-
-    if(atividade_id){
-        IndicadoresStore.getById(atividade_id,'atividade_id',indicador_id);
-    }else if(iniciativa_id){
-        IndicadoresStore.getById(iniciativa_id,'iniciativa_id',indicador_id);
-    }else{
-        IndicadoresStore.getById(meta_id,'meta_id',indicador_id);
-    }
     
-    VariaveisStore.getAll(indicador_id);
+    Promise.all([
+        IndicadoresStore.getById(parentVar,parentField,indicador_id),
+        VariaveisStore.getAll(indicador_id)
+    ]).then(()=>{
+        if(singleIndicadores.value.formula){
+            formula.value = singleIndicadores.value.formula;
+            variaveisFormula = {};
+            singleIndicadores.value.formula_variaveis.forEach(x=>{
+                variaveisFormula['$'+x.referencia] = {
+                    id: '$'+x.referencia,
+                    periodo: x.janela<0?-1:x.janela>1?0:1,
+                    meses: Math.abs(x.janela),
+                    variavel_id: x.variavel_id,
+                    usar_serie_acumulada: x.usar_serie_acumulada
+                }
+            });
+            formatFormula();
+        }
+    });
+    
+    
 }else{
     if(atividade_id){
         IndicadoresStore.getAll(atividade_id,'atividade_id');
@@ -116,12 +138,17 @@ async function onSubmit(values) {
         if (indicador_id) {
 
             values.formula = formula.value;
+            let er = await validadeFormula(values.formula);
+            if(er){
+                errFormula.value = er;
+                throw 'Erro na fórmula';
+            }
             values.formula_variaveis = Object.values(variaveisFormula).map(x=>{
                 return {
                     referencia:x.id.substring(1),
                     janela: x.periodo==0 ? x.meses : x.periodo==-1 ? x.meses*-1 : 1,
-                    variavel_id:x.variavel,
-                    usar_serie_acumulada:!!x.acumulado,
+                    variavel_id:x.variavel_id,
+                    usar_serie_acumulada:!!x.usar_serie_acumulada,
                 };
             });
 
@@ -139,9 +166,8 @@ async function onSubmit(values) {
         }
         if(r == true){
             MetasStore.clear();
-            router.push(parentlink);
             alertStore.success(msg);
-            return;
+            router.push(parentlink);
         }
     } catch (error) {
         alertStore.error(error);
@@ -184,36 +210,33 @@ function fieldToDate(d){
     return null;
 }
 
-
 //Formula
-let formula = ref("");
-let formulaInput = ref(null);
-const variaveisFormula = {};
-let variaveisFormulaModal = ref(0);
-let fieldsVariaveis = ref({});
+async function validadeFormula(f){
+    try { 
+        if(typeof window.formula_parser !== 'undefined'){
+            window.formula_parser.parse(f.toLocaleUpperCase());
+            return false;
+        }
+    } catch (e) {
+        return e.hash;
+    }
+}
 function getCaretPosition(editableDiv) {
-  var caretPos = 0,
-    sel, range;
-  if (window.getSelection) {
-    sel = window.getSelection();
-    if (sel.rangeCount) {
-      range = sel.getRangeAt(0);
-      if (range.commonAncestorContainer.parentNode == editableDiv) {
-        caretPos = range.endOffset;
-      }
+    var caretPos = [0,0],
+        sel, 
+        range;
+    if (window.getSelection) {
+        sel = window.getSelection();
+        if (sel.rangeCount) {
+            range = sel.getRangeAt(0);
+            if (range.commonAncestorContainer.parentNode == editableDiv) {
+                let pi = Array.from(editableDiv.childNodes).findIndex(x=>x==range.commonAncestorContainer);
+                caretPos = [pi??0,range.endOffset];
+            }
+        }
     }
-  } else if (document.selection && document.selection.createRange) {
-    range = document.selection.createRange();
-    if (range.parentElement() == editableDiv) {
-      var tempEl = document.createElement("span");
-      editableDiv.insertBefore(tempEl, editableDiv.firstChild);
-      var tempRange = range.duplicate();
-      tempRange.moveToElementText(tempEl);
-      tempRange.setEndPoint("EndToEnd", range);
-      caretPos = tempRange.text.length;
-    }
-  }
-  return caretPos;
+    currentCaretPos = caretPos;
+    return caretPos;
 }
 function setCaret(el,p) {
     var range = document.createRange();
@@ -221,22 +244,58 @@ function setCaret(el,p) {
     
     sel.removeAllRanges();
     range.selectNodeContents(el);
-    //range.setStart(el.childNodes[0], p);
-    range.collapse(false);
+    if(p){
+        console.log(el.childNodes[p[0]]);
+        range.setStart(el.childNodes[p[0]], p[1]);
+    }
+    range.collapse(true);
     sel.addRange(range);
     el.focus();
 }
+function labelPeriodo(p,m){
+    if(p==0 && m>1){
+        return m+' meses atrás';
+    }else if(p==-1){
+        return 'Média dos últimos '+m+' meses';
+    }else{
+        return 'Mês corrente';
+    }
+}
 function formatFormula(p){
     var regex = /\$\_[\d]{0,5}/gm;
-    formulaInput.value.innerHTML = formula.value.replace(regex,(m,g1)=>{ return variaveisFormula[m] ? `<span class="v" contenteditable="false" data-id="${m}" data-var="${variaveisFormula[m].variavel}">${m}</span>`: m;});
+    formulaInput.value.innerHTML = formula.value.replace(regex,(m,g1)=>{ 
+        let r = m;
+        if(variaveisFormula[m]){
+            let n = variaveisFormula[m].variavel_id;
+            let t = '';
+            if(Variaveis.value[indicador_id]?.length){
+                let v = Variaveis.value[indicador_id].find(x=>x.id == variaveisFormula[m].variavel_id);
+                if(v){
+                    n = `${v.codigo} - ${v.titulo}`;
+                    t = labelPeriodo(variaveisFormula[m].periodo,variaveisFormula[m].meses);
+                }
+
+            }
+
+            r = `<span class="v" contenteditable="false"
+                data-id="${m}" 
+                data-var="${n}"
+                title="${t}"
+            >${m}</span>&nbsp;`;
+        }
+        return r;
+    });
     
-    let i = Array.from(formulaInput.value.childNodes).findIndex(x=>{return x?.dataset?.id == p; });
-    setCaret(formulaInput.value,i+1);
+    if(p){
+        console.log(p);
+        let i = Array.from(formulaInput.value.childNodes).findIndex(x=>{return x?.dataset?.id == p; });
+        setCaret(formulaInput.value,[i+1,0]);
+    }
 }
 function editFormula(e) {
     let f = e.target;
     let v = f.innerText;
-    var p = getCaretPosition(f);
+    getCaretPosition(f);
     formula.value = v;
     if(e.data=='$'){
         document.execCommand("insertText", false, "xxx")
@@ -246,29 +305,51 @@ function editFormula(e) {
         return;
     }
 }
+function trackClickFormula(e) {
+    let id = e.target?.dataset?.id;
+    if(id){
+        editVariavel(id);
+    }
+    getCaretPosition(e.target);
+}
 function newVariavel() {
     let vs = variaveisFormula?Object.keys(variaveisFormula):[];
     let next = vs.length? '$_'+(Number(vs[vs.length-1].replace('$_',''))+1) : '$_1';
-    let v = formula.value;
-    let i = v.indexOf('$xxx');
-    formula.value = [v.slice(0, i), next, v.slice(i+4)].join('');
     fieldsVariaveis.value = {
         id: next
     };
     formatFormula(next);
     variaveisFormulaModal.value = 1;
 }
-function editVariavel(m) {
-    if(variaveisFormula[fieldsVariaveis.value.id]){
-        fieldsVariaveis = variaveisFormula[fieldsVariaveis.value.id];
+function editVariavel(id) {
+    if(variaveisFormula[id]){
+        fieldsVariaveis.value = variaveisFormula[id];
         variaveisFormulaModal.value = 1;
     }
 }
 function saveVar(e) {
     e.preventDefault();
+    let nova = !variaveisFormula[fieldsVariaveis.value.id];
     variaveisFormula[fieldsVariaveis.value.id] = fieldsVariaveis.value;
     variaveisFormulaModal.value = 0;
+    if(nova){
+        let v = formula.value;
+        let i = v.indexOf('$xxx');
+        let id = fieldsVariaveis.value.id;
+        formula.value = [v.slice(0, i), id, v.slice(i+4)].join('');
+    }
     formatFormula(fieldsVariaveis.value.id);
+}
+function cancelVar() {
+    let v = formula.value;
+    let i = v.indexOf('$xxx');
+    if(i!=-1) formula.value = [v.slice(0, i), v.slice(i+4)].join('');
+    formatFormula(fieldsVariaveis.value.id);
+    variaveisFormulaModal.value=0;
+}
+async function addFunction(f){
+    await setCaret(formulaInput.value,currentCaretPos);
+    document.execCommand("insertText", false, f);
 }
 </script>
 
@@ -398,13 +479,31 @@ function saveVar(e) {
                 <div v-if="indicador_id&&!Variaveis[indicador_id]?.loading">
                     <label class="label">Fórmula do Agregador <span class="tvermelho">*</span></label>
                     <div class="inputtext light mb1">
-                        <div class="formula" contenteditable="true" ref="formulaInput" @input="editFormula"></div>
+                        <div class="formula" contenteditable="true" ref="formulaInput" @input="editFormula" @click="trackClickFormula"></div>
                     </div>
+                    <p class="error-msg" v-if="errFormula">{{errFormula}}</p>
                     <p class="tc300 mb1">Passe o mouse sobre as variáves para detalhes sobre o período e operação</p>
 
                     <label class="label">Adicionar operadores </label>
                     <div class="formula">
-                        <span class="v" @click="newVariavel">Variável</span>
+                        <span readonly="readonly" class="v" @click="newVariavel">Variável</span>
+                        <span readonly="readonly" class="op" @click="addFunction('*')">*</span>
+                        <span readonly="readonly" class="op" @click="addFunction('/')">/</span>
+                        <span readonly="readonly" class="op" @click="addFunction('-')">-</span>
+                        <span readonly="readonly" class="op" @click="addFunction('+')">+</span>
+                        <span readonly="readonly" class="op" @click="addFunction('^')">^</span>
+                        <span readonly="readonly" class="op" @click="addFunction('FACTORIAL')">FACTORIAL</span>
+                        <span readonly="readonly" class="op" @click="addFunction('ABS')">ABS</span>
+                        <span readonly="readonly" class="op" @click="addFunction('LN')">LN</span>
+                        <span readonly="readonly" class="op" @click="addFunction('FLOOR')">FLOOR</span>
+                        <span readonly="readonly" class="op" @click="addFunction('CEIL')">CEIL</span>
+                        <span readonly="readonly" class="op" @click="addFunction('EXP')">EXP</span>
+                        <span readonly="readonly" class="op" @click="addFunction('ROUND')">ROUND</span>
+                        <span readonly="readonly" class="op" @click="addFunction('POWER')">POWER</span>
+                        <span readonly="readonly" class="op" @click="addFunction('LOG')">LOG</span>
+                        <span readonly="readonly" class="op" @click="addFunction('NULLIF')">NULLIF</span>
+                        <span readonly="readonly" class="op" @click="addFunction('DIV')">DIV</span>
+                        <span readonly="readonly" class="op" @click="addFunction('MOD')">MOD</span>
                     </div>
                 </div>
                 <div v-else-if="Variaveis[indicador_id]?.loading">
@@ -423,15 +522,15 @@ function saveVar(e) {
                         <h2 class="mb2">Adicionar Variável</h2>
                         <input type="hidden" name="id" v-model="fieldsVariaveis.id" class="inputtext light mb1" />
                         <label class="label">Variável</label>
-                        <select class="inputtext light mb1" name="variavel" v-model="fieldsVariaveis.variavel">
-                            <option value :selected="!fieldsVariaveis.variavel">Selecionar</option>
+                        <select class="inputtext light mb1" name="variavel_id" v-model="fieldsVariaveis.variavel_id">
+                            <option value :selected="!fieldsVariaveis.variavel_id">Selecionar</option>
                             <option v-for="v in Variaveis[indicador_id]" :key="v.id" :value="v.id">{{v.codigo}} - {{v.titulo}}</option>
                         </select>
                         <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="1"><span>Mês corrente</span></label>
                         <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="-1"><span>Média</span></label>
                         <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="0"><span>Mês anterior</span></label>
 
-                        <label class="block mt2 mb2"><input type="checkbox" class="inputcheckbox" value="1" v-model="fieldsVariaveis.acumulado"><span>Utilizar valores acumulados</span></label>
+                        <label class="block mt2 mb2"><input type="checkbox" class="inputcheckbox" value="1" v-model="fieldsVariaveis.usar_serie_acumulada"><span>Utilizar valores acumulados</span></label>
                         
                         <label class="label">Meses</label>
                         <input type="number" name="meses" v-model="fieldsVariaveis.meses" min="1" required class="inputtext light mb1" />
@@ -439,7 +538,7 @@ function saveVar(e) {
                         <p class="t300 tc500">Para média, deixar o campo acima em branco considera todo o período. <br>Para uma média móvel, insira o numero de meses considerados.<br>Para ”mes anterior”, indique quantos meses atrás em relação ao mês corrente está o valor da variável.</p>
 
                         <div class="tc">
-                            <button class="btn outline bgnone tcprimary" @click="variaveisFormulaModal=0;">Cancelar</button>
+                            <a class="btn outline bgnone tcprimary" @click="cancelVar()">Cancelar</a>
                             <button class="ml1 btn" @click="">Salvar</button>
                         </div>
                     </form>
