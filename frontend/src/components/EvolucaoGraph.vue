@@ -81,7 +81,7 @@
 
 		    //Months
 			const xAxis = d3.axisBottom(xScale)
-				.ticks(d3.timeMonth)
+				.ticks(d3.timeMonth,10)
 				.tickFormat( this.locale.utcFormat("%b") )
 				.tickSize(0)
 				.tickPadding(15);
@@ -106,7 +106,7 @@
 		      		.attr("transform", 'translate(0,'+(this.sizes.height - this.sizes.margin.bottom)+')')
 		      	.merge(gXaxis).transition().duration(this.transitionDuration)
 		      		.attr("transform", 'translate(0,'+(this.sizes.height - this.sizes.margin.bottom)+')')
-		      		.call(xAxis);
+		      		.call(xAxis)
 
 		    //Draw X-Axis2
 		    this.rangeYearsLines(svg, ticksYears, xDomain, xScale, this.sizes, this.transitionDuration);
@@ -220,7 +220,6 @@
 				.attr("x2", pos.x);
 
 			//Creating tooltip element
-			console.log(d.date)
 			let tipHtml = `<p class="data tprimary">${this.locale.utcFormat("%B/%Y")(d.date)}</p>
 				<p class="meta tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>
 				<p class="tc300">
