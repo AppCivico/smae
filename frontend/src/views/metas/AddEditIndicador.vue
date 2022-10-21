@@ -1,5 +1,5 @@
 <script setup>
-import { ref, unref, onMounted, onUpdated } from 'vue';
+import { ref, onMounted, onUpdated } from 'vue';
 import { Dashboard, SmallModal} from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
@@ -10,7 +10,6 @@ import { useEditModalStore, useAlertStore, useAuthStore, useMetasStore, useIndic
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -262,8 +261,8 @@ function labelPeriodo(p,m){
     }
 }
 function formatFormula(p){
-    var regex = /\$\_[\d]{0,5}/gm;
-    formulaInput.value.innerHTML = formula.value.replace(regex,(m,g1)=>{ 
+    var regex = /\$_[\d]{0,5}/gm;
+    formulaInput.value.innerHTML = formula.value.replace(regex,(m)=>{ 
         let r = m;
         if(variaveisFormula[m]){
             let n = variaveisFormula[m].variavel_id;
@@ -538,7 +537,7 @@ async function addFunction(f){
 
                         <div class="tc">
                             <a class="btn outline bgnone tcprimary" @click="cancelVar()">Cancelar</a>
-                            <button class="ml1 btn" @click="">Salvar</button>
+                            <button class="ml1 btn">Salvar</button>
                         </div>
                     </form>
                 </SmallModal>

@@ -19,3 +19,4 @@ export * from './iniciativas.store';
 export * from './atividades.store';
 export * from './cronogramas.store';
 export * from './etapas.store';
+export * from './paineis.store';

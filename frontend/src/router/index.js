@@ -19,7 +19,6 @@ import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao } f
 import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade, SingleAtividade } from '@/views/metas';
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
-
 import { ListPainel, AddEditPainel } from '@/views/paineis';
 
 
@@ -89,7 +88,7 @@ export const router = createRouter({
             children: [
                 { path: '', component: ListPainel, },
                 { path: 'novo', component: AddEditPainel,  },
-                { path: 'editar/:painel_id', component: AddEditPainel, },
+                { path: ':painel_id', component: AddEditPainel, },
             ]
         },
         { path: '/metas',
