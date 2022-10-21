@@ -74,6 +74,8 @@ export class VariavelService {
 
             await this.resyncIndicadorVariavel(indicador, variavel.id, prisma);
 
+            await this.recalc_variaveis_acumulada([variavel.id], prisma);
+
             await prisma.variavelResponsavel.createMany({
                 data: await this.buildVarResponsaveis(variavel.id, responsaveis),
             });
