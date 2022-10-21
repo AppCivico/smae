@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { create } from 'domain';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -66,6 +65,63 @@ export class PainelService {
                         periodo_fim: true,
                         periodo_inicio: true,
                         periodo_valor: true,
+
+                        detalhes: {
+                            where: {
+                                pai_id: null
+                            },
+                            orderBy: [
+                                {ordem: 'asc'}
+                            ],
+                            select: {
+                                tipo: true,
+                                mostrar_indicador: true,
+                                variavel: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                filhos: {
+                                    select: {
+                                        tipo: true,
+                                        mostrar_indicador: true,
+
+                                        variavel: {
+                                            select: {
+                                                id: true,
+                                                titulo: true,
+                                            }
+                                        },
+                                        atividade: {
+                                            select: {
+                                                id: true,
+                                                titulo: true
+                                            }
+                                        },
+                                        filhos: {
+                                            select: {
+                                                tipo: true,
+                                                mostrar_indicador: true,
+
+                                                variavel: {
+                                                    select: {
+                                                        id: true,
+                                                        titulo: true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -118,7 +174,6 @@ export class PainelService {
                 }
             });
 
-            // const conteudos: CreatePainelConteudoDto[] = []
             const conteudos = [];
 
             for (const meta of createConteudoDto.metas) {
