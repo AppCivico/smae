@@ -36,14 +36,17 @@ let parentLabel = ref(atividade_id?'-':iniciativa_id?'-':meta_id?'Meta':false);
 })();
 
 const IndicadoresStore = useIndicadoresStore();
-const { tempIndicadores } = storeToRefs(IndicadoresStore);
+const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
 const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 
 (async()=>{
     if(!tempIndicadores.value.length||tempIndicadores.value[0][parent_field] != parent_id) await IndicadoresStore.filterIndicadores(parent_id,parent_field);
-    if(tempIndicadores.value[0]?.id) await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
+    if(tempIndicadores.value[0]?.id) {
+        IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
+        await VariaveisStore.getAll(tempIndicadores.value[0]?.id);
+    }
 
     if(Variaveis.value[tempIndicadores.value[0]?.id]) Variaveis.value[tempIndicadores.value[0]?.id].forEach(x=>{
         VariaveisStore.getValores(x.id);
@@ -88,8 +91,45 @@ onUpdated(()=>{start()});
                                     </select>
                                 </div>
                                 <router-link v-if="perm.CadastroIndicador?.editar" :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                ValoresInd
                             </div>
+                            <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
                         </header>
+                        <div>
+                            <div class="tablepreinfo">
+                                <div class="flex spacebetween">
+                                    <div class="flex center">
+                                        <div class="t12 lh1 w700 uc tc400">Projetado X Realizado</div>
+                                        <div class="tipinfo ml1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Indicador calculado pelo média móvel das variáveis</div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="tablemain">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%">Mês/Ano</th>
+                                        <th style="width: 17.5%">Projetado Mensal</th>
+                                        <th style="width: 17.5%">Realizado Mensal</th>
+                                        <th style="width: 17.5%">Projetado Acumulado</th>
+                                        <th style="width: 17.5%">Realizado Acumulado</th>
+                                        <th style="width: 5%"></th>
+                                    </tr>
+                                </thead>
+                                <tr v-for="(val, i) in ValoresInd[ind.id]?.linhas" :key="i">
+                                    <td><div class="flex center"><div class="farol i1"></div> <span>{{val.periodo}}</span></div></td>
+                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
+                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
+                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
+                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
+                                    <td style="white-space: nowrap; text-align: right;">
+                                        <!-- <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link> -->
+                                    </td>
+                                </tr>
+                                <tr v-if="ValoresInd[ind.id]?.loading">
+                                    <td colspan="555"><span class="spinner">Carregando</span></td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
 
                     <div class="t12 uc w700 mb05 tc300">Variáveis</div>
