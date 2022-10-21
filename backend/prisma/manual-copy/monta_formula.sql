@@ -11,7 +11,7 @@ DECLARE
 BEGIN
     --
     SELECT
-        formula INTO _formula
+        formula_compilada INTO _formula
     FROM
         indicador i
     WHERE
@@ -22,7 +22,7 @@ BEGIN
 
     -- extrai as variaveis (apenas as referencias unicas)
     WITH cte AS (
-        SELECT DISTINCT unnest(regexp_matches(_formula, '\$[A-Z]+\y', 'g')) AS x
+        SELECT DISTINCT unnest(regexp_matches(_formula, '\$_[0-9]{1,8}\y', 'g')) AS x
     )
     SELECT
         array_agg(replace(x, '$', '')) INTO _referencias
@@ -68,13 +68,7 @@ BEGIN
              AND ifv.referencia = ANY(_referencias) -- carrega apenas variaveis se existir necessidade
         ) SELECT
             cte.*,
-            CASE WHEN (cte.janela < cte.periodicidade_dias) THEN
-                1
-            WHEN cte.janela = cte.periodicidade_dias THEN
-                cte.janela
-            ELSE
-                floor(cte.janela / cte.periodicidade_dias)
-            END as registros
+            cte.janela as registros
          FROM cte
     LOOP
         RAISE NOTICE 'ifv %', ROW_TO_JSON(r);
