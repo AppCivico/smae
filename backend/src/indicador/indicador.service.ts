@@ -190,6 +190,7 @@ export class IndicadorService {
         console.log({ formula_variaveis });
 
         const oldVersion = IndicadorService.getIndicadorHash(indicador);
+        this.logger.debug({oldVersion});
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
@@ -206,6 +207,7 @@ export class IndicadorService {
             });
 
             const newVersion = IndicadorService.getIndicadorHash(indicador);
+            this.logger.debug({oldVersion ,  newVersion});
 
             if (formula_variaveis && !(oldVersion === newVersion)) {
                 await prisma.indicadorFormulaVariavel.deleteMany({
