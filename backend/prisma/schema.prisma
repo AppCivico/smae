@@ -1169,7 +1169,7 @@ model PainelConteudo {
     mostrar_acumulado     Boolean
     mostrar_indicador     Boolean
     ordem                 Int?
-    PainelConteudoDetalhe PainelConteudoDetalhe[]
+    detalhes              PainelConteudoDetalhe[]
     indicador             Indicador?              @relation(fields: [indicador_id], references: [id])
     indicador_id          Int?
 
