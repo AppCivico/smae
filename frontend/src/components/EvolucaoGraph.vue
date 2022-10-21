@@ -74,15 +74,15 @@
 			/*XAXIS*/
 		    //Years
 		    const xAxis2 = d3.axisBottom(xScale)
-		    	.tickFormat( this.locale.format("%Y") )
-				.tickValues(ticksYears)
+				.ticks(d3.timeYear)
+		    	.tickFormat( this.locale.utcFormat("%Y") )
 				.tickSize(0)
 				.tickPadding(9);
 
 		    //Months
 			const xAxis = d3.axisBottom(xScale)
-				.ticks(24)
-				.tickFormat( this.locale.format("%b") )
+				.ticks(d3.timeMonth)
+				.tickFormat( this.locale.utcFormat("%b") )
 				.tickSize(0)
 				.tickPadding(15);
 
@@ -220,7 +220,8 @@
 				.attr("x2", pos.x);
 
 			//Creating tooltip element
-			let tipHtml = `<p class="data tprimary">${this.locale.format("%B/%Y")(d.date)}</p>
+			console.log(d.date)
+			let tipHtml = `<p class="data tprimary">${this.locale.utcFormat("%B/%Y")(d.date)}</p>
 				<p class="meta tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>
 				<p class="tc300">
 					Previsto Junho: <span>${d.projetado || '-'}</span><br />
