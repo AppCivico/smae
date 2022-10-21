@@ -19,8 +19,8 @@ export class PainelConteudoDetalhes {
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
 
-    variavel: RowWithIdTitle[] | null
-    iniciativa: RowWithIdTitle[] | null
+    variavel: RowWithIdTitle | null
+    iniciativa: RowWithIdTitle | null
     filhos: FirstLevelChildren[] | null
 }
 
@@ -33,8 +33,8 @@ export class FirstLevelChildren {
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
 
-    variavel: RowWithIdTitle[] | null
-    atividade: RowWithIdTitle[] | null
+    variavel: RowWithIdTitle | null
+    atividade: RowWithIdTitle | null
     filhos: SecondLevelChildren[] | null
 } 
 
@@ -42,5 +42,5 @@ export class SecondLevelChildren {
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
 
-    variavel: RowWithIdTitle[] | null
+    variavel: RowWithIdTitle | null
 }
