@@ -91,7 +91,6 @@ onUpdated(()=>{start()});
                                     </select>
                                 </div>
                                 <router-link v-if="perm.CadastroIndicador?.editar" :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                ValoresInd
                             </div>
                             <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
                         </header>
