@@ -492,25 +492,22 @@ async function addFunction(f){
                         <span readonly="readonly" class="op" @click="addFunction('-')">-</span>
                         <span readonly="readonly" class="op" @click="addFunction('+')">+</span>
                         <span readonly="readonly" class="op" @click="addFunction('^')">^</span>
-                        <span readonly="readonly" class="op" @click="addFunction('FACTORIAL')">FACTORIAL</span>
-                        <span readonly="readonly" class="op" @click="addFunction('ABS')">ABS</span>
-                        <span readonly="readonly" class="op" @click="addFunction('LN')">LN</span>
-                        <span readonly="readonly" class="op" @click="addFunction('FLOOR')">FLOOR</span>
-                        <span readonly="readonly" class="op" @click="addFunction('CEIL')">CEIL</span>
-                        <span readonly="readonly" class="op" @click="addFunction('EXP')">EXP</span>
-                        <span readonly="readonly" class="op" @click="addFunction('ROUND')">ROUND</span>
-                        <span readonly="readonly" class="op" @click="addFunction('POWER')">POWER</span>
-                        <span readonly="readonly" class="op" @click="addFunction('LOG')">LOG</span>
-                        <span readonly="readonly" class="op" @click="addFunction('NULLIF')">NULLIF</span>
-                        <span readonly="readonly" class="op" @click="addFunction('DIV')">DIV</span>
-                        <span readonly="readonly" class="op" @click="addFunction('MOD')">MOD</span>
+                        <span readonly="readonly" class="op" @click="addFunction('FLOOR()')">FLOOR</span>
+                        <span readonly="readonly" class="op" @click="addFunction('CEIL()')">CEIL</span>
+                        <span readonly="readonly" class="op" @click="addFunction('ROUND()')">ROUND</span>
+                        <span readonly="readonly" class="op" @click="addFunction('ABS()')">ABS</span>
+                        <span readonly="readonly" class="op" @click="addFunction('DIV()')">DIV</span>
+                        <span readonly="readonly" class="op" @click="addFunction('MOD()')">MOD</span>
+                        <span readonly="readonly" class="op" @click="addFunction('LOG()')">LOG</span>
+                        <span readonly="readonly" class="op" @click="addFunction('LN()')">LN</span>
+                        <span readonly="readonly" class="op" @click="addFunction('FACTORIAL()')">FACTORIAL</span>
                     </div>
                 </div>
                 <div v-else-if="Variaveis[indicador_id]?.loading">
                     <span class="spinner">Carregando</span>
                 </div>
 
-                <div class="flex spacebetween center mb2">
+                <div class="flex spacebetween center mt2 mb2">
                     <hr class="mr2 f1"/>
                     <button class="btn big" :disabled="isSubmitting">Salvar</button>
                     <hr class="ml2 f1"/>

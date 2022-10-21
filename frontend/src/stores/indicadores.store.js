@@ -8,12 +8,14 @@ export const useIndicadoresStore = defineStore({
         Indicadores: {},
         tempIndicadores: {},
         singleIndicadores: {},
+        ValoresInd: {}
     }),
     actions: {
         clear (){
             this.Indicadores = {};
             this.tempIndicadores = {};
             this.singleIndicadores = {};
+            this.ValoresInd = {};
         },
         dateToField(d){
             var dd=d?new Date(d):false;
@@ -79,6 +81,16 @@ export const useIndicadoresStore = defineStore({
                 }) : this.Indicadores;
             } catch (error) {
                 this.tempIndicadores = { error };
+            }
+        },
+        async getValores(id) {
+            try {
+                if(!id) throw "Inidicador inválida";
+                this.ValoresInd[id] = { loading: true };
+                let r = await requestS.get(`${baseUrl}/indicador/${id}/serie`);    
+                this.ValoresInd[id] = r;
+            } catch (error) {
+                this.ValoresInd[id] = { error };
             }
         },
     }
