@@ -22,6 +22,8 @@ export class VariavelResumo {
     */
     @ApiProperty({ type: String })
     periodicidade: Periodicidade
+
+    acumulativa: boolean
 }
 
 export class ListSeriesAgrupadas {
