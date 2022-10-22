@@ -751,14 +751,14 @@ export class VariavelService {
 
             // ja este delete é esperado caso tenha valores pra ser removidos
             if (idsToBeRemoved.length)
-                await this.prisma.serieVariavel.deleteMany({
+                await prismaTnx.serieVariavel.deleteMany({
                     where: {
                         'id': { 'in': idsToBeRemoved }
                     }
                 });
 
             if (createList.length)
-                await this.prisma.serieVariavel.createMany({
+                await prismaTnx.serieVariavel.createMany({
                     data: createList
                 });
 
