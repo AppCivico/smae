@@ -653,7 +653,7 @@ export class VariavelService {
         const valids: ValidatedUpsert[] = [];
         console.log({ log: 'validation', valores })
         for (const valor of valores) {
-            if (valor.referencia === 'dummy')
+            if (valor.referencia === 'SS') // server-side
                 continue;
             let referenciaDecoded: SerieJwt | null = null;
             try {
