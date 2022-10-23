@@ -31,6 +31,10 @@ BEGIN
     SELECT count(1) into _referencias_count from indicador_formula_variavel ifv
     WHERE ifv.indicador_id = pIndicador_id AND ifv.referencia = ANY(_referencias);
 
+    RAISE NOTICE '';
+    RAISE NOTICE '';
+    RAISE NOTICE '--> monta_formula(indicador=%', pIndicador_id::text || ', serie='||coalesce(pSerie::text, '(todas series)')||', mês = '|| pPeriodo::text || ', formula=' || _formula ||')';
+
     IF (_referencias_count != array_length(_referencias, 1)) THEN
         RAISE NOTICE 'Formula inválida, há referencias faltando na indicador_formula_variavel, referencias = %', _referencias::text || ', existentes ' || (
             SELECT ARRAY_AGG(referencia) from indicador_formula_variavel ifv
@@ -98,7 +102,7 @@ BEGIN
             ) subq;
 
             IF _valor IS NULL THEN
-                RAISE NOTICE 'Não há valores para a referencia %', r.referencia || ' no periodo ' || pPeriodo;
+                RAISE NOTICE '->> monta_formula retornando NULL pois Não há valores para a referencia %', r.referencia || ' no periodo ' || pPeriodo;
                 RETURN NULL;
             END IF;
 
@@ -123,7 +127,7 @@ BEGIN
                     data_valor DESC
                 LIMIT 1;
             IF NOT FOUND then
-                RAISE NOTICE 'Não há valores para a referencia %', r.referencia || ' no periodo ' || pPeriodo;
+                RAISE NOTICE '->> monta_formula retornando NULL pois Não há valores para a referencia %', r.referencia || ' no periodo ' || pPeriodo;
                 return null;
             end if;
 
@@ -135,6 +139,9 @@ BEGIN
 
     END LOOP;
     --
+
+    RAISE NOTICE '->> monta_formula retornando %', _formula || ' no periodo ' || pPeriodo;
+
     RETURN _formula;
 END
 $$
