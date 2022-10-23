@@ -216,6 +216,7 @@ export class IndicadorService {
                 await prisma.indicadorFormulaVariavel.createMany({
                     data: formula_variaveis.map((fv) => {
                         return {
+                            usar_serie_acumulada: fv.usar_serie_acumulada,
                             indicador_id: indicador.id,
                             janela: fv.janela === 0 ? 1 : fv.janela,
                             variavel_id: fv.variavel_id,
