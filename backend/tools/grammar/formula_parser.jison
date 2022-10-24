@@ -17,7 +17,8 @@
 "("                   return '('
 ")"                   return ')'
 "PI"                  return 'FUNC0'
-(FACTORIAL|ABS|LN|FLOOR|CEIL|EXP)\(  return 'FUNC1'
+"FACTORIAL"           return 'FACTORIAL'
+(ABS|LN|FLOOR|CEIL|EXP)\(  return 'FUNC1'
 (LOG|DIV|MOD|NULLIF|POWER|ROUND)\(   return 'FUNC2'
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
@@ -75,5 +76,8 @@ e
         }
     | 'FUNC1' e ')'
         {$$ = $1 + $2 + ")";}
+    | 'FACTORIAL' e ')'
+        {$$ = $1 + $2 + "::bigint)";}
     ;
+
 
