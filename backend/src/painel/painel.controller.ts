@@ -11,8 +11,9 @@ import { CreatePainelDto } from './dto/create-painel.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
-import { DetailPainelDto } from './dto/detalhe-painel.dto';
+import { DetailPainelVisualizacaoDto } from './dto/detalhe-painel.dto';
 import { UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
+import { Painel } from './entities/painel-entity';
 
 @ApiTags('Painel')
 @Controller('painel')
@@ -35,8 +36,8 @@ export class PainelController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    async findOne(@Param() params: FindOneParams): Promise<DetailPainelDto> {
-        return { 'painel': await this.painelService.getDetail(+params.id) };
+    async findOne(@Param() params: FindOneParams): Promise<Painel> {
+        return await this.painelService.getDetail(+params.id);
     }
 
     @Patch(':id')
@@ -67,8 +68,16 @@ export class PainelController {
     }
 
     @ApiBearerAuth('access-token')
-    @Patch(':id/conteudo/:id')
+    @Get(':id/conteudo/:id/visualizacao')
+    async detailPainelConteudoVisualizacao(@Param() params: FindTwoParams): Promise<DetailPainelVisualizacaoDto> {
+        return await this.painelService.getPainelConteudoVisualizacao(+params.id2);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Patch(':id/conteudo/:id/visualizacao')
     async updateConteudo(@Param() params: FindTwoParams, @Body() updatePainelConteudoDto: UpdatePainelConteudoDto): Promise<RecordWithId> {
         return await this.painelService.updatePainelConteudo(+params.id, +params.id2, updatePainelConteudoDto);
     }
+
+
 }
