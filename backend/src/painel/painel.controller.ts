@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse }
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams } from 'src/common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PainelService } from './painel.service';
 import { ListPainelDto } from './dto/list-painel.dto';
@@ -11,6 +11,8 @@ import { CreatePainelDto } from './dto/create-painel.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
+import { DetailPainelDto } from './dto/detalhe-painel.dto';
+import { UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
 
 @ApiTags('Painel')
 @Controller('painel')
@@ -29,6 +31,12 @@ export class PainelController {
     @Get()
     async findAll(@Query() filters: FilterPainelDto): Promise<ListPainelDto> {
         return { 'linhas': await this.painelService.findAll(filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<DetailPainelDto> {
+        return { 'painel': await this.painelService.getDetail(+params.id) };
     }
 
     @Patch(':id')
@@ -58,4 +66,9 @@ export class PainelController {
         return await this.painelService.createConteudo(+params.id, createConteudoDto, user);
     }
 
+    @ApiBearerAuth('access-token')
+    @Patch(':id/conteudo/:id')
+    async updateConteudo(@Param() params: FindTwoParams, @Body() updatePainelConteudoDto: UpdatePainelConteudoDto): Promise<RecordWithId> {
+        return await this.painelService.updatePainelConteudo(+params.id, +params.id2, updatePainelConteudoDto);
+    }
 }
