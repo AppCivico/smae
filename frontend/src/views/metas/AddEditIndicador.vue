@@ -243,8 +243,7 @@ function setCaret(el,p) {
     
     sel.removeAllRanges();
     range.selectNodeContents(el);
-    if(p){
-        console.log(el.childNodes[p[0]]);
+    if(p && el.childNodes[p[0]]){
         range.setStart(el.childNodes[p[0]], p[1]);
     }
     range.collapse(true);
@@ -262,9 +261,11 @@ function labelPeriodo(p,m){
 }
 function formatFormula(p){
     var regex = /\$_[\d]{0,5}/gm;
+    var inuse = [];
     formulaInput.value.innerHTML = formula.value.replace(regex,(m)=>{ 
         let r = m;
         if(variaveisFormula[m]){
+            inuse.push(m);
             let n = variaveisFormula[m].variavel_id;
             let t = '';
             if(Variaveis.value[indicador_id]?.length){
@@ -276,17 +277,20 @@ function formatFormula(p){
 
             }
 
-            r = `<span class="v" contenteditable="false"
+            r = ` <span class="v" contenteditable="false"
                 data-id="${m}" 
                 data-var="${n}"
                 title="${t}"
-            >${m}</span>&nbsp;`;
+            >${m}</span> `;
         }
         return r;
-    });
+    }).replace(/\s+/g,' ');
     
+    for(var k in variaveisFormula){
+        if(inuse.indexOf(k) == -1) delete variaveisFormula[k];
+    }
+
     if(p){
-        console.log(p);
         let i = Array.from(formulaInput.value.childNodes).findIndex(x=>{return x?.dataset?.id == p; });
         setCaret(formulaInput.value,[i+1,0]);
     }
@@ -523,8 +527,8 @@ async function addFunction(f){
                             <option v-for="v in Variaveis[indicador_id]" :key="v.id" :value="v.id">{{v.codigo}} - {{v.titulo}}</option>
                         </select>
                         <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="1"><span>Mês corrente</span></label>
-                        <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="-1"><span>Média</span></label>
-                        <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="0"><span>Mês anterior</span></label>
+                        <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="0"><span>Média</span></label>
+                        <label class="block mb1"><input type="radio" class="inputcheckbox" v-model="fieldsVariaveis.periodo" value="-1"><span>Mês anterior</span></label>
 
                         <label class="block mt2 mb2"><input type="checkbox" class="inputcheckbox" value="1" v-model="fieldsVariaveis.usar_serie_acumulada"><span>Utilizar valores acumulados</span></label>
                         
