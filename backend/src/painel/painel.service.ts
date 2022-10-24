@@ -287,6 +287,23 @@ export class PainelService {
         return ret
     }
 
+    async getPainelConteudoVisualizacao(id: number) {
+        return await this.prisma.painelConteudo.findFirstOrThrow({
+            where: {id: id},
+            select: {
+                id: true,
+                periodicidade: true,
+                periodo: true,
+                periodo_valor: true,
+                periodo_inicio: true,
+                periodo_fim: true,
+                mostrar_acumulado: true,
+                mostrar_planejado: true,
+                ordem: true,
+            }
+        })
+    }
+
     async updatePainelConteudo(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoDto) {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
