@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
+import { UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { PainelConteudo } from './entities/painel-conteudo-entity';
 
@@ -52,7 +53,6 @@ export class PainelService {
                 mostrar_acumulado_por_padrao: true,
                 mostrar_indicador_por_padrao: true,
 
-                // TODO: adicionar order by pela coluna 'ordem'
                 painel_conteudo: {
                     select: {
                         id: true,
@@ -129,6 +129,94 @@ export class PainelService {
         });
     }
 
+    async getDetail(id: number) {
+        return await this.prisma.painel.findFirstOrThrow({
+            where: {id: id},
+            select: {
+                id: true,
+                nome: true,
+                ativo: true,
+                periodicidade: true,
+                mostrar_planejado_por_padrao: true,
+                mostrar_acumulado_por_padrao: true,
+                mostrar_indicador_por_padrao: true,
+
+                painel_conteudo: {
+                    select: {
+                        id: true,
+                        meta_id: true,
+                        indicador_id: true,
+                        mostrar_planejado: true,
+                        mostrar_acumulado: true,
+                        mostrar_indicador: true,
+                        periodicidade: true,
+                        periodo: true,
+                        periodo_fim: true,
+                        periodo_inicio: true,
+                        periodo_valor: true,
+
+                        detalhes: {
+                            where: {
+                                pai_id: null
+                            },
+                            orderBy: [
+                                {ordem: 'asc'}
+                            ],
+                            select: {
+                                tipo: true,
+                                mostrar_indicador: true,
+                                variavel: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                iniciativa: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                    }
+                                },
+                                filhos: {
+                                    select: {
+                                        tipo: true,
+                                        mostrar_indicador: true,
+
+                                        variavel: {
+                                            select: {
+                                                id: true,
+                                                titulo: true,
+                                            }
+                                        },
+                                        atividade: {
+                                            select: {
+                                                id: true,
+                                                titulo: true
+                                            }
+                                        },
+                                        filhos: {
+                                            select: {
+                                                tipo: true,
+                                                mostrar_indicador: true,
+
+                                                variavel: {
+                                                    select: {
+                                                        id: true,
+                                                        titulo: true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+
     async update(id: number, UpdatePainelDto: UpdatePainelDto, user: PessoaFromJwt) {
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -197,6 +285,27 @@ export class PainelService {
         });
         
         return ret
+    }
+
+    async updatePainelConteudo(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoDto) {
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
+            if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
+
+            const updated_painel_conteudo = await prisma.painelConteudo.update({
+                where: {
+                    id: painel_conteudo_id
+                },
+                data: {
+                    ...updatePainelConteudoDto
+                },
+                select: {id: true}
+            });
+
+            return updated_painel_conteudo;
+        });
+
+        return { id: painel_conteudo_id }
     }
 
 }
