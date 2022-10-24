@@ -104,7 +104,7 @@ function soma(a,j) {
                 <div class="flex g2" v-for="(v,i) in Valores[var_id].linhas" :key="i">
                     <div class="f1">
                         <label class="label">Previsto {{v.periodo}}</label>
-                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="soma(Valores[var_id].linhas,i)"/>
+                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="singleVariaveis.acumulativa&&soma(Valores[var_id].linhas,i)"/>
                     </div>
                     <div class="f1">
                         <label class="label">Acumulado {{v.periodo}}</label>
