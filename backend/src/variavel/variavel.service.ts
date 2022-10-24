@@ -289,7 +289,6 @@ export class VariavelService {
                 ano_base: true,
                 valor_base: true,
                 periodicidade: true,
-                peso: true,
                 orgao: {
                     select: {
                         id: true,

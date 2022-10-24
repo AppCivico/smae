@@ -69,16 +69,6 @@ export class CreateVariavelDto {
     unidade_medida_id: number
 
 
-    /**
-     * usado para calcular as agregações, por exemplo na média ponderada
-    */
-    @IsOptional()
-    @IsPositive({ message: '$property| peso precisa ser numérico e positivo' })
-    @ValidateIf((object, value) => value !== null)
-    @Type(() => Number)
-    peso?: number
-
-
     @IsBoolean({ message: 'acumulativa| Precisa ser um boolean' })
     acumulativa: boolean
 
