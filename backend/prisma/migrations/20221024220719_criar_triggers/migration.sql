@@ -125,7 +125,7 @@ CREATE OR REPLACE FUNCTION f_trg_estapa_esticar_datas_do_pai() RETURNS trigger A
             WHERE e.id = NEW.etapa_pai_id
             AND (
                 select count(1) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id
-                AND ef.termino_real IS NULL  and removido_em is null
+                AND ef.termino_previsto IS NULL  and removido_em is null
             ) = 0
             AND (e.termino_previsto IS NULL OR e.termino_previsto != (
                  select max(termino_previsto) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id and removido_em is null
@@ -135,7 +135,7 @@ CREATE OR REPLACE FUNCTION f_trg_estapa_esticar_datas_do_pai() RETURNS trigger A
             -- sempre recalcula o termino_real de acordo com a situacao atual
             UPDATE etapa e
             SET termino_real = (
-                 select max(termino_previsto) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id  and removido_em is null
+                 select max(termino_real) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id  and removido_em is null
             )
             WHERE e.id = NEW.etapa_pai_id
             AND (
@@ -143,7 +143,7 @@ CREATE OR REPLACE FUNCTION f_trg_estapa_esticar_datas_do_pai() RETURNS trigger A
                 AND ef.termino_real IS NULL  and removido_em is null
             ) = 0
             AND (termino_real is null or termino_real != (
-                 select max(termino_previsto) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id  and removido_em is null
+                 select max(termino_real) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id  and removido_em is null
             ));
 
 
