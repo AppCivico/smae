@@ -48,7 +48,6 @@ export class Variavel {
     valor_base: Decimal
     @ApiProperty({ type: String })
     periodicidade: Periodicidade
-    peso: number | null
     orgao: OrgaoResumo
     regiao: Regiao | null
     indicador_variavel: IndicadorVariavel[]
