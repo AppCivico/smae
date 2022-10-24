@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsOptional, IsPositive } from "class-validator";
+import { IsInt, IsOptional, IsPositive } from "class-validator";
 
 export class FilterIndicadorDto {
     /**
@@ -7,7 +7,7 @@ export class FilterIndicadorDto {
    * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| meta_id' })
+    @IsInt({ message: '$property| meta_id' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -16,7 +16,7 @@ export class FilterIndicadorDto {
    * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| iniciativa_id' })
+    @IsInt({ message: '$property| iniciativa_id' })
     @Type(() => Number)
     iniciativa_id?: number;
 
@@ -25,7 +25,7 @@ export class FilterIndicadorDto {
   * @example "1"
    */
     @IsOptional()
-    @IsPositive({ message: '$property| atividade_id' })
+    @IsInt({ message: '$property| atividade_id' })
     @Type(() => Number)
     atividade_id?: number;
 
@@ -34,7 +34,7 @@ export class FilterIndicadorDto {
     * @example "1"
    */
     @IsOptional()
-    @IsPositive({ message: '$property| id' })
+    @IsInt({ message: '$property| id' })
     @Type(() => Number)
     id?: number;
 }
