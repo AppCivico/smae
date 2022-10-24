@@ -130,7 +130,7 @@ case 13:
 this.$ = $$[$0-2] + $$[$0-1] + ")";
 break;
 case 14:
-this.$ = $$[$0-2] + $$[$0-1] + "::bigint)";
+this.$ = 'FACTORIAL((' + $$[$0-1] + ")::bigint)";
 break;
 }
 },

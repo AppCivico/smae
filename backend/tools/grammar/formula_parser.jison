@@ -32,6 +32,7 @@
 %left '^'
 %left 'FUNC1'
 %left 'FUNC2'
+%left 'FACTORIAL'
 %right '%'
 %left UMINUS
 
@@ -77,7 +78,7 @@ e
     | 'FUNC1' e ')'
         {$$ = $1 + $2 + ")";}
     | 'FACTORIAL' e ')'
-        {$$ = $1 + $2 + "::bigint)";}
+        {$$ = 'FACTORIAL((' + $2 + ")::bigint)";}
     ;
 
 
