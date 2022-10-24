@@ -8,6 +8,8 @@ DECLARE
     _referencias varchar[];
     _referencias_count int;
     r record;
+    _p1 date;
+    _p2 date;
 BEGIN
     --
     SELECT
@@ -33,7 +35,7 @@ BEGIN
 
     RAISE NOTICE '';
     RAISE NOTICE '';
-    RAISE NOTICE '--> monta_formula(indicador=%', pIndicador_id::text || ', serie='||coalesce(pSerie::text, '(todas series)')||', mês = '|| pPeriodo::text || ', formula=' || _formula ||')';
+    RAISE NOTICE '==> monta_formula(indicador=%', pIndicador_id::text || ', serie='||coalesce(pSerie::text, '(todas series)')||', mês = '|| pPeriodo::text || ', formula=' || _formula ||')';
 
     IF (_referencias_count != array_length(_referencias, 1)) THEN
         RAISE NOTICE 'Formula inválida, há referencias faltando na indicador_formula_variavel, referencias = %', _referencias::text || ', existentes ' || (
@@ -51,9 +53,10 @@ BEGIN
                 ifv.janela,
                 ifv.referencia,
                 -- talvez o mais certo seja usar o periodo do indicador e não da variavel, mas estou ainda em duvida
+                -- 2 semanas depois: ainda estou em duvida !
                 periodicidade_intervalo (v.periodicidade) AS periodicidade_intervalo,
-                (extract(epoch FROM periodicidade_intervalo (v.periodicidade)) / 86400)::int
-                    AS periodicidade_dias,
+                (extract(epoch FROM periodicidade_intervalo (v.periodicidade)) / 86400 / 30)::int
+                    AS periodicidade_mes,
                 v.casas_decimais,
                 case when ifv.usar_serie_acumulada then
                     case
@@ -72,12 +75,27 @@ BEGIN
              AND ifv.referencia = ANY(_referencias) -- carrega apenas variaveis se existir necessidade
         ) SELECT
             cte.*,
-            cte.janela as registros
+            (case
+                when cte.janela  < cte.periodicidade_mes then 1
+                when cte.janela  = cte.periodicidade_mes then cte.janela
+                else floor( (cte.janela ) / cte.periodicidade_mes  )
+                END
+            ) as registros
          FROM cte
+
     LOOP
         RAISE NOTICE 'ifv %', ROW_TO_JSON(r);
+        _p1 := null;
+        _p2 := null;
 
         IF r.janela >= 1 THEN
+
+             select
+                pPeriodo
+            into _p2;
+
+            RAISE NOTICE '->> buscando %', r.referencia || ' no periodo ' || pPeriodo
+                    || ' ( data_valor <= ' || _p2 || ' LIMIT ' || r.registros || ')';
 
             SELECT
                 avg(valor_nominal)
@@ -94,23 +112,30 @@ BEGIN
                 WHERE
                     sv.serie = r.serie_escolhida
                     AND sv.variavel_id = r.variavel_id
-                    AND sv.data_valor <= pPeriodo
-                    AND sv.data_valor >= pPeriodo - r.periodicidade_intervalo + '1 month'::interval
+                    AND sv.data_valor <= _p2
                 ORDER BY
                     data_valor DESC
                 LIMIT (r.registros)
             ) subq;
 
             IF _valor IS NULL THEN
-                RAISE NOTICE '->> monta_formula retornando NULL pois Não há valores para a referencia %', r.referencia || ' no periodo ' || pPeriodo;
+                RAISE NOTICE '  <-- monta_formula retornando NULL não foram encontrado os valores';
                 RETURN NULL;
             END IF;
 
-            RAISE NOTICE 'resultado referencia %', r.referencia || '=' || _valor || ' valores referencia '||_valores_debug::text || ' pPeriodo=' || pPeriodo ;
+            RAISE NOTICE ' <-- valor calculado %', _valor || ' valores usados ' || _valores_debug::text;
 
             _formula := replace(_formula, '$' || r.referencia , 'round(' || _valor::text || ', ' || r.casas_decimais || ')');
 
         ELSEIF r.janela < 1 THEN
+
+                select
+                    pPeriodo - ((abs(r.janela)) || ' mon')::interval - (r.periodicidade_intervalo || ' mon')::interval,
+                    pPeriodo - ((abs(r.janela)) || ' mon')::interval
+                    into _p1, _p2;
+
+                RAISE NOTICE '->> buscando %', r.referencia || ' no periodo ' || pPeriodo
+                        || ' ( data_valor > ' || _p1 || ' AND data_valor <= ' || _p2 || ')';
 
                 SELECT
                     valor_nominal,
@@ -121,17 +146,17 @@ BEGIN
                 WHERE
                     sv.serie = r.serie_escolhida
                     AND sv.variavel_id = r.variavel_id
-                    AND sv.data_valor >= pPeriodo - r.periodicidade_intervalo - (abs(r.janela)-1 || ' mon')::interval
-                    AND sv.data_valor < pPeriodo - r.periodicidade_intervalo - (abs(r.janela)-1 || ' mon')::interval + '1 mon'::interval
+                    AND sv.data_valor > _p1
+                    AND sv.data_valor <= _p2
                 ORDER BY
                     data_valor DESC
                 LIMIT 1;
             IF NOT FOUND then
-                RAISE NOTICE '->> monta_formula retornando NULL pois Não há valores para a referencia %', r.referencia || ' no periodo ' || pPeriodo;
+                RAISE NOTICE ' <-- monta_formula retornando NULL não foi encontrado valores';
                 return null;
             end if;
 
-            RAISE NOTICE 'resultado referencia %', r.referencia || '=' || _valor || ' valores referencia '||_valores_debug::text || ' pPeriodo=' || pPeriodo ;
+            RAISE NOTICE 'resultado valor %',  _valor || ' valor utilizado '|| _valores_debug::text;
 
             _formula := regexp_replace(_formula, '\$' || r.referencia || '\y' , 'round(' || _valor::text || '::numeric, ' || r.casas_decimais || ')', 'g');
 
@@ -140,7 +165,7 @@ BEGIN
     END LOOP;
     --
 
-    RAISE NOTICE '->> monta_formula retornando %', _formula || ' no periodo ' || pPeriodo;
+    RAISE NOTICE '<== monta_formula retornando %', _formula || ' no periodo ' || pPeriodo;
 
     RETURN _formula;
 END
