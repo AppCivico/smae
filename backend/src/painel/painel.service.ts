@@ -46,6 +46,7 @@ export class PainelService {
             select: {
                 id: true,
                 nome: true,
+                ativo: true,
                 periodicidade: true,
                 mostrar_planejado_por_padrao: true,
                 mostrar_acumulado_por_padrao: true,

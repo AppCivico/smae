@@ -472,15 +472,14 @@ export class VariavelService {
                 },
             },
             select: {
-                inicio_medicao: true, // -- pegando a data de inicio do indicador "original" -- verificar monta_serie_acumulada.pgsql para mais comentários
-                fim_medicao: true,
                 IndicadorVariavel: {
                     select: {
                         variavel: {
                             select: {
                                 id: true,
                                 casas_decimais: true,
-                                periodicidade: true
+                                periodicidade: true,
+                                acumulativa: true
                             }
                         }
                     }
@@ -548,6 +547,7 @@ export class VariavelService {
                 id: variavelId,
                 casas_decimais: variavel.casas_decimais,
                 periodicidade: variavel.periodicidade,
+                acumulativa: variavel.acumulativa,
             },
             linhas: [],
             ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']
@@ -572,9 +572,9 @@ export class VariavelService {
                 }
 
                 if (existeValor.PrevistoAcumulado) {
-                    seriesExistentes.push(existeValor.PrevistoAcumulado);
+                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.PrevistoAcumulado));
                 } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
+                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado')));
                 }
 
                 if (existeValor.Realizado) {
@@ -584,9 +584,9 @@ export class VariavelService {
                 }
 
                 if (existeValor.RealizadoAcumulado) {
-                    seriesExistentes.push(existeValor.RealizadoAcumulado);
+                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.RealizadoAcumulado));
                 } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
+                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado')));
                 }
             } else {
                 seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
@@ -605,6 +605,13 @@ export class VariavelService {
         }
 
         return result;
+    }
+
+    referencia_boba(varServerSideAcumulativa: boolean, sv: SerieValorNomimal): SerieValorNomimal {
+        if (varServerSideAcumulativa) {
+            sv.referencia = 'SS';
+        }
+        return sv;
     }
 
     buildNonExistingSerieValor(periodo: DateYMD, variavelId: number, serie: Serie): SerieValorNomimal {
@@ -646,11 +653,13 @@ export class VariavelService {
         const valids: ValidatedUpsert[] = [];
         console.log({ log: 'validation', valores })
         for (const valor of valores) {
+            if (valor.referencia === 'SS') // server-side
+                continue;
             let referenciaDecoded: SerieJwt | null = null;
             try {
                 referenciaDecoded = this.jwtService.decode(valor.referencia) as SerieJwt;
             } catch (error) {
-                console.log(error)
+                this.logger.error(error)
             }
             if (!referenciaDecoded)
                 throw new HttpException('Tempo para edição dos valores já expirou. Abra em uma nova aba e faça o preenchimento novamente.', 400);
@@ -660,7 +669,7 @@ export class VariavelService {
                 referencia: referenciaDecoded,
             });
         }
-        console.log({ log: 'validation', valids })
+        this.logger.debug(JSON.stringify({ log: 'validation', valids }))
         return valids;
     }
 
@@ -742,14 +751,14 @@ export class VariavelService {
 
             // ja este delete é esperado caso tenha valores pra ser removidos
             if (idsToBeRemoved.length)
-                await this.prisma.serieVariavel.deleteMany({
+                await prismaTnx.serieVariavel.deleteMany({
                     where: {
                         'id': { 'in': idsToBeRemoved }
                     }
                 });
 
             if (createList.length)
-                await this.prisma.serieVariavel.createMany({
+                await prismaTnx.serieVariavel.createMany({
                     data: createList
                 });
 

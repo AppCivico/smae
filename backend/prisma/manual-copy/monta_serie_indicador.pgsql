@@ -116,7 +116,7 @@ BEGIN
                     pIndicador_id,
                     (serieRecord.serie::text || 'Acumulado')::"Serie",
                     gs.gs as data_serie,
-                    coalesce(sum(si.valor_nominal) OVER (order by gs.gs), vIndicadorBase) as valor_acc
+                    coalesce(sum(si.valor_nominal) OVER (order by gs.gs), case when serieRecord.serie = 'Realizado'::"Serie" then null else vIndicadorBase end) as valor_acc
                 FROM
                     generate_series(
                     (select inicio_medicao from indData),
