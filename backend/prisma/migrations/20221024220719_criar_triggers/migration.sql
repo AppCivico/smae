@@ -2,10 +2,11 @@ CREATE OR REPLACE FUNCTION atualiza_inicio_fim_cronograma (pCronoId int)
     RETURNS varchar
     AS $$
 DECLARE
-    v_inicio_previsto date;
-    v_inicio_real date;
-    v_termino_previsto date;
-    v_termino_real date;
+
+v_inicio_previsto date;
+v_inicio_real date;
+v_termino_previsto date;
+v_termino_real date;
 BEGIN
 
     SELECT
@@ -82,7 +83,6 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
 
 CREATE OR REPLACE FUNCTION f_trg_estapa_esticar_datas_do_pai() RETURNS trigger AS $emp_stamp$
 DECLARE
