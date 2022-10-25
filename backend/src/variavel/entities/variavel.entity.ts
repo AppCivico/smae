@@ -75,6 +75,15 @@ export class SerieValorNomimal {
      * @example "2023-01-01"
      */
     data_valor: DateYMD
+
+    /**
+     * Apenas em indicadores
+     **/
+    ha_conferencia_pendente?: boolean;
+    /**
+     * Apenas em variaveis
+     **/
+    conferida?: boolean;
 };
 
 export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>
@@ -123,6 +132,14 @@ export class ValorSerieExistente {
     valor_nominal: Decimal | number;
     data_valor: Date;
     serie: Serie;
+    /**
+     * Apenas em indicadores
+     **/
+    ha_conferencia_pendente?: boolean;
+    /**
+     * Apenas em variaveis
+     **/
+    conferida?: boolean;
 }
 
 export class Iniciativa {

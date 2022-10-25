@@ -296,6 +296,7 @@ export class IndicadorService {
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toPrecision(),
+                ha_conferencia_pendente: serieValor.ha_conferencia_pendente
             }
         }
 
@@ -324,7 +325,8 @@ export class IndicadorService {
                 id: true,
                 serie: true,
                 data_valor: true,
-                valor_nominal: true
+                valor_nominal: true,
+                ha_conferencia_pendente: true
             },
             orderBy: [
                 { serie: 'asc' },
