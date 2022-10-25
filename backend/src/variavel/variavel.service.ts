@@ -528,6 +528,7 @@ export class VariavelService {
                 id: true,
                 data_valor: true,
                 serie: true,
+                conferida: true,
             }
         });
     }
@@ -549,6 +550,7 @@ export class VariavelService {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toPrecision(),
                 referencia: this.getEditExistingSerieJwt(serieValor.id, variavel_id),
+                conferida: serieValor.conferida
             }
         }
 
