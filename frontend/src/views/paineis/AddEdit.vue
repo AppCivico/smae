@@ -1,5 +1,5 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, onMounted, onUpdated } from 'vue';
     import { Dashboard} from '@/components';
     import { Form, Field } from 'vee-validate';
     import * as Yup from 'yup';
@@ -7,14 +7,16 @@
     import { router } from '@/router';
     import { storeToRefs } from 'pinia';
 
-    import { useAlertStore, usePaineisStore } from '@/stores';
+    import { useEditModalStore, useAlertStore, usePaineisStore } from '@/stores';
+    import { default as SelecionarMetas } from '@/views/paineis/SelecionarMetas.vue';
 
+    const editModalStore = useEditModalStore();
     const alertStore = useAlertStore();
     const route = useRoute();
     const painel_id = route.params.painel_id;
 
     const PaineisStore = usePaineisStore();
-    const { tempPaineis } = storeToRefs(PaineisStore);
+    const { singlePainel } = storeToRefs(PaineisStore);
     PaineisStore.clear();
 
     const virtualCopy = ref({
@@ -29,6 +31,13 @@
         title = 'Editar painel de indicador';
         PaineisStore.getById(painel_id);
     }
+
+    const props = defineProps(['type']);
+    function start(){
+        if(props.type=='editarMetas')editModalStore.modal(SelecionarMetas,props);
+    }
+    onMounted(()=>{start()});
+    onUpdated(()=>{start()});
 
     const schema = Yup.object().shape({
         nome: Yup.string().required('Preencha o nome'),
@@ -49,7 +58,7 @@
             values.mostrar_acumulado_por_padrao = !!values.mostrar_acumulado_por_padrao;
             values.mostrar_indicador_por_padrao = !!values.mostrar_indicador_por_padrao;
 
-            if (painel_id&&tempPaineis.value.painel_id) {
+            if (painel_id&&singlePainel.value.painel_id) {
                 r = await PaineisStore.update(painel_id, values);
                 msg = 'Dados salvos com sucesso!';
             } else {
@@ -86,8 +95,8 @@
             <hr class="ml2 f1"/>
             <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
         </div>
-        <template v-if="!(tempPaineis?.loading || tempPaineis?.error)">
-            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="painel_id?tempPaineis:virtualCopy" v-slot="{ errors, isSubmitting }">
+        <template v-if="!(singlePainel?.loading || singlePainel?.error)">
+            <Form @submit="onSubmit" :validation-schema="schema" :initial-values="painel_id?singlePainel:virtualCopy" v-slot="{ errors, isSubmitting }">
                 <div class="mb1">
                     <label class="block">
                         <Field name="ativo" type="checkbox" value="1" class="inputcheckbox" /><span :class="{ 'error': errors.ativo }">Painel ativo</span>
@@ -128,15 +137,15 @@
                 </div>
             </Form>
         </template>
-        <template v-if="tempPaineis.id">
-            <button @click="checkDelete(tempPaineis.id)" class="btn amarelo big">Remover item</button>
+        <template v-if="singlePainel.id">
+            <button @click="checkDelete(singlePainel.id)" class="btn amarelo big">Remover item</button>
         </template>
-        <template v-if="tempPaineis?.loading">
+        <template v-if="singlePainel?.loading">
             <span class="spinner">Carregando</span>
         </template>
-        <template v-if="tempPaineis?.error||error">
+        <template v-if="singlePainel?.error||error">
             <div class="error p1">
-                <div class="error-msg">{{tempPaineis.error??error}}</div>
+                <div class="error-msg">{{singlePainel.error??error}}</div>
             </div>
         </template>
         

@@ -7,37 +7,38 @@ export const usePaineisStore = defineStore({
     state: () => ({
         Paineis: {},
         tempPaineis: {},
+        singlePainel: {}
     }),
     actions: {
         clear (){
             this.Paineis = {};
             this.tempPaineis = {};
+            this.singlePainel = {};
         },
         async getAll() {
             this.Paineis = { loading: true };
             try {
                 let r = await requestS.get(`${baseUrl}/painel`);    
-                this.Paineis = r.linhas.length ? r.linhas.map(x=>{
-                	x.ativo = x.ativo ? "1":false;
-                	x.mostrar_planejado_por_padrao = x.mostrar_planejado_por_padrao ? "1":false;
-                	x.mostrar_acumulado_por_padrao = x.mostrar_acumulado_por_padrao ? "1":false;
-                	x.mostrar_indicador_por_padrao = x.mostrar_indicador_por_padrao ? "1":false;
-                	return x;
-				}) : r.linhas;
+                this.Paineis = r.linhas;
             } catch (error) {
                 this.Paineis = { error };
             }
         },
         async getById(id) {
-            this.tempPaineis = { loading: true };
+            this.singlePainel = { loading: true };
             try {
-                if(!this.Paineis.length){
-                    await this.getAll();
+                let r = await requestS.get(`${baseUrl}/painel/${id}`);    
+                if(r.id){
+                    r.ativo = r.ativo ? "1":false;
+                    r.mostrar_planejado_por_padrao = r.mostrar_planejado_por_padrao ? "1":false;
+                    r.mostrar_acumulado_por_padrao = r.mostrar_acumulado_por_padrao ? "1":false;
+                    r.mostrar_indicador_por_padrao = r.mostrar_indicador_por_padrao ? "1":false;
+                    this.singlePainel = r;
+                } else {
+                    throw 'Painel não encontrado';
                 }
-                this.tempPaineis = this.Paineis.find((u)=>u.id == id);
-                if(!this.tempPaineis) throw 'Painel não encontrado';
             } catch (error) {
-                this.tempPaineis = { error };
+                this.singlePainel = { error };
             }
         },
         async insert(params) {
@@ -50,6 +51,10 @@ export const usePaineisStore = defineStore({
         },
         async delete(id) {
             if(await requestS.delete(`${baseUrl}/painel/${id}`)) return true;
+            return false;
+        },
+        async insertMetas(id,params) {
+            if(await requestS.post(`${baseUrl}/painel/${id}/conteudo`, params)) return true;
             return false;
         },
         async filterPaineis(f){
