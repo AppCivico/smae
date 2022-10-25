@@ -1,6 +1,45 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, ValidateIf } from 'class-validator';
-import { CreateIndicadorDto, FormulaVariaveis } from './create-indicador.dto';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, IsPositive, IsString, Matches, ValidateIf, ValidateNested } from 'class-validator';
+import { CreateIndicadorDto } from './create-indicador.dto';
+
+export class FormulaVariaveis {
+
+    /**
+     * referência da variavel, único por indicador - Regexp: ^_[0-9]{1,8}$
+     * @example "_1159"
+    */
+    @IsString({ message: '$property| precisa ser uma string' })
+    @Matches(/^_[0-9]{1,8}$/, { message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 números' })
+    referencia: string
+
+    /**
+    * janela
+    *
+    * = 1 para periodo corrente,
+    *
+    * < 1 para buscar o mês retroativo
+    *
+    * > 1 para fazer média dos valores neste periodo de meses
+    *
+    * 0 será convertido para 1 automaticamente
+    */
+    @IsInt({ message: '$property| descrição: Precisa ser um número' })
+    @Transform((a: any) => +a.value)
+    janela: number
+
+    /**
+     * ID da variavel
+    */
+    @IsPositive({ message: '$property| precisa ser um número' })
+    variavel_id: number
+
+    /**
+     * Usar serie acumulada
+    */
+    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    usar_serie_acumulada: boolean
+}
 
 export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto), [
     'meta_id',
@@ -54,6 +93,8 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     * Variáveis para usar na expressão
     */
     @IsOptional()
+    @ValidateNested({each: true})
+    @Type(() => FormulaVariaveis)
     formula_variaveis?: FormulaVariaveis[]
 
     /**

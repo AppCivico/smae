@@ -1,40 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Polaridade } from "@prisma/client";
-import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { Type } from "class-transformer";
+import { IsBoolean, IsEnum, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
-
-export class FormulaVariaveis {
-
-    /**
-     * referência da variavel, único por indicador - Regexp: ^_[0-9]{1,8}$
-     * @example "_1159"
-    */
-    @IsString({ message: '$property| precisa ser uma string' })
-    @Matches(/^_[0-9]{1,8}$/, { message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 números' })
-    referencia: string
-
-    /**
-    * janela - 1 para periodo corrente, > 1 para buscar o mês retroativo, < 0 para fazer média dos valores
-    * 0 será convertido para 1 automaticamente
-    */
-    @IsNumber(undefined, { message: '$property| descrição: Precisa ser um número' })
-    @Transform((a: any) => +a.value)
-    janela: number
-
-    /**
-     * ID da variavel
-    */
-    @IsPositive({ message: '$property| precisa ser um número' })
-    variavel_id: number
-
-    /**
-     * Usar serie acumulada
-    */
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
-    usar_serie_acumulada: boolean
-}
 
 export class CreateIndicadorDto {
 
