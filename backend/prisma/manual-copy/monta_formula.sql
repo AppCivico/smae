@@ -8,6 +8,7 @@ DECLARE
     _referencias varchar[];
     _referencias_count int;
     _ind_casas_decimais int;
+    _count_conferencia int;
     r record;
     _p1 date;
     _p2 date;
@@ -104,8 +105,12 @@ BEGIN
                 avg(valor_nominal)
                     AS valor,
                 array_agg(json_build_object('sv_data', data_valor, 'sv_valor', valor_nominal))
-                    AS _valores_debug
-                INTO _valor, _valores_debug
+                    AS _valores_debug,
+                    count(1) filter (where conferida = false)
+                INTO
+                _valor,
+                _valores_debug,
+                _count_faltando_conferir
             FROM (
                 SELECT
                     valor_nominal,
@@ -126,6 +131,8 @@ BEGIN
                 RETURN NULL;
             END IF;
 
+            _count_conferencia := _count_conferencia + _count_faltando_conferir;
+
             RAISE NOTICE ' <-- valor calculado %', _valor || ' valores usados ' || _valores_debug::text;
 
             _formula := replace(_formula, '$' || r.referencia , 'round(' || _valor::text || ', ' || r.casas_decimais || ')');
@@ -142,8 +149,9 @@ BEGIN
 
                 SELECT
                     valor_nominal,
-                    ARRAY[json_build_object('sv_data', data_valor, 'sv_valor', valor_nominal)]
-                    INTO _valor, _valores_debug
+                    ARRAY[json_build_object('sv_data', data_valor, 'sv_valor', valor_nominal)],
+                    case when conferida = false then 1 else 0 end
+                    INTO _valor, _valores_debug, _count_faltando_conferir
                 FROM
                     serie_variavel sv
                 WHERE
@@ -161,6 +169,8 @@ BEGIN
 
             RAISE NOTICE 'resultado valor %',  _valor || ' valor utilizado '|| _valores_debug::text;
 
+            _count_conferencia := _count_conferencia + _count_faltando_conferir;
+
             _formula := regexp_replace(_formula, '\$' || r.referencia || '\y' , 'round(' || _valor::text || '::numeric, ' || r.casas_decimais || ')', 'g');
 
         END IF;
@@ -170,11 +180,13 @@ BEGIN
 
     RAISE NOTICE '<== monta_formula retornando %', _formula || ' no periodo ' || pPeriodo;
 
-    RETURN
-        CASE WHEN _ind_casas_decimais IS NULL THEN
+    RETURN json_build_object(
+        'formula', CASE WHEN _ind_casas_decimais IS NULL THEN
             _formula
         ELSE 'round(' || _formula || ', ' || _ind_casas_decimais || ')'
-        END;
+        END,
+        'ha_conferencia_pendente', _count_conferencia > 0
+        );
 END
 $$
 LANGUAGE plpgsql;
