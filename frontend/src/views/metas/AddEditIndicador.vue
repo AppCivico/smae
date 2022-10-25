@@ -502,7 +502,6 @@ async function addFunction(f){
                         <span readonly="readonly" class="op" @click="addFunction('DIV()')">DIV</span>
                         <span readonly="readonly" class="op" @click="addFunction('MOD()')">MOD</span>
                         <span readonly="readonly" class="op" @click="addFunction('LOG()')">LOG</span>
-                        <span readonly="readonly" class="op" @click="addFunction('LN()')">LN</span>
                         <span readonly="readonly" class="op" @click="addFunction('FACTORIAL()')">FACTORIAL</span>
                     </div>
                 </div>
@@ -537,7 +536,7 @@ async function addFunction(f){
                             <input type="number" name="meses" v-model="fieldsVariaveis.meses" min="1" required class="inputtext light mb1" />
                         </template>
 
-                        <p class="t300 tc500">Para média, deixar o campo acima em branco considera todo o período. <br>Para uma média móvel, insira o numero de meses considerados.<br>Para ”mes anterior”, indique quantos meses atrás em relação ao mês corrente está o valor da variável.</p>
+                        <p class="t300 tc500">Para uma média móvel, insira o numero de meses considerados.<br>Para ”mes anterior”, indique quantos meses atrás em relação ao mês corrente está o valor da variável.</p>
 
                         <div class="tc">
                             <a class="btn outline bgnone tcprimary" @click="cancelVar()">Cancelar</a>

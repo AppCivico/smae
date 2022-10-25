@@ -113,6 +113,14 @@
 	}
 
 /* Components */
+	.accordeon{
+		cursor: pointer;
+		.arrow{display: inline-block; vertical-align: middle; transform-origin: center; .transition; margin-right: .5em;}
+		&:not(.active){
+			.content{display: none !important;}
+			.arrow{transform: rotate(-90deg);}
+		}
+	}
 	.addlink{
 		display: inline-block; cursor: pointer;
 		.t12; .w900; .tc600; .uc; letter-spacing: .05em;
@@ -333,35 +341,17 @@
 	.etapa-edit{
 		padding: 0;
 
-			.list{
-				.farol{
-					text-align: center;
-					position: initial;
-					width: 1.75rem;
-					height: 1.75rem;
-					line-height: 1.75rem;
-					margin-right: 0.5rem;
+		.list{
+			.farol{
+				text-align: center;
+				position: initial;
+				width: 1.75rem;
+				height: 1.75rem;
+				line-height: 1.75rem;
+				margin-right: 0.5rem;
 
-				}
 			}
-	
-			.tzaccordeon{
-				cursor: pointer;
-				>div:first-child{vertical-align: middle;	margin-bottom: 1rem;
-					.title{
-						.t16;.w700;
-						.status{display: inline-flex;justify-content: center;left: 0rem; .mr1;width: 2.5rem; top: 0rem; width: 2.5rem; .br(200px); text-align: center; line-height: 2.5rem; .t14; .w700; color: white; .bgc300;}
-					}
-				}
-				.flex{align-items: center;}
-	
-				.arrow{display: inline-block; vertical-align: middle; transform-origin: center; .transition; margin-right: .5em;}
-				&:not(.active){
-					.content,+tbody{display: none !important;}
-					.arrow{transform: rotate(-90deg);}
-				}
-			}
-
+		}
 	}
 	.farol{
 		display: inline-block; width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; .br(500px); background: @c100 center no-repeat; margin-right: 1rem;
