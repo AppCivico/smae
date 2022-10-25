@@ -112,8 +112,9 @@ model Pessoa {
     AtividadesQueAtualizei Atividade[]            @relation("Atualizador")
     AtividadesQueSouResp   AtividadeResponsavel[] @relation("AtividadePessoaResp")
 
-    VariavelResponsavel VariavelResponsavel[]
-    SerieVariavel       SerieVariavel[]
+    VariavelResponsavel    VariavelResponsavel[]
+    AtualizouSerieVariavel SerieVariavel[]       @relation("Atualizador")
+    ConferiuSerieVariavel  SerieVariavel[]       @relation("Conferidor")
 
     CronogramaOrgao         CronogramaOrgao[]
     CronogramasQueCriei     Cronograma[]      @relation("Criador")
@@ -713,6 +714,7 @@ model Indicador {
     removido_em           DateTime?     @db.Timestamptz(6)
     contexto              String?
     complemento           String?
+    casas_decimais        Int?          @db.SmallInt
 
     atualizador             Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador                 Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
@@ -785,13 +787,19 @@ model Variavel {
     //a regiao por agora, o usuario precisa criar cada uma das variaveis manualmente
     regiao            Regiao?       @relation(fields: [regiao_id], references: [id])
     titulo            String
+    // qual é o valor que o valor base se refere
+    ano_base          Int?
     valor_base        Decimal       @db.Decimal(65, 30) // onde o grafico começa
     periodicidade     Periodicidade
     unidade_medida_id Int
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
-    ano_base          Int?
 
     codigo String
+
+    // ficam null quando a Periodicidade é a mesma do indicador
+    // quando for diferente, é necessário preencher para saber qual é o mês de base
+    inicio_medicao DateTime? @db.Date()
+    fim_medicao    DateTime? @db.Date()
 
     peso                       Int?
     casas_decimais             Int                        @default(0) @db.SmallInt
@@ -842,6 +850,7 @@ model SerieIndicador {
 
     data_valor    DateTime @db.Date()
     valor_nominal Float    @db.DoublePrecision
+    ha_conferencia_pendente Boolean @default(false)
 
     @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
     @@map("serie_indicador")
@@ -859,10 +868,15 @@ model SerieVariavel {
 
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
-    atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
+    atualizador    Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
 
-    ciclo_fisico_id             Int?
-    aguardando_aprovacao_cp     Boolean?
+    conferida       Boolean   @default(false)
+    conferida_por   Int?
+    conferida_em    DateTime?
+
+    conferidor      Pessoa?   @relation("Conferidor", fields: [conferida_por], references: [id])
+    ciclo_fisico_id Int?
+
     ha_pedido_de_complementacao Boolean?
 
     @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
@@ -1165,13 +1179,13 @@ model PainelConteudo {
     periodo_inicio DateTime?     @db.Date
     periodo_fim    DateTime?     @db.Date
 
-    mostrar_planejado     Boolean
-    mostrar_acumulado     Boolean
-    mostrar_indicador     Boolean
-    ordem                 Int?
-    detalhes              PainelConteudoDetalhe[]
-    indicador             Indicador?              @relation(fields: [indicador_id], references: [id])
-    indicador_id          Int?
+    mostrar_planejado Boolean
+    mostrar_acumulado Boolean
+    mostrar_indicador Boolean
+    ordem             Int?
+    detalhes          PainelConteudoDetalhe[]
+    indicador         Indicador?              @relation(fields: [indicador_id], references: [id])
+    indicador_id      Int?
 
     @@map("painel_conteudo")
 }
@@ -1192,9 +1206,9 @@ model PainelConteudoDetalhe {
     atividade_id       Int?
     atividade          Atividade?             @relation(fields: [atividade_id], references: [id])
     painel_conteudo_id Int
-    painel_conteudo    PainelConteudo         @relation(fields: [painel_conteudo_id], references: [id])
+    painel_conteudo    PainelConteudo         @relation(fields: [painel_conteudo_id], references: [id], onDelete: Cascade)
     pai_id             Int?
-    pai                PainelConteudoDetalhe? @relation("fk", fields: [pai_id], references: [id])
+    pai                PainelConteudoDetalhe? @relation("fk", fields: [pai_id], references: [id], onDelete: Cascade)
 
     mostrar_indicador Boolean
 

@@ -183,3 +183,14 @@ CREATE TRIGGER trg_estapa_esticar_datas_do_pai_update AFTER  UPDATE ON etapa
         (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
     )
     EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
+
+CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$
+BEGIN
+    PERFORM  atualiza_inicio_fim_cronograma(NEW.cronograma_id);
+    RETURN NEW;
+END;
+$emp_stamp$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
+    FOR EACH ROW
+    EXECUTE FUNCTION f_trg_crono_estapa_resync();
