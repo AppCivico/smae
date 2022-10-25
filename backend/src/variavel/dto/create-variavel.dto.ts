@@ -1,7 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsNumber, IsNumberString, IsOptional, IsPositive, IsString, Max, Min, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsNumberString, IsOptional, IsPositive, IsString, Max, Min, ValidateIf } from "class-validator";
+import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateVariavelDto {
 
@@ -48,7 +49,7 @@ export class CreateVariavelDto {
     @IsNumberString({ maxDecimalPlaces: 30 }, { message: "Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String" })
     valor_base: number
 
-    @IsNumber(undefined, { message: "$property| $property inválido" })
+    @IsInt({ message: "$property| $property inválido" })
     @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
     @Max(30, { message: '$property| casas_decimais tem valor máximo de 30' })
     @Transform((a: any) => a.value === '' ? undefined : +a.value)
@@ -73,6 +74,7 @@ export class CreateVariavelDto {
     acumulativa: boolean
 
     @IsOptional()
+    @IsInt()
     @IsPositive({ message: '$property| ano_base precisa ser numérico' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
@@ -80,4 +82,24 @@ export class CreateVariavelDto {
 
     @IsString()
     codigo: string
+
+
+    /**
+    * inicio_medicao [obrigatório apenas caso a periodicidade for diferente do indicador, se for igual, será transformado em null]
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    inicio_medicao: Date | null
+
+    /**
+     * fim_medicao [obrigatório apenas caso a periodicidade for diferente do indicador, se for igual, será transformado em null]
+     * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    fim_medicao: Date | null
+
 }

@@ -12,7 +12,7 @@ import { UpdatePainelDto } from './dto/update-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { DetailPainelVisualizacaoDto } from './dto/detalhe-painel.dto';
-import { UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
+import { PainelConteudoUpsertRet, UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
 import { Painel } from './entities/painel-entity';
 
 @ApiTags('Painel')
@@ -59,11 +59,11 @@ export class PainelController {
         return '';
     }
 
-    @Post(':id/conteudo')
+    @Patch(':id/conteudo')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPainel.inserir')
-    async createConteudo(@Param() params: FindOneParams, @Body() createConteudoDto: CreateParamsPainelConteudoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId[]> {
+    async createConteudo(@Param() params: FindOneParams, @Body() createConteudoDto: CreateParamsPainelConteudoDto, @CurrentUser() user: PessoaFromJwt): Promise<PainelConteudoUpsertRet> {
         return await this.painelService.createConteudo(+params.id, createConteudoDto, user);
     }
 
