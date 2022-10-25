@@ -155,6 +155,13 @@ export class PainelService {
                         periodo_inicio: true,
                         periodo_valor: true,
 
+                        meta: {
+                            select: {
+                                codigo: true,
+                                titulo: true,
+                            }
+                        },
+
                         detalhes: {
                             where: {
                                 pai_id: null
@@ -165,6 +172,7 @@ export class PainelService {
                             select: {
                                 tipo: true,
                                 mostrar_indicador: true,
+                                
                                 variavel: {
                                     select: {
                                         id: true,
@@ -259,13 +267,24 @@ export class PainelService {
                     mostrar_indicador_por_padrao: true,
                     mostrar_planejado_por_padrao: true,
 
-                    periodicidade: true
+                    periodicidade: true,
+
+                    painel_conteudo: {
+                        select: {
+                            id: true,
+                            meta_id: true
+                        }
+                    }
                 }
             });
 
             const conteudos = [];
-
             for (const meta of createConteudoDto.metas) {
+                const conteudo_already_exists = painel.painel_conteudo.filter(r => {
+                    return r.meta_id === meta
+                });
+                if (conteudo_already_exists.length > 0) continue;
+
                 conteudos.push(
                     prisma.painelConteudo.create({
                         data: {
@@ -280,7 +299,6 @@ export class PainelService {
                     })
                 )
             }
-
             const conteudo_ret = await Promise.all(conteudos);
 
             for (const painel_conteudo of conteudo_ret) {
