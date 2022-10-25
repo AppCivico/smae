@@ -9,10 +9,12 @@ DECLARE
     _referencias_count int;
     _ind_casas_decimais int;
     _count_conferencia int;
+    _count_faltando_conferir int;
     r record;
     _p1 date;
     _p2 date;
 BEGIN
+    _count_conferencia := 0;
     --
     SELECT
         formula_compilada,
@@ -114,7 +116,8 @@ BEGIN
             FROM (
                 SELECT
                     valor_nominal,
-                    sv.data_valor
+                    sv.data_valor,
+                    sv.conferida
                 FROM
                     serie_variavel sv
                 WHERE
