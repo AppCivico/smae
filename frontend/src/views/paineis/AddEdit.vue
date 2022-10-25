@@ -156,7 +156,7 @@
         </div>
         <table class="tablemain">
             <tbody>
-                <tr v-for="m in singlePainel.painel_conteudo" :key="m.meta_id"><td><span class="w700">Meta {{m.meta_id}}</span></td></tr>
+                <tr v-for="m in singlePainel.painel_conteudo" :key="m.meta_id"><td><span class="w700">Meta {{m?.meta?.codigo}} {{m?.meta?.titulo}}</span></td></tr>
                 <!-- <tr class="tzaccordeon" @click="toggleAccordeon">
                     <td>
                         <div class="flex">
