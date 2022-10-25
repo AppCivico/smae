@@ -183,3 +183,40 @@ CREATE TRIGGER trg_estapa_esticar_datas_do_pai_update AFTER  UPDATE ON etapa
         (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
     )
     EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
+
+CREATE OR REPLACE FUNCTION busca_periodos_variavel (pVariavelId int)
+    RETURNS TABLE (
+        periodicidade interval,
+        min date,
+        max date
+    )
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        min(periodicidade_intervalo (v.periodicidade)),
+        coalesce(v.inicio_medicao, min(i.inicio_medicao)),
+        coalesce(v.fim_medicao, max(i.fim_medicao))
+    FROM
+        variavel v
+        JOIN indicador_variavel iv ON IV.variavel_id = v.id
+        JOIN indicador i ON Iv.indicador_id = i.id
+    WHERE
+        v.id = pVariavelId
+    GROUP BY
+        (v.fim_medicao, v.inicio_medicao);
+END;
+$$
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$
+BEGIN
+    PERFORM  atualiza_inicio_fim_cronograma(NEW.cronograma_id);
+    RETURN NEW;
+END;
+$emp_stamp$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
+    FOR EACH ROW
+    EXECUTE FUNCTION f_trg_crono_estapa_resync();
