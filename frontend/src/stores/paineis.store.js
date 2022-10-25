@@ -53,8 +53,8 @@ export const usePaineisStore = defineStore({
             if(await requestS.delete(`${baseUrl}/painel/${id}`)) return true;
             return false;
         },
-        async insertMetas(id,params) {
-            if(await requestS.post(`${baseUrl}/painel/${id}/conteudo`, params)) return true;
+        async selectMetas(id,params) {
+            if(await requestS.patch(`${baseUrl}/painel/${id}/conteudo`, params)) return true;
             return false;
         },
         async filterPaineis(f){

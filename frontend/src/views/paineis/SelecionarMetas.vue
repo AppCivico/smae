@@ -79,13 +79,14 @@
         		metas: Object.keys(unref(selMetas.value)).map(x=>Number(x)).filter(x=>!!x)
         	};
 
-            r = await PaineisStore.insertMetas(painel_id, values);
+            r = await PaineisStore.selectMetas(painel_id, values);
             msg = 'Dados salvos com sucesso!';
 	        
 	        if(r == true){
 	            PaineisStore.clear();
 	            PaineisStore.getById(painel_id);
 	            await router.push(`/paineis/${painel_id}`);
+	        	editModalStore.clear(); 
 	            alertStore.success(msg);
 	        }else{
 	        	throw r;
