@@ -3,11 +3,13 @@
 	import { useRoute } from 'vue-router';
 	import { router } from '@/router';
 	import { storeToRefs } from 'pinia';
-	import { useAlertStore, useMetasStore, usePaineisStore } from '@/stores';
+	import { useEditModalStore, useAlertStore, useMetasStore, usePaineisStore } from '@/stores';
 
 	const route = useRoute();
 	const painel_id = route.params.painel_id;
 	const alertStore = useAlertStore();
+	const editModalStore = useEditModalStore();
+
 
 	let selMetas = ref({});
 	let selAll = ref(false);
@@ -17,7 +19,7 @@
 	(async()=>{
 		if(singlePainel.id != painel_id) await PaineisStore.getById(painel_id);
 		singlePainel?.value?.painel_conteudo.forEach(x=>{
-			selMetas.value[x] = true;
+			selMetas.value[x.meta_id] = true;
 		})
 	})()
 	
@@ -74,15 +76,16 @@
 	        var msg;
 	        var r;
         	var values = {
-        		metas: Object.keys(unref(selMetas.value))
+        		metas: Object.keys(unref(selMetas.value)).map(x=>Number(x)).filter(x=>!!x)
         	};
 
             r = await PaineisStore.insertMetas(painel_id, values);
             msg = 'Dados salvos com sucesso!';
 	        
 	        if(r == true){
-	            MetasStore.clear();
-	            await router.push('/metas');
+	            PaineisStore.clear();
+	            PaineisStore.getById(painel_id);
+	            await router.push(`/paineis/${painel_id}`);
 	            alertStore.success(msg);
 	        }else{
 	        	throw r;
