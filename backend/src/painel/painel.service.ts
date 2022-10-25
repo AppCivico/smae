@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
-import { UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
+import { PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { PainelConteudo } from './entities/painel-conteudo-entity';
 
@@ -172,7 +172,7 @@ export class PainelService {
                             select: {
                                 tipo: true,
                                 mostrar_indicador: true,
-                                
+
                                 variavel: {
                                     select: {
                                         id: true,
@@ -259,7 +259,7 @@ export class PainelService {
 
     
     async createConteudo(painel_id: number, createConteudoDto: CreateParamsPainelConteudoDto, user: PessoaFromJwt) {
-        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId[]>=> {
+        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoUpsertRet>=> {
             const painel = await this.prisma.painel.findFirstOrThrow({
                 where: {id: painel_id},
                 select: {
@@ -299,61 +299,16 @@ export class PainelService {
                     })
                 )
             }
-            const conteudo_ret = await Promise.all(conteudos);
+            const created = await Promise.all(conteudos);
 
-            for (const painel_conteudo of conteudo_ret) {
+            await this.populatePainelConteudoDetalhe(created, prisma);
+            
+            const deleted = await this.checkDeletedPainelConteudo(createConteudoDto.metas, painel.painel_conteudo, prisma);
 
-                const meta_indicador = await prisma.indicador.findMany({
-                    where: {
-                        meta_id: painel_conteudo.meta_id
-                    },
-                    select: {id: true}
-                })
-
-                for (const row of meta_indicador) {
-                    const parent = await prisma.painelConteudoDetalhe.create({
-                        data: {
-                            painel_conteudo_id: painel_conteudo.id,
-                            mostrar_indicador: false,
-                            tipo: PainelConteudoTipoDetalhe.Variavel
-                        },
-                        select: { id: true }
-                    });
-
-                    const indicador_variaveis = await prisma.indicadorVariavel.findMany({
-                        where: {
-                            indicador_id: row.id,
-                            desativado: false
-                        },
-                        select: { variavel_id: true }
-                    });
-
-                    for (const row of indicador_variaveis) {
-                        await prisma.painelConteudoDetalhe.create({
-                            data: {
-                                painel_conteudo_id: painel_conteudo.id,
-                                variavel_id: row.variavel_id,
-                                mostrar_indicador: false,
-                                tipo: PainelConteudoTipoDetalhe.Variavel,
-                                pai_id: parent.id
-                            }
-                        })
-                    }
-                }
-
-                // const meta_iniciativas = await prisma.indicadorVariavel.findMany({
-                //     where: {
-                //         indicador: {
-                //             iniciativa: {
-                //                 meta_id: painel_conteudo.meta_id
-                //             }
-                //         },
-
-                //     }
-                // })
-            }
-
-            return conteudo_ret;
+            return {
+                created: created,
+                deleted: deleted
+            };
         });
         
         return ret
@@ -395,6 +350,87 @@ export class PainelService {
         });
 
         return { id: painel_conteudo_id }
+    }
+
+    async populatePainelConteudoDetalhe(conteudos: any[], prisma: Prisma.TransactionClient) {
+        for (const painel_conteudo of conteudos) {
+
+            const meta_indicador = await prisma.indicador.findMany({
+                where: {
+                    meta_id: painel_conteudo.meta_id
+                },
+                select: {id: true}
+            })
+
+            for (const row of meta_indicador) {
+                const parent = await prisma.painelConteudoDetalhe.create({
+                    data: {
+                        painel_conteudo_id: painel_conteudo.id,
+                        mostrar_indicador: false,
+                        tipo: PainelConteudoTipoDetalhe.Variavel
+                    },
+                    select: { id: true }
+                });
+
+                const indicador_variaveis = await prisma.indicadorVariavel.findMany({
+                    where: {
+                        indicador_id: row.id,
+                        desativado: false
+                    },
+                    select: { variavel_id: true }
+                });
+
+                for (const row of indicador_variaveis) {
+                    await prisma.painelConteudoDetalhe.create({
+                        data: {
+                            painel_conteudo_id: painel_conteudo.id,
+                            variavel_id: row.variavel_id,
+                            mostrar_indicador: false,
+                            tipo: PainelConteudoTipoDetalhe.Variavel,
+                            pai_id: parent.id
+                        }
+                    })
+                }
+            }
+
+            // const meta_iniciativas = await prisma.indicadorVariavel.findMany({
+            //     where: {
+            //         indicador: {
+            //             iniciativa: {
+            //                 meta_id: painel_conteudo.meta_id
+            //             }
+            //         },
+
+            //     }
+            // })
+        }
+    }
+
+    async checkDeletedPainelConteudo (metas: number[], conteudos: PainelConteudoIdAndMeta[], prisma: Prisma.TransactionClient): Promise<PainelConteudoIdAndMeta[]> {
+        const deleted: PainelConteudoIdAndMeta[] = [];
+        for (const existent_conteudo of conteudos) {
+
+            const conteudo_kept = metas.filter(v => {
+                return v === existent_conteudo.meta_id
+            });
+
+            if (conteudo_kept.length === 0) {
+                
+                const deleted_row = await prisma.painelConteudo.delete({
+                    where: {
+                        id: existent_conteudo.id
+                    },
+                    select: {
+                        id: true,
+                        meta_id: true
+                    }
+                });
+
+                deleted.push(deleted_row)
+            }
+        }
+
+        return deleted;
     }
 
 }
