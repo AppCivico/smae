@@ -1192,9 +1192,9 @@ model PainelConteudoDetalhe {
     atividade_id       Int?
     atividade          Atividade?             @relation(fields: [atividade_id], references: [id])
     painel_conteudo_id Int
-    painel_conteudo    PainelConteudo         @relation(fields: [painel_conteudo_id], references: [id])
+    painel_conteudo    PainelConteudo         @relation(fields: [painel_conteudo_id], references: [id], onDelete: Cascade)
     pai_id             Int?
-    pai                PainelConteudoDetalhe? @relation("fk", fields: [pai_id], references: [id])
+    pai                PainelConteudoDetalhe? @relation("fk", fields: [pai_id], references: [id], onDelete: Cascade)
 
     mostrar_indicador Boolean
 
