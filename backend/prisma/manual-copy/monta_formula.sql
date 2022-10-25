@@ -7,13 +7,16 @@ DECLARE
     _valor numeric(95, 60);
     _referencias varchar[];
     _referencias_count int;
+    _ind_casas_decimais int;
     r record;
     _p1 date;
     _p2 date;
 BEGIN
     --
     SELECT
-        formula_compilada INTO _formula
+        formula_compilada,
+        casas_decimais
+        INTO _formula, _ind_casas_decimais
     FROM
         indicador i
     WHERE
@@ -167,7 +170,11 @@ BEGIN
 
     RAISE NOTICE '<== monta_formula retornando %', _formula || ' no periodo ' || pPeriodo;
 
-    RETURN _formula;
+    RETURN
+        CASE WHEN _ind_casas_decimais IS NULL THEN
+            _formula
+        ELSE 'round(' || _formula || ', ' || _ind_casas_decimais || ')'
+        END;
 END
 $$
 LANGUAGE plpgsql;
