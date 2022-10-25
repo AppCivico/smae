@@ -12,7 +12,8 @@ import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from 'sr
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
-const JWT_AUD = 'VS';
+const InicioFimErrMsg = 'Inicio/Fim da medição da variável não pode ser nulo quando a periodicidade da variável é diferente do indicador';
+type InicioFimCol = 'inicio_medicao' | 'fim_medicao';
 
 @Injectable()
 export class VariavelService {
@@ -54,9 +55,21 @@ export class VariavelService {
                 iniciativa_id: true,
                 atividade_id: true,
                 meta_id: true,
+                periodicidade: true,
             }
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
+
+        if (createVariavelDto.periodicidade === indicador.periodicidade) {
+            createVariavelDto.fim_medicao = null;
+            createVariavelDto.inicio_medicao = null;
+        } else {
+            ['inicio_medicao', 'fim_medicao'].forEach((e: 'inicio_medicao' | 'fim_medicao') => {
+                if (!createVariavelDto[e]) {
+                    throw new HttpException(`${e}| ${InicioFimErrMsg}`, 400);
+                }
+            });
+        }
 
         const created = await this.prisma.$transaction(async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
 
@@ -411,7 +424,7 @@ export class VariavelService {
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
-            select: { indicador_id: true, variavel: { select: { valor_base: true } } }
+            select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true } } }
         });
         if (!selfIdicadorVariavel) throw new HttpException('Variavel não encontrada', 400);
 
@@ -424,10 +437,21 @@ export class VariavelService {
                 iniciativa_id: true,
                 atividade_id: true,
                 meta_id: true,
+                periodicidade: true,
             }
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
 
+        if (selfIdicadorVariavel.variavel.periodicidade === indicador.periodicidade) {
+            updateVariavelDto.fim_medicao = null;
+            updateVariavelDto.inicio_medicao = null;
+        } else {
+            ['inicio_medicao', 'fim_medicao'].forEach((e: 'inicio_medicao' | 'fim_medicao') => {
+                if (updateVariavelDto[e] === null) {
+                    throw new HttpException(`${e}| ${InicioFimErrMsg}`, 400);
+                }
+            });
+        }
 
         await this.prisma.$transaction(async (prismaTnx: Prisma.TransactionClient) => {
             let responsaveis = updateVariavelDto.responsaveis!;
