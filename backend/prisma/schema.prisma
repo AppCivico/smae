@@ -713,6 +713,7 @@ model Indicador {
     removido_em           DateTime?     @db.Timestamptz(6)
     contexto              String?
     complemento           String?
+    casas_decimais        Int?          @db.SmallInt
 
     atualizador             Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador                 Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
@@ -785,13 +786,19 @@ model Variavel {
     //a regiao por agora, o usuario precisa criar cada uma das variaveis manualmente
     regiao            Regiao?       @relation(fields: [regiao_id], references: [id])
     titulo            String
+    // qual é o valor que o valor base se refere
+    ano_base          Int?
     valor_base        Decimal       @db.Decimal(65, 30) // onde o grafico começa
     periodicidade     Periodicidade
     unidade_medida_id Int
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
-    ano_base          Int?
 
     codigo String
+
+    // ficam null quando a Periodicidade é a mesma do indicador
+    // quando for diferente, é necessário preencher para saber qual é o mês de base
+    inicio_medicao DateTime? @db.Date()
+    fim_medicao    DateTime? @db.Date()
 
     peso                       Int?
     casas_decimais             Int                        @default(0) @db.SmallInt
@@ -1165,13 +1172,13 @@ model PainelConteudo {
     periodo_inicio DateTime?     @db.Date
     periodo_fim    DateTime?     @db.Date
 
-    mostrar_planejado     Boolean
-    mostrar_acumulado     Boolean
-    mostrar_indicador     Boolean
-    ordem                 Int?
-    detalhes              PainelConteudoDetalhe[]
-    indicador             Indicador?              @relation(fields: [indicador_id], references: [id])
-    indicador_id          Int?
+    mostrar_planejado Boolean
+    mostrar_acumulado Boolean
+    mostrar_indicador Boolean
+    ordem             Int?
+    detalhes          PainelConteudoDetalhe[]
+    indicador         Indicador?              @relation(fields: [indicador_id], references: [id])
+    indicador_id      Int?
 
     @@map("painel_conteudo")
 }
