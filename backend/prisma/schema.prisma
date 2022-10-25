@@ -1198,7 +1198,7 @@ model PainelConteudoDetalhe {
 
     mostrar_indicador Boolean
 
-    ordem  Int
+    ordem  Int?
     tipo   PainelConteudoTipoDetalhe
     filhos PainelConteudoDetalhe[]   @relation("fk")
 
