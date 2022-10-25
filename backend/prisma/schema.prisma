@@ -112,8 +112,9 @@ model Pessoa {
     AtividadesQueAtualizei Atividade[]            @relation("Atualizador")
     AtividadesQueSouResp   AtividadeResponsavel[] @relation("AtividadePessoaResp")
 
-    VariavelResponsavel VariavelResponsavel[]
-    SerieVariavel       SerieVariavel[]
+    VariavelResponsavel    VariavelResponsavel[]
+    AtualizouSerieVariavel SerieVariavel[]       @relation("Atualizador")
+    ConferiuSerieVariavel  SerieVariavel[]       @relation("Conferidor")
 
     CronogramaOrgao         CronogramaOrgao[]
     CronogramasQueCriei     Cronograma[]      @relation("Criador")
@@ -849,6 +850,7 @@ model SerieIndicador {
 
     data_valor    DateTime @db.Date()
     valor_nominal Float    @db.DoublePrecision
+    ha_conferencia_pendente Boolean @default(false)
 
     @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
     @@map("serie_indicador")
@@ -866,10 +868,15 @@ model SerieVariavel {
 
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
-    atualizador    Pessoa?  @relation(fields: [atualizado_por], references: [id])
+    atualizador    Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
 
-    ciclo_fisico_id             Int?
-    aguardando_aprovacao_cp     Boolean?
+    conferida       Boolean   @default(false)
+    conferida_por   Int?
+    conferida_em    DateTime?
+
+    conferidor      Pessoa?   @relation("Conferidor", fields: [conferida_por], references: [id])
+    ciclo_fisico_id Int?
+
     ha_pedido_de_complementacao Boolean?
 
     @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
