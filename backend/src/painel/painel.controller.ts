@@ -59,7 +59,7 @@ export class PainelController {
         return '';
     }
 
-    @Post(':id/conteudo')
+    @Patch(':id/conteudo')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPainel.inserir')
