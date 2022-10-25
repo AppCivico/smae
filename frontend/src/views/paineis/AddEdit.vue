@@ -32,6 +32,8 @@
         PaineisStore.getById(painel_id);
     }
 
+    let buscaMeta = ref('');
+
     const props = defineProps(['type']);
     function start(){
         if(props.type=='editarMetas')editModalStore.modal(SelecionarMetas,props);
@@ -132,13 +134,10 @@
                 </div>
                 <div class="flex spacebetween center mb2">
                     <hr class="mr2 f1"/>
-                    <button class="btn big" :disabled="isSubmitting">Salvar</button>
+                    <button class="btn big" :disabled="isSubmitting">Salvar painel</button>
                     <hr class="ml2 f1"/>
                 </div>
             </Form>
-        </template>
-        <template v-if="singlePainel.id">
-            <button @click="checkDelete(singlePainel.id)" class="btn amarelo big">Remover item</button>
         </template>
         <template v-if="singlePainel?.loading">
             <span class="spinner">Carregando</span>
@@ -151,14 +150,15 @@
         
         <hr class="f1 mb1 mt1" />
 
-        <!-- <h5 class="tc500 uc">Conteúdo</h5>
+        <h5 class="tc300 uc">Conteúdo</h5>
         <div class="search mb2">
-            <input placeholder="Buscar" type="text" class="inputtext" />
+            <input placeholder="Buscar" type="text" v-model="buscaMeta" class="inputtext" />
         </div>
         <table class="tablemain">
             <tbody>
-                <tr class="tzaccordeon" @click="toggleAccordeon">
-                    <td style="widht: 50%">
+                <tr v-for="m in singlePainel.painel_conteudo" :key="m.meta_id"><td><span class="w700">Meta {{m.meta_id}}</span></td></tr>
+                <!-- <tr class="tzaccordeon" @click="toggleAccordeon">
+                    <td>
                         <div class="flex">
                             <svg class="arrow" width="13" height="8">
                                 <use xlink:href="#i_down"></use>
@@ -167,7 +167,7 @@
                         </div>
                     </td>
 
-                    <td style="text-align: right; width: 50%">
+                    <td style="text-align: right; width: 70px">
                         <a href="#" class="tprimary mr1">
                             <svg width="20" height="20" class="blue">
                                 <use xlink:href="#i_edit"></use>
@@ -271,13 +271,15 @@
                             </thead>
                         </table>
                     </td>
-                </tz>
+                </tz> -->
             </tbody>
         </table>
-        <label class="addlink mt2">
-            <svg width="20" height="20"><use xlink:href="#i_+"></use></svg>
-            <span>Adicionar Meta(s)</span>
-        </label>
-        <hr class="mt1 mb2" /> -->
+        <router-link :to="`/paineis/${painel_id}/metas`" class="addlink mt2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Adicionar Meta(s)</span></router-link>
+        <hr class="mt1 mb2" />
+
+
+        <template v-if="singlePainel.id">
+            <button @click="checkDelete(singlePainel.id)" class="btn amarelo big">Remover painel</button>
+        </template>
     </Dashboard>
 </template>
