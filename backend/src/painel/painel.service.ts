@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { PainelConteudoTipoDetalhe, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -276,12 +276,66 @@ export class PainelService {
                             mostrar_planejado: painel.mostrar_planejado_por_padrao,
                             periodicidade: painel.periodicidade
                         },
-                        select: {id: true}
+                        select: {id: true, meta_id: true}
                     })
                 )
             }
 
-            return await Promise.all(conteudos)
+            const conteudo_ret = await Promise.all(conteudos);
+
+            for (const painel_conteudo of conteudo_ret) {
+
+                const meta_indicador = await prisma.indicador.findMany({
+                    where: {
+                        meta_id: painel_conteudo.meta_id
+                    },
+                    select: {id: true}
+                })
+
+                for (const row of meta_indicador) {
+                    const parent = await prisma.painelConteudoDetalhe.create({
+                        data: {
+                            painel_conteudo_id: painel_conteudo.id,
+                            mostrar_indicador: false,
+                            tipo: PainelConteudoTipoDetalhe.Variavel
+                        },
+                        select: { id: true }
+                    });
+
+                    const indicador_variaveis = await prisma.indicadorVariavel.findMany({
+                        where: {
+                            indicador_id: row.id,
+                            desativado: false
+                        },
+                        select: { variavel_id: true }
+                    });
+
+                    for (const row of indicador_variaveis) {
+                        await prisma.painelConteudoDetalhe.create({
+                            data: {
+                                painel_conteudo_id: painel_conteudo.id,
+                                variavel_id: row.variavel_id,
+                                mostrar_indicador: false,
+                                tipo: PainelConteudoTipoDetalhe.Variavel,
+                                pai_id: parent.id
+                            }
+                        })
+                    }
+                }
+
+                // const meta_iniciativas = await prisma.indicadorVariavel.findMany({
+                //     where: {
+                //         indicador: {
+                //             iniciativa: {
+                //                 meta_id: painel_conteudo.meta_id
+                //             }
+                //         },
+
+                //     }
+                // })
+            }
+
+            return conteudo_ret;
         });
         
         return ret
