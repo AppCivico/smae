@@ -60,7 +60,7 @@
             values.mostrar_acumulado_por_padrao = !!values.mostrar_acumulado_por_padrao;
             values.mostrar_indicador_por_padrao = !!values.mostrar_indicador_por_padrao;
 
-            if (painel_id&&singlePainel.value.painel_id) {
+            if (painel_id) {
                 r = await PaineisStore.update(painel_id, values);
                 msg = 'Dados salvos com sucesso!';
             } else {
