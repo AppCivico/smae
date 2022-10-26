@@ -298,7 +298,7 @@ export class PainelService {
                             mostrar_planejado: painel.mostrar_planejado_por_padrao,
                             periodicidade: painel.periodicidade
                         },
-                        select: {id: true, meta_id: true}
+                        select: {id: true, meta_id: true, mostrar_indicador: true}
                     })
                 )
             }
@@ -416,7 +416,7 @@ export class PainelService {
                 const parent = await prisma.painelConteudoDetalhe.create({
                     data: {
                         painel_conteudo_id: painel_conteudo.id,
-                        mostrar_indicador: false,
+                        mostrar_indicador: painel_conteudo.mostrar_indicador,
                         tipo: PainelConteudoTipoDetalhe.Variavel
                     },
                     select: { id: true }
@@ -435,7 +435,7 @@ export class PainelService {
                         data: {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: row.variavel_id,
-                            mostrar_indicador: false,
+                            mostrar_indicador: painel_conteudo.mostrar_indicador,
                             tipo: PainelConteudoTipoDetalhe.Variavel,
                             pai_id: parent.id
                         }
@@ -456,7 +456,7 @@ export class PainelService {
                 const parent_iniciativa = await prisma.painelConteudoDetalhe.create({
                     data: {
                         painel_conteudo_id: painel_conteudo.id,
-                        mostrar_indicador: false,
+                        mostrar_indicador: painel_conteudo.mostrar_indicador,
                         tipo: PainelConteudoTipoDetalhe.Iniciativa
                     },
                     select: { id: true }
@@ -497,7 +497,7 @@ export class PainelService {
                     const parent_atividade = await prisma.painelConteudoDetalhe.create({
                         data: {
                             painel_conteudo_id: painel_conteudo.id,
-                            mostrar_indicador: false,
+                            mostrar_indicador: painel_conteudo.mostrar_indicador,
                             tipo: PainelConteudoTipoDetalhe.Atividade,
                             pai_id: parent_iniciativa.id
                         },
@@ -519,7 +519,7 @@ export class PainelService {
                             data: {
                                 painel_conteudo_id: painel_conteudo.id,
                                 variavel_id: variavel.variavel_id,
-                                mostrar_indicador: false,
+                                mostrar_indicador: painel_conteudo.mostrar_indicador,
                                 tipo: PainelConteudoTipoDetalhe.Atividade,
                                 pai_id: parent_atividade.id
                             }
