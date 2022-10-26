@@ -362,6 +362,7 @@ export class PainelService {
                 select: {id: true}
             })
 
+            // Primeiro nivel
             for (const row of meta_indicador) {
                 const parent = await prisma.painelConteudoDetalhe.create({
                     data: {
@@ -393,16 +394,90 @@ export class PainelService {
                 }
             }
 
-            // const meta_iniciativas = await prisma.indicadorVariavel.findMany({
-            //     where: {
-            //         indicador: {
-            //             iniciativa: {
-            //                 meta_id: painel_conteudo.meta_id
-            //             }
-            //         },
+            const meta_iniciativas = await prisma.iniciativa.findMany({
+                where: {
+                    meta_id: painel_conteudo.meta_id,
+                    ativo: true
+                },
+                select: { id: true }
+            });
 
-            //     }
-            // })
+            // Segundo nível
+            for (const iniciativa of meta_iniciativas) {
+                const parent_iniciativa = await prisma.painelConteudoDetalhe.create({
+                    data: {
+                        painel_conteudo_id: painel_conteudo.id,
+                        mostrar_indicador: false,
+                        tipo: PainelConteudoTipoDetalhe.Iniciativa
+                    },
+                    select: { id: true }
+                });
+
+                const iniciativa_variaveis = await prisma.indicadorVariavel.findMany({
+                    where: {
+                        indicador: {
+                            iniciativa_id: iniciativa.id
+                        },
+                        desativado: false
+                    },
+                    select: { variavel_id: true }
+                })
+
+                for (const variavel of iniciativa_variaveis) {
+                    await prisma.painelConteudoDetalhe.create({
+                        data: {
+                            painel_conteudo_id: painel_conteudo.id,
+                            variavel_id: variavel.variavel_id,
+                            mostrar_indicador: false,
+                            tipo: PainelConteudoTipoDetalhe.Iniciativa,
+                            pai_id: parent_iniciativa.id
+                        }
+                    })
+                }
+
+                // Terceiro nível
+                const atividades = await prisma.atividade.findMany({
+                    where: {
+                        iniciativa_id: iniciativa.id,
+                        ativo: true
+                    },
+                    select: { id: true }
+                });
+
+                for (const atividade of atividades) {
+                    const parent_atividade = await prisma.painelConteudoDetalhe.create({
+                        data: {
+                            painel_conteudo_id: painel_conteudo.id,
+                            mostrar_indicador: false,
+                            tipo: PainelConteudoTipoDetalhe.Atividade,
+                            pai_id: parent_iniciativa.id
+                        },
+                        select: { id: true }
+                    });
+
+                    const atividade_variaveis = await prisma.indicadorVariavel.findMany({
+                        where: {
+                            indicador: {
+                                atividade_id: atividade.id
+                            },
+                            desativado: false
+                        },
+                        select: { variavel_id: true }
+                    });
+
+                    for (const variavel of iniciativa_variaveis) {
+                        await prisma.painelConteudoDetalhe.create({
+                            data: {
+                                painel_conteudo_id: painel_conteudo.id,
+                                variavel_id: variavel.variavel_id,
+                                mostrar_indicador: false,
+                                tipo: PainelConteudoTipoDetalhe.Atividade,
+                                pai_id: parent_atividade.id
+                            }
+                        })
+                    }
+                }
+            }
         }
     }
 
