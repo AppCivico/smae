@@ -1,19 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PainelService } from './painel.service';
-import { ListPainelDto } from './dto/list-painel.dto';
+import { CreateParamsPainelConteudoDto } from 'src/painel/dto/create-painel-conteudo.dto';
+import { PainelConteudoDetalheUpdateRet, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from 'src/painel/dto/update-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
-import { UpdatePainelDto } from './dto/update-painel.dto';
-import { FilterPainelDto } from './dto/filter-painel.dto';
-import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { DetailPainelVisualizacaoDto } from './dto/detalhe-painel.dto';
-import { PainelConteudoDetalheUpdateRet, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
-import { Painel } from './entities/painel-entity';
+import { FilterPainelDto } from './dto/filter-painel.dto';
+import { ListPainelDto } from './dto/list-painel.dto';
+import { UpdatePainelDto } from './dto/update-painel.dto';
+import { PainelDto } from './entities/painel.entity';
+import { PainelService } from './painel.service';
 
 @ApiTags('Painel')
 @Controller('painel')
@@ -36,7 +36,7 @@ export class PainelController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    async findOne(@Param() params: FindOneParams): Promise<Painel> {
+    async findOne(@Param() params: FindOneParams): Promise<PainelDto> {
         return await this.painelService.getDetail(+params.id);
     }
 
