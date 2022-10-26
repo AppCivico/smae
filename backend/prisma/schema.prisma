@@ -848,9 +848,9 @@ model SerieIndicador {
 
     serie Serie
 
-    data_valor    DateTime @db.Date()
-    valor_nominal Float    @db.DoublePrecision
-    ha_conferencia_pendente Boolean @default(false)
+    data_valor              DateTime @db.Date()
+    valor_nominal           Float    @db.DoublePrecision
+    ha_conferencia_pendente Boolean  @default(false)
 
     @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
     @@map("serie_indicador")
@@ -870,11 +870,11 @@ model SerieVariavel {
     atualizado_por Int?
     atualizador    Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
 
-    conferida       Boolean   @default(false)
-    conferida_por   Int?
-    conferida_em    DateTime?
+    conferida     Boolean   @default(false)
+    conferida_por Int?
+    conferida_em  DateTime?
 
-    conferidor      Pessoa?   @relation("Conferidor", fields: [conferida_por], references: [id])
+    conferidor      Pessoa? @relation("Conferidor", fields: [conferida_por], references: [id])
     ciclo_fisico_id Int?
 
     ha_pedido_de_complementacao Boolean?
@@ -1256,26 +1256,28 @@ model CicloFasesPdmConfig {
 model CicloFisico {
     id Int @id @default(autoincrement())
 
-    pdm_id           Int
-    pdm              Pdm        @relation(fields: [pdm_id], references: [id])
-    data_ciclo       DateTime   @db.Date()
-    ciclo_fase_atual CicloFase?
-    ativo            Boolean    @default(false)
+    pdm_id              Int
+    pdm                 Pdm              @relation(fields: [pdm_id], references: [id])
+    data_ciclo          DateTime         @db.Date()
+    ciclo_fase_atual_id Int?
+    ciclo_fase_atual    CicloFisicoFase? @relation("atual", fields: [ciclo_fase_atual_id], references: [id])
+    ativo               Boolean          @default(false)
 
     acordar_ciclo_em          DateTime?
     acordar_ciclo_errmsg      String?
     acordar_ciclo_executou_em DateTime?
-    CicloFisicoFases          CicloFisicoFase[]
-    Meta                      Meta[]
+    fases                     CicloFisicoFase[] @relation("fk")
+    metas                     Meta[]
 
     @@map("ciclo_fisico")
 }
 
 // data de cada uma das fases
 model CicloFisicoFase {
-    id              Int         @id @default(autoincrement())
-    ciclo_fisico_id Int
-    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    id               Int           @id @default(autoincrement())
+    ciclo_fisico_id  Int
+    ciclo_fisico     CicloFisico   @relation("fk", fields: [ciclo_fisico_id], references: [id])
+    cf_estou_em_usos CicloFisico[] @relation("atual") @ignore
 
     data_inicio DateTime  @db.Date()
     data_fim    DateTime  @db.Date()
