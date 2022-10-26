@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
-import { PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
+import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { PainelConteudo } from './entities/painel-conteudo-entity';
 
@@ -170,6 +170,7 @@ export class PainelService {
                                 {ordem: 'asc'}
                             ],
                             select: {
+                                id: true,
                                 tipo: true,
                                 mostrar_indicador: true,
 
@@ -187,6 +188,7 @@ export class PainelService {
                                 },
                                 filhos: {
                                     select: {
+                                        id: true,
                                         tipo: true,
                                         mostrar_indicador: true,
 
@@ -204,6 +206,7 @@ export class PainelService {
                                         },
                                         filhos: {
                                             select: {
+                                                id: true,
                                                 tipo: true,
                                                 mostrar_indicador: true,
 
@@ -295,7 +298,7 @@ export class PainelService {
                             mostrar_planejado: painel.mostrar_planejado_por_padrao,
                             periodicidade: painel.periodicidade
                         },
-                        select: {id: true, meta_id: true}
+                        select: {id: true, meta_id: true, mostrar_indicador: true}
                     })
                 )
             }
@@ -331,7 +334,7 @@ export class PainelService {
         })
     }
 
-    async updatePainelConteudo(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoDto) {
+    async updatePainelConteudoVisualizacao(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto) {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
             if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
@@ -352,6 +355,52 @@ export class PainelService {
         return { id: painel_conteudo_id }
     }
 
+    async updatePainelConteudoDetalhes(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDetalheDto: UpdatePainelConteudoDetalheDto) {
+        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoDetalheUpdateRet> => {
+            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
+            if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
+
+            const operations = [];
+            if (updatePainelConteudoDetalheDto.mostrar_indicador || updatePainelConteudoDetalheDto.mostrar_indicador === false) {
+                operations.push(prisma.painelConteudoDetalhe.update({
+                    where: { id: updatePainelConteudoDetalheDto.id },
+                    data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador },
+                    select: {id: true}
+                }));
+            }
+
+            if (updatePainelConteudoDetalheDto.filhos! && updatePainelConteudoDetalheDto.filhos?.length > 0) {
+                for (const row of updatePainelConteudoDetalheDto.filhos) {
+                    if (row.mostrar_indicador || row.mostrar_indicador === false) {
+                        operations.push(prisma.painelConteudoDetalhe.update({
+                            where: { id: row.id },
+                            data: { mostrar_indicador: row.mostrar_indicador },
+                            select: {id: true}
+                        }));
+                    }
+
+                    if (row.filhos! && row.filhos?.length > 0) {
+                        for (const second_level_row of row.filhos) {
+                            if (second_level_row.mostrar_indicador || second_level_row.mostrar_indicador === false) {
+                                operations.push(prisma.painelConteudoDetalhe.update({
+                                    where: { id: second_level_row.id },
+                                    data: { mostrar_indicador: second_level_row.mostrar_indicador },
+                                    select: {id: true}
+                                }));
+                            }
+                        }
+                    }
+                }
+            }
+
+            const updated = await Promise.all(operations);
+
+            return {updated};
+        });
+
+        return ret
+    }
+
     async populatePainelConteudoDetalhe(conteudos: any[], prisma: Prisma.TransactionClient) {
         for (const painel_conteudo of conteudos) {
 
@@ -362,11 +411,12 @@ export class PainelService {
                 select: {id: true}
             })
 
+            // Primeiro nivel
             for (const row of meta_indicador) {
                 const parent = await prisma.painelConteudoDetalhe.create({
                     data: {
                         painel_conteudo_id: painel_conteudo.id,
-                        mostrar_indicador: false,
+                        mostrar_indicador: painel_conteudo.mostrar_indicador,
                         tipo: PainelConteudoTipoDetalhe.Variavel
                     },
                     select: { id: true }
@@ -385,7 +435,7 @@ export class PainelService {
                         data: {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: row.variavel_id,
-                            mostrar_indicador: false,
+                            mostrar_indicador: painel_conteudo.mostrar_indicador,
                             tipo: PainelConteudoTipoDetalhe.Variavel,
                             pai_id: parent.id
                         }
@@ -393,16 +443,90 @@ export class PainelService {
                 }
             }
 
-            // const meta_iniciativas = await prisma.indicadorVariavel.findMany({
-            //     where: {
-            //         indicador: {
-            //             iniciativa: {
-            //                 meta_id: painel_conteudo.meta_id
-            //             }
-            //         },
+            const meta_iniciativas = await prisma.iniciativa.findMany({
+                where: {
+                    meta_id: painel_conteudo.meta_id,
+                    ativo: true
+                },
+                select: { id: true }
+            });
 
-            //     }
-            // })
+            // Segundo nível
+            for (const iniciativa of meta_iniciativas) {
+                const parent_iniciativa = await prisma.painelConteudoDetalhe.create({
+                    data: {
+                        painel_conteudo_id: painel_conteudo.id,
+                        mostrar_indicador: painel_conteudo.mostrar_indicador,
+                        tipo: PainelConteudoTipoDetalhe.Iniciativa
+                    },
+                    select: { id: true }
+                });
+
+                const iniciativa_variaveis = await prisma.indicadorVariavel.findMany({
+                    where: {
+                        indicador: {
+                            iniciativa_id: iniciativa.id
+                        },
+                        desativado: false
+                    },
+                    select: { variavel_id: true }
+                })
+
+                for (const variavel of iniciativa_variaveis) {
+                    await prisma.painelConteudoDetalhe.create({
+                        data: {
+                            painel_conteudo_id: painel_conteudo.id,
+                            variavel_id: variavel.variavel_id,
+                            mostrar_indicador: false,
+                            tipo: PainelConteudoTipoDetalhe.Iniciativa,
+                            pai_id: parent_iniciativa.id
+                        }
+                    })
+                }
+
+                // Terceiro nível
+                const atividades = await prisma.atividade.findMany({
+                    where: {
+                        iniciativa_id: iniciativa.id,
+                        ativo: true
+                    },
+                    select: { id: true }
+                });
+
+                for (const atividade of atividades) {
+                    const parent_atividade = await prisma.painelConteudoDetalhe.create({
+                        data: {
+                            painel_conteudo_id: painel_conteudo.id,
+                            mostrar_indicador: painel_conteudo.mostrar_indicador,
+                            tipo: PainelConteudoTipoDetalhe.Atividade,
+                            pai_id: parent_iniciativa.id
+                        },
+                        select: { id: true }
+                    });
+
+                    const atividade_variaveis = await prisma.indicadorVariavel.findMany({
+                        where: {
+                            indicador: {
+                                atividade_id: atividade.id
+                            },
+                            desativado: false
+                        },
+                        select: { variavel_id: true }
+                    });
+
+                    for (const variavel of iniciativa_variaveis) {
+                        await prisma.painelConteudoDetalhe.create({
+                            data: {
+                                painel_conteudo_id: painel_conteudo.id,
+                                variavel_id: variavel.variavel_id,
+                                mostrar_indicador: painel_conteudo.mostrar_indicador,
+                                tipo: PainelConteudoTipoDetalhe.Atividade,
+                                pai_id: parent_atividade.id
+                            }
+                        })
+                    }
+                }
+            }
         }
     }
 
