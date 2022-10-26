@@ -453,11 +453,11 @@ export class VariavelService {
             });
         }
 
-        await this.prisma.$transaction(async (prismaTnx: Prisma.TransactionClient) => {
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             let responsaveis = updateVariavelDto.responsaveis!;
             delete updateVariavelDto.responsaveis;
 
-            const updated = await prismaTnx.variavel.update({
+            const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
                 data: {
                     ...updateVariavelDto,
@@ -467,17 +467,17 @@ export class VariavelService {
                 }
             });
 
-            await this.resyncIndicadorVariavel(indicador, variavelId, prismaTnx);
-            await prismaTnx.variavelResponsavel.deleteMany({
+            await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
+            await prismaTxn.variavelResponsavel.deleteMany({
                 where: { variavel_id: variavelId }
             })
 
-            await prismaTnx.variavelResponsavel.createMany({
+            await prismaTxn.variavelResponsavel.createMany({
                 data: await this.buildVarResponsaveis(variavelId, responsaveis),
             });
 
             if (Number(oldValorBase).toString() !== Number(updated.valor_base).toString()) {
-                await this.recalc_variaveis_acumulada([variavelId], prismaTnx);
+                await this.recalc_variaveis_acumulada([variavelId], prismaTxn);
             }
         });
 
@@ -707,7 +707,7 @@ export class VariavelService {
 
         const variaveisModificadas: Record<number, boolean> = {};
 
-        await this.prisma.$transaction(async (prismaTnx: Prisma.TransactionClient) => {
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
 
             const idsToBeRemoved: number[] = [];
             const updatePromises: Promise<any>[] = [];
@@ -729,7 +729,7 @@ export class VariavelService {
                     }
 
                     if ("id" in valor.referencia) {
-                        updatePromises.push(prismaTnx.serieVariavel.updateMany({
+                        updatePromises.push(prismaTxn.serieVariavel.updateMany({
                             where: { id: valor.referencia.id },
                             data: {
                                 valor_nominal: valor.valor,
@@ -755,14 +755,14 @@ export class VariavelService {
             // apenas um select pra forçar o banco fazer o serialize na variavel
             // ja que o prisma não suporta 'select for update'
             if (anySerieIsToBeCreatedOnVariable)
-                await prismaTnx.variavel.findFirst({ where: { id: anySerieIsToBeCreatedOnVariable }, select: { id: true } });
+                await prismaTxn.variavel.findFirst({ where: { id: anySerieIsToBeCreatedOnVariable }, select: { id: true } });
 
             if (updatePromises.length)
                 await Promise.all(updatePromises);
 
             // TODO: maybe pode verificar aqui o resultado e fazer o exception caso tenha removido alguma
             if (createList.length)
-                await prismaTnx.serieVariavel.deleteMany({
+                await prismaTxn.serieVariavel.deleteMany({
                     where: {
                         'OR': createList.map((e) => {
                             return {
@@ -776,21 +776,21 @@ export class VariavelService {
 
             // ja este delete é esperado caso tenha valores pra ser removidos
             if (idsToBeRemoved.length)
-                await prismaTnx.serieVariavel.deleteMany({
+                await prismaTxn.serieVariavel.deleteMany({
                     where: {
                         'id': { 'in': idsToBeRemoved }
                     }
                 });
 
             if (createList.length)
-                await prismaTnx.serieVariavel.createMany({
+                await prismaTxn.serieVariavel.createMany({
                     data: createList
                 });
 
             const variaveisMod = Object.keys(variaveisModificadas).map(e => +e);
             this.logger.log(`Variáveis modificadas: ${JSON.stringify(variaveisMod)}`);
-            await this.recalc_variaveis_acumulada(variaveisMod, prismaTnx);
-            await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTnx);
+            await this.recalc_variaveis_acumulada(variaveisMod, prismaTxn);
+            await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTxn);
 
         }, {
             isolationLevel: 'Serializable',
@@ -800,9 +800,9 @@ export class VariavelService {
 
     }
 
-    async recalc_variaveis_acumulada(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
+    async recalc_variaveis_acumulada(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
         this.logger.log(`called recalc_variaveis_acumulada (${JSON.stringify(variaveis)})`);
-        const afetadas = await prismaTnx.variavel.findMany({
+        const afetadas = await prismaTxn.variavel.findMany({
             where: {
                 id: { 'in': variaveis },
                 acumulativa: true
@@ -814,13 +814,13 @@ export class VariavelService {
         this.logger.log(`query.afetadas => ${JSON.stringify(afetadas)}`);
         for (const row of afetadas) {
             this.logger.debug(`Recalculando serie acumulada variavel ${row.id}...`);
-            await prismaTnx.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
+            await prismaTxn.$queryRaw`select monta_serie_acumulada(${row.id}::int, null)`;
         }
     }
 
-    async recalc_indicador_usando_variaveis(variaveis: number[], prismaTnx: Prisma.TransactionClient) {
+    async recalc_indicador_usando_variaveis(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
         this.logger.log(`called recalc_indicador_usando_variaveis (${JSON.stringify(variaveis)})`);
-        const indicadores = await prismaTnx.indicadorFormulaVariavel.findMany({
+        const indicadores = await prismaTxn.indicadorFormulaVariavel.findMany({
             where: {
                 variavel_id: { 'in': variaveis },
             },
@@ -832,7 +832,7 @@ export class VariavelService {
         this.logger.log(`query.indicadores => ${JSON.stringify(indicadores)}`);
         for (const row of indicadores) {
             this.logger.log(`Recalculando indicador ... ${row.indicador_id}`)
-            await prismaTnx.$queryRaw`select monta_serie_indicador(${row.indicador_id}::int, null, null, null)`;
+            await prismaTxn.$queryRaw`select monta_serie_indicador(${row.indicador_id}::int, null, null, null)`;
         }
     }
 
