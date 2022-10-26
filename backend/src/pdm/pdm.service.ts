@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
+import { CicloFisicoAtivo } from 'src/pdm/dto/list-pdm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -298,7 +299,7 @@ export class PdmService {
 
         }, {
             maxWait: 30000,
-            timeout: 60000,
+            timeout: 60 * 1000 * 5,
             isolationLevel: 'ReadCommitted',
         });
     }
@@ -355,8 +356,35 @@ export class PdmService {
                     acordar_ciclo_em: null
                 }
             });
-        });
 
+            const proximoCiclo = await this.prisma.cicloFisico.findFirst({
+                where: {
+                    data_ciclo: {
+                        gt: cf.data_ciclo
+                    },
+                },
+                select: {
+                    id: true,
+                    data_ciclo: true,
+                },
+                orderBy: {
+                    data_ciclo: 'asc'
+                },
+                take: 1,
+            });
+
+            if (proximoCiclo) {
+                this.logger.log(`Marcando proximo ciclo ${proximoCiclo.data_ciclo} para acordar no proximo tick`);
+                await prismaTxn.cicloFisico.update({
+                    where: { id: proximoCiclo.id },
+                    data: {
+                        acordar_ciclo_em: new Date(Date.now())
+                    }
+                });
+            } else {
+                this.logger.log(`não há próximos ciclos`);
+            }
+        });
     }
 
     private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date; }) {
@@ -369,14 +397,56 @@ export class PdmService {
             }
             this.logger.log(`ativando ciclo ${cf.data_ciclo}`);
 
+            const primeira_fase = await prismaTxn.cicloFisicoFase.findFirst({
+                where: { ciclo_fisico_id: cf.id },
+                orderBy: {
+                    data_inicio: 'asc'
+                },
+                take: 1
+            });
+            if (!primeira_fase) {
+                throw new Error(`faltando primeira fase do ciclo!`);
+            }
+
             await prismaTxn.cicloFisico.update({
                 where: { id: cf.id },
                 data: {
                     ativo: true,
-                    acordar_ciclo_em: null
+                    ciclo_fase_atual_id: primeira_fase.id,
+                    acordar_ciclo_em: primeira_fase.data_fim
                 }
             });
 
         });
     }
+
+    async getCicloAtivo(pdm_id: number): Promise<CicloFisicoAtivo | null> {
+        let ciclo: CicloFisicoAtivo | null = null;
+        const found = await this.prisma.cicloFisico.findFirst({
+            where: { pdm_id: pdm_id, ativo: true },
+            include: {
+                fases: true
+            }
+        });
+        if (found) {
+            ciclo = {
+                id: found.id,
+                data_ciclo: Date2YMD.toString(found.data_ciclo),
+                fases: [],
+            };
+            for (const fase of found.fases) {
+                ciclo.fases.push({
+                    id: fase.id,
+                    ciclo_fase: fase.ciclo_fase,
+                    data_inicio: Date2YMD.toString(fase.data_inicio),
+                    data_fim: Date2YMD.toString(fase.data_fim),
+                    fase_corrente: found.ciclo_fase_atual_id == fase.id
+                });
+            }
+        }
+
+        return ciclo;
+    }
+
+
 }

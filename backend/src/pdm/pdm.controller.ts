@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { EixoService } from 'src/eixo/eixo.service';
 import { MetaService } from 'src/meta/meta.service';
 import { ObjetivoEstrategicoService } from 'src/objetivo-estrategico/objetivo-estrategico.service';
-import { ListPdmDto } from 'src/pdm/dto/list-pdm.dto';
+import { CicloFisicoAtivo, ListPdmDto } from 'src/pdm/dto/list-pdm.dto';
 import { Pdm } from 'src/pdm/dto/pdm.dto';
 import { UpdatePdmDto } from 'src/pdm/dto/update-pdm.dto';
 import { SubTemaService } from 'src/subtema/subtema.service';
@@ -45,7 +45,18 @@ export class PdmController {
     @Get()
     @Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar')
     async findAll(@Query() filters: FilterPdmDto): Promise<ListPdmDto> {
-        return { 'linhas': await this.pdmService.findAll(filters) };
+
+        const linhas = await this.pdmService.findAll(filters);
+        let ciclo_fisico_ativo: CicloFisicoAtivo | null | undefined = undefined;
+
+        if (filters.ativo && linhas[0] && linhas[0].id){
+            ciclo_fisico_ativo = await this.pdmService.getCicloAtivo(linhas[0].id);
+        }
+
+        return {
+            'linhas': linhas,
+            ciclo_fisico_ativo: ciclo_fisico_ativo,
+        };
     }
 
 
