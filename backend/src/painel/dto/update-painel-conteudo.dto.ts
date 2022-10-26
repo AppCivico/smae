@@ -16,7 +16,8 @@ export class UpdatePainelConteudoDetalheDto {
     @IsNumber()
     id: number
 
-    filhos?:  UpdatePainelConteudoDetalheDto[] | null
+    @IsArray()
+    filhos?: UpdatePainelConteudoDetalheDto[] | null
 }
 export class PainelConteudoIdAndMeta {
     id: number
