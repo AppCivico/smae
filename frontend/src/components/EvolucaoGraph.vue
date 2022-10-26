@@ -220,15 +220,17 @@
 				.attr("x2", pos.x);
 
 			//Creating tooltip element
-			let tipHtml = `<p class="data tprimary">${this.locale.utcFormat("%B/%Y")(d.date)}</p>
-				<p class="meta tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>
-				<p class="tc300">
-					Previsto Junho: <span>${d.projetado || '-'}</span><br />
-					Relizado Junho: <span class="tamarelo">${d.realizado || '-'}</span>
+			let mes = this.locale.utcFormat("%B/%Y")(d.date);
+			let tipHtml = `<p class="t14 data tprimary">${mes}</p>
+				<p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>
+				<p class="tc300 t14">
+					Previsto acumulado até ${mes}: <span>${d.projetadoAcum || '-'}</span><br />
+					<span class="tamarelo">Realizado acumulado até ${mes}: ${d.realizadoAcum || '-'}</span>
+				
 				</p>
-				<p class="tc300">
-					Previsto acumulado até Junho: <span>${d.projetadoAcum || '-'}</span><br />
-					Realizado acumulado até Junho: <span class="tamarelo">${d.realizadoAcum || '-'}</span>
+				<p class="tc300 t11">
+					Previsto ${mes}: <span>${d.projetado || '-'}</span><br />
+					Relizado ${mes}: <span class="tamarelo">${d.realizado || '-'}</span>
 				</p>`;
 
 			el.html(tipHtml);
@@ -550,7 +552,6 @@
 		z-index: 999;
 		p{
 			font-family: sans-serif;
-			font-size: 14px;
 			&.data, span{ font-weight: 700; }
 		}
 		&::after{
