@@ -109,6 +109,11 @@ BEGIN
         count(id) INTO vCount
     FROM
         ciclo_fisicos_fases;
+
+    update ciclo_fisico
+    set acordar_ciclo_em = now()
+    where pdm_id = pPdmId
+    AND data_ciclo = date_trunc('month', now() at time zone 'America/Sao_Paulo');
     --
     RETURN vCount || ' ciclo fases inseridos';
 EXCEPTION WHEN OTHERS THEN
