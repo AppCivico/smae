@@ -228,7 +228,7 @@
 					<span class="tamarelo">Realizado acumulado até ${mes}: ${d.realizadoAcum || '-'}</span>
 				
 				</p>
-				<p class="tc300 t11">
+				<p class="tc300 t11 mb0">
 					Previsto ${mes}: <span>${d.projetado || '-'}</span><br />
 					Relizado ${mes}: <span class="tamarelo">${d.realizado || '-'}</span>
 				</p>`;
@@ -549,6 +549,7 @@
 		background: white; padding: 20px; border-radius: 8px;
 		box-shadow: 5px 5px 15px 10px fade(black, 8);
 		transform: translateX(-50%) translateY( calc(-100% - 12px ) );
+		max-width: 230px;
 		z-index: 999;
 		p{
 			font-family: sans-serif;
