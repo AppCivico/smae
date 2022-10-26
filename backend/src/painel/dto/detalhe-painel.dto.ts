@@ -1,5 +1,5 @@
 import { Periodicidade, Periodo } from '@prisma/client';
-import { Painel } from '../entities/painel-entity';
+import { PainelDto } from '../entities/painel.entity';
 
 
 export class DetailPainelVisualizacaoDto {

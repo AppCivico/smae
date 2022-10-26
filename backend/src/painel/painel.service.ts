@@ -3,12 +3,11 @@ import { PainelConteudoTipoDetalhe, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
+import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
-import { PainelConteudo } from './entities/painel-conteudo-entity';
 
 @Injectable()
 export class PainelService {
@@ -260,7 +259,7 @@ export class PainelService {
         return removed;
     }
 
-    
+
     async createConteudo(painel_id: number, createConteudoDto: CreateParamsPainelConteudoDto, user: PessoaFromJwt) {
         const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoUpsertRet>=> {
             const painel = await this.prisma.painel.findFirstOrThrow({
@@ -305,7 +304,7 @@ export class PainelService {
             const created = await Promise.all(conteudos);
 
             await this.populatePainelConteudoDetalhe(created, prisma);
-            
+
             const deleted = await this.checkDeletedPainelConteudo(createConteudoDto.metas, painel.painel_conteudo, prisma);
 
             return {
@@ -313,7 +312,7 @@ export class PainelService {
                 deleted: deleted
             };
         });
-        
+
         return ret
     }
 
@@ -539,7 +538,7 @@ export class PainelService {
             });
 
             if (conteudo_kept.length === 0) {
-                
+
                 const deleted_row = await prisma.painelConteudo.delete({
                     where: {
                         id: existent_conteudo.id

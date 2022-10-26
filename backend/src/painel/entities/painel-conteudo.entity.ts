@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger"
 import { PainelConteudoTipoDetalhe, Periodicidade, Periodo } from "@prisma/client"
 
 export class PainelConteudo {
@@ -7,7 +8,9 @@ export class PainelConteudo {
     mostrar_planejado: boolean
     mostrar_acumulado: boolean
     mostrar_indicador: boolean
+    @ApiProperty({enum: Periodicidade})
     periodicidade: Periodicidade
+    @ApiProperty({enum: Periodo})
     periodo: Periodo | null
     periodo_fim: Date | null
     periodo_inicio: Date | null
@@ -16,6 +19,7 @@ export class PainelConteudo {
     detalhes: PainelConteudoDetalhes[] | null
 }
 export class PainelConteudoDetalhes {
+    @ApiProperty({enum: PainelConteudoTipoDetalhe})
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
 
@@ -30,15 +34,17 @@ export class RowWithIdTitle {
 }
 
 export class FirstLevelChildren {
+    @ApiProperty({enum: PainelConteudoTipoDetalhe})
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
 
     variavel: RowWithIdTitle | null
     atividade: RowWithIdTitle | null
     filhos: SecondLevelChildren[] | null
-} 
+}
 
 export class SecondLevelChildren {
+    @ApiProperty({enum: PainelConteudoTipoDetalhe})
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
 
