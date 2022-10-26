@@ -1,7 +1,8 @@
 import { Periodicidade } from "@prisma/client"
-import { PainelConteudo } from "./painel-conteudo-entity"
+import { PainelConteudo } from "src/painel/entities/painel-conteudo.entity"
 
-export class Painel {
+
+export class PainelDto {
     id: number
     nome: string
     ativo: boolean
