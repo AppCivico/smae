@@ -74,19 +74,28 @@ BEGIN
             -- recalcula o periodo
             FOR r IN
                 SELECT
-                    serieRecord.serie AS serie,
-                    gs.gs AS data_serie,
-                    monta_formula (pIndicador_id, serieRecord.serie, gs.gs::date) AS formula
-                FROM
-                    generate_series(vInicio, vFim, vPeriodicidade) gs
-                ORDER BY 1 -- não faz diferença, mas fica melhor nos logs
+                    serie,
+                    data_serie,
+                    case when formula_res is null then null else formula_res->>'formula' end as formula,
+                    (formula_res->>'ha_conferencia_pendente')::boolean as ha_conferencia_pendente
+                from (
+                    SELECT
+                        serieRecord.serie AS serie,
+                        gs.gs AS data_serie,
+                        monta_formula (pIndicador_id, serieRecord.serie, gs.gs::date)::jsonb AS formula_res
+                    FROM
+                        generate_series(vInicio, vFim, vPeriodicidade) gs
+                    ORDER BY 1 -- não faz diferença, mas fica melhor nos logs
+                ) subq
             LOOP
                 resultado := NULL;
 
                 IF (r.formula IS NOT NULL) THEN
+
                     EXECUTE 'SELECT ' || r.formula INTO resultado;
-                    INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal)
-                        VALUES (pIndicador_id, r.serie, r.data_serie, resultado);
+
+                    INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
+                        VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente);
                 END IF;
 
                 RAISE NOTICE 'r %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
@@ -97,10 +106,9 @@ BEGIN
             -- muito arriscado fazer usando os periodos, entao recaclula tudo
             DELETE FROM serie_indicador
             WHERE indicador_id = pIndicador_id
-                AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie"
-                ;
+                AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
 
-            INSERT INTO serie_indicador(indicador_id, serie, data_valor, valor_nominal)
+            INSERT INTO serie_indicador(indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
             WITH theData AS (
                 WITH indData AS (
                     SELECT
@@ -116,7 +124,8 @@ BEGIN
                     pIndicador_id,
                     (serieRecord.serie::text || 'Acumulado')::"Serie",
                     gs.gs as data_serie,
-                    coalesce(sum(si.valor_nominal) OVER (order by gs.gs), case when serieRecord.serie = 'Realizado'::"Serie" then null else vIndicadorBase end) as valor_acc
+                    coalesce(sum(si.valor_nominal) OVER (order by gs.gs), case when serieRecord.serie = 'Realizado'::"Serie" then null else vIndicadorBase end) as valor_acc,
+                    count(1) FILTER (WHERE si.ha_conferencia_pendente) OVER (order by gs.gs) > 0 as ha_conferencia_pendente
                 FROM
                     generate_series(
                     (select inicio_medicao from indData),
