@@ -36,6 +36,7 @@ export class PdmController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.inserir')
     create(@Body() createPdmDto: CreatePdmDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        console.log(createPdmDto)
         return this.pdmService.create(createPdmDto, user);
     }
 

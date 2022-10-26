@@ -35,6 +35,7 @@ import { AtividadeModule } from './atividade/atividade.module';
 import { CronogramaModule } from './cronograma/cronograma.module';
 import { EtapaModule } from './etapa/etapa.module';
 import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { PainelModule } from './painel/painel.module';
 
@@ -57,7 +58,8 @@ import { PainelModule } from './painel/painel.module';
         CronogramaModule,
         EtapaModule,
         CronogramaEtapaModule,
-        PainelModule
+        PainelModule,
+        ScheduleModule.forRoot(),
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

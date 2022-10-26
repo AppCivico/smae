@@ -1,6 +1,8 @@
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -8,6 +10,7 @@ import { CreatePdmDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { PdmDocument } from './entities/pdm-document.entity';
+const JOB_LOCK_NUMBER = 65656565;
 
 @Injectable()
 export class PdmService {
@@ -274,4 +277,106 @@ export class PdmService {
         });
     }
 
+    @Cron('* * * * * *')
+    async handleCron() {
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
+            const locked: {
+                locked: boolean,
+                now_ymd: DateYMD
+            }[] = await prisma.$queryRaw`SELECT
+                pg_try_advisory_lock(${JOB_LOCK_NUMBER}) as locked,
+                (now() at time zone 'America/Sao_Paulo')::date::text as now_ymd
+            `;
+            if (!locked[0].locked) {
+                this.logger.debug(`Já está em processamento...`);
+                return;
+            }
+
+            // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
+            await this.verificaCiclosPendentes(locked[0].now_ymd);
+
+        }, {
+            maxWait: 30000,
+            timeout: 60000,
+            isolationLevel: 'ReadCommitted',
+        });
+    }
+
+    async verificaCiclosPendentes(now: DateYMD) {
+        console.log(now)
+        this.logger.debug(`Verificando ciclos físicos com tick faltando...`);
+
+        const cf = await this.prisma.cicloFisico.findFirst({
+            where: {
+                acordar_ciclo_em: {
+                    lt: new Date(Date.now())
+                },
+                acordar_ciclo_errmsg: null,
+            },
+            select: {
+                pdm_id: true,
+                id: true,
+                data_ciclo: true,
+                ativo: true,
+            },
+            orderBy: {
+                data_ciclo: 'asc'
+            },
+            take: 1,
+        });
+        if (!cf) {
+            this.logger.debug('não há CicloFisico pendente');
+            return;
+        }
+
+        const mesCorrente = now.substring(0, 8) + '01';
+
+        this.logger.debug(JSON.stringify(cf) + ' mesCorrente=' + mesCorrente)
+
+        if (Date2YMD.toString(cf.data_ciclo) < mesCorrente && cf.ativo) {
+            await this.inativarCiclo(cf);
+        } else if (Date2YMD.toString(cf.data_ciclo) === mesCorrente && !cf.ativo) {
+            await this.ativarCiclo(cf);
+        } else {
+            this.logger.debug(`Tarefa do CicloFisico não detectada`);
+        }
+    }
+
+
+    private async inativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date; }) {
+        this.logger.log(`desativando ciclo ${cf.data_ciclo}`);
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            await prismaTxn.cicloFisico.update({
+                where: { id: cf.id },
+                data: {
+                    ativo: false,
+                    acordar_ciclo_em: null
+                }
+            });
+        });
+
+    }
+
+    private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date; }) {
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+
+            const count = await prismaTxn.cicloFisico.count({ where: { ativo: true, pdm_id: cf.pdm_id } });
+            if (count) {
+                this.logger.error(`Não é possível ativar o ciclo ${cf.data_ciclo} pois ainda há outros ciclos que não foram fechados`);
+                return;
+            }
+            this.logger.log(`ativando ciclo ${cf.data_ciclo}`);
+
+            await prismaTxn.cicloFisico.update({
+                where: { id: cf.id },
+                data: {
+                    ativo: true,
+                    acordar_ciclo_em: null
+                }
+            });
+
+        });
+    }
 }
