@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePainelConteudoDto, CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
-import { PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDto } from './dto/update-painel-conteudo.dto';
+import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { PainelConteudo } from './entities/painel-conteudo-entity';
 
@@ -170,6 +170,7 @@ export class PainelService {
                                 {ordem: 'asc'}
                             ],
                             select: {
+                                id: true,
                                 tipo: true,
                                 mostrar_indicador: true,
 
@@ -187,6 +188,7 @@ export class PainelService {
                                 },
                                 filhos: {
                                     select: {
+                                        id: true,
                                         tipo: true,
                                         mostrar_indicador: true,
 
@@ -204,6 +206,7 @@ export class PainelService {
                                         },
                                         filhos: {
                                             select: {
+                                                id: true,
                                                 tipo: true,
                                                 mostrar_indicador: true,
 
@@ -331,7 +334,7 @@ export class PainelService {
         })
     }
 
-    async updatePainelConteudo(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoDto) {
+    async updatePainelConteudoVisualizacao(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto) {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
             if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
@@ -350,6 +353,52 @@ export class PainelService {
         });
 
         return { id: painel_conteudo_id }
+    }
+
+    async updatePainelConteudoDetalhes(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDetalheDto: UpdatePainelConteudoDetalheDto) {
+        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoDetalheUpdateRet> => {
+            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
+            if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
+
+            const operations = [];
+            if (updatePainelConteudoDetalheDto.mostrar_indicador || updatePainelConteudoDetalheDto.mostrar_indicador === false) {
+                operations.push(prisma.painelConteudoDetalhe.update({
+                    where: { id: updatePainelConteudoDetalheDto.id },
+                    data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador },
+                    select: {id: true}
+                }));
+            }
+
+            if (updatePainelConteudoDetalheDto.filhos! && updatePainelConteudoDetalheDto.filhos?.length > 0) {
+                for (const row of updatePainelConteudoDetalheDto.filhos) {
+                    if (row.mostrar_indicador || row.mostrar_indicador === false) {
+                        operations.push(prisma.painelConteudoDetalhe.update({
+                            where: { id: row.id },
+                            data: { mostrar_indicador: row.mostrar_indicador },
+                            select: {id: true}
+                        }));
+                    }
+
+                    if (row.filhos! && row.filhos?.length > 0) {
+                        for (const second_level_row of row.filhos) {
+                            if (second_level_row.mostrar_indicador || second_level_row.mostrar_indicador === false) {
+                                operations.push(prisma.painelConteudoDetalhe.update({
+                                    where: { id: second_level_row.id },
+                                    data: { mostrar_indicador: second_level_row.mostrar_indicador },
+                                    select: {id: true}
+                                }));
+                            }
+                        }
+                    }
+                }
+            }
+
+            const updated = await Promise.all(operations);
+
+            return {updated};
+        });
+
+        return ret
     }
 
     async populatePainelConteudoDetalhe(conteudos: any[], prisma: Prisma.TransactionClient) {
