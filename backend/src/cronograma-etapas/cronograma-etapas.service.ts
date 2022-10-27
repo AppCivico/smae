@@ -116,6 +116,9 @@ export class CronogramaEtapaService {
                                 termino_real: true,
                                 prazo: true,
                                 titulo: true,
+                                CronogramaEtapa: {
+                                    orderBy: { ordem: 'asc' }
+                                },
 
                                 etapa_filha: {
                                     select: {
@@ -130,6 +133,10 @@ export class CronogramaEtapaService {
                                         termino_real: true,
                                         prazo: true,
                                         titulo: true,
+
+                                        CronogramaEtapa: {
+                                            orderBy: { ordem: 'asc' }
+                                        }
                                     }
                                 }
                             }
@@ -148,14 +155,6 @@ export class CronogramaEtapaService {
             if (cronogramaEtapa.etapa.etapa_pai_id) {
                 const firstLevelParentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
                 if (firstLevelParentIndex >= 0) continue;
-
-                // let secondLevelParentIndex;
-                // const foo = cronogramaEtapas.filter(e => {
-                //     return e.etapa.etapa_filha.length
-                // })
-                // if (cronogramaEtapa.etapa.etapa_filha.length > 0) {
-                    
-                // }
             }
         
             let ordem;
@@ -188,12 +187,6 @@ export class CronogramaEtapaService {
                 },
 
                 cronograma_origem_etapa: {
-                    // id: cronogramaEtapa.etapa.cronograma.id,
-                    // meta_id: cronogramaEtapa.etapa.cronograma.meta_id,
-                    // iniciativa_id: cronogramaEtapa.etapa.cronograma.iniciativa_id,
-                    // atividade_id: cronogramaEtapa.etapa.cronograma.atividade_id,
-                    // descricao: cronogramaEtapa.etapa.cronograma.descricao,
-
                     ...cronogramaEtapa.etapa.cronograma
                 }
             })
