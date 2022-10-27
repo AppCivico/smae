@@ -27,7 +27,7 @@ export class Date2YMD {
 
 
     static incUtcDays(data: Date, days: number): Date {
-        var incDays = new Date();
+        var incDays = new Date(data);
         incDays.setUTCDate(incDays.getUTCDate() + days);
         return incDays;
     }
