@@ -387,7 +387,7 @@ export class PdmService {
             await this.prisma.cicloFisico.update({
                 where: { id: cf.id },
                 data: {
-                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incUtcDays(proxima_fase.data_fim, 1)),
+                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1)),
                     acordar_ciclo_executou_em: new Date(Date.now()),
                     ciclo_fase_atual_id: proxima_fase.id,
                 },
@@ -470,7 +470,7 @@ export class PdmService {
                     data: {
                         ativo: true,
                         ciclo_fase_atual_id: proxima_fase.id,
-                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incUtcDays(proxima_fase.data_fim, 1))
+                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1))
                     }
                 });
             }
