@@ -278,7 +278,7 @@ export class PdmService {
         });
     }
 
-    @Cron('* * * * * *')
+    @Cron('0 * * * * *')
     async handleCron() {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
@@ -304,8 +304,8 @@ export class PdmService {
         });
     }
 
-    async verificaCiclosPendentes(now: DateYMD) {
-        console.log(now)
+    async verificaCiclosPendentes(today: DateYMD) {
+        console.log(today)
         this.logger.debug(`Verificando ciclos físicos com tick faltando...`);
 
         const cf = await this.prisma.cicloFisico.findFirst({
@@ -320,6 +320,7 @@ export class PdmService {
                 id: true,
                 data_ciclo: true,
                 ativo: true,
+                ciclo_fase_atual_id: true
             },
             orderBy: {
                 data_ciclo: 'asc'
@@ -327,21 +328,73 @@ export class PdmService {
             take: 1,
         });
         if (!cf) {
-            this.logger.debug('não há CicloFisico pendente');
+            this.logger.debug('Não há Ciclo Físico com processamento pendente');
             return;
         }
 
-        const mesCorrente = now.substring(0, 8) + '01';
-
+        const mesCorrente = today.substring(0, 8) + '01';
         this.logger.debug(JSON.stringify(cf) + ' mesCorrente=' + mesCorrente)
 
-        if (Date2YMD.toString(cf.data_ciclo) < mesCorrente && cf.ativo) {
-            await this.inativarCiclo(cf);
-        } else if (Date2YMD.toString(cf.data_ciclo) === mesCorrente && !cf.ativo) {
-            await this.ativarCiclo(cf);
-        } else {
-            this.logger.debug(`Tarefa do CicloFisico não detectada`);
+        try {
+            if (Date2YMD.toString(cf.data_ciclo) < mesCorrente && cf.ativo) {
+                await this.inativarCiclo(cf);
+            } else if (Date2YMD.toString(cf.data_ciclo) === mesCorrente && !cf.ativo) {
+                await this.ativarCiclo(cf, today);
+            } else {
+                await this.verificaFaseAtual(cf, today);
+            }
+        } catch (error) {
+            this.logger.error(error);
+            await this.prisma.cicloFisico.update({
+                where: {
+                    id: cf.id
+                },
+                data: {
+                    acordar_ciclo_errmsg: error,
+                    acordar_ciclo_executou_em: new Date(Date.now()),
+                }
+            });
         }
+    }
+
+    private async verificaFaseAtual(cf: {
+        id: number; pdm_id: number; data_ciclo: Date;
+        ciclo_fase_atual_id: number | null;
+    }, today: string) {
+
+        const proxima_fase = await this.prisma.cicloFisicoFase.findFirst({
+            where: {
+                ciclo_fisico_id: cf.id,
+                data_inicio: {
+                    lte: today
+                }
+            },
+            orderBy: {
+                data_inicio: 'desc'
+            },
+            take: 1
+        });
+
+        if (!proxima_fase) {
+            throw new Error(`Faltando próxima fase do ciclo!`);
+        } else if (cf.ciclo_fase_atual_id === null) {
+            throw new Error(`ciclo_fase_atual_id está null, provavelmente o ciclo não deveria ter sido executado ainda`);
+        }
+
+        if (cf.ciclo_fase_atual_id !== proxima_fase.id) {
+            this.logger.debug(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id} para ${proxima_fase.id} (${proxima_fase.ciclo_fase})`);
+
+            await this.prisma.cicloFisico.update({
+                where: { id: cf.id },
+                data: {
+                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incUtcDays(proxima_fase.data_fim, 1)),
+                    acordar_ciclo_executou_em: new Date(Date.now()),
+                    ciclo_fase_atual_id: proxima_fase.id,
+                },
+            });
+
+        }
+
     }
 
 
@@ -387,7 +440,7 @@ export class PdmService {
         });
     }
 
-    private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date; }) {
+    private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date; }, today: string) {
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
 
             const count = await prismaTxn.cicloFisico.count({ where: { ativo: true, pdm_id: cf.pdm_id } });
@@ -397,26 +450,30 @@ export class PdmService {
             }
             this.logger.log(`ativando ciclo ${cf.data_ciclo}`);
 
-            const primeira_fase = await prismaTxn.cicloFisicoFase.findFirst({
-                where: { ciclo_fisico_id: cf.id },
+            const proxima_fase = await prismaTxn.cicloFisicoFase.findFirst({
+                where: {
+                    ciclo_fisico_id: cf.id,
+                    data_inicio: {
+                        lte: today
+                    }
+                },
                 orderBy: {
-                    data_inicio: 'asc'
+                    data_inicio: 'desc'
                 },
                 take: 1
             });
-            if (!primeira_fase) {
-                throw new Error(`faltando primeira fase do ciclo!`);
+            if (!proxima_fase) {
+                throw new Error(`Faltando próxima fase do ciclo!`);
+            } else {
+                await prismaTxn.cicloFisico.update({
+                    where: { id: cf.id },
+                    data: {
+                        ativo: true,
+                        ciclo_fase_atual_id: proxima_fase.id,
+                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incUtcDays(proxima_fase.data_fim, 1))
+                    }
+                });
             }
-
-            await prismaTxn.cicloFisico.update({
-                where: { id: cf.id },
-                data: {
-                    ativo: true,
-                    ciclo_fase_atual_id: primeira_fase.id,
-                    acordar_ciclo_em: primeira_fase.data_fim
-                }
-            });
-
         });
     }
 
