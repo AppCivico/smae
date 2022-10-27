@@ -17,5 +17,19 @@ export class Date2YMD {
         }
     }
 
+    // converte uma data, considerando SP (-0300) para date-time UTC
+    static tzSp2UTC(data: string | Date): string {
+        let str = typeof data === 'string' ? data : Date2YMD.toString(data);
+        return new Date(
+            new Date('' + str + 'T00:00:00').toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' })
+        ).toISOString()
+    }
+
+
+    static incUtcDays(data: Date, days: number): Date {
+        var incDays = new Date();
+        incDays.setUTCDate(incDays.getUTCDate() + days);
+        return incDays;
+    }
 
 }
