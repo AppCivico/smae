@@ -65,6 +65,11 @@ export class EtapaService {
                             }
                         }
                     }
+                },
+                CronogramaEtapa: {
+                    every: {
+                        cronograma_id:  cronogramaId
+                    }
                 }
             },
             include: {
@@ -72,11 +77,16 @@ export class EtapaService {
                     include: {
                         etapa_filha: true
                     }
-                }
+                },
+                CronogramaEtapa: true
             }
         });
 
         for (const etapa of etapas) {
+            const cronograma_etapa = etapa.CronogramaEtapa.filter(r => {
+                return r.cronograma_id === cronogramaId
+            });
+
             ret.push({
                 id: etapa.id,
                 etapa_pai_id: etapa.etapa_pai_id,
@@ -91,7 +101,8 @@ export class EtapaService {
                 termino_previsto: etapa.termino_previsto,
                 inicio_real: etapa.inicio_real,
                 termino_real: etapa.termino_real,
-                etapa_filha: etapa.etapa_filha
+                etapa_filha: etapa.etapa_filha,
+                ordem: cronograma_etapa[0].ordem
             })
         }
 
