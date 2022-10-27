@@ -350,7 +350,7 @@ export class PdmService {
                     id: cf.id
                 },
                 data: {
-                    acordar_ciclo_errmsg: error,
+                    acordar_ciclo_errmsg: `${error}`,
                     acordar_ciclo_executou_em: new Date(Date.now()),
                 }
             });
@@ -366,7 +366,7 @@ export class PdmService {
             where: {
                 ciclo_fisico_id: cf.id,
                 data_inicio: {
-                    lte: today
+                    lte: new Date(today)
                 }
             },
             orderBy: {
@@ -454,7 +454,7 @@ export class PdmService {
                 where: {
                     ciclo_fisico_id: cf.id,
                     data_inicio: {
-                        lte: today
+                        lte: new Date(today)
                     }
                 },
                 orderBy: {
