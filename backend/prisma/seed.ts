@@ -239,7 +239,7 @@ const PerfilAcessoConfig: any = [
         ]
     },
     {
-        nome: 'Responsável por meta na CP',
+        nome: 'Ponto Focal',
         descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
         privilegios: [
             'PDM.ponto_focal',
