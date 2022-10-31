@@ -1,4 +1,4 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
+import { ApiHideProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsNumber, IsOptional } from 'class-validator';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreatePainelConteudoDto } from './create-painel-conteudo.dto';

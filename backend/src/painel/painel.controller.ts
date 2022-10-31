@@ -68,19 +68,19 @@ export class PainelController {
     }
 
     @ApiBearerAuth('access-token')
-    @Get(':id/conteudo/:id/visualizacao')
+    @Get(':id/conteudo/:id2/visualizacao')
     async detailPainelConteudoVisualizacao(@Param() params: FindTwoParams): Promise<DetailPainelVisualizacaoDto> {
         return await this.painelService.getPainelConteudoVisualizacao(+params.id2);
     }
 
     @ApiBearerAuth('access-token')
-    @Patch(':id/conteudo/:id/visualizacao')
+    @Patch(':id/conteudo/:id2/visualizacao')
     async updateConteudoVisualizacao(@Param() params: FindTwoParams, @Body() updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto): Promise<RecordWithId> {
         return await this.painelService.updatePainelConteudoVisualizacao(+params.id, +params.id2, updatePainelConteudoDto);
     }
 
     @ApiBearerAuth('access-token')
-    @Patch(':id/conteudo/:id/detalhes')
+    @Patch(':id/conteudo/:id2/detalhes')
     async updateConteudoDetalhe(@Param() params: FindTwoParams, @Body() updatePainelConteudoDetalhesDto: UpdatePainelConteudoDetalheDto): Promise<PainelConteudoDetalheUpdateRet> {
         return await this.painelService.updatePainelConteudoDetalhes(+params.id, +params.id2, updatePainelConteudoDetalhesDto);
     }
