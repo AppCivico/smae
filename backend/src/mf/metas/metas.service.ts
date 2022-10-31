@@ -6,7 +6,7 @@ import { MfMetaAgrupadaDto } from './dto/mf-meta.dto';
 export class MetasService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async metasPorPlano(filters: { ids: number[] }): Promise<MfMetaAgrupadaDto[]> {
+    async metasPorFase(filters: { ids: number[] }): Promise<MfMetaAgrupadaDto[]> {
 
         const rows = await this.prisma.meta.findMany({
             where: {
@@ -30,7 +30,7 @@ export class MetasService {
                 id: r.id,
                 codigo: r.codigo,
                 titulo: r.titulo,
-                grupo: r.ciclo_fase?.ciclo_fase || ''
+                grupo: r.ciclo_fase?.ciclo_fase || 'Sem Ciclo Fase'
             }
         });
     }
