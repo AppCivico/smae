@@ -360,35 +360,26 @@ export class PainelService {
             if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
 
             const operations = [];
-            if (updatePainelConteudoDetalheDto.mostrar_indicador || updatePainelConteudoDetalheDto.mostrar_indicador === false) {
+            if (updatePainelConteudoDetalheDto.mostrar_indicador_meta || updatePainelConteudoDetalheDto.mostrar_indicador_meta === false) {
                 operations.push(prisma.painelConteudo.update({
                     where: { id: painel_conteudo_id },
-                    data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador },
+                    data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador_meta },
                     select: {id: true}
                 }));
             }
 
-            if (updatePainelConteudoDetalheDto.filhos! && updatePainelConteudoDetalheDto.filhos?.length > 0) {
-                for (const row of updatePainelConteudoDetalheDto.filhos) {
-                    if (row.mostrar_indicador || row.mostrar_indicador === false) {
-                        operations.push(prisma.painelConteudoDetalhe.update({
-                            where: { id: row.id },
-                            data: { mostrar_indicador: row.mostrar_indicador },
-                            select: {id: true}
-                        }));
-                    }
-
-                    if (row.filhos! && row.filhos?.length > 0) {
-                        for (const second_level_row of row.filhos) {
-                            if (second_level_row.mostrar_indicador || second_level_row.mostrar_indicador === false) {
-                                operations.push(prisma.painelConteudoDetalhe.update({
-                                    where: { id: second_level_row.id },
-                                    data: { mostrar_indicador: second_level_row.mostrar_indicador },
-                                    select: {id: true}
-                                }));
-                            }
-                        }
-                    }
+            for (const detalhe of updatePainelConteudoDetalheDto.detalhes!) {
+                if (detalhe.mostrar_indicador!) {
+                    operations.push(prisma.painelConteudoDetalhe.update({
+                        where: {
+                            id: detalhe.id,
+                        },
+                        data: { mostrar_indicador: detalhe.mostrar_indicador },
+                        select: {id: true}
+                    }))
+                }
+                else {
+                    continue;
                 }
             }
 
@@ -412,15 +403,6 @@ export class PainelService {
 
             // Primeiro nivel
             for (const row of meta_indicador) {
-                const parent = await prisma.painelConteudoDetalhe.create({
-                    data: {
-                        painel_conteudo_id: painel_conteudo.id,
-                        mostrar_indicador: painel_conteudo.mostrar_indicador,
-                        tipo: PainelConteudoTipoDetalhe.Variavel
-                    },
-                    select: { id: true }
-                });
-
                 const indicador_variaveis = await prisma.indicadorVariavel.findMany({
                     where: {
                         indicador_id: row.id,
@@ -435,8 +417,7 @@ export class PainelService {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: row.variavel_id,
                             mostrar_indicador: painel_conteudo.mostrar_indicador,
-                            tipo: PainelConteudoTipoDetalhe.Variavel,
-                            pai_id: parent.id
+                            tipo: PainelConteudoTipoDetalhe.Variavel
                         }
                     })
                 }
