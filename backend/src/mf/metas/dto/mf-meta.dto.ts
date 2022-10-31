@@ -31,4 +31,5 @@ export class MfMetaAgrupadaDto {
 
 export class ListMfMetasAgrupadasDto {
     linhas: MfMetaAgrupadaDto[]
+    agrupador: string
 }
