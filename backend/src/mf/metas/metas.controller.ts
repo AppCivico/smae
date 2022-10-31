@@ -17,9 +17,9 @@ export class MetasController {
 
 
     @ApiBearerAuth('access-token')
-    @Get('')
+    @Get('por-fase')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    async metasCronograma(
+    async metasPorFase(
         @Query() params: ParamsMfMetaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasAgrupadasDto> {
@@ -31,9 +31,10 @@ export class MetasController {
         ];
 
         return {
-            'linhas': await this.metasService.metasPorPlano({
+            'linhas': await this.metasService.metasPorFase({
                 ids: ids,
-            })
+            }),
+            agrupador: 'Fase'
         };
     }
 
