@@ -778,6 +778,8 @@ model VariavelResponsavel {
 
     pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
     variavel Variavel @relation(fields: [variavel_id], references: [id])
+
+    @@map("variavel_responsavel")
 }
 
 model Variavel {
