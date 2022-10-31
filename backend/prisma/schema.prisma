@@ -1292,11 +1292,16 @@ model PessoaAcessoPdm {
     id        Int @id @default(autoincrement())
     pessoa_id Int
 
-    metas       Int[]
-    variaveis   Int[]
+    metas_cronograma   Int[]
+    metas_variaveis    Int[]
+    variaveis          Int[]
     cronogramas_etapas Int[]
 
+    data_ciclo DateTime? @db.Date
+    perfil     String
+
     // se o valor estiver congelado, para debug, não vamos recalcular as permissões
+    // exceto se for mudança de ciclo, nesse caso, vai recacular anyway
     congelado Boolean
 
     pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
