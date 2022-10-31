@@ -263,7 +263,7 @@ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION f_recalc_acesso_pessoas() RETURNS trigger AS $emp_stamp$
 BEGIN
-    PERFORM  select pessoa_acesso_pdm(id) from pessoa where ativa;
+    PERFORM pessoa_acesso_pdm(id) from pessoa where ativa;
     RETURN NEW;
 END;
 $emp_stamp$ LANGUAGE plpgsql;
