@@ -12,24 +12,20 @@ export class UpdatePainelConteudoVisualizacaoDto extends PartialType(OmitType(Cr
 export class UpdatePainelConteudoDetalheDto {
     @IsBoolean()
     @IsOptional()
-    mostrar_indicador?: boolean | null
+    mostrar_indicador_meta?: boolean | null
 
     @IsArray()
     @IsOptional()
-    filhos?: updatePainelConteudoDetalheFilhosDto[] | null
+    detalhes?: UpdatePainelConteudoDetalheRowsDto[] | null
 }
 
-export class updatePainelConteudoDetalheFilhosDto {
+export class UpdatePainelConteudoDetalheRowsDto {
     @IsBoolean()
     @IsOptional()
     mostrar_indicador?: boolean | null
 
     @IsNumber()
     id: number
-
-    @IsArray()
-    @IsOptional()
-    filhos?: updatePainelConteudoDetalheFilhosDto[] | null
 }
 export class PainelConteudoIdAndMeta {
     id: number
