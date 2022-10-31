@@ -14,12 +14,22 @@ export class UpdatePainelConteudoDetalheDto {
     @IsOptional()
     mostrar_indicador?: boolean | null
 
+    @IsArray()
+    @IsOptional()
+    filhos?: updatePainelConteudoDetalheFilhosDto[] | null
+}
+
+export class updatePainelConteudoDetalheFilhosDto {
+    @IsBoolean()
+    @IsOptional()
+    mostrar_indicador?: boolean | null
+
     @IsNumber()
     id: number
 
     @IsArray()
     @IsOptional()
-    filhos?: UpdatePainelConteudoDetalheDto[] | null
+    filhos?: updatePainelConteudoDetalheFilhosDto[] | null
 }
 export class PainelConteudoIdAndMeta {
     id: number
