@@ -361,8 +361,8 @@ export class PainelService {
 
             const operations = [];
             if (updatePainelConteudoDetalheDto.mostrar_indicador || updatePainelConteudoDetalheDto.mostrar_indicador === false) {
-                operations.push(prisma.painelConteudoDetalhe.update({
-                    where: { id: updatePainelConteudoDetalheDto.id },
+                operations.push(prisma.painelConteudo.update({
+                    where: { id: painel_conteudo_id },
                     data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador },
                     select: {id: true}
                 }));
