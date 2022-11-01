@@ -23,7 +23,8 @@ export class MetasController {
         @Query() params: ParamsMfMetaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasAgrupadasDto> {
-
+        const start = Date.now();
+        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
         const config = await this.mfService.pessoaAcessoPdm(user);
         const ids: number[] = [
             ...(params.via_cronograma ? config.metas_cronograma : []),
@@ -34,7 +35,9 @@ export class MetasController {
             'linhas': await this.metasService.metasPorFase({
                 ids: ids,
             }),
-            agrupador: 'Fase'
+            agrupador: 'Fase',
+            meta: { queryTook: Date.now() - start },
+            ciclo_ativo: cicloFisicoAtivo
         };
     }
 
@@ -44,7 +47,7 @@ export class MetasController {
     async metasPorStatus(
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasAgrupadasDto> {
-
+        const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
         const ids: number[] = [
@@ -54,7 +57,9 @@ export class MetasController {
             'linhas': await this.metasService.metasPorStatus({
                 ids: ids,
             }, cicloFisicoAtivo.id),
-            agrupador: 'Status'
+            agrupador: 'Status',
+            meta: { queryTook: Date.now() - start },
+            ciclo_ativo: cicloFisicoAtivo
         };
     }
 
