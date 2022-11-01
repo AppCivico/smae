@@ -89,7 +89,9 @@ export const router = createRouter({
                 { path: '', component: ListPainel, },
                 { path: 'novo', component: AddEditPainel,  },
                 { path: ':painel_id', component: AddEditPainel, },
-                { path: ':painel_id/metas', component: AddEditPainel, props:{type:"editarMetas"} },
+                { path: ':painel_id/metas', component: AddEditPainel, props:{type:"selecionarMetas"} },
+                { path: ':painel_id/metas/:conteudo_id', component: AddEditPainel, props:{type:"editarMeta"} },
+                { path: ':painel_id/metas/:conteudo_id/detalhes', component: AddEditPainel, props:{type:"editarDetalhe"} },
             ]
         },
         { path: '/metas',
