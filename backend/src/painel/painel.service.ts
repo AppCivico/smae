@@ -177,12 +177,14 @@ export class PainelService {
                                     select: {
                                         id: true,
                                         titulo: true,
+                                        codigo: true
                                     }
                                 },
                                 iniciativa: {
                                     select: {
                                         id: true,
                                         titulo: true,
+                                        codigo: true
                                     }
                                 },
                                 filhos: {
@@ -195,12 +197,14 @@ export class PainelService {
                                             select: {
                                                 id: true,
                                                 titulo: true,
+                                                codigo: true
                                             }
                                         },
                                         atividade: {
                                             select: {
                                                 id: true,
-                                                titulo: true
+                                                titulo: true,
+                                                codigo: true
                                             }
                                         },
                                         filhos: {
@@ -212,7 +216,8 @@ export class PainelService {
                                                 variavel: {
                                                     select: {
                                                         id: true,
-                                                        titulo: true
+                                                        titulo: true,
+                                                        codigo: true
                                                     }
                                                 }
                                             }
