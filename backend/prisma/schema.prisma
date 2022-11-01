@@ -130,6 +130,8 @@ model Pessoa {
     PaineisQueAtualizei Painel[]          @relation("Atualizador")
     PessoaAcessoPdm     PessoaAcessoPdm[]
 
+    GruposDePaineisQueCriei GrupoPainel[] @relation("Criador")
+    GruposDePaineisQueRemovi GrupoPainel[] @relation("Removedor")
     GruposDePaineisQueParticipo PessoaGrupoPainel[]
 
     @@map("pessoa")
@@ -1231,6 +1233,14 @@ model GrupoPainel {
 
     nome  String  @unique
     ativo Boolean @default(true)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador         Pessoa?          @relation("Criador", fields: [criado_por], references: [id])
+    removedor       Pessoa?          @relation("Removedor", fields: [removido_por], references: [id])
 
     pessoas PessoaGrupoPainel[]
     paineis PainelGrupoPainel[]
