@@ -177,12 +177,14 @@ export class PainelService {
                                     select: {
                                         id: true,
                                         titulo: true,
+                                        codigo: true
                                     }
                                 },
                                 iniciativa: {
                                     select: {
                                         id: true,
                                         titulo: true,
+                                        codigo: true
                                     }
                                 },
                                 filhos: {
@@ -195,12 +197,14 @@ export class PainelService {
                                             select: {
                                                 id: true,
                                                 titulo: true,
+                                                codigo: true
                                             }
                                         },
                                         atividade: {
                                             select: {
                                                 id: true,
-                                                titulo: true
+                                                titulo: true,
+                                                codigo: true
                                             }
                                         },
                                         filhos: {
@@ -212,7 +216,8 @@ export class PainelService {
                                                 variavel: {
                                                     select: {
                                                         id: true,
-                                                        titulo: true
+                                                        titulo: true,
+                                                        codigo: true
                                                     }
                                                 }
                                             }
@@ -360,35 +365,26 @@ export class PainelService {
             if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
 
             const operations = [];
-            if (updatePainelConteudoDetalheDto.mostrar_indicador || updatePainelConteudoDetalheDto.mostrar_indicador === false) {
-                operations.push(prisma.painelConteudoDetalhe.update({
-                    where: { id: updatePainelConteudoDetalheDto.id },
-                    data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador },
+            if (updatePainelConteudoDetalheDto.mostrar_indicador_meta || updatePainelConteudoDetalheDto.mostrar_indicador_meta === false) {
+                operations.push(prisma.painelConteudo.update({
+                    where: { id: painel_conteudo_id },
+                    data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador_meta },
                     select: {id: true}
                 }));
             }
 
-            if (updatePainelConteudoDetalheDto.filhos! && updatePainelConteudoDetalheDto.filhos?.length > 0) {
-                for (const row of updatePainelConteudoDetalheDto.filhos) {
-                    if (row.mostrar_indicador || row.mostrar_indicador === false) {
-                        operations.push(prisma.painelConteudoDetalhe.update({
-                            where: { id: row.id },
-                            data: { mostrar_indicador: row.mostrar_indicador },
-                            select: {id: true}
-                        }));
-                    }
-
-                    if (row.filhos! && row.filhos?.length > 0) {
-                        for (const second_level_row of row.filhos) {
-                            if (second_level_row.mostrar_indicador || second_level_row.mostrar_indicador === false) {
-                                operations.push(prisma.painelConteudoDetalhe.update({
-                                    where: { id: second_level_row.id },
-                                    data: { mostrar_indicador: second_level_row.mostrar_indicador },
-                                    select: {id: true}
-                                }));
-                            }
-                        }
-                    }
+            for (const detalhe of updatePainelConteudoDetalheDto.detalhes!) {
+                if (detalhe.mostrar_indicador!) {
+                    operations.push(prisma.painelConteudoDetalhe.update({
+                        where: {
+                            id: detalhe.id,
+                        },
+                        data: { mostrar_indicador: detalhe.mostrar_indicador },
+                        select: {id: true}
+                    }))
+                }
+                else {
+                    continue;
                 }
             }
 
@@ -412,15 +408,6 @@ export class PainelService {
 
             // Primeiro nivel
             for (const row of meta_indicador) {
-                const parent = await prisma.painelConteudoDetalhe.create({
-                    data: {
-                        painel_conteudo_id: painel_conteudo.id,
-                        mostrar_indicador: painel_conteudo.mostrar_indicador,
-                        tipo: PainelConteudoTipoDetalhe.Variavel
-                    },
-                    select: { id: true }
-                });
-
                 const indicador_variaveis = await prisma.indicadorVariavel.findMany({
                     where: {
                         indicador_id: row.id,
@@ -435,8 +422,7 @@ export class PainelService {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: row.variavel_id,
                             mostrar_indicador: painel_conteudo.mostrar_indicador,
-                            tipo: PainelConteudoTipoDetalhe.Variavel,
-                            pai_id: parent.id
+                            tipo: PainelConteudoTipoDetalhe.Variavel
                         }
                     })
                 }
@@ -445,7 +431,6 @@ export class PainelService {
             const meta_iniciativas = await prisma.iniciativa.findMany({
                 where: {
                     meta_id: painel_conteudo.meta_id,
-                    ativo: true
                 },
                 select: { id: true }
             });
@@ -456,7 +441,8 @@ export class PainelService {
                     data: {
                         painel_conteudo_id: painel_conteudo.id,
                         mostrar_indicador: painel_conteudo.mostrar_indicador,
-                        tipo: PainelConteudoTipoDetalhe.Iniciativa
+                        tipo: PainelConteudoTipoDetalhe.Iniciativa,
+                        iniciativa_id: iniciativa.id
                     },
                     select: { id: true }
                 });
@@ -477,8 +463,8 @@ export class PainelService {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: variavel.variavel_id,
                             mostrar_indicador: false,
-                            tipo: PainelConteudoTipoDetalhe.Iniciativa,
-                            pai_id: parent_iniciativa.id
+                            tipo: PainelConteudoTipoDetalhe.Variavel,
+                            pai_id: parent_iniciativa.id,
                         }
                     })
                 }
@@ -487,7 +473,6 @@ export class PainelService {
                 const atividades = await prisma.atividade.findMany({
                     where: {
                         iniciativa_id: iniciativa.id,
-                        ativo: true
                     },
                     select: { id: true }
                 });
@@ -498,7 +483,8 @@ export class PainelService {
                             painel_conteudo_id: painel_conteudo.id,
                             mostrar_indicador: painel_conteudo.mostrar_indicador,
                             tipo: PainelConteudoTipoDetalhe.Atividade,
-                            pai_id: parent_iniciativa.id
+                            pai_id: parent_iniciativa.id,
+                            atividade_id: atividade.id
                         },
                         select: { id: true }
                     });
@@ -513,13 +499,13 @@ export class PainelService {
                         select: { variavel_id: true }
                     });
 
-                    for (const variavel of iniciativa_variaveis) {
+                    for (const variavel of atividade_variaveis) {
                         await prisma.painelConteudoDetalhe.create({
                             data: {
                                 painel_conteudo_id: painel_conteudo.id,
                                 variavel_id: variavel.variavel_id,
                                 mostrar_indicador: painel_conteudo.mostrar_indicador,
-                                tipo: PainelConteudoTipoDetalhe.Atividade,
+                                tipo: PainelConteudoTipoDetalhe.Variavel,
                                 pai_id: parent_atividade.id
                             }
                         })

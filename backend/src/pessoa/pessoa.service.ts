@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, HttpException, Injectable, Log
 import { Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { NovaSenhaDto } from 'src/minha-conta/models/nova-senha.dto';
 import { DetalhePessoaDto } from 'src/pessoa/dto/detalhe-pessoa.dto';
 import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
@@ -397,8 +398,10 @@ export class PessoaService {
                     promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } }))
                 }
                 await Promise.all(promises);
-            }
 
+                this.logger.log(`recalculando pessoa_acesso_pdm...`)
+                await prisma.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
+            }
 
         }, {
             // verificar o email dentro do contexto Serializable
@@ -431,7 +434,7 @@ export class PessoaService {
             senha_bloqueada_em: new Date(Date.now()),
         } as Prisma.PessoaCreateInput;
 
-        const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Pessoa> => {
+        const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
             if (emailExists > 0) {
@@ -472,7 +475,7 @@ export class PessoaService {
                 data: {
                     ...pessoaData,
                     pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
-                } as Prisma.PessoaCreateInput
+                } as Prisma.PessoaCreateInput,
             });
 
             let promises = [];
@@ -481,6 +484,9 @@ export class PessoaService {
             }
             promises.push(this.enviaPrimeiraSenha(created, newPass, prisma));
             await Promise.all(promises);
+
+            this.logger.log(`calculando pessoa_acesso_pdm...`)
+            await prisma.$queryRaw`select pessoa_acesso_pdm(${created.id}::int)`;
 
             return created;
         }, {
