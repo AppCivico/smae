@@ -44,6 +44,6 @@ export class ListMfMetasAgrupadasDto {
     agrupador: string
     meta: {
         queryTook: number
-    },
+    }
     ciclo_ativo: CicloAtivo
 }
