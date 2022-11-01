@@ -379,7 +379,7 @@ export class PessoaService {
 
                     GruposDePaineisQueParticipo: {
                         createMany: {
-                            data: {...grupos_to_assign}
+                            data: grupos_to_assign
                         }
                     }
                 }
@@ -525,7 +525,7 @@ export class PessoaService {
 
                     GruposDePaineisQueParticipo: {
                         createMany: {
-                            data: {...grupos_to_assign}
+                            data: grupos_to_assign
                         }
                     }
                 } as Prisma.PessoaCreateInput,
