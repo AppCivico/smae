@@ -48,6 +48,8 @@ export class VariavelService {
         let indicador_id = createVariavelDto.indicador_id!;
         delete createVariavelDto.indicador_id;
 
+        if (createVariavelDto.atraso_meses === undefined) createVariavelDto.atraso_meses = 1;
+
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: indicador_id },
             select: {
