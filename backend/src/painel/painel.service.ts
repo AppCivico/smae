@@ -59,18 +59,6 @@ export class PainelService {
         return await this.prisma.painel.findMany({
             where: {
                 ativo: ativo,
-
-                grupos: {
-                    some: {
-                        grupo_painel: {
-                            pessoas: {
-                                some: {
-                                    pessoa_id: user.id
-                                }
-                            }
-                        }
-                    }
-                }
             },
             select: {
                 id: true,
