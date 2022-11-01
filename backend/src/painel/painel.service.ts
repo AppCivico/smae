@@ -436,7 +436,8 @@ export class PainelService {
                     data: {
                         painel_conteudo_id: painel_conteudo.id,
                         mostrar_indicador: painel_conteudo.mostrar_indicador,
-                        tipo: PainelConteudoTipoDetalhe.Iniciativa
+                        tipo: PainelConteudoTipoDetalhe.Iniciativa,
+                        iniciativa_id: iniciativa.id
                     },
                     select: { id: true }
                 });
@@ -458,7 +459,7 @@ export class PainelService {
                             variavel_id: variavel.variavel_id,
                             mostrar_indicador: false,
                             tipo: PainelConteudoTipoDetalhe.Variavel,
-                            pai_id: parent_iniciativa.id
+                            pai_id: parent_iniciativa.id,
                         }
                     })
                 }
@@ -477,7 +478,8 @@ export class PainelService {
                             painel_conteudo_id: painel_conteudo.id,
                             mostrar_indicador: painel_conteudo.mostrar_indicador,
                             tipo: PainelConteudoTipoDetalhe.Atividade,
-                            pai_id: parent_iniciativa.id
+                            pai_id: parent_iniciativa.id,
+                            atividade_id: atividade.id
                         },
                         select: { id: true }
                     });
