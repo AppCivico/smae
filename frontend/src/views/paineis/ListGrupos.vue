@@ -2,36 +2,32 @@
     import { ref, reactive } from 'vue';
     import { storeToRefs } from 'pinia';
     import { Dashboard} from '@/components';
-    import { useAuthStore, usePaineisStore, useMetasStore } from '@/stores';
+    import { useAuthStore, usePaineisGruposStore } from '@/stores';
 
     const authStore = useAuthStore();
     const { permissions } = storeToRefs(authStore);
     const perm = permissions.value;
 
-    const PaineisStore = usePaineisStore();
-    const { tempPaineis } = storeToRefs(PaineisStore);
-    PaineisStore.clear();
-    PaineisStore.filterPaineis();
-
-    const MetasStore = useMetasStore();
-    const { Metas } = storeToRefs(MetasStore);
-    MetasStore.getAll();
+    const PaineisGruposStore = usePaineisGruposStore();
+    const { tempPaineisGrupos } = storeToRefs(PaineisGruposStore);
+    PaineisGruposStore.clear();
+    PaineisGruposStore.filterPaineisGrupos();
 
     const filters = ref({
         textualSearch: ""
     });
-    let itemsFiltered = ref(tempPaineis);
+    let itemsFiltered = ref(tempPaineisGrupos);
 
     function filterItems(){
-        PaineisStore.filterPaineis(filters.value);
+        PaineisGruposStore.filterPaineisGrupos(filters.value);
     }
 </script>
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Painel Indicador</h1>
+            <h1>Grupos de paineis</h1>
             <hr class="ml2 f1" />
-            <router-link v-if="perm?.CadastroPainel?.inserir" to="/paineis/novo" class="btn big ml2">Novo Modelo</router-link>
+            <router-link v-if="perm?.CadastroPainel?.inserir" to="/paineis-grupos/novo" class="btn big ml2">Novo Grupo</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
@@ -42,10 +38,8 @@
         <table class="tablemain">
             <thead>
                 <tr>
-                    <th style="width: 45%">Nome</th>
-                    <th style="width: 15%">Status</th>
-                    <th style="width: 15%">Periodicidade</th>
-                    <th style="width: 15%">Metas monitoradas</th>
+                    <th style="width: 65%">Grupo</th>
+                    <th style="width: 25%">Status</th>
                     <th style="width: 10%"></th>
                 </tr>
             </thead>
@@ -54,10 +48,8 @@
                     <tr v-for="p in itemsFiltered" :key="p.id">
                         <td>{{p.nome}}</td>
                         <td>{{p.ativo?"Ativo":"Inativo"}}</td>
-                        <td>{{p.periodicidade}}</td>
-                        <td>{{p.painel_conteudo.length}} de {{Metas.length}}</td>
                         <td style="white-space: nowrap; text-align: right">
-                            <router-link v-if="perm?.CadastroPainel?.editar" :to="`/paineis/${p.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            <router-link v-if="perm?.CadastroPainel?.editar" :to="`/paineis-grupos/${p.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                         </td>
                     </tr>
                 </template>

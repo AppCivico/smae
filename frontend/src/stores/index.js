@@ -20,3 +20,4 @@ export * from './atividades.store';
 export * from './cronogramas.store';
 export * from './etapas.store';
 export * from './paineis.store';
+export * from './paineisGrupos.store';
