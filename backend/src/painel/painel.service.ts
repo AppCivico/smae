@@ -313,7 +313,7 @@ export class PainelService {
 
                     grupos: {
                         createMany: {
-                            data: {...grupos_to_assign}
+                            data: grupos_to_assign,
                         }
                     }
                 },
