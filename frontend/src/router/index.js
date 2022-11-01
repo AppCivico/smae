@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores';
 import { Home } from '@/views';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
+import { default as SubmenuPaineis } from '@/components/SubmenuPaineis.vue';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 import { AddEditUsers, ListUsers } from '@/views/users';
@@ -19,7 +20,7 @@ import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao } f
 import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade, SingleAtividade } from '@/views/metas';
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
-import { ListPainel, AddEditPainel } from '@/views/paineis';
+import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
 
 
 export const router = createRouter({
@@ -86,12 +87,19 @@ export const router = createRouter({
         },
         { path: '/paineis',
             children: [
-                { path: '', component: ListPainel, },
-                { path: 'novo', component: AddEditPainel,  },
-                { path: ':painel_id', component: AddEditPainel, },
-                { path: ':painel_id/metas', component: AddEditPainel, props:{type:"selecionarMetas"} },
-                { path: ':painel_id/metas/:conteudo_id', component: AddEditPainel, props:{type:"editarMeta"} },
-                { path: ':painel_id/metas/:conteudo_id/detalhes', component: AddEditPainel, props:{type:"editarDetalhe"} },
+                { path: '', component: ListPainel, props:{submenu:SubmenuPaineis} },
+                { path: 'novo', component: AddEditPainel,  props:{submenu:SubmenuPaineis} },
+                { path: ':painel_id', component: AddEditPainel, props:{submenu:SubmenuPaineis} },
+                { path: ':painel_id/metas', component: AddEditPainel, props:{type:"selecionarMetas", submenu:SubmenuPaineis} },
+                { path: ':painel_id/metas/:conteudo_id', component: AddEditPainel, props:{type:"editarMeta", submenu:SubmenuPaineis} },
+                { path: ':painel_id/metas/:conteudo_id/detalhes', component: AddEditPainel, props:{type:"editarDetalhe", submenu:SubmenuPaineis} },
+            ]
+        },
+        { path: '/paineis-grupos',
+            children: [
+                { path: '', component: ListGrupos, props:{submenu:SubmenuPaineis} },
+                { path: 'novo', component: AddEditGrupo,  props:{submenu:SubmenuPaineis} },
+                { path: ':grupo_id', component: AddEditGrupo, props:{submenu:SubmenuPaineis} },
             ]
         },
         { path: '/metas',
