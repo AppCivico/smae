@@ -61,10 +61,10 @@ export class PainelService {
                 ativo: ativo,
 
                 grupos: {
-                    every: {
+                    some: {
                         grupo_painel: {
                             pessoas: {
-                                every: {
+                                some: {
                                     pessoa_id: user.id
                                 }
                             }
