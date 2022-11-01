@@ -426,7 +426,6 @@ export class PainelService {
             const meta_iniciativas = await prisma.iniciativa.findMany({
                 where: {
                     meta_id: painel_conteudo.meta_id,
-                    ativo: true
                 },
                 select: { id: true }
             });
@@ -468,7 +467,6 @@ export class PainelService {
                 const atividades = await prisma.atividade.findMany({
                     where: {
                         iniciativa_id: iniciativa.id,
-                        ativo: true
                     },
                     select: { id: true }
                 });
@@ -494,7 +492,7 @@ export class PainelService {
                         select: { variavel_id: true }
                     });
 
-                    for (const variavel of iniciativa_variaveis) {
+                    for (const variavel of atividade_variaveis) {
                         await prisma.painelConteudoDetalhe.create({
                             data: {
                                 painel_conteudo_id: painel_conteudo.id,
