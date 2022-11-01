@@ -54,10 +54,12 @@ export class CreatePainelConteudoDto {
 
     @IsOptional()
     @IsOnlyDate()
+    @Type(() => Date)
     periodo_fim?: Date
 
     @IsOptional()
     @IsOnlyDate()
+    @Type(() => Date)
     periodo_inicio?: Date
 
     @IsOptional()
