@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted, onUpdated } from 'vue';
+    import { ref, unref, onMounted, onUpdated } from 'vue';
     import { Dashboard} from '@/components';
     import { Form, Field } from 'vee-validate';
     import * as Yup from 'yup';
@@ -9,6 +9,9 @@
 
     import { useEditModalStore, useAlertStore, usePaineisStore } from '@/stores';
     import { default as SelecionarMetas } from '@/views/paineis/SelecionarMetas.vue';
+    import { default as EditarMeta } from '@/views/paineis/EditarMeta.vue';
+    import { default as EditarDetalhe } from '@/views/paineis/EditarDetalhe.vue';
+    
 
     const editModalStore = useEditModalStore();
     const alertStore = useAlertStore();
@@ -36,7 +39,10 @@
 
     const props = defineProps(['type']);
     function start(){
-        if(props.type=='editarMetas')editModalStore.modal(SelecionarMetas,props);
+        if(props.type=='selecionarMetas')editModalStore.modal(SelecionarMetas,props);
+        if(props.type=='editarMeta')editModalStore.modal(EditarMeta,props);
+        if(props.type=='editarDetalhe')editModalStore.modal(EditarDetalhe,props);
+
     }
     onMounted(()=>{start()});
     onUpdated(()=>{start()});
@@ -81,6 +87,25 @@
     }
     async function checkDelete(painel_id) {
         alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await PaineisStore.delete(painel_id)) router.push('/paineis')},'Remover');
+    }
+    async function checkUnselect(painel_id,meta_id) {
+        alertStore.confirmAction('Deseja mesmo esse item?',async()=>{
+            try {
+                var r;
+                var values = {
+                    metas: Object.values(singlePainel.value.painel_conteudo).map(x=>Number(x.meta_id)).filter(x=>x!=meta_id)
+                };
+                r = await PaineisStore.selectMetas(painel_id, values);
+                if(r == true){
+                    PaineisStore.clear();
+                    PaineisStore.getById(painel_id);
+                }else{
+                    throw r;
+                }
+            } catch (error) {
+                alertStore.error(error);
+            }
+        },'Remover');
     }
     function removeChars(x){
         x.target.value = x.target.value.replace(/[^a-zA-Z0-9,]/g,'');
@@ -156,122 +181,117 @@
         </div>
         <table class="tablemain">
             <tbody>
-                <tr v-for="m in singlePainel.painel_conteudo" :key="m.meta_id"><td><span class="w700">Meta {{m?.meta?.codigo}} {{m?.meta?.titulo}}</span></td></tr>
-                <!-- <tr class="tzaccordeon" @click="toggleAccordeon">
-                    <td>
-                        <div class="flex">
-                            <svg class="arrow" width="13" height="8">
-                                <use xlink:href="#i_down"></use>
-                            </svg>
-                            <span class="w700">Meta 1</span>
-                        </div>
-                    </td>
+                <template v-for="m in singlePainel.painel_conteudo" :key="m.meta_id">
+                    <tr class="tzaccordeon" @click="toggleAccordeon">
+                        <td>
+                            <div class="flex">
+                                <svg class="arrow" width="13" height="8">
+                                    <use xlink:href="#i_down"></use>
+                                </svg>
+                                <span class="w700">Meta {{m?.meta?.codigo}} {{m?.meta?.titulo}}</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right; width: 90px">
+                            <router-link :to="`/paineis/${painel_id}/metas/${m.id}`" class="tipinfo right mr1">
+                                <svg width="20" height="20" class="blue"><use xlink:href="#i_edit"></use></svg>
+                                <div>Editar visualização</div>
+                            </router-link>
+                            <a @click="checkUnselect(singlePainel.id,m.meta_id)" class="tipinfo right">
+                                <svg width="20" height="20" class="blue"><use xlink:href="#i_waste"></use></svg>
+                                <div>Remover meta</div>
+                            </a>
+                        </td>
+                    </tr>
+                    <tz>
+                        <td colspan="56" style="padding-left: 0;padding: 0;">
+                            <table class="tablemain no-border">
+                                <thead>
+                                    <tr class="no-border">
+                                        <th>Periodicidade</th>
+                                        <th>Período</th>
+                                        <th>Meses</th>
+                                        <th>Planejado</th>
+                                        <th>Acumulado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="no-border bgc50">
+                                        <td>{{m.periodicidade}}</td>
+                                        <td>{{m.periodo??'-'}}</td>
+                                        <td>{{m.periodo_valor??'-'}}</td>
+                                        <td>{{m.mostrar_planejado?'Sim':'Não'}}</td>
+                                        <td>{{m.mostrar_acumulado?'Sim':'Não'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                    <td style="text-align: right; width: 70px">
-                        <a href="#" class="tprimary mr1">
-                            <svg width="20" height="20" class="blue">
-                                <use xlink:href="#i_edit"></use>
-                            </svg>
-                        </a>
-                        <a href="#" class="tprimary">
-                            <svg width="20" height="20" class="blue">
-                                <use xlink:href="#i_waste"></use>
-                            </svg>
-                        </a>
-                    </td>
-                </tr>
-                <tz>
-                    <td colspan="56" style="padding-left: 0">
-                        <table class="tablemain no-border mb1">
-                            <thead>
-                                <tr class="no-border">
-                                    <th>Periodicidade</th>
-                                    <th>Período</th>
-                                    <th>Meses</th>
-                                    <th>Planejado</th>
-                                    <th>Acumulado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="no-border bgc50">
-                                    <td>Mensal</td>
-                                    <td>Meses anteriores</td>
-                                    <td>12</td>
-                                    <td>Sim</td>
-                                    <td>-</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <table class="tablemain no-border">
-                            <thead>
-                                <tr class="no-border">
-                                    <th>
-                                        Conteúdo da meta incluso na visão de evolução
-                                        <a href="#" style="float: right">
-                                            <svg width="20" height="20" class="blue">
-                                                <use xlink:href="#i_edit"></use>
-                                            </svg>
-                                        </a>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <hr />
-                            <thead class="subtable">
-                                <tr>
-                                    <th class="">
-                                        <a href="#" class="tprimary">
-                                            <svg width="20" height="20" class="blue mr05">
-                                                <use xlink:href="#i_graf"></use>
-                                            </svg>
-                                        </a>
-                                        Iniciativa 1.1 Lorem Ipsum Dolor - integra indicador da meta
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td class="w700">Indicador da Iniciativa 1.1</td>
-                                </tr>
-                                <tr>
-                                    <td class="pl2">Variável simples 1 da Atividade 1.1.1</td>
-                                </tr>
-                                <tr>
-                                    <th class="pl2">
-                                        <a href="#" class="tprimary">
-                                            <svg width="20" height="20" class="blue mr05">
-                                                <use xlink:href="#i_graf"></use>
-                                            </svg>
-                                        </a>
-                                        Iniciativa 1.1 Lorem Ipsum Dolor - integra indicador da meta
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td class="pl2">Variável simples 1 da Atividade 1.1.1</td>
-                                </tr>
-                                <tr>
-                                    <td class="pl2">Variável simples 1 da Atividade 1.1.1</td>
-                                </tr>
-                                <tr>
-                                    <th class="pl2">
-                                        <a href="#" class="tprimary">
-                                            <svg width="20" height="20" class="blue mr05">
-                                                <use xlink:href="#i_graf"></use>
-                                            </svg>
-                                        </a>
-                                        Iniciativa 1.1 Lorem Ipsum Dolor - integra indicador da meta
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td class="pl2 w700">
-                                        Variável simples 1 da Atividade 1.1.1
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="pl2">Variável simples 1 da Atividade 1.1.1</td>
-                                </tr>
-                            </thead>
-                        </table>
-                    </td>
-                </tz> -->
+                            <table class="tablemain no-border">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div class="flex center">
+                                                <span class="f1">Detalhamento da meta na visão de evolução</span>
+                                                <div class="f0" style="text-align: right; flex-basis: 50px;">
+                                                    <router-link :to="`/paineis/${painel_id}/metas/${m.id}/detalhes`" class="tipinfo right">
+                                                        <svg width="20" height="20" class="blue"><use xlink:href="#i_edit"></use></svg>
+                                                        <div>Editar detalhamento</div>
+                                                    </router-link>
+                                                </div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <hr />
+                                <tbody class="subtable">
+                                    <tr v-if="m.mostrar_indicador">
+                                        <th>
+                                            <span class="ib"><svg width="20" height="20" class="blue mr05"><use xlink:href="#i_graf"></use></svg></span> Indicador da Meta {{m?.meta?.codigo}} {{m?.meta?.titulo}}
+                                        </th>
+                                    </tr>
+                                    <tr v-if="m.detalhes.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador).length">
+                                        <td class="w700">Indicador da Meta {{m?.meta?.codigo}} {{m?.meta?.titulo}}</td>
+                                    </tr>
+                                    <template v-for="x in m.detalhes.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador)" :key="x.id">
+                                        <tr>
+                                            <td class="pl2">Variável - {{x.variavel.codigo?x.variavel.codigo+' - ':''}}{{x.variavel.titulo}}</td>
+                                        </tr>
+                                    </template>
+                                    <template v-for="x in m.detalhes.filter(y=>y.tipo=='Iniciativa')" :key="x.id">
+                                        <tr v-if="x.mostrar_indicador">
+                                            <th class="pl2">
+                                                <span class="ib"><svg width="20" height="20" class="blue mr05"><use xlink:href="#i_graf"></use></svg></span> Indicador da Iniciativa {{x?.iniciativa?.codigo}} {{x?.iniciativa?.titulo}}
+                                            </th>
+                                        </tr>
+                                        <tr v-if="x.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador).length">
+                                            <td class="pl2 w700">Indicador da Iniciativa {{x?.iniciativa?.codigo}} {{x?.iniciativa?.titulo}}</td>
+                                        </tr>
+                                        <template v-for="xx in x.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador)" :key="xx.id">
+                                            <tr>
+                                                <td class="pl4">Variável - {{xx.variavel.codigo?xx.variavel.codigo+' - ':''}}{{xx.variavel.titulo}}</td>
+                                            </tr>
+                                        </template>
+                                        <template v-for="xx in x.filhos.filter(y=>y.tipo=='Atividade')" :key="xx.id">
+                                            <tr v-if="xx.mostrar_indicador">
+                                                <th class="pl2">
+                                                    <span class="ib"><svg width="20" height="20" class="blue mr05"><use xlink:href="#i_graf"></use></svg></span> Indicador da Atividade {{xx?.atividade?.codigo}} {{xx?.atividade?.titulo}}
+                                                </th>
+                                            </tr>
+                                            <tr v-if="xx.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador).length">
+                                                <td class="pl2 w700">Indicador da Atividade {{xx?.atividade?.codigo}} {{xx?.atividade?.titulo}}</td>
+                                            </tr>
+                                            <template v-for="xxx in xx.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador)" :key="xxx.id">
+                                                <tr>
+                                                    <td class="pl4">Variável - {{xxx.variavel.codigo?xxx.variavel.codigo+' - ':''}}{{xxx.variavel.titulo}}</td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <router-link :to="`/paineis/${painel_id}/metas/${m.id}/detalhes`" class="addlink mt1 ml1 mb2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Detalhamento da meta</span></router-link>
+                        </td>
+                    </tz>
+                </template>
             </tbody>
         </table>
         <router-link :to="`/paineis/${painel_id}/metas`" class="addlink mt2"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Adicionar Meta(s)</span></router-link>
