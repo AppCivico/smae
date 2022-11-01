@@ -457,7 +457,7 @@ export class PainelService {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: variavel.variavel_id,
                             mostrar_indicador: false,
-                            tipo: PainelConteudoTipoDetalhe.Iniciativa,
+                            tipo: PainelConteudoTipoDetalhe.Variavel,
                             pai_id: parent_iniciativa.id
                         }
                     })
@@ -498,7 +498,7 @@ export class PainelService {
                                 painel_conteudo_id: painel_conteudo.id,
                                 variavel_id: variavel.variavel_id,
                                 mostrar_indicador: painel_conteudo.mostrar_indicador,
-                                tipo: PainelConteudoTipoDetalhe.Atividade,
+                                tipo: PainelConteudoTipoDetalhe.Variavel,
                                 pai_id: parent_atividade.id
                             }
                         })
