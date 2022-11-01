@@ -50,7 +50,7 @@ export class PainelService {
         return created;
     }
 
-    async findAll(filters: FilterPainelDto | undefined = undefined) {
+    async findAll(filters: FilterPainelDto | undefined = undefined, user: PessoaFromJwt) {
         let ativo = filters?.ativo;
         if (typeof ativo === undefined) {
             ativo = true;
@@ -58,7 +58,19 @@ export class PainelService {
 
         return await this.prisma.painel.findMany({
             where: {
-                ativo: ativo
+                ativo: ativo,
+
+                grupos: {
+                    every: {
+                        grupo_painel: {
+                            pessoas: {
+                                every: {
+                                    pessoa_id: user.id
+                                }
+                            }
+                        }
+                    }
+                }
             },
             select: {
                 id: true,
