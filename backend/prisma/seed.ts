@@ -147,7 +147,10 @@ const PrivConfig: any = {
         ['CadastroPainel.ativar', 'Ativar Painéis'],
     ],
     PDM: [
-        ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP']
+        ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP'],
+        ['PDM.admin_cp', 'Administrador CP'],
+        ['PDM.tecnico_cp', 'Técnico CP'],
+        ['PDM.ponto_focal', 'Ponto Focal'],
     ]
 };
 
@@ -219,6 +222,27 @@ const PerfilAcessoConfig: any = [
         descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
         privilegios: [
             'PDM.coorderandor_responsavel_cp',
+        ]
+    },
+    {
+        nome: 'Administrador CP',
+        descricao: 'Pode visualizar e editar dados de todas as metas, em todos os ciclos',
+        privilegios: [
+            'PDM.admin_cp',
+        ]
+    },
+    {
+        nome: 'Técnico CP',
+        descricao: 'Pode visualizar e editar dados nas metas onde é responsável, em todos os ciclos',
+        privilegios: [
+            'PDM.tecnico_cp',
+        ]
+    },
+    {
+        nome: 'Ponto Focal',
+        descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
+        privilegios: [
+            'PDM.ponto_focal',
         ]
     },
 

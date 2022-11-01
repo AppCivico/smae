@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { PessoaModule } from './pessoa/pessoa.module';
 import { AuthModule } from './auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, RouterModule } from '@nestjs/core';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { MinhaContaController } from './minha-conta/minha-conta.controller';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
@@ -38,6 +38,8 @@ import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.mod
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { PainelModule } from './painel/painel.module';
+import { MfModule } from './mf/mf.module';
+import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
 
 
 @Module({
@@ -60,6 +62,16 @@ import { PainelModule } from './painel/painel.module';
         CronogramaEtapaModule,
         PainelModule,
         ScheduleModule.forRoot(),
+        MfMetasModule,
+        RouterModule.register([
+            {
+                path: 'mf',
+                module: MfModule,
+                children: [
+                    MfMetasModule
+                ]
+            },
+        ]),
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

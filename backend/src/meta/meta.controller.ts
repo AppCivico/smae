@@ -26,6 +26,7 @@ export class MetaController {
 
     @ApiBearerAuth('access-token')
     @Get()
+    @Roles('CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover')
     async findAll(@Query() filters: FilterMetaDto): Promise<ListMetaDto> {
         return { 'linhas': await this.metaService.findAll(filters) };
     }

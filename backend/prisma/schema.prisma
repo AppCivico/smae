@@ -125,9 +125,10 @@ model Pessoa {
     EtapasQueRemovi    Etapa[] @relation("Removedor")
     EtapasQueAtualizei Etapa[] @relation("Atualizador")
 
-    PaineisQueCriei     Painel[] @relation("Criador")
-    PaineisQueRemovi    Painel[] @relation("Removedor")
-    PaineisQueAtualizei Painel[] @relation("Atualizador")
+    PaineisQueCriei     Painel[]          @relation("Criador")
+    PaineisQueRemovi    Painel[]          @relation("Removedor")
+    PaineisQueAtualizei Painel[]          @relation("Atualizador")
+    PessoaAcessoPdm     PessoaAcessoPdm[]
 
     @@map("pessoa")
 }
@@ -777,6 +778,8 @@ model VariavelResponsavel {
 
     pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
     variavel Variavel @relation(fields: [variavel_id], references: [id])
+
+    @@map("variavel_responsavel")
 }
 
 model Variavel {
@@ -1285,4 +1288,25 @@ model CicloFisicoFase {
     metas       Meta[]
 
     @@map("ciclo_fisico_fase")
+}
+
+model PessoaAcessoPdm {
+    id        Int @id @default(autoincrement())
+    pessoa_id Int @unique
+
+    metas_cronograma   Int[]
+    metas_variaveis    Int[]
+    variaveis          Int[]
+    cronogramas_etapas Int[]
+
+    data_ciclo DateTime? @db.Date
+    perfil     String
+
+    // se o valor estiver congelado, para debug, não vamos recalcular as permissões
+    // exceto se for mudança de ciclo, nesse caso, vai recacular anyway
+    congelado Boolean
+
+    pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    @@map("pessoa_acesso_pdm")
 }
