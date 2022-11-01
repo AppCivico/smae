@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade } from "@prisma/client";
-import { IsBoolean, IsEnum, IsString } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsOptional, IsString } from "class-validator";
 
 export class CreatePainelDto {
     @IsString()
@@ -23,4 +23,10 @@ export class CreatePainelDto {
 
     @IsBoolean()
     ativo: boolean
+
+    @IsArray()
+    @IsOptional()
+    @ArrayMinSize(1, { message: '$property| grupo(s): precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
+    grupos?: number[]
 }
