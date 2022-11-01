@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PainelConteudoTipoDetalhe, Prisma } from '@prisma/client';
+import { PainelConteudoTipoDetalhe, PainelGrupoPainel, Prisma } from '@prisma/client';
+import { every } from 'rxjs';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,12 +17,28 @@ export class PainelService {
     async create(createPainelDto: CreatePainelDto, user: PessoaFromJwt) {
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            
+            let grupos_to_assign = [];
+            if (createPainelDto.grupos) {
+                const grupos = createPainelDto.grupos;
+                delete createPainelDto.grupos;
+
+                for (const grupo of grupos) {
+                    grupos_to_assign.push({grupo_painel_id: grupo})
+                }
+            }
 
             const painel = await prisma.painel.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     ...createPainelDto,
+
+                    grupos: {
+                        createMany: {
+                            data: {...grupos_to_assign}
+                        }
+                    }
                 },
                 select: { id: true }
             });
@@ -130,7 +147,17 @@ export class PainelService {
 
     async getDetail(id: number) {
         return await this.prisma.painel.findFirstOrThrow({
-            where: {id: id},
+            where: {
+                id: id,
+
+                grupos: {
+                    every: {
+                        grupo_painel: {
+                            ativo: true
+                        }
+                    }
+                }
+            },
             select: {
                 id: true,
                 nome: true,
@@ -139,6 +166,17 @@ export class PainelService {
                 mostrar_planejado_por_padrao: true,
                 mostrar_acumulado_por_padrao: true,
                 mostrar_indicador_por_padrao: true,
+
+                grupos: {
+                    select: {
+                        grupo_painel: {
+                            select: {
+                                id: true,
+                                nome: true,
+                            }
+                        }
+                    }
+                },
 
                 painel_conteudo: {
                     select: {
@@ -232,16 +270,40 @@ export class PainelService {
         })
     }
 
-    async update(id: number, UpdatePainelDto: UpdatePainelDto, user: PessoaFromJwt) {
+    async update(id: number, updatePainelDto: UpdatePainelDto, user: PessoaFromJwt) {
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            let grupos_to_assign = [];
+            if (updatePainelDto.grupos) {
+                const grupos = updatePainelDto.grupos;
+                delete updatePainelDto.grupos;
+
+                for (const grupo of grupos) {
+                    grupos_to_assign.push({grupo_painel_id: grupo})
+                }
+
+                await prisma.painelGrupoPainel.deleteMany({
+                    where: {
+                        painel_id: id,
+                        grupo_painel_id: {
+                            in: grupos
+                        }
+                    }
+                })
+            }
 
             const painel = await prisma.painel.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
-                    ...UpdatePainelDto,
+                    ...updatePainelDto,
+
+                    grupos: {
+                        createMany: {
+                            data: {...grupos_to_assign}
+                        }
+                    }
                 },
                 select: { id: true }
             });
