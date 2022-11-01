@@ -30,8 +30,20 @@ export class MfMetaAgrupadaDto {
     codigo: string
 }
 
+export class CicloAtivo {
+    id: number;
+    data_ciclo: Date;
+    pdm: {
+        id: number;
+    };
+}
+
 export class ListMfMetasAgrupadasDto {
     linhas: MfMetaAgrupadaDto[]
     @ApiProperty({ enum: ['Status', 'Fase'] })
     agrupador: string
+    meta: {
+        queryTook: number
+    },
+    ciclo_ativo: CicloAtivo
 }
