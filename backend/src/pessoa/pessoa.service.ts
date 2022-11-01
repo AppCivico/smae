@@ -258,6 +258,17 @@ export class PessoaService {
                         perfil_acesso_id: true
                     }
                 },
+
+                GruposDePaineisQueParticipo: {
+                    select: {
+                        grupo_painel: {
+                            select: {
+                                id: true,
+                                nome: true
+                            }
+                        }
+                    }
+                }
             }
         });
         if (!pessoa) throw new HttpException('Pessoa não encontrada', 404)
@@ -276,7 +287,8 @@ export class PessoaService {
             cargo: pessoa.pessoa_fisica?.cargo || null,
             registro_funcionario: pessoa.pessoa_fisica?.registro_funcionario || null,
             cpf: pessoa.pessoa_fisica?.cpf || null,
-            perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id)
+            perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id),
+            grupos: pessoa.GruposDePaineisQueParticipo.map(e => e.grupo_painel)
         };
 
         return listFixed;
@@ -326,6 +338,25 @@ export class PessoaService {
                 }
             }
 
+            let grupos_to_assign = [];
+            if (updatePessoaDto.grupos) {
+                const grupos = updatePessoaDto.grupos;
+                delete updatePessoaDto.grupos;
+
+                for (const grupo of grupos) {
+                    grupos_to_assign.push({grupo_painel_id: grupo})
+                }
+
+                await prisma.pessoaGrupoPainel.deleteMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        grupo_painel_id: {
+                            in: grupos
+                        }
+                    }
+                });
+            }
+
 
             const updated = await prisma.pessoa.update({
                 where: {
@@ -343,6 +374,12 @@ export class PessoaService {
                             orgao_id: updatePessoaDto.orgao_id,
                             cpf: updatePessoaDto.cpf,
                             registro_funcionario: updatePessoaDto.registro_funcionario,
+                        }
+                    },
+
+                    GruposDePaineisQueParticipo: {
+                        createMany: {
+                            data: grupos_to_assign
                         }
                     }
                 }
@@ -471,10 +508,26 @@ export class PessoaService {
                 });
             }
 
+            let grupos_to_assign = [];
+            if (createPessoaDto.grupos) {
+                const grupos = createPessoaDto.grupos;
+                delete createPessoaDto.grupos;
+
+                for (const grupo of grupos) {
+                    grupos_to_assign.push({grupo_painel_id: grupo})
+                }
+            }
+
             const created = await prisma.pessoa.create({
                 data: {
                     ...pessoaData,
                     pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
+
+                    GruposDePaineisQueParticipo: {
+                        createMany: {
+                            data: grupos_to_assign
+                        }
+                    }
                 } as Prisma.PessoaCreateInput,
             });
 

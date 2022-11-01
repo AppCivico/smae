@@ -40,6 +40,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PainelModule } from './painel/painel.module';
 import { MfModule } from './mf/mf.module';
 import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
+import { GrupoPaineisModule } from './grupo-paineis/grupo-paineis.module';
 
 
 @Module({
@@ -63,6 +64,7 @@ import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
         PainelModule,
         ScheduleModule.forRoot(),
         MfMetasModule,
+        GrupoPaineisModule,
         RouterModule.register([
             {
                 path: 'mf',
