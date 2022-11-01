@@ -2,7 +2,7 @@
     import { ref, reactive } from 'vue';
     import { storeToRefs } from 'pinia';
     import { Dashboard} from '@/components';
-    import { useAuthStore, usePaineisStore } from '@/stores';
+    import { useAuthStore, usePaineisStore, useMetasStore } from '@/stores';
 
     const authStore = useAuthStore();
     const { permissions } = storeToRefs(authStore);
@@ -12,6 +12,10 @@
     const { tempPaineis } = storeToRefs(PaineisStore);
     PaineisStore.clear();
     PaineisStore.filterPaineis();
+
+    const MetasStore = useMetasStore();
+    const { Metas } = storeToRefs(MetasStore);
+    MetasStore.getAll();
 
     const filters = ref({
         textualSearch: ""
@@ -51,7 +55,7 @@
                         <td>{{p.nome}}</td>
                         <td>{{p.ativo?"Ativo":"Inativo"}}</td>
                         <td>{{p.periodicidade}}</td>
-                        <td>- de -</td>
+                        <td>{{p.painel_conteudo.length}} de {{Metas.length}}</td>
                         <td style="white-space: nowrap; text-align: right">
                             <router-link v-if="perm?.CadastroPainel?.editar" :to="`/paineis/${p.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                         </td>

@@ -57,6 +57,15 @@ export const usePaineisStore = defineStore({
             if(await requestS.patch(`${baseUrl}/painel/${id}/conteudo`, params)) return true;
             return false;
         },
+        async visualizacaoMeta(id,conteudo_id,params) {
+            if(await requestS.patch(`${baseUrl}/painel/${id}/conteudo/${conteudo_id}/visualizacao`, params)) return true;
+            return false;
+        },
+        async detalhesMeta(id,conteudo_id,params) {
+            if(await requestS.patch(`${baseUrl}/painel/${id}/conteudo/${conteudo_id}/detalhes`, params)) return true;
+            return false;
+        },
+        
         async filterPaineis(f){
             this.tempPaineis = { loading: true };
             try {
