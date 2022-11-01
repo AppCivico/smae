@@ -412,6 +412,7 @@ export class PdmService {
 
             const proximoCiclo = await this.prisma.cicloFisico.findFirst({
                 where: {
+                    pdm_id: cf.pdm_id,
                     data_ciclo: {
                         gt: cf.data_ciclo
                     },
