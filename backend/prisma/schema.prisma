@@ -130,6 +130,8 @@ model Pessoa {
     PaineisQueAtualizei Painel[]          @relation("Atualizador")
     PessoaAcessoPdm     PessoaAcessoPdm[]
 
+    GruposDePaineisQueParticipo PessoaGrupoPainel[]
+
     @@map("pessoa")
 }
 
@@ -1157,6 +1159,8 @@ model Painel {
     removedor       Pessoa?          @relation("Removedor", fields: [removido_por], references: [id])
     painel_conteudo PainelConteudo[]
 
+    grupos PainelGrupoPainel[]
+
     @@map("painel")
 }
 
@@ -1220,6 +1224,40 @@ model PainelConteudoDetalhe {
     filhos PainelConteudoDetalhe[]   @relation("fk")
 
     @@map("painel_conteudo_detalhe")
+}
+
+model GrupoPainel {
+    id Int @id @default(autoincrement())
+
+    nome  String  @unique
+    ativo Boolean @default(true)
+
+    pessoas PessoaGrupoPainel[]
+    paineis PainelGrupoPainel[]
+
+    @@map("grupo_painel")
+}
+
+model PessoaGrupoPainel {
+    id Int @id @default(autoincrement())
+
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    grupo_painel_id Int
+    grupo_painel    GrupoPainel @relation(fields: [grupo_painel_id], references: [id])
+
+    @@map("pessoa_grupo_painel")
+}
+
+model PainelGrupoPainel {
+    id Int @id @default(autoincrement())
+
+    painel_id Int
+    painel    Painel @relation(fields: [painel_id], references: [id])
+    grupo_painel_id Int
+    grupo_painel    GrupoPainel @relation(fields: [grupo_painel_id], references: [id])
+    
+    @@map("painel_grupos")
 }
 
 enum CicloFase {
