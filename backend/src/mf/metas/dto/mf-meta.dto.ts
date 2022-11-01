@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsOptional } from "class-validator";
 
@@ -31,5 +32,6 @@ export class MfMetaAgrupadaDto {
 
 export class ListMfMetasAgrupadasDto {
     linhas: MfMetaAgrupadaDto[]
+    @ApiProperty({ enum: ['Status', 'Fase'] })
     agrupador: string
 }

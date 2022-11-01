@@ -38,4 +38,27 @@ export class MetasController {
         };
     }
 
+    @ApiBearerAuth('access-token')
+    @Get('por-status')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    async metasPorStatus(
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListMfMetasAgrupadasDto> {
+
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+        const ids: number[] = [
+            ...config.metas_variaveis,
+        ];
+        return {
+            'linhas': await this.metasService.metasPorStatus({
+                ids: ids,
+            }, cicloFisicoAtivo.id),
+            agrupador: 'Status'
+        };
+    }
+
+
+
+
 }

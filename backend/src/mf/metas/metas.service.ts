@@ -35,5 +35,40 @@ export class MetasService {
         });
     }
 
+    async metasPorStatus(filters: { ids: number[] }, ciclo_fisico_id: number): Promise<MfMetaAgrupadaDto[]> {
+
+        const rows = await this.prisma.meta.findMany({
+            where: {
+                id: { in: filters.ids }
+            },
+            select: {
+                id: true,
+                titulo: true,
+                codigo: true,
+
+                StatusMetaCicloFisico: {
+                    where: {
+                        ciclo_fisico_id: ciclo_fisico_id
+                    },
+                    select: {
+                        status: true
+                    }
+                }
+            },
+            orderBy: {
+                codigo: 'asc'
+            }
+        });
+
+        return rows.map((r) => {
+            return {
+                id: r.id,
+                codigo: r.codigo,
+                titulo: r.titulo,
+                grupo: r.StatusMetaCicloFisico[0]?.status || 'Não categorizado'
+            }
+        });
+    }
+
 
 }
