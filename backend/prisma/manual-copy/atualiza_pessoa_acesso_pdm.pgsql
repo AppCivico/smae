@@ -126,10 +126,12 @@ BEGIN
         -- resultados para ponto focal filtra apenas variaveis que tem algo para preencher
         select vpdm.variavel_id
         from variaveis_pdm vpdm
+        join variavel v on v.id = vpdm.variavel_id
         join variavel_responsavel vr ON vpdm.variavel_id = vr.variavel_id
         AND vr.pessoa_id = pPessoa_id
         JOIN serie_variavel svp on svp.variavel_id = vr.variavel_id
-        AND svp.serie = 'Previsto' and svp.data_valor = vCiclo
+        AND svp.serie = 'Previsto' and svp.data_valor = vCiclo - (v.atraso_meses || ' months')::interval
+
         WHERE ((select perfil from perfil) = 'ponto_focal')
         GROUP BY 1
     ),

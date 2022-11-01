@@ -74,8 +74,7 @@ export class CreateVariavelDto {
     acumulativa: boolean
 
     @IsOptional()
-    @IsInt()
-    @IsPositive({ message: '$property| ano_base precisa ser numérico' })
+    @IsInt({ message: '$property| ano_base precisa ser numérico' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
     ano_base?: number | null
@@ -101,5 +100,11 @@ export class CreateVariavelDto {
     @IsOnlyDate()
     @Type(() => Date)
     fim_medicao: Date | null
+
+    @IsOptional()
+    @IsInt({ message: '$property| atraso_meses precisa ser numérico' })
+    @Type(() => Number)
+    @Min(0)
+    atraso_meses?: number
 
 }
