@@ -147,10 +147,10 @@ const PrivConfig: any = {
         ['CadastroPainel.ativar', 'Ativar Painéis'],
     ],
     CadastroGrupoPaineis: [
-        ['CadastroPainel.inserir', 'Inserir Painéis'],
-        ['CadastroPainel.editar', 'Editar Painéis'],
-        ['CadastroPainel.inativar', 'Inativar Painéis'],
-        ['CadastroPainel.ativar', 'Ativar Painéis'],
+        ['CadastroGrupoPaineis.inserir', 'Inserir Painéis'],
+        ['CadastroGrupoPaineis.editar', 'Editar Painéis'],
+        ['CadastroGrupoPaineis.inativar', 'Inativar Painéis'],
+        ['CadastroGrupoPaineis.ativar', 'Ativar Painéis'],
     ],
     PDM: [
         ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP'],
