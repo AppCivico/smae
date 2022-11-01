@@ -1,6 +1,8 @@
 import { Pessoa } from '../entities/pessoa.entity';
 
 import {
+    ArrayMaxSize,
+    ArrayMinSize,
     IsArray,
     IsEmail,
     IsNumber,
@@ -91,4 +93,10 @@ export class CreatePessoaDto {
     @IsString({ message: '$property| cpf: Precisa ser alfanumérico' })
     @MaxLength(14, { message: '$property| cpf: Máximo 14 caracteres' })
     cpf?: string;
+
+    @IsArray()
+    @IsOptional()
+    @ArrayMinSize(1, { message: '$property| grupo(s): precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
+    grupos?: number[]
 }
