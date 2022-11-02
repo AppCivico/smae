@@ -1,25 +1,17 @@
 CREATE OR REPLACE FUNCTION variavel_participa_do_ciclo (pVariavelId int, dataCiclo date)
-    RETURNS TABLE (
-        periodicidade interval,
-        min date,
-        max date
-    )
+    RETURNS boolean
     AS $$
-BEGIN
-    RETURN QUERY
     SELECT
-        min(periodicidade_intervalo (v.periodicidade)),
-        coalesce(v.inicio_medicao, min(i.inicio_medicao)),
-        coalesce(v.fim_medicao, max(i.fim_medicao))
-    FROM
-        variavel v
-        JOIN indicador_variavel iv ON IV.variavel_id = v.id
-        JOIN indicador i ON Iv.indicador_id = i.id
-    WHERE
-        v.id = pVariavelId
-    GROUP BY
-        (v.fim_medicao, v.inicio_medicao);
-END;
+        coalesce((
+            SELECT
+                TRUE
+            FROM
+            busca_periodos_variavel (pVariavelId) AS g (periodo, inicio, fim),
+            generate_series(inicio, fim, periodo) p
+        WHERE
+            p.p = dataCiclo), FALSE);
+
 $$
-LANGUAGE plpgsql;
+LANGUAGE SQL COST 10000
+STABLE;
 

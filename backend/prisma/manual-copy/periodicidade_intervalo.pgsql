@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION periodicidade_intervalo (p "Periodicidade")
     RETURNS interval
-    LANGUAGE SQL
+    LANGUAGE SQL IMMUTABLE
     AS $$
     SELECT
         CASE WHEN p = 'Mensal' THEN
