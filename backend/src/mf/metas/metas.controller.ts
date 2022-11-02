@@ -96,7 +96,8 @@ export class MetasController {
             ...await this.metasService.metaVariaveis(
                 params.id,
                 config,
-                cicloFisicoAtivo
+                cicloFisicoAtivo,
+                user
             ),
             requestInfo: { queryTook: Date.now() - start },
         };
