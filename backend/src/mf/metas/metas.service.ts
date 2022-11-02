@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { PessoaAcessoPdm } from '@prisma/client';
+import { CicloFisicoAtivo } from 'src/pdm/dto/list-pdm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { MfMetaAgrupadaDto } from './dto/mf-meta.dto';
+import { CicloAtivoDto, MfMetaAgrupadaDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
 
 @Injectable()
 export class MetasService {
@@ -68,6 +70,22 @@ export class MetasService {
                 grupo: r.StatusMetaCicloFisico[0]?.status || 'Não categorizado'
             }
         });
+    }
+
+    async metaVariaveis(
+        id: number,
+        config: PessoaAcessoPdm,
+        cicloFisicoAtivo: CicloAtivoDto,
+    ): Promise<RetornoMetaVariaveisDto> {
+
+        return {
+            perfil: config.perfil,
+            qtdePorStatus: {
+                aguarda_complementacao: 0,
+                aguarda_cp: 0,
+                nao_preenchidas: 0,
+            },
+        }
     }
 
 

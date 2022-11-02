@@ -30,7 +30,7 @@ export class MfMetaAgrupadaDto {
     codigo: string
 }
 
-export class CicloAtivo {
+export class CicloAtivoDto {
     id: number;
     data_ciclo: Date;
     pdm: {
@@ -38,12 +38,25 @@ export class CicloAtivo {
     };
 }
 
+export class RequestInfoDto {
+    requestInfo: {
+        queryTook: number
+    }
+}
+
 export class ListMfMetasAgrupadasDto {
     linhas: MfMetaAgrupadaDto[]
     @ApiProperty({ enum: ['Status', 'Fase'] })
     agrupador: string
-    meta: {
-        queryTook: number
+    perfil: string
+    ciclo_ativo: CicloAtivoDto
+}
+
+export class RetornoMetaVariaveisDto {
+    perfil: string
+    qtdePorStatus: {
+        aguarda_cp: number
+        aguarda_complementacao: number
+        nao_preenchidas: number
     }
-    ciclo_ativo: CicloAtivo
 }
