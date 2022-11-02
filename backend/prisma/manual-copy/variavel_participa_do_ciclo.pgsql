@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION busca_periodos_variavel (pVariavelId int)
+CREATE OR REPLACE FUNCTION variavel_participa_do_ciclo (pVariavelId int, dataCiclo date)
     RETURNS TABLE (
         periodicidade interval,
         min date,
@@ -13,7 +13,7 @@ BEGIN
         coalesce(v.fim_medicao, max(i.fim_medicao))
     FROM
         variavel v
-        JOIN indicador_variavel iv ON IV.variavel_id = v.id and iv.desativado_em is null
+        JOIN indicador_variavel iv ON IV.variavel_id = v.id
         JOIN indicador i ON Iv.indicador_id = i.id
     WHERE
         v.id = pVariavelId
