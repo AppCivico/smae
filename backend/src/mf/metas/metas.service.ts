@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PessoaAcessoPdm } from '@prisma/client';
+import { Periodicidade, PessoaAcessoPdm } from '@prisma/client';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { CicloFisicoAtivo } from 'src/pdm/dto/list-pdm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
@@ -7,7 +9,6 @@ import { CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, RetornoMetaVariav
 type VariavelIdAtrasoNivel = {
     id: number;
     codigo: string;
-    atraso_meses: number
     nivel: 'meta' | 'iniciativa' | 'atividade'
 };
 
@@ -83,6 +84,7 @@ export class MetasService {
         meta_id: number,
         config: PessoaAcessoPdm,
         cicloFisicoAtivo: CicloAtivoDto,
+        user: PessoaFromJwt
     ): Promise<RetornoMetaVariaveisDto> {
 
         const map = await this.getVariaveisMeta(meta_id, config.variaveis);
@@ -97,6 +99,7 @@ export class MetasService {
             select: { titulo: true, id: true, codigo: true }
         });
 
+        const calcSerieVariaveis = await this.calcSerieVariaveis(map, cicloFisicoAtivo);
         const ret: RetornoMetaVariaveisDto = {
             perfil: config.perfil,
             variaveis: {
@@ -112,10 +115,7 @@ export class MetasService {
 
         // busca apenas iniciativas que tem nas variaveis
         const iniciativas = await this.getIniciativas(meta_id, map);
-
-
         const atividades = await this.getAtividades(meta_id, map);
-        console.log(atividades);
 
 
         for (const iniciativa of iniciativas) {
@@ -131,7 +131,7 @@ export class MetasService {
             };
 
             for (const atividade of atividades) {
-                if (atividade.iniciativa_id != iniciativa.id) continue;
+                if (+atividade.iniciativa_id != +iniciativa.id) continue;
 
                 retInit.atividades.push({
                     indicador: { ...atividade.Indicador[0] },
@@ -153,6 +153,43 @@ export class MetasService {
 
     }
 
+    private async calcSerieVariaveis(map: Record<number, VariavelIdAtrasoNivel>, ciclo: CicloAtivoDto) {
+
+        //const data = Date2YMD.toString
+
+        const statusExistentes = await this.prisma.statusVariavelCicloFisico.findMany({
+            where: {
+                variavel_id: { in: Object.keys(map).map(n => +n) },
+                ciclo_fisico_id: ciclo.id
+            }
+        });
+
+        const seriesVariavel: any[] = await this.prisma.$queryRaw`
+        with dtCorrente as (select ${Date2YMD.toString(ciclo.data_ciclo)}::date as data)
+        select
+            (cte.data - (atraso_meses || 'month')::interval)::date::text as data_corrente,
+            (cte.data - (atraso_meses || 'month')::interval - periodicidade_intervalo(periodicidade))::date::text as data_anterior,
+            id as variavel_id
+        from
+            dtCorrente cte,
+            variavel v
+        where v.id = ANY(${Object.keys(map)}::int[])
+        `;
+
+        console.log(seriesVariavel);
+
+        for (const variavel of seriesVariavel) {
+
+        }
+        /*const seriesVariavel = await this.prisma.serieVariavel.findMany({
+            where: {
+                variavel_id:
+            }
+        });
+        console.log(map);*/
+
+
+    }
 
     private async getAtividades(meta_id: number, map: Record<number, VariavelIdAtrasoNivel>) {
         return await this.prisma.atividade.findMany({
@@ -231,7 +268,6 @@ export class MetasService {
             select: {
                 id: true,
                 codigo: true,
-                atraso_meses: true
             }
         });
         for (const r of variaveis_da_meta) {
@@ -258,7 +294,6 @@ export class MetasService {
             select: {
                 id: true,
                 codigo: true,
-                atraso_meses: true
             }
         });
         for (const r of variaveis_da_iniciativa) {
@@ -287,7 +322,6 @@ export class MetasService {
             select: {
                 id: true,
                 codigo: true,
-                atraso_meses: true
             }
         });
         for (const r of variaveis_da_atividade) {

@@ -645,6 +645,7 @@ model Meta {
     VariavelCicloFisicoQualitativo VariavelCicloFisicoQualitativo[]
     VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
 
+    @@index([pdm_id])
     @@map("meta")
 }
 
@@ -682,6 +683,8 @@ model MetaResponsavel {
 
     // TODO: arrumar o nome desta coluna, palavra 'coordenador'.
     coorderandor_responsavel_cp Boolean
+
+    @@index([pessoa_id])
 
     @@map("meta_responsavel")
 }
@@ -742,6 +745,9 @@ model Indicador {
     formula_variaveis       IndicadorFormulaVariavel[]
     painel_conteudo         PainelConteudo[]
 
+    @@index([meta_id])
+    @@index([iniciativa_id])
+    @@index([atividade_id])
     @@map("indicador")
 }
 
@@ -795,6 +801,7 @@ model VariavelResponsavel {
     pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
     variavel Variavel @relation(fields: [variavel_id], references: [id])
 
+    @@index([pessoa_id])
     @@map("variavel_responsavel")
 }
 
@@ -863,6 +870,8 @@ model IndicadorVariavel {
     desativado_por Int?
     desativador    Pessoa?   @relation("Desativador", fields: [desativado_por], references: [id])
 
+    @@index([variavel_id], map: "idx_indicador_variavel_variavel")
+    @@index([indicador_id], map: "idx_indicador_variavel_indicador")
     @@map("indicador_variavel")
 }
 
@@ -879,6 +888,7 @@ model SerieIndicador {
     ha_conferencia_pendente Boolean  @default(false)
 
     @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
+    @@index([indicador_id, data_valor], map: "idx_indicador_indicador_id_data_valor")
     @@map("serie_indicador")
 }
 
