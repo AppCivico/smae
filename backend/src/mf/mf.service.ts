@@ -1,5 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { PessoaAcessoPdm } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { CicloAtivoDto } from 'src/mf/metas/dto/mf-meta.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -7,7 +9,7 @@ export class MfService {
 
     constructor(private readonly prisma: PrismaService) { }
 
-    async pessoaAcessoPdm(user: PessoaFromJwt) {
+    async pessoaAcessoPdm(user: PessoaFromJwt) : Promise<PessoaAcessoPdm>{
         const perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
         if (!perfil)
             throw new HttpException('Faltando pessoaAcessoPdm', 404)
@@ -18,7 +20,7 @@ export class MfService {
         return perfil;
     }
 
-    async cicloFisicoAtivo() {
+    async cicloFisicoAtivo(): Promise<CicloAtivoDto> {
         const cicloAtivo = await this.prisma.cicloFisico.findFirst({
             where: {
                 ativo: true,
