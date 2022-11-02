@@ -52,11 +52,37 @@ export class ListMfMetasAgrupadasDto {
     ciclo_ativo: CicloAtivoDto
 }
 
+export class IdCodTituloDto {
+    id: number
+    codigo: string
+    titulo: string
+}
+
+export class VariavelQtdeDto {
+    aguarda_cp: number
+    aguarda_complementacao: number
+    nao_preenchidas: number
+}
+
+export class AtividadesRetorno {
+    status: VariavelQtdeDto
+    indicador: IdCodTituloDto | null
+    atividade: IdCodTituloDto
+}
+
+export class IniciativasRetorno {
+    status: VariavelQtdeDto
+    indicador: IdCodTituloDto | null
+    iniciativa: IdCodTituloDto
+    atividades: AtividadesRetorno[]
+}
+
 export class RetornoMetaVariaveisDto {
     perfil: string
-    qtdePorStatus: {
-        aguarda_cp: number
-        aguarda_complementacao: number
-        nao_preenchidas: number
+
+    variaveis: {
+        status: VariavelQtdeDto
+        indicador: IdCodTituloDto | null
+        iniciativas: IniciativasRetorno[]
     }
 }
