@@ -668,9 +668,9 @@ export class VariavelService {
 
     async gerarPeriodoVariavelEntreDatas(variavelId: number): Promise<DateYMD[]> {
         const dados: Record<string, string>[] = await this.prisma.$queryRaw`
-            WITH func as (select * from busca_periodos_variavel(${variavelId}::int) as g(p, inicio, fim))
             select to_char(p.p, 'yyyy-mm-dd') as dt
-            from generate_series((select inicio from func), (select fim from func), (select p from func)) p
+            from busca_periodos_variavel(${variavelId}::int) as g(p, inicio, fim),
+            generate_series(inicio, fim, p) p
         `;
 
         return dados.map((e) => e.dt);

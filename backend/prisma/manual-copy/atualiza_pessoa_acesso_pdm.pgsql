@@ -104,36 +104,38 @@ BEGIN
     ),
     variaveis_pdm as (
         select
-            variavel_id
-        from indicador_variavel iv
-        join indicadores_pdm i on i.indicador_id = iv.indicador_id
-        group by 1
+            v.id as variavel_id
+        from variavel v
+        where v.id in (
+            select
+                iv.variavel_id
+            from indicador_variavel iv
+            join variavel v on v.id = iv.variavel_id
+            join indicadores_pdm i on i.indicador_id = iv.indicador_id
+            WHERE iv.desativado_em is null
+            group by 1
+        )
+        AND variavel_participa_do_ciclo(v.id, (vCiclo - (v.atraso_meses || ' months')::interval)::date) = TRUE
+
     ),
     variaveis as (
-
         select vpdm.variavel_id
         from variaveis_pdm vpdm
-        join variavel_responsavel vr ON vpdm.variavel_id = vr.variavel_id
-        AND (CASE WHEN ( (select perfil from perfil) IN ('tecnico_cp') ) THEN
-                vr.pessoa_id = pPessoa_id
-            WHEN ((select perfil from perfil) IN ('admin_cp')) THEN
-                TRUE
-            ELSE
-                FALSE -- zero pra quem é ponto_focal ou sem perfil
-            END)
-        GROUP BY 1
-        UNION ALL
-        -- resultados para ponto focal filtra apenas variaveis que tem algo para preencher
-        select vpdm.variavel_id
-        from variaveis_pdm vpdm
-        join variavel v on v.id = vpdm.variavel_id
-        join variavel_responsavel vr ON vpdm.variavel_id = vr.variavel_id
-        AND vr.pessoa_id = pPessoa_id
-        JOIN serie_variavel svp on svp.variavel_id = vr.variavel_id
-        AND svp.serie = 'Previsto' and svp.data_valor = vCiclo - (v.atraso_meses || ' months')::interval
-
-        WHERE ((select perfil from perfil) = 'ponto_focal')
-        GROUP BY 1
+        where
+        exists (
+                select 1
+                from variavel_responsavel vr
+                where vpdm.variavel_id = vr.variavel_id
+            AND (
+                CASE WHEN ( (select perfil from perfil) IN ('tecnico_cp', 'ponto_focal') ) THEN
+                    vr.pessoa_id = pPessoa_id
+                WHEN ((select perfil from perfil) IN ('admin_cp')) THEN
+                    TRUE
+                ELSE
+                    FALSE -- zero pra quem sem perfil
+                END
+            )
+        )
     ),
     cronogramas as (
         select
@@ -261,7 +263,7 @@ LANGUAGE plpgsql;
 
 -- as funcoes estao muito abertas, calculando todo mundo
 -- mais pra frente vamos colocar isso apenas durante as alterações respectivas, onde for possivel.
-
+/*
 CREATE OR REPLACE FUNCTION f_recalc_acesso_pessoas() RETURNS trigger AS $emp_stamp$
 BEGIN
     PERFORM pessoa_acesso_pdm(id) from pessoa where desativado=false;
@@ -295,3 +297,4 @@ CREATE TRIGGER trg_variavel_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR 
 
 
 
+*/
