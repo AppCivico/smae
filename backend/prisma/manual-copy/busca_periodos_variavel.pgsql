@@ -21,5 +21,5 @@ BEGIN
         (v.fim_medicao, v.inicio_medicao);
 END;
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql STABLE;
 
