@@ -1495,7 +1495,7 @@ model StatusMetaCicloFisico {
     ciclo_fisico_id Int
 
     status String
-    // nao atualizadas = todas variaveis pendente
+    // nao atualizadas = uma ou mais variaveis não preenchida
     // aguardando complementação = uma ou mais variavel aguarda complementação
     // não conferidas = uma ou mais variavel não foi conferida
     // outros = qualquer uma não categorizada acima
