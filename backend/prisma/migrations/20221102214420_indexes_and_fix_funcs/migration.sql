@@ -207,7 +207,7 @@ BEGIN
                 and m.removido_em is null
             ) i on i.indicador_id = iv.indicador_id
             WHERE iv.desativado_em is null
-            and vv.id = iv.id
+            and vv.id = iv.variavel_id
         )
         -- o COST da function foi alterado pra ser em teoria, maior do que o de exeuta o filtro
         -- por IDs, mas pode acontecer o PG querer filtrar todas as variaveis primeiro e depois cruzar

@@ -164,14 +164,12 @@ export class MetasService {
             }
         });
 
-        const seriesVariavel: any[] = await this.prisma.$queryRaw`
-        with dtCorrente as (select ${Date2YMD.toString(ciclo.data_ciclo)}::date as data)
-        select
+        const seriesVariavel: any[] = await this.prisma.$queryRaw`select
             (cte.data - (atraso_meses || 'month')::interval)::date::text as data_corrente,
             (cte.data - (atraso_meses || 'month')::interval - periodicidade_intervalo(periodicidade))::date::text as data_anterior,
             id as variavel_id
         from
-            dtCorrente cte,
+            (select ${Date2YMD.toString(ciclo.data_ciclo)}::date as data) cte,
             variavel v
         where v.id = ANY(${Object.keys(map)}::int[])
         `;
