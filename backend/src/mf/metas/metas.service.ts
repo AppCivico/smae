@@ -25,6 +25,13 @@ type SerieseTotais = {
     variaveis: VariavelComSeries[]
 }
 
+function shuffleArray(array: any[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
 type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
@@ -99,7 +106,7 @@ export class MetasService {
     extraiVariaveis(
         map: VariavelDetailhePorID,
         seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>,
-        fieldName: 'meta_id' | 'iniciativa_id' | 'atividade_id', fieldMatch: number
+        fieldName: 'meta_id' | 'iniciativa_id' | 'atividade_id', fieldMatch: number,
         cicloFisicoAtivo: CicloAtivoDto,
     ): SerieseTotais {
 
@@ -242,29 +249,24 @@ export class MetasService {
         }
 
 
-        /*const statusPorNivel: Record<Niveis, VariavelQtdeDto> = {
-            meta: { ...ZeroStatuses },
-            atividade: { ...ZeroStatuses },
-            iniciativa: { ...ZeroStatuses }
-        };*/
+        let ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+        shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+
         const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
         for (const r of seriesVariavel) {
             const variavel = map[r.variavel_id];
             const status = statusPorVariavel[r.variavel_id];
 
-            let corrente: SerieValorNomimal[] = [];
+            const corrente: SerieValorNomimal[] = [];
 
-            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'Previsto');
-            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'PrevistoAcumulado');
-            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'Realizado');
-            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'RealizadoAcumulado');
+            for (const serie of ordem_series) {
+                this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, serie);
+            }
 
-            let anterior: SerieValorNomimal[] = [];
-
-            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'Previsto');
-            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'PrevistoAcumulado');
-            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'Realizado');
-            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'RealizadoAcumulado');
+            const anterior: SerieValorNomimal[] = [];
+            for (const serie of ordem_series) {
+                this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, serie);
+            }
 
             seriesPorVariavel[variavel.id] = [
                 {
@@ -288,7 +290,7 @@ export class MetasService {
         }
 
         return {
-            ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'],
+            ordem_series,
             seriesPorVariavel: seriesPorVariavel
         }
     }
