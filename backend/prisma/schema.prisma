@@ -913,8 +913,6 @@ model SerieVariavel {
     conferidor      Pessoa? @relation("Conferidor", fields: [conferida_por], references: [id])
     ciclo_fisico_id Int?
 
-    ha_pedido_de_complementacao Boolean?
-
     @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@map("serie_variavel")
 }
