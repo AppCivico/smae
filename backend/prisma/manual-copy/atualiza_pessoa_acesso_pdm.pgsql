@@ -77,13 +77,12 @@ BEGIN
     )
     WITH variaveis_pdm as (
         select
-            v.id as variavel_id
-        from variavel v
-        where v.id in (
+            vv.id as variavel_id
+        from variavel vv
+        where exists (
             select
-                iv.variavel_id
+                1
             from indicador_variavel iv
-            join variavel v on v.id = iv.variavel_id
             join (
                 -- indicadores do pdm
                 select
@@ -115,16 +114,14 @@ BEGIN
                 and m.ativo = TRUE
                 and m.removido_em is null
                 AND (vPerfil != '' )
-
-
             ) i on i.indicador_id = iv.indicador_id
             WHERE iv.desativado_em is null
-            group by 1
+            and vv.id = iv.id
         )
         -- o COST da function foi alterado pra ser em teoria, maior do que o de exeuta o filtro
         -- por IDs, mas pode acontecer o PG querer filtrar todas as variaveis primeiro e depois cruzar
         -- com as subqueries
-        AND variavel_participa_do_ciclo(v.id, (vCiclo - (v.atraso_meses || ' months')::interval)::date) = TRUE
+        AND variavel_participa_do_ciclo(vv.id, (vCiclo - (vv.atraso_meses || ' months')::interval)::date) = TRUE
 
     ),
     variaveis as (
