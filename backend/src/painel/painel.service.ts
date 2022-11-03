@@ -148,15 +148,7 @@ export class PainelService {
     async getDetail(id: number) {
         return await this.prisma.painel.findFirstOrThrow({
             where: {
-                id: id,
-
-                grupos: {
-                    every: {
-                        grupo_painel: {
-                            ativo: true
-                        }
-                    }
-                }
+                id: id
             },
             select: {
                 id: true,
