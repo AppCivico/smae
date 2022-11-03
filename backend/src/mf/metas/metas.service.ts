@@ -4,10 +4,9 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
-import { CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, Niveis, RetornoMetaVariaveisDto, StatusPorNivel, VariavelQtdeDto, ZeroStatuses } from './dto/mf-meta.dto';
+import { CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, MfSeriesAgrupadas, Niveis, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto, ZeroStatuses } from './dto/mf-meta.dto';
 
-
-type VariavelIdAtrasoNivel = {
+type VariavelDetalhe = {
     id: number;
     codigo: string;
     titulo: string;
@@ -20,6 +19,13 @@ type VariavelIdAtrasoNivel = {
         };
     }[]
 };
+
+type SerieseTotais = {
+    totais: VariavelQtdeDto
+    variaveis: VariavelComSeries[]
+}
+
+type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
 export class MetasService {
@@ -89,6 +95,51 @@ export class MetasService {
         });
     }
 
+
+    extraiVariaveis(
+        map: VariavelDetailhePorID,
+        seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>,
+        fieldName: 'meta_id' | 'iniciativa_id' | 'atividade_id', fieldMatch: number
+        cicloFisicoAtivo: CicloAtivoDto,
+    ): SerieseTotais {
+
+        const seriesDaX: VariavelComSeries[] = [];
+        let aguarda_complementacao = 0;
+        let aguarda_cp = 0;
+        let nao_preenchidas = 0;
+
+        for (const varId of Object.keys(map)) {
+            const variavel = map[+varId];
+            if (variavel.indicador_variavel[0].indicador[fieldName] === fieldMatch) {
+
+                for (const variavelPeriodo of seriesPorVariavel[+varId]) {
+                    if (variavelPeriodo.aguarda_cp) {
+                        aguarda_cp++;
+                    } else if (variavelPeriodo.aguarda_complementacao) {
+                        aguarda_cp++;
+                    } else if (variavelPeriodo.ciclo_fisico_id == cicloFisicoAtivo.id) { // apenas das variaveis do ciclo
+                        nao_preenchidas++;
+                    }
+                }
+
+                seriesDaX.push({
+                    variavel: { id: variavel.id, codigo: variavel.codigo, titulo: variavel.titulo },
+                    series: seriesPorVariavel[+varId]
+                });
+            }
+        }
+
+        return {
+            totais: {
+                aguarda_complementacao,
+                aguarda_cp,
+                nao_preenchidas,
+            },
+            variaveis: seriesDaX
+        }
+
+    }
+
     async metaVariaveis(
         meta_id: number,
         config: PessoaAcessoPdm,
@@ -110,27 +161,18 @@ export class MetasService {
             }
         });
 
-        const calcSerieVariaveis = await this.calcSerieVariaveis(map, cicloFisicoAtivo);
+        const calcSerieVariaveis = await this.calcSerieVariaveis(map, config, cicloFisicoAtivo, user);
+
         const ret: RetornoMetaVariaveisDto = {
             perfil: config.perfil,
-            status_por_nivel: calcSerieVariaveis.statusPorNivel,
             ordem_series: calcSerieVariaveis.ordem_series,
             meta: {
                 indicador: indicador,
                 iniciativas: [],
-                variaveis: []
+                ...this.extraiVariaveis(map, calcSerieVariaveis.seriesPorVariavel, 'meta_id', meta_id, cicloFisicoAtivo),
             },
         }
 
-        for (const varId of Object.keys(map)) {
-            const variavel = map[+varId];
-            if (variavel.indicador_variavel[0].indicador.meta_id === meta_id) {
-                ret.meta.variaveis.push({
-                    variavel: { id: variavel.id, codigo: variavel.codigo, titulo: variavel.titulo },
-                    series: calcSerieVariaveis.seriesPorVariavel[+varId]
-                });
-            }
-        }
 
         // busca apenas iniciativas que tem nas variaveis
         const iniciativas = await this.getIniciativas(meta_id, map);
@@ -142,6 +184,7 @@ export class MetasService {
                 atividades: [],
                 indicador: { ...iniciativa.Indicador[0] },
                 iniciativa: { id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo },
+                ...this.extraiVariaveis(map, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
 
             for (const atividade of atividades) {
@@ -150,6 +193,7 @@ export class MetasService {
                 retornoIniciativa.atividades.push({
                     indicador: { ...atividade.Indicador[0] },
                     atividade: { id: atividade.id, codigo: atividade.codigo, titulo: atividade.titulo },
+                    ...this.extraiVariaveis(map, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
                 });
 
             }
@@ -162,11 +206,14 @@ export class MetasService {
 
     }
 
-    private async calcSerieVariaveis(map: Record<number, VariavelIdAtrasoNivel>, ciclo: CicloAtivoDto): Promise<{
-        statusPorNivel: StatusPorNivel
-        ordem_series: Serie[],
-        seriesPorVariavel: Record<number, SerieValorNomimal[]>
-    }> {
+    private async calcSerieVariaveis(
+        map: VariavelDetailhePorID,
+        config: PessoaAcessoPdm,
+        ciclo: CicloAtivoDto,
+        user: PessoaFromJwt): Promise<{
+            ordem_series: Serie[],
+            seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>
+        }> {
         const statusVariaveisDb = await this.statusVariaveisDb(map, ciclo);
         const statusPorVariavel: Record<number, typeof statusVariaveisDb[0]> = {};
         for (const r of statusVariaveisDb) {
@@ -195,41 +242,52 @@ export class MetasService {
         }
 
 
-        const statusPorNivel: Record<Niveis, VariavelQtdeDto> = {
+        /*const statusPorNivel: Record<Niveis, VariavelQtdeDto> = {
             meta: { ...ZeroStatuses },
             atividade: { ...ZeroStatuses },
             iniciativa: { ...ZeroStatuses }
-        };
-        const seriesPorVariavel: Record<number, SerieValorNomimal[]> = {};
+        };*/
+        const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
         for (const r of seriesVariavel) {
             const variavel = map[r.variavel_id];
             const status = statusPorVariavel[r.variavel_id];
 
-            if (status && status.aguarda_complementacao) {
-                statusPorNivel[variavel.nivel].aguarda_complementacao++;
-            } else if (status && status.aguarda_cp) {
-                statusPorNivel[variavel.nivel].aguarda_cp++;
-            } else {
-                statusPorNivel[variavel.nivel].nao_preenchidas++;
-            }
+            let corrente: SerieValorNomimal[] = [];
 
-            if (!seriesPorVariavel[variavel.id]) seriesPorVariavel[variavel.id] = [];
+            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'Previsto');
+            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'PrevistoAcumulado');
+            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'Realizado');
+            this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'RealizadoAcumulado');
 
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'Previsto');
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'PrevistoAcumulado');
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'Realizado');
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_corrente, true, 'RealizadoAcumulado');
+            let anterior: SerieValorNomimal[] = [];
 
+            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'Previsto');
+            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'PrevistoAcumulado');
+            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'Realizado');
+            this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'RealizadoAcumulado');
 
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'Previsto');
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'PrevistoAcumulado');
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'Realizado');
-            this.pushSerieVariavel(seriesPorVariavel, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, 'RealizadoAcumulado');
+            seriesPorVariavel[variavel.id] = [
+                {
+                    agrupador: '',
+                    ciclo_fisico_id: ciclo.id,
+                    periodo: r.data_corrente,
+                    series: corrente,
+                    pode_editar: true,
+                    aguarda_cp: status && status.aguarda_cp ? true : false,
+                    aguarda_complementacao: status && status.aguarda_complementacao ? true : false,
+                },
+                {
+                    agrupador: '',
+                    ciclo_fisico_id: null,
+                    periodo: r.data_anterior,
+                    series: anterior,
+                    pode_editar: config.perfil == 'ponto_focal'
+                }
+            ];
 
         }
 
         return {
-            statusPorNivel: statusPorNivel,
             ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'],
             seriesPorVariavel: seriesPorVariavel
         }
@@ -237,7 +295,7 @@ export class MetasService {
 
 
     private pushSerieVariavel(
-        seriesPorVariavel: Record<number, SerieValorNomimal[]>,
+        serieValores: SerieValorNomimal[],
         porVariavelIdDataSerie: any,
         idVariavel: number,
         dataReferencia: DateYMD,
@@ -245,17 +303,17 @@ export class MetasService {
         serie: Serie
     ) {
         const existeSerieValor = porVariavelIdDataSerie[idVariavel]
-        && porVariavelIdDataSerie[idVariavel][dataReferencia] &&
+            && porVariavelIdDataSerie[idVariavel][dataReferencia] &&
             porVariavelIdDataSerie[idVariavel][dataReferencia][serie] ? porVariavelIdDataSerie[idVariavel][dataReferencia][serie] : undefined;
         if (existeSerieValor) {
-            seriesPorVariavel[idVariavel].push({
+            serieValores.push({
                 data_valor: Date2YMD.toString(existeSerieValor.data_valor),
                 referencia: '',
                 valor_nominal: existeSerieValor.valor_nominal.toString(),
                 conferida: existeSerieValor.conferida
             });
         } else {
-            seriesPorVariavel[idVariavel].push({
+            serieValores.push({
                 data_valor: dataReferencia,
                 referencia: '',
                 valor_nominal: '',
@@ -264,7 +322,7 @@ export class MetasService {
         }
     }
 
-    private async buscaSeriesValores(map: Record<number, VariavelIdAtrasoNivel>, ciclo: CicloAtivoDto) {
+    private async buscaSeriesValores(map: VariavelDetailhePorID, ciclo: CicloAtivoDto) {
         const seriesVariavel: { data_corrente: string, data_anterior: string, variavel_id: number }[] = await this.prisma.$queryRaw`select
             (cte.data - (atraso_meses || 'month')::interval)::date::text as data_corrente,
             (cte.data - (atraso_meses || 'month')::interval - periodicidade_intervalo(periodicidade))::date::text as data_anterior,
@@ -302,7 +360,7 @@ export class MetasService {
         };
     }
 
-    private async statusVariaveisDb(map: Record<number, VariavelIdAtrasoNivel>, ciclo: CicloAtivoDto) {
+    private async statusVariaveisDb(map: VariavelDetailhePorID, ciclo: CicloAtivoDto) {
         return await this.prisma.statusVariavelCicloFisico.findMany({
             where: {
                 variavel_id: { in: Object.keys(map).map(n => +n) },
@@ -316,7 +374,7 @@ export class MetasService {
         });
     }
 
-    private async getAtividades(meta_id: number, map: Record<number, VariavelIdAtrasoNivel>) {
+    private async getAtividades(meta_id: number, map: VariavelDetailhePorID) {
         return await this.prisma.atividade.findMany({
             where: {
                 removido_em: null,
@@ -347,7 +405,7 @@ export class MetasService {
         });
     }
 
-    private async getIniciativas(meta_id: number, map: Record<number, VariavelIdAtrasoNivel>) {
+    private async getIniciativas(meta_id: number, map: VariavelDetailhePorID) {
         return await this.prisma.iniciativa.findMany({
             where: {
                 meta_id: meta_id,
@@ -377,7 +435,7 @@ export class MetasService {
     }
 
     private async getVariaveisMeta(meta_id: number, inIds: number[]) {
-        const map: Record<number, VariavelIdAtrasoNivel> = {};
+        const map: VariavelDetailhePorID = {};
         const variaveis_da_meta = await this.prisma.variavel.findMany({
             where: {
                 id: { in: inIds },
