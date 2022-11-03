@@ -92,14 +92,14 @@ $$
 LANGUAGE SQL COST 10000
 STABLE;
 
-
-CREATE OR REPLACE FUNCTION pessoa_acesso_pdm (pPessoa_id int)
+CREATE OR REPLACE FUNCTION pessoa_acesso_pdm(pPessoa_id int)
     RETURNS varchar
     AS $$
 DECLARE
     vPdmId int;
     vCiclo date;
     vLocked boolean;
+    vPerfil varchar;
 BEGIN
     --
     SELECT
@@ -125,21 +125,18 @@ BEGIN
         RETURN 'Erro: acesso está congelado';
     END IF;
     --
-    DELETE FROM pessoa_acesso_pdm
-    WHERE pessoa_id = pPessoa_id;
 
-    INSERT INTO pessoa_acesso_pdm (
-        pessoa_id,
-        metas_cronograma,
-        metas_variaveis,
-        variaveis,
-        cronogramas_etapas,
-        data_ciclo,
-        perfil,
-        congelado
-    )
-    WITH
-     pessoa_perfil AS (
+    -- prioridade pro admin
+    -- se ficar sem nenhuma, mesmo tendo outras permissoes de criar ciclos, etc,
+    -- vai continuar sem poder usar os endpoints do ciclo
+    select
+    case
+        when ( codigos  )  like '%PDM.admin_cp%' then 'admin_cp'
+        when ( codigos )  like '%PDM.tecnico_cp%' then 'tecnico_cp'
+        when (codigos )  like '%PDM.ponto_focal%' then 'ponto_focal'
+        else ''
+    end into vPerfil
+    from (
         select array_to_string(array_agg(p.codigo), ' ') as codigos
         from pessoa_perfil pp
         join perfil_acesso pa on pp.perfil_acesso_id = pa.id
@@ -153,64 +150,72 @@ BEGIN
             'PDM.tecnico_cp',
             'PDM.admin_cp'
         )
-    ),
-    perfil as (
-        -- prioridade pro admin
-        -- se ficar sem nenhuma, mesmo tendo outras permissoes de criar ciclos, etc,
-        -- vai continuar sem poder usar os endpoints do ciclo
-        select
-            case
-            when (select codigos from pessoa_perfil)  like '%PDM.admin_cp%' then 'admin_cp'
-            when (select codigos from pessoa_perfil)  like '%PDM.tecnico_cp%' then 'tecnico_cp'
-            when (select codigos from pessoa_perfil)  like '%PDM.ponto_focal%' then 'ponto_focal'
-            else '' end as perfil
+    ) as pessoa_perfil;
 
-    ),
-    indicadores_pdm as (
+    DELETE FROM pessoa_acesso_pdm
+    WHERE pessoa_id = pPessoa_id;
+
+    if (vPerfil = '') then
+        return 'sem perfil';
+    end if;
+
+    INSERT INTO pessoa_acesso_pdm (
+        pessoa_id,
+        metas_cronograma,
+        metas_variaveis,
+        variaveis,
+        cronogramas_etapas,
+        data_ciclo,
+        perfil,
+        congelado
+    )
+    WITH variaveis_pdm as (
         select
-            im.id as indicador_id
-        from meta m
-        join indicador im on im.meta_id = m.id and im.removido_em is null
-        where m.pdm_id = vPdmId
-        and m.ativo = TRUE
-        and m.removido_em is null
-        AND ((select perfil from perfil) != '' )
-        UNION ALL
-        select
-            ii.id as indicador_id
-        from meta m
-        join iniciativa i on i.meta_id = m.id and i.removido_em is null
-        join indicador ii on ii.iniciativa_id = i.id and ii.removido_em is null
-        where m.pdm_id = vPdmId
-        and m.ativo = TRUE
-        and m.removido_em is null
-        AND ((select perfil from perfil) != '' )
-        UNION ALL
-        select
-            ia.id as indicador_id
-        from meta m
-        join iniciativa i on i.meta_id = m.id and i.removido_em is null
-        join atividade a on a.iniciativa_id = i.id and a.removido_em is null
-        join indicador ia on ia.atividade_id = a.id and ia.removido_em is null
-        where m.pdm_id = vPdmId
-        and m.ativo = TRUE
-        and m.removido_em is null
-        AND ((select perfil from perfil) != '' )
-    ),
-    variaveis_pdm as (
-        select
-            v.id as variavel_id
-        from variavel v
-        where v.id in (
+            vv.id as variavel_id
+        from variavel vv
+        where exists (
             select
-                iv.variavel_id
+                1
             from indicador_variavel iv
-            join variavel v on v.id = iv.variavel_id
-            join indicadores_pdm i on i.indicador_id = iv.indicador_id
+            join (
+                -- indicadores do pdm
+                select
+                    im.id as indicador_id
+                from meta m
+                join indicador im on im.meta_id = m.id and im.removido_em is null
+                where m.pdm_id = vPdmId
+                and m.ativo = TRUE
+                and m.removido_em is null
+                AND (vPerfil != '' )
+                UNION ALL
+                select
+                    ii.id as indicador_id
+                from meta m
+                join iniciativa i on i.meta_id = m.id and i.removido_em is null
+                join indicador ii on ii.iniciativa_id = i.id and ii.removido_em is null
+                where m.pdm_id = vPdmId
+                and m.ativo = TRUE
+                and m.removido_em is null
+                AND (vPerfil != '' )
+                UNION ALL
+                select
+                    ia.id as indicador_id
+                from meta m
+                join iniciativa i on i.meta_id = m.id and i.removido_em is null
+                join atividade a on a.iniciativa_id = i.id and a.removido_em is null
+                join indicador ia on ia.atividade_id = a.id and ia.removido_em is null
+                where m.pdm_id = vPdmId
+                and m.ativo = TRUE
+                and m.removido_em is null
+                AND (vPerfil != '' )
+            ) i on i.indicador_id = iv.indicador_id
             WHERE iv.desativado_em is null
-            group by 1
+            and vv.id = iv.id
         )
-        AND variavel_participa_do_ciclo(v.id, (vCiclo - (v.atraso_meses || ' months')::interval)::date) = TRUE
+        -- o COST da function foi alterado pra ser em teoria, maior do que o de exeuta o filtro
+        -- por IDs, mas pode acontecer o PG querer filtrar todas as variaveis primeiro e depois cruzar
+        -- com as subqueries
+        AND variavel_participa_do_ciclo(vv.id, (vCiclo - (vv.atraso_meses || ' months')::interval)::date) = TRUE
 
     ),
     variaveis as (
@@ -222,9 +227,9 @@ BEGIN
                 from variavel_responsavel vr
                 where vpdm.variavel_id = vr.variavel_id
             AND (
-                CASE WHEN ( (select perfil from perfil) IN ('tecnico_cp', 'ponto_focal') ) THEN
+                CASE WHEN ( vPerfil IN ('tecnico_cp', 'ponto_focal') ) THEN
                     vr.pessoa_id = pPessoa_id
-                WHEN ((select perfil from perfil) IN ('admin_cp')) THEN
+                WHEN (vPerfil IN ('admin_cp')) THEN
                     TRUE
                 ELSE
                     FALSE -- zero pra quem sem perfil
@@ -237,9 +242,9 @@ BEGIN
             im.id as cronograma_id
         from meta m
         join meta_responsavel mr on mr.meta_id = m.id
-        AND (CASE WHEN ((select perfil from perfil) IN ('tecnico_cp', 'ponto_focal')) THEN
+        AND (CASE WHEN (vPerfil IN ('tecnico_cp', 'ponto_focal')) THEN
             mr.pessoa_id = pPessoa_id
-        WHEN ((select perfil from perfil) IN ('admin_cp')) THEN
+        WHEN (vPerfil IN ('admin_cp')) THEN
             TRUE
         ELSE
             FALSE -- zero pra quem é ponto_focal ou sem perfil
@@ -255,9 +260,9 @@ BEGIN
         join iniciativa i on i.meta_id = m.id and i.removido_em is null
         join iniciativa_responsavel ir on ir.iniciativa_id = i.id
         AND (
-            CASE WHEN ((select perfil from perfil) IN ('tecnico_cp', 'ponto_focal')) THEN
+            CASE WHEN (vPerfil IN ('tecnico_cp', 'ponto_focal')) THEN
                 ir.pessoa_id = pPessoa_id
-            WHEN ((select perfil from perfil) IN ('admin_cp')) THEN
+            WHEN (vPerfil IN ('admin_cp')) THEN
                 TRUE
             ELSE
                 FALSE
@@ -276,9 +281,9 @@ BEGIN
         join atividade_responsavel ar on ar.atividade_id = a.id
         AND
             (
-            CASE WHEN ((select perfil from perfil) IN ('tecnico_cp', 'ponto_focal')) THEN
+            CASE WHEN (vPerfil IN ('tecnico_cp', 'ponto_focal')) THEN
                 ar.pessoa_id = pPessoa_id
-            WHEN ((select perfil from perfil) IN ('admin_cp')) THEN
+            WHEN (vPerfil IN ('admin_cp')) THEN
                 TRUE
             ELSE
                 FALSE
@@ -348,10 +353,10 @@ BEGIN
         (select coalesce(array_agg(distinct variavel_id), '{}'::int[]) from variaveis) as variaveis,
         (select coalesce(array_agg(distinct etapa_id), '{}'::int[]) from cronogramas_etapas) as cronogramas_etapas,
         vCiclo as ciclo,
-        (select perfil from perfil) as perfil,
+        vPerfil as perfil,
         false as congelado;
 
-    return '';
+    return 'ok';
 END
 $$
 LANGUAGE plpgsql;
