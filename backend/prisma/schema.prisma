@@ -1218,6 +1218,7 @@ model PainelConteudo {
     mostrar_planejado Boolean
     mostrar_acumulado Boolean
     mostrar_indicador Boolean
+    mostrar_acumulado_periodo Boolean @default(false)
     ordem             Int?
     detalhes          PainelConteudoDetalhe[]
     indicador         Indicador?              @relation(fields: [indicador_id], references: [id])

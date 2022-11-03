@@ -66,4 +66,7 @@ export class CreatePainelConteudoDto {
     @IsNumber()
     periodo_valor?: number
 
+    @IsOptional()
+    @IsBoolean()
+    mostrar_acumulado_periodo?: boolean
 }
