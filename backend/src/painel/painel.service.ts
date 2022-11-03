@@ -77,6 +77,7 @@ export class PainelService {
                         mostrar_planejado: true,
                         mostrar_acumulado: true,
                         mostrar_indicador: true,
+                        mostrar_acumulado_periodo: true,
                         periodicidade: true,
                         periodo: true,
                         periodo_fim: true,
@@ -178,6 +179,7 @@ export class PainelService {
                         mostrar_planejado: true,
                         mostrar_acumulado: true,
                         mostrar_indicador: true,
+                        mostrar_acumulado_periodo: true,
                         periodicidade: true,
                         periodo: true,
                         periodo_fim: true,
@@ -387,6 +389,7 @@ export class PainelService {
                 periodo_fim: true,
                 mostrar_acumulado: true,
                 mostrar_planejado: true,
+                mostrar_acumulado_periodo: true,
                 ordem: true,
             }
         })
