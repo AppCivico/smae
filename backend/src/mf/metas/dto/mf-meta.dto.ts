@@ -2,7 +2,7 @@ import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Serie } from "@prisma/client";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsOptional } from "class-validator";
-import { SeriesAgrupadas } from "src/variavel/entities/variavel.entity";
+import { SeriesAgrupadas, SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
 export class FilterMfMetaDto {
     /**
@@ -77,10 +77,19 @@ export class VariavelComSeries {
     series: MfSeriesAgrupadas[]
 }
 
-export class MfSeriesAgrupadas extends OmitType(SeriesAgrupadas, ['agrupador']) {
+export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) { }
+
+export class MfSeriesAgrupadas {
     pode_editar: boolean
     aguarda_cp?: boolean
     aguarda_complementacao?: boolean
+
+    /**
+     * Data completa do mês de referencia do ciclo
+     * @example "2020-01-01"
+     */
+    periodo: string
+    series: MfSerieValorNomimal[]
 }
 
 export class AtividadesRetorno {
