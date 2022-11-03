@@ -10,6 +10,7 @@ type StatusTracking = {
     algumaAguardaCp: boolean,
     algumaAguardaComplementacao: boolean
     algumaNaoInformada: boolean
+    algumaNaoConferida: boolean
 }
 
 type VariavelDetalhe = {
@@ -164,6 +165,7 @@ export class MetasService {
             algumaAguardaComplementacao: false,
             algumaAguardaCp: false,
             algumaNaoInformada: false,
+            algumaNaoConferida: false
         };
 
         const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
@@ -192,7 +194,8 @@ export class MetasService {
 
         // provavelmente isso ta muito errado...
         const status = totalStatusTracking.algumaAguardaComplementacao ? 'Aguardando complementação' :
-            totalStatusTracking.algumaNaoInformada ? 'Aguardando preenchimento' : 'Não conferidas';
+            totalStatusTracking.algumaNaoInformada ? 'Aguardando preenchimento' :
+                totalStatusTracking.algumaNaoConferida ? 'Não conferidas' : 'Outras metas';
 
         if (!currentStatus) {
             await this.prisma.statusMetaCicloFisico.create({
@@ -324,6 +327,8 @@ export class MetasService {
                 statusTracking.algumaAguardaComplementacao = true;
             } else if (permissoes.ha_valor === false) {
                 statusTracking.algumaNaoInformada = true;
+            } else if (permissoes.todasConferidas == false) {
+                statusTracking.algumaNaoConferida = true;
             }
 
             seriesPorVariavel[variavel.id] = [
@@ -365,13 +370,33 @@ export class MetasService {
             && porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
             ? true : false;
 
+        let todasConferidas = true;
+        let existeValorRealizado = false;
+        if (porVariavelIdDataSerie[idVariavel] && porVariavelIdDataSerie[idVariavel][dataReferencia]) {
+
+            for (const serie in porVariavelIdDataSerie[idVariavel][dataReferencia]) {
+                const element = porVariavelIdDataSerie[idVariavel][dataReferencia][serie];
+                if (serie == 'Realizado' && element.valor_nominal !== '') {
+                    existeValorRealizado = true;
+                }
+
+                if (element.conferida == false) {
+                    todasConferidas = false
+                }
+            }
+        }
+        // se nao tem valor, nao tem conferencia
+        if (!existeValorRealizado) todasConferidas = false;
+
         if (config.perfil == 'ponto_focal') {
             return {
+                todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
                 pode_editar: status.aguarda_complementacao || (!status.aguarda_cp && !existeSerieValorRealizado)
             }
         } else {
             return {
+                todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
                 pode_editar: true
             }
