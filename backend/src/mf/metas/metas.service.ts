@@ -6,6 +6,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
 
+type StatusTracking = {
+    algumaAguardaCp: boolean,
+    algumaAguardaComplementacao: boolean
+    algumaNaoInformada: boolean
+}
+
 type VariavelDetalhe = {
     id: number;
     codigo: string;
@@ -146,12 +152,27 @@ export class MetasService {
 
     }
 
+
     async metaVariaveis(
         meta_id: number,
         config: PessoaAcessoPdm,
         cicloFisicoAtivo: CicloAtivoDto,
         user: PessoaFromJwt
     ): Promise<RetornoMetaVariaveisDto> {
+
+        const totalStatusTracking: StatusTracking = {
+            algumaAguardaComplementacao: false,
+            algumaAguardaCp: false,
+            algumaNaoInformada: false,
+        };
+
+        const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
+            where: { meta_id: meta_id, ciclo_fisico_id: cicloFisicoAtivo.id },
+            select: {
+                id: true,
+                status: true
+            }
+        });
 
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
 
@@ -165,8 +186,34 @@ export class MetasService {
                     titulo: true, id: true, codigo: true
                 }
             }),
-            this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, user),
+            this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, user, totalStatusTracking),
         ]);
+
+
+        // provavelmente isso ta muito errado...
+        const status = totalStatusTracking.algumaAguardaComplementacao ? 'Aguardando complementação' :
+            totalStatusTracking.algumaNaoInformada ? 'Aguardando preenchimento' : 'Não conferidas';
+
+        if (!currentStatus) {
+            await this.prisma.statusMetaCicloFisico.create({
+                data: {
+                    meta_id: meta_id,
+                    ciclo_fisico_id: cicloFisicoAtivo.id,
+                    status: status
+                },
+            })
+        } else {
+            if (status !== currentStatus.status) {
+                await this.prisma.statusMetaCicloFisico.update({
+                    where: {
+                        id: currentStatus.id
+                    },
+                    data: {
+                        status: status
+                    },
+                })
+            }
+        }
 
         const retorno: RetornoMetaVariaveisDto = {
             perfil: config.perfil,
@@ -181,7 +228,6 @@ export class MetasService {
         // busca apenas iniciativas que tem nas variaveis
         const iniciativas = await this.getIniciativas(meta_id, variaveisMeta);
         const atividades = await this.getAtividades(meta_id, variaveisMeta);
-
 
         for (const iniciativa of iniciativas) {
             const retornoIniciativa: IniciativasRetorno = {
@@ -213,7 +259,8 @@ export class MetasService {
         map: VariavelDetailhePorID,
         config: PessoaAcessoPdm,
         ciclo: CicloAtivoDto,
-        user: PessoaFromJwt): Promise<{
+        user: PessoaFromJwt,
+        statusTracking: StatusTracking): Promise<{
             ordem_series: Serie[],
             seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>
         }> {
@@ -269,18 +316,28 @@ export class MetasService {
                 this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, serie);
             }
 
+            const permissoes = this.calculaPermissoesSerieCorrente(config, status, porVariavelIdDataSerie, variavel.id, r.data_corrente);
+
+            if (status && status.aguarda_cp) {
+                statusTracking.algumaAguardaCp = true;
+            } else if (status && status.aguarda_complementacao) {
+                statusTracking.algumaAguardaComplementacao = true;
+            } else if (permissoes.ha_valor === false) {
+                statusTracking.algumaNaoInformada = true;
+            }
+
             seriesPorVariavel[variavel.id] = [
                 {
                     periodo: r.data_corrente,
                     series: corrente,
-                    pode_editar: true,
+                    pode_editar: permissoes.pode_editar,
                     aguarda_cp: status && status.aguarda_cp ? true : false,
                     aguarda_complementacao: status && status.aguarda_complementacao ? true : false,
                 },
                 {
                     periodo: r.data_anterior,
                     series: anterior,
-                    pode_editar: config.perfil == 'ponto_focal'
+                    pode_editar: config.perfil !== 'ponto_focal'
                 }
             ];
 
@@ -292,6 +349,34 @@ export class MetasService {
         }
     }
 
+    calculaPermissoesSerieCorrente(
+        config: PessoaAcessoPdm,
+        status: { aguarda_complementacao: boolean; aguarda_cp: boolean; variavel_id: number; },
+        porVariavelIdDataSerie: any,
+        idVariavel: number,
+        dataReferencia: DateYMD,
+    ) {
+        // isso ta errado, mas por enquanto tudo bem
+        // o certo é verificar se já houve alguma vez uma submissão para a CP
+        // mesmo que o valor seja vazio
+        const existeSerieValorRealizado = porVariavelIdDataSerie[idVariavel]
+            && porVariavelIdDataSerie[idVariavel][dataReferencia] &&
+            porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado
+            && porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
+            ? true : false;
+
+        if (config.perfil == 'ponto_focal') {
+            return {
+                ha_valor: existeSerieValorRealizado,
+                pode_editar: status.aguarda_complementacao || (!status.aguarda_cp && !existeSerieValorRealizado)
+            }
+        } else {
+            return {
+                ha_valor: existeSerieValorRealizado,
+                pode_editar: true
+            }
+        }
+    }
 
     private pushSerieVariavel(
         serieValores: SerieValorNomimal[],
