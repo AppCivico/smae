@@ -92,7 +92,6 @@ BEGIN
                 where m.pdm_id = vPdmId
                 and m.ativo = TRUE
                 and m.removido_em is null
-                AND (vPerfil != '' )
                 UNION ALL
                 select
                     ii.id as indicador_id
@@ -102,7 +101,6 @@ BEGIN
                 where m.pdm_id = vPdmId
                 and m.ativo = TRUE
                 and m.removido_em is null
-                AND (vPerfil != '' )
                 UNION ALL
                 select
                     ia.id as indicador_id
@@ -113,7 +111,6 @@ BEGIN
                 where m.pdm_id = vPdmId
                 and m.ativo = TRUE
                 and m.removido_em is null
-                AND (vPerfil != '' )
             ) i on i.indicador_id = iv.indicador_id
             WHERE iv.desativado_em is null
             and vv.id = iv.id
@@ -124,7 +121,7 @@ BEGIN
         AND variavel_participa_do_ciclo(vv.id, (vCiclo - (vv.atraso_meses || ' months')::interval)::date) = TRUE
 
     ),
-    variaveis as (
+    variaveis_visiveis as (
         select vpdm.variavel_id
         from variaveis_pdm vpdm
         where
@@ -159,7 +156,7 @@ BEGIN
         where m.pdm_id = vPdmId
         and m.ativo = TRUE
         and m.removido_em is null
-        UNION ALL
+            UNION ALL
         select
             ii.id as cronograma_id
         from meta m
@@ -178,7 +175,7 @@ BEGIN
         where m.pdm_id = vPdmId
         and m.ativo = TRUE
         and m.removido_em is null
-        UNION ALL
+            UNION ALL
         select
             ia.id as cronograma_id
         from meta m
@@ -211,38 +208,40 @@ BEGIN
     cronogramas_indiretos as (
         select ce.cronograma_id
         from public.cronograma_etapa ce
-        where ce.etapa_id in (
-            select x.etapa_id from cronogramas_etapas x
-        ) AND ce.inativo = false
+        where exists (
+            select 1 from cronogramas_etapas x where ce.etapa_id = x.etapa_id
+        )
+        AND ce.inativo = false
     ), metas_variaveis as (
         select
             m.id as meta_id
         from meta m
         join indicador i on  i.meta_id = m.id
-        join indicador_variavel iv on iv.indicador_id = i.id
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
         where iv.variavel_id in (
-            select variavel_id from variaveis
+            -- aqui nao adianta muda pra EXISTS pq nao vai ter index na CTE
+            select variavel_id from variaveis_visiveis
         ) and m.removido_em is null and m.ativo = TRUE
-        UNION ALL
+            UNION ALL
         select
             m.id as meta_id
         from meta m
         join iniciativa _i on _i.meta_id = m.id
         join indicador i on  i.iniciativa_id = _i.id
-        join indicador_variavel iv on iv.indicador_id = i.id
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
         where iv.variavel_id in (
-            select variavel_id from variaveis
+            select variavel_id from variaveis_visiveis
         ) and m.removido_em is null and m.ativo = TRUE
-        UNION ALL
+            UNION ALL
         select
             m.id as meta_id
         from meta m
         join iniciativa _i on _i.meta_id = m.id
         join atividade _a on _a.iniciativa_id = _i.id
         join indicador i on  i.atividade_id = _a.id
-        join indicador_variavel iv on iv.indicador_id = i.id
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
         where iv.variavel_id in (
-            select variavel_id from variaveis
+            select variavel_id from variaveis_visiveis
         ) and m.removido_em is null and m.ativo = TRUE
     ), metas_cronograma as (
         select
@@ -250,13 +249,15 @@ BEGIN
         from meta m
         join cronograma c on  c.meta_id = m.id
         join cronogramas_indiretos x on x.cronograma_id = c.id
-        where m.removido_em is null and m.ativo = TRUE
+        where m.removido_em is null
+        and m.ativo = TRUE
+        and c.removido_em is null -- just in case, na teoria as etapas ja seriam removidas?
     )
     select
         pPessoa_id as pessoa_id,
         (select coalesce(array_agg(distinct meta_id), '{}'::int[]) from metas_cronograma) as metas_cronograma,
         (select coalesce(array_agg(distinct meta_id), '{}'::int[]) from metas_variaveis) as metas_variaveis,
-        (select coalesce(array_agg(distinct variavel_id), '{}'::int[]) from variaveis) as variaveis,
+        (select coalesce(array_agg(distinct variavel_id), '{}'::int[]) from variaveis_visiveis) as variaveis,
         (select coalesce(array_agg(distinct etapa_id), '{}'::int[]) from cronogramas_etapas) as cronogramas_etapas,
         vCiclo as ciclo,
         vPerfil as perfil,
