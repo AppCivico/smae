@@ -376,6 +376,7 @@ export class MetasService {
 
             for (const serie in porVariavelIdDataSerie[idVariavel][dataReferencia]) {
                 const element = porVariavelIdDataSerie[idVariavel][dataReferencia][serie];
+                if (!element) continue;
                 if (serie == 'Realizado' && element.valor_nominal !== '') {
                     existeValorRealizado = true;
                 }
