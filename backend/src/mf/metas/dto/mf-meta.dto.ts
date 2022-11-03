@@ -65,24 +65,32 @@ export class VariavelQtdeDto {
 }
 
 export class AtividadesRetorno {
-    status: VariavelQtdeDto
+
     indicador: IdCodTituloDto | null
     atividade: IdCodTituloDto
 }
 
 export class IniciativasRetorno {
-    status: VariavelQtdeDto
+
     indicador: IdCodTituloDto | null
     iniciativa: IdCodTituloDto
     atividades: AtividadesRetorno[]
 }
 
+export type Niveis = 'meta' | 'iniciativa' | 'atividade'
+export type Status = keyof VariavelQtdeDto
+
+export const ZeroStatuses: Record<Status, number> = { aguarda_complementacao: 0, aguarda_cp: 0, nao_preenchidas: 0 };
+
+export type StatusPorNivel = Record<Niveis, VariavelQtdeDto>
+
 export class RetornoMetaVariaveisDto {
     perfil: string
 
     variaveis: {
-        status: VariavelQtdeDto
         indicador: IdCodTituloDto | null
         iniciativas: IniciativasRetorno[]
     }
+
+    status_por_nivel: StatusPorNivel
 }
