@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Serie } from "@prisma/client";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsOptional } from "class-validator";
-import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
+import { SeriesAgrupadas, SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
 export class FilterMfMetaDto {
     /**
@@ -66,29 +66,39 @@ export class VariavelQtdeDto {
     nao_preenchidas: number
 }
 
-export class AtividadesRetorno {
-
-    indicador: IdCodTituloDto | null
-    atividade: IdCodTituloDto
-}
-
-export class IniciativasRetorno {
-
-    indicador: IdCodTituloDto | null
-    iniciativa: IdCodTituloDto
-    atividades: AtividadesRetorno[]
-}
 
 export type Niveis = 'meta' | 'iniciativa' | 'atividade'
 export type Status = keyof VariavelQtdeDto
 
 export const ZeroStatuses: Record<Status, number> = { aguarda_complementacao: 0, aguarda_cp: 0, nao_preenchidas: 0 };
 
-export type StatusPorNivel = Record<Niveis, VariavelQtdeDto>
 
-export class VariavelComSeries  {
+export class VariavelComSeries {
     variavel: IdCodTituloDto
-    series: SerieValorNomimal[]
+    series: MfSeriesAgrupadas[]
+}
+
+export class MfSeriesAgrupadas extends SeriesAgrupadas {
+    ciclo_fisico_id: number | null
+    pode_editar: boolean
+
+    aguarda_cp?: boolean
+    aguarda_complementacao?: boolean
+}
+
+export class AtividadesRetorno {
+    indicador: IdCodTituloDto | null
+    atividade: IdCodTituloDto
+    variaveis: VariavelComSeries[]
+    totais: VariavelQtdeDto
+}
+
+export class IniciativasRetorno {
+    indicador: IdCodTituloDto | null
+    iniciativa: IdCodTituloDto
+    atividades: AtividadesRetorno[]
+    variaveis: VariavelComSeries[]
+    totais: VariavelQtdeDto
 }
 
 export class RetornoMetaVariaveisDto {
@@ -98,9 +108,9 @@ export class RetornoMetaVariaveisDto {
         indicador: IdCodTituloDto | null
         iniciativas: IniciativasRetorno[]
         variaveis: VariavelComSeries[]
+        totais: VariavelQtdeDto
     }
 
-    status_por_nivel: StatusPorNivel
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro das series
     * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
