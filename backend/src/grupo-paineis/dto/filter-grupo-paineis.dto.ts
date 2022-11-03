@@ -1,3 +1,4 @@
+import { Transform } from "class-transformer";
 import { IsBoolean, IsOptional } from "class-validator";
 
 export class FilterGrupoPaineisDto {
@@ -6,5 +7,6 @@ export class FilterGrupoPaineisDto {
     */
     @IsBoolean()
     @IsOptional()
+    @Transform(({ value }: any) => value === 'true')
     ativo?: boolean
 }
