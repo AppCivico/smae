@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Serie } from "@prisma/client";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsOptional } from "class-validator";
+import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
 export class FilterMfMetaDto {
     /**
@@ -84,13 +86,25 @@ export const ZeroStatuses: Record<Status, number> = { aguarda_complementacao: 0,
 
 export type StatusPorNivel = Record<Niveis, VariavelQtdeDto>
 
+export class VariavelComSeries  {
+    variavel: IdCodTituloDto
+    series: SerieValorNomimal[]
+}
+
 export class RetornoMetaVariaveisDto {
     perfil: string
 
-    variaveis: {
+    meta: {
         indicador: IdCodTituloDto | null
         iniciativas: IniciativasRetorno[]
+        variaveis: VariavelComSeries[]
     }
 
     status_por_nivel: StatusPorNivel
+    /**
+     * contextualiza qual a ordem que as séries serão apresentadas dentro das series
+    * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
+    */
+    ordem_series: Serie[]
+
 }
