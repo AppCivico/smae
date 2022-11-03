@@ -270,7 +270,7 @@ export class MetasService {
 
             const anterior: SerieValorNomimal[] = [];
             for (const serie of ordem_series) {
-                this.pushSerieVariavel(corrente, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, serie);
+                this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, serie);
             }
 
             seriesPorVariavel[variavel.id] = [
