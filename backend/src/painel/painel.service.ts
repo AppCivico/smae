@@ -475,7 +475,7 @@ export class PainelService {
                         data: {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: row.variavel_id,
-                            mostrar_indicador: painel_conteudo.mostrar_indicador,
+                            mostrar_indicador: false,
                             tipo: PainelConteudoTipoDetalhe.Variavel
                         }
                     })
@@ -494,7 +494,7 @@ export class PainelService {
                 const parent_iniciativa = await prisma.painelConteudoDetalhe.create({
                     data: {
                         painel_conteudo_id: painel_conteudo.id,
-                        mostrar_indicador: painel_conteudo.mostrar_indicador,
+                        mostrar_indicador: false,
                         tipo: PainelConteudoTipoDetalhe.Iniciativa,
                         iniciativa_id: iniciativa.id
                     },
@@ -535,7 +535,7 @@ export class PainelService {
                     const parent_atividade = await prisma.painelConteudoDetalhe.create({
                         data: {
                             painel_conteudo_id: painel_conteudo.id,
-                            mostrar_indicador: painel_conteudo.mostrar_indicador,
+                            mostrar_indicador: false,
                             tipo: PainelConteudoTipoDetalhe.Atividade,
                             pai_id: parent_iniciativa.id,
                             atividade_id: atividade.id
@@ -558,7 +558,7 @@ export class PainelService {
                             data: {
                                 painel_conteudo_id: painel_conteudo.id,
                                 variavel_id: variavel.variavel_id,
-                                mostrar_indicador: painel_conteudo.mostrar_indicador,
+                                mostrar_indicador: false,
                                 tipo: PainelConteudoTipoDetalhe.Variavel,
                                 pai_id: parent_atividade.id
                             }
