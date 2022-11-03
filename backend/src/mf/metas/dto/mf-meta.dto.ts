@@ -67,7 +67,6 @@ export class VariavelQtdeDto {
 }
 
 
-export type Niveis = 'meta' | 'iniciativa' | 'atividade'
 export type Status = keyof VariavelQtdeDto
 
 export const ZeroStatuses: Record<Status, number> = { aguarda_complementacao: 0, aguarda_cp: 0, nao_preenchidas: 0 };
