@@ -1,8 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Serie } from "@prisma/client";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsOptional } from "class-validator";
-import { SeriesAgrupadas, SerieValorNomimal } from "src/variavel/entities/variavel.entity";
+import { SeriesAgrupadas } from "src/variavel/entities/variavel.entity";
 
 export class FilterMfMetaDto {
     /**
@@ -77,10 +77,8 @@ export class VariavelComSeries {
     series: MfSeriesAgrupadas[]
 }
 
-export class MfSeriesAgrupadas extends SeriesAgrupadas {
-    ciclo_fisico_id: number | null
+export class MfSeriesAgrupadas extends OmitType(SeriesAgrupadas, ['agrupador']) {
     pode_editar: boolean
-
     aguarda_cp?: boolean
     aguarda_complementacao?: boolean
 }

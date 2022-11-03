@@ -123,7 +123,7 @@ export class MetasService {
                         aguarda_cp++;
                     } else if (variavelPeriodo.aguarda_complementacao) {
                         aguarda_cp++;
-                    } else if (variavelPeriodo.ciclo_fisico_id == cicloFisicoAtivo.id) { // apenas das variaveis do ciclo
+                    } else if (variavelPeriodo.periodo === Date2YMD.toString(cicloFisicoAtivo.data_ciclo)) { // apenas das variaveis do ciclo
                         nao_preenchidas++;
                     }
                 }
@@ -250,12 +250,8 @@ export class MetasService {
         }
 
 
-        //let ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        let ordem_series : Serie[]= [   "Previsto",
-        "Realizado",
-        "RealizadoAcumulado",
-        "PrevistoAcumulado"];
-        //shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+        let ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+        shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
 
         const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
         for (const r of seriesVariavel) {
@@ -275,8 +271,6 @@ export class MetasService {
 
             seriesPorVariavel[variavel.id] = [
                 {
-                    agrupador: '',
-                    ciclo_fisico_id: ciclo.id,
                     periodo: r.data_corrente,
                     series: corrente,
                     pode_editar: true,
@@ -284,8 +278,6 @@ export class MetasService {
                     aguarda_complementacao: status && status.aguarda_complementacao ? true : false,
                 },
                 {
-                    agrupador: '',
-                    ciclo_fisico_id: null,
                     periodo: r.data_anterior,
                     series: anterior,
                     pode_editar: config.perfil == 'ponto_focal'
