@@ -671,7 +671,8 @@ export class PainelService {
                   ' - ' +
                   lte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                 periodo_inicio: gte,
-                periodo_fim: lte
+                periodo_fim: lte,
+                valores_nominais: [0, 0, 0, 0]
             });
         }
         else if (config.periodo === Periodo.Anteriores) {
@@ -688,7 +689,8 @@ export class PainelService {
                     series_template.push({
                         titulo: periodo_inicio.getUTCFullYear().toString(),
                         periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Semestral) {
@@ -711,7 +713,8 @@ export class PainelService {
                     series_template.push({
                         titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                         periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Trimestral) {
@@ -725,7 +728,8 @@ export class PainelService {
                     series_template.push({
                         titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                         periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Quadrimestral) {
@@ -748,7 +752,8 @@ export class PainelService {
                     series_template.push({
                         titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                         periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Bimestral) {
@@ -768,7 +773,8 @@ export class PainelService {
                     series_template.push({
                         titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                         periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Mensal) {
@@ -782,7 +788,8 @@ export class PainelService {
                     series_template.push({
                         titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                         periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
                     })
                 }
             }
@@ -972,16 +979,36 @@ export class PainelService {
                     titulo: series.meta.indicador[0].titulo,
 
                     series: series_template.map(t => {
-                        const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
+                        let series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
                             return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
-                        }) || [0, 0, 0, 0];
+                        });
+
 
                         return {
                             titulo: t.titulo,
                             periodo_inicio: t.periodo_inicio,
                             periodo_fim: t.periodo_fim,
-                            valores_nominais: series_for_period.map(r => {
-                                return r.valor_nominal ? r.valor_nominal : r
+                            // valores_nominais: series_for_period.map(r => {
+                            //     return r.valor_nominal ? r.valor_nominal : r
+                            // })
+                            valores_nominais: t.valores_nominais.map((vn, ix) => {
+
+                                const serie_match_arr = series_for_period.filter(sm => {
+                                    if (ix == 0) {
+                                        return sm.serie === 'Previsto'
+                                    } else if (ix == 1) {
+                                        return sm.serie === 'PrevistoAcumulado'
+                                    } else if (ix == 2) {
+                                        return sm.serie === 'Realizado'
+                                    } else {
+                                        return sm.serie === 'RealizadoAcumulado'
+                                    }
+                                });
+                                const serie_match = serie_match_arr[0];
+
+                                if (serie_match) {
+                                    return serie_match.valor_nominal
+                                } else { return vn }
                             })
                         }
                     })
