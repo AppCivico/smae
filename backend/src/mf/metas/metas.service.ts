@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { PessoaAcessoPdm, Serie } from '@prisma/client';
+import { HttpException, Injectable } from '@nestjs/common';
+import { PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
-import { CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { VariavelService } from 'src/variavel/variavel.service';
+import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type StatusTracking = {
     algumaAguardaCp: boolean,
@@ -42,7 +44,10 @@ type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
 export class MetasService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly variavelService: VariavelService,
+        private readonly prisma: PrismaService
+    ) { }
 
     async metasPorFase(filters: { ids: number[] }): Promise<MfMetaAgrupadaDto[]> {
 
@@ -667,6 +672,149 @@ export class MetasService {
         }
 
         return map;
+    }
+
+    async addMetaVariavelAnaliseQualitativa(dto: AnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
+        const now = new Date(Date.now());
+        const dateYMD = Date2YMD.toString(dto.data_valor);
+
+
+        const dadosCicloResult: { variavelParticipa: boolean, id: number, ativo: boolean }[]
+            = await this.prisma.$queryRaw`
+            select
+                variavel_participa_do_ciclo( v.id, ${dateYMD}::date ) as "variavelParticipa",
+                cf.ativo as ativo,
+                cf.id as id
+            from ciclo_fisico cf,
+            variavel v
+            where v.id = ${dto.variavel_id}::int
+            AND cf.data_ciclo = ${dateYMD}::date + (v.atraso_meses || ' month')::interval
+            and cf.pdm_id = ${dto.pdm_id}
+        `;
+        const dadosCiclo = dadosCicloResult[0];
+        console.log(dadosCiclo);
+
+        if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
+        if (!dadosCiclo.variavelParticipa)
+            throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${dto.variavel_id}`, 400);
+
+        if (config.perfil == 'ponto_focal' && !dadosCiclo.ativo) {
+            throw new HttpException('Você não pode enviar valores fora de um ciclo ainda ativo.', 400);
+        }
+
+        // o trabalho pra montar um SerieJwt não faz sentido
+        // entao vamos operar diretamente na SerieVariavel
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            // isolation lock
+            await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
+
+            let needRecalc = false;
+            for (const campo of CamposRealizado) {
+                const valor_nominal = dto[campo];
+                if (valor_nominal === undefined) continue;
+
+
+                const existeValor = await this.prisma.serieVariavel.findFirst({
+                    where: {
+                        variavel_id: dto.variavel_id,
+                        serie: CamposRealizadoParaSerie[campo],
+                        data_valor: dto.data_valor,
+                    },
+                    select: { id: true, valor_nominal: true, ciclo_fisico_id: true }
+                });
+
+                if (existeValor && valor_nominal === '') {
+                    // existe o valor, mas é pra remover, então bora
+                    needRecalc = true;
+
+                    await this.prisma.serieVariavel.delete({
+                        where: {
+                            id: existeValor.id
+                        }
+                    });
+                } else if (!existeValor && valor_nominal !== '') {
+                    // valor não existe, entao vamos criar
+                    needRecalc = true;
+
+                    await this.prisma.serieVariavel.create({
+                        data: {
+                            variavel_id: dto.variavel_id,
+                            serie: CamposRealizadoParaSerie[campo],
+                            data_valor: dto.data_valor,
+                            valor_nominal: valor_nominal,
+                            atualizado_em: now,
+                            atualizado_por: user.id,
+                            ciclo_fisico_id: dadosCiclo.id,
+                            // se o ciclo nao ta ativo, entao já ta conferida automaticamente
+                            conferida: dadosCiclo.ativo ? false : true,
+                        }
+                    });
+                } else if (existeValor && valor_nominal !== '') {
+
+                    var valorModificado = existeValor.valor_nominal.toString() !== valor_nominal;
+                    // se os valores mudaram, ou se faltava o ciclo_fisico_id
+                    if (
+                        valorModificado
+                        ||
+                        existeValor.ciclo_fisico_id === null
+                    ) {
+                        needRecalc = true;
+
+                        await this.prisma.serieVariavel.update({
+                            where: { id: existeValor.id },
+                            data: {
+                                valor_nominal: valor_nominal,
+                                atualizado_em: now,
+                                atualizado_por: user.id,
+                                ciclo_fisico_id: dadosCiclo.id,
+                                // se o ciclo nao ta ativo, entao já ta conferida automaticamente
+                                conferida: valorModificado ? (dadosCiclo.ativo ? false : true) : undefined,
+                            }
+                        });
+                    }
+                }
+
+            }
+            if (needRecalc) {
+                await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
+                await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
+            }
+
+            await prismaTxn.variavelCicloFisicoQualitativo.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    ultima_revisao: true
+                },
+                data: {
+                    ultima_revisao: false,
+                }
+            });
+
+            const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, prismaTxn);
+
+            await prismaTxn.variavelCicloFisicoQualitativo.create({
+                data: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    ultima_revisao: true,
+                    criado_por: user.id,
+                    criado_em: now,
+                    referencia_data: dto.data_valor,
+                    analise_qualitativa: dto.analise_qualitativa,
+                    meta_id: meta_id
+                }
+            });
+
+
+
+        }, {
+            isolationLevel: 'Serializable',
+            maxWait: 15000,
+            timeout: 25000,
+        });
+
+        return { id: 0 }
     }
 
 

@@ -838,5 +838,45 @@ export class VariavelService {
         }
     }
 
+    async getMetaIdDaVariavel(variavel_id: number, prismaTxn: Prisma.TransactionClient): Promise<number> {
+
+        let result: {
+            meta_id: number
+        }[] = await prismaTxn.$queryRaw`
+            select coalesce(
+
+                -- busca pela diretamente na meta
+                (
+                    select m.id
+                    from meta m
+                    join indicador i on i.meta_id = m.id and i.removido_em is null
+                    join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
+                    where iv.variavel_id = ${variavel_id}::int
+                ),
+                (
+                    select m.id
+                    from meta m
+                    join iniciativa _i on _i.meta_id = m.id
+                    join indicador i on  i.iniciativa_id = _i.id
+                    join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
+                    where iv.variavel_id = ${variavel_id}::int
+                ),
+                (
+                    select m.id
+                    from meta m
+                    join iniciativa _i on _i.meta_id = m.id
+                    join atividade _a on _a.iniciativa_id = _i.id
+                    join indicador i on  i.atividade_id = _a.id
+                    join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
+                    where iv.variavel_id = ${variavel_id}::int
+                )
+            ) as meta_id
+        `;
+console.log(result);
+
+        if (!result[0].meta_id) throw `getMetaIdDaVariavel: nenhum resultado para variavel ${variavel_id}`
+        return result[0].meta_id;
+    }
+
 
 }
