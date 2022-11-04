@@ -55,6 +55,28 @@ export class ListMfMetasAgrupadasDto {
     ciclo_ativo: CicloAtivoDto
 }
 
+export class MfMetaDto {
+    id: number
+    titulo: string
+    codigo: string
+    fase: string
+    cronograma: {
+        participante: boolean
+        status: string
+    }
+    coleta: {
+        participante: boolean
+        status: string
+    }
+    codigo_organizacoes: string[]
+}
+
+export class ListMfMetasDto {
+    linhas: MfMetaDto[]
+    perfil: string
+    ciclo_ativo: CicloAtivoDto
+}
+
 export class IdCodTituloDto {
     id: number
     codigo: string
