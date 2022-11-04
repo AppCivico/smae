@@ -1400,6 +1400,7 @@ model VariavelCicloFisicoQualitativo {
 
     referencia_data     DateTime @db.Date
     analise_qualitativa String?
+    enviado_para_cp Boolean
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
@@ -1423,8 +1424,6 @@ model PedidoComplementacao {
     id              Int @id @default(autoincrement())
     ciclo_fisico_id Int
     variavel_id     Int
-
-    enviado_para_cp Boolean
 
     pedido String
 
