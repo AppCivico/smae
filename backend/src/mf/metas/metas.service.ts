@@ -701,10 +701,15 @@ export class MetasService {
         if (config.perfil == 'ponto_focal' && !dadosCiclo.ativo) {
             throw new HttpException('Você não pode enviar valores fora de um ciclo ainda ativo.', 400);
         }
+        if (dto.enviar_para_cp && !dadosCiclo.ativo) {
+            throw new HttpException('Não é possivel enviar para CP fora do ciclo ativo.', 400);
+        }
+
+
 
         // o trabalho pra montar um SerieJwt não faz sentido
         // entao vamos operar diretamente na SerieVariavel
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+        const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
             // isolation lock
             await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
 
@@ -793,7 +798,7 @@ export class MetasService {
 
             const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, prismaTxn);
 
-            await prismaTxn.variavelCicloFisicoQualitativo.create({
+            const cfq = await prismaTxn.variavelCicloFisicoQualitativo.create({
                 data: {
                     ciclo_fisico_id: dadosCiclo.id,
                     variavel_id: dto.variavel_id,
@@ -804,21 +809,35 @@ export class MetasService {
                     analise_qualitativa: dto.analise_qualitativa,
                     meta_id: meta_id,
                     enviado_para_cp: dto.enviar_para_cp,
-                }
+                },
+                select: { id: true }
             });
 
-            if (dto.enviar_para_cp){
-
+            if (dto.enviar_para_cp) {
+                await prismaTxn.statusVariavelCicloFisico.deleteMany({
+                    where: {
+                        variavel_id: dto.variavel_id,
+                        ciclo_fisico_id: dadosCiclo.id,
+                    }
+                });
+                await prismaTxn.statusVariavelCicloFisico.create({
+                    data: {
+                        variavel_id: dto.variavel_id,
+                        ciclo_fisico_id: dadosCiclo.id,
+                        aguarda_cp: true,
+                        meta_id: meta_id,
+                    }
+                });
             }
 
-
+            return cfq.id;
         }, {
             isolationLevel: 'Serializable',
             maxWait: 15000,
             timeout: 25000,
         });
 
-        return { id: 0 }
+        return { id: id }
     }
 
 
