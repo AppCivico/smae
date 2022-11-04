@@ -1397,10 +1397,9 @@ model VariavelCicloFisicoQualitativo {
     meta_id                          Int
     ciclo_fisico_id                  Int
     variavel_id                      Int
-    diretamente_do_indicador_da_meta Boolean
 
     referencia_data     DateTime @db.Date
-    analise_qualitativa String
+    analise_qualitativa String?
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
@@ -1452,7 +1451,6 @@ model VariavelCicloFisicoDocumento {
     meta_id                          Int
     ciclo_fisico_id                  Int
     variavel_id                      Int
-    diretamente_do_indicador_da_meta Boolean
 
     referencia_data DateTime @db.Date
 

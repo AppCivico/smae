@@ -217,7 +217,7 @@ BEGIN
             m.id as meta_id
         from meta m
         join indicador i on  i.meta_id = m.id
-        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
         where iv.variavel_id in (
             -- aqui nao adianta muda pra EXISTS pq nao vai ter index na CTE
             select variavel_id from variaveis_visiveis
@@ -228,7 +228,7 @@ BEGIN
         from meta m
         join iniciativa _i on _i.meta_id = m.id
         join indicador i on  i.iniciativa_id = _i.id
-        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
         where iv.variavel_id in (
             select variavel_id from variaveis_visiveis
         ) and m.removido_em is null and m.ativo = TRUE
@@ -239,7 +239,7 @@ BEGIN
         join iniciativa _i on _i.meta_id = m.id
         join atividade _a on _a.iniciativa_id = _i.id
         join indicador i on  i.atividade_id = _a.id
-        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
         where iv.variavel_id in (
             select variavel_id from variaveis_visiveis
         ) and m.removido_em is null and m.ativo = TRUE
