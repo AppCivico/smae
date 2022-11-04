@@ -133,6 +133,9 @@ export const usePdMStore = defineStore({
 
                         return x;
                     })(r.linhas[0]);
+                    if(r.ciclo_fisico_ativo){
+                        this.activePdm.ciclo_fisico_ativo = r.ciclo_fisico_ativo;
+                    }
                     return this.activePdm;
                 }else{
                     const alertStore = useAlertStore();

@@ -33,6 +33,8 @@ export const usePaineisStore = defineStore({
                     r.mostrar_planejado_por_padrao = r.mostrar_planejado_por_padrao ? "1":false;
                     r.mostrar_acumulado_por_padrao = r.mostrar_acumulado_por_padrao ? "1":false;
                     r.mostrar_indicador_por_padrao = r.mostrar_indicador_por_padrao ? "1":false;
+
+                    if(r.grupos) r.grupos = r.grupos.map(g=>g.grupo_painel.id);
                     this.singlePainel = r;
                 } else {
                     throw 'Painel não encontrado';

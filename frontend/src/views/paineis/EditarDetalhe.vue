@@ -3,13 +3,17 @@
 	import { useRoute } from 'vue-router';
 	import { router } from '@/router';
 	import { storeToRefs } from 'pinia';
-	import { useEditModalStore, useAlertStore, useMetasStore, usePaineisStore } from '@/stores';
+	import { useEditModalStore, useAlertStore, usePdMStore, useMetasStore, usePaineisStore } from '@/stores';
 
 	const route = useRoute();
 	const painel_id = route.params.painel_id;
 	const conteudo_id = route.params.conteudo_id;
 	const alertStore = useAlertStore();
 	const editModalStore = useEditModalStore();
+
+	const PdMStore = usePdMStore();
+    const { activePdm } = storeToRefs(PdMStore);
+    PdMStore.getActive();
 
 	const PaineisStore = usePaineisStore();
 	const { singlePainel } = storeToRefs(PaineisStore);
@@ -105,10 +109,10 @@
 		<template v-for="x in metaConteudo.detalhes.filter(y=>y.tipo=='Iniciativa')" :key="x.id">
 			<div class="accordeon metasselect">
 			    <div class="flex mb1" @click="openParent">
-			    	<span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span><span class="t0 mr1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></span><h4 class="t1 mb0">Iniciativa - {{x.iniciativa.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa.titulo}}</h4>
+			    	<span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span><span class="t0 mr1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></span><h4 class="t1 mb0">{{activePdm.rotulo_iniciativa}} - {{x.iniciativa.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa.titulo}}</h4>
 			    </div>
 			    <div class="content">
-			    	<label class="block mb1 t14 w700"><input type="checkbox" class="inputcheckbox" v-model="selDetalhes[x.id]" :value="true"><span>Indicador da Iniciativa - {{x.iniciativa.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa.titulo}}</span></label>
+			    	<label class="block mb1 t14 w700"><input type="checkbox" class="inputcheckbox" v-model="selDetalhes[x.id]" :value="true"><span>Indicador da {{activePdm.rotulo_iniciativa}} - {{x.iniciativa.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa.titulo}}</span></label>
 
 			    	<template v-for="xx in x.filhos.filter(y=>y.tipo=='Variavel')" :key="xx.id">
 			    		<div v-if="xx.tipo=='Variavel'" class="mb1 ml1">
@@ -119,10 +123,10 @@
 				    <template v-for="xx in x.filhos.filter(y=>y.tipo=='Atividade')" :key="xx.id">
 				    	<div class="accordeon metasselect ml1">
 				    	    <div class="flex mb1" @click="openParent">
-				    	    	<span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span><span class="t0 mr1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></span><h4 class="t1 mb0">Atividade - {{xx.atividade.codigo?xx.atividade.codigo+' - ':''}}{{xx.atividade.titulo}}</h4>
+				    	    	<span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span><span class="t0 mr1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></span><h4 class="t1 mb0">{{activePdm.rotulo_atividade}} - {{xx.atividade.codigo?xx.atividade.codigo+' - ':''}}{{xx.atividade.titulo}}</h4>
 				    	    </div>
 				    	    <div class="content">
-				    	    	<label class="block mb1 t14 w700"><input type="checkbox" class="inputcheckbox" v-model="selDetalhes[xx.id]" :value="true"><span>Indicador da Atividade - {{xx.atividade.codigo?xx.atividade.codigo+' - ':''}}{{xx.atividade.titulo}}</span></label>
+				    	    	<label class="block mb1 t14 w700"><input type="checkbox" class="inputcheckbox" v-model="selDetalhes[xx.id]" :value="true"><span>Indicador da {{activePdm.rotulo_atividade}} - {{xx.atividade.codigo?xx.atividade.codigo+' - ':''}}{{xx.atividade.titulo}}</span></label>
 
 				    	    	<template v-for="xxx in xx.filhos.filter(y=>y.tipo=='Variavel')" :key="xxx.id">
 				    	    		<div v-if="xxx.tipo=='Variavel'" class="mb1 ml1">
