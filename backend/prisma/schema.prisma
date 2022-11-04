@@ -685,7 +685,6 @@ model MetaResponsavel {
     coorderandor_responsavel_cp Boolean
 
     @@index([pessoa_id])
-
     @@map("meta_responsavel")
 }
 
@@ -1210,19 +1209,19 @@ model PainelConteudo {
     meta    Meta @relation(fields: [meta_id], references: [id])
 
     periodicidade  Periodicidade
-    periodo        Periodo @default(Todos)
+    periodo        Periodo       @default(Todos)
     periodo_valor  Int?
     periodo_inicio DateTime?     @db.Date
     periodo_fim    DateTime?     @db.Date
 
-    mostrar_planejado Boolean
-    mostrar_acumulado Boolean
-    mostrar_indicador Boolean
-    mostrar_acumulado_periodo Boolean @default(false)
-    ordem             Int?
-    detalhes          PainelConteudoDetalhe[]
-    indicador         Indicador?              @relation(fields: [indicador_id], references: [id])
-    indicador_id      Int?
+    mostrar_planejado         Boolean
+    mostrar_acumulado         Boolean
+    mostrar_indicador         Boolean
+    mostrar_acumulado_periodo Boolean                 @default(false)
+    ordem                     Int?
+    detalhes                  PainelConteudoDetalhe[]
+    indicador                 Indicador?              @relation(fields: [indicador_id], references: [id])
+    indicador_id              Int?
 
     @@map("painel_conteudo")
 }
@@ -1393,14 +1392,14 @@ model PessoaAcessoPdm {
 }
 
 model VariavelCicloFisicoQualitativo {
-    id                               Int     @id @default(autoincrement())
-    meta_id                          Int
-    ciclo_fisico_id                  Int
-    variavel_id                      Int
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+    variavel_id     Int
 
     referencia_data     DateTime @db.Date
     analise_qualitativa String?
-    enviado_para_cp Boolean
+    enviado_para_cp     Boolean
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
@@ -1448,10 +1447,10 @@ model PedidoComplementacao {
 }
 
 model VariavelCicloFisicoDocumento {
-    id                               Int     @id @default(autoincrement())
-    meta_id                          Int
-    ciclo_fisico_id                  Int
-    variavel_id                      Int
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+    variavel_id     Int
 
     referencia_data DateTime @db.Date
 
@@ -1493,11 +1492,14 @@ model StatusMetaCicloFisico {
     meta_id         Int
     ciclo_fisico_id Int
 
-    status String
+    status_coleta     String @default("")
     // nao atualizadas = uma ou mais variaveis não preenchida
     // aguardando complementação = uma ou mais variavel aguarda complementação
     // não conferidas = uma ou mais variavel não foi conferida
     // outros = qualquer uma não categorizada acima
+    status_cronograma String @default("")
+
+    status_valido Boolean @default(false)
 
     ciclo_fisico CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
     meta         Meta        @relation(fields: [meta_id], references: [id])

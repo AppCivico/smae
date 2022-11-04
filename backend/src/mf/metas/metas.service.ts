@@ -6,7 +6,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type StatusTracking = {
     algumaAguardaCp: boolean,
@@ -48,6 +48,48 @@ export class MetasService {
         private readonly variavelService: VariavelService,
         private readonly prisma: PrismaService
     ) { }
+
+
+    async metas(config: PessoaAcessoPdm, cicloAtivoId: number): Promise<MfMetaDto[]> {
+
+        const rows = await this.prisma.meta.findMany({
+            where: {
+                id: { in: [...config.metas_cronograma, ...config.metas_variaveis] }
+            },
+            select: {
+                id: true,
+                titulo: true,
+                codigo: true,
+                ciclo_fase: {
+                    select: { ciclo_fase: true }
+                },
+                StatusMetaCicloFisico: {
+                    where: {
+                        ciclo_fisico_id: cicloAtivoId
+                    },
+                    select: {
+                        status_coleta: true,
+                        status_cronograma: true,
+                        status_valido: true,
+                    }
+                },
+                meta_orgao: {
+                    where: {
+                        responsavel: true,
+                    },
+                    select: {
+                        orgao: { select: { sigla: true } }
+                    }
+                }
+            },
+            orderBy: {
+                codigo: 'asc'
+            }
+        });
+
+        return [];
+    }
+
 
     async metasPorFase(filters: { ids: number[] }): Promise<MfMetaAgrupadaDto[]> {
 
@@ -94,7 +136,7 @@ export class MetasService {
                         ciclo_fisico_id: ciclo_fisico_id
                     },
                     select: {
-                        status: true
+                        status_coleta: true
                     }
                 }
             },
@@ -108,7 +150,7 @@ export class MetasService {
                 id: r.id,
                 codigo: r.codigo,
                 titulo: r.titulo,
-                grupo: r.StatusMetaCicloFisico[0]?.status || 'Não categorizado'
+                grupo: r.StatusMetaCicloFisico[0]?.status_coleta || 'Não categorizado'
             }
         });
     }
@@ -177,7 +219,7 @@ export class MetasService {
             where: { meta_id: meta_id, ciclo_fisico_id: cicloFisicoAtivo.id },
             select: {
                 id: true,
-                status: true
+                status_coleta: true
             }
         });
 
@@ -207,17 +249,17 @@ export class MetasService {
                 data: {
                     meta_id: meta_id,
                     ciclo_fisico_id: cicloFisicoAtivo.id,
-                    status: status
+                    status_coleta: status
                 },
             })
         } else {
-            if (status !== currentStatus.status) {
+            if (status !== currentStatus.status_coleta) {
                 await this.prisma.statusMetaCicloFisico.update({
                     where: {
                         id: currentStatus.id
                     },
                     data: {
-                        status: status
+                        status_coleta: status
                     },
                 })
             }
