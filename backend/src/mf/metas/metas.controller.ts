@@ -18,18 +18,14 @@ export class MetasController {
     ) { }
 
 
-    @ApiBearerAuth('access-token')
-    @Get('por-fase')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-
-    @ApiBearerAuth('access-token')
     @Get('')
+    @ApiBearerAuth('access-token')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(ListMfMetasDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListMfMetasDto, RequestInfoDto) },
     })
-    async metas(
+    async xxxmetas(
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasDto & RequestInfoDto> {
         const start = Date.now();
@@ -44,12 +40,14 @@ export class MetasController {
         };
     }
 
-
+    @ApiBearerAuth('access-token')
+    @Get('por-fase')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(ListMfMetasAgrupadasDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListMfMetasAgrupadasDto, RequestInfoDto) },
     })
-    async metasPorFase(
+        async metasPorFase(
         @Query() params: ParamsMfMetaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasAgrupadasDto & RequestInfoDto> {
