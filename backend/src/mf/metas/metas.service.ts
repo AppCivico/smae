@@ -6,7 +6,9 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, IniciativasRetorno, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
+
+type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
 
 type StatusTracking = {
     algumaAguardaCp: boolean,
@@ -751,26 +753,9 @@ export class MetasService {
     async addMetaVariavelAnaliseQualitativa(dto: AnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
-
-        const dadosCicloResult: { variavelParticipa: boolean, id: number, ativo: boolean }[]
-            = await this.prisma.$queryRaw`
-            select
-                variavel_participa_do_ciclo( v.id, ${dateYMD}::date ) as "variavelParticipa",
-                cf.ativo as ativo,
-                cf.id as id
-            from ciclo_fisico cf,
-            variavel v
-            where v.id = ${dto.variavel_id}::int
-            AND cf.data_ciclo = ${dateYMD}::date + (v.atraso_meses || ' month')::interval
-            and cf.pdm_id = ${dto.pdm_id}
-        `;
-        const dadosCiclo = dadosCicloResult[0];
-        console.log(dadosCiclo);
-
-        if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
-        if (!dadosCiclo.variavelParticipa)
-            throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${dto.variavel_id}`, 400);
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto, meta_id);
 
         if (config.perfil == 'ponto_focal' && !dadosCiclo.ativo) {
             throw new HttpException('Você não pode enviar valores fora de um ciclo ainda ativo.', 400);
@@ -778,8 +763,6 @@ export class MetasService {
         if (dto.enviar_para_cp && !dadosCiclo.ativo) {
             throw new HttpException('Não é possivel enviar para CP fora do ciclo ativo.', 400);
         }
-
-
 
         // o trabalho pra montar um SerieJwt não faz sentido
         // entao vamos operar diretamente na SerieVariavel
@@ -870,7 +853,7 @@ export class MetasService {
                 }
             });
 
-            const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, prismaTxn);
+
 
             const cfq = await prismaTxn.variavelCicloFisicoQualitativo.create({
                 data: {
@@ -914,5 +897,111 @@ export class MetasService {
         return { id: id }
     }
 
+    async getMetaVariavelAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListAnaliseQualitativaDto> {
+        const dateYMD = Date2YMD.toString(dto.data_valor);
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto, meta_id);
+        console.log(dadosCiclo);
+
+        const variavel = await this.prisma.variavel.findFirstOrThrow({
+            where: {
+                id: dto.variavel_id,
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                unidade_medida: {
+                    select: {
+                        sigla: true,
+                        descricao: true
+                    }
+                },
+                regiao: {
+                    select: {
+                        id: true,
+                        descricao: true
+                    }
+                },
+                casas_decimais: true,
+                acumulativa: true,
+                periodicidade: true,
+            }
+        });
+
+        const serieValores = await this.prisma.serieVariavel.findMany({
+            where: {
+                variavel_id: dto.variavel_id,
+                data_valor: dto.data_valor,
+            },
+            select: {
+                id: true,
+                valor_nominal: true,
+                serie: true,
+                conferida: true,
+            }
+        });
+
+        const analisesResult = await this.prisma.variavelCicloFisicoQualitativo.findMany({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                ultima_revisao: dto.apenas_ultima_revisao ? true : undefined,
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+            select: {
+                ultima_revisao: true,
+                analise_qualitativa: true,
+                criado_em: true,
+                meta_id: true,
+                enviado_para_cp: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true }
+                },
+                id: true
+            }
+        });
+
+
+        return {
+            analises: analisesResult.map((r) => {
+                return {
+                    analise_qualitativa: r.analise_qualitativa || '',
+                    ultima_revisao: r.ultima_revisao,
+                    criado_em: r.criado_em,
+                    meta_id: r.meta_id,
+                    enviado_para_cp: r.enviado_para_cp,
+                    id: r.id,
+                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao }
+                }
+            }),
+            ordem_series: [],
+            series: [],
+            variavel: variavel,
+        }
+    }
+
+
+    private async capturaDadosCicloVariavel(dateYMD: string, dto: FilterAnaliseQualitativaDto, meta_id: number) {
+        const dadosCicloResult: DadosCiclo[] = await this.prisma.$queryRaw`
+            select
+                variavel_participa_do_ciclo( v.id, ${dateYMD}::date ) as "variavelParticipa",
+                cf.ativo as ativo,
+                cf.id as id
+            from ciclo_fisico cf,
+            variavel v
+            where v.id = ${dto.variavel_id}::int
+            AND cf.data_ciclo = ${dateYMD}::date + (v.atraso_meses || ' month')::interval
+            and cf.pdm_id = (select pdm_id from meta where id = ${meta_id})
+        `;
+        const dadosCiclo = dadosCicloResult[0];
+        console.log(dadosCiclo);
+        if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
+        if (!dadosCiclo.variavelParticipa)
+            throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${dto.variavel_id}`, 400);
+        return dadosCiclo;
+    }
 }

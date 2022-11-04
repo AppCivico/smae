@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { AnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDto, FilterAnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, MfListAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -145,6 +145,31 @@ export class MetasController {
 
         return {
             ...await this.metasService.addMetaVariavelAnaliseQualitativa(
+                dto,
+                config,
+                user
+            ),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
+
+
+    @ApiBearerAuth('access-token')
+    @Get(':id/variaveis/analise-qualitativa')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(MfListAnaliseQualitativaDto, RequestInfoDto) },
+    })
+    async GetMetaVariavelAnaliseQualitativa(
+        @Query() dto: FilterAnaliseQualitativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<MfListAnaliseQualitativaDto & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        return {
+            ...await this.metasService.getMetaVariavelAnaliseQualitativa(
                 dto,
                 config,
                 user
