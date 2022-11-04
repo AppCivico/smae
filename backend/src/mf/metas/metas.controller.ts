@@ -1,11 +1,12 @@
-import { Controller, Get, HttpException, Param, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiOkResponse, ApiResponse, refs } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpException, Param, Patch, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, refs } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -90,6 +91,7 @@ export class MetasController {
             throw new HttpException('ID da meta não faz parte do seu perfil', 404);
 
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
+        // todo encontrar uma maneira de listar o passado sem um ciclo ativo
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
 
         return {
@@ -104,6 +106,31 @@ export class MetasController {
     }
 
 
+    @ApiBearerAuth('access-token')
+    @Patch(':id/variaveis/analise-qualitativa')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async AddMetaVariavelAnaliseQualitativa(
+        @Body() dto: AnaliseQualitativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        // mesma coisa, pra editar um ciclo, vamos precisar de
+
+
+        return {
+            ...await this.metasService.addMetaVariavelAnaliseQualitativa(
+                dto,
+                config,
+                user
+            ),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
 
 
 }

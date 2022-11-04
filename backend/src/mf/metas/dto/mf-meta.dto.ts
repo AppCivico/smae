@@ -1,8 +1,9 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Serie } from "@prisma/client";
-import { Transform } from "class-transformer";
-import { IsBoolean, IsOptional } from "class-validator";
-import { SeriesAgrupadas, SerieValorNomimal } from "src/variavel/entities/variavel.entity";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsInt, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
+import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
 export class FilterMfMetaDto {
     /**
@@ -122,5 +123,52 @@ export class RetornoMetaVariaveisDto {
     * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
     */
     ordem_series: Serie[]
+}
+
+type ColunasAtualizaveis = 'valor_realizado' | 'valor_realizado_acumulado';
+export const CamposRealizado: ColunasAtualizaveis[] = ['valor_realizado', 'valor_realizado_acumulado'];
+export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
+    'valor_realizado': 'Realizado',
+    'valor_realizado_acumulado': 'RealizadoAcumulado',
+};
+
+export class AnaliseQualitativaDto {
+
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    variavel_id: number
+
+    @IsOptional()
+    @IsNumberString({ maxDecimalPlaces: 30 }, { message: "Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover" })
+    @ValidateIf((object, value) => value !== '')
+    valor_realizado?: string
+
+    @IsOptional()
+    @IsNumberString({ maxDecimalPlaces: 30 }, { message: "Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover" })
+    @ValidateIf((object, value) => value !== '')
+    valor_realizado_acumulado?: string
+
+    @IsString()
+    analise_qualitativa: string
+
+    @IsBoolean()
+    enviar_para_cp: boolean
+
+    @IsInt({ message: 'pdm_id é necessário' })
+    pdm_id: number
+
 
 }
