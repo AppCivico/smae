@@ -1424,6 +1424,8 @@ model PedidoComplementacao {
     ciclo_fisico_id Int
     variavel_id     Int
 
+    enviado_para_cp Boolean
+
     pedido String
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
@@ -1451,7 +1453,6 @@ model VariavelCicloFisicoDocumento {
     meta_id                          Int
     ciclo_fisico_id                  Int
     variavel_id                      Int
-    enviado_para_cp Boolean
 
     referencia_data DateTime @db.Date
 
