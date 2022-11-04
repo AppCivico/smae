@@ -9,4 +9,4 @@
 ALTER TABLE "variavel_ciclo_fisico_pedido_complementacao" DROP COLUMN "enviado_para_cp";
 
 -- AlterTable
-ALTER TABLE "variavel_ciclo_fisico_qualitativo" ADD COLUMN     "enviado_para_cp" BOOLEAN NOT NULL;
+ALTER TABLE "variavel_ciclo_fisico_qualitativo" ADD COLUMN     "enviado_para_cp" BOOLEAN NOT NULL default false;
