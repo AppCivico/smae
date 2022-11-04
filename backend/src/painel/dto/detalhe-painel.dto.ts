@@ -22,5 +22,5 @@ export class SeriesTemplate {
     titulo: string
     periodo_inicio: Date
     periodo_fim: Date
-    // valores_nomais: number[]
+    valores_nominais: number[]
 }
