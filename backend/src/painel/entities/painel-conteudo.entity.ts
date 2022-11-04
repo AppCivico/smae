@@ -8,6 +8,7 @@ export class PainelConteudo {
     mostrar_planejado: boolean
     mostrar_acumulado: boolean
     mostrar_indicador: boolean
+    mostrar_acumulado_periodo: boolean
     @ApiProperty({enum: Periodicidade})
     periodicidade: Periodicidade
     @ApiProperty({enum: Periodo})

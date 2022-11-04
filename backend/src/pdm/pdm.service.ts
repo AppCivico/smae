@@ -278,7 +278,7 @@ export class PdmService {
         });
     }
 
-    @Cron('0 * * * * *')
+    //@Cron('0 * * * * *')
     async handleCron() {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
@@ -412,6 +412,7 @@ export class PdmService {
 
             const proximoCiclo = await this.prisma.cicloFisico.findFirst({
                 where: {
+                    pdm_id: cf.pdm_id,
                     data_ciclo: {
                         gt: cf.data_ciclo
                     },
@@ -431,11 +432,19 @@ export class PdmService {
                 await prismaTxn.cicloFisico.update({
                     where: { id: proximoCiclo.id },
                     data: {
-                        acordar_ciclo_em: new Date(Date.now())
+                        acordar_ciclo_em: new Date(Date.now()),
+                        acordar_ciclo_executou_em: new Date(Date.now()),
                     }
                 });
             } else {
                 this.logger.log(`não há próximos ciclos`);
+                await prismaTxn.cicloFisico.update({
+                    where: { id: cf.id },
+                    data: {
+                        acordar_ciclo_em: null,
+                        acordar_ciclo_executou_em: new Date(Date.now()),
+                    }
+                });
             }
         });
     }

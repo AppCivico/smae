@@ -130,9 +130,16 @@ model Pessoa {
     PaineisQueAtualizei Painel[]          @relation("Atualizador")
     PessoaAcessoPdm     PessoaAcessoPdm[]
 
-    GruposDePaineisQueCriei GrupoPainel[] @relation("Criador")
-    GruposDePaineisQueRemovi GrupoPainel[] @relation("Removedor")
-    GruposDePaineisQueParticipo PessoaGrupoPainel[]
+    GruposDePaineisQueCriei                 GrupoPainel[]                    @relation("Criador")
+    GruposDePaineisQueRemovi                GrupoPainel[]                    @relation("Removedor")
+    GruposDePaineisQueParticipo             PessoaGrupoPainel[]
+    VariavelCicloFisicoQualitativoCriador   VariavelCicloFisicoQualitativo[] @relation("criador")
+    VariavelCicloFisicoQualitativoRemovedor VariavelCicloFisicoQualitativo[] @relation("removedor")
+    VariavelCicloFisicoDocumentoCriador     VariavelCicloFisicoDocumento[]   @relation("criador")
+    VariavelCicloFisicoDocumentoRemovedor   VariavelCicloFisicoDocumento[]   @relation("removedor")
+    PedidoComplementacaoCriador             PedidoComplementacao[]           @relation("criador")
+    PedidoComplementacaoAtendeu             PedidoComplementacao[]           @relation("atendeu")
+    PedidoComplementacaoRemovedor           PedidoComplementacao[]           @relation("removedor")
 
     @@map("pessoa")
 }
@@ -546,20 +553,21 @@ model Arquivo {
     id   Int    @id @default(autoincrement())
     tipo String
 
-    criador           Pessoa?            @relation("Criador", fields: [criado_por], references: [id])
-    criado_por        Int?
-    criado_em         DateTime           @default(now()) @db.Timestamptz(6)
-    caminho           String
-    nome_original     String
-    mime_type         String?
-    tamanho_bytes     Int
-    descricao         String?
-    tipo_documento_id Int?
-    TipoDocumento     TipoDocumento?     @relation(fields: [tipo_documento_id], references: [id])
-    Tag               Tag[]
-    Regiao            Regiao[]
-    ArquivoDocumento  ArquivoDocumento[]
-    Pdm               Pdm[]
+    criador                      Pessoa?                        @relation("Criador", fields: [criado_por], references: [id])
+    criado_por                   Int?
+    criado_em                    DateTime                       @default(now()) @db.Timestamptz(6)
+    caminho                      String
+    nome_original                String
+    mime_type                    String?
+    tamanho_bytes                Int
+    descricao                    String?
+    tipo_documento_id            Int?
+    TipoDocumento                TipoDocumento?                 @relation(fields: [tipo_documento_id], references: [id])
+    Tag                          Tag[]
+    Regiao                       Regiao[]
+    ArquivoDocumento             ArquivoDocumento[]
+    Pdm                          Pdm[]
+    VariavelCicloFisicoDocumento VariavelCicloFisicoDocumento[]
 
     @@map("arquivo")
 }
@@ -630,9 +638,14 @@ model Meta {
     iniciativa       Iniciativa[]
     meta_tag         MetaTag[]
 
-    cronograma      Cronograma[]
-    painel_conteudo PainelConteudo[]
+    cronograma                     Cronograma[]
+    painel_conteudo                PainelConteudo[]
+    StatusMetaCicloFisico          StatusMetaCicloFisico[]
+    StatusVariavelCicloFisico      StatusVariavelCicloFisico[]
+    VariavelCicloFisicoQualitativo VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
 
+    @@index([pdm_id])
     @@map("meta")
 }
 
@@ -670,6 +683,8 @@ model MetaResponsavel {
 
     // TODO: arrumar o nome desta coluna, palavra 'coordenador'.
     coorderandor_responsavel_cp Boolean
+
+    @@index([pessoa_id])
 
     @@map("meta_responsavel")
 }
@@ -730,6 +745,9 @@ model Indicador {
     formula_variaveis       IndicadorFormulaVariavel[]
     painel_conteudo         PainelConteudo[]
 
+    @@index([meta_id])
+    @@index([iniciativa_id])
+    @@index([atividade_id])
     @@map("indicador")
 }
 
@@ -783,6 +801,7 @@ model VariavelResponsavel {
     pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
     variavel Variavel @relation(fields: [variavel_id], references: [id])
 
+    @@index([pessoa_id])
     @@map("variavel_responsavel")
 }
 
@@ -808,12 +827,11 @@ model Variavel {
     inicio_medicao DateTime? @db.Date()
     fim_medicao    DateTime? @db.Date()
 
-    peso                       Int?
-    casas_decimais             Int                        @default(0) @db.SmallInt
+    casas_decimais             Int                         @default(0) @db.SmallInt
     // usar para calculcar as agregações, por exemplo na média ponderada
     // acho que pode ser um valor e não uma porcentagem, e ai o sistema calcula a porcentagem sozinho
     // de acordo com o numero de variaveis
-    acumulativa                Boolean                    @default(false)
+    acumulativa                Boolean                     @default(false)
     // quando true, o sistema vai calcular automaticamente a serie acumulativa
     // quando false, o usuario precisa preencher, mas sempre via ter as 4 series, correto?
     serie_variavel             SerieVariavel[]
@@ -821,6 +839,14 @@ model Variavel {
     indicador_variavel         IndicadorVariavel[]
     indicador_formula_variavel IndicadorFormulaVariavel[]
     PainelConteudoDetalhe      PainelConteudoDetalhe[]
+    StatusVariavelCicloFisico  StatusVariavelCicloFisico[]
+
+    // quanto tempo leva para o preenchimento da variavel
+    // geralmente é 1, ou seja, numa variavel mensal, no ciclo de novembro, se preenche os valores de outubro
+    atraso_meses                   Int                              @default(1) @db.Integer
+    VariavelCicloFisicoQualitativo VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
+    PedidoComplementacao           PedidoComplementacao[]
 
     @@map("variavel")
 }
@@ -844,6 +870,8 @@ model IndicadorVariavel {
     desativado_por Int?
     desativador    Pessoa?   @relation("Desativador", fields: [desativado_por], references: [id])
 
+    @@index([variavel_id], map: "idx_indicador_variavel_variavel")
+    @@index([indicador_id], map: "idx_indicador_variavel_indicador")
     @@map("indicador_variavel")
 }
 
@@ -860,6 +888,7 @@ model SerieIndicador {
     ha_conferencia_pendente Boolean  @default(false)
 
     @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
+    @@index([indicador_id, data_valor], map: "idx_indicador_indicador_id_data_valor")
     @@map("serie_indicador")
 }
 
@@ -883,8 +912,6 @@ model SerieVariavel {
 
     conferidor      Pessoa? @relation("Conferidor", fields: [conferida_por], references: [id])
     ciclo_fisico_id Int?
-
-    ha_pedido_de_complementacao Boolean?
 
     @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@map("serie_variavel")
@@ -1183,7 +1210,7 @@ model PainelConteudo {
     meta    Meta @relation(fields: [meta_id], references: [id])
 
     periodicidade  Periodicidade
-    periodo        Periodo?
+    periodo        Periodo @default(Todos)
     periodo_valor  Int?
     periodo_inicio DateTime?     @db.Date
     periodo_fim    DateTime?     @db.Date
@@ -1191,6 +1218,7 @@ model PainelConteudo {
     mostrar_planejado Boolean
     mostrar_acumulado Boolean
     mostrar_indicador Boolean
+    mostrar_acumulado_periodo Boolean @default(false)
     ordem             Int?
     detalhes          PainelConteudoDetalhe[]
     indicador         Indicador?              @relation(fields: [indicador_id], references: [id])
@@ -1234,13 +1262,13 @@ model GrupoPainel {
     nome  String  @unique
     ativo Boolean @default(true)
 
-    criado_por     Int?
-    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
-    removido_por   Int?
-    removido_em    DateTime? @db.Timestamptz(6)
+    criado_por   Int?
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
 
-    criador         Pessoa?          @relation("Criador", fields: [criado_por], references: [id])
-    removedor       Pessoa?          @relation("Removedor", fields: [removido_por], references: [id])
+    criador   Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     pessoas PessoaGrupoPainel[]
     paineis PainelGrupoPainel[]
@@ -1251,8 +1279,8 @@ model GrupoPainel {
 model PessoaGrupoPainel {
     id Int @id @default(autoincrement())
 
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    pessoa_id       Int
+    pessoa          Pessoa      @relation(fields: [pessoa_id], references: [id])
     grupo_painel_id Int
     grupo_painel    GrupoPainel @relation(fields: [grupo_painel_id], references: [id])
 
@@ -1262,11 +1290,11 @@ model PessoaGrupoPainel {
 model PainelGrupoPainel {
     id Int @id @default(autoincrement())
 
-    painel_id Int
-    painel    Painel @relation(fields: [painel_id], references: [id])
+    painel_id       Int
+    painel          Painel      @relation(fields: [painel_id], references: [id])
     grupo_painel_id Int
     grupo_painel    GrupoPainel @relation(fields: [grupo_painel_id], references: [id])
-    
+
     @@map("painel_grupos")
 }
 
@@ -1314,11 +1342,16 @@ model CicloFisico {
     ciclo_fase_atual    CicloFisicoFase? @relation("atual", fields: [ciclo_fase_atual_id], references: [id])
     ativo               Boolean          @default(false)
 
-    acordar_ciclo_em          DateTime?
-    acordar_ciclo_errmsg      String?
-    acordar_ciclo_executou_em DateTime?
-    fases                     CicloFisicoFase[] @relation("fk")
-    metas                     Meta[]
+    acordar_ciclo_em               DateTime?
+    acordar_ciclo_errmsg           String?
+    acordar_ciclo_executou_em      DateTime?
+    fases                          CicloFisicoFase[]                @relation("fk")
+    metas                          Meta[]
+    StatusMetaCicloFisico          StatusMetaCicloFisico[]
+    StatusVariavelCicloFisico      StatusVariavelCicloFisico[]
+    VariavelCicloFisicoQualitativo VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
+    PedidoComplementacao           PedidoComplementacao[]
 
     @@map("ciclo_fisico")
 }
@@ -1357,4 +1390,117 @@ model PessoaAcessoPdm {
     pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
 
     @@map("pessoa_acesso_pdm")
+}
+
+model VariavelCicloFisicoQualitativo {
+    id                               Int     @id @default(autoincrement())
+    meta_id                          Int
+    ciclo_fisico_id                  Int
+    variavel_id                      Int
+
+    referencia_data     DateTime @db.Date
+    analise_qualitativa String?
+    enviado_para_cp Boolean
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta            Meta        @relation(fields: [meta_id], references: [id])
+    variavel        Variavel    @relation(fields: [variavel_id], references: [id])
+    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([meta_id, ultima_revisao])
+    @@map("variavel_ciclo_fisico_qualitativo")
+}
+
+model PedidoComplementacao {
+    id              Int @id @default(autoincrement())
+    ciclo_fisico_id Int
+    variavel_id     Int
+
+    pedido String
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+    atendido       Boolean
+    atendido_em    DateTime?
+    atendido_por   Int?
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    variavel        Variavel    @relation(fields: [variavel_id], references: [id])
+    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaAtendeu   Pessoa?     @relation("atendeu", fields: [atendido_por], references: [id])
+    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+
+    @@map("variavel_ciclo_fisico_pedido_complementacao")
+}
+
+model VariavelCicloFisicoDocumento {
+    id                               Int     @id @default(autoincrement())
+    meta_id                          Int
+    ciclo_fisico_id                  Int
+    variavel_id                      Int
+
+    referencia_data DateTime @db.Date
+
+    arquivo_id Int
+    arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta            Meta        @relation(fields: [meta_id], references: [id])
+    variavel        Variavel    @relation(fields: [variavel_id], references: [id])
+    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+
+    @@map("variavel_ciclo_fisico_documento")
+}
+
+model StatusVariavelCicloFisico {
+    id                     Int     @id @default(autoincrement())
+    meta_id                Int
+    ciclo_fisico_id        Int
+    variavel_id            Int
+    aguarda_cp             Boolean @default(false)
+    aguarda_complementacao Boolean @default(false)
+
+    ciclo_fisico CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta         Meta        @relation(fields: [meta_id], references: [id])
+    variavel     Variavel    @relation(fields: [variavel_id], references: [id])
+
+    @@map("status_variavel_ciclo_fisico")
+}
+
+model StatusMetaCicloFisico {
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+
+    status String
+    // nao atualizadas = uma ou mais variaveis não preenchida
+    // aguardando complementação = uma ou mais variavel aguarda complementação
+    // não conferidas = uma ou mais variavel não foi conferida
+    // outros = qualquer uma não categorizada acima
+
+    ciclo_fisico CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta         Meta        @relation(fields: [meta_id], references: [id])
+
+    @@map("status_meta_ciclo_fisico")
 }
