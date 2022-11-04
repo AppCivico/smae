@@ -87,8 +87,7 @@ export class MetasService {
             }
         });
 
-
-        let out: MfMetaDto[] = [];
+        const out: MfMetaDto[] = [];
 
         for (const r of rows) {
 

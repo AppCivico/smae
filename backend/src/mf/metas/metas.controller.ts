@@ -25,7 +25,7 @@ export class MetasController {
     @ApiOkResponse({
         schema: { allOf: refs(ListMfMetasDto, RequestInfoDto) },
     })
-    async xxxmetas(
+    async metas(
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasDto & RequestInfoDto> {
         const start = Date.now();
@@ -47,7 +47,7 @@ export class MetasController {
     @ApiOkResponse({
         schema: { allOf: refs(ListMfMetasAgrupadasDto, RequestInfoDto) },
     })
-        async metasPorFase(
+    async metasPorFase(
         @Query() params: ParamsMfMetaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasAgrupadasDto & RequestInfoDto> {
