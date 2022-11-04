@@ -959,14 +959,152 @@ export class PainelService {
             }
         });
 
-        // ret = {
-        //     meta: {
-        //         id: series.meta.id,
-        //         titulo: series.meta.codigo
-        //     }
-        // }
 
-        return series;
+        ret = {
+            meta: {
+                id: series.meta.id,
+                titulo: series.meta.titulo,
+                codigo: series.meta.codigo,
+
+                indicador: {
+                    id: series.meta.indicador[0].id,
+                    codigo: series.meta.indicador[0].codigo,
+                    titulo: series.meta.indicador[0].titulo,
+
+                    series: series_template.map(t => {
+                        const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
+                            return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                        });
+
+                        return {
+                            titulo: t.titulo,
+                            valores_nominais: series_for_period.map(r => {
+                                return r.valor_nominal
+                            })
+                        }
+                    })
+                }
+            },
+            
+            detalhes: series.detalhes.map(d => {
+                return {
+                    variavel: {
+                        id: d.variavel?.id,
+                        titulo: d.variavel?.titulo,
+
+                        series: series_template.map(t => {
+                            const series_for_period = d.variavel?.serie_variavel.filter(r => {
+                                return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                            });
+
+                            return {
+                                titulo: t.titulo,
+                                valores_nominais: series_for_period?.map(r => {
+                                    return r.valor_nominal
+                                })
+                            }
+                        })
+                    },
+
+                    iniciativa: {
+                        id: d.iniciativa?.id,
+                        titulo: d.iniciativa?.titulo,
+
+                        indicador: d.iniciativa?.Indicador.map(i => {
+
+                            return {
+                                id: i.id,
+                                codigo: i.codigo,
+                                titulo: i.titulo,
+
+                                series: series_template.map(t => {
+                                    const series_for_period = i.SerieIndicador.filter(r => {
+                                        return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                    });
+
+                                    return {
+                                        titulo: t.titulo,
+                                        valores_nominais: series_for_period?.map(r => {
+                                            return r.valor_nominal
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    },
+
+                    filhos: d.filhos.map(f => {
+
+                        return {
+                            variavel: {
+                                id: f.variavel?.id,
+                                titulo: f.variavel?.titulo,
+                                series: series_template.map(t => {
+                                    const series_for_period = f.variavel?.serie_variavel.filter(r => {
+                                        return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                    });
+        
+                                    return {
+                                        titulo: t.titulo,
+                                        valores_nominais: series_for_period?.map(r => {
+                                            return r.valor_nominal
+                                        })
+                                    }
+                                })
+                            },
+
+                            atividade: {
+                                id: f.atividade?.id,
+                                titulo: f.atividade?.titulo,
+
+                                indicador: f.atividade?.Indicador.map(i => {
+                                    return {
+                                        id: i.id,
+                                        codigo: i.codigo,
+                                        titulo: i.titulo,
+        
+                                        series: series_template.map(t => {
+                                            const series_for_period = i.SerieIndicador.filter(r => {
+                                                return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                            });
+        
+                                            return {
+                                                titulo: t.titulo,
+                                                valores_nominais: series_for_period?.map(r => {
+                                                    return r.valor_nominal
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            },
+
+                            filhos: f.filhos.map(af => {
+                                return {variavel: {
+                                    id: af.variavel?.id,
+                                    titulo: af.variavel?.titulo,
+
+                                    series: series_template.map(t => {
+                                        const series_for_period = af.variavel?.serie_variavel.filter(r => {
+                                            return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                        });
+            
+                                        return {
+                                            titulo: t.titulo,
+                                            valores_nominais: series_for_period?.map(r => {
+                                                return r.valor_nominal
+                                            })
+                                        }
+                                    })
+                                }}
+                            })
+                        }
+                    })
+                }
+            })
+        }
+
+        return ret;
     }
 
 }
