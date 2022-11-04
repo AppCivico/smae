@@ -22,6 +22,8 @@
 		if(c){
 			c.mostrar_planejado=c.mostrar_planejado?"1":false;
 			c.mostrar_acumulado=c.mostrar_acumulado?"1":false;
+			c.mostrar_acumulado_periodo=c.mostrar_acumulado_periodo?"1":false;
+
 			metaConteudo.value = c;
 		}else{
 			metaConteudo.value = {error: 'Item não encontrado'};
@@ -34,7 +36,7 @@
         periodicidade: Yup.string().required('Selecione a periodicidade'),
         periodo: Yup.string().required('Selecione o período'),
 
-        periodo_valor: Yup.string().nullable().when('periodo', (periodo, field) => periodo!="EntreDatas" ? field.required("Preencha um valor") : field),
+        periodo_valor: Yup.string().nullable().when('periodo', (periodo, field) => ["EntreDatas","Todos"].indexOf(periodo) == -1 ? field.required("Preencha um valor") : field),
         periodo_inicio: Yup.string().nullable()
         					.when('periodo', (periodo, field) => periodo=="EntreDatas" ? field.required("Preencha o início") : field)
         					.matches(regx,'Formato inválido'),
@@ -44,6 +46,7 @@
 
         mostrar_planejado: Yup.boolean().nullable(),
         mostrar_acumulado: Yup.boolean().nullable(),
+        mostrar_acumulado_periodo: Yup.boolean().nullable(),
     });
 
 	async function onSubmit(values) {
@@ -55,6 +58,10 @@
 	        	values.periodo_valor=null;
 	        	values.periodo_inicio = fieldToDate(values.periodo_inicio);
 				values.periodo_fim = fieldToDate(values.periodo_fim);
+	        }else if(values.periodo == "Todos"){
+	        	values.periodo_valor=null;
+	        	values.periodo_inicio=null;
+	        	values.periodo_fim=null;
 	        }else{
 	        	values.periodo_valor = Number(values.periodo_valor);
 	        	values.periodo_inicio=null;
@@ -63,6 +70,7 @@
 
 	        values.mostrar_planejado = !!values.mostrar_planejado;
 	        values.mostrar_acumulado = !!values.mostrar_acumulado;
+	        values.mostrar_acumulado_periodo = !!values.mostrar_acumulado_periodo;
 
 	        r = await PaineisStore.visualizacaoMeta(painel_id,conteudo_id,values);
             msg = 'Dados salvos com sucesso!';
@@ -145,7 +153,7 @@
 				    </Field>
 				    <div class="error-msg">{{ errors.periodo }}</div>
 				</div>
-				<div class="f1" v-if="periodo!='EntreDatas'">
+				<div class="f1" v-if="['EntreDatas','Todos'].indexOf(periodo) == -1">
 				    <label class="label">Meses<span class="tvermelho">*</span></label>
 				    <Field name="periodo_valor" type="text" class="inputtext light mb1" :class="{ 'error': errors.periodo_valor }" />
 				    <div class="error-msg">{{ errors.periodo_valor }}</div>
@@ -165,6 +173,7 @@
 			<div class="mb2">
 			    <label class="mr2"><Field name="mostrar_planejado" type="checkbox" value="1" class="inputcheckbox" /><span>Exibir planejado</span></label>
 			    <label class="mr2"><Field name="mostrar_acumulado" type="checkbox" value="1" class="inputcheckbox" /><span>Exibir acumulado</span></label>
+			    <label class="mr2"><Field name="mostrar_acumulado_periodo" type="checkbox" value="1" class="inputcheckbox" /><span>Somente acumulado do período</span></label>
 			</div>
 
 			<div class="flex spacebetween center">

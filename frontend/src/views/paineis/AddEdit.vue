@@ -7,20 +7,27 @@
     import { router } from '@/router';
     import { storeToRefs } from 'pinia';
 
-    import { useEditModalStore, useAlertStore, usePaineisStore } from '@/stores';
+    import { useEditModalStore, useAlertStore, usePdMStore, usePaineisStore, usePaineisGruposStore } from '@/stores';
     import { default as SelecionarMetas } from '@/views/paineis/SelecionarMetas.vue';
     import { default as EditarMeta } from '@/views/paineis/EditarMeta.vue';
     import { default as EditarDetalhe } from '@/views/paineis/EditarDetalhe.vue';
-    
 
     const editModalStore = useEditModalStore();
     const alertStore = useAlertStore();
     const route = useRoute();
     const painel_id = route.params.painel_id;
 
+    const PdMStore = usePdMStore();
+    const { activePdm } = storeToRefs(PdMStore);
+    PdMStore.getActive();
+
     const PaineisStore = usePaineisStore();
     const { singlePainel } = storeToRefs(PaineisStore);
     PaineisStore.clear();
+
+    const PaineisGruposStore = usePaineisGruposStore();
+    const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
+    PaineisGruposStore.getAll();
 
     const virtualCopy = ref({
         ativo:"1",
@@ -54,6 +61,7 @@
         mostrar_planejado_por_padrao: Yup.boolean().nullable(),
         mostrar_acumulado_por_padrao: Yup.boolean().nullable(),
         mostrar_indicador_por_padrao: Yup.boolean().nullable(),
+        grupos: Yup.array().required('Selecione ao menos um grupo'),
     });
 
     async function onSubmit(values) {
@@ -152,10 +160,26 @@
                         <div class="error-msg">{{ errors.periodicidade }}</div>
                     </div>
                 </div>
-                <div class="mb1">
+                <div class="mb2">
                     <label class="mr2"><Field name="mostrar_planejado_por_padrao" type="checkbox" value="1" class="inputcheckbox" /><span>Exibir planejado por padrão</span></label>
                     <label class="mr2"><Field name="mostrar_acumulado_por_padrao" type="checkbox" value="1" class="inputcheckbox" /><span>Exibir acumulado por padrão</span></label>
                     <label class="mr2"><Field name="mostrar_indicador_por_padrao" type="checkbox" value="1" class="inputcheckbox" /><span>Exibir indicador por padrão</span></label>
+                </div>
+                <div class="mb2">
+                    <div class="label">Grupos de paineis de indicador</div>
+                    <template v-if="PaineisGrupos?.loading">
+                        <span class="spinner">Carregando</span>
+                    </template>
+                    <template v-if="PaineisGrupos.length">
+                        <label v-for="p in PaineisGrupos" :key="p.id" class="block mb1">
+                            <Field name="grupos" class="inputcheckbox" type="checkbox"
+                                :class="{ 'error': errors.grupos }" 
+                                :value="p.id" 
+                                :checked="grupos&&grupos.includes(p.id)"
+                            /><span>{{p.nome}}</span>
+                        </label>
+                        <div class="error-msg">{{ errors.grupos }}</div>
+                    </template>
                 </div>
                 <div class="flex spacebetween center mb2">
                     <hr class="mr2 f1"/>
@@ -259,11 +283,11 @@
                                     <template v-for="x in m.detalhes.filter(y=>y.tipo=='Iniciativa')" :key="x.id">
                                         <tr v-if="x.mostrar_indicador">
                                             <th class="pl2">
-                                                <span class="ib"><svg width="20" height="20" class="blue mr05"><use xlink:href="#i_graf"></use></svg></span> Indicador da Iniciativa {{x?.iniciativa?.codigo}} {{x?.iniciativa?.titulo}}
+                                                <span class="ib"><svg width="20" height="20" class="blue mr05"><use xlink:href="#i_graf"></use></svg></span> Indicador da {{activePdm.rotulo_iniciativa}} {{x?.iniciativa?.codigo}} {{x?.iniciativa?.titulo}}
                                             </th>
                                         </tr>
                                         <tr v-if="x.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador).length">
-                                            <td class="pl2 w700">Indicador da Iniciativa {{x?.iniciativa?.codigo}} {{x?.iniciativa?.titulo}}</td>
+                                            <td class="pl2 w700">Indicador da {{activePdm.rotulo_iniciativa}} {{x?.iniciativa?.codigo}} {{x?.iniciativa?.titulo}}</td>
                                         </tr>
                                         <template v-for="xx in x.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador)" :key="xx.id">
                                             <tr>
@@ -273,11 +297,11 @@
                                         <template v-for="xx in x.filhos.filter(y=>y.tipo=='Atividade')" :key="xx.id">
                                             <tr v-if="xx.mostrar_indicador">
                                                 <th class="pl2">
-                                                    <span class="ib"><svg width="20" height="20" class="blue mr05"><use xlink:href="#i_graf"></use></svg></span> Indicador da Atividade {{xx?.atividade?.codigo}} {{xx?.atividade?.titulo}}
+                                                    <span class="ib"><svg width="20" height="20" class="blue mr05"><use xlink:href="#i_graf"></use></svg></span> Indicador da {{activePdm.rotulo_atividade}} {{xx?.atividade?.codigo}} {{xx?.atividade?.titulo}}
                                                 </th>
                                             </tr>
                                             <tr v-if="xx.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador).length">
-                                                <td class="pl2 w700">Indicador da Atividade {{xx?.atividade?.codigo}} {{xx?.atividade?.titulo}}</td>
+                                                <td class="pl2 w700">Indicador da {{activePdm.rotulo_atividade}} {{xx?.atividade?.codigo}} {{xx?.atividade?.titulo}}</td>
                                             </tr>
                                             <template v-for="xxx in xx.filhos.filter(y=>y.tipo=='Variavel'&&!!y.mostrar_indicador)" :key="xxx.id">
                                                 <tr>

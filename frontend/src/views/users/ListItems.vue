@@ -69,7 +69,7 @@ function filterPerfil(ids) {
                     <th style="width: 20%">Lotação</th>
                     <th style="width: 15%">Órgão</th>
                     <th style="width: 20%">Perfil</th>
-                    <th style="width: 5%"></th>
+                    <th style="width: 50px"></th>
                 </tr>
             </thead>
             <tbody>

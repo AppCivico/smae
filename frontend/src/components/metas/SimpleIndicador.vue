@@ -1,6 +1,7 @@
 <script setup>
     import { storeToRefs } from 'pinia';
     import { useAuthStore, useIndicadoresStore } from '@/stores';
+    import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 
     const authStore = useAuthStore();
     const { permissions } = storeToRefs(authStore);
@@ -9,8 +10,14 @@
     const props = defineProps(['group','parentlink','parent_id','parent_field']);
 
     const IndicadoresStore = useIndicadoresStore();
-    const { tempIndicadores } = storeToRefs(IndicadoresStore);
-    if(!tempIndicadores.value.length||tempIndicadores.value[0][props.parent_field] != props.parent_id) IndicadoresStore.filterIndicadores(props.parent_id,props.parent_field);
+    const { tempIndicadores,ValoresInd } = storeToRefs(IndicadoresStore);
+
+    (async()=>{
+        if(!tempIndicadores.value.length||tempIndicadores.value[0][props.parent_field] != props.parent_id) await IndicadoresStore.filterIndicadores(props.parent_id,props.parent_field);
+        if(tempIndicadores.value[0]?.id) {
+            IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
+        }
+    })();
 </script>
 <template>
     <template v-if="tempIndicadores.length">
@@ -28,6 +35,7 @@
                         </ul>
                     </div>
                 </div>
+                <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
                 <div class="tc">
                     <router-link :to="`${parentlink}/evolucao`" class="btn big mt1 mb1"><span>Acompanhar evolução</span></router-link>
                 </div>
