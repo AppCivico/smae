@@ -980,7 +980,7 @@ export class PainelService {
 
                     series: series_template.map(t => {
                         const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
-                            return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                            return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
                         });
 
                         return {
@@ -1020,7 +1020,7 @@ export class PainelService {
 
                         series: series_template.map(t => {
                             const series_for_period = d.variavel?.serie_variavel.filter(r => {
-                                r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_fim
                             }) || [];
 
                             return {
@@ -1063,7 +1063,7 @@ export class PainelService {
 
                                 series: series_template.map(t => {
                                     const series_for_period = i.SerieIndicador.filter(r => {
-                                        return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                        return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_fim
                                     }) || [];
 
                                     return {
@@ -1103,7 +1103,7 @@ export class PainelService {
                                 titulo: f.variavel?.titulo,
                                 series: series_template.map(t => {
                                     const series_for_period = f.variavel?.serie_variavel.filter(r => {
-                                        return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                        return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_fim
                                     }) || [];
         
                                     return {
@@ -1145,7 +1145,7 @@ export class PainelService {
         
                                         series: series_template.map(t => {
                                             const series_for_period = i.SerieIndicador.filter(r => {
-                                                return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                                return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_fim
                                             }) || []; 
         
                                             return {
@@ -1184,7 +1184,7 @@ export class PainelService {
 
                                     series: series_template.map(t => {
                                         const series_for_period = af.variavel?.serie_variavel.filter(r => {
-                                            return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
+                                            return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_fim
                                         }) || [];
             
                                         return {
