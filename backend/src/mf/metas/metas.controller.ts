@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { AnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -21,6 +21,29 @@ export class MetasController {
     @ApiBearerAuth('access-token')
     @Get('por-fase')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+
+    @ApiBearerAuth('access-token')
+    @Get('')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(ListMfMetasDto, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(ListMfMetasDto, RequestInfoDto) },
+    })
+    async metas(
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListMfMetasDto & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+
+        return {
+            'linhas': await this.metasService.metas(config, cicloFisicoAtivo.id),
+            requestInfo: { queryTook: Date.now() - start },
+            ciclo_ativo: cicloFisicoAtivo,
+            perfil: config.perfil
+        };
+    }
+
 
     @ApiExtraModels(ListMfMetasAgrupadasDto, RequestInfoDto)
     @ApiOkResponse({
