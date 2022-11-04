@@ -6,7 +6,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
 
@@ -930,6 +930,9 @@ export class MetasService {
             }
         });
 
+        let ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+        shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+
         const serieValores = await this.prisma.serieVariavel.findMany({
             where: {
                 variavel_id: dto.variavel_id,
@@ -942,6 +945,26 @@ export class MetasService {
                 conferida: true,
             }
         });
+        const seriesValoresBySerie: Record<string, typeof serieValores[0]> = {};
+        for (const r of serieValores) {
+            seriesValoresBySerie[r.serie] = r;
+        }
+
+        const series: MfSerieValorNomimal[] = ordem_series.map((serie) => {
+            const existe = seriesValoresBySerie[serie];
+            if (existe)
+                return {
+                    data_valor: dateYMD,
+                    conferida: existe.conferida,
+                    valor_nominal: existe.valor_nominal.toString(),
+                }
+
+            return {
+                data_valor: dateYMD,
+                conferida: false,
+                valor_nominal: ''
+            }
+        })
 
         const analisesResult = await this.prisma.variavelCicloFisicoQualitativo.findMany({
             where: {
@@ -975,11 +998,12 @@ export class MetasService {
                     meta_id: r.meta_id,
                     enviado_para_cp: r.enviado_para_cp,
                     id: r.id,
-                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao }
+                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+
                 }
             }),
-            ordem_series: [],
-            series: [],
+            ordem_series: ordem_series,
+            series: series,
             variavel: variavel,
         }
     }
