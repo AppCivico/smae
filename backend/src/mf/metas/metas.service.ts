@@ -803,7 +803,7 @@ export class MetasService {
                     referencia_data: dto.data_valor,
                     analise_qualitativa: dto.analise_qualitativa,
                     meta_id: meta_id,
-
+                    enviado_para_cp: dto.enviar_para_cp,
                 }
             });
 
