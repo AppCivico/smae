@@ -802,10 +802,14 @@ export class MetasService {
                     criado_em: now,
                     referencia_data: dto.data_valor,
                     analise_qualitativa: dto.analise_qualitativa,
-                    meta_id: meta_id
+                    meta_id: meta_id,
+
                 }
             });
 
+            if (dto.enviar_para_cp){
+
+            }
 
 
         }, {
