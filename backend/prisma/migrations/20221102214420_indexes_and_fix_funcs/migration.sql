@@ -1,3 +1,97 @@
+-- CreateIndex
+CREATE INDEX "indicador_meta_id_idx" ON "indicador"("meta_id");
+
+-- CreateIndex
+CREATE INDEX "indicador_iniciativa_id_idx" ON "indicador"("iniciativa_id");
+
+-- CreateIndex
+CREATE INDEX "indicador_atividade_id_idx" ON "indicador"("atividade_id");
+
+-- CreateIndex
+CREATE INDEX "idx_indicador_variavel_variavel" ON "indicador_variavel"("variavel_id");
+
+-- CreateIndex
+CREATE INDEX "idx_indicador_variavel_indicador" ON "indicador_variavel"("indicador_id");
+
+-- CreateIndex
+CREATE INDEX "meta_pdm_id_idx" ON "meta"("pdm_id");
+
+-- CreateIndex
+CREATE INDEX "meta_responsavel_pessoa_id_idx" ON "meta_responsavel"("pessoa_id");
+
+-- CreateIndex
+CREATE INDEX "idx_indicador_indicador_id_data_valor" ON "serie_indicador"("indicador_id", "data_valor");
+
+-- CreateIndex
+CREATE INDEX "variavel_responsavel_pessoa_id_idx" ON "variavel_responsavel"("pessoa_id");
+
+CREATE OR REPLACE FUNCTION busca_periodos_variavel (pVariavelId int)
+    RETURNS TABLE (
+        periodicidade interval,
+        min date,
+        max date
+    )
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        min(periodicidade_intervalo (v.periodicidade)),
+        coalesce(v.inicio_medicao, min(i.inicio_medicao)),
+        coalesce(v.fim_medicao, max(i.fim_medicao))
+    FROM
+        variavel v
+        JOIN indicador_variavel iv ON IV.variavel_id = v.id and iv.desativado_em is null
+        JOIN indicador i ON Iv.indicador_id = i.id
+    WHERE
+        v.id = pVariavelId
+    GROUP BY
+        (v.fim_medicao, v.inicio_medicao);
+END;
+$$
+LANGUAGE plpgsql STABLE;
+
+CREATE OR REPLACE FUNCTION busca_periodos_variavel (pVariavelId int)
+    RETURNS TABLE (
+        periodicidade interval,
+        min date,
+        max date
+    )
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        min(periodicidade_intervalo (v.periodicidade)),
+        coalesce(v.inicio_medicao, min(i.inicio_medicao)),
+        coalesce(v.fim_medicao, max(i.fim_medicao))
+    FROM
+        variavel v
+        JOIN indicador_variavel iv ON IV.variavel_id = v.id and iv.desativado_em is null
+        JOIN indicador i ON Iv.indicador_id = i.id
+    WHERE
+        v.id = pVariavelId
+    GROUP BY
+        (v.fim_medicao, v.inicio_medicao);
+END;
+$$
+LANGUAGE plpgsql STABLE;
+
+CREATE OR REPLACE FUNCTION variavel_participa_do_ciclo (pVariavelId int, dataCiclo date)
+    RETURNS boolean
+    AS $$
+    SELECT
+        coalesce((
+            SELECT
+                TRUE
+            FROM
+            busca_periodos_variavel (pVariavelId) AS g (periodo, inicio, fim),
+            generate_series(inicio, fim, periodo) p
+        WHERE
+            p.p = dataCiclo), FALSE);
+
+$$
+LANGUAGE SQL COST 10000
+STABLE;
+
 CREATE OR REPLACE FUNCTION pessoa_acesso_pdm(pPessoa_id int)
     RETURNS varchar
     AS $$
@@ -217,7 +311,7 @@ BEGIN
             m.id as meta_id
         from meta m
         join indicador i on  i.meta_id = m.id
-        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
         where iv.variavel_id in (
             -- aqui nao adianta muda pra EXISTS pq nao vai ter index na CTE
             select variavel_id from variaveis_visiveis
@@ -228,7 +322,7 @@ BEGIN
         from meta m
         join iniciativa _i on _i.meta_id = m.id
         join indicador i on  i.iniciativa_id = _i.id
-        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
         where iv.variavel_id in (
             select variavel_id from variaveis_visiveis
         ) and m.removido_em is null and m.ativo = TRUE
@@ -239,7 +333,7 @@ BEGIN
         join iniciativa _i on _i.meta_id = m.id
         join atividade _a on _a.iniciativa_id = _i.id
         join indicador i on  i.atividade_id = _a.id
-        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
+        join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false
         where iv.variavel_id in (
             select variavel_id from variaveis_visiveis
         ) and m.removido_em is null and m.ativo = TRUE
@@ -268,40 +362,3 @@ END
 $$
 LANGUAGE plpgsql;
 
--- as funcoes estao muito abertas, calculando todo mundo
--- mais pra frente vamos colocar isso apenas durante as alterações respectivas, onde for possivel.
-/*
-CREATE OR REPLACE FUNCTION f_recalc_acesso_pessoas() RETURNS trigger AS $emp_stamp$
-BEGIN
-    PERFORM pessoa_acesso_pdm(id) from pessoa where desativado=false;
-    RETURN NEW;
-END;
-$emp_stamp$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_ciclo_fisico_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON ciclo_fisico
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION f_recalc_acesso_pessoas();
-
-CREATE TRIGGER trg_meta_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON meta
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION f_recalc_acesso_pessoas();
-
-CREATE TRIGGER trg_iniciativa_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON iniciativa
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION f_recalc_acesso_pessoas();
-
-CREATE TRIGGER trg_atividade_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON atividade
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION f_recalc_acesso_pessoas();
-
-CREATE TRIGGER trg_cronograma_etapa_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION f_recalc_acesso_pessoas();
-
-CREATE TRIGGER trg_variavel_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON variavel_responsavel
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION f_recalc_acesso_pessoas();
-
-
-
-*/

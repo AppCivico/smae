@@ -26,16 +26,22 @@ export class GrupoPaineisService {
     async findAll(filters: FilterGrupoPaineisDto | undefined = undefined) {
         let ativo = filters?.ativo;
 
-        if (!ativo) ativo = true
-
-        let listActive = await this.prisma.grupoPainel.findMany({
-            where: {
+        let searchCond;
+        if (typeof(ativo) === undefined) {
+            searchCond = { removido_em: null }
+        } else {
+            searchCond = {
                 removido_em: null,
                 ativo: ativo
-            },
+            }
+        }
+
+        let listActive = await this.prisma.grupoPainel.findMany({
+            where: {...searchCond},
             select: {
                 id: true,
                 nome: true,
+                ativo: true
             }
         });
         return listActive;

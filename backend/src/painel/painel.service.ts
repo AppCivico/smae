@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { PainelConteudoTipoDetalhe, PainelGrupoPainel, Prisma } from '@prisma/client';
+import { PainelConteudoTipoDetalhe, PainelGrupoPainel, Periodicidade, Periodo, Prisma } from '@prisma/client';
+import { time } from 'console';
+import * as moment from 'moment';
 import { every } from 'rxjs';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
+import { SeriesTemplate } from './dto/detalhe-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
@@ -77,6 +80,7 @@ export class PainelService {
                         mostrar_planejado: true,
                         mostrar_acumulado: true,
                         mostrar_indicador: true,
+                        mostrar_acumulado_periodo: true,
                         periodicidade: true,
                         periodo: true,
                         periodo_fim: true,
@@ -148,15 +152,7 @@ export class PainelService {
     async getDetail(id: number) {
         return await this.prisma.painel.findFirstOrThrow({
             where: {
-                id: id,
-
-                grupos: {
-                    every: {
-                        grupo_painel: {
-                            ativo: true
-                        }
-                    }
-                }
+                id: id
             },
             select: {
                 id: true,
@@ -186,6 +182,7 @@ export class PainelService {
                         mostrar_planejado: true,
                         mostrar_acumulado: true,
                         mostrar_indicador: true,
+                        mostrar_acumulado_periodo: true,
                         periodicidade: true,
                         periodo: true,
                         periodo_fim: true,
@@ -395,6 +392,7 @@ export class PainelService {
                 periodo_fim: true,
                 mostrar_acumulado: true,
                 mostrar_planejado: true,
+                mostrar_acumulado_periodo: true,
                 ordem: true,
             }
         })
@@ -483,7 +481,7 @@ export class PainelService {
                         data: {
                             painel_conteudo_id: painel_conteudo.id,
                             variavel_id: row.variavel_id,
-                            mostrar_indicador: painel_conteudo.mostrar_indicador,
+                            mostrar_indicador: false,
                             tipo: PainelConteudoTipoDetalhe.Variavel
                         }
                     })
@@ -502,7 +500,7 @@ export class PainelService {
                 const parent_iniciativa = await prisma.painelConteudoDetalhe.create({
                     data: {
                         painel_conteudo_id: painel_conteudo.id,
-                        mostrar_indicador: painel_conteudo.mostrar_indicador,
+                        mostrar_indicador: false,
                         tipo: PainelConteudoTipoDetalhe.Iniciativa,
                         iniciativa_id: iniciativa.id
                     },
@@ -543,7 +541,7 @@ export class PainelService {
                     const parent_atividade = await prisma.painelConteudoDetalhe.create({
                         data: {
                             painel_conteudo_id: painel_conteudo.id,
-                            mostrar_indicador: painel_conteudo.mostrar_indicador,
+                            mostrar_indicador: false,
                             tipo: PainelConteudoTipoDetalhe.Atividade,
                             pai_id: parent_iniciativa.id,
                             atividade_id: atividade.id
@@ -566,7 +564,7 @@ export class PainelService {
                             data: {
                                 painel_conteudo_id: painel_conteudo.id,
                                 variavel_id: variavel.variavel_id,
-                                mostrar_indicador: painel_conteudo.mostrar_indicador,
+                                mostrar_indicador: false,
                                 tipo: PainelConteudoTipoDetalhe.Variavel,
                                 pai_id: parent_atividade.id
                             }
@@ -604,4 +602,633 @@ export class PainelService {
         return deleted;
     }
 
+    async getPainelConteudoSerie (painel_conteudo_id: number) {
+        let ret = {};
+        const config = await this.getPainelConteudoVisualizacao(painel_conteudo_id);
+
+        const current_year = new Date().getUTCFullYear();
+        const current_month = new Date().getUTCMonth();
+
+        let series_template: SeriesTemplate[] = []
+        let gte;
+        let lte;
+
+        if (config.periodo === Periodo.Corrente) {
+            if (config.periodicidade === Periodicidade.Anual) {
+                gte = new Date( new Date().getFullYear(), 0, 1);
+                lte = new Date( new Date().getFullYear(), 11, 31);
+
+
+            } else if (config.periodicidade === Periodicidade.Semestral) {
+                const year_start_epoch = new Date(new Date().getFullYear(), 0, 1).getTime();
+                const half_year_epoch  = new Date(new Date().getFullYear(), 5, 1).getTime();
+                const current_epoch    = Date.now();
+
+                if (current_epoch >= half_year_epoch) {
+                    gte = new Date(half_year_epoch);
+                    lte = new Date( current_year, 11, 31);
+                } else {
+                    gte = new Date(year_start_epoch);
+                    lte = new Date(half_year_epoch);
+                }
+            } else if (config.periodicidade === Periodicidade.Trimestral) {
+                gte = moment().startOf('quarter').toDate();
+                lte = moment().endOf('quarter').toDate();
+            } else if (config.periodicidade === Periodicidade.Quadrimestral) {
+
+                if (current_month <= 4) {
+                    gte = new Date( current_year, 0, 1);
+                    lte = new Date( current_year, 3, 30);
+                } else if (current_month > 4 && current_month <= 8) {
+                    gte = new Date( current_year, 4, 1);
+                    lte = new Date( current_year, 7, 31);
+                } else {
+                    gte = new Date( current_year, 8, 1);
+                    lte = new Date( current_year, 11, 31);
+                }
+            } else if (config.periodicidade === Periodicidade.Bimestral) {
+
+                if (current_month % 2) {
+                    gte = new Date( current_year, current_month - 1, 1);
+                    lte = new Date( current_year, current_month, 31);
+                } else {
+                    gte = new Date( current_year, current_month - 2, 1);
+                    lte = new Date( current_year, current_month - 1, 31);
+                }
+            } else if (config.periodicidade === Periodicidade.Mensal) {
+                gte = new Date( current_year, current_month - 1, 1);
+                lte = new Date( current_year, current_month - 1, 31);
+            } else if (config.periodicidade === Periodicidade.Quinquenal) {
+                gte = new Date( current_year - 5, 0, 1);
+                lte = new Date( current_year, 11, 31);
+            } else {
+                gte = new Date( current_year - 100, 0, 1);
+                lte = new Date( current_year, 11, 31);
+            }
+
+            series_template.push({
+                titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}) +
+                  ' - ' +
+                  lte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                periodo_inicio: gte,
+                periodo_fim: lte,
+                valores_nominais: [0, 0, 0, 0]
+            });
+        }
+        else if (config.periodo === Periodo.Anteriores) {
+            if (!config.periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
+
+            if (config.periodicidade === Periodicidade.Anual) {
+                gte = new Date( new Date().getFullYear() - config.periodo_valor, 0, 1);
+                lte = new Date( new Date().getFullYear(), 0, 1);
+
+                for (let i = 0; i < config.periodo_valor; i++) {
+                    const periodo_inicio = new Date( new Date().getFullYear() - config.periodo_valor + i, 0, 1);
+                    const periodo_fim    = new Date( new Date().getFullYear() - config.periodo_valor + i + 1, 0, 1 );
+
+                    series_template.push({
+                        titulo: periodo_inicio.getUTCFullYear().toString(),
+                        periodo_inicio: periodo_inicio,
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
+                    })
+                }
+            } else if (config.periodicidade === Periodicidade.Semestral) {
+                const year_start_epoch = new Date(new Date().getFullYear(), 0, 1).getTime();
+                const half_year_epoch  = new Date(new Date().getFullYear(), 5, 1).getTime();
+                const current_epoch    = Date.now();
+
+                if (current_epoch >= half_year_epoch) {
+                    gte = new Date(half_year_epoch - 183 * 86400000 * config.periodo_valor);
+                    lte = new Date(half_year_epoch);
+                } else {
+                    gte = new Date(year_start_epoch - 183 * 86400000 * config.periodo_valor);
+                    lte = new Date(year_start_epoch);
+                }
+
+                for (let i = 0; i < config.periodo_valor; i++) {
+                    const periodo_inicio = new Date(gte.getTime() + 183 * 86400000 * (config.periodo_valor + i));
+                    const periodo_fim    = new Date(gte.getTime() + 183 * 86400000 * (config.periodo_valor + i + 1));
+
+                    series_template.push({
+                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                        periodo_inicio: periodo_inicio,
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
+                    })
+                }
+            } else if (config.periodicidade === Periodicidade.Trimestral) {
+                gte = moment().subtract(config.periodo_valor, 'quarter').startOf('quarter').toDate();
+                lte = moment().startOf('quarter').toDate();
+
+                for (let i = 0; i < config.periodo_valor; i++) {
+                    const periodo_inicio = moment(gte).add(i, 'quarter').toDate();
+                    const periodo_fim    = moment(gte).add(i + 1, 'quarter').toDate();
+
+                    series_template.push({
+                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                        periodo_inicio: periodo_inicio,
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
+                    })
+                }
+            } else if (config.periodicidade === Periodicidade.Quadrimestral) {
+
+                if (current_month <= 4) {
+                    gte = moment(new Date( current_year, 0, 1)).subtract(config.periodo_valor * 4, 'months').toDate();
+                    lte = new Date( current_year, 0, 1);
+                } else if (current_month > 4 && current_month <= 8) {
+                    gte = moment(new Date( current_year, 4, 1)).subtract(config.periodo_valor * 4, 'months').toDate();
+                    lte = new Date( current_year, 4, 1);
+                } else {
+                    gte = moment(new Date( current_year, 8, 1)).subtract(config.periodo_valor * 4, 'months').toDate();
+                    lte = new Date( current_year, 11, 31);
+                }
+
+                for (let i = 0; i < config.periodo_valor; i++) {
+                    const periodo_inicio = moment(gte).add(i * 4, 'months').toDate();
+                    const periodo_fim    = moment(gte).add(i * 4 + 4, 'months').toDate();
+
+                    series_template.push({
+                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                        periodo_inicio: periodo_inicio,
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
+                    })
+                }
+            } else if (config.periodicidade === Periodicidade.Bimestral) {
+
+                if (current_month % 2) {
+                    gte = moment(new Date( current_year, current_month - 1, 1)).subtract(config.periodo_valor * 2, 'months').toDate();
+                    lte = new Date( current_year, current_month, 31);
+                } else {
+                    gte = moment(new Date( current_year, current_month - 2, 1)).subtract(config.periodo_valor * 2, 'months').toDate();
+                    lte = new Date( current_year, current_month - 1, 31);
+                }
+
+                for (let i = 0; i < config.periodo_valor; i++) {
+                    const periodo_inicio = moment(gte).add(i * 2, 'months').toDate();
+                    const periodo_fim    = moment(gte).add(i * 2 + 2, 'months').toDate();
+
+                    series_template.push({
+                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                        periodo_inicio: periodo_inicio,
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
+                    })
+                }
+            } else if (config.periodicidade === Periodicidade.Mensal) {
+                gte = moment(new Date( current_year, current_month - 1, 1)).subtract(config.periodo_valor, 'months').toDate();
+                lte = new Date( current_year, current_month - 1, 31);
+
+                for (let i = 0; i < config.periodo_valor; i++) {
+                    const periodo_inicio = moment(gte).add(i * 1, 'months').toDate();
+                    const periodo_fim    = moment(gte).add(i * 1 + 1, 'months').toDate();
+
+                    series_template.push({
+                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                        periodo_inicio: periodo_inicio,
+                        periodo_fim: periodo_fim,
+                        valores_nominais: [0, 0, 0, 0]
+                    })
+                }
+            }
+        }
+        else {
+            gte = new Date(0);
+            lte = new Date();
+        }
+
+        const series = await this.prisma.painelConteudo.findFirstOrThrow({
+            where: { id: painel_conteudo_id },
+            select: {
+                meta: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+
+                        indicador: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+
+                                SerieIndicador: {
+                                    where: {
+                                        data_valor: {
+                                            gte: gte,
+                                            lte: lte
+                                        }
+                                    },
+                                    select: {
+                                        serie: true,
+                                        data_valor: true,
+                                        valor_nominal: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+
+                detalhes: {
+                    where: { mostrar_indicador: true },
+                    orderBy: [ {ordem: 'asc'} ],
+                    select: {
+                        variavel: {
+                            select: {
+                                id: true,
+                                titulo: true,
+                                serie_variavel: {
+                                    where: {
+                                        data_valor: {
+                                            gte: gte,
+                                            lte: lte
+                                        }
+                                    },
+                                    select: {
+                                        serie: true,
+                                        data_valor: true,
+                                        valor_nominal: true
+                                    }
+                                }
+                            },
+                        },
+                        iniciativa: {
+                            select: {
+                                id: true,
+                                titulo: true,
+
+                                Indicador: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        titulo: true,
+
+                                        SerieIndicador: {
+                                            where: {
+                                                data_valor: {
+                                                    gte: gte,
+                                                    lte: lte
+                                                }
+                                            },
+                                            select: {
+                                                serie: true,
+                                                data_valor: true,
+                                                valor_nominal: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        filhos: {
+                            where: { mostrar_indicador: true },
+                            select: {    
+                                variavel: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+
+                                        serie_variavel: {
+                                            where: {
+                                                data_valor: {
+                                                    gte: gte,
+                                                    lte: lte
+                                                }
+                                            },
+                                            select: {
+                                                serie: true,
+                                                data_valor: true,
+                                                valor_nominal: true
+                                            }
+                                        }
+                                    }
+                                },
+                                atividade: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+
+                                        Indicador: {
+                                            select: {
+                                                id: true,
+                                                codigo: true,
+                                                titulo: true,
+        
+                                                SerieIndicador: {
+                                                    where: {
+                                                        data_valor: {
+                                                            gte: gte,
+                                                            lte: lte
+                                                        }
+                                                    },
+                                                    select: {
+                                                        serie: true,
+                                                        data_valor: true,
+                                                        valor_nominal: true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                filhos: {
+                                    where: { mostrar_indicador: true },
+                                    select: {    
+                                        variavel: {
+                                            select: {
+                                                id: true,
+                                                titulo: true,
+
+                                                serie_variavel: {
+                                                    where: {
+                                                        data_valor: {
+                                                            gte: gte,
+                                                            lte: lte
+                                                        }
+                                                    },
+                                                    select: {
+                                                        serie: true,
+                                                        data_valor: true,
+                                                        valor_nominal: true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+
+        ret = {
+            meta: {
+                id: series.meta.id,
+                titulo: series.meta.titulo,
+                codigo: series.meta.codigo,
+
+                indicador: {
+                    id: series.meta.indicador[0].id,
+                    codigo: series.meta.indicador[0].codigo,
+                    titulo: series.meta.indicador[0].titulo,
+
+                    series: series_template.map(t => {
+                        const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
+                            return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                        });
+
+                        return {
+                            titulo: t.titulo,
+                            periodo_inicio: t.periodo_inicio,
+                            periodo_fim: t.periodo_fim,
+
+                            valores_nominais: t.valores_nominais.map((vn, ix) => {
+
+                                const serie_match_arr = series_for_period.filter(sm => {
+                                    if (ix == 0) {
+                                        return sm.serie === 'Previsto'
+                                    } else if (ix == 1) {
+                                        return sm.serie === 'PrevistoAcumulado'
+                                    } else if (ix == 2) {
+                                        return sm.serie === 'Realizado'
+                                    } else {
+                                        return sm.serie === 'RealizadoAcumulado'
+                                    }
+                                });
+                                const serie_match = serie_match_arr[0];
+
+                                if (serie_match) {
+                                    return serie_match.valor_nominal
+                                } else { return vn }
+                            })
+                        }
+                    })
+                }
+            },
+            
+            detalhes: series.detalhes.map(d => {
+                return {
+                    variavel: {
+                        id: d.variavel?.id,
+                        titulo: d.variavel?.titulo,
+
+                        series: series_template.map(t => {
+                            const series_for_period = d.variavel?.serie_variavel.filter(r => {
+                                r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                            }) || [];
+
+                            return {
+                                titulo: t.titulo,
+                                periodo_inicio: t.periodo_inicio,
+                                periodo_fim: t.periodo_fim,
+                                valores_nominais: t.valores_nominais.map((vn, ix) => {
+
+                                    const serie_match_arr = series_for_period.filter(sm => {
+                                        if (ix == 0) {
+                                            return sm.serie === 'Previsto'
+                                        } else if (ix == 1) {
+                                            return sm.serie === 'PrevistoAcumulado'
+                                        } else if (ix == 2) {
+                                            return sm.serie === 'Realizado'
+                                        } else {
+                                            return sm.serie === 'RealizadoAcumulado'
+                                        }
+                                    });
+                                    const serie_match = serie_match_arr[0];
+    
+                                    if (serie_match) {
+                                        return serie_match.valor_nominal
+                                    } else { return vn }
+                                })
+                            }
+                        })
+                    },
+
+                    iniciativa: {
+                        id: d.iniciativa?.id,
+                        titulo: d.iniciativa?.titulo,
+
+                        indicador: d.iniciativa?.Indicador.map(i => {
+
+                            return {
+                                id: i.id,
+                                codigo: i.codigo,
+                                titulo: i.titulo,
+
+                                series: series_template.map(t => {
+                                    const series_for_period = i.SerieIndicador.filter(r => {
+                                        return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                    }) || [];
+
+                                    return {
+                                        titulo: t.titulo,
+                                        periodo_inicio: t.periodo_inicio,
+                                        periodo_fim: t.periodo_fim,
+                                        valores_nominais: t.valores_nominais.map((vn, ix) => {
+
+                                            const serie_match_arr = series_for_period.filter(sm => {
+                                                if (ix == 0) {
+                                                    return sm.serie === 'Previsto'
+                                                } else if (ix == 1) {
+                                                    return sm.serie === 'PrevistoAcumulado'
+                                                } else if (ix == 2) {
+                                                    return sm.serie === 'Realizado'
+                                                } else {
+                                                    return sm.serie === 'RealizadoAcumulado'
+                                                }
+                                            });
+                                            const serie_match = serie_match_arr[0];
+            
+                                            if (serie_match) {
+                                                return serie_match.valor_nominal
+                                            } else { return vn }
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    },
+
+                    filhos: d.filhos.map(f => {
+
+                        return {
+                            variavel: {
+                                id: f.variavel?.id,
+                                titulo: f.variavel?.titulo,
+                                series: series_template.map(t => {
+                                    const series_for_period = f.variavel?.serie_variavel.filter(r => {
+                                        return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                    }) || [];
+        
+                                    return {
+                                        titulo: t.titulo,
+                                        periodo_inicio: t.periodo_inicio,
+                                        periodo_fim: t.periodo_fim,
+                                        valores_nominais: t.valores_nominais.map((vn, ix) => {
+
+                                            const serie_match_arr = series_for_period.filter(sm => {
+                                                if (ix == 0) {
+                                                    return sm.serie === 'Previsto'
+                                                } else if (ix == 1) {
+                                                    return sm.serie === 'PrevistoAcumulado'
+                                                } else if (ix == 2) {
+                                                    return sm.serie === 'Realizado'
+                                                } else {
+                                                    return sm.serie === 'RealizadoAcumulado'
+                                                }
+                                            });
+                                            const serie_match = serie_match_arr[0];
+            
+                                            if (serie_match) {
+                                                return serie_match.valor_nominal
+                                            } else { return vn }
+                                        })
+                                    }
+                                })
+                            },
+
+                            atividade: {
+                                id: f.atividade?.id,
+                                titulo: f.atividade?.titulo,
+
+                                indicador: f.atividade?.Indicador.map(i => {
+                                    return {
+                                        id: i.id,
+                                        codigo: i.codigo,
+                                        titulo: i.titulo,
+        
+                                        series: series_template.map(t => {
+                                            const series_for_period = i.SerieIndicador.filter(r => {
+                                                return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                            }) || []; 
+        
+                                            return {
+                                                titulo: t.titulo,
+                                                periodo_inicio: t.periodo_inicio,
+                                                periodo_fim: t.periodo_fim,
+                                                valores_nominais: t.valores_nominais.map((vn, ix) => {
+
+                                                    const serie_match_arr = series_for_period.filter(sm => {
+                                                        if (ix == 0) {
+                                                            return sm.serie === 'Previsto'
+                                                        } else if (ix == 1) {
+                                                            return sm.serie === 'PrevistoAcumulado'
+                                                        } else if (ix == 2) {
+                                                            return sm.serie === 'Realizado'
+                                                        } else {
+                                                            return sm.serie === 'RealizadoAcumulado'
+                                                        }
+                                                    });
+                                                    const serie_match = serie_match_arr[0];
+                    
+                                                    if (serie_match) {
+                                                        return serie_match.valor_nominal
+                                                    } else { return vn }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            },
+
+                            filhos: f.filhos.map(af => {
+                                return {variavel: {
+                                    id: af.variavel?.id,
+                                    titulo: af.variavel?.titulo,
+
+                                    series: series_template.map(t => {
+                                        const series_for_period = af.variavel?.serie_variavel.filter(r => {
+                                            return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                        }) || [];
+            
+                                        return {
+                                            titulo: t.titulo,
+                                            periodo_inicio: t.periodo_inicio,
+                                            periodo_fim: t.periodo_fim,
+                                            valores_nominais: t.valores_nominais.map((vn, ix) => {
+
+                                                const serie_match_arr = series_for_period.filter(sm => {
+                                                    if (ix == 0) {
+                                                        return sm.serie === 'Previsto'
+                                                    } else if (ix == 1) {
+                                                        return sm.serie === 'PrevistoAcumulado'
+                                                    } else if (ix == 2) {
+                                                        return sm.serie === 'Realizado'
+                                                    } else {
+                                                        return sm.serie === 'RealizadoAcumulado'
+                                                    }
+                                                });
+                                                const serie_match = serie_match_arr[0];
+                
+                                                if (serie_match) {
+                                                    return serie_match.valor_nominal
+                                                } else { return vn }
+                                            })
+                                        }
+                                    })
+                                }}
+                            })
+                        }
+                    })
+                }
+            }),
+
+            ordem_series: [
+                "Previsto",
+                "PrevistoAcumulado",
+                "Realizado",
+                "RealizadoAcumulado"
+            ]
+        }
+
+        return ret;
+    }
+
 }
+

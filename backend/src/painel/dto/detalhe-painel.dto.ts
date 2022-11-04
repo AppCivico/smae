@@ -1,6 +1,4 @@
 import { Periodicidade, Periodo } from '@prisma/client';
-import { PainelDto } from '../entities/painel.entity';
-
 
 export class DetailPainelVisualizacaoDto {
     id: number
@@ -12,4 +10,17 @@ export class DetailPainelVisualizacaoDto {
     mostrar_acumulado: boolean
     mostrar_planejado: boolean
     ordem: number | null
+}
+
+export class PainelConteudoSerieDto {
+    id: number
+    meta_id: number
+
+}
+
+export class SeriesTemplate {
+    titulo: string
+    periodo_inicio: Date
+    periodo_fim: Date
+    valores_nominais: number[]
 }
