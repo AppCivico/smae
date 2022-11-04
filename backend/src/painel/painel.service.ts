@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PainelConteudoTipoDetalhe, PainelGrupoPainel, Periodicidade, Periodo, Prisma } from '@prisma/client';
 import { time } from 'console';
-import moment from 'moment';
+import * as moment from 'moment';
 import { every } from 'rxjs';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -808,6 +808,12 @@ export class PainelService {
                                 titulo: true,
 
                                 SerieIndicador: {
+                                    where: {
+                                        data_valor: {
+                                            gte: gte,
+                                            lte: lte
+                                        }
+                                    },
                                     select: {
                                         serie: true,
                                         data_valor: true,
