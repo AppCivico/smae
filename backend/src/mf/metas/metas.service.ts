@@ -78,7 +78,7 @@ export class MetasService {
                         responsavel: true,
                     },
                     select: {
-                        orgao: { select: { sigla: true } }
+                        orgao: { select: { sigla: true, descricao: true } }
                     }
                 }
             },
@@ -87,7 +87,40 @@ export class MetasService {
             }
         });
 
-        return [];
+
+        let out: MfMetaDto[] = [];
+
+        for (const r of rows) {
+
+
+            let status_coleta = '';
+            let status_cronograma = '';
+            if (r.StatusMetaCicloFisico[0] && r.StatusMetaCicloFisico[0].status_coleta) {
+                status_coleta = r.StatusMetaCicloFisico[0].status_coleta;
+            }
+            if (r.StatusMetaCicloFisico[0] && r.StatusMetaCicloFisico[0].status_cronograma) {
+                status_cronograma = r.StatusMetaCicloFisico[0].status_cronograma;
+            }
+
+            out.push({
+                fase: r.ciclo_fase?.ciclo_fase || '(sem fase)',
+                codigo: r.codigo,
+                id: r.id,
+                titulo: r.titulo,
+                codigo_organizacoes: r.meta_orgao ? r.meta_orgao.map(e => e.orgao.sigla || e.orgao.descricao) : ['Sem Organização'],
+                coleta: {
+                    participante: config.metas_variaveis.includes(r.id),
+                    status: status_coleta
+                },
+                cronograma: {
+                    participante: config.metas_cronograma.includes(r.id),
+                    status: status_cronograma
+                },
+
+            })
+        }
+
+        return out;
     }
 
 
