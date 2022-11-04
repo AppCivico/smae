@@ -1210,7 +1210,7 @@ model PainelConteudo {
     meta    Meta @relation(fields: [meta_id], references: [id])
 
     periodicidade  Periodicidade
-    periodo        Periodo?
+    periodo        Periodo
     periodo_valor  Int?
     periodo_inicio DateTime?     @db.Date
     periodo_fim    DateTime?     @db.Date
