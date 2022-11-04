@@ -978,6 +978,8 @@ export class PainelService {
 
                         return {
                             titulo: t.titulo,
+                            periodo_inicio: t.periodo_inicio,
+                            periodo_fim: t.periodo_fim,
                             valores_nominais: series_for_period.map(r => {
                                 return r.valor_nominal
                             })
@@ -999,6 +1001,8 @@ export class PainelService {
 
                             return {
                                 titulo: t.titulo,
+                                periodo_inicio: t.periodo_inicio,
+                                periodo_fim: t.periodo_fim,
                                 valores_nominais: series_for_period?.map(r => {
                                     return r.valor_nominal
                                 })
@@ -1024,6 +1028,8 @@ export class PainelService {
 
                                     return {
                                         titulo: t.titulo,
+                                        periodo_inicio: t.periodo_inicio,
+                                        periodo_fim: t.periodo_fim,
                                         valores_nominais: series_for_period?.map(r => {
                                             return r.valor_nominal
                                         })
@@ -1046,6 +1052,8 @@ export class PainelService {
         
                                     return {
                                         titulo: t.titulo,
+                                        periodo_inicio: t.periodo_inicio,
+                                        periodo_fim: t.periodo_fim,
                                         valores_nominais: series_for_period?.map(r => {
                                             return r.valor_nominal
                                         })
@@ -1070,6 +1078,8 @@ export class PainelService {
         
                                             return {
                                                 titulo: t.titulo,
+                                                periodo_inicio: t.periodo_inicio,
+                                                periodo_fim: t.periodo_fim,
                                                 valores_nominais: series_for_period?.map(r => {
                                                     return r.valor_nominal
                                                 })
@@ -1091,6 +1101,8 @@ export class PainelService {
             
                                         return {
                                             titulo: t.titulo,
+                                            periodo_inicio: t.periodo_inicio,
+                                            periodo_fim: t.periodo_fim,
                                             valores_nominais: series_for_period?.map(r => {
                                                 return r.valor_nominal
                                             })
