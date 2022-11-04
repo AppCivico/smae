@@ -30,8 +30,13 @@ export const usePaineisGruposStore = defineStore({
                 if(!this.PaineisGrupos.length){
                     await this.getAll();
                 }
-                this.singlePaineisGrupos = this.PaineisGrupos.find((u)=>u.id == id);
-                if(!this.singlePaineisGrupos) throw 'Tipo de documento não encontrado';
+                var r = this.PaineisGrupos.find((u)=>u.id == id);
+                if(r.id){
+                    r.ativo = r.ativo ? "1":false;
+                    this.singlePaineisGrupos = r;
+                }else{
+                    throw 'Tipo de documento não encontrado';
+                }
             } catch (error) {
                 this.singlePaineisGrupos = { error };
             }

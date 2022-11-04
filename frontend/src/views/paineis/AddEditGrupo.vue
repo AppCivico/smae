@@ -102,7 +102,7 @@
             <Form @submit="onSubmit" :validation-schema="schema" :initial-values="grupo_id?singlePaineisGrupos:virtualCopy" v-slot="{ errors, isSubmitting }">
                 <div class="mb1">
                     <label class="block">
-                        <Field name="ativo" type="checkbox" value="1" class="inputcheckbox" /><span :class="{ 'error': errors.ativo }">Painel ativo</span>
+                        <Field name="ativo" type="checkbox" value="1" class="inputcheckbox" /><span :class="{ 'error': errors.ativo }">Grupo ativo</span>
                     </label>
                     <div class="error-msg">{{ errors.ativo }}</div>
                 </div>
@@ -115,7 +115,7 @@
                 </div>
                 <div class="flex spacebetween center mb2">
                     <hr class="mr2 f1"/>
-                    <button class="btn big" :disabled="isSubmitting">Salvar painel</button>
+                    <button class="btn big" :disabled="isSubmitting">Salvar grupo</button>
                     <hr class="ml2 f1"/>
                 </div>
             </Form>
@@ -133,7 +133,7 @@
 
 
         <template v-if="singlePaineisGrupos.id">
-            <button @click="checkDelete(singlePaineisGrupos.id)" class="btn amarelo big">Remover painel</button>
+            <button @click="checkDelete(singlePaineisGrupos.id)" class="btn amarelo big">Remover grupo</button>
         </template>
     </Dashboard>
 </template>

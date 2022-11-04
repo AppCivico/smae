@@ -34,24 +34,14 @@ export const useUsersStore = defineStore({
                 this.users = { error };
             }
         },
-        /*async getById(id) {
-            this.user = { loading: true };
-            try {
-                let r = await requestS.get(`${baseUrl}/pessoa/${id}`);
-                this.user = r.linhas;
-            } catch (error) {
-                this.user = { error };
-            }
-        },*/
         async getById(id) {
             this.user = { loading: true };
             try {
-                if(!this.users.length){
-                    await this.getAll();
-                }
-                this.user = this.users.find((u)=>u.id == id);
-                this.user.desativado = this.user.desativado?"1":false;
-                if(!this.user) throw 'Usuário não encontrado';
+                let r = await requestS.get(`${baseUrl}/pessoa/${id}`);
+                if(!r.id) throw 'Usuário não encontrado';
+                r.desativado = r.desativado?"1":false;
+                if(r.grupos) r.grupos = r.grupos.map(g=>g.id);
+                this.user = r;
             } catch (error) {
                 this.user = { error };
             }
@@ -75,6 +65,7 @@ export const useUsersStore = defineStore({
                   "lotacao": params.lotacao,
                   "orgao_id": params.orgao_id,
                   "perfil_acesso_ids": params.perfil_acesso_ids,
+                  "grupos": params.grupos,
                 };
 
                 const authStore = useAuthStore();

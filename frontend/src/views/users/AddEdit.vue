@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 
-import { useUsersStore, useAlertStore, useOrgansStore } from '@/stores';
+import { useUsersStore, useAlertStore, useOrgansStore, usePaineisGruposStore } from '@/stores';
 
 const usersStore = useUsersStore();
 usersStore.clear();
@@ -17,6 +17,10 @@ const id = route.params.id;
 const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
 organsStore.getAll();
+
+const PaineisGruposStore = usePaineisGruposStore();
+const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
+PaineisGruposStore.getAll();
 
 let title = 'Cadastro de Usuário';
 const { user, accessProfiles } = storeToRefs(usersStore);
@@ -35,12 +39,14 @@ const schema = Yup.object().shape({
     perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
     desativado: Yup.string().nullable(),
     desativado_motivo: Yup.string().nullable().when('desativado', (desativado, field) => desativado=="1" ? field.required("Escreva um motivo para a inativação") : field),
+    grupos: Yup.array().required('Selecione ao menos um grupo de painel'),
 });
 
 async function onSubmit(values) {
     try {
         var msg;
         var r;
+        if(!values.grupos.length) throw 'Selecione ao menos um grupo de painel';
         if (id&&user) {
             r = await usersStore.update(user.value.id, values);
             msg = 'Dados salvos com sucesso!';
@@ -139,6 +145,23 @@ async function checkClose() {
                             </div></span></span>
                         </label>
                         <div class="error-msg">{{ errors.perfil_acesso_ids }}</div>
+                    </template>
+                </div>
+
+                <div class="mb2">
+                    <div class="label">Grupos de paineis da meta</div>
+                    <template v-if="PaineisGrupos?.loading">
+                        <span class="spinner">Carregando</span>
+                    </template>
+                    <template v-if="PaineisGrupos.length">
+                        <label v-for="p in PaineisGrupos" :key="p.id" class="block mb1">
+                            <Field name="grupos" class="inputcheckbox" type="checkbox"
+                                :class="{ 'error': errors.grupos }" 
+                                :value="p.id" 
+                                :checked="grupos&&grupos.includes(p.id)"
+                            /><span>{{p.nome}}</span>
+                        </label>
+                        <div class="error-msg">{{ errors.grupos }}</div>
                     </template>
                 </div>
 

@@ -8,6 +8,7 @@ import { Home } from '@/views';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
 import { default as SubmenuPaineis } from '@/components/SubmenuPaineis.vue';
+import { default as SubmenuMonitoramento } from '@/components/SubmenuMonitoramento.vue';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 import { AddEditUsers, ListUsers } from '@/views/users';
@@ -21,6 +22,7 @@ import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
+import { ListCiclos, ListMonitoramentoMetas } from '@/views/monitoramento';
 
 
 export const router = createRouter({
@@ -102,6 +104,15 @@ export const router = createRouter({
                 { path: ':grupo_id', component: AddEditGrupo, props:{submenu:SubmenuPaineis} },
             ]
         },
+        { path: '/monitoramento',
+            children: [
+                { path: '', redirect: '/monitoramento/metas' },
+                { path: 'metas', component: ListMonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'ciclos', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'ciclos/fechados', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
+            ]
+        },
+        
         { path: '/metas',
             children: [
                 { path: '', component: ListMetas },
