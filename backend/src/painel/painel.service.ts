@@ -974,14 +974,14 @@ export class PainelService {
                     series: series_template.map(t => {
                         const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
                             return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
-                        });
+                        }) || [];
 
                         return {
                             titulo: t.titulo,
                             periodo_inicio: t.periodo_inicio,
                             periodo_fim: t.periodo_fim,
                             valores_nominais: series_for_period.map(r => {
-                                return r.valor_nominal
+                                return r.valor_nominal ? r.valor_nominal : 0
                             })
                         }
                     })
@@ -997,14 +997,14 @@ export class PainelService {
                         series: series_template.map(t => {
                             const series_for_period = d.variavel?.serie_variavel.filter(r => {
                                 return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
-                            });
+                            }) || [];
 
                             return {
                                 titulo: t.titulo,
                                 periodo_inicio: t.periodo_inicio,
                                 periodo_fim: t.periodo_fim,
-                                valores_nominais: series_for_period?.map(r => {
-                                    return r.valor_nominal
+                                valores_nominais:  series_for_period?.map(r => {
+                                    return r.valor_nominal ? r.valor_nominal : 0
                                 })
                             }
                         })
@@ -1024,14 +1024,14 @@ export class PainelService {
                                 series: series_template.map(t => {
                                     const series_for_period = i.SerieIndicador.filter(r => {
                                         return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
-                                    });
+                                    }) || [];
 
                                     return {
                                         titulo: t.titulo,
                                         periodo_inicio: t.periodo_inicio,
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: series_for_period?.map(r => {
-                                            return r.valor_nominal
+                                            return r.valor_nominal ? r.valor_nominal : 0
                                         })
                                     }
                                 })
@@ -1048,14 +1048,14 @@ export class PainelService {
                                 series: series_template.map(t => {
                                     const series_for_period = f.variavel?.serie_variavel.filter(r => {
                                         return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
-                                    });
+                                    }) || [];
         
                                     return {
                                         titulo: t.titulo,
                                         periodo_inicio: t.periodo_inicio,
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: series_for_period?.map(r => {
-                                            return r.valor_nominal
+                                            return r.valor_nominal ? r.valor_nominal : 0
                                         })
                                     }
                                 })
@@ -1074,14 +1074,14 @@ export class PainelService {
                                         series: series_template.map(t => {
                                             const series_for_period = i.SerieIndicador.filter(r => {
                                                 return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
-                                            });
+                                            }) || []; 
         
                                             return {
                                                 titulo: t.titulo,
                                                 periodo_inicio: t.periodo_inicio,
                                                 periodo_fim: t.periodo_fim,
                                                 valores_nominais: series_for_period?.map(r => {
-                                                    return r.valor_nominal
+                                                    return r.valor_nominal ? r.valor_nominal : 0
                                                 })
                                             }
                                         })
@@ -1097,14 +1097,14 @@ export class PainelService {
                                     series: series_template.map(t => {
                                         const series_for_period = af.variavel?.serie_variavel.filter(r => {
                                             return r.data_valor >= t.periodo_inicio && r.data_valor <= t.periodo_inicio
-                                        });
+                                        }) || [];
             
                                         return {
                                             titulo: t.titulo,
                                             periodo_inicio: t.periodo_inicio,
                                             periodo_fim: t.periodo_fim,
                                             valores_nominais: series_for_period?.map(r => {
-                                                return r.valor_nominal
+                                                return r.valor_nominal ? r.valor_nominal : 0
                                             })
                                         }
                                     })
