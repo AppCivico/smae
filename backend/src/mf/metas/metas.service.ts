@@ -1049,8 +1049,42 @@ export class MetasService {
             }
         });
 
+        const arquivosResult = await this.prisma.variavelCicloFisicoDocumento.findMany({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+            select: {
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true }
+                },
+                id: true,
+                arquivo: {
+                    select: {
+                        id: true,
+                        tamanho_bytes: true,
+                        TipoDocumento: true,
+                        descricao: true,
+                        nome_original: true
+                    }
+                }
+            }
+        });
+
 
         return {
+            arquivos: arquivosResult.map((r) => {
+                return {
+                    id: r.id,
+                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                    criado_em: r.criado_em,
+                    arquivo: r.arquivo
+                }
+            }),
             analises: analisesResult.map((r) => {
                 return {
                     analise_qualitativa: r.analise_qualitativa || '',
