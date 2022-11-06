@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Periodicidade, Serie } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsInt, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
+import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
@@ -259,5 +259,32 @@ export class MfListAnaliseQualitativaDto {
 
     ordem_series: Serie[]
     series: MfSerieValorNomimal[]
+
+}
+
+export class AnaliseQualitativaDocumentoDto {
+
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    variavel_id: number
+
+    /**
+     * Upload do Documento
+     */
+    @IsString({ message: '$property| upload_token de um arquivo' })
+    upload_token: string
 
 }
