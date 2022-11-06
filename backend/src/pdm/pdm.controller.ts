@@ -6,7 +6,6 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { EixoService } from 'src/eixo/eixo.service';
-import { MetaService } from 'src/meta/meta.service';
 import { ObjetivoEstrategicoService } from 'src/objetivo-estrategico/objetivo-estrategico.service';
 import { CicloFisicoAtivo, ListPdmDto } from 'src/pdm/dto/list-pdm.dto';
 import { Pdm } from 'src/pdm/dto/pdm.dto';

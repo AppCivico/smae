@@ -4,9 +4,10 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
 
@@ -48,7 +49,8 @@ type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
 export class MetasService {
     constructor(
         private readonly variavelService: VariavelService,
-        private readonly prisma: PrismaService
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService,
     ) { }
 
 
@@ -750,12 +752,71 @@ export class MetasService {
         return map;
     }
 
+
+    async addMetaVariavelAnaliseQualitativaDocumento(dto: AnaliseQualitativaDocumentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
+        const now = new Date(Date.now());
+        const dateYMD = Date2YMD.toString(dto.data_valor);
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
+
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
+
+        if (config.perfil == 'ponto_focal' && !dadosCiclo.ativo) {
+            throw new HttpException('Você não pode enviar valores fora de um ciclo ainda ativo.', 400);
+        }
+
+        const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+            const uploadId = this.uploadService.checkUploadToken(dto.upload_token);
+
+            const cfq = await prismaTxn.variavelCicloFisicoDocumento.create({
+                data: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    criado_por: user.id,
+                    criado_em: now,
+                    referencia_data: dto.data_valor,
+                    meta_id: meta_id,
+                    arquivo_id: uploadId,
+                },
+                select: { id: true }
+            });
+
+            return cfq.id;
+        });
+
+        return { id: id }
+    }
+
+    async deleteMetaVariavelAnaliseQualitativaDocumento(id: number, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+        const arquivo = await this.prisma.variavelCicloFisicoDocumento.findFirst({
+            where: {
+                id: id,
+                removido_em: null
+            }
+        });
+        if (!arquivo) throw new HttpException('404', 404);
+
+        const now = new Date(Date.now());
+        const dateYMD = Date2YMD.toString(arquivo.referencia_data);
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(arquivo.variavel_id, this.prisma);
+
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, arquivo.variavel_id, meta_id);
+
+        if (config.perfil == 'ponto_focal' && !dadosCiclo.ativo) {
+            throw new HttpException('Você não pode enviar valores fora de um ciclo ainda ativo.', 400);
+        }
+
+        await this.prisma.variavelCicloFisicoDocumento.update({
+            where: { id: id },
+            data: { removido_em: now, removido_por: user.id }
+        });
+    }
+
     async addMetaVariavelAnaliseQualitativa(dto: AnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
-        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto, meta_id);
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
 
         if (config.perfil == 'ponto_focal' && !dadosCiclo.ativo) {
             throw new HttpException('Você não pode enviar valores fora de um ciclo ainda ativo.', 400);
@@ -901,7 +962,7 @@ export class MetasService {
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
-        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto, meta_id);
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
         console.log(dadosCiclo);
 
         const variavel = await this.prisma.variavel.findFirstOrThrow({
@@ -1009,7 +1070,7 @@ export class MetasService {
     }
 
 
-    private async capturaDadosCicloVariavel(dateYMD: string, dto: FilterAnaliseQualitativaDto, meta_id: number) {
+    private async capturaDadosCicloVariavel(dateYMD: string, variavel_id: number, meta_id: number) {
         const dadosCicloResult: DadosCiclo[] = await this.prisma.$queryRaw`
             select
                 variavel_participa_do_ciclo( v.id, ${dateYMD}::date ) as "variavelParticipa",
@@ -1017,7 +1078,7 @@ export class MetasService {
                 cf.id as id
             from ciclo_fisico cf,
             variavel v
-            where v.id = ${dto.variavel_id}::int
+            where v.id = ${variavel_id}::int
             AND cf.data_ciclo = ${dateYMD}::date + (v.atraso_meses || ' month')::interval
             and cf.pdm_id = (select pdm_id from meta where id = ${meta_id})
         `;
@@ -1025,7 +1086,7 @@ export class MetasService {
         console.log(dadosCiclo);
         if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
         if (!dadosCiclo.variavelParticipa)
-            throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${dto.variavel_id}`, 400);
+            throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${variavel_id}`, 400);
         return dadosCiclo;
     }
 }
