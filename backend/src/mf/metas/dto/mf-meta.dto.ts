@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
-import { Periodicidade, Serie } from "@prisma/client";
+import { Periodicidade, Serie, TipoDocumento } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
@@ -235,6 +235,21 @@ export class DetailAnaliseQualitativaDto {
     id: number
 }
 
+export class ArquivoAnaliseQualitativaDocumentoDto {
+    arquivo: {
+        id: number;
+        descricao: string | null;
+        tamanho_bytes: number;
+        TipoDocumento: TipoDocumento | null;
+        nome_original: string;
+        download_token?: string
+    }
+    id: number
+    criado_em: Date
+    criador: {
+        nome_exibicao: string
+    }
+}
 export class MfListAnaliseQualitativaDto {
 
 
@@ -254,6 +269,8 @@ export class MfListAnaliseQualitativaDto {
         acumulativa: boolean
         periodicidade: Periodicidade
     }
+
+    arquivos: ArquivoAnaliseQualitativaDocumentoDto[]
 
     analises: DetailAnaliseQualitativaDto[]
 
