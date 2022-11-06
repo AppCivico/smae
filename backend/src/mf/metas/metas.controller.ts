@@ -1,15 +1,16 @@
-import { Body, Controller, Get, HttpException, Param, Patch, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, refs } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams } from 'src/common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { AnaliseQualitativaDto, FilterAnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, MfListAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, MfListAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
+@ApiTags('Monitoramento Fisico - Metas e variáveis')
 @Controller('metas')
 export class MetasController {
     constructor(
@@ -128,7 +129,7 @@ export class MetasController {
 
 
     @ApiBearerAuth('access-token')
-    @Patch(':id/variaveis/analise-qualitativa')
+    @Patch('variaveis/analise-qualitativa')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
@@ -155,7 +156,7 @@ export class MetasController {
 
 
     @ApiBearerAuth('access-token')
-    @Get(':id/variaveis/analise-qualitativa')
+    @Get('variaveis/analise-qualitativa')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
@@ -177,6 +178,52 @@ export class MetasController {
             requestInfo: { queryTook: Date.now() - start },
         };
     }
+
+    @ApiBearerAuth('access-token')
+    @Patch('variaveis/analise-qualitativa/documento')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async AddMetaVariavelAnaliseQualitativaDocumento(
+        @Body() dto: AnaliseQualitativaDocumentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        // mesma coisa, pra editar um ciclo, vamos precisar de
+
+        return {
+            ...await this.metasService.addMetaVariavelAnaliseQualitativaDocumento(
+                dto,
+                config,
+                user
+            ),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Delete('variaveis/analise-qualitativa/documento/:id')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async DeleteMetaVariavelAnaliseQualitativaDocumento(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        await this.metasService.deleteMetaVariavelAnaliseQualitativaDocumento(
+            params.id,
+            config,
+            user
+        );
+
+        return '';
+    }
+
 
 
 }
