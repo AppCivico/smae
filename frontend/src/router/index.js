@@ -7,7 +7,6 @@ import { useAuthStore } from '@/stores';
 import { Home } from '@/views';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
-import { default as SubmenuPaineis } from '@/components/SubmenuPaineis.vue';
 import { default as SubmenuMonitoramento } from '@/components/SubmenuMonitoramento.vue';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
@@ -22,7 +21,7 @@ import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
-import { ListCiclos, ListMonitoramentoMetas } from '@/views/monitoramento';
+import { ListCiclos, ListMonitoramentoMetas, ListMonitoramentoMetasStatus, MonitoramentoMetas } from '@/views/monitoramento';
 
 
 export const router = createRouter({
@@ -89,27 +88,29 @@ export const router = createRouter({
         },
         { path: '/paineis',
             children: [
-                { path: '', component: ListPainel, props:{submenu:SubmenuPaineis} },
-                { path: 'novo', component: AddEditPainel,  props:{submenu:SubmenuPaineis} },
-                { path: ':painel_id', component: AddEditPainel, props:{submenu:SubmenuPaineis} },
-                { path: ':painel_id/metas', component: AddEditPainel, props:{type:"selecionarMetas", submenu:SubmenuPaineis} },
-                { path: ':painel_id/metas/:conteudo_id', component: AddEditPainel, props:{type:"editarMeta", submenu:SubmenuPaineis} },
-                { path: ':painel_id/metas/:conteudo_id/detalhes', component: AddEditPainel, props:{type:"editarDetalhe", submenu:SubmenuPaineis} },
+                { path: '', component: ListPainel, props:{submenu:SubmenuConfig} },
+                { path: 'novo', component: AddEditPainel,  props:{submenu:SubmenuConfig} },
+                { path: ':painel_id', component: AddEditPainel, props:{submenu:SubmenuConfig} },
+                { path: ':painel_id/metas', component: AddEditPainel, props:{type:"selecionarMetas", submenu:SubmenuConfig} },
+                { path: ':painel_id/metas/:conteudo_id', component: AddEditPainel, props:{type:"editarMeta", submenu:SubmenuConfig} },
+                { path: ':painel_id/metas/:conteudo_id/detalhes', component: AddEditPainel, props:{type:"editarDetalhe", submenu:SubmenuConfig} },
             ]
         },
         { path: '/paineis-grupos',
             children: [
-                { path: '', component: ListGrupos, props:{submenu:SubmenuPaineis} },
-                { path: 'novo', component: AddEditGrupo,  props:{submenu:SubmenuPaineis} },
-                { path: ':grupo_id', component: AddEditGrupo, props:{submenu:SubmenuPaineis} },
+                { path: '', component: ListGrupos, props:{submenu:SubmenuConfig} },
+                { path: 'novo', component: AddEditGrupo,  props:{submenu:SubmenuConfig} },
+                { path: ':grupo_id', component: AddEditGrupo, props:{submenu:SubmenuConfig} },
             ]
         },
         { path: '/monitoramento',
             children: [
-                { path: '', redirect: '/monitoramento/metas' },
-                { path: 'metas', component: ListMonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
+                { path: '', redirect: '/monitoramento/evolucao' },
+                { path: 'fases', component: ListMonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'evolucao', component: ListMonitoramentoMetasStatus,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos/fechados', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'metas/:meta_id', component: MonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
             ]
         },
         
