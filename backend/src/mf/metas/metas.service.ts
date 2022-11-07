@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelComSeries, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
 
@@ -811,6 +811,82 @@ export class MetasService {
         });
     }
 
+    async addVariavelConferida(dto: VariavelConferidaDto, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
+        const dateYMD = Date2YMD.toString(dto.data_valor);
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
+
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
+        if (config.perfil == 'ponto_focal') {
+            throw new HttpException('Você não pode conferir valores', 400);
+        }
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            // isolation lock
+            await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
+
+
+            let needRecalc = false;
+            for (const campo of CamposRealizado) {
+
+                const existeValor = await this.prisma.serieVariavel.findFirst({
+                    where: {
+                        variavel_id: dto.variavel_id,
+                        serie: CamposRealizadoParaSerie[campo],
+                        data_valor: dto.data_valor,
+                        conferida: false
+                    },
+                    select: { id: true }
+                });
+
+                if (existeValor) {
+                    // existe o valor, entao vamos ativar
+                    needRecalc = true;
+
+                    await this.prisma.serieVariavel.update({
+                        where: { id: existeValor.id },
+                        data: {
+                            conferida_em: now,
+                            conferida_por: user.id,
+                            ciclo_fisico_id: dadosCiclo.id,
+                            // se o ciclo nao ta ativo, entao já ta conferida automaticamente
+                            conferida: true
+                        }
+                    });
+                }
+            }
+
+            if (needRecalc) {
+                await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
+                await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
+            }
+
+            await prismaTxn.statusVariavelCicloFisico.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    aguarda_cp: true
+                },
+                data: {
+                    aguarda_cp: false,
+                }
+            });
+
+            await prismaTxn.statusMetaCicloFisico.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    meta_id: meta_id,
+                },
+                data: {
+                    status_valido: false
+                }
+            });
+
+        });
+
+    }
+
+
     async addMetaVariavelAnaliseQualitativa(dto: AnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
@@ -946,6 +1022,17 @@ export class MetasService {
                         meta_id: meta_id,
                     }
                 });
+
+                await prismaTxn.statusMetaCicloFisico.updateMany({
+                    where: {
+                        ciclo_fisico_id: dadosCiclo.id,
+                        meta_id: meta_id
+                    },
+                    data: {
+                        status_valido: false
+                    }
+                });
+
             }
 
             return cfq.id;
