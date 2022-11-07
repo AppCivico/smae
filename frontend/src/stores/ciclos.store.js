@@ -6,12 +6,14 @@ export const useCiclosStore = defineStore({
     id: 'Ciclos',
     state: () => ({
         MetasCiclos: {},
-        SingleMeta: {}
+        SingleMeta: {},
+        MetaVars: {}
     }),
     actions: {
         clear (){
             this.MetasCiclos = {};
             this.SingleMeta = {};
+            this.MetaVars = {};
         },
         async getMetas() {
             this.MetasCiclos = { loading: true };
@@ -34,5 +36,15 @@ export const useCiclosStore = defineStore({
                 this.SingleMeta = { error };
             }
         },
+        async getMetaVars(id) {
+            this.MetaVars = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/mf/metas/${id}/variaveis`);    
+                this.MetaVars = r;
+            } catch (error) {
+                this.MetaVars = { error };
+            }
+        },
+        
     },
 });
