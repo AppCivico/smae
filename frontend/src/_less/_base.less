@@ -61,6 +61,7 @@
 /* Colors */
 	.tprimary{color: @primary;}
 	.tamarelo{color: @amarelo;}
+	.tlaranja{color: @laranja;}
 	.tc50{color: @c50;}
 	.tc100{color: @c100;}
 	.tc200{color: @c200;}
@@ -548,6 +549,13 @@
 		background: @c50; border:1px solid; .br(4px); padding: .5em; margin-right: .5em; margin-bottom: .5em;
 		cursor: pointer;
 		svg{display: inline-block; width: .8em; height: auto; margin-left: .3rem; vertical-align: middle;}
+	}
+	.tagcount{
+		display: inline-block; .br(4px); .t14; .w700; padding: .5em; margin-right: .5em; margin-bottom: .5em; 
+		background: @c100;
+		&.s1{background: fade(@azul, 10%);}
+		&.s2{background: fade(@laranja, 10%);}
+		&.s3{background: fade(@verde, 10%);}
 	}
 	.tipinfo{
 		display: inline-block; vertical-align: middle; color: #3A3A47;
