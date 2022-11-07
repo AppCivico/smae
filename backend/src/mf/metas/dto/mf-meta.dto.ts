@@ -154,6 +154,28 @@ export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
     'valor_realizado_acumulado': 'RealizadoAcumulado',
 };
 
+
+export class VariavelConferidaDto {
+
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    variavel_id: number
+
+}
+
 export class AnaliseQualitativaDto {
 
     /**
