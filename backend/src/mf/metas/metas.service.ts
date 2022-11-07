@@ -105,6 +105,8 @@ export class MetasService {
                 status_cronograma = r.StatusMetaCicloFisico[0].status_cronograma;
             }
 
+            const coleta = config.metas_variaveis.includes(r.id);
+            const cronograma = config.metas_variaveis.includes(r.id);
             out.push({
                 fase: r.ciclo_fase?.ciclo_fase || '(sem fase)',
                 codigo: r.codigo,
@@ -112,12 +114,12 @@ export class MetasService {
                 titulo: r.titulo,
                 codigo_organizacoes: r.meta_orgao ? r.meta_orgao.map(e => e.orgao.sigla || e.orgao.descricao) : ['Sem Organização'],
                 coleta: {
-                    participante: config.metas_variaveis.includes(r.id),
-                    status: status_coleta
+                    participante: coleta,
+                    status: coleta ? status_coleta || 'Outros' : ''
                 },
                 cronograma: {
-                    participante: config.metas_cronograma.includes(r.id),
-                    status: status_cronograma
+                    participante: cronograma,
+                    status: cronograma ? status_cronograma || 'Outros' : ''
                 },
 
             })
