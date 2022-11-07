@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, MfListAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto } from './dto/mf-meta.dto';
+import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, MfListAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelConferidaDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -217,6 +217,27 @@ export class MetasController {
         const config = await this.mfService.pessoaAcessoPdm(user);
         await this.metasService.deleteMetaVariavelAnaliseQualitativaDocumento(
             params.id,
+            config,
+            user
+        );
+
+        return '';
+    }
+
+
+    @ApiBearerAuth('access-token')
+    @Patch('variaveis/analise-qualitativa/documento')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async AddVariavelConferida(
+        @Body() dto: VariavelConferidaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        await this.metasService.addVariavelConferida(
+            dto,
             config,
             user
         );
