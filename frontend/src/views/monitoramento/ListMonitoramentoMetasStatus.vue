@@ -21,11 +21,12 @@
         grupos.value = {loading: true};
         await CiclosStore.getMetas();
         grupos.value = MetasCiclos.value.length ? MetasCiclos.value.reduce(function(r,a) {
-            if(chaves.indexOf(a.fase)==-1)chaves.push(a.fase);
-            r[a.fase] = r[a.fase] || [];
-            r[a.fase].push(a);
+            if(chaves.indexOf(a.coleta.status)==-1)chaves.push(a.coleta.status);
+            r[a.coleta.status] = r[a.coleta.status] || [];
+            r[a.coleta.status].push(a);
             return r;
         }, Object.create(null)) : MetasCiclos.value;
+        console.log(grupos.value);
     })();
 
     function dateToField(d){
