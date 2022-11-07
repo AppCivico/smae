@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
-import { Serie } from "@prisma/client";
+import { Periodicidade, Serie, TipoDocumento } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsInt, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
+import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
@@ -51,6 +51,28 @@ export class ListMfMetasAgrupadasDto {
     linhas: MfMetaAgrupadaDto[]
     @ApiProperty({ enum: ['Status', 'Fase'] })
     agrupador: string
+    perfil: string
+    ciclo_ativo: CicloAtivoDto
+}
+
+export class MfMetaDto {
+    id: number
+    titulo: string
+    codigo: string
+    fase: string
+    cronograma: {
+        participante: boolean
+        status: string
+    }
+    coleta: {
+        participante: boolean
+        status: string
+    }
+    codigo_organizacoes: string[]
+}
+
+export class ListMfMetasDto {
+    linhas: MfMetaDto[]
     perfil: string
     ciclo_ativo: CicloAtivoDto
 }
@@ -132,6 +154,28 @@ export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
     'valor_realizado_acumulado': 'RealizadoAcumulado',
 };
 
+
+export class VariavelConferidaDto {
+
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    variavel_id: number
+
+}
+
 export class AnaliseQualitativaDto {
 
     /**
@@ -167,8 +211,119 @@ export class AnaliseQualitativaDto {
     @IsBoolean()
     enviar_para_cp: boolean
 
-    @IsInt({ message: 'pdm_id é necessário' })
-    pdm_id: number
 
+
+}
+
+export class FilterAnaliseQualitativaDto {
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    @Transform(({ value }: any) => +value)
+    variavel_id: number
+
+    /**
+   * trazer apenas a analise mais recente?
+   * @example "true"
+    */
+    @IsBoolean()
+    @IsOptional()
+    @Transform(({ value }: any) => value === 'true')
+    apenas_ultima_revisao?: boolean;
+
+}
+
+
+export class DetailAnaliseQualitativaDto {
+    analise_qualitativa: string
+    ultima_revisao: boolean
+    criado_em: Date
+    criador: {
+        nome_exibicao: string
+    }
+    meta_id: number
+    enviado_para_cp: boolean
+    id: number
+}
+
+export class ArquivoAnaliseQualitativaDocumentoDto {
+    arquivo: {
+        id: number;
+        descricao: string | null;
+        tamanho_bytes: number;
+        TipoDocumento: TipoDocumento | null;
+        nome_original: string;
+        download_token?: string
+    }
+    id: number
+    criado_em: Date
+    criador: {
+        nome_exibicao: string
+    }
+}
+export class MfListAnaliseQualitativaDto {
+
+
+    variavel: {
+        id: number
+        codigo: string
+        titulo: string
+        unidade_medida: {
+            sigla: string
+            descricao: string
+        }
+        regiao: {
+            id: number
+            descricao: string
+        } | null
+        casas_decimais: number
+        acumulativa: boolean
+        periodicidade: Periodicidade
+    }
+
+    arquivos: ArquivoAnaliseQualitativaDocumentoDto[]
+
+    analises: DetailAnaliseQualitativaDto[]
+
+    ordem_series: Serie[]
+    series: MfSerieValorNomimal[]
+
+}
+
+export class AnaliseQualitativaDocumentoDto {
+
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    variavel_id: number
+
+    /**
+     * Upload do Documento
+     */
+    @IsString({ message: '$property| upload_token de um arquivo' })
+    upload_token: string
 
 }
