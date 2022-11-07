@@ -140,6 +140,15 @@ model Pessoa {
     PedidoComplementacaoCriador             PedidoComplementacao[]           @relation("criador")
     PedidoComplementacaoAtendeu             PedidoComplementacao[]           @relation("atendeu")
     PedidoComplementacaoRemovedor           PedidoComplementacao[]           @relation("removedor")
+    MetaCicloFisicoAnaliseCriador           MetaCicloFisicoAnalise[]         @relation("criador")
+    MetaCicloFisicoAnaliseRemovedor         MetaCicloFisicoAnalise[]         @relation("removedor")
+    MetaCicloFisicoFechamentoCriador        MetaCicloFisicoFechamento[]      @relation("criador")
+    MetaCicloFisicoFechamentoRemovedor      MetaCicloFisicoFechamento[]      @relation("removedor")
+
+    MetaCicloFisicoRiscoCriador              MetaCicloFisicoRisco[]            @relation("criador")
+    MetaCicloFisicoRiscoRemovedor            MetaCicloFisicoRisco[]            @relation("removedor")
+    MetaCicloFisicoAnaliseDocumentoCriador   MetaCicloFisicoAnaliseDocumento[] @relation("criador")
+    MetaCicloFisicoAnaliseDocumentoRemovedor MetaCicloFisicoAnaliseDocumento[] @relation("removedor")
 
     @@map("pessoa")
 }
@@ -553,21 +562,22 @@ model Arquivo {
     id   Int    @id @default(autoincrement())
     tipo String
 
-    criador                      Pessoa?                        @relation("Criador", fields: [criado_por], references: [id])
-    criado_por                   Int?
-    criado_em                    DateTime                       @default(now()) @db.Timestamptz(6)
-    caminho                      String
-    nome_original                String
-    mime_type                    String?
-    tamanho_bytes                Int
-    descricao                    String?
-    tipo_documento_id            Int?
-    TipoDocumento                TipoDocumento?                 @relation(fields: [tipo_documento_id], references: [id])
-    Tag                          Tag[]
-    Regiao                       Regiao[]
-    ArquivoDocumento             ArquivoDocumento[]
-    Pdm                          Pdm[]
-    VariavelCicloFisicoDocumento VariavelCicloFisicoDocumento[]
+    criador                         Pessoa?                           @relation("Criador", fields: [criado_por], references: [id])
+    criado_por                      Int?
+    criado_em                       DateTime                          @default(now()) @db.Timestamptz(6)
+    caminho                         String
+    nome_original                   String
+    mime_type                       String?
+    tamanho_bytes                   Int
+    descricao                       String?
+    tipo_documento_id               Int?
+    TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
+    Tag                             Tag[]
+    Regiao                          Regiao[]
+    ArquivoDocumento                ArquivoDocumento[]
+    Pdm                             Pdm[]
+    VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
+    MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
 
     @@map("arquivo")
 }
@@ -638,12 +648,16 @@ model Meta {
     iniciativa       Iniciativa[]
     meta_tag         MetaTag[]
 
-    cronograma                     Cronograma[]
-    painel_conteudo                PainelConteudo[]
-    StatusMetaCicloFisico          StatusMetaCicloFisico[]
-    StatusVariavelCicloFisico      StatusVariavelCicloFisico[]
-    VariavelCicloFisicoQualitativo VariavelCicloFisicoQualitativo[]
-    VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
+    cronograma                      Cronograma[]
+    painel_conteudo                 PainelConteudo[]
+    StatusMetaCicloFisico           StatusMetaCicloFisico[]
+    StatusVariavelCicloFisico       StatusVariavelCicloFisico[]
+    VariavelCicloFisicoQualitativo  VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
+    MetaCicloFisicoAnalise          MetaCicloFisicoAnalise[]
+    MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
+    MetaCicloFisicoRisco            MetaCicloFisicoRisco[]
+    MetaCicloFisicoFechamento       MetaCicloFisicoFechamento[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1341,16 +1355,20 @@ model CicloFisico {
     ciclo_fase_atual    CicloFisicoFase? @relation("atual", fields: [ciclo_fase_atual_id], references: [id])
     ativo               Boolean          @default(false)
 
-    acordar_ciclo_em               DateTime?
-    acordar_ciclo_errmsg           String?
-    acordar_ciclo_executou_em      DateTime?
-    fases                          CicloFisicoFase[]                @relation("fk")
-    metas                          Meta[]
-    StatusMetaCicloFisico          StatusMetaCicloFisico[]
-    StatusVariavelCicloFisico      StatusVariavelCicloFisico[]
-    VariavelCicloFisicoQualitativo VariavelCicloFisicoQualitativo[]
-    VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
-    PedidoComplementacao           PedidoComplementacao[]
+    acordar_ciclo_em                DateTime?
+    acordar_ciclo_errmsg            String?
+    acordar_ciclo_executou_em       DateTime?
+    fases                           CicloFisicoFase[]                 @relation("fk")
+    metas                           Meta[]
+    StatusMetaCicloFisico           StatusMetaCicloFisico[]
+    StatusVariavelCicloFisico       StatusVariavelCicloFisico[]
+    VariavelCicloFisicoQualitativo  VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
+    PedidoComplementacao            PedidoComplementacao[]
+    MetaCicloFisicoAnalise          MetaCicloFisicoAnalise[]
+    MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
+    MetaCicloFisicoRisco            MetaCicloFisicoRisco[]
+    MetaCicloFisicoFechamento       MetaCicloFisicoFechamento[]
 
     @@map("ciclo_fisico")
 }
@@ -1389,6 +1407,108 @@ model PessoaAcessoPdm {
     pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
 
     @@map("pessoa_acesso_pdm")
+}
+
+model MetaCicloFisicoAnalise {
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+
+    referencia_data            DateTime @db.Date
+    informacoes_complementares String?
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta            Meta        @relation(fields: [meta_id], references: [id])
+    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([meta_id, ultima_revisao])
+    @@map("meta_ciclo_fisico_analise")
+}
+
+model MetaCicloFisicoAnaliseDocumento {
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+
+    referencia_data DateTime @db.Date
+
+    arquivo_id Int
+    arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta            Meta        @relation(fields: [meta_id], references: [id])
+    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([ciclo_fisico_id])
+    @@map("meta_ciclo_fisico_analise_documento")
+}
+
+model MetaCicloFisicoRisco {
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+
+    referencia_data  DateTime @db.Date
+    detalhamento     String?
+    ponto_de_atencao String?
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta            Meta        @relation(fields: [meta_id], references: [id])
+    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([meta_id, ultima_revisao])
+    @@map("meta_ciclo_fisico_risco")
+}
+
+model MetaCicloFisicoFechamento {
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+
+    referencia_data  DateTime @db.Date
+    detalhamento     String?
+    ponto_de_atencao String?
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta            Meta        @relation(fields: [meta_id], references: [id])
+    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([meta_id, ultima_revisao])
+    @@map("meta_ciclo_fisico_fechamento")
 }
 
 model VariavelCicloFisicoQualitativo {
