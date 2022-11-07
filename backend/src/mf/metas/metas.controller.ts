@@ -226,7 +226,7 @@ export class MetasController {
 
 
     @ApiBearerAuth('access-token')
-    @Patch('variaveis/analise-qualitativa/documento')
+    @Patch('variaveis/conferida')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
