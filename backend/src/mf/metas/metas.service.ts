@@ -214,7 +214,7 @@ export class MetasService {
                     if (variavelPeriodo.aguarda_cp) {
                         aguarda_cp++;
                     } else if (variavelPeriodo.aguarda_complementacao) {
-                        aguarda_cp++;
+                        aguarda_complementacao++;
                     } else if (variavelPeriodo.periodo === Date2YMD.toString(cicloFisicoAtivo.data_ciclo)) { // apenas das variaveis do ciclo
                         nao_preenchidas++;
                     }
