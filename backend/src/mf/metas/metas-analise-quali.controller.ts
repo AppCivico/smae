@@ -13,7 +13,7 @@ import { MfListVariavelAnaliseQualitativaDto, RequestInfoDto } from './dto/mf-me
 
 @ApiTags('Monitoramento Fisico - análise qualitativa da meta')
 @Controller('metas')
-export class MetasControllerAnaliseQuali {
+export class MetasAnaliseQualiController {
     constructor(
         private readonly metasAnaliseQualiService: MetasAnaliseQualiService,
         private readonly mfService: MfService
