@@ -3,11 +3,12 @@ import { PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from 'src/mf/metas/dto/mf-meta-analise-quali.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterAnaliseQualitativaDto, IniciativasRetorno, MfListAnaliseQualitativaDto, MfMetaAgrupadaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { VariavelAnaliseQualitativaDto, CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
 
@@ -16,6 +17,8 @@ type StatusTracking = {
     algumaAguardaComplementacao: boolean
     algumaNaoInformada: boolean
     algumaNaoConferida: boolean
+    // nao preenchida (vazio)
+    // nao enviada (tem valor, mas nao foi pra ainda enviada pra CP)
 }
 
 type VariavelDetalhe = {
@@ -47,6 +50,7 @@ type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
 export class MetasService {
+
     constructor(
         private readonly variavelService: VariavelService,
         private readonly prisma: PrismaService,
@@ -126,71 +130,6 @@ export class MetasService {
         }
 
         return out;
-    }
-
-
-    async metasPorFase(filters: { ids: number[] }): Promise<MfMetaAgrupadaDto[]> {
-
-        const rows = await this.prisma.meta.findMany({
-            where: {
-                id: { in: filters.ids }
-            },
-            select: {
-                id: true,
-                titulo: true,
-                codigo: true,
-                ciclo_fase: {
-                    select: { ciclo_fase: true }
-                }
-            },
-            orderBy: {
-                codigo: 'asc'
-            }
-        });
-
-        return rows.map((r) => {
-            return {
-                id: r.id,
-                codigo: r.codigo,
-                titulo: r.titulo,
-                grupo: r.ciclo_fase?.ciclo_fase || 'Sem Ciclo Fase'
-            }
-        });
-    }
-
-    async metasPorStatus(filters: { ids: number[] }, ciclo_fisico_id: number): Promise<MfMetaAgrupadaDto[]> {
-
-        const rows = await this.prisma.meta.findMany({
-            where: {
-                id: { in: filters.ids }
-            },
-            select: {
-                id: true,
-                titulo: true,
-                codigo: true,
-
-                StatusMetaCicloFisico: {
-                    where: {
-                        ciclo_fisico_id: ciclo_fisico_id
-                    },
-                    select: {
-                        status_coleta: true
-                    }
-                }
-            },
-            orderBy: {
-                codigo: 'asc'
-            }
-        });
-
-        return rows.map((r) => {
-            return {
-                id: r.id,
-                codigo: r.codigo,
-                titulo: r.titulo,
-                grupo: r.StatusMetaCicloFisico[0]?.status_coleta || 'Não categorizado'
-            }
-        });
     }
 
 
@@ -755,7 +694,7 @@ export class MetasService {
     }
 
 
-    async addMetaVariavelAnaliseQualitativaDocumento(dto: AnaliseQualitativaDocumentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
+    async addMetaVariavelAnaliseQualitativaDocumento(dto: VariavelAnaliseQualitativaDocumentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
@@ -889,7 +828,7 @@ export class MetasService {
     }
 
 
-    async addMetaVariavelAnaliseQualitativa(dto: AnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
+    async addMetaVariavelAnaliseQualitativa(dto: VariavelAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
@@ -1047,7 +986,7 @@ export class MetasService {
         return { id: id }
     }
 
-    async getMetaVariavelAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListAnaliseQualitativaDto> {
+    async getMetaVariavelAnaliseQualitativa(dto: FilterVariavelAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
@@ -1212,4 +1151,6 @@ export class MetasService {
             throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${variavel_id}`, 400);
         return dadosCiclo;
     }
+
+
 }
