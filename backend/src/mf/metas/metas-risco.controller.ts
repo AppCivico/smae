@@ -10,7 +10,7 @@ import { MetasRiscoService } from 'src/mf/metas/metas-risco.service';
 import { MfService } from '../mf.service';
 
 
-@ApiTags('Monitoramento Fisico - análise qualitativa da meta')
+@ApiTags('Monitoramento Fisico - Risco')
 @Controller('metas')
 export class MetasRiscoController {
     constructor(
