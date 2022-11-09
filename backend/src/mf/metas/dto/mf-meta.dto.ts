@@ -83,6 +83,9 @@ export class IdCodTituloDto {
     titulo: string
 }
 
+// TODO:
+// nao preenchida (vazio)
+// nao enviada (tem valor, mas nao foi pra ainda enviada pra CP)
 export class VariavelQtdeDto {
     aguarda_cp: number
     aguarda_complementacao: number
@@ -176,7 +179,7 @@ export class VariavelConferidaDto {
 
 }
 
-export class AnaliseQualitativaDto {
+export class VariavelAnaliseQualitativaDto {
 
     /**
     * data_valor
@@ -210,12 +213,9 @@ export class AnaliseQualitativaDto {
 
     @IsBoolean()
     enviar_para_cp: boolean
-
-
-
 }
 
-export class FilterAnaliseQualitativaDto {
+export class FilterVariavelAnaliseQualitativaDto {
     /**
     * data_valor
     * @example YYYY-MM-DD
@@ -257,7 +257,7 @@ export class DetailAnaliseQualitativaDto {
     id: number
 }
 
-export class ArquivoAnaliseQualitativaDocumentoDto {
+export class ArquivoVariavelAnaliseQualitativaDocumentoDto {
     arquivo: {
         id: number;
         descricao: string | null;
@@ -272,7 +272,8 @@ export class ArquivoAnaliseQualitativaDocumentoDto {
         nome_exibicao: string
     }
 }
-export class MfListAnaliseQualitativaDto {
+
+export class MfListVariavelAnaliseQualitativaDto {
 
 
     variavel: {
@@ -292,7 +293,7 @@ export class MfListAnaliseQualitativaDto {
         periodicidade: Periodicidade
     }
 
-    arquivos: ArquivoAnaliseQualitativaDocumentoDto[]
+    arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[]
 
     analises: DetailAnaliseQualitativaDto[]
 
@@ -301,7 +302,7 @@ export class MfListAnaliseQualitativaDto {
 
 }
 
-export class AnaliseQualitativaDocumentoDto {
+export class VariavelAnaliseQualitativaDocumentoDto {
 
     /**
     * data_valor
