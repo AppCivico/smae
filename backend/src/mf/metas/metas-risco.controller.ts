@@ -19,7 +19,7 @@ export class MetasRiscoController {
     ) { }
 
     @ApiBearerAuth('access-token')
-    @Get('analise-qualitativa')
+    @Get('risco')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
@@ -43,7 +43,7 @@ export class MetasRiscoController {
     }
 
     @ApiBearerAuth('access-token')
-    @Patch('analise-qualitativa')
+    @Patch('risco')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
