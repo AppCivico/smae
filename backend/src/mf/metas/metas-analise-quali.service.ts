@@ -6,7 +6,6 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from 'src/mf/metas/dto/mf-meta-analise-quali.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
-import { VariavelService } from 'src/variavel/variavel.service';
 
 
 @Injectable()
