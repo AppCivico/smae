@@ -602,6 +602,51 @@ export class PainelService {
         return deleted;
     }
 
+    async secondsDiff(d1: number, d2: number) {
+        let millisecondDiff = d2 - d1;
+        let secDiff = Math.floor( ( d2 - d1) / 1000 );
+        return secDiff;
+    }
+
+    async minutesDiff(d1: number, d2: number) {
+        let seconds = await this.secondsDiff(d1, d2);
+        let minutesDiff = Math.floor( seconds / 60 );
+        return minutesDiff;
+    }
+
+    async hoursDiff(d1: number, d2: number) {
+        let minutes = await this.minutesDiff(d1, d2);
+        let hoursDiff = Math.floor( minutes / 60 );
+        return hoursDiff;
+    }
+
+    async daysDiff(d1: number, d2: number) {
+        let hours = await this.hoursDiff(d1, d2);
+        let daysDiff = Math.floor( hours / 24 );
+        return daysDiff;
+    }
+
+    async weeksDiff(d1: number, d2: number) {
+        let days = await this.daysDiff(d1, d2);
+        let weeksDiff = Math.floor( days/ 7 );
+        return weeksDiff;
+    }
+
+    async yearsDiff(d1: number, d2: number) {
+        let date1 = new Date(d1);
+        let date2 = new Date(d2);
+        let yearsDiff =  date2.getFullYear() - date1.getFullYear();
+        return yearsDiff;
+    }
+
+    async monthsDiff(d1: number, d2: number) {
+        let date1 = new Date(d1);
+        let date2 = new Date(d2);
+        let years = await this.yearsDiff(d1, d2);
+        let months =(years * 12) + (date2.getMonth() - date1.getMonth()) ;
+        return months;
+    }
+
     async getPainelConteudoSerie (painel_conteudo_id: number) {
         let ret = {};
         const config = await this.getPainelConteudoVisualizacao(painel_conteudo_id);
@@ -667,9 +712,7 @@ export class PainelService {
             }
 
             series_template.push({
-                titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}) +
-                  ' - ' +
-                  lte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                 periodo_inicio: gte,
                 periodo_fim: lte,
                 valores_nominais: [0, 0, 0, 0]
@@ -794,9 +837,98 @@ export class PainelService {
                 }
             }
         }
+        else if (config.periodo === Periodo.EntreDatas) {
+            if (!config.periodo_inicio || !config.periodo_fim)
+              throw new Error('Faltando configuração de periodos');
+
+            gte = config.periodo_inicio;
+            lte = config.periodo_fim;
+
+            if (config.periodicidade === Periodicidade.Anual) {
+                const year_diff = await this.yearsDiff(lte.getTime(), gte.getTime());
+
+                if (year_diff > 0) {
+                    for (let i = 0; i < year_diff; i++) {
+                        const periodo_inicio = moment(gte).add(i, 'years').toDate();
+                        const periodo_fim    = moment(periodo_inicio).add(1, 'year').toDate();
+
+                        series_template.push({
+                            titulo: periodo_inicio.toLocaleDateString('pt-br'),
+                            periodo_inicio: periodo_inicio,
+                            periodo_fim: periodo_fim,
+                            valores_nominais: [0, 0, 0, 0]
+                        })
+                    }
+                } else {
+                    series_template.push({
+                        titulo: gte.toLocaleDateString('pt-BR', {year: 'numeric'}),
+                        periodo_inicio: gte,
+                        periodo_fim: lte,
+                        valores_nominais: [0, 0, 0, 0]
+                    })
+                }
+            } else if (
+                config.periodicidade === Periodicidade.Semestral ||
+                config.periodicidade === Periodicidade.Quadrimestral ||
+                config.periodicidade === Periodicidade.Bimestral ||
+                config.periodicidade === Periodicidade.Trimestral ||
+                config.periodicidade === Periodicidade.Mensal) {
+                
+                    let denominator;
+
+                    switch (config.periodicidade) {
+                        case Periodicidade.Semestral:
+                            denominator = 6;
+                            break;
+                        case Periodicidade.Quadrimestral:
+                            denominator = 4
+                            break;
+                        case Periodicidade.Trimestral:
+                            denominator = 3;
+                            break;
+                        case Periodicidade.Bimestral:
+                            denominator = 2;
+                            break;
+                        case Periodicidade.Mensal:
+                            denominator = 1;
+                    }
+
+                    const months_diff = await this.monthsDiff(lte.getTime(), gte.getTime())
+
+                    if (months_diff >= denominator) {
+                        let i = 0;
+                        while (1) {
+                            const periodo_inicio = moment(gte).add(denominator * i, 'months').toDate();
+                            const periodo_fim    = moment(gte).add(denominator * (i + 1), 'months').toDate();
+                            i++;
+
+                            series_template.push({
+                                titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                                periodo_inicio: periodo_inicio,
+                                periodo_fim: periodo_fim,
+                                valores_nominais: [0, 0, 0, 0]
+                            })
+                        }
+                    } else {
+                        series_template.push({
+                            titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                            periodo_inicio: gte,
+                            periodo_fim: lte,
+                            valores_nominais: [0, 0, 0, 0]
+                        })
+                    }
+            }
+        }
         else {
             gte = new Date(0);
             lte = new Date();
+
+            series_template.push({
+                titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                periodo_inicio: gte,
+                periodo_fim: gte,
+                valores_nominais: [0, 0, 0, 0]
+            })
         }
 
         const series = await this.prisma.painelConteudo.findFirstOrThrow({
