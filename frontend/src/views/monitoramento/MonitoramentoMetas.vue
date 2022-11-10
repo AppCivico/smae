@@ -4,11 +4,15 @@
     import { Dashboard} from '@/components';
     import { default as listVars } from '@/components/monitoramento/listVars.vue';
     import { default as countVars } from '@/components/monitoramento/countVars.vue';
-    import { useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
+    import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
+    import { useEditModalStore, useAlertStore, useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
     import { useRoute } from 'vue-router';
     
     const route = useRoute();
     const meta_id = route.params.meta_id;
+
+    const editModalStore = useEditModalStore();
+    const alertStore = useAlertStore();
 
     const authStore = useAuthStore();
     const { permissions } = storeToRefs(authStore);
@@ -34,6 +38,16 @@
         var year = dd.getUTCFullYear();
         return `${month} ${year}`;
     }
+    function checkClose(){
+        alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
+            editModalStore.clear(); 
+            alertStore.clear(); 
+        });
+    }
+    function editPeriodo(parent,var_id,periodo){
+        editModalStore.clear();
+        editModalStore.modal(modalRealizado,{'parent':parent,'var_id':var_id,'periodo':periodo,'checkClose':checkClose});
+    }
 </script>
 <template>
     <Dashboard>
@@ -58,7 +72,7 @@
                             </a>
                         </div>
                     </div>
-                    <listVars :list="MetaVars.meta.variaveis" :indexes="MetaVars.ordem_series"/>
+                    <listVars :parent="MetaVars.meta" :list="MetaVars.meta.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo"/>
                 </div>
                 <template v-if="MetaVars.meta.iniciativas.length">
                     <div class="flex spacebetween center mt4 mb2">
@@ -78,7 +92,7 @@
                                     </a>
                                 </div>
                             </header>
-                            <listVars :list="ini.variaveis" :indexes="MetaVars.ordem_series"/>
+                            <listVars :parent="ini" :list="ini.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo"/>
                         </div>
                         <p class="label mb2" v-if="ini.atividades.length">{{activePdm.rotulo_atividade}}(s) em {{activePdm.rotulo_iniciativa}} {{ini.iniciativa.codigo}} {{ini.iniciativa.titulo}}</p>
                         <template v-for="ati in ini.atividades" :key="ati.atividade.id">
@@ -94,7 +108,7 @@
                                         </a>
                                     </div>
                                 </header>
-                                <listVars :list="ati.variaveis" :indexes="MetaVars.ordem_series"/>
+                                <listVars :parent="ati" :list="ati.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo"/>
                             </div>
                         </template>
                     </template>

@@ -78,6 +78,10 @@
 	.bgc200{background: @c200;}
 	.bgc300{background: @c300;}
 
+	.bgs1{background: fade(@azul, 10%) !important;}
+	.bgs2{background: fade(@laranja, 10%) !important;}
+	.bgs3{background: fade(@verde, 10%) !important;}
+
 /* Margins */
 	.p05{padding: .5rem !important;}
 	.p1{padding: 1rem !important;}
@@ -528,8 +532,14 @@
 
 		}
 
-		th{.t12; .uc; .tc300; .w700; text-align: left; padding: .75em 1em; overflow: hidden; text-overflow: ellipsis;}
-		td{padding: .75em 1em; overflow: hidden; text-overflow: ellipsis;}
+		th{
+			.t12; .uc; .tc300; .w700; text-align: left; padding: .75em 1em; text-overflow: ellipsis;
+			&:not(:last-child){overflow: hidden;}
+		}
+		td{
+			padding: .75em 1em; text-overflow: ellipsis;
+			&:not(:last-child){overflow: hidden;}
+		}
 		a:hover{color: @amarelo;}
 		&.center{vertical-align: middle;}
 		.tablemain{
@@ -553,10 +563,7 @@
 	.tagcount{
 		display: inline-block; .br(4px); .t14; .w700; padding: .5em; margin-right: .5em; margin-bottom: .5em; 
 		background: @c100;
-		&.s1{background: fade(@azul, 10%);}
-		&.s2{background: fade(@laranja, 10%);}
-		&.s3{background: fade(@verde, 10%);}
-	}
+ 	}
 	.tipinfo{
 		display: inline-block; vertical-align: middle; color: #3A3A47;
 		position: relative;

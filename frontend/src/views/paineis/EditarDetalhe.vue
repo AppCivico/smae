@@ -98,7 +98,7 @@
 		<hr class="mb1 mt1">
     	<label class="block t14 w700 mb1"><input type="checkbox" class="inputcheckbox" v-model="selIndicador"><span>Exibir indicador da meta</span></label>
 		<template v-for="x in metaConteudo.detalhes.filter(y=>y.tipo=='Variavel')" :key="x.id">
-			<div class="mb1 ml1">
+			<div class="mb1 ml1" v-if="x.variavel">
 				<label class="t14 w700"><input type="checkbox" class="inputcheckbox" v-model="selDetalhes[x.id]" :value="true"><span>Variável - {{x.variavel.codigo?x.variavel.codigo+' - ':''}}{{x.variavel.titulo}}</span></label>
 			</div>
 		</template>
