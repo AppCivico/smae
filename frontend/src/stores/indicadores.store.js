@@ -49,12 +49,21 @@ export const useIndicadoresStore = defineStore({
                 this.Indicadores = { error };
             }
         },
-        async getById(m,parent_field,id) {
+        async getById(id) {
             try {
                 this.singleIndicadores = { loading: true };
-                await this.getAll(m,parent_field);
-                this.singleIndicadores = this.Indicadores.length? this.Indicadores.find((u)=>u.id == id):{};
-                if(!this.singleIndicadores) throw 'Indicadores não encontrada';
+                
+                let r = await requestS.get(`${baseUrl}/indicador?id=${id}`);    
+                if(r.linhas.length){
+                    let x = r.linhas[0];
+                    x.inicio_medicao = this.dateToField(x.inicio_medicao);
+                    x.fim_medicao = this.dateToField(x.fim_medicao);
+                    x.agregador_id = x.agregador?x.agregador.id:null;
+
+                    this.singleIndicadores = x;
+                }else{
+                    throw 'Indicador não encontrado';
+                }
             } catch (error) {
                 this.singleIndicadores = { error };
             }

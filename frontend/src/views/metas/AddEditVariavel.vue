@@ -37,11 +37,11 @@ const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
 if(indicador_id&&(!singleIndicadores?.id || singleIndicadores.id!=indicador_id)){
     if(atividade_id){
-        IndicadoresStore.getById(atividade_id,'atividade_id',indicador_id);
+        IndicadoresStore.getById(indicador_id);
     }else if(iniciativa_id){
-        IndicadoresStore.getById(iniciativa_id,'iniciativa_id',indicador_id);
+        IndicadoresStore.getById(indicador_id);
     }else{
-        IndicadoresStore.getById(meta_id,'meta_id',indicador_id);
+        IndicadoresStore.getById(indicador_id);
     }
 }
 
