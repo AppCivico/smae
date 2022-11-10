@@ -83,20 +83,16 @@ export class IdCodTituloDto {
     titulo: string
 }
 
-// TODO:
-// nao preenchida (vazio)
-// nao enviada (tem valor, mas nao foi pra ainda enviada pra CP)
+
 export class VariavelQtdeDto {
     aguarda_cp: number
     aguarda_complementacao: number
     nao_preenchidas: number
+    nao_enviadas: number
 }
 
 
 export type Status = keyof VariavelQtdeDto
-
-export const ZeroStatuses: Record<Status, number> = { aguarda_complementacao: 0, aguarda_cp: 0, nao_preenchidas: 0 };
-
 
 export class VariavelComSeries {
     variavel: IdCodTituloDto
@@ -106,9 +102,12 @@ export class VariavelComSeries {
 export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) { }
 
 export class MfSeriesAgrupadas {
+    eh_corrente: boolean
     pode_editar: boolean
     aguarda_cp?: boolean
     aguarda_complementacao?: boolean
+    nao_preenchida?: boolean
+    nao_enviada?: boolean
 
     /**
      * Data completa do mês de referencia do ciclo
