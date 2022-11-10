@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
 
@@ -827,6 +827,56 @@ export class MetasService {
     }
 
 
+    async addVariavelPedidoComplementacao(dto: VariavelComplementacaoDto, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
+        const dateYMD = Date2YMD.toString(dto.data_valor);
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
+
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
+        if (config.perfil == 'ponto_focal') {
+            throw new HttpException('Você não pode pedir por complementação', 400);
+        }
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            await prismaTxn.pedidoComplementacao.create({
+                data: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    pedido: dto.pedido,
+                    ultima_revisao: true,
+                    criado_por: user.id,
+                    criado_em: now,
+                    atendido: false,
+                }
+            });
+
+
+            await prismaTxn.statusVariavelCicloFisico.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                },
+                data: {
+                    aguarda_cp: false,
+                    aguarda_complementacao: true
+                }
+            });
+
+            await prismaTxn.statusMetaCicloFisico.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    meta_id: meta_id,
+                },
+                data: {
+                    status_valido: false
+                }
+            });
+
+        });
+
+    }
+
+
     async addMetaVariavelAnaliseQualitativa(dto: VariavelAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
@@ -948,6 +998,20 @@ export class MetasService {
             });
 
             if (dto.enviar_para_cp) {
+                await prismaTxn.pedidoComplementacao.updateMany({
+                    where: {
+                        ciclo_fisico_id: dadosCiclo.id,
+                        variavel_id: dto.variavel_id,
+                        ultima_revisao: true,
+                        atendido: false,
+                    },
+                    data: {
+                        atendido_em: now,
+                        atendido: true,
+                        atendido_por: user.id,
+                    }
+                });
+
                 await prismaTxn.statusVariavelCicloFisico.deleteMany({
                     where: {
                         variavel_id: dto.variavel_id,
@@ -1103,7 +1167,32 @@ export class MetasService {
         });
 
 
+        const pedido = await this.prisma.pedidoComplementacao.findFirst({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                ultima_revisao: true,
+            },
+            select: {
+                ultima_revisao: true,
+                pedido: true,
+                atendido: true,
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true }
+                },
+                id: true
+            }
+        });
+
         return {
+            ultimoPedidoComplementacao: pedido ? {
+                pedido: pedido.pedido || '',
+                criado_em: pedido.criado_em,
+                id: pedido.id,
+                criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
+                atendido: pedido.atendido,
+            } : null,
             arquivos: arquivosResult.map((r) => {
                 return {
                     id: r.id,
@@ -1121,7 +1210,6 @@ export class MetasService {
                     enviado_para_cp: r.enviado_para_cp,
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-
                 }
             }),
             ordem_series: ordem_series,
