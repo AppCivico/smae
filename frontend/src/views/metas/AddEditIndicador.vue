@@ -79,7 +79,7 @@ if (indicador_id) {
     title = 'Editar Indicador';
     
     Promise.all([
-        IndicadoresStore.getById(parentVar,parentField,indicador_id),
+        IndicadoresStore.getById(indicador_id),
         VariaveisStore.getAll(indicador_id)
     ]).then(()=>{
         if(singleIndicadores.value.formula){

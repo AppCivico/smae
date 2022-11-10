@@ -15,8 +15,8 @@ export const useAlertStore = defineStore({
         confirm(message, url) {
             this.alert = { message, url: url, type: 'confirm' };
         },
-        confirmAction(message, callback, label) {
-            this.alert = { message, callback: callback, type: 'confirmAction', label: label??'OK' };
+        confirmAction(message, callback, label, fallback) {
+            this.alert = { message, callback: callback, type: 'confirmAction', label: label??'OK', fallback: fallback??false };
         },
         clear() {
             this.alert = null;

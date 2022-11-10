@@ -7,11 +7,15 @@ const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
 const { editModal } = storeToRefs(editModalStore);
 async function checkClose() {
-    alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-        router.go(-1);
-        editModalStore.clear(); 
-        alertStore.clear(); 
-    });
+    if(editModal.value.props?.checkClose){
+        editModal.value.props.checkClose();
+    }else{
+        alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
+            router.go(-1);
+            editModalStore.clear(); 
+            alertStore.clear(); 
+        });
+    }
 }
 </script>
 
