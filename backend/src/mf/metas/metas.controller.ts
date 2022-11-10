@@ -3,10 +3,10 @@ import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, Api
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, FilterMfMetaDto as ParamsMfMetaDto, ListMfMetasAgrupadasDto, ListMfMetasDto, MfListAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelConferidaDto } from './dto/mf-meta.dto';
+import { FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelConferidaDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -41,60 +41,6 @@ export class MetasController {
         };
     }
 
-    @ApiBearerAuth('access-token')
-    @Get('por-fase')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    @ApiExtraModels(ListMfMetasAgrupadasDto, RequestInfoDto)
-    @ApiOkResponse({
-        schema: { allOf: refs(ListMfMetasAgrupadasDto, RequestInfoDto) },
-    })
-    async metasPorFase(
-        @Query() params: ParamsMfMetaDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListMfMetasAgrupadasDto & RequestInfoDto> {
-        const start = Date.now();
-        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
-        const config = await this.mfService.pessoaAcessoPdm(user);
-        const ids: number[] = [
-            ...(params.via_cronograma ? config.metas_cronograma : []),
-            ...(params.via_variaveis ? config.metas_variaveis : []),
-        ];
-
-        return {
-            'linhas': await this.metasService.metasPorFase({
-                ids: ids,
-            }),
-            agrupador: 'Fase',
-            requestInfo: { queryTook: Date.now() - start },
-            ciclo_ativo: cicloFisicoAtivo,
-            perfil: config.perfil
-        };
-    }
-
-    @ApiBearerAuth('access-token')
-    @Get('por-status')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    @ApiExtraModels(ListMfMetasAgrupadasDto, RequestInfoDto)
-    @ApiOkResponse({
-        schema: { allOf: refs(ListMfMetasAgrupadasDto, RequestInfoDto) },
-    })
-    async metasPorStatus(
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListMfMetasAgrupadasDto & RequestInfoDto> {
-        const start = Date.now();
-        const config = await this.mfService.pessoaAcessoPdm(user);
-        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
-
-        return {
-            'linhas': await this.metasService.metasPorStatus({
-                ids: config.metas_variaveis,
-            }, cicloFisicoAtivo.id),
-            agrupador: 'Status',
-            requestInfo: { queryTook: Date.now() - start },
-            ciclo_ativo: cicloFisicoAtivo,
-            perfil: config.perfil
-        };
-    }
 
     @ApiBearerAuth('access-token')
     @Get(':id/variaveis')
@@ -136,7 +82,7 @@ export class MetasController {
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
     async AddMetaVariavelAnaliseQualitativa(
-        @Body() dto: AnaliseQualitativaDto,
+        @Body() dto: VariavelAnaliseQualitativaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
@@ -160,12 +106,12 @@ export class MetasController {
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
-        schema: { allOf: refs(MfListAnaliseQualitativaDto, RequestInfoDto) },
+        schema: { allOf: refs(MfListVariavelAnaliseQualitativaDto, RequestInfoDto) },
     })
     async GetMetaVariavelAnaliseQualitativa(
-        @Query() dto: FilterAnaliseQualitativaDto,
+        @Query() dto: FilterVariavelAnaliseQualitativaDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<MfListAnaliseQualitativaDto & RequestInfoDto> {
+    ): Promise<MfListVariavelAnaliseQualitativaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
@@ -187,7 +133,7 @@ export class MetasController {
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
     async AddMetaVariavelAnaliseQualitativaDocumento(
-        @Body() dto: AnaliseQualitativaDocumentoDto,
+        @Body() dto: VariavelAnaliseQualitativaDocumentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
@@ -207,7 +153,6 @@ export class MetasController {
     @ApiBearerAuth('access-token')
     @Delete('variaveis/analise-qualitativa/documento/:id')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async DeleteMetaVariavelAnaliseQualitativaDocumento(
