@@ -7,13 +7,15 @@ export const useCiclosStore = defineStore({
     state: () => ({
         MetasCiclos: {},
         SingleMeta: {},
-        MetaVars: {}
+        MetaVars: {},
+        SingleAnalise: {}
     }),
     actions: {
         clear (){
             this.MetasCiclos = {};
             this.SingleMeta = {};
             this.MetaVars = {};
+            this.SingleAnalise = {};
         },
         async getMetas() {
             this.MetasCiclos = { loading: true };
@@ -45,6 +47,18 @@ export const useCiclosStore = defineStore({
                 this.MetaVars = { error };
             }
         },
-        
+        async getAnalise(id,periodo){
+            this.SingleAnalise = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa?data_valor=${periodo}&variavel_id=${id}&apenas_ultima_revisao=true`);
+                this.SingleAnalise = r;
+            } catch (error) {
+                this.SingleAnalise = { error };
+            }
+        },
+        async updateAnalise(params) {
+            if(await requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, params)) return true;
+            return false;
+        },
     },
 });
