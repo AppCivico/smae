@@ -15,9 +15,8 @@ type StatusTracking = {
     algumaAguardaCp: boolean,
     algumaAguardaComplementacao: boolean
     algumaNaoInformada: boolean
+    algumaNaoEnviada: boolean
     algumaNaoConferida: boolean
-    // nao preenchida (vazio)
-    // nao enviada (tem valor, mas nao foi pra ainda enviada pra CP)
 }
 
 type VariavelDetalhe = {
@@ -143,6 +142,7 @@ export class MetasService {
         let aguarda_complementacao = 0;
         let aguarda_cp = 0;
         let nao_preenchidas = 0;
+        let nao_enviadas = 0;
 
         for (const varId of Object.keys(map)) {
             const variavel = map[+varId];
@@ -153,8 +153,10 @@ export class MetasService {
                         aguarda_cp++;
                     } else if (variavelPeriodo.aguarda_complementacao) {
                         aguarda_complementacao++;
-                    } else if (variavelPeriodo.periodo === Date2YMD.toString(cicloFisicoAtivo.data_ciclo)) { // apenas das variaveis do ciclo
+                    } else if (variavelPeriodo.eh_corrente && variavelPeriodo.nao_preenchida) {
                         nao_preenchidas++;
+                    } else if (variavelPeriodo.eh_corrente && variavelPeriodo.nao_enviada) {
+                        nao_enviadas++;
                     }
                 }
 
@@ -170,6 +172,7 @@ export class MetasService {
                 aguarda_complementacao,
                 aguarda_cp,
                 nao_preenchidas,
+                nao_enviadas,
             },
             variaveis: seriesDaX
         }
@@ -188,7 +191,8 @@ export class MetasService {
             algumaAguardaComplementacao: false,
             algumaAguardaCp: false,
             algumaNaoInformada: false,
-            algumaNaoConferida: false
+            algumaNaoConferida: false,
+            algumaNaoEnviada: false
         };
 
         const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
@@ -350,19 +354,25 @@ export class MetasService {
                 statusTracking.algumaAguardaComplementacao = true;
             } else if (permissoes.ha_valor === false) {
                 statusTracking.algumaNaoInformada = true;
+            } else if (permissoes.ha_valor && !status.aguarda_cp) {
+                statusTracking.algumaNaoEnviada = true;
             } else if (permissoes.todasConferidas == false) {
                 statusTracking.algumaNaoConferida = true;
             }
 
             seriesPorVariavel[variavel.id] = [
                 {
+                    eh_corrente: true,
                     periodo: r.data_corrente,
                     series: corrente,
                     pode_editar: permissoes.pode_editar,
                     aguarda_cp: status && status.aguarda_cp ? true : false,
                     aguarda_complementacao: status && status.aguarda_complementacao ? true : false,
+                    nao_enviada: permissoes.ha_valor && !status.aguarda_cp,
+                    nao_preenchida: !permissoes.ha_valor
                 },
                 {
+                    eh_corrente: false,
                     periodo: r.data_anterior,
                     series: anterior,
                     pode_editar: config.perfil !== 'ponto_focal'
