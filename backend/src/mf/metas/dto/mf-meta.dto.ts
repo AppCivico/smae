@@ -158,6 +158,31 @@ export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
 };
 
 
+
+export class VariavelComplementacaoDto {
+
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    variavel_id: number
+
+    @IsString()
+    pedido: string
+
+}
+
 export class VariavelConferidaDto {
 
     /**
@@ -273,8 +298,18 @@ export class ArquivoVariavelAnaliseQualitativaDocumentoDto {
     }
 }
 
-export class MfListVariavelAnaliseQualitativaDto {
+export class DetailPedidoComplementacaoDto {
+    pedido: string
+    criado_em: Date
+    criador: {
+        nome_exibicao: string
+    }
+    atendido: boolean
+    id: number
+}
 
+
+export class MfListVariavelAnaliseQualitativaDto {
 
     variavel: {
         id: number
@@ -295,6 +330,7 @@ export class MfListVariavelAnaliseQualitativaDto {
 
     arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[]
 
+    ultimoPedidoComplementacao: DetailPedidoComplementacaoDto | null
     analises: DetailAnaliseQualitativaDto[]
 
     ordem_series: Serie[]
