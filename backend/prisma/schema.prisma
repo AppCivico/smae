@@ -1491,8 +1491,7 @@ model MetaCicloFisicoFechamento {
     ciclo_fisico_id Int
 
     referencia_data  DateTime @db.Date
-    detalhamento     String?
-    ponto_de_atencao String?
+    comentario     String?
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
