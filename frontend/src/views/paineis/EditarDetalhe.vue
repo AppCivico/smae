@@ -109,10 +109,10 @@
 		<template v-for="x in metaConteudo.detalhes.filter(y=>y.tipo=='Iniciativa')" :key="x.id">
 			<div class="accordeon metasselect">
 			    <div class="flex mb1" @click="openParent">
-			    	<span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span><span class="t0 mr1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></span><h4 class="t1 mb0">{{activePdm.rotulo_iniciativa}} - {{x.iniciativa.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa.titulo}}</h4>
+			    	<span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span><span class="t0 mr1"><svg width="20" height="20"><use xlink:href="#i_valores"></use></svg></span><h4 class="t1 mb0">{{activePdm.rotulo_iniciativa}} - {{x.iniciativa?.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa?.titulo}}</h4>
 			    </div>
 			    <div class="content">
-			    	<label class="block mb1 t14 w700"><input type="checkbox" class="inputcheckbox" v-model="selDetalhes[x.id]" :value="true"><span>Indicador da {{activePdm.rotulo_iniciativa}} - {{x.iniciativa.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa.titulo}}</span></label>
+			    	<label class="block mb1 t14 w700"><input type="checkbox" class="inputcheckbox" v-model="selDetalhes[x.id]" :value="true"><span>Indicador da {{activePdm.rotulo_iniciativa}} - {{x.iniciativa?.codigo?x.iniciativa.codigo+' - ':''}}{{x.iniciativa?.titulo}}</span></label>
 
 			    	<template v-for="xx in x.filhos.filter(y=>y.tipo=='Variavel')" :key="xx.id">
 			    		<div v-if="xx.tipo=='Variavel'" class="mb1 ml1">
