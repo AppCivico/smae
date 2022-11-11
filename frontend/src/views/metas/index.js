@@ -13,5 +13,5 @@ export { default as SingleIniciativa } from './SingleIniciativa.vue';
 export { default as SingleAtividade } from './SingleAtividade.vue';
 export { default as SingleCronograma } from './SingleCronograma.vue';
 export { default as AddEditCronograma } from './AddEditCronograma.vue';
-
+export { default as SinglePainelMeta } from './SinglePainelMeta.vue';
 
