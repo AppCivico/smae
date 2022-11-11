@@ -26,8 +26,9 @@ export class MetaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover')
+    //@Roles('CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover')
     async findAll(@Query() filters: FilterMetaDto): Promise<ListMetaDto> {
+        // TODO filtrar por apenas painels , se a pessoa nao tiver essas permissoes acima
         return { 'linhas': await this.metaService.findAll(filters) };
     }
 

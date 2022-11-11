@@ -153,10 +153,10 @@ const PrivConfig: any = {
         ['CadastroGrupoPaineis.ativar', 'Ativar Painéis'],
     ],
     PDM: [
-        ['PDM.coorderandor_responsavel_cp', 'Coordenador Responsável CP'],
-        ['PDM.admin_cp', 'Administrador CP'],
-        ['PDM.tecnico_cp', 'Técnico CP'],
-        ['PDM.ponto_focal', 'Ponto Focal'],
+        ['PDM.coorderandor_responsavel_cp', '(PDM) Coordenador Responsável CP'],
+        ['PDM.tecnico_cp', '(PDM) Técnico CP'],
+        ['PDM.admin_cp', '(PDM) Administrador CP'],
+        ['PDM.ponto_focal', '(PDM) Ponto Focal'],
     ]
 };
 
@@ -207,28 +207,19 @@ const PerfilAcessoConfig: any = [
     {
         nome: 'Coordenadoria de Planejamento',
         descricao: 'Coordenadoria de Planejamento',
-        privilegios: [
-            'CadastroPessoa.inserir',
-            'CadastroPessoa.inativar',
-            'CadastroPessoa.ativar',
-            'CadastroPessoa.editar',
-        ]
+        privilegios: []
     },
     {
         nome: 'Unidade de Entregas',
         descricao: 'Unidade de Entregas',
-        privilegios: [
-            'CadastroPessoa.inserir',
-            'CadastroPessoa.inativar',
-            'CadastroPessoa.ativar',
-            'CadastroPessoa.editar',
-        ]
+        privilegios: []
     },
     {
         nome: 'Responsável por meta na CP',
         descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
         privilegios: [
             'PDM.coorderandor_responsavel_cp',
+            'PDM.tecnico_cp',
         ]
     },
     {
@@ -240,9 +231,8 @@ const PerfilAcessoConfig: any = [
     },
     {
         nome: 'Técnico CP',
-        descricao: 'Pode visualizar e editar dados nas metas onde é responsável, em todos os ciclos',
+        descricao: 'REMOVER',
         privilegios: [
-            'PDM.tecnico_cp',
         ]
     },
     {
