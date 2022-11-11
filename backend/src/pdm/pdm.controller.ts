@@ -42,7 +42,7 @@ export class PdmController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar')
+    //@Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar')
     async findAll(@Query() filters: FilterPdmDto): Promise<ListPdmDto> {
 
         const linhas = await this.pdmService.findAll(filters);
