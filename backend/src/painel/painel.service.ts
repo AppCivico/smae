@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
-import { SeriesTemplate } from './dto/detalhe-painel.dto';
+import { PainelConteudoSerie, SeriesTemplate } from './dto/detalhe-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
@@ -647,8 +647,8 @@ export class PainelService {
         return months;
     }
 
-    async getPainelConteudoSerie (painel_conteudo_id: number) {
-        let ret = {};
+    async getPainelConteudoSerie (painel_conteudo_id: number): Promise<PainelConteudoSerie> {
+        let ret = <PainelConteudoSerie>{};
         const config = await this.getPainelConteudoVisualizacao(painel_conteudo_id);
 
         const current_year = new Date().getUTCFullYear();
@@ -1137,7 +1137,7 @@ export class PainelService {
 
                                 if (serie_match) {
                                     return serie_match.valor_nominal
-                                } else { return vn }
+                                } else { return "" }
                             })
                         }
                     })
@@ -1176,7 +1176,7 @@ export class PainelService {
     
                                     if (serie_match) {
                                         return serie_match.valor_nominal
-                                    } else { return vn }
+                                    } else { return "" }
                                 })
                             }
                         })
@@ -1219,7 +1219,7 @@ export class PainelService {
             
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
-                                            } else { return vn }
+                                            } else { return "" }
                                         })
                                     }
                                 })
@@ -1259,7 +1259,7 @@ export class PainelService {
             
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
-                                            } else { return vn }
+                                            } else { return "" }
                                         })
                                     }
                                 })
@@ -1301,7 +1301,7 @@ export class PainelService {
                     
                                                     if (serie_match) {
                                                         return serie_match.valor_nominal
-                                                    } else { return vn }
+                                                    } else { return "" }
                                                 })
                                             }
                                         })
@@ -1340,7 +1340,7 @@ export class PainelService {
                 
                                                 if (serie_match) {
                                                     return serie_match.valor_nominal
-                                                } else { return vn }
+                                                } else { return "" }
                                             })
                                         }
                                     })
