@@ -83,20 +83,16 @@ export class IdCodTituloDto {
     titulo: string
 }
 
-// TODO:
-// nao preenchida (vazio)
-// nao enviada (tem valor, mas nao foi pra ainda enviada pra CP)
+
 export class VariavelQtdeDto {
     aguarda_cp: number
     aguarda_complementacao: number
     nao_preenchidas: number
+    nao_enviadas: number
 }
 
 
 export type Status = keyof VariavelQtdeDto
-
-export const ZeroStatuses: Record<Status, number> = { aguarda_complementacao: 0, aguarda_cp: 0, nao_preenchidas: 0 };
-
 
 export class VariavelComSeries {
     variavel: IdCodTituloDto
@@ -106,9 +102,12 @@ export class VariavelComSeries {
 export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) { }
 
 export class MfSeriesAgrupadas {
+    eh_corrente: boolean
     pode_editar: boolean
     aguarda_cp?: boolean
     aguarda_complementacao?: boolean
+    nao_preenchida?: boolean
+    nao_enviada?: boolean
 
     /**
      * Data completa do mês de referencia do ciclo
@@ -157,6 +156,31 @@ export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
     'valor_realizado_acumulado': 'RealizadoAcumulado',
 };
 
+
+
+export class VariavelComplementacaoDto {
+
+    /**
+    * data_valor
+    * @example YYYY-MM-DD
+    */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date
+
+
+    /**
+    * variavel_id
+    * @example "1"
+    */
+    @IsNumber()
+    variavel_id: number
+
+    @IsString()
+    pedido: string
+
+}
 
 export class VariavelConferidaDto {
 
@@ -211,8 +235,19 @@ export class VariavelAnaliseQualitativaDto {
     @IsString()
     analise_qualitativa: string
 
+    @IsOptional()
     @IsBoolean()
-    enviar_para_cp: boolean
+    enviar_para_cp?: boolean
+
+    /**
+     * válido apenas para CP e técnico CP simular o comportamento do envio como se fosse um ponto_focal
+     * ou seja, os dados não serão conferidos automaticamente
+     **/
+    @IsOptional()
+    @IsBoolean()
+    simular_ponto_focal: boolean
+
+
 }
 
 export class FilterVariavelAnaliseQualitativaDto {
@@ -273,8 +308,18 @@ export class ArquivoVariavelAnaliseQualitativaDocumentoDto {
     }
 }
 
-export class MfListVariavelAnaliseQualitativaDto {
+export class DetailPedidoComplementacaoDto {
+    pedido: string
+    criado_em: Date
+    criador: {
+        nome_exibicao: string
+    }
+    atendido: boolean
+    id: number
+}
 
+
+export class MfListVariavelAnaliseQualitativaDto {
 
     variavel: {
         id: number
@@ -295,6 +340,7 @@ export class MfListVariavelAnaliseQualitativaDto {
 
     arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[]
 
+    ultimoPedidoComplementacao: DetailPedidoComplementacaoDto | null
     analises: DetailAnaliseQualitativaDto[]
 
     ordem_series: Serie[]

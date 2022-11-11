@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelConferidaDto } from './dto/mf-meta.dto';
+import { FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelConferidaDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -104,7 +104,7 @@ export class MetasController {
     @ApiBearerAuth('access-token')
     @Get('variaveis/analise-qualitativa')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiExtraModels(MfListVariavelAnaliseQualitativaDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(MfListVariavelAnaliseQualitativaDto, RequestInfoDto) },
     })
@@ -182,6 +182,28 @@ export class MetasController {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         await this.metasService.addVariavelConferida(
+            dto,
+            config,
+            user
+        );
+
+        return '';
+    }
+
+
+
+    @ApiBearerAuth('access-token')
+    @Patch('variaveis/complemento')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async AddVariavelPedidoComplementacao(
+        @Body() dto: VariavelComplementacaoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        await this.metasService.addVariavelPedidoComplementacao(
             dto,
             config,
             user

@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
 
@@ -15,9 +15,8 @@ type StatusTracking = {
     algumaAguardaCp: boolean,
     algumaAguardaComplementacao: boolean
     algumaNaoInformada: boolean
+    algumaNaoEnviada: boolean
     algumaNaoConferida: boolean
-    // nao preenchida (vazio)
-    // nao enviada (tem valor, mas nao foi pra ainda enviada pra CP)
 }
 
 type VariavelDetalhe = {
@@ -143,6 +142,7 @@ export class MetasService {
         let aguarda_complementacao = 0;
         let aguarda_cp = 0;
         let nao_preenchidas = 0;
+        let nao_enviadas = 0;
 
         for (const varId of Object.keys(map)) {
             const variavel = map[+varId];
@@ -153,8 +153,10 @@ export class MetasService {
                         aguarda_cp++;
                     } else if (variavelPeriodo.aguarda_complementacao) {
                         aguarda_complementacao++;
-                    } else if (variavelPeriodo.periodo === Date2YMD.toString(cicloFisicoAtivo.data_ciclo)) { // apenas das variaveis do ciclo
+                    } else if (variavelPeriodo.eh_corrente && variavelPeriodo.nao_preenchida) {
                         nao_preenchidas++;
+                    } else if (variavelPeriodo.eh_corrente && variavelPeriodo.nao_enviada) {
+                        nao_enviadas++;
                     }
                 }
 
@@ -170,6 +172,7 @@ export class MetasService {
                 aguarda_complementacao,
                 aguarda_cp,
                 nao_preenchidas,
+                nao_enviadas,
             },
             variaveis: seriesDaX
         }
@@ -188,7 +191,8 @@ export class MetasService {
             algumaAguardaComplementacao: false,
             algumaAguardaCp: false,
             algumaNaoInformada: false,
-            algumaNaoConferida: false
+            algumaNaoConferida: false,
+            algumaNaoEnviada: false
         };
 
         const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
@@ -344,25 +348,38 @@ export class MetasService {
 
             const permissoes = this.calculaPermissoesSerieCorrente(config, status, porVariavelIdDataSerie, variavel.id, r.data_corrente);
 
+            const aguarda_complementacao = status && status.aguarda_complementacao;
+            // se ja conferiu (mesmo que um valor em branco) então ta pronta
+            const nao_preenchida = (status && status.conferida === true) ? false : permissoes.ha_valor === false;
+            // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
+            const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true)
+                ? false : permissoes.ha_valor;
+
             if (status && status.aguarda_cp) {
                 statusTracking.algumaAguardaCp = true;
-            } else if (status && status.aguarda_complementacao) {
+            } else if (aguarda_complementacao) {
                 statusTracking.algumaAguardaComplementacao = true;
-            } else if (permissoes.ha_valor === false) {
+            } else if (nao_preenchida) {
                 statusTracking.algumaNaoInformada = true;
+            } else if (nao_enviada) {
+                statusTracking.algumaNaoEnviada = true;
             } else if (permissoes.todasConferidas == false) {
                 statusTracking.algumaNaoConferida = true;
             }
 
             seriesPorVariavel[variavel.id] = [
                 {
+                    eh_corrente: true,
                     periodo: r.data_corrente,
                     series: corrente,
                     pode_editar: permissoes.pode_editar,
                     aguarda_cp: status && status.aguarda_cp ? true : false,
-                    aguarda_complementacao: status && status.aguarda_complementacao ? true : false,
+                    aguarda_complementacao: aguarda_complementacao,
+                    nao_enviada: nao_enviada,
+                    nao_preenchida: nao_preenchida
                 },
                 {
+                    eh_corrente: false,
                     periodo: r.data_anterior,
                     series: anterior,
                     pode_editar: config.perfil !== 'ponto_focal'
@@ -503,7 +520,8 @@ export class MetasService {
             select: {
                 aguarda_complementacao: true,
                 aguarda_cp: true,
-                variavel_id: true
+                variavel_id: true,
+                conferida: true,
             }
         });
     }
@@ -789,7 +807,6 @@ export class MetasService {
                             conferida_em: now,
                             conferida_por: user.id,
                             ciclo_fisico_id: dadosCiclo.id,
-                            // se o ciclo nao ta ativo, entao já ta conferida automaticamente
                             conferida: true
                         }
                     });
@@ -801,14 +818,77 @@ export class MetasService {
                 await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
             }
 
-            await prismaTxn.statusVariavelCicloFisico.updateMany({
-                where: {
+            await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
+            await prismaTxn.statusVariavelCicloFisico.create({
+                data: {
                     ciclo_fisico_id: dadosCiclo.id,
                     variavel_id: dto.variavel_id,
-                    aguarda_cp: true
+                    meta_id: meta_id,
+                    // marcando que foi conferida, mesmo que o valor não exista na serie-variavel
+                    conferida: true,
+                    aguarda_cp: false,
+                }
+            });
+
+            await prismaTxn.statusMetaCicloFisico.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    meta_id: meta_id,
                 },
                 data: {
+                    status_valido: false
+                }
+            });
+
+        });
+
+    }
+
+
+    private async removeStatusVariavel(prismaTxn: Prisma.TransactionClient, dto: VariavelConferidaDto, dadosCiclo: DadosCiclo) {
+        await prismaTxn.statusVariavelCicloFisico.deleteMany({
+            where: {
+                variavel_id: dto.variavel_id,
+                ciclo_fisico_id: dadosCiclo.id,
+            }
+        });
+    }
+
+    async addVariavelPedidoComplementacao(dto: VariavelComplementacaoDto, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
+        const dateYMD = Date2YMD.toString(dto.data_valor);
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
+
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
+        if (config.perfil == 'ponto_focal') {
+            throw new HttpException('Você não pode pedir por complementação', 400);
+        }
+        if (!dadosCiclo.ativo) {
+            throw new HttpException('Não é possível solicitar complementação para ciclos não ativos.', 400);
+        }
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            await prismaTxn.pedidoComplementacao.create({
+                data: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    pedido: dto.pedido,
+                    ultima_revisao: true,
+                    criado_por: user.id,
+                    criado_em: now,
+                    atendido: false,
+                }
+            });
+
+
+            await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
+            await prismaTxn.statusVariavelCicloFisico.create({
+                data: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    meta_id: meta_id,
                     aguarda_cp: false,
+                    aguarda_complementacao: true
                 }
             });
 
@@ -833,16 +913,22 @@ export class MetasService {
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
+        let ehPontoFocal = config.perfil == 'ponto_focal';
 
-        if (config.perfil == 'ponto_focal' && !dadosCiclo.ativo) {
-            throw new HttpException('Você não pode enviar valores fora de um ciclo ainda ativo.', 400);
+        if (ehPontoFocal && !dadosCiclo.ativo) {
+            throw new HttpException('Você não pode enviar valores fora de um ciclo ativo.', 400);
         }
-        if (dto.enviar_para_cp && !dadosCiclo.ativo) {
-            throw new HttpException('Não é possivel enviar para CP fora do ciclo ativo.', 400);
+        // se nao é o ponto_focal, pode simular virar um
+        if (!ehPontoFocal && dto.simular_ponto_focal) {
+            ehPontoFocal = true;
+        }
+
+        if (dto.enviar_para_cp && !ehPontoFocal) {
+            throw new HttpException(`Não é possível enviar para cp, pois o seu perfil é ${config.perfil}, e os valores já entram conferidos.`, 400);
         }
 
         // o trabalho pra montar um SerieJwt não faz sentido
-        // entao vamos operar diretamente na SerieVariavel
+        // então vamos operar diretamente na SerieVariavel
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
             // isolation lock
             await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
@@ -851,7 +937,6 @@ export class MetasService {
             for (const campo of CamposRealizado) {
                 const valor_nominal = dto[campo];
                 if (valor_nominal === undefined) continue;
-
 
                 const existeValor = await this.prisma.serieVariavel.findFirst({
                     where: {
@@ -884,8 +969,7 @@ export class MetasService {
                             atualizado_em: now,
                             atualizado_por: user.id,
                             ciclo_fisico_id: dadosCiclo.id,
-                            // se o ciclo nao ta ativo, entao já ta conferida automaticamente
-                            conferida: dadosCiclo.ativo ? false : true,
+                            conferida: ehPontoFocal ? false : true,
                         }
                     });
                 } else if (existeValor && valor_nominal !== '') {
@@ -906,8 +990,7 @@ export class MetasService {
                                 atualizado_em: now,
                                 atualizado_por: user.id,
                                 ciclo_fisico_id: dadosCiclo.id,
-                                // se o ciclo nao ta ativo, entao já ta conferida automaticamente
-                                conferida: valorModificado ? (dadosCiclo.ativo ? false : true) : undefined,
+                                conferida: valorModificado ? (ehPontoFocal ? false : true) : undefined,
                             }
                         });
                     }
@@ -931,7 +1014,6 @@ export class MetasService {
             });
 
 
-
             const cfq = await prismaTxn.variavelCicloFisicoQualitativo.create({
                 data: {
                     ciclo_fisico_id: dadosCiclo.id,
@@ -942,18 +1024,27 @@ export class MetasService {
                     referencia_data: dto.data_valor,
                     analise_qualitativa: dto.analise_qualitativa,
                     meta_id: meta_id,
-                    enviado_para_cp: dto.enviar_para_cp,
+                    enviado_para_cp: dto.enviar_para_cp === true,
                 },
                 select: { id: true }
             });
 
             if (dto.enviar_para_cp) {
-                await prismaTxn.statusVariavelCicloFisico.deleteMany({
+                await prismaTxn.pedidoComplementacao.updateMany({
                     where: {
-                        variavel_id: dto.variavel_id,
                         ciclo_fisico_id: dadosCiclo.id,
+                        variavel_id: dto.variavel_id,
+                        ultima_revisao: true,
+                        atendido: false,
+                    },
+                    data: {
+                        atendido_em: now,
+                        atendido: true,
+                        atendido_por: user.id,
                     }
                 });
+
+                await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
                 await prismaTxn.statusVariavelCicloFisico.create({
                     data: {
                         variavel_id: dto.variavel_id,
@@ -963,18 +1054,46 @@ export class MetasService {
                     }
                 });
 
-                await prismaTxn.statusMetaCicloFisico.updateMany({
-                    where: {
-                        ciclo_fisico_id: dadosCiclo.id,
-                        meta_id: meta_id
-                    },
-                    data: {
-                        status_valido: false
-                    }
-                });
 
+            } else {
+                if (ehPontoFocal == false) {
+                    // limpa o pedido de complementacao, se existir
+                    await prismaTxn.pedidoComplementacao.updateMany({
+                        where: {
+                            ciclo_fisico_id: dadosCiclo.id,
+                            variavel_id: dto.variavel_id,
+                            ultima_revisao: true,
+                            atendido: false,
+                        },
+                        data: {
+                            atendido_em: now,
+                            atendido: true,
+                            atendido_por: user.id,
+                        }
+                    });
+
+                    await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
+                    // ja marca como conferida, nao há aguarda CP para os admins
+                    await prismaTxn.statusVariavelCicloFisico.create({
+                        data: {
+                            variavel_id: dto.variavel_id,
+                            ciclo_fisico_id: dadosCiclo.id,
+                            meta_id: meta_id,
+                            conferida: true,
+                        }
+                    });
+                }
             }
 
+            await prismaTxn.statusMetaCicloFisico.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    meta_id: meta_id
+                },
+                data: {
+                    status_valido: false
+                }
+            });
             return cfq.id;
         }, {
             isolationLevel: 'Serializable',
@@ -1103,7 +1222,32 @@ export class MetasService {
         });
 
 
+        const pedido = await this.prisma.pedidoComplementacao.findFirst({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                ultima_revisao: true,
+            },
+            select: {
+                ultima_revisao: true,
+                pedido: true,
+                atendido: true,
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true }
+                },
+                id: true
+            }
+        });
+
         return {
+            ultimoPedidoComplementacao: pedido ? {
+                pedido: pedido.pedido || '',
+                criado_em: pedido.criado_em,
+                id: pedido.id,
+                criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
+                atendido: pedido.atendido,
+            } : null,
             arquivos: arquivosResult.map((r) => {
                 return {
                     id: r.id,
@@ -1121,7 +1265,6 @@ export class MetasService {
                     enviado_para_cp: r.enviado_para_cp,
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-
                 }
             }),
             ordem_series: ordem_series,

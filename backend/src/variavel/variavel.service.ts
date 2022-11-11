@@ -732,11 +732,17 @@ export class VariavelService {
 
                     if ("id" in valor.referencia) {
                         updatePromises.push(prismaTxn.serieVariavel.updateMany({
-                            where: { id: valor.referencia.id },
+                            where: {
+                                id: valor.referencia.id,
+                                valor_nominal: {
+                                    not: valor.valor
+                                },
+                            },
                             data: {
                                 valor_nominal: valor.valor,
                                 atualizado_em: new Date(Date.now()),
                                 atualizado_por: user.id,
+                                conferida: true
                             }
                         }));
                     } else {
@@ -746,7 +752,8 @@ export class VariavelService {
                             valor_nominal: valor.valor,
                             variavel_id: valor.referencia.v,
                             serie: valor.referencia.s,
-                            data_valor: Date2YMD.fromString(valor.referencia.p)
+                            data_valor: Date2YMD.fromString(valor.referencia.p),
+                            conferida: true
                         });
                     }
 
@@ -872,7 +879,7 @@ export class VariavelService {
                 )
             ) as meta_id
         `;
-console.log(result);
+        console.log(result);
 
         if (!result[0].meta_id) throw `getMetaIdDaVariavel: nenhum resultado para variavel ${variavel_id}`
         return result[0].meta_id;

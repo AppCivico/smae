@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateParamsPainelConteudoDto } from 'src/painel/dto/create-painel-conteudo.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from 'src/painel/dto/update-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
-import { DetailPainelVisualizacaoDto, PainelConteudoSerieDto } from './dto/detalhe-painel.dto';
+import { DetailPainelVisualizacaoDto, PainelConteudoSerie, PainelConteudoSerieDto } from './dto/detalhe-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { ListPainelDto } from './dto/list-painel.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
@@ -87,7 +87,7 @@ export class PainelController {
 
     @ApiBearerAuth('access-token')
     @Get(':id/conteudo/:id2/serie')
-    async getPainelConteudoSerie(@Param() params: FindTwoParams) {
+    async getPainelConteudoSerie(@Param() params: FindTwoParams): Promise<PainelConteudoSerie> {
         return await this.painelService.getPainelConteudoSerie(+params.id2);
     }
 

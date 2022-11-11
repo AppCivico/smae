@@ -919,7 +919,7 @@ model SerieVariavel {
     atualizado_por Int?
     atualizador    Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
 
-    conferida     Boolean   @default(false)
+    conferida     Boolean   @default(true)
     conferida_por Int?
     conferida_em  DateTime?
 
@@ -1598,6 +1598,7 @@ model StatusVariavelCicloFisico {
     variavel_id            Int
     aguarda_cp             Boolean @default(false)
     aguarda_complementacao Boolean @default(false)
+    conferida              Boolean @default(false)
 
     ciclo_fisico CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
     meta         Meta        @relation(fields: [meta_id], references: [id])
