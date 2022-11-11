@@ -110,6 +110,7 @@
 		display: flex;
 		&.spacebetween{justify-content: space-between;}
 		&.center{align-items: center;}
+		&.end{align-items: flex-end;}
 		&.column{flex-direction: column;}
 		&.flexwrap{flex-wrap: wrap;}
 		&.g1{gap:1rem;}
@@ -505,6 +506,7 @@
 	}
 	.tablemain{
 		width: 100%;
+		&.fix{table-layout: fixed;}
 		tr,tz{
 			display: table-row; border-bottom: 1px solid @c100;
 			&:nth-of-type(even){

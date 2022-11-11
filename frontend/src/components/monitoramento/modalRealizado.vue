@@ -106,10 +106,6 @@
 		
 		<div class="flex g2">
 		    <div>
-		        <div class="t12 uc w700 tc200">Polaridade</div>
-		        <div class="t13">{{SingleAnalise.variavel.polaridade??'-'}}</div>
-		    </div>
-		    <div>
 		        <div class="t12 uc w700 tc200">Unidade de medida</div>
 		        <div class="t13">{{SingleAnalise.variavel.unidade_medida.sigla}} ({{SingleAnalise.variavel.unidade_medida.descricao}})</div>
 		    </div>
