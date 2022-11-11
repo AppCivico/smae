@@ -235,8 +235,19 @@ export class VariavelAnaliseQualitativaDto {
     @IsString()
     analise_qualitativa: string
 
+    @IsOptional()
     @IsBoolean()
-    enviar_para_cp: boolean
+    enviar_para_cp?: boolean
+
+    /**
+     * válido apenas para CP e técnico CP simular o comportamento do envio como se fosse um ponto_focal
+     * ou seja, os dados não serão conferidos automaticamente
+     **/
+    @IsOptional()
+    @IsBoolean()
+    simular_ponto_focal: boolean
+
+
 }
 
 export class FilterVariavelAnaliseQualitativaDto {
