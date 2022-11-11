@@ -7,13 +7,15 @@ export const usePaineisStore = defineStore({
     state: () => ({
         Paineis: {},
         tempPaineis: {},
-        singlePainel: {}
+        singlePainel: {},
+        SingleSerie: {},
     }),
     actions: {
         clear (){
             this.Paineis = {};
             this.tempPaineis = {};
             this.singlePainel = {};
+            this.SingleSerie = {};
         },
         async getAll() {
             this.Paineis = { loading: true };
@@ -43,6 +45,18 @@ export const usePaineisStore = defineStore({
                 this.singlePainel = { error };
             }
         },
+        async getByMeta(meta_id) {
+            this.tempPaineis = { loading: true };
+            try {
+                if(!this.Paineis.length) await this.getAll();
+                
+                this.tempPaineis = this.Paineis.filter(x=>{
+                    return x.painel_conteudo.find(c=>c.meta_id==meta_id)
+                });
+            } catch (error) {
+                this.tempPaineis = { error };
+            }
+        },
         async insert(params) {
             if(await requestS.post(`${baseUrl}/painel`, params)) return true;
             return false;
@@ -67,7 +81,15 @@ export const usePaineisStore = defineStore({
             if(await requestS.patch(`${baseUrl}/painel/${id}/conteudo/${conteudo_id}/detalhes`, params)) return true;
             return false;
         },
-        
+        async getSerieMeta(id,conteudo_id) {
+            this.SingleSerie = { loading: true };
+            try {
+                let r = await requestS.get(`${baseUrl}/painel/${id}/conteudo/${conteudo_id}/serie`);
+                this.SingleSerie = r;
+            } catch (error) {
+                this.SingleSerie = { error };
+            }
+        },
         async filterPaineis(f){
             this.tempPaineis = { loading: true };
             try {

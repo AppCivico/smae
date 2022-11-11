@@ -16,7 +16,7 @@ import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import { AddEditODS, ListODS } from '@/views/ods';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
-import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao } from '@/views/metas';
+import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao, SinglePainelMeta } from '@/views/metas';
 import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade, SingleAtividade } from '@/views/metas';
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
@@ -138,6 +138,7 @@ export const router = createRouter({
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props:{group:"variaveis",submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props:{group:"valores",submenu:SubmenuMetas} },
                 { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props:{group:"retroativos",submenu:SubmenuMetas} },
+                { path: ':meta_id/painel', component: SinglePainelMeta, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao', component: SingleEvolucao, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id', component: SingleEvolucao, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/evolucao/:indicador_id/variaveis/novo', component: SingleEvolucao, props:{group:"variaveis",submenu:SubmenuMetas} },
