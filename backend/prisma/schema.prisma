@@ -919,7 +919,7 @@ model SerieVariavel {
     atualizado_por Int?
     atualizador    Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
 
-    conferida     Boolean   @default(false)
+    conferida     Boolean   @default(true)
     conferida_por Int?
     conferida_em  DateTime?
 
