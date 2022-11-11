@@ -352,9 +352,9 @@ export class MetasService {
                 statusTracking.algumaAguardaCp = true;
             } else if (status && status.aguarda_complementacao) {
                 statusTracking.algumaAguardaComplementacao = true;
-            } else if (permissoes.ha_valor === false) {
+            } else if (permissoes.ha_valor === false && (!status || status.conferida === false)) {
                 statusTracking.algumaNaoInformada = true;
-            } else if (permissoes.ha_valor && !status.aguarda_cp) {
+            } else if (permissoes.ha_valor && status && !status.aguarda_cp) {
                 statusTracking.algumaNaoEnviada = true;
             } else if (permissoes.todasConferidas == false) {
                 statusTracking.algumaNaoConferida = true;
@@ -368,7 +368,7 @@ export class MetasService {
                     pode_editar: permissoes.pode_editar,
                     aguarda_cp: status && status.aguarda_cp ? true : false,
                     aguarda_complementacao: status && status.aguarda_complementacao ? true : false,
-                    nao_enviada: permissoes.ha_valor && !status.aguarda_cp,
+                    nao_enviada: permissoes.ha_valor && status && !status.aguarda_cp,
                     nao_preenchida: !permissoes.ha_valor
                 },
                 {
@@ -513,7 +513,8 @@ export class MetasService {
             select: {
                 aguarda_complementacao: true,
                 aguarda_cp: true,
-                variavel_id: true
+                variavel_id: true,
+                conferida: true,
             }
         });
     }
@@ -799,7 +800,6 @@ export class MetasService {
                             conferida_em: now,
                             conferida_por: user.id,
                             ciclo_fisico_id: dadosCiclo.id,
-                            // se o ciclo nao ta ativo, entao já ta conferida automaticamente
                             conferida: true
                         }
                     });
@@ -815,9 +815,10 @@ export class MetasService {
                 where: {
                     ciclo_fisico_id: dadosCiclo.id,
                     variavel_id: dto.variavel_id,
-                    aguarda_cp: true
                 },
                 data: {
+                    // marcando que foi conferida, mesmo que o valor não exista na serie-variavel
+                    conferida: true,
                     aguarda_cp: false,
                 }
             });
@@ -845,6 +846,9 @@ export class MetasService {
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode pedir por complementação', 400);
+        }
+        if (!dadosCiclo.ativo) {
+            throw new HttpException('Não é possível solicitar complementação para ciclos não ativos.', 400);
         }
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
@@ -944,8 +948,7 @@ export class MetasService {
                             atualizado_em: now,
                             atualizado_por: user.id,
                             ciclo_fisico_id: dadosCiclo.id,
-                            // se o ciclo nao ta ativo, entao já ta conferida automaticamente
-                            conferida: dadosCiclo.ativo ? false : true,
+                            conferida: config.perfil === 'ponto_focal' ? false : true,
                         }
                     });
                 } else if (existeValor && valor_nominal !== '') {
@@ -966,8 +969,8 @@ export class MetasService {
                                 atualizado_em: now,
                                 atualizado_por: user.id,
                                 ciclo_fisico_id: dadosCiclo.id,
-                                // se o ciclo nao ta ativo, entao já ta conferida automaticamente
-                                conferida: valorModificado ? (dadosCiclo.ativo ? false : true) : undefined,
+
+                                conferida: valorModificado ? (config.perfil === 'ponto_focal' ? false : true) : undefined,
                             }
                         });
                     }
