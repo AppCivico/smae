@@ -139,7 +139,10 @@ export class RetornoMetaVariaveisDto {
         indicador: IdCodTituloDto | null
         iniciativas: IniciativasRetorno[]
         variaveis: VariavelComSeries[]
-        totais: VariavelQtdeDto
+        totais: VariavelQtdeDto,
+        codigo: string
+        titulo: string
+        id: number
     }
 
     /**
