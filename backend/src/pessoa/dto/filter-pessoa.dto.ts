@@ -3,14 +3,14 @@ import { IsBoolean, IsOptional, IsPositive } from "class-validator";
 
 export class FilterPessoaDto {
     /**
-   * Filtrar pessoa com privilegio PDM.coorderandor_responsavel_cp?
-   *  true filtra quem tem a PDM.coorderandor_responsavel_cp; false filtra quem não tem
+   * Filtrar pessoa com privilegio PDM.coordenador_responsavel_cp?
+   *  true filtra quem tem a PDM.coordenador_responsavel_cp; false filtra quem não tem
    * @example "true"
     */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
-    coorderandor_responsavel_cp?: boolean;
+    coordenador_responsavel_cp?: boolean;
 
     /**
    * Filtrar por órgão?

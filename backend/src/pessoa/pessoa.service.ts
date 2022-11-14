@@ -577,8 +577,8 @@ export class PessoaService {
         };
 
         let extraFilter: any = {};
-        if (filters?.coorderandor_responsavel_cp) {
-            this.logger.log('filtrando apenas coorderandor_responsavel_cp');
+        if (filters?.coordenador_responsavel_cp) {
+            this.logger.log('filtrando apenas coordenador_responsavel_cp');
             extraFilter = {
                 PessoaPerfil: {
                     some: {
@@ -586,7 +586,7 @@ export class PessoaService {
                             perfil_privilegio: {
                                 some: {
                                     privilegio: {
-                                        codigo: 'PDM.coorderandor_responsavel_cp'
+                                        codigo: 'PDM.coordenador_responsavel_cp'
                                     }
                                 }
                             }
@@ -594,8 +594,8 @@ export class PessoaService {
                     }
                 },
             }
-        } else if (filters?.coorderandor_responsavel_cp === false) {
-            this.logger.log('filtrando quem não é coorderandor_responsavel_cp');
+        } else if (filters?.coordenador_responsavel_cp === false) {
+            this.logger.log('filtrando quem não é coordenador_responsavel_cp');
             extraFilter = {
                 PessoaPerfil: {
                     none: {
@@ -603,7 +603,7 @@ export class PessoaService {
                             perfil_privilegio: {
                                 some: {
                                     privilegio: {
-                                        codigo: 'PDM.coorderandor_responsavel_cp'
+                                        codigo: 'PDM.coordenador_responsavel_cp'
                                     }
                                 }
                             }
