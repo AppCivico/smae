@@ -696,7 +696,7 @@ model MetaResponsavel {
     orgao     Orgao  @relation(fields: [orgao_id], references: [id])
 
     // TODO: arrumar o nome desta coluna, palavra 'coordenador'.
-    coorderandor_responsavel_cp Boolean
+    coordenador_responsavel_cp Boolean // @map("coorderandor_responsavel_cp")
 
     @@index([pessoa_id])
     @@map("meta_responsavel")
