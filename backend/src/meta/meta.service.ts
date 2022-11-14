@@ -79,7 +79,7 @@ export class MetaService {
                     meta_id: metaId,
                     pessoa_id: participanteId,
                     orgao_id: orgao.orgao_id,
-                    coorderandor_responsavel_cp: false,
+                    coordenador_responsavel_cp: false,
                 });
             }
         }
@@ -100,7 +100,7 @@ export class MetaService {
                     meta_id: metaId,
                     pessoa_id: CoordenadoriaParticipanteId,
                     orgao_id: orgaoId,
-                    coorderandor_responsavel_cp: true,
+                    coordenador_responsavel_cp: true,
                 });
 
             }
@@ -168,7 +168,7 @@ export class MetaService {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
                         pessoa: { select: { id: true, nome_exibicao: true } },
-                        coorderandor_responsavel_cp: true,
+                        coordenador_responsavel_cp: true,
                     }
                 },
                 meta_tag: {
@@ -198,7 +198,7 @@ export class MetaService {
             }
 
             for (const responsavel of dbMeta.meta_responsavel) {
-                if (responsavel.coorderandor_responsavel_cp) {
+                if (responsavel.coordenador_responsavel_cp) {
                     coordenadores_cp.push({
                         id: responsavel.pessoa.id,
                         nome_exibicao: responsavel.pessoa.nome_exibicao,
