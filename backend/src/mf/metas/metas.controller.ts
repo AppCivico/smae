@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelConferidaDto } from './dto/mf-meta.dto';
+import { CicloFaseDto, FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelConferidaDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -206,6 +206,32 @@ export class MetasController {
         await this.metasService.addVariavelPedidoComplementacao(
             dto,
             config,
+            user
+        );
+
+        return '';
+    }
+
+
+    @ApiBearerAuth('access-token')
+    @Patch(':id/fase')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async MudarMetaCicloFase(
+        @Param() params: FindOneParams,
+        @Body() dto: CicloFaseDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+
+        await this.metasService.mudarMetaCicloFase(
+            params.id,
+            dto,
+            config,
+            cicloFisicoAtivo,
             user
         );
 
