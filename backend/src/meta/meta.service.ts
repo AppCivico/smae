@@ -27,10 +27,11 @@ export class MetaService {
             let tags = createMetaDto.tags!;
             delete createMetaDto.tags;
 
+            const now = new Date(Date.now());
             const meta = await prisma.meta.create({
                 data: {
                     criado_por: user.id,
-                    criado_em: new Date(Date.now()),
+                    criado_em: now,
                     status: '',
                     ativo: true,
                     ...createMetaDto,
@@ -48,6 +49,16 @@ export class MetaService {
 
             await prisma.metaTag.createMany({
                 data: await this.buildTags(meta.id, tags)
+            });
+
+            // reagenda o PDM para recalcular as fases
+            await this.prisma.cicloFisico.updateMany({
+                where: {
+                    ativo: true
+                },
+                data: {
+                    acordar_ciclo_em: now
+                },
             });
 
             return meta;

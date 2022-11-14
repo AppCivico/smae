@@ -395,6 +395,18 @@ export class PdmService {
 
             this.logger.log(`chamando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
             await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
+        } else {
+
+            this.logger.log(`Recalculando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
+            await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
+
+            await this.prisma.cicloFisico.update({
+                where: { id: cf.id },
+                data: {
+                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1)),
+                    acordar_ciclo_executou_em: new Date(Date.now()),
+                },
+            });
         }
     }
 
