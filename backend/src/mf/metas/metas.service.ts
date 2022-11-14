@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
+import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -205,19 +205,25 @@ export class MetasService {
 
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
 
-        const [indicador, calcSerieVariaveis] = await Promise.all([
-            this.prisma.indicador.findFirst({
-                where: {
-                    meta_id: meta_id,
-                    removido_em: null
-                },
-                select: {
-                    titulo: true, id: true, codigo: true
+        const indicadorMeta = await this.prisma.indicador.findFirst({
+            where: {
+                meta_id: meta_id,
+                removido_em: null
+            },
+            select: {
+                titulo: true, id: true, codigo: true,
+                meta: {
+                    select: {
+                        ciclo_fase: {
+                            select: { ciclo_fase: true }
+                        }
+                    }
                 }
-            }),
-            this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, user, totalStatusTracking),
-        ]);
+            }
+        });
+        const metaEstaFaseColeta = indicadorMeta?.meta?.ciclo_fase?.ciclo_fase === 'Coleta';
 
+        const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, user, totalStatusTracking, metaEstaFaseColeta);
 
         // provavelmente isso ta muito errado...
         const status = totalStatusTracking.algumaAguardaComplementacao ? 'Aguardando complementação' :
@@ -249,7 +255,7 @@ export class MetasService {
             perfil: config.perfil,
             ordem_series: calcSerieVariaveis.ordem_series,
             meta: {
-                indicador: indicador,
+                indicador: indicadorMeta,
                 iniciativas: [],
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'meta_id', meta_id, cicloFisicoAtivo),
             },
@@ -290,7 +296,8 @@ export class MetasService {
         config: PessoaAcessoPdm,
         ciclo: CicloAtivoDto,
         user: PessoaFromJwt,
-        statusTracking: StatusTracking): Promise<{
+        statusTracking: StatusTracking,
+        metaEstaFaseColeta: boolean): Promise<{
             ordem_series: Serie[],
             seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>
         }> {
@@ -346,7 +353,7 @@ export class MetasService {
                 this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, serie);
             }
 
-            const permissoes = this.calculaPermissoesSerieCorrente(config, status, porVariavelIdDataSerie, variavel.id, r.data_corrente);
+            const permissoes = this.calculaPermissoesSerieCorrente(config, status, porVariavelIdDataSerie, variavel.id, r.data_corrente, metaEstaFaseColeta);
 
             const aguarda_complementacao = status ? status && status.aguarda_complementacao : false;
             // se ja conferiu (mesmo que um valor em branco) então ta pronta
@@ -398,6 +405,7 @@ export class MetasService {
         porVariavelIdDataSerie: any,
         idVariavel: number,
         dataReferencia: DateYMD,
+        metaEstaFaseColeta: boolean
     ) {
         // verifica apenas se existe valor
         const existeSerieValorRealizado = porVariavelIdDataSerie[idVariavel]
@@ -411,7 +419,7 @@ export class MetasService {
         // se ta aguardando_cp, tbm já foi enviado
         // se tem valor, então suponhamos que não foi enviada ainda mas já foi preenchida
         const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true)
-        ? false : existeSerieValorRealizado;
+            ? false : existeSerieValorRealizado;
 
         let todasConferidas = true;
         let existeValorRealizado = false;
@@ -437,7 +445,11 @@ export class MetasService {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
                 nao_enviada: nao_enviada,
-                pode_editar: !status || (status.aguarda_complementacao || (!status.aguarda_cp && !existeSerieValorRealizado))
+                pode_editar: status ?
+                    (status.aguarda_complementacao ? true :
+                        status.aguarda_cp || status.conferida ? false : metaEstaFaseColeta
+                    )
+                    : metaEstaFaseColeta
             }
         } else {
             return {
@@ -626,6 +638,7 @@ export class MetasService {
                 }
             }
         });
+
         for (const r of variaveis_da_meta) {
             map[r.id] = r;
         }
@@ -659,7 +672,7 @@ export class MetasService {
                     select: {
                         indicador: {
                             select: {
-                                iniciativa_id: true
+                                iniciativa_id: true,
                             }
                         }
                     }
