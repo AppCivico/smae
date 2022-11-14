@@ -278,7 +278,7 @@ export class PdmService {
         });
     }
 
-    //@Cron('0 * * * * *')
+    @Cron('0 * * * * *')
     async handleCron() {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
@@ -393,8 +393,9 @@ export class PdmService {
                 },
             });
 
+            this.logger.log(`chamando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
+            await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
         }
-
     }
 
 
