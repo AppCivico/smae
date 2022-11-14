@@ -153,7 +153,7 @@ const PrivConfig: any = {
         ['CadastroGrupoPaineis.ativar', 'Ativar Painéis'],
     ],
     PDM: [
-        ['PDM.coorderandor_responsavel_cp', '(PDM) Coordenador Responsável CP'],
+        ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
         ['PDM.tecnico_cp', '(PDM) Técnico CP'],
         ['PDM.admin_cp', '(PDM) Administrador CP'],
         ['PDM.ponto_focal', '(PDM) Ponto Focal'],
@@ -218,7 +218,7 @@ const PerfilAcessoConfig: any = [
         nome: 'Responsável por meta na CP',
         descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
         privilegios: [
-            'PDM.coorderandor_responsavel_cp',
+            'PDM.coordenador_responsavel_cp',
             'PDM.tecnico_cp',
         ]
     },
