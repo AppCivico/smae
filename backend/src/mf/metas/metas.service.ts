@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
@@ -48,13 +48,11 @@ type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
 export class MetasService {
-
     constructor(
         private readonly variavelService: VariavelService,
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
     ) { }
-
 
     async metas(config: PessoaAcessoPdm, cicloAtivoId: number): Promise<MfMetaDto[]> {
 
@@ -294,8 +292,10 @@ export class MetasService {
             const retornoIniciativa: IniciativasRetorno = {
                 atividades: [],
                 indicador: { ...iniciativa.Indicador[0] },
-                iniciativa: { id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo,
-                    ...this.extraiResponsaveis(iniciativa.iniciativa_responsavel) },
+                iniciativa: {
+                    id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo,
+                    ...this.extraiResponsaveis(iniciativa.iniciativa_responsavel)
+                },
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
 
@@ -1432,9 +1432,63 @@ export class MetasService {
         console.log(dadosCiclo);
         if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
         if (!dadosCiclo.variavelParticipa)
-            throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${variavel_id}`, 400);
+            throw new HttpException(`Nenhum ciclo encontrado para preenchimento em ${dateYMD} na variável ${variavel_id}`, 400);
         return dadosCiclo;
     }
 
+
+    async mudarMetaCicloFase(meta_id: number, dto: CicloFaseDto, config: PessoaAcessoPdm, cf: CicloAtivoDto, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
+        if (config.perfil == 'ponto_focal') throw new HttpException('Função não está disponível', 400);
+
+        const meta = await this.prisma.meta.findFirst({
+            where: {
+                id: meta_id,
+            },
+            select: {
+                ciclo_fase: {
+                    select: {
+                        data_inicio: true,
+                        id: true,
+                        ciclo_fase: true
+                    }
+                }
+            }
+        });
+        if (!meta) throw new HttpException('Meta não encontrada', 404);
+        if (!meta.ciclo_fase) throw new HttpException('Meta não tem uma fase de atualmente', 404);
+
+        const cicloFase = await this.prisma.cicloFisicoFase.findFirst({
+            where: {
+                id: dto.ciclo_fase_id,
+                ciclo_fisico_id: cf.id,
+            },
+            select: {
+                data_inicio: true,
+                ciclo_fase: true,
+                id: true,
+            }
+        });
+        if (!cicloFase) throw new HttpException('Fase não encontrada', 404);
+
+        // nada pra fazer, já está na fase desejada
+        if (cicloFase.id == meta.ciclo_fase.id) return;
+
+        if (Date2YMD.toString(meta.ciclo_fase.data_inicio) > Date2YMD.toString(cicloFase.data_inicio)) {
+            throw new HttpException(`A meta está na fase ${meta.ciclo_fase.ciclo_fase} e não pode retroceder para ${cicloFase.ciclo_fase}`, 400);
+        }
+
+        await this.prisma.meta.update({
+            where: {
+                id: meta_id,
+            },
+            data: {
+                ciclo_fase_id: cicloFase.id,
+                atualizado_em: now,
+                atualizado_por: user.id,
+            }
+        });
+
+    }
 
 }
