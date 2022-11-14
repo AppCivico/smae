@@ -83,6 +83,16 @@ export class IdCodTituloDto {
     titulo: string
 }
 
+export class IdCodTituloRespDto {
+    id: number
+    codigo: string
+    titulo: string
+
+    orgaos_responsaveis: string[]
+    orgaos_participantes: string[]
+    responsaveis_na_cp: string[]
+}
+
 
 export class VariavelQtdeDto {
     aguarda_cp: number
@@ -119,14 +129,14 @@ export class MfSeriesAgrupadas {
 
 export class AtividadesRetorno {
     indicador: IdCodTituloDto | null
-    atividade: IdCodTituloDto
+    atividade: IdCodTituloRespDto
     variaveis: VariavelComSeries[]
     totais: VariavelQtdeDto
 }
 
 export class IniciativasRetorno {
     indicador: IdCodTituloDto | null
-    iniciativa: IdCodTituloDto
+    iniciativa: IdCodTituloRespDto
     atividades: AtividadesRetorno[]
     variaveis: VariavelComSeries[]
     totais: VariavelQtdeDto
@@ -143,6 +153,9 @@ export class RetornoMetaVariaveisDto {
         codigo: string
         titulo: string
         id: number
+        orgaos_responsaveis: string[]
+        orgaos_participantes: string[]
+        responsaveis_na_cp: string[]
     }
 
     /**
