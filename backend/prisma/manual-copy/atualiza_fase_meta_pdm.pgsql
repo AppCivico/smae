@@ -59,9 +59,9 @@ BEGIN
         x) subq
     WHERE m.id = subq.meta_id
     AND (
-        (m.ciclo_fase_id != novo_ciclo_fase_id)
+        (m.ciclo_fase_id is distinct from novo_ciclo_fase_id)
             OR
-        (m.ciclo_fisico_id != pCicloFisicoId)
+        (m.ciclo_fisico_id is distinct from pCicloFisicoId)
     );
     --
     RETURN '';
