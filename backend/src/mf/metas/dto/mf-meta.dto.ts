@@ -174,6 +174,18 @@ export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
 
 
 
+export class CicloFaseDto {
+
+    /**
+    * ciclo_fase_id -- precisa ser uma fase mais avançada que a atual
+    * @example "1"
+    */
+    @IsNumber()
+    ciclo_fase_id: number
+
+}
+
+
 export class VariavelComplementacaoDto {
 
     /**
