@@ -9,7 +9,7 @@ import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
 import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
-type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
+type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
 type StatusTracking = {
     algumaAguardaCp: boolean,
@@ -299,7 +299,7 @@ export class MetasService {
             this.buscaSeriesValores(map, ciclo)
         ]);
 
-        const statusPorVariavel: Record<number, typeof statusVariaveisCorrente[0]> = {};
+        const statusPorVariavel: Record<number, typeof statusVariaveisCorrente[0] | null> = {};
         for (const r of statusVariaveisCorrente) {
             statusPorVariavel[r.variavel_id] = r;
         }
@@ -348,12 +348,10 @@ export class MetasService {
 
             const permissoes = this.calculaPermissoesSerieCorrente(config, status, porVariavelIdDataSerie, variavel.id, r.data_corrente);
 
-            const aguarda_complementacao = status && status.aguarda_complementacao;
+            const aguarda_complementacao = status ? status && status.aguarda_complementacao : false;
             // se ja conferiu (mesmo que um valor em branco) então ta pronta
             const nao_preenchida = (status && status.conferida === true) ? false : permissoes.ha_valor === false;
-            // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
-            const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true)
-                ? false : permissoes.ha_valor;
+
 
             if (status && status.aguarda_cp) {
                 statusTracking.algumaAguardaCp = true;
@@ -361,7 +359,7 @@ export class MetasService {
                 statusTracking.algumaAguardaComplementacao = true;
             } else if (nao_preenchida) {
                 statusTracking.algumaNaoInformada = true;
-            } else if (nao_enviada) {
+            } else if (permissoes.nao_enviada) {
                 statusTracking.algumaNaoEnviada = true;
             } else if (permissoes.todasConferidas == false) {
                 statusTracking.algumaNaoConferida = true;
@@ -375,7 +373,7 @@ export class MetasService {
                     pode_editar: permissoes.pode_editar,
                     aguarda_cp: status && status.aguarda_cp ? true : false,
                     aguarda_complementacao: aguarda_complementacao,
-                    nao_enviada: nao_enviada,
+                    nao_enviada: permissoes.nao_enviada,
                     nao_preenchida: nao_preenchida
                 },
                 {
@@ -396,19 +394,24 @@ export class MetasService {
 
     calculaPermissoesSerieCorrente(
         config: PessoaAcessoPdm,
-        status: { aguarda_complementacao: boolean; aguarda_cp: boolean; variavel_id: number; },
+        status: { aguarda_complementacao: boolean; aguarda_cp: boolean; variavel_id: number; conferida: boolean } | null,
         porVariavelIdDataSerie: any,
         idVariavel: number,
         dataReferencia: DateYMD,
     ) {
-        // isso ta errado, mas por enquanto tudo bem
-        // o certo é verificar se já houve alguma vez uma submissão para a CP
-        // mesmo que o valor seja vazio
+        // verifica apenas se existe valor
         const existeSerieValorRealizado = porVariavelIdDataSerie[idVariavel]
             && porVariavelIdDataSerie[idVariavel][dataReferencia] &&
             porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado
             && porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
             ? true : false;
+
+        // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
+        // verifica se já foi enviada (se ta conferida, já foi enviada alguma vez)
+        // se ta aguardando_cp, tbm já foi enviado
+        // se tem valor, então suponhamos que não foi enviada ainda mas já foi preenchida
+        const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true)
+        ? false : existeSerieValorRealizado;
 
         let todasConferidas = true;
         let existeValorRealizado = false;
@@ -433,13 +436,15 @@ export class MetasService {
             return {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
-                pode_editar: status.aguarda_complementacao || (!status.aguarda_cp && !existeSerieValorRealizado)
+                nao_enviada: nao_enviada,
+                pode_editar: !status || (status.aguarda_complementacao || (!status.aguarda_cp && !existeSerieValorRealizado))
             }
         } else {
             return {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
-                pode_editar: true
+                nao_enviada: nao_enviada,
+                pode_editar: true,
             }
         }
     }
@@ -927,6 +932,19 @@ export class MetasService {
             throw new HttpException(`Não é possível enviar para cp, pois o seu perfil é ${config.perfil}, e os valores já entram conferidos.`, 400);
         }
 
+        const status = await this.prisma.statusVariavelCicloFisico.findFirst({
+            where: {
+                variavel_id: dto.variavel_id,
+                ciclo_fisico_id: dadosCiclo.id,
+            },
+            select: { aguarda_complementacao: true }
+        });
+
+        if (ehPontoFocal && dadosCiclo.meta_esta_na_coleta == false &&
+            (!status || status.aguarda_complementacao == false)) {
+            throw new HttpException('Você não pode enviar valores fora da fase de Coleta se não há pedido de complementação', 400);
+        }
+
         // o trabalho pra montar um SerieJwt não faz sentido
         // então vamos operar diretamente na SerieVariavel
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
@@ -1279,7 +1297,15 @@ export class MetasService {
             select
                 variavel_participa_do_ciclo( v.id, ${dateYMD}::date ) as "variavelParticipa",
                 cf.ativo as ativo,
-                cf.id as id
+                cf.id as id,
+                (
+                    select (
+                        select cff.ciclo_fase
+                        from meta m
+                        join ciclo_fisico_fase cff on cff.id = m.ciclo_fisico_id
+                        where m.id = ${meta_id}
+                    )
+                ) = 'Coleta'::"CicloFase" as meta_esta_na_coleta
             from ciclo_fisico cf,
             variavel v
             where v.id = ${variavel_id}::int
