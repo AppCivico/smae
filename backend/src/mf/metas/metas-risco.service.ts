@@ -80,7 +80,7 @@ export class MetasRiscoService {
     async addMetaRisco(dto: RiscoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
-            throw new HttpException('Você não pode listar riscos.', 400);
+            throw new HttpException('Você não pode adicionar analise de risco.', 400);
         }
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 

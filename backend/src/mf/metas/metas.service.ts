@@ -195,13 +195,6 @@ export class MetasService {
             algumaNaoEnviada: false
         };
 
-        const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
-            where: { meta_id: meta_id, ciclo_fisico_id: cicloFisicoAtivo.id },
-            select: {
-                id: true,
-                status_coleta: true
-            }
-        });
 
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
 
@@ -216,12 +209,17 @@ export class MetasService {
                     select: {
                         ciclo_fase: {
                             select: { ciclo_fase: true }
-                        }
+                        },
+                        codigo: true,
+                        titulo: true,
+                        id: true,
                     }
                 }
             }
         });
-        const metaEstaFaseColeta = indicadorMeta?.meta?.ciclo_fase?.ciclo_fase === 'Coleta';
+        if (!indicadorMeta || !indicadorMeta.meta) throw new HttpException('404', 404);
+        let metaEstaFaseColeta = indicadorMeta.meta.ciclo_fase?.ciclo_fase === 'Coleta';
+
 
         const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, user, totalStatusTracking, metaEstaFaseColeta);
 
@@ -230,6 +228,13 @@ export class MetasService {
             totalStatusTracking.algumaNaoInformada ? 'Aguardando preenchimento' :
                 totalStatusTracking.algumaNaoConferida ? 'Não conferidas' : 'Outras metas';
 
+        const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
+            where: { meta_id: meta_id, ciclo_fisico_id: cicloFisicoAtivo.id },
+            select: {
+                id: true,
+                status_coleta: true
+            }
+        });
         if (!currentStatus) {
             await this.prisma.statusMetaCicloFisico.create({
                 data: {
@@ -258,8 +263,12 @@ export class MetasService {
                 indicador: indicadorMeta,
                 iniciativas: [],
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'meta_id', meta_id, cicloFisicoAtivo),
+                id: meta_id,
+                titulo: indicadorMeta.meta.titulo,
+                codigo: indicadorMeta.meta.codigo
             },
-        }
+        };
+        delete (indicadorMeta as any).meta;
 
         // busca apenas iniciativas que tem nas variaveis
         const iniciativas = await this.getIniciativas(meta_id, variaveisMeta);
@@ -399,7 +408,7 @@ export class MetasService {
         }
     }
 
-    calculaPermissoesSerieCorrente(
+    private calculaPermissoesSerieCorrente(
         config: PessoaAcessoPdm,
         status: { aguarda_complementacao: boolean; aguarda_cp: boolean; variavel_id: number; conferida: boolean } | null,
         porVariavelIdDataSerie: any,
