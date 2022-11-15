@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PessoaAcessoPdm } from '@prisma/client';
+import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { CicloAtivoDto } from 'src/mf/metas/dto/mf-meta.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,7 +9,7 @@ export class MfService {
 
     constructor(private readonly prisma: PrismaService) { }
 
-    async pessoaAcessoPdm(user: PessoaFromJwt) : Promise<PessoaAcessoPdm>{
+    async pessoaAcessoPdm(user: PessoaFromJwt): Promise<PessoaAcessoPdm> {
         const perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
         if (!perfil)
             throw new HttpException('Faltando pessoaAcessoPdm', 404)
@@ -40,6 +40,17 @@ export class MfService {
         return cicloAtivo;
     }
 
+    // foi movido pra cá, pq pode ser que uma ação (risco, fechamento, analise) possa mudar o status
+    // mas por enquanto as únicas coisas que mudam os status são as ações dentro dentro da coleta mesmo
+    // e quando tiver o cronograma aqui tbm será usado
+    async invalidaStatusIndicador(prismaTxn: Prisma.TransactionClient, ciclo_fisico_id: number, meta_id: number) {
+        await prismaTxn.statusMetaCicloFisico.deleteMany({
+            where: {
+                ciclo_fisico_id: ciclo_fisico_id,
+                meta_id: meta_id,
+            }
+        });
+    }
 
 
 }
