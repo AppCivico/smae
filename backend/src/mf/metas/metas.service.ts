@@ -154,7 +154,7 @@ export class MetasService {
             }
 
             const coleta = config.metas_variaveis.includes(r.id);
-            const cronograma = config.metas_variaveis.includes(r.id);
+            const cronograma = config.metas_cronograma.includes(r.id);
             out.push({
                 status_ciclo_fase: params.ciclo_fase ? labelsPorStatus[params.ciclo_fase][metasStatusPorMeta[r.id] ? 'true' : 'false'] : undefined,
                 fase: r.ciclo_fase?.ciclo_fase || '(sem fase)',
