@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { CicloFaseDto, FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelConferidaDto } from './dto/mf-meta.dto';
+import { CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelConferidaDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -27,14 +27,17 @@ export class MetasController {
         schema: { allOf: refs(ListMfMetasDto, RequestInfoDto) },
     })
     async metas(
+        @Query() params: FilterMfMetasDto,
+        @Query() paramsx: any,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+console.log(paramsx);
 
         return {
-            'linhas': await this.metasService.metas(config, cicloFisicoAtivo.id),
+            'linhas': await this.metasService.metas(config, cicloFisicoAtivo.id, params),
             requestInfo: { queryTook: Date.now() - start },
             ciclo_ativo: cicloFisicoAtivo,
             perfil: config.perfil

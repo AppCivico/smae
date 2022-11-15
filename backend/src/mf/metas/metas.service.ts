@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
@@ -54,11 +54,14 @@ export class MetasService {
         private readonly uploadService: UploadService,
     ) { }
 
-    async metas(config: PessoaAcessoPdm, cicloAtivoId: number): Promise<MfMetaDto[]> {
+    async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
 
         const rows = await this.prisma.meta.findMany({
             where: {
-                id: { in: [...config.metas_cronograma, ...config.metas_variaveis] }
+                id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
+                ciclo_fase: params.ciclo_fase ? {
+                    ciclo_fase: params.ciclo_fase
+                } : undefined
             },
             select: {
                 id: true,
@@ -91,11 +94,56 @@ export class MetasService {
             }
         });
 
+        let metaStatus: { meta_id: number }[] | undefined = undefined;
+
+        if (params.ciclo_fase == 'Analise') {
+            metaStatus = await this.prisma.metaCicloFisicoAnalise.findMany({
+                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
+                select: { meta_id: true }
+            });
+        } else if (params.ciclo_fase == 'Risco') {
+            metaStatus = await this.prisma.metaCicloFisicoRisco.findMany({
+                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
+                select: { meta_id: true }
+            });
+        } else if (params.ciclo_fase == 'Fechamento') {
+            metaStatus = await this.prisma.metaCicloFisicoFechamento.findMany({
+                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
+                select: { meta_id: true }
+            });
+            console.log(metaStatus);
+
+        }
+        const labelsPorStatus: Record<CicloFase, Record<'true' | 'false', string>> = {
+            Analise: {
+                'false': 'Metas sem análise qualitativa',
+                'true': 'Metas com análise qualitativa',
+            },
+            Coleta: {
+                'false': '',
+                'true': '',
+            },
+            Risco: {
+                'false': 'Metas sem análise de risco',
+                'true': 'Metas com análise de risco',
+            },
+            Fechamento: {
+                'false': 'Metas não fechadas',
+                'true': 'Metas fechadas',
+            },
+        };
+        console.log(params.ciclo_fase);
+
+        let metasStatusPorMeta: Record<number, boolean> = {};
+        if (metaStatus) {
+            for (const r of metaStatus) {
+                metasStatusPorMeta[r.meta_id] = true;
+            }
+        }
+
         const out: MfMetaDto[] = [];
 
         for (const r of rows) {
-
-
             let status_coleta = '';
             let status_cronograma = '';
             if (r.StatusMetaCicloFisico[0] && r.StatusMetaCicloFisico[0].status_coleta) {
@@ -108,6 +156,7 @@ export class MetasService {
             const coleta = config.metas_variaveis.includes(r.id);
             const cronograma = config.metas_variaveis.includes(r.id);
             out.push({
+                status_ciclo_fase: params.ciclo_fase ? labelsPorStatus[params.ciclo_fase][metasStatusPorMeta[r.id] ? 'true' : 'false'] : undefined,
                 fase: r.ciclo_fase?.ciclo_fase || '(sem fase)',
                 codigo: r.codigo,
                 id: r.id,

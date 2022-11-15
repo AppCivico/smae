@@ -1,28 +1,19 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
-import { Periodicidade, Serie, TipoDocumento } from "@prisma/client";
+import { CicloFase, Periodicidade, Serie, TipoDocumento } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
-export class FilterMfMetaDto {
+export class FilterMfMetasDto {
     /**
-   * Incluir metas pelas etadas do cronograma
-   * @example "true"
+   * Qual ciclo fase filtrar
+   * @example "Fechamento"
     */
-    @IsBoolean()
     @IsOptional()
-    @Transform(({ value }: any) => value === 'true')
-    via_cronograma: boolean;
+    @ApiProperty({ enum: CicloFase })
+    ciclo_fase?: CicloFase;
 
-    /**
-   * Incluir metas pelas variaveis dos indicadores
-   * @example "true"
-    */
-    @IsBoolean()
-    @IsOptional()
-    @Transform(({ value }: any) => value === 'true')
-    via_variaveis: boolean;
 }
 
 
@@ -69,6 +60,10 @@ export class MfMetaDto {
         status: string
     }
     codigo_organizacoes: string[]
+    /**
+     * Só aparece quando filtrado por algum ciclo-fase em especial
+    */
+    status_ciclo_fase?: string
 }
 
 export class ListMfMetasDto {

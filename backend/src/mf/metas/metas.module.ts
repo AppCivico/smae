@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MetasAnaliseQualiController } from 'src/mf/metas/metas-analise-quali.controller';
 import { MetasAnaliseQualiService } from 'src/mf/metas/metas-analise-quali.service';
+import { MetasFechamentoController } from 'src/mf/metas/metas-fechamento.controller';
+import { MetasFechamentoService } from 'src/mf/metas/metas-fechamento.service';
 import { MetasRiscoController } from 'src/mf/metas/metas-risco.controller';
 import { MetasRiscoService } from 'src/mf/metas/metas-risco.service';
 import { MetasController } from 'src/mf/metas/metas.controller';
@@ -12,7 +14,7 @@ import { VariavelModule } from 'src/variavel/variavel.module';
 
 @Module({
     imports: [PrismaModule, MfModule, VariavelModule, UploadModule],
-    controllers: [MetasController, MetasAnaliseQualiController, MetasRiscoController],
-    providers: [MetasService, MetasAnaliseQualiService, MetasRiscoService]
+    controllers: [MetasController, MetasAnaliseQualiController, MetasRiscoController, MetasFechamentoController],
+    providers: [MetasService, MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService]
 })
 export class MetasModule { }
