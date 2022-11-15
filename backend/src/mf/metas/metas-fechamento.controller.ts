@@ -19,7 +19,7 @@ export class MetasFechamentoController {
     ) { }
 
     @ApiBearerAuth('access-token')
-    @Get('Fechamento')
+    @Get('fechamento')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
@@ -43,7 +43,7 @@ export class MetasFechamentoController {
     }
 
     @ApiBearerAuth('access-token')
-    @Patch('Fechamento')
+    @Patch('fechamento')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
