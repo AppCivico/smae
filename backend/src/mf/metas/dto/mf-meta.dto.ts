@@ -7,7 +7,7 @@ import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
 
 export class FilterMfMetasDto {
     /**
-   * Qual ciclo fase filtrar
+   * Qual ciclo usar para calcular o status (exceto Coleta, que o status é sempre em branco)
    * @example "Fechamento"
     */
     @IsOptional()

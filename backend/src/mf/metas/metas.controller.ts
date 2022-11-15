@@ -34,7 +34,6 @@ export class MetasController {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
-console.log(paramsx);
 
         return {
             'linhas': await this.metasService.metas(config, cicloFisicoAtivo.id, params),
