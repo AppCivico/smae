@@ -153,6 +153,7 @@ export class RetornoMetaVariaveisDto {
         codigo: string
         titulo: string
         id: number
+        ciclo_fase: string
         orgaos_responsaveis: string[]
         orgaos_participantes: string[]
         responsaveis_na_cp: string[]
