@@ -279,7 +279,8 @@ export class MetasService {
                 ...this.extraiResponsaveis(indicadorMeta.meta.meta_responsavel),
                 id: meta_id,
                 titulo: indicadorMeta.meta.titulo,
-                codigo: indicadorMeta.meta.codigo
+                codigo: indicadorMeta.meta.codigo,
+                ciclo_fase: indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : ''
             },
         };
         delete (indicadorMeta as any).meta;
