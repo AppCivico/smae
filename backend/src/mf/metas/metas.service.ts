@@ -132,15 +132,25 @@ export class MetasService {
         }
 
         const out: MfMetaDto[] = [];
-
         for (const r of rows) {
             let status_coleta = '';
             let status_cronograma = '';
-            if (r.StatusMetaCicloFisico[0] && r.StatusMetaCicloFisico[0].status_coleta) {
+
+            if (r.StatusMetaCicloFisico[0]) {
                 status_coleta = r.StatusMetaCicloFisico[0].status_coleta;
-            }
-            if (r.StatusMetaCicloFisico[0] && r.StatusMetaCicloFisico[0].status_cronograma) {
                 status_cronograma = r.StatusMetaCicloFisico[0].status_cronograma;
+            } else {
+                // atualiza o status
+                await this.prisma.$queryRaw`select atualiza_status_meta_pessoa(${r.id}::int, ${config.pessoa_id}::int, ${cicloAtivoId}::int)`;
+                // busca novamente
+                const novoStatus = await this.prisma.statusMetaCicloFisico.findFirst({
+                    where: { ciclo_fisico_id: cicloAtivoId, meta_id: r.id, pessoa_id: config.pessoa_id },
+                    select: { status_coleta: true, status_cronograma: true }
+                });
+                if (novoStatus) {
+                    status_coleta = novoStatus.status_coleta;
+                    status_cronograma = novoStatus.status_cronograma;
+                }
             }
 
             const coleta = config.metas_variaveis.includes(r.id);
@@ -160,8 +170,8 @@ export class MetasService {
                     participante: cronograma,
                     status: cronograma ? status_cronograma || 'Outros' : ''
                 },
+            });
 
-            })
         }
 
         return out;
