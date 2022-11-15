@@ -1069,7 +1069,7 @@ export class MetasService {
 
             let needRecalc = false;
             for (const campo of CamposRealizado) {
-                const valor_nominal = dto[campo];
+                const valor_nominal = dto[campo] === null ? '' : dto[campo];
                 if (valor_nominal === undefined) continue;
 
                 const existeValor = await this.prisma.serieVariavel.findFirst({
