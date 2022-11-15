@@ -3,6 +3,7 @@ import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { MfService } from 'src/mf/mf.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
@@ -11,13 +12,6 @@ import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto,
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
-type StatusTracking = {
-    algumaAguardaCp: boolean,
-    algumaAguardaComplementacao: boolean
-    algumaNaoInformada: boolean
-    algumaNaoEnviada: boolean
-    algumaNaoConferida: boolean
-}
 
 type VariavelDetalhe = {
     id: number;
@@ -52,6 +46,7 @@ export class MetasService {
         private readonly variavelService: VariavelService,
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
+        private readonly mfService: MfService,
     ) { }
 
     async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
@@ -74,7 +69,6 @@ export class MetasService {
                     select: {
                         status_coleta: true,
                         status_cronograma: true,
-                        status_valido: true,
                     }
                 },
                 meta_orgao: {
@@ -230,15 +224,6 @@ export class MetasService {
         user: PessoaFromJwt
     ): Promise<RetornoMetaVariaveisDto> {
 
-        const totalStatusTracking: StatusTracking = {
-            algumaAguardaComplementacao: false,
-            algumaAguardaCp: false,
-            algumaNaoInformada: false,
-            algumaNaoConferida: false,
-            algumaNaoEnviada: false
-        };
-
-
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
 
         const indicadorMeta = await this.prisma.indicador.findFirst({
@@ -279,40 +264,8 @@ export class MetasService {
         let metaEstaFaseColeta = indicadorMeta.meta.ciclo_fase?.ciclo_fase === 'Coleta';
 
 
-        const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, user, totalStatusTracking, metaEstaFaseColeta);
+        const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, metaEstaFaseColeta);
 
-        // provavelmente isso ta muito errado...
-        const status = totalStatusTracking.algumaAguardaComplementacao ? 'Aguardando complementação' :
-            totalStatusTracking.algumaNaoInformada ? 'Aguardando preenchimento' :
-                totalStatusTracking.algumaNaoConferida ? 'Não conferidas' : 'Outras metas';
-
-        const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
-            where: { meta_id: meta_id, ciclo_fisico_id: cicloFisicoAtivo.id },
-            select: {
-                id: true,
-                status_coleta: true
-            }
-        });
-        if (!currentStatus) {
-            await this.prisma.statusMetaCicloFisico.create({
-                data: {
-                    meta_id: meta_id,
-                    ciclo_fisico_id: cicloFisicoAtivo.id,
-                    status_coleta: status
-                },
-            })
-        } else {
-            if (status !== currentStatus.status_coleta) {
-                await this.prisma.statusMetaCicloFisico.update({
-                    where: {
-                        id: currentStatus.id
-                    },
-                    data: {
-                        status_coleta: status
-                    },
-                })
-            }
-        }
 
         const retorno: RetornoMetaVariaveisDto = {
             perfil: config.perfil,
@@ -414,8 +367,6 @@ export class MetasService {
         map: VariavelDetailhePorID,
         config: PessoaAcessoPdm,
         ciclo: CicloAtivoDto,
-        user: PessoaFromJwt,
-        statusTracking: StatusTracking,
         metaEstaFaseColeta: boolean): Promise<{
             ordem_series: Serie[],
             seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>
@@ -477,19 +428,6 @@ export class MetasService {
             const aguarda_complementacao = status ? status && status.aguarda_complementacao : false;
             // se ja conferiu (mesmo que um valor em branco) então ta pronta
             const nao_preenchida = (status && status.conferida === true) ? false : permissoes.ha_valor === false;
-
-
-            if (status && status.aguarda_cp) {
-                statusTracking.algumaAguardaCp = true;
-            } else if (aguarda_complementacao) {
-                statusTracking.algumaAguardaComplementacao = true;
-            } else if (nao_preenchida) {
-                statusTracking.algumaNaoInformada = true;
-            } else if (permissoes.nao_enviada) {
-                statusTracking.algumaNaoEnviada = true;
-            } else if (permissoes.todasConferidas == false) {
-                statusTracking.algumaNaoConferida = true;
-            }
 
             seriesPorVariavel[variavel.id] = [
                 {
@@ -997,15 +935,7 @@ export class MetasService {
                 }
             });
 
-            await prismaTxn.statusMetaCicloFisico.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    meta_id: meta_id,
-                },
-                data: {
-                    status_valido: false
-                }
-            });
+            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
 
         });
 
@@ -1059,18 +989,8 @@ export class MetasService {
                 }
             });
 
-            await prismaTxn.statusMetaCicloFisico.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    meta_id: meta_id,
-                },
-                data: {
-                    status_valido: false
-                }
-            });
-
+            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
         });
-
     }
 
 
@@ -1265,15 +1185,8 @@ export class MetasService {
                 }
             }
 
-            await prismaTxn.statusMetaCicloFisico.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    meta_id: meta_id
-                },
-                data: {
-                    status_valido: false
-                }
-            });
+            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+
             return cfq.id;
         }, {
             isolationLevel: 'Serializable',
