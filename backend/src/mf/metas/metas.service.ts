@@ -59,9 +59,6 @@ export class MetasService {
         const rows = await this.prisma.meta.findMany({
             where: {
                 id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
-                ciclo_fase: params.ciclo_fase ? {
-                    ciclo_fase: params.ciclo_fase
-                } : undefined
             },
             select: {
                 id: true,
@@ -111,7 +108,6 @@ export class MetasService {
                 where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
                 select: { meta_id: true }
             });
-            console.log(metaStatus);
 
         }
         const labelsPorStatus: Record<CicloFase, Record<'true' | 'false', string>> = {
