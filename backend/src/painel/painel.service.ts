@@ -1135,6 +1135,7 @@ export class PainelService {
 
             const earliest = new Date(all_series[0].data_valor);
             const latest   = new Date(all_series.at(-1)!.data_valor);
+            console.log(all_series);
             console.log(earliest);
             console.log(latest);
             if (config.periodicidade === Periodicidade.Anual) {
@@ -1187,7 +1188,7 @@ export class PainelService {
                     }
 
                     const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
-
+                    console.debug('months_diff: ' + months_diff)
                     if (months_diff >= denominator) {
                         let i = 0;
                         while (1) {
@@ -1202,7 +1203,7 @@ export class PainelService {
                                 valores_nominais: ["", "", "", ""]
                             });
 
-                            if (i == denominator) {
+                            if (i >= months_diff) {
                                 break;
                             }
                         }
