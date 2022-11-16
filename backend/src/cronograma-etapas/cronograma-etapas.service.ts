@@ -3,8 +3,9 @@ import { Prisma } from '@prisma/client';
 import { create } from 'domain';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-cronograma-etapa.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
+
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CronogramaEtapa } from './entities/cronograma-etapa.entity';
 
@@ -20,10 +21,18 @@ export class CronogramaEtapaService {
 
         let ret: CronogramaEtapa[] = [];
 
+        if (filters && filters.cronograma_etapa_ids && etapaId) {
+            if (filters.cronograma_etapa_ids.includes(etapaId)) {
+                filters.cronograma_etapa_ids = [etapaId]
+            } else {
+                filters.cronograma_etapa_ids = [-1];
+            }
+        }
+
         const cronogramaEtapas = await this.prisma.cronogramaEtapa.findMany({
             where: {
                 cronograma_id: cronogramaId,
-                etapa_id: etapaId,
+                etapa_id: filters && filters.cronograma_etapa_ids ? { in: filters.cronograma_etapa_ids } : etapaId,
                 inativo: inativo,
             },
             select: {
@@ -46,7 +55,7 @@ export class CronogramaEtapaService {
                         termino_real: true,
                         prazo: true,
                         titulo: true,
-                   
+
                         cronograma: {
                             select: {
                                 id: true,
@@ -156,21 +165,21 @@ export class CronogramaEtapaService {
                 const firstLevelParentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
                 if (firstLevelParentIndex >= 0) continue;
             }
-        
+
             let ordem;
             if (cronogramaEtapa.ordem) {
                 lastOrdemVal = ordem = cronogramaEtapa.ordem;
             } else {
                 lastOrdemVal = ordem = lastOrdemVal + 1;
             }
-    
+
             ret.push({
                 id: cronogramaEtapa.id,
                 cronograma_id: cronogramaEtapa.cronograma_id,
                 etapa_id: cronogramaEtapa.etapa_id,
                 inativo: cronogramaEtapa.inativo,
                 ordem: ordem,
-                
+
                 etapa: {
                     id: cronogramaEtapa.etapa.id,
                     etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,

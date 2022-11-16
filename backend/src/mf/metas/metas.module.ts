@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { CronogramaEtapaModule } from 'src/cronograma-etapas/cronograma-etapas.module';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { CronogramaModule } from 'src/cronograma/cronograma.module';
 import { CronogramaService } from 'src/cronograma/cronograma.service';
 import { MetasAnaliseQualiController } from 'src/mf/metas/metas-analise-quali.controller';
@@ -16,7 +18,7 @@ import { UploadModule } from 'src/upload/upload.module';
 import { VariavelModule } from 'src/variavel/variavel.module';
 
 @Module({
-    imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule],
+    imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule, CronogramaEtapaModule],
     controllers: [
         MetasController,
         MetasAnaliseQualiController,
@@ -29,7 +31,8 @@ import { VariavelModule } from 'src/variavel/variavel.module';
         MetasAnaliseQualiService,
         MetasRiscoService,
         MetasFechamentoService,
-        CronogramaService
+        CronogramaService,
+        CronogramaEtapaService
     ]
 })
 export class MetasModule { }
