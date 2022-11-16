@@ -142,7 +142,7 @@ export class MetasService {
             } else {
                 // atualiza o status
                 await this.prisma.$queryRaw`select atualiza_status_meta_pessoa(${r.id}::int, ${config.pessoa_id}::int, ${cicloAtivoId}::int)`;
-                // busca novamente
+                // busca novamente, há uma pequena chance de já ter sido invalidado, nesse caso, ignora o status nesse render
                 const novoStatus = await this.prisma.statusMetaCicloFisico.findFirst({
                     where: { ciclo_fisico_id: cicloAtivoId, meta_id: r.id, pessoa_id: config.pessoa_id },
                     select: { status_coleta: true, status_cronograma: true }
@@ -150,6 +150,9 @@ export class MetasService {
                 if (novoStatus) {
                     status_coleta = novoStatus.status_coleta;
                     status_cronograma = novoStatus.status_cronograma;
+                } else {
+                    status_coleta = 'Status desconhecido, atualize a página';
+                    status_cronograma = 'Status desconhecido, atualize a página';
                 }
             }
 
