@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
+import { CronogramaModule } from 'src/cronograma/cronograma.module';
+import { CronogramaService } from 'src/cronograma/cronograma.service';
 import { MetasAnaliseQualiController } from 'src/mf/metas/metas-analise-quali.controller';
 import { MetasAnaliseQualiService } from 'src/mf/metas/metas-analise-quali.service';
+import { MetasCronogramaController } from 'src/mf/metas/metas-cronogramas.controller';
 import { MetasFechamentoController } from 'src/mf/metas/metas-fechamento.controller';
 import { MetasFechamentoService } from 'src/mf/metas/metas-fechamento.service';
 import { MetasRiscoController } from 'src/mf/metas/metas-risco.controller';
@@ -13,8 +16,20 @@ import { UploadModule } from 'src/upload/upload.module';
 import { VariavelModule } from 'src/variavel/variavel.module';
 
 @Module({
-    imports: [PrismaModule, MfModule, VariavelModule, UploadModule],
-    controllers: [MetasController, MetasAnaliseQualiController, MetasRiscoController, MetasFechamentoController],
-    providers: [MetasService, MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService]
+    imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule],
+    controllers: [
+        MetasController,
+        MetasAnaliseQualiController,
+        MetasRiscoController,
+        MetasFechamentoController,
+        MetasCronogramaController
+    ],
+    providers: [
+        MetasService,
+        MetasAnaliseQualiService,
+        MetasRiscoService,
+        MetasFechamentoService,
+        CronogramaService
+    ]
 })
 export class MetasModule { }
