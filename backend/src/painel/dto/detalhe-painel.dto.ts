@@ -1,4 +1,4 @@
-import { Periodicidade, Periodo, Prisma } from '@prisma/client';
+import { Periodicidade, Periodo, Prisma, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime';
 
 export class DetailPainelVisualizacaoDto {
@@ -72,4 +72,10 @@ export class SeriesTemplate {
      * @example "["", 123.456, 0, 1]"
     */
     valores_nominais: (number | Decimal | "")[]
+}
+
+export class SerieRow {
+    serie: Serie
+    data_valor: Date
+    valor_nominal: number | Prisma.Decimal
 }
