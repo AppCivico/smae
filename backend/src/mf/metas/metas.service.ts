@@ -1051,7 +1051,7 @@ export class MetasService {
                 const valor_nominal = dto[campo] === null ? '' : dto[campo];
                 if (valor_nominal === undefined) continue;
 
-                const existeValor = await this.prisma.serieVariavel.findFirst({
+                const existeValor = await prismaTxn.serieVariavel.findFirst({
                     where: {
                         variavel_id: dto.variavel_id,
                         serie: CamposRealizadoParaSerie[campo],
@@ -1064,7 +1064,7 @@ export class MetasService {
                     // existe o valor, mas é pra remover, então bora
                     needRecalc = true;
 
-                    await this.prisma.serieVariavel.delete({
+                    await prismaTxn.serieVariavel.delete({
                         where: {
                             id: existeValor.id
                         }
@@ -1073,7 +1073,7 @@ export class MetasService {
                     // valor não existe, entao vamos criar
                     needRecalc = true;
 
-                    await this.prisma.serieVariavel.create({
+                    await prismaTxn.serieVariavel.create({
                         data: {
                             variavel_id: dto.variavel_id,
                             serie: CamposRealizadoParaSerie[campo],
@@ -1096,7 +1096,7 @@ export class MetasService {
                     ) {
                         needRecalc = true;
 
-                        await this.prisma.serieVariavel.update({
+                        await prismaTxn.serieVariavel.update({
                             where: { id: existeValor.id },
                             data: {
                                 valor_nominal: valor_nominal,
