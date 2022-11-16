@@ -908,6 +908,10 @@ export class PainelService {
                                 periodo_fim: periodo_fim,
                                 valores_nominais: [0, 0, 0, 0]
                             })
+
+                            if (i === denominator) {
+                                break;
+                            }
                         }
                     } else {
                         series_template.push({
@@ -1131,7 +1135,8 @@ export class PainelService {
 
             const earliest = new Date(all_series[0].data_valor);
             const latest   = new Date(all_series.at(-1).data_valor);
-
+            console.log(earliest);
+            console.log(latest);
             if (config.periodicidade === Periodicidade.Anual) {
                 const year_diff = await this.yearsDiff(latest.getTime(), earliest.getTime());
 
@@ -1195,7 +1200,11 @@ export class PainelService {
                                 periodo_inicio: periodo_inicio,
                                 periodo_fim: periodo_fim,
                                 valores_nominais: ["", "", "", ""]
-                            })
+                            });
+
+                            if (i == denominator) {
+                                break;
+                            }
                         }
                     } else {
                         series_template.push({
