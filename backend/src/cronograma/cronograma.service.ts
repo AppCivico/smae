@@ -44,7 +44,13 @@ export class CronogramaService {
                 meta_id: metaId,
                 atividade_id: atividadeId,
                 iniciativa_id: iniciativaId,
-                removido_em: null
+                removido_em: null,
+
+                CronogramaEtapa: filters && filters.cronograma_etapa_ids ? {
+                    some: {
+                        etapa_id: { in: filters.cronograma_etapa_ids }
+                    }
+                } : undefined,
             },
             select: {
                 id: true,
