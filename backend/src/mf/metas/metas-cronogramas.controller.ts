@@ -1,14 +1,17 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpException, Param, Patch, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-cronograma-etapa.dto';
 import { ListCronogramaEtapaDto } from 'src/cronograma-etapas/dto/list-cronograma-etapa.dto';
 import { CronogramaService } from 'src/cronograma/cronograma.service';
 import { FilterCronogramaDto } from 'src/cronograma/dto/fillter-cronograma.dto';
 import { ListCronogramaDto } from 'src/cronograma/dto/list-cronograma.dto';
+import { EtapaService } from 'src/etapa/etapa.service';
+import { MfEtapaDto } from 'src/mf/metas/dto/mf-crono.dto';
 import { MfService } from '../mf.service';
 import { RequestInfoDto } from './dto/mf-meta.dto';
 
@@ -19,6 +22,7 @@ export class MetasCronogramaController {
     constructor(
         private readonly cronogramaService: CronogramaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
+        private readonly etapaService: EtapaService,
         private readonly mfService: MfService
     ) { }
 
@@ -67,5 +71,26 @@ export class MetasCronogramaController {
         };
     }
 
+
+    @Patch('cronograma/:id/etapa')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    async patch_crono_etapa(@Param() params: FindOneParams, @Body() updateEtapaDto: MfEtapaDto, @CurrentUser() user: PessoaFromJwt) {
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        if (config.cronogramas_etapas.includes(params.id) == false) {
+            throw new HttpException('Etapa não encontrada', 404);
+        }
+
+        const ret = await this.etapaService.update(+params.id, updateEtapaDto, user);
+
+        // basicamente, todos esses valores não temos aqui
+        // então o melhor é na trigger do update da etapa, apagar invalidar esse status, pq ai
+        // já muda quando o admin mudar aqui
+        //await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+
+        return ret;
+    }
 
 }
