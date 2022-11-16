@@ -20,6 +20,10 @@ export class PainelConteudoSerieDto {
 }
 
 export class PainelConteudoSerie {
+    mostrar_acumulado: boolean
+    mostrar_acumulado_periodo: boolean
+    mostrar_indicador: boolean
+    mostrar_planejado: boolean
     meta: PainelConteudoMetaSerie
     detalhes: PainelConteudoDetalhesSeries[] | null
 

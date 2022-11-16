@@ -922,18 +922,16 @@ export class PainelService {
         else {
             gte = new Date(0);
             lte = new Date();
-
-            series_template.push({
-                titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                periodo_inicio: gte,
-                periodo_fim: gte,
-                valores_nominais: [0, 0, 0, 0]
-            })
         }
 
         const series = await this.prisma.painelConteudo.findFirstOrThrow({
             where: { id: painel_conteudo_id },
             select: {
+                mostrar_acumulado: true,
+                mostrar_acumulado_periodo: true,
+                mostrar_indicador: true,
+                mostrar_planejado: true,
+
                 meta: {
                     select: {
                         id: true,
@@ -1098,8 +1096,123 @@ export class PainelService {
             }
         });
 
+        if (config.periodo === Periodo.Todos) {
+            const all_series: any[] = [];
+
+            series.meta.indicador.forEach(r => {
+                r.SerieIndicador.forEach(s => { all_series.push(r.SerieIndicador) });
+            })
+
+            series.detalhes.forEach(d => {
+                d.variavel?.serie_variavel.forEach(s => { all_series.push(s) });
+                
+                d.iniciativa?.Indicador.forEach(i => {
+                    i.SerieIndicador.forEach(s => { all_series.push(s) })
+                });
+                
+                d.filhos.forEach(f => {
+                    f.atividade?.Indicador.forEach(i => {
+                        i.SerieIndicador.forEach(s => { all_series.push(s) });
+                    });
+
+                    f.variavel?.serie_variavel.forEach(s => { all_series.push(s) });
+                    
+                    f.filhos.forEach(ff => {
+                        ff.variavel?.serie_variavel.forEach(s => { all_series.push(s) })
+                    })
+                });
+            });
+
+            all_series.sort( function compare (a, b) {
+                const date_a = new Date(a.data_valor).getTime();
+                const date_b = new Date(b.data_valor).getTime();
+                return date_a - date_b;
+            });
+
+            const earliest = new Date(all_series[0].data_valor);
+            const latest   = new Date(all_series.at(-1).data_valor);
+
+            if (config.periodicidade === Periodicidade.Anual) {
+                const year_diff = await this.yearsDiff(latest.getTime(), earliest.getTime());
+
+                if (year_diff > 0) {
+                    for (let i = 0; i < year_diff; i++) {
+                        const periodo_inicio = moment(earliest).add(i, 'years').toDate();
+                        const periodo_fim    = moment(periodo_inicio).add(1, 'year').toDate();
+
+                        series_template.push({
+                            titulo: periodo_inicio.toLocaleDateString('pt-br'),
+                            periodo_inicio: periodo_inicio,
+                            periodo_fim: periodo_fim,
+                            valores_nominais: ["", "", "", ""]
+                        })
+                    }
+                } else {
+                    series_template.push({
+                        titulo: earliest.toLocaleDateString('pt-BR', {year: 'numeric'}),
+                        periodo_inicio: earliest,
+                        periodo_fim: latest,
+                        valores_nominais: ["", "", "", ""]
+                    })
+                }
+            } else if (
+                config.periodicidade === Periodicidade.Semestral ||
+                config.periodicidade === Periodicidade.Quadrimestral ||
+                config.periodicidade === Periodicidade.Bimestral ||
+                config.periodicidade === Periodicidade.Trimestral ||
+                config.periodicidade === Periodicidade.Mensal) {
+                
+                    let denominator;
+
+                    switch (config.periodicidade) {
+                        case Periodicidade.Semestral:
+                            denominator = 6;
+                            break;
+                        case Periodicidade.Quadrimestral:
+                            denominator = 4
+                            break;
+                        case Periodicidade.Trimestral:
+                            denominator = 3;
+                            break;
+                        case Periodicidade.Bimestral:
+                            denominator = 2;
+                            break;
+                        case Periodicidade.Mensal:
+                            denominator = 1;
+                    }
+
+                    const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
+
+                    if (months_diff >= denominator) {
+                        let i = 0;
+                        while (1) {
+                            const periodo_inicio = moment(earliest).add(denominator * i, 'months').toDate();
+                            const periodo_fim    = moment(earliest).add(denominator * (i + 1), 'months').toDate();
+                            i++;
+
+                            series_template.push({
+                                titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                                periodo_inicio: periodo_inicio,
+                                periodo_fim: periodo_fim,
+                                valores_nominais: ["", "", "", ""]
+                            })
+                        }
+                    } else {
+                        series_template.push({
+                            titulo: earliest.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                            periodo_inicio: earliest,
+                            periodo_fim: latest,
+                            valores_nominais: ["", "", "", ""]
+                        })
+                    }
+            }
+        }
 
         ret = {
+            mostrar_acumulado: series.mostrar_acumulado,
+            mostrar_acumulado_periodo: series.mostrar_acumulado_periodo,
+            mostrar_indicador: series.mostrar_indicador,
+            mostrar_planejado: series.mostrar_planejado,
             meta: {
                 id: series.meta.id,
                 titulo: series.meta.titulo,
