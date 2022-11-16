@@ -1,3 +1,4 @@
+import { ApiHideProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsOptional, IsPositive } from "class-validator";
 
@@ -28,4 +29,10 @@ export class FilterCronogramaDto {
     @IsPositive({ message: '$property| atividade_id' })
     @Type(() => Number)
     atividade_id?: number;
+
+    /**
+    * Filtrar apenas cronogramas que os ids derem match
+    */
+    @ApiHideProperty()
+    cronograma_etapa_ids?: number[]
 }

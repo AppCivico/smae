@@ -3,12 +3,11 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse }
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateEtapaDto } from 'src/etapa/dto/create-etapa.dto';
 import { FilterCronogramaEtapaDto } from 'src/etapa/dto/filter-etapa.dto';
 import { ListEtapaDto } from 'src/etapa/dto/list-etapa.dto';
-import { UpdateEtapaDto } from 'src/etapa/dto/update-etapa.dto';
 import { EtapaService } from 'src/etapa/etapa.service';
 import { CronogramaService } from './cronograma.service';
 import { CreateCronogramaDto } from './dto/create-cronograma.dto';
