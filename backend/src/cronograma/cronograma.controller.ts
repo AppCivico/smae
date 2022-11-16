@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateEtapaDto } from 'src/etapa/dto/create-etapa.dto';
-import { FilterCronogramaEtapaDto } from 'src/etapa/dto/filter-etapa.dto';
+import { FilterEtapaDto } from 'src/etapa/dto/filter-etapa.dto';
 import { ListEtapaDto } from 'src/etapa/dto/list-etapa.dto';
 import { EtapaService } from 'src/etapa/etapa.service';
 import { CronogramaService } from './cronograma.service';
@@ -67,7 +67,7 @@ export class CronogramaController {
 
     @ApiBearerAuth('access-token')
     @Get(':id/etapa')
-    async findAllEtapas(@Query() filters: FilterCronogramaEtapaDto, @Param() params: FindOneParams): Promise<ListEtapaDto> {
+    async findAllEtapas(@Query() filters: FilterEtapaDto, @Param() params: FindOneParams): Promise<ListEtapaDto> {
         filters.cronograma_id = +params.id;
         return { 'linhas': await this.etapaService.findAll(filters) };
     }

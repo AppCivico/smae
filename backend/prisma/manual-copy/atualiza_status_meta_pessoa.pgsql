@@ -46,7 +46,7 @@ SELECT
         variaveis_visiveis as (
             select vpdm.id as variavel_id
             from variavel vpdm
-            cross join (select variaveis from pessoa_acesso_pdm where pessoa_id = 1) v
+            cross join (select variaveis from pessoa_acesso_pdm where pessoa_id = pPessoaId) v
             where vpdm.id = any(v.variaveis)
         ), variaveis as (
             select
@@ -94,11 +94,12 @@ SELECT
             and s.variavel_id = v.variavel_id
         )
         select
-            case when total = conferidas then 'Todas conferidas'
+            case when total = 0 then '-'
+            when total = conferidas then 'Todas conferidas'
             when aguarda_complementacao > 0 then 'Aguardando complementação'
             when aguarda_cp = total then 'Aguardando conferencia'
             else
-                case when vPerfil = 'ponto_focal' then 'Não atualizadas' else 'Aguardando conferencia' end
+                case when vPerfil = 'ponto_focal' then 'Não atualizadas' else 'Aguardando preenchimento' end
             end
             into vStatusColeta
         from counts;
