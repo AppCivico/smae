@@ -874,32 +874,32 @@ export class PainelService {
                 config.periodicidade === Periodicidade.Trimestral ||
                 config.periodicidade === Periodicidade.Mensal) {
                 
-                    let denominator;
+                    let multiplier;
 
                     switch (config.periodicidade) {
                         case Periodicidade.Semestral:
-                            denominator = 6;
+                            multiplier = 6;
                             break;
                         case Periodicidade.Quadrimestral:
-                            denominator = 4
+                            multiplier = 4
                             break;
                         case Periodicidade.Trimestral:
-                            denominator = 3;
+                            multiplier = 3;
                             break;
                         case Periodicidade.Bimestral:
-                            denominator = 2;
+                            multiplier = 2;
                             break;
                         case Periodicidade.Mensal:
-                            denominator = 1;
+                            multiplier = 1;
                     }
 
                     const months_diff = await this.monthsDiff(lte.getTime(), gte.getTime())
 
-                    if (months_diff >= denominator) {
+                    if (months_diff >= multiplier) {
                         let i = 0;
                         while (1) {
-                            const periodo_inicio = moment(gte).add(denominator * i, 'months').toDate();
-                            const periodo_fim    = moment(gte).add(denominator * (i + 1), 'months').toDate();
+                            const periodo_inicio = moment(gte).add(multiplier * i, 'months').toDate();
+                            const periodo_fim    = moment(gte).add(multiplier * (i + 1), 'months').toDate();
                             i++;
 
                             series_template.push({
@@ -909,7 +909,7 @@ export class PainelService {
                                 valores_nominais: [0, 0, 0, 0]
                             })
 
-                            if (i === denominator) {
+                            if (i >= months_diff) {
                                 break;
                             }
                         }
@@ -1135,9 +1135,7 @@ export class PainelService {
 
             const earliest = new Date(all_series[0].data_valor);
             const latest   = new Date(all_series.at(-1)!.data_valor);
-            console.log(all_series);
-            console.log(earliest);
-            console.log(latest);
+
             if (config.periodicidade === Periodicidade.Anual) {
                 const year_diff = await this.yearsDiff(latest.getTime(), earliest.getTime());
 
@@ -1168,32 +1166,32 @@ export class PainelService {
                 config.periodicidade === Periodicidade.Trimestral ||
                 config.periodicidade === Periodicidade.Mensal) {
                 
-                    let denominator;
+                    let multiplier;
 
                     switch (config.periodicidade) {
                         case Periodicidade.Semestral:
-                            denominator = 6;
+                            multiplier = 6;
                             break;
                         case Periodicidade.Quadrimestral:
-                            denominator = 4
+                            multiplier = 4
                             break;
                         case Periodicidade.Trimestral:
-                            denominator = 3;
+                            multiplier = 3;
                             break;
                         case Periodicidade.Bimestral:
-                            denominator = 2;
+                            multiplier = 2;
                             break;
                         case Periodicidade.Mensal:
-                            denominator = 1;
+                            multiplier = 1;
                     }
 
                     const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
                     console.debug('months_diff: ' + months_diff)
-                    if (months_diff >= denominator) {
+                    if (months_diff >= multiplier) {
                         let i = 0;
                         while (1) {
-                            const periodo_inicio = moment(earliest).add(denominator * i, 'months').toDate();
-                            const periodo_fim    = moment(earliest).add(denominator * (i + 1), 'months').toDate();
+                            const periodo_inicio = moment(earliest).add(multiplier * i, 'months').toDate();
+                            const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
                             i++;
 
                             series_template.push({
