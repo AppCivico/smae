@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
-import { PainelConteudoSerie, SeriesTemplate } from './dto/detalhe-painel.dto';
+import { PainelConteudoSerie, SerieRow, SeriesTemplate } from './dto/detalhe-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
@@ -1101,10 +1101,10 @@ export class PainelService {
         });
 
         if (config.periodo === Periodo.Todos) {
-            const all_series: any[] = [];
+            const all_series: SerieRow[] = [];
 
             series.meta.indicador.forEach(r => {
-                r.SerieIndicador.forEach(s => { all_series.push(r.SerieIndicador) });
+                r.SerieIndicador.forEach(s => { all_series.push(s) });
             })
 
             series.detalhes.forEach(d => {
@@ -1134,7 +1134,7 @@ export class PainelService {
             });
 
             const earliest = new Date(all_series[0].data_valor);
-            const latest   = new Date(all_series.at(-1).data_valor);
+            const latest   = new Date(all_series.at(-1)!.data_valor);
             console.log(earliest);
             console.log(latest);
             if (config.periodicidade === Periodicidade.Anual) {
