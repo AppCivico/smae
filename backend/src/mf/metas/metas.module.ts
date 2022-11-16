@@ -3,6 +3,7 @@ import { CronogramaEtapaModule } from 'src/cronograma-etapas/cronograma-etapas.m
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { CronogramaModule } from 'src/cronograma/cronograma.module';
 import { CronogramaService } from 'src/cronograma/cronograma.service';
+import { EtapaModule } from 'src/etapa/etapa.module';
 import { MetasAnaliseQualiController } from 'src/mf/metas/metas-analise-quali.controller';
 import { MetasAnaliseQualiService } from 'src/mf/metas/metas-analise-quali.service';
 import { MetasCronogramaController } from 'src/mf/metas/metas-cronogramas.controller';
@@ -18,7 +19,7 @@ import { UploadModule } from 'src/upload/upload.module';
 import { VariavelModule } from 'src/variavel/variavel.module';
 
 @Module({
-    imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule, CronogramaEtapaModule],
+    imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule, CronogramaEtapaModule, EtapaModule],
     controllers: [
         MetasController,
         MetasAnaliseQualiController,
@@ -32,7 +33,8 @@ import { VariavelModule } from 'src/variavel/variavel.module';
         MetasRiscoService,
         MetasFechamentoService,
         CronogramaService,
-        CronogramaEtapaService
+        CronogramaEtapaService,
+
     ]
 })
 export class MetasModule { }
