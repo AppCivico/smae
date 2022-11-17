@@ -62,6 +62,7 @@ export class MetasAnaliseQualiService {
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
                 meta_id: dto.meta_id,
+                removido_em: null
             },
             orderBy: {
                 criado_em: 'desc',
@@ -91,7 +92,7 @@ export class MetasAnaliseQualiService {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
-                    arquivo: r.arquivo
+                    arquivo: {...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes')},
                 }
             }),
             analises: analisesResult.map((r) => {
