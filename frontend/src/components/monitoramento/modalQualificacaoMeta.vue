@@ -129,34 +129,35 @@
 	            <div class="error-msg">{{ errors.informacoes_complementares }}</div>
 	        </div>
 	        
+			<table class="tablemain mb1">
+			    <thead>
+			        <tr>
+			            <th style="width: 30%">Documento</th>
+			            <th style="width: 60%">Descrição</th>
+			            <th style="width: 10%"></th>
+			        </tr>
+			    </thead>
+			    <tbody>
+			        <template v-for="subitem in SingleMetaAnaliseDocs" :key="subitem.id">
+			            <tr>
+			                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.nome_original??'-' }}</a></td>
+			                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.descricao??'-' }}</a></td>
+			                <td style="white-space: nowrap; text-align: right;">
+			                    <a @click="deleteArquivo(subitem.id)" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
+			                </td>
+			            </tr>
+			        </template>
+			    </tbody>
+			</table>
+			<a @click="virtualUpload.open=1;" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar documentos</span></a>
+			
 		    <div class="flex spacebetween center mb2">
 		        <hr class="mr2 f1"/>
-		        <button ref="submitBt" type="submit" class="btn big" :disabled="isSubmitting">Salvar análise de risco</button>
+		        <button ref="submitBt" type="submit" class="btn big" :disabled="isSubmitting">Qualificar meta</button>
 		        <hr class="ml2 f1"/>
 		    </div>
 		</Form>
 
-		<table class="tablemain mb1">
-		    <thead>
-		        <tr>
-		            <th style="width: 30%">Documento</th>
-		            <th style="width: 60%">Descrição</th>
-		            <th style="width: 10%"></th>
-		        </tr>
-		    </thead>
-		    <tbody>
-		        <template v-for="subitem in SingleMetaAnaliseDocs" :key="subitem.id">
-		            <tr>
-		                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.nome_original??'-' }}</a></td>
-		                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.descricao??'-' }}</a></td>
-		                <td style="white-space: nowrap; text-align: right;">
-		                    <a @click="deleteArquivo(subitem.id)" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
-		                </td>
-		            </tr>
-		        </template>
-		    </tbody>
-		</table>
-		<a @click="virtualUpload.open=1;" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar documentos</span></a>
 
 		<div v-if="virtualUpload.open" class="editModal-wrap">
 		    <div class="overlay" @click="virtualUpload.open=false"></div>
