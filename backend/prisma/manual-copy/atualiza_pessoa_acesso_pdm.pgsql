@@ -84,33 +84,7 @@ BEGIN
                 1
             from indicador_variavel iv
             join (
-                -- indicadores do pdm
-                select
-                    im.id as indicador_id
-                from meta m
-                join indicador im on im.meta_id = m.id and im.removido_em is null
-                where m.pdm_id = vPdmId
-                and m.ativo = TRUE
-                and m.removido_em is null
-                UNION ALL
-                select
-                    ii.id as indicador_id
-                from meta m
-                join iniciativa i on i.meta_id = m.id and i.removido_em is null
-                join indicador ii on ii.iniciativa_id = i.id and ii.removido_em is null
-                where m.pdm_id = vPdmId
-                and m.ativo = TRUE
-                and m.removido_em is null
-                UNION ALL
-                select
-                    ia.id as indicador_id
-                from meta m
-                join iniciativa i on i.meta_id = m.id and i.removido_em is null
-                join atividade a on a.iniciativa_id = i.id and a.removido_em is null
-                join indicador ia on ia.atividade_id = a.id and ia.removido_em is null
-                where m.pdm_id = vPdmId
-                and m.ativo = TRUE
-                and m.removido_em is null
+                 select 123 as indicador_id
             ) i on i.indicador_id = iv.indicador_id
             WHERE iv.desativado_em is null
             and vv.id = iv.variavel_id
@@ -302,6 +276,8 @@ CREATE TRIGGER trg_variavel_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR 
     FOR EACH STATEMENT
     EXECUTE FUNCTION f_recalc_acesso_pessoas();
 
-
+CREATE TRIGGER trg_indicador_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON indicador
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION f_recalc_acesso_pessoas();
 
 */
