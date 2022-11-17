@@ -5,12 +5,20 @@
     import { default as listVars } from '@/components/monitoramento/listVars.vue';
     import { default as countVars } from '@/components/monitoramento/countVars.vue';
     import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
-    import { useEditModalStore, useAlertStore, useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
+    import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
+
+    import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
+    import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
+    import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
+
+    import { useEditModalStore, useSideBarStore, useAlertStore, useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
     import { useRoute } from 'vue-router';
+    import { router } from '@/router';
     
     const route = useRoute();
     const meta_id = route.params.meta_id;
 
+    const SideBarStore = useSideBarStore();
     const editModalStore = useEditModalStore();
     const alertStore = useAlertStore();
 
@@ -20,12 +28,18 @@
 
     const PdMStore = usePdMStore();
     const { activePdm } = storeToRefs(PdMStore);
-    if(!activePdm.value.id)PdMStore.getActive();
 
     const CiclosStore = useCiclosStore();
-    const { SingleMeta, MetaVars } = storeToRefs(CiclosStore);
+    const { SingleMeta, MetaVars, SingleMetaAnalise, SingleRisco, SingleFechamento } = storeToRefs(CiclosStore);
     CiclosStore.getMetaById(meta_id);
     CiclosStore.getMetaVars(meta_id);
+
+    (async()=>{
+        if(!activePdm.value.id)await PdMStore.getActive();
+        CiclosStore.getMetaAnalise(activePdm.value.ciclo_fisico_ativo.id,meta_id);
+        CiclosStore.getMetaRisco(activePdm.value.ciclo_fisico_ativo.id,meta_id);
+        CiclosStore.getMetaFechamento(activePdm.value.ciclo_fisico_ativo.id,meta_id);
+    })();
 
     function dateToField(d){
         var dd=d?new Date(d):false;
@@ -48,6 +62,34 @@
         editModalStore.clear();
         editModalStore.modal(modalRealizado,{'parent':parent,'var_id':var_id,'periodo':periodo,'checkClose':checkClose});
     }
+    function abrePeriodo(parent,var_id,periodo){
+        SideBarStore.clear();
+        SideBarStore.modal(sidebarRealizado,{'parent':parent,'var_id':var_id,'periodo':periodo});
+    }
+    function confirmFase(id,f){
+        let z = activePdm.value.ciclo_fisico_ativo.fases.find(x=>x.ciclo_fase==f);
+        
+        if(z) alertStore.confirmAction(
+            'Deseja mesmo avançar a etapa?',
+            async()=>{alertStore.clear(); await CiclosStore.updateFase(id,{ciclo_fase_id: z.id}); router.go(); },
+            'Avançar',
+            ()=>{alertStore.clear();},
+        );
+    }
+
+    function fecharciclo(ciclo_id,meta_id,parent){
+        editModalStore.clear();
+        editModalStore.modal(modalFechamento,{'ciclo_id':ciclo_id,'meta_id':meta_id,'parent':parent,'checkClose':checkClose});
+    }
+    function analisederisco(ciclo_id,meta_id,parent){
+        editModalStore.clear();
+        editModalStore.modal(modalAnaliseRisco,{'ciclo_id':ciclo_id,'meta_id':meta_id,'parent':parent,'checkClose':checkClose});
+    }
+    function qualificar(ciclo_id,meta_id,parent){
+        editModalStore.clear();
+        editModalStore.modal(modalQualificacaoMeta,{'ciclo_id':ciclo_id,'meta_id':meta_id,'parent':parent,'checkClose':checkClose});
+    }
+
 </script>
 <template>
     <Dashboard>
@@ -56,9 +98,65 @@
             <div class="flex spacebetween center">
                 <h1>Meta {{SingleMeta.codigo}} - {{SingleMeta.titulo}}</h1>
                 <hr class="ml2 f1" />
+                <div class="ml2 dropbtn" v-if="(perm.PDM.admin_cp||perm.PDM.tecnico_cp)&&!['Fechamento'].includes(SingleMeta.fase)">
+                    <span class="btn">Avançar etapa</span>
+                    <ul>
+                        <li><a v-if="['Coleta'].includes(SingleMeta.fase)" @click="confirmFase(SingleMeta.id,'Analise')" to="/metas/tags/novo">Qualificação</a></li>
+                        <li><a v-if="['Coleta','Analise'].includes(SingleMeta.fase)" @click="confirmFase(SingleMeta.id,'Risco')" to="/metas/tags/novo">Análise de Risco</a></li>
+                        <li><a v-if="['Coleta','Analise','Risco'].includes(SingleMeta.fase)" @click="confirmFase(SingleMeta.id,'Fechamento')" to="/metas/tags/novo">Fechamento</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
-        
+        <div class="mb2" v-if="SingleFechamento.comentario?.length">
+            <div class="flex spacebetween center mb1">
+                <h2>Fechamento do Ciclo</h2>
+                <hr class="ml2 f1" />
+                <a class="tprimary ml1" @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+            </div>
+            <div class="label tc600">Comentários</div>
+            <div>{{SingleFechamento.comentario}}</div>
+        </div>
+        <div v-else-if="SingleFechamento.loading">
+            <span class="spinner">Carregando</span>
+        </div>
+        <div class="p1 bgc50 tc mb2" v-else-if="['Fechamento'].includes(SingleMeta.fase)">
+            <a class="btn" @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Fechar ciclo</a>
+        </div>
+
+        <div class="mb2" v-if="SingleRisco.detalhamento||SingleRisco.ponto_de_atencao">
+            <div class="flex spacebetween center mb1">
+                <h2>Análise de Risco</h2>
+                <hr class="ml2 f1" />
+                <a class="tprimary ml1" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+            </div>
+            <div class="label tc600">Detalhamento</div>
+            <div class="mb2">{{SingleRisco.detalhamento}}</div>
+            <div class="label tc600">Pontos de atenção</div>
+            <div>{{SingleRisco.ponto_de_atencao}}</div>
+        </div>
+        <div v-else-if="SingleRisco.loading">
+            <span class="spinner">Carregando</span>
+        </div>
+        <div class="p1 bgc50 tc mb2" v-else-if="['Risco','Fechamento'].includes(SingleMeta.fase)">
+            <a class="btn" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Adicionar Análise de Risco</a>
+        </div>
+
+        <div class="mb2" v-if="SingleMetaAnalise.informacoes_complementares">
+            <div class="flex spacebetween center mb1">
+                <h2>Qualificação</h2>
+                <hr class="ml2 f1" />
+                <a class="tprimary ml1" @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+            </div>
+            <div class="label tc600">Informações complementares</div>
+            <div>{{SingleMetaAnalise.informacoes_complementares}}</div>
+        </div>
+        <div v-else-if="SingleMetaAnalise.loading">
+            <span class="spinner">Carregando</span>
+        </div>
+        <div class="p1 bgc50 tc mb2" v-else-if="['Coleta','Analise','Risco','Fechamento'].includes(SingleMeta.fase)">
+            <a class="btn" @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Qualificar</a>
+        </div>
 
         <div class="boards">
             <template v-if="MetaVars.meta">
@@ -72,7 +170,7 @@
                             </a>
                         </div>
                     </div>
-                    <listVars :parent="MetaVars.meta" :list="MetaVars.meta.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo"/>
+                    <listVars :parent="MetaVars.meta" :list="MetaVars.meta.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo" :abrePeriodo="abrePeriodo"/>
                 </div>
                 <template v-if="MetaVars.meta.iniciativas.length">
                     <div class="flex spacebetween center mt4 mb2">
@@ -92,7 +190,7 @@
                                     </a>
                                 </div>
                             </header>
-                            <listVars :parent="ini" :list="ini.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo"/>
+                            <listVars :parent="ini" :list="ini.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo" :abrePeriodo="abrePeriodo"/>
                         </div>
                         <p class="label mb2" v-if="ini.atividades.length">{{activePdm.rotulo_atividade}}(s) em {{activePdm.rotulo_iniciativa}} {{ini.iniciativa.codigo}} {{ini.iniciativa.titulo}}</p>
                         <template v-for="ati in ini.atividades" :key="ati.atividade.id">
@@ -108,7 +206,7 @@
                                         </a>
                                     </div>
                                 </header>
-                                <listVars :parent="ati" :list="ati.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo"/>
+                                <listVars :parent="ati" :list="ati.variaveis" :indexes="MetaVars.ordem_series" :editPeriodo="editPeriodo" :abrePeriodo="abrePeriodo"/>
                             </div>
                         </template>
                     </template>

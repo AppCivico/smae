@@ -1,7 +1,11 @@
 <script setup>
     import { useRoute } from 'vue-router';
     import { storeToRefs } from 'pinia';
-    import { usePdMStore, useCiclosStore } from '@/stores';
+    import { useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
+
+    const authStore = useAuthStore();
+    const { permissions } = storeToRefs(authStore);
+    const perm = permissions.value;
 
     const route = useRoute();
     const meta_id = route.params.meta_id;
@@ -34,10 +38,10 @@
             <div class="links-container mb2">
                 <router-link to="/monitoramento/fases">Metas por fase do ciclo</router-link>
                 <router-link to="/monitoramento/evolucao">Coleta - Evolução</router-link>
-                <router-link class="disabled" to="/monitoramento/">Coleta - Cronograma</router-link>
-                <router-link class="disabled" to="/monitoramento/">Qualificação</router-link>
-                <router-link class="disabled" to="/monitoramento/">Análise de risco</router-link>
-                <router-link class="disabled" to="/monitoramento/">Fechamento</router-link>
+                <router-link to="/monitoramento/cronograma">Coleta - Cronograma</router-link>
+                <router-link v-if="perm.PDM.admin_cp||perm.PDM.tecnico_cp" class="disabled" to="/monitoramento/">Qualificação</router-link>
+                <router-link v-if="perm.PDM.admin_cp||perm.PDM.tecnico_cp" class="disabled" to="/monitoramento/">Análise de risco</router-link>
+                <router-link v-if="perm.PDM.admin_cp||perm.PDM.tecnico_cp" class="disabled" to="/monitoramento/">Fechamento</router-link>
             </div>
             <h2>Configuração</h2>
             <div class="links-container mb2">

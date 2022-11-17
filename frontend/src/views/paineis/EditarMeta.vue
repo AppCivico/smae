@@ -16,6 +16,7 @@
 	const PaineisStore = usePaineisStore();
 	const { singlePainel } = storeToRefs(PaineisStore);
 	let metaConteudo = ref({loading: true});
+	let periodo = ref();
 	(async ()=>{
 		if(singlePainel.value.id != painel_id) await PaineisStore.getById(painel_id);
 		let c = singlePainel.value.painel_conteudo.find(x=>x.id==conteudo_id);
@@ -23,7 +24,9 @@
 			c.mostrar_planejado=c.mostrar_planejado?"1":false;
 			c.mostrar_acumulado=c.mostrar_acumulado?"1":false;
 			c.mostrar_acumulado_periodo=c.mostrar_acumulado_periodo?"1":false;
-
+			c.periodo_inicio = dateToField(c.periodo_inicio);
+			c.periodo_fim = dateToField(c.periodo_fim);
+			periodo.value = c.periodo;
 			metaConteudo.value = c;
 		}else{
 			metaConteudo.value = {error: 'Item não encontrado'};
@@ -108,6 +111,10 @@
 	        }
 	    }
 	}
+	function dateToField(d){
+        var dd=d?new Date(d):false;
+        return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
+    }
 	function fieldToDate(d){
         if(d){
             var x=d.split('/');

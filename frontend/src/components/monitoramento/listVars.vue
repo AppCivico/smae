@@ -1,5 +1,5 @@
 <script setup>
-    const props = defineProps(['parent','list','indexes','editPeriodo']);
+    const props = defineProps(['parent','list','indexes','editPeriodo','abrePeriodo']);
     function openParent(e) {
         e.target.closest('.accordeon').classList.toggle('active');
     }
@@ -18,7 +18,7 @@
             <h4 class="t1 mb0">{{v.variavel.codigo}} {{v.variavel.titulo}}</h4>
         </div>
         <div class="content">
-            <table class="tablemain">
+            <table class="tablemain fix">
                 <thead>
                     <tr>
                         <th style="width: 25%">Mês/Ano</th>
@@ -37,11 +37,11 @@
                     </td>
                 </tr>
                 <tr v-for="val in v.series" :key="val.periodo" :class="{'bgs2':val.aguarda_cp}">
-                    <td><div class="flex center"><div class="farol i1"></div> <span>{{dateToTitle(val.periodo)}}</span></div></td>
-                    <td>{{val.series[indexes.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
-                    <td>{{val.series[indexes.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
-                    <td>{{val.series[indexes.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
-                    <td>{{val.series[indexes.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
+                    <td @click="abrePeriodo(parent,v.variavel.id,val.periodo)"><div class="flex center"><div class="farol i1"></div> <span>{{dateToTitle(val.periodo)}}</span></div></td>
+                    <td @click="abrePeriodo(parent,v.variavel.id,val.periodo)">{{val.series[indexes.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
+                    <td @click="abrePeriodo(parent,v.variavel.id,val.periodo)">{{val.series[indexes.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
+                    <td @click="abrePeriodo(parent,v.variavel.id,val.periodo)">{{val.series[indexes.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
+                    <td @click="abrePeriodo(parent,v.variavel.id,val.periodo)">{{val.series[indexes.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
                     <td style="white-space: nowrap; text-align: right;">
                         <a v-if="val.pode_editar&&editPeriodo" @click="editPeriodo(parent,v.variavel.id,val.periodo)" class="tprimary">
                             <svg width="20" height="20"><use xlink:href="#i_edit"></use></svg>

@@ -1,11 +1,12 @@
 <script setup>
-import { Alert, EditModal } from '@/components';
+import { Alert, EditModal, SideBar } from '@/components';
 import { useRoute } from 'vue-router';
 const route = useRoute();
 </script>
 
 <template>
     <router-view :key="route.fullPath" />
+    <SideBar />
     <EditModal />
     <Alert />
 </template>
