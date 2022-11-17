@@ -287,7 +287,7 @@ export class MetasService {
                 indicador: indicadorMeta,
                 iniciativas: [],
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'meta_id', meta_id, cicloFisicoAtivo),
-                ...this.extraiResponsaveis(indicadorMeta.meta.meta_responsavel),
+                ...this.mfService.extraiResponsaveis(indicadorMeta.meta.meta_responsavel),
                 id: meta_id,
                 titulo: indicadorMeta.meta.titulo,
                 codigo: indicadorMeta.meta.codigo,
@@ -306,7 +306,7 @@ export class MetasService {
                 indicador: { ...iniciativa.Indicador[0] },
                 iniciativa: {
                     id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo,
-                    ...this.extraiResponsaveis(iniciativa.iniciativa_responsavel)
+                    ...this.mfService.extraiResponsaveis(iniciativa.iniciativa_responsavel)
                 },
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
@@ -318,7 +318,7 @@ export class MetasService {
                     indicador: { ...atividade.Indicador[0] },
                     atividade: {
                         id: atividade.id, codigo: atividade.codigo, titulo: atividade.titulo,
-                        ...this.extraiResponsaveis(atividade.atividade_responsavel)
+                        ...this.mfService.extraiResponsaveis(atividade.atividade_responsavel)
                     },
                     ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
                 });
@@ -332,49 +332,7 @@ export class MetasService {
 
     }
 
-    private extraiResponsaveis(
-        responsaveis: {
-            coordenador_responsavel_cp: boolean,
-            orgao: {
-                sigla: string | null
-            },
-            pessoa: {
-                nome_exibicao: string
-            },
-        }[]
-    ): {
-        orgaos_responsaveis: string[],
-        orgaos_participantes: string[],
-        responsaveis_na_cp: string[]
-    } {
-        let orgaos_responsaveis: string[] = [];
-        let orgaos_participantes: string[] = [];
-        let responsaveis_na_cp: string[] = [];
 
-        for (const r of responsaveis) {
-            const sigla = r.orgao.sigla || '';
-
-            if (r.coordenador_responsavel_cp) {
-                if (orgaos_responsaveis.includes(sigla) == false) {
-                    orgaos_responsaveis.push(sigla)
-                }
-
-                if (responsaveis_na_cp.includes(r.pessoa.nome_exibicao) == false) {
-                    responsaveis_na_cp.push(r.pessoa.nome_exibicao)
-                }
-            }
-
-            if (orgaos_participantes.includes(sigla) == false) {
-                orgaos_participantes.push(sigla)
-            }
-        }
-
-        return {
-            orgaos_responsaveis,
-            orgaos_participantes,
-            responsaveis_na_cp,
-        }
-    }
 
     private async calcSerieVariaveis(
         map: VariavelDetailhePorID,
