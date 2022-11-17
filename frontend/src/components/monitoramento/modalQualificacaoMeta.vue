@@ -3,13 +3,18 @@
     import { Form, Field } from 'vee-validate';
     import * as Yup from 'yup';
     import { storeToRefs } from 'pinia';
-	import { useEditModalStore, useAlertStore, useCiclosStore } from '@/stores';
+	import { useEditModalStore, useAlertStore, useDocumentTypesStore, useCiclosStore } from '@/stores';
 	import { requestS } from '@/helpers';
     import { router } from '@/router';
 	const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
     const editModalStore = useEditModalStore();
 	const alertStore = useAlertStore();
+
+	const documentTypesStore = useDocumentTypesStore();
+	const { tempDocumentTypes } = storeToRefs(documentTypesStore);
+	documentTypesStore.clear();
+	documentTypesStore.filterDocumentTypes();
 
     const pr = defineProps(['props']);
     const props = pr.props;
@@ -47,6 +52,62 @@
             alertStore.error(error);
         }
     }
+
+
+    let virtualUpload = ref({});
+    const uploadSchema = Yup.object().shape({
+        descricao: Yup.string().required('Preencha a descrição'),
+        tipo_documento_id: Yup.string().nullable(),
+        arquivo: Yup.string().required('Selecione um arquivo')
+    });
+    async function addArquivo(values) {
+        try {
+            var msg;
+            var r;
+
+            virtualUpload.value.loading = true;
+            values.tipo = 'DOCUMENTO';
+            const formData = new FormData();
+            
+            Object.entries(values).forEach(x=>{
+                formData.append(x[0], x[1]);
+            });
+            
+
+            let u = await requestS.upload(`${baseUrl}/upload`, formData)
+            if(u.upload_token){
+                r = await CiclosStore.addMetaArquivo({
+                	"ciclo_fisico_id": props.ciclo_id,
+			    	"meta_id": props.meta_id,
+                	"upload_token": u.upload_token
+                });
+                if(r == true){
+                    msg = 'Item adicionado com sucesso!';
+                    alertStore.success(msg);
+                    virtualUpload.value = {};
+                    getAnaliseData();
+                }
+            }else{
+                virtualUpload.value.loading = false;
+            }
+
+        } catch (error) {
+            alertStore.error(error);
+            virtualUpload.value.loading = false;
+        }
+    }
+    function deleteArquivo(id){
+        alertStore.confirmAction('Deseja remover o arquivo?',()=>{ 
+            CiclosStore.deleteMetaArquivo(id);
+            getAnaliseData();
+        },'Remover');
+    }
+    function addFile(e) {
+        const files = e.target.files;
+        virtualUpload.value.name = files[0].name;
+        virtualUpload.value.file = files[0];
+    }
+
 </script>
 <template>
 	<div class="flex spacebetween center">
@@ -74,6 +135,73 @@
 		        <hr class="ml2 f1"/>
 		    </div>
 		</Form>
+
+		<table class="tablemain mb1">
+		    <thead>
+		        <tr>
+		            <th style="width: 30%">Documento</th>
+		            <th style="width: 60%">Descrição</th>
+		            <th style="width: 10%"></th>
+		        </tr>
+		    </thead>
+		    <tbody>
+		        <template v-for="subitem in SingleMetaAnaliseDocs" :key="subitem.id">
+		            <tr>
+		                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.nome_original??'-' }}</a></td>
+		                <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{ subitem?.arquivo?.descricao??'-' }}</a></td>
+		                <td style="white-space: nowrap; text-align: right;">
+		                    <a @click="deleteArquivo(subitem.id)" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
+		                </td>
+		            </tr>
+		        </template>
+		    </tbody>
+		</table>
+		<a @click="virtualUpload.open=1;" class="addlink mb1"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar documentos</span></a>
+
+		<div v-if="virtualUpload.open" class="editModal-wrap">
+		    <div class="overlay" @click="virtualUpload.open=false"></div>
+		    <div class="editModal">
+		        <div>
+		        	<h3 class="mb2">Upload de arquivo</h3>
+		        	<template v-if="virtualUpload?.loading">
+		        	    <span class="spinner">Enviando o arquivo</span>
+		        	</template>
+		            <Form v-else @submit="addArquivo" :validation-schema="uploadSchema" v-slot="{ errors, isSubmitting }">
+		                <div class="flex g2">
+		                    <div class="f1">
+		                        <label class="label">Descrição <span class="tvermelho">*</span></label>
+		                        <Field name="descricao" v-model="virtualUpload.descricao" type="text" class="inputtext light mb1" :class="{ 'error': errors.descricao }" />
+		                        <div class="error-msg">{{ errors.descricao }}</div>
+		                    </div>
+		                    <div class="f1">
+		                        <label class="label">Tipo de Documento <span class="tvermelho">*</span></label>
+		                        <Field name="tipo_documento_id" as="select" v-model="virtualUpload.tipo_documento_id" class="inputtext light mb1" :class="{ 'error': errors.tipo_documento_id }">
+		                            <option value="">Selecione</option>
+		                            <option v-for="d in tempDocumentTypes" :key="d.id" :value="d.id">{{d.titulo}}</option>
+		                        </Field>
+		                        <div class="error-msg">{{ errors.tipo_documento_id }}</div>
+		                    </div>
+		                </div>
+		                <div class="flex g2 mb2">
+		                    <div class="f1">
+		                        <label class="label">Arquivo</label>
+		                        
+		                        <label v-if="!virtualUpload.name" class="addlink" :class="{ 'error': errors.arquivo }"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg><span>Selecionar arquivo</span><input type="file" :onchange="addFile" style="display:none;"></label>
+		                                
+		                        <div v-else-if="virtualUpload.name"><span>{{virtualUpload?.name?.slice(0,30)}}</span> <a @click="virtualUpload.name=''" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a></div>
+		                        <Field name="arquivo" type="hidden" v-model="virtualUpload.file"/>
+		                        <div class="error-msg">{{ errors.arquivo }}</div>
+		                    </div>
+		                </div>
+		                <div class="flex spacebetween center">
+		                    <hr class="mr2 f1"/>
+		                    <button class="btn big" :disabled="isSubmitting">Salvar</button>
+		                    <hr class="ml2 f1"/>
+		                </div>
+		            </Form>
+		        </div>
+		    </div>
+		</div>
 
 	</template>
 	<template v-if="SingleMetaAnalise?.loading">
