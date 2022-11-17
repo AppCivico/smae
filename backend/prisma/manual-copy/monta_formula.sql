@@ -94,14 +94,15 @@ BEGIN
         _p1 := null;
         _p2 := null;
 
-        IF r.janela >= 1 THEN
+        IF r.janela = 1 THEN
 
-             select
-                pPeriodo
-            into _p2;
+            select
+                pPeriodo,
+                pPeriodo - r.periodicidade_intervalo
+            into _p2, _p1;
 
             RAISE NOTICE '->> buscando %', r.referencia || ' no periodo ' || pPeriodo
-                    || ' ( data_valor <= ' || _p2 || ' LIMIT ' || r.registros || ')';
+                    || ' ( data_valor > ' || _p1 || ' AND data_valor <= ' || _p2 || ' LIMIT ' || r.registros || ') - data_valor>(periodo - periodicidade) and data_valor <= periodo';
 
             SELECT
                 avg(valor_nominal)
@@ -124,6 +125,54 @@ BEGIN
                     sv.serie = r.serie_escolhida
                     AND sv.variavel_id = r.variavel_id
                     AND sv.data_valor <= _p2
+                    AND sv.data_valor > _p1
+                ORDER BY
+                    data_valor DESC
+                LIMIT (r.registros)
+            ) subq;
+
+            IF _valor IS NULL THEN
+                RAISE NOTICE '  <-- monta_formula retornando NULL não foram encontrado os valores';
+                RETURN NULL;
+            END IF;
+
+            _count_conferencia := _count_conferencia + _count_faltando_conferir;
+
+            RAISE NOTICE ' <-- valor calculado %', _valor || ' valores usados ' || _valores_debug::text;
+
+            _formula := replace(_formula, '$' || r.referencia , 'round(' || _valor::text || ', ' || r.casas_decimais || ')');
+        ELSEIF r.janela >= 1 THEN
+
+             select
+                pPeriodo,
+                pPeriodo - (r.janela || ' month')::interval
+            into _p2, _p1;
+
+            RAISE NOTICE '->> buscando %', r.referencia || ' no periodo ' || pPeriodo
+                    || ' ( data_valor > ' || _p1 || ' AND data_valor <= ' || _p2 || ' LIMIT ' || r.registros || ') - data_valor>(periodo - meses da janela) and data_valor <= periodo';
+
+            SELECT
+                avg(valor_nominal)
+                    AS valor,
+                array_agg(json_build_object('sv_data', data_valor, 'sv_valor', valor_nominal))
+                    AS _valores_debug,
+                    count(1) filter (where conferida = false)
+                INTO
+                _valor,
+                _valores_debug,
+                _count_faltando_conferir
+            FROM (
+                SELECT
+                    valor_nominal,
+                    sv.data_valor,
+                    sv.conferida
+                FROM
+                    serie_variavel sv
+                WHERE
+                    sv.serie = r.serie_escolhida
+                    AND sv.variavel_id = r.variavel_id
+                    AND sv.data_valor <= _p2
+                    AND sv.data_valor > _p1
                 ORDER BY
                     data_valor DESC
                 LIMIT (r.registros)
