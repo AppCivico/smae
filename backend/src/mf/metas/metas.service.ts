@@ -51,11 +51,6 @@ export class MetasService {
 
     async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
 
-        // se nao é o ponto_focal, pode simular virar um
-        if (config.perfil !== 'ponto_focal' && params.simular_ponto_focal) {
-            config.perfil = 'ponto_focal'
-        }
-
         const rows = await this.prisma.meta.findMany({
             where: {
                 id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
