@@ -28,7 +28,6 @@ export class MetasController {
     })
     async metas(
         @Query() params: FilterMfMetasDto,
-        @Query() paramsx: any,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListMfMetasDto & RequestInfoDto> {
         const start = Date.now();

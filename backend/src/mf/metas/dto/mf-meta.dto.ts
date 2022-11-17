@@ -14,6 +14,13 @@ export class FilterMfMetasDto {
     @ApiProperty({ enum: CicloFase })
     ciclo_fase?: CicloFase;
 
+    /**
+     * válido apenas para CP e técnico CP simular o comportamento do envio como se fosse um ponto_focal
+     * ou seja, os dados não serão conferidos automaticamente
+     **/
+     @IsOptional()
+     @IsBoolean()
+     simular_ponto_focal: boolean
 }
 
 
