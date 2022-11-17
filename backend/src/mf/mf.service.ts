@@ -14,6 +14,10 @@ export class MfService {
         if (!perfil)
             throw new HttpException('Faltando pessoaAcessoPdm', 404)
 
+        // apenas pra ter certeza, mas eu acredito que o Prisma já faz isso sozinho
+        perfil.cronogramas_etapas = perfil.cronogramas_etapas.map(n => +n);
+        perfil.metas_cronograma = perfil.metas_cronograma.map(n => +n);
+        perfil.metas_variaveis = perfil.metas_variaveis.map(n => +n);
 
         // TODO conferir se o ciclo é o mesmo do pdm-ativo, se n for, tem algo ruim
 
@@ -51,6 +55,5 @@ export class MfService {
             }
         });
     }
-
 
 }
