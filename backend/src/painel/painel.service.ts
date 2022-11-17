@@ -658,6 +658,18 @@ export class PainelService {
         let gte;
         let lte;
 
+        let template_values = [];
+        const series_order: string[] = [];
+
+        if (config.mostrar_planejado) {
+            series_order.push('Previsto');
+
+            if (config.mostrar_acumulado) series_order.push('PrevistoAcumulado');
+        }
+
+        series_order.push('Realizado');
+        if (config.mostrar_acumulado) series_order.push('RealizadoAcumulado');
+
         if (config.periodo === Periodo.Corrente) {
             if (config.periodicidade === Periodicidade.Anual) {
                 gte = new Date( new Date().getFullYear(), 0, 1);
@@ -953,7 +965,8 @@ export class PainelService {
                                         data_valor: {
                                             gte: gte,
                                             lte: lte
-                                        }
+                                        },
+                                        ha_conferencia_pendente: false
                                     },
                                     select: {
                                         serie: true,
@@ -979,7 +992,8 @@ export class PainelService {
                                         data_valor: {
                                             gte: gte,
                                             lte: lte
-                                        }
+                                        },
+                                        conferida: true
                                     },
                                     select: {
                                         serie: true,
@@ -1005,7 +1019,8 @@ export class PainelService {
                                                 data_valor: {
                                                     gte: gte,
                                                     lte: lte
-                                                }
+                                                },
+                                                ha_conferencia_pendente: false
                                             },
                                             select: {
                                                 serie: true,
@@ -1030,7 +1045,8 @@ export class PainelService {
                                                 data_valor: {
                                                     gte: gte,
                                                     lte: lte
-                                                }
+                                                },
+                                                conferida: true
                                             },
                                             select: {
                                                 serie: true,
@@ -1056,7 +1072,8 @@ export class PainelService {
                                                         data_valor: {
                                                             gte: gte,
                                                             lte: lte
-                                                        }
+                                                        },
+                                                        ha_conferencia_pendente: false
                                                     },
                                                     select: {
                                                         serie: true,
@@ -1081,7 +1098,8 @@ export class PainelService {
                                                         data_valor: {
                                                             gte: gte,
                                                             lte: lte
-                                                        }
+                                                        },
+                                                        conferida: true
                                                     },
                                                     select: {
                                                         serie: true,
@@ -1244,13 +1262,13 @@ export class PainelService {
                             valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                 const serie_match_arr = series_for_period.filter(sm => {
-                                    if (ix == 0) {
+                                    if (config.mostrar_planejado && ix == 0) {
                                         return sm.serie === 'Previsto'
-                                    } else if (ix == 1) {
+                                    } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                         return sm.serie === 'PrevistoAcumulado'
                                     } else if (ix == 2) {
                                         return sm.serie === 'Realizado'
-                                    } else {
+                                    } else if (config.mostrar_acumulado && ix == 3) {
                                         return sm.serie === 'RealizadoAcumulado'
                                     }
                                 });
@@ -1283,13 +1301,13 @@ export class PainelService {
                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                     const serie_match_arr = series_for_period.filter(sm => {
-                                        if (ix == 0) {
+                                        if (config.mostrar_planejado && ix == 0) {
                                             return sm.serie === 'Previsto'
-                                        } else if (ix == 1) {
+                                        } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                             return sm.serie === 'PrevistoAcumulado'
                                         } else if (ix == 2) {
                                             return sm.serie === 'Realizado'
-                                        } else {
+                                        } else if (config.mostrar_acumulado && ix == 3) {
                                             return sm.serie === 'RealizadoAcumulado'
                                         }
                                     });
@@ -1326,13 +1344,13 @@ export class PainelService {
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                             const serie_match_arr = series_for_period.filter(sm => {
-                                                if (ix == 0) {
+                                                if (config.mostrar_planejado && ix == 0) {
                                                     return sm.serie === 'Previsto'
-                                                } else if (ix == 1) {
+                                                } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                     return sm.serie === 'PrevistoAcumulado'
                                                 } else if (ix == 2) {
                                                     return sm.serie === 'Realizado'
-                                                } else {
+                                                } else if (config.mostrar_acumulado && ix == 3) {
                                                     return sm.serie === 'RealizadoAcumulado'
                                                 }
                                             });
@@ -1366,13 +1384,13 @@ export class PainelService {
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                             const serie_match_arr = series_for_period.filter(sm => {
-                                                if (ix == 0) {
+                                                if (config.mostrar_planejado && ix == 0) {
                                                     return sm.serie === 'Previsto'
-                                                } else if (ix == 1) {
+                                                } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                     return sm.serie === 'PrevistoAcumulado'
                                                 } else if (ix == 2) {
                                                     return sm.serie === 'Realizado'
-                                                } else {
+                                                } else if (config.mostrar_acumulado && ix == 3) {
                                                     return sm.serie === 'RealizadoAcumulado'
                                                 }
                                             });
@@ -1408,13 +1426,13 @@ export class PainelService {
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                                     const serie_match_arr = series_for_period.filter(sm => {
-                                                        if (ix == 0) {
+                                                        if (config.mostrar_planejado && ix == 0) {
                                                             return sm.serie === 'Previsto'
-                                                        } else if (ix == 1) {
+                                                        } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                             return sm.serie === 'PrevistoAcumulado'
                                                         } else if (ix == 2) {
                                                             return sm.serie === 'Realizado'
-                                                        } else {
+                                                        } else if (config.mostrar_acumulado && ix == 3) {
                                                             return sm.serie === 'RealizadoAcumulado'
                                                         }
                                                     });
@@ -1447,13 +1465,13 @@ export class PainelService {
                                             valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                                 const serie_match_arr = series_for_period.filter(sm => {
-                                                    if (ix == 0) {
+                                                    if (config.mostrar_planejado && ix == 0) {
                                                         return sm.serie === 'Previsto'
-                                                    } else if (ix == 1) {
+                                                    } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                         return sm.serie === 'PrevistoAcumulado'
                                                     } else if (ix == 2) {
                                                         return sm.serie === 'Realizado'
-                                                    } else {
+                                                    } else if (config.mostrar_acumulado && ix == 3) {
                                                         return sm.serie === 'RealizadoAcumulado'
                                                     }
                                                 });
@@ -1472,12 +1490,7 @@ export class PainelService {
                 }
             }),
 
-            ordem_series: [
-                "Previsto",
-                "PrevistoAcumulado",
-                "Realizado",
-                "RealizadoAcumulado"
-            ]
+            ordem_series: series_order
         }
 
         return ret;
