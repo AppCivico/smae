@@ -955,6 +955,7 @@ export class PainelService {
                         codigo: true,
 
                         indicador: {
+                            where: { removido_em: null },
                             select: {
                                 id: true,
                                 codigo: true,
@@ -1009,6 +1010,7 @@ export class PainelService {
                                 titulo: true,
 
                                 Indicador: {
+                                    where: {removido_em: null},
                                     select: {
                                         id: true,
                                         codigo: true,
@@ -1062,6 +1064,7 @@ export class PainelService {
                                         titulo: true,
 
                                         Indicador: {
+                                            where: {removido_em: null},
                                             select: {
                                                 id: true,
                                                 codigo: true,
@@ -1244,43 +1247,46 @@ export class PainelService {
                 titulo: series.meta.titulo,
                 codigo: series.meta.codigo,
 
-                indicador: {
-                    id: series.meta.indicador[0].id,
-                    codigo: series.meta.indicador[0].codigo,
-                    titulo: series.meta.indicador[0].titulo,
+                indicador: series.meta.indicador.map(i => {
+                    return {
+                        id: i.id,
+                        codigo: i.codigo,
+                        titulo: i.titulo,
+    
+                        series: series_template.map(t => {
+                            const series_for_period = i.SerieIndicador.filter(r => {
+                                return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                            });
+    
+                            return {
+                                titulo: t.titulo,
+                                periodo_inicio: t.periodo_inicio,
+                                periodo_fim: t.periodo_fim,
+    
+                                valores_nominais: t.valores_nominais.map((vn, ix) => {
+    
+                                    const serie_match_arr = series_for_period.filter(sm => {
+                                        if (config.mostrar_planejado && ix == 0) {
+                                            return sm.serie === 'Previsto'
+                                        } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
+                                            return sm.serie === 'PrevistoAcumulado'
+                                        } else if (ix == 2) {
+                                            return sm.serie === 'Realizado'
+                                        } else if (config.mostrar_acumulado && ix == 3) {
+                                            return sm.serie === 'RealizadoAcumulado'
+                                        }
+                                    });
+                                    const serie_match = serie_match_arr[0];
+    
+                                    if (serie_match) {
+                                        return serie_match.valor_nominal
+                                    } else { return "" }
+                                })
+                            }
+                        })
+                    }
+                }),
 
-                    series: series_template.map(t => {
-                        const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
-                            return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
-                        });
-
-                        return {
-                            titulo: t.titulo,
-                            periodo_inicio: t.periodo_inicio,
-                            periodo_fim: t.periodo_fim,
-
-                            valores_nominais: t.valores_nominais.map((vn, ix) => {
-
-                                const serie_match_arr = series_for_period.filter(sm => {
-                                    if (config.mostrar_planejado && ix == 0) {
-                                        return sm.serie === 'Previsto'
-                                    } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
-                                        return sm.serie === 'PrevistoAcumulado'
-                                    } else if (ix == 2) {
-                                        return sm.serie === 'Realizado'
-                                    } else if (config.mostrar_acumulado && ix == 3) {
-                                        return sm.serie === 'RealizadoAcumulado'
-                                    }
-                                });
-                                const serie_match = serie_match_arr[0];
-
-                                if (serie_match) {
-                                    return serie_match.valor_nominal
-                                } else { return "" }
-                            })
-                        }
-                    })
-                }
             },
             
             detalhes: series.detalhes.map(d => {
