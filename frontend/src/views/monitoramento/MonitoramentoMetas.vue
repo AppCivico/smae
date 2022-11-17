@@ -15,6 +15,8 @@
     import { useRoute } from 'vue-router';
     import { router } from '@/router';
     
+    const baseUrl = `${import.meta.env.VITE_API_URL}`;
+    
     const route = useRoute();
     const meta_id = route.params.meta_id;
 
