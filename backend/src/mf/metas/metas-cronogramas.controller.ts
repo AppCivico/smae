@@ -11,7 +11,8 @@ import { CronogramaService } from 'src/cronograma/cronograma.service';
 import { FilterCronogramaDto } from 'src/cronograma/dto/fillter-cronograma.dto';
 import { ListCronogramaDto } from 'src/cronograma/dto/list-cronograma.dto';
 import { EtapaService } from 'src/etapa/etapa.service';
-import { MfEtapaDto } from 'src/mf/metas/dto/mf-crono.dto';
+import { MfEtapaDto, RetornoMetaCronogramaDto } from 'src/mf/metas/dto/mf-crono.dto';
+import { MetasCronogramaService } from 'src/mf/metas/metas-cronograma.service';
 import { MfService } from '../mf.service';
 import { RequestInfoDto } from './dto/mf-meta.dto';
 
@@ -22,6 +23,7 @@ export class MetasCronogramaController {
     constructor(
         private readonly cronogramaService: CronogramaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
+        private readonly metasCronogramaService: MetasCronogramaService,
         private readonly etapaService: EtapaService,
         private readonly mfService: MfService
     ) { }
@@ -72,7 +74,7 @@ export class MetasCronogramaController {
     }
 
 
-    @Patch('cronograma/:id/etapa')
+    @Patch('cronograma/etapa/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
@@ -89,6 +91,21 @@ export class MetasCronogramaController {
         // então o melhor é na trigger do update da etapa, apagar invalidar esse status, pq ai
         // já muda quando o admin mudar aqui
         //await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+
+        return ret;
+    }
+
+    @Get(':id/iniciativas-e-atividades')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    async iniciativa_atividades(@Param() params: FindOneParams,  @CurrentUser() user: PessoaFromJwt) : Promise<RetornoMetaCronogramaDto>{
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        if (config.metas_cronograma.includes(params.id) == false) {
+            throw new HttpException('Meta não encontrada no ciclo', 404);
+        }
+        const ret = await this.metasCronogramaService.metaIniciativaAtividadesComCrono(params.id);
 
         return ret;
     }
