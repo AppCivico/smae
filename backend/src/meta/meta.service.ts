@@ -62,6 +62,9 @@ export class MetaService {
             });
 
             return meta;
+        }, {
+            maxWait: 5000,
+            timeout: 100000
         });
 
         return created;
@@ -288,6 +291,9 @@ export class MetaService {
             ]);
 
             return meta;
+        }, {
+            maxWait: 5000,
+            timeout: 100000
         });
 
         return { id };
