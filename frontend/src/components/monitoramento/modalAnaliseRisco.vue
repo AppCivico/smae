@@ -7,6 +7,7 @@
 	import { requestS } from '@/helpers';
     import { router } from '@/router';
 	const baseUrl = `${import.meta.env.VITE_API_URL}`;
+    import { default as TextEditor } from '@/components/TextEditor.vue';
 
     const editModalStore = useEditModalStore();
 	const alertStore = useAlertStore();
@@ -17,26 +18,25 @@
 	const CiclosStore = useCiclosStore();
     const { SingleRisco } = storeToRefs(CiclosStore);
 
+    let detalhamento = ref('');
+	let ponto_de_atencao = ref('');
     async function getAnaliseData(){
     	await CiclosStore.getMetaRisco(props.ciclo_id,props.meta_id);
+    	detalhamento.value = SingleRisco.value.detalhamento;
+    	ponto_de_atencao.value = SingleRisco.value.ponto_de_atencao;
     }
     getAnaliseData();
 
-    const schema = Yup.object().shape({
-        detalhamento: Yup.string(),
-        ponto_de_atencao: Yup.string(),
-    });
 
     async function onSubmit(values) {
         try {
             var msg;
             var r;
-		    
 		    let v = {
 		    	"ciclo_fisico_id": props.ciclo_id,
 		    	"meta_id": props.meta_id,
-	        	"detalhamento": values.detalhamento,
-	        	"ponto_de_atencao": values.ponto_de_atencao
+	        	"detalhamento": detalhamento.value,
+	        	"ponto_de_atencao": ponto_de_atencao.value
 		    };
             r = await CiclosStore.updateMetaRisco(v);
             msg = 'Análise de risco salva com sucesso!';
@@ -66,13 +66,11 @@
 		<Form @submit="onSubmit" ref="varForm" :validation-schema="schema" :initial-values="SingleRisco" v-slot="{ errors, isSubmitting }">
 	        <div class="mb2">
 	            <label class="label">Detalhamento</label>
-	            <Field name="detalhamento" as="textarea" rows="5" class="inputtext light mb1" :class="{ 'error': errors.detalhamento }" />
-	            <div class="error-msg">{{ errors.detalhamento }}</div>
+				<TextEditor v-model="detalhamento"/>
 	        </div>
 	        <div class="mb2">
 	            <label class="label">Ponto de atenção</label>
-	            <Field name="ponto_de_atencao" as="textarea" rows="5" class="inputtext light mb1" :class="{ 'error': errors.ponto_de_atencao }" />
-	            <div class="error-msg">{{ errors.ponto_de_atencao }}</div>
+				<TextEditor v-model="ponto_de_atencao"/>
 	        </div>
 		    <div class="flex spacebetween center mb2">
 		        <hr class="mr2 f1"/>

@@ -135,9 +135,9 @@
                 <a class="tprimary ml1" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
             </div>
             <div class="label tc300">Detalhamento</div>
-            <div class="mb2">{{vazio(SingleRisco.detalhamento)}}</div>
+            <div class="contentStyle mb2" v-html="SingleRisco.detalhamento"></div>
             <div class="label tc300">Pontos de atenção</div>
-            <div>{{vazio(SingleRisco.ponto_de_atencao)}}</div>
+            <div class="contentStyle " v-html="SingleRisco.ponto_de_atencao"></div>
         </div>
         <div v-else-if="SingleRisco.loading">
             <span class="spinner">Carregando</span>
