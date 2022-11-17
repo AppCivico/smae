@@ -57,6 +57,9 @@
 	p{line-height: 1.4;}
 	.tc{text-align: center;}
 	.lh1{line-height: 1;}
+	.i{font-style: italic;}
+	.c{text-decoration: line-through;}
+	.u{text-decoration: underline;}
 
 /* Colors */
 	.tprimary{color: @primary;}
@@ -644,6 +647,30 @@
 		}
 	}
 
+	.menueditor{
+		background: @primary; color: white; padding: .25rem;
+		.editorbt{
+			padding: .5rem; display: inline-block; min-width: 1.5rem; text-align: center;
+			&:hover{color: @c100;}
+			&.is-active{color: @amarelo;}
+		}
+	}
+	.contentStyle{
+		ul,ol{margin: 0 0 1rem; padding: 0 0 0 1rem;}
+		ul{list-style: disc;}
+		ol{list-style: decimal;}
+		li{list-style: inherit;}
+		blockquote{padding-left: 2rem;}
+		p,blockquote{margin-bottom: 1rem;}
+		.ProseMirror{
+			min-height: 7em;
+			outline: 0;
+			padding: 1rem;
+			display: block; width: 100%; max-width: 100%;
+			.br(4px); padding: .75em 1.2em; background: none;
+			border: 1.5px solid @c100; outline: 0;
+		}
+	}
 /* Navigation */
 	#submenu{
 	    position: fixed; left: 70px; top: 0; bottom: 0; background: white; z-index: 8; width: 280px; overflow: auto; .transition(); .bs(0 0 40px 20px fadeOut(black,93%));
