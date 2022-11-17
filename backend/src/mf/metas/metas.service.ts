@@ -1263,6 +1263,7 @@ export class MetasService {
             where: {
                 ciclo_fisico_id: dadosCiclo.id,
                 variavel_id: dto.variavel_id,
+                removido_em: null
             },
             orderBy: {
                 criado_em: 'desc',
@@ -1317,7 +1318,7 @@ export class MetasService {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
-                    arquivo: r.arquivo
+                    arquivo: {...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes')},
                 }
             }),
             analises: analisesResult.map((r) => {
