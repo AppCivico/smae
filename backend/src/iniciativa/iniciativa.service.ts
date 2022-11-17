@@ -309,15 +309,23 @@ export class IniciativaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const removed = await this.prisma.iniciativa.updateMany({
-            where: { id: id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            }
-        });
 
-        return removed;
+        return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+            const removed = await this.prisma.iniciativa.updateMany({
+                where: { id: id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                }
+            });
+        
+            // Caso a Iniciativa seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
+            // public.painel_conteudo_detalhe
+            await prisma.painelConteudoDetalhe.deleteMany({ where: { iniciativa_id: id } });
+
+            return removed;
+
+        });
     }
 
 }

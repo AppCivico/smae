@@ -300,14 +300,20 @@ export class MetaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const created = await this.prisma.meta.updateMany({
-            where: { id: id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            }
-        });
+        return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+            const removed = await prisma.meta.updateMany({
+                where: { id: id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
+    
+            // Caso a Meta seja removida, é necessário remover relacionamentos com Painel
+            // public.painel_conteudo e public.painel_conteudo_detalhe
+            await prisma.painelConteudo.deleteMany({ where: { meta_id: id } });
 
-        return created;
+            return removed;
+        });
     }
 }
