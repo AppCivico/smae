@@ -696,7 +696,7 @@ model MetaResponsavel {
     orgao     Orgao  @relation(fields: [orgao_id], references: [id])
 
     // TODO: arrumar o nome desta coluna, palavra 'coordenador'.
-    coorderandor_responsavel_cp Boolean
+    coordenador_responsavel_cp Boolean // @map("coorderandor_responsavel_cp")
 
     @@index([pessoa_id])
     @@map("meta_responsavel")
@@ -1612,14 +1612,13 @@ model StatusMetaCicloFisico {
     meta_id         Int
     ciclo_fisico_id Int
 
+    pessoa_id Int
     status_coleta     String @default("")
     // nao atualizadas = uma ou mais variaveis não preenchida
     // aguardando complementação = uma ou mais variavel aguarda complementação
     // não conferidas = uma ou mais variavel não foi conferida
     // outros = qualquer uma não categorizada acima
     status_cronograma String @default("")
-
-    status_valido Boolean @default(false)
 
     ciclo_fisico CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
     meta         Meta        @relation(fields: [meta_id], references: [id])

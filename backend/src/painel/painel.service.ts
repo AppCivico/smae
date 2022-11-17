@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
-import { PainelConteudoSerie, SeriesTemplate } from './dto/detalhe-painel.dto';
+import { PainelConteudoSerie, SerieRow, SeriesTemplate } from './dto/detalhe-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
@@ -658,6 +658,18 @@ export class PainelService {
         let gte;
         let lte;
 
+        let template_values = [];
+        const series_order: string[] = [];
+
+        if (config.mostrar_planejado) {
+            series_order.push('Previsto');
+
+            if (config.mostrar_acumulado) series_order.push('PrevistoAcumulado');
+        }
+
+        series_order.push('Realizado');
+        if (config.mostrar_acumulado) series_order.push('RealizadoAcumulado');
+
         if (config.periodo === Periodo.Corrente) {
             if (config.periodicidade === Periodicidade.Anual) {
                 gte = new Date( new Date().getFullYear(), 0, 1);
@@ -874,32 +886,32 @@ export class PainelService {
                 config.periodicidade === Periodicidade.Trimestral ||
                 config.periodicidade === Periodicidade.Mensal) {
                 
-                    let denominator;
+                    let multiplier;
 
                     switch (config.periodicidade) {
                         case Periodicidade.Semestral:
-                            denominator = 6;
+                            multiplier = 6;
                             break;
                         case Periodicidade.Quadrimestral:
-                            denominator = 4
+                            multiplier = 4
                             break;
                         case Periodicidade.Trimestral:
-                            denominator = 3;
+                            multiplier = 3;
                             break;
                         case Periodicidade.Bimestral:
-                            denominator = 2;
+                            multiplier = 2;
                             break;
                         case Periodicidade.Mensal:
-                            denominator = 1;
+                            multiplier = 1;
                     }
 
                     const months_diff = await this.monthsDiff(lte.getTime(), gte.getTime())
 
-                    if (months_diff >= denominator) {
+                    if (months_diff >= multiplier) {
                         let i = 0;
                         while (1) {
-                            const periodo_inicio = moment(gte).add(denominator * i, 'months').toDate();
-                            const periodo_fim    = moment(gte).add(denominator * (i + 1), 'months').toDate();
+                            const periodo_inicio = moment(gte).add(multiplier * i, 'months').toDate();
+                            const periodo_fim    = moment(gte).add(multiplier * (i + 1), 'months').toDate();
                             i++;
 
                             series_template.push({
@@ -908,6 +920,10 @@ export class PainelService {
                                 periodo_fim: periodo_fim,
                                 valores_nominais: [0, 0, 0, 0]
                             })
+
+                            if (i >= months_diff) {
+                                break;
+                            }
                         }
                     } else {
                         series_template.push({
@@ -922,18 +938,16 @@ export class PainelService {
         else {
             gte = new Date(0);
             lte = new Date();
-
-            series_template.push({
-                titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                periodo_inicio: gte,
-                periodo_fim: gte,
-                valores_nominais: [0, 0, 0, 0]
-            })
         }
 
         const series = await this.prisma.painelConteudo.findFirstOrThrow({
             where: { id: painel_conteudo_id },
             select: {
+                mostrar_acumulado: true,
+                mostrar_acumulado_periodo: true,
+                mostrar_indicador: true,
+                mostrar_planejado: true,
+
                 meta: {
                     select: {
                         id: true,
@@ -941,6 +955,7 @@ export class PainelService {
                         codigo: true,
 
                         indicador: {
+                            where: { removido_em: null },
                             select: {
                                 id: true,
                                 codigo: true,
@@ -951,7 +966,8 @@ export class PainelService {
                                         data_valor: {
                                             gte: gte,
                                             lte: lte
-                                        }
+                                        },
+                                        ha_conferencia_pendente: false
                                     },
                                     select: {
                                         serie: true,
@@ -977,7 +993,8 @@ export class PainelService {
                                         data_valor: {
                                             gte: gte,
                                             lte: lte
-                                        }
+                                        },
+                                        conferida: true
                                     },
                                     select: {
                                         serie: true,
@@ -993,6 +1010,7 @@ export class PainelService {
                                 titulo: true,
 
                                 Indicador: {
+                                    where: {removido_em: null},
                                     select: {
                                         id: true,
                                         codigo: true,
@@ -1003,7 +1021,8 @@ export class PainelService {
                                                 data_valor: {
                                                     gte: gte,
                                                     lte: lte
-                                                }
+                                                },
+                                                ha_conferencia_pendente: false
                                             },
                                             select: {
                                                 serie: true,
@@ -1028,7 +1047,8 @@ export class PainelService {
                                                 data_valor: {
                                                     gte: gte,
                                                     lte: lte
-                                                }
+                                                },
+                                                conferida: true
                                             },
                                             select: {
                                                 serie: true,
@@ -1044,6 +1064,7 @@ export class PainelService {
                                         titulo: true,
 
                                         Indicador: {
+                                            where: {removido_em: null},
                                             select: {
                                                 id: true,
                                                 codigo: true,
@@ -1054,7 +1075,8 @@ export class PainelService {
                                                         data_valor: {
                                                             gte: gte,
                                                             lte: lte
-                                                        }
+                                                        },
+                                                        ha_conferencia_pendente: false
                                                     },
                                                     select: {
                                                         serie: true,
@@ -1079,7 +1101,8 @@ export class PainelService {
                                                         data_valor: {
                                                             gte: gte,
                                                             lte: lte
-                                                        }
+                                                        },
+                                                        conferida: true
                                                     },
                                                     select: {
                                                         serie: true,
@@ -1098,8 +1121,127 @@ export class PainelService {
             }
         });
 
+        if (config.periodo === Periodo.Todos) {
+            const all_series: SerieRow[] = [];
+
+            series.meta.indicador.forEach(r => {
+                r.SerieIndicador.forEach(s => { all_series.push(s) });
+            })
+
+            series.detalhes.forEach(d => {
+                d.variavel?.serie_variavel.forEach(s => { all_series.push(s) });
+                
+                d.iniciativa?.Indicador.forEach(i => {
+                    i.SerieIndicador.forEach(s => { all_series.push(s) })
+                });
+                
+                d.filhos.forEach(f => {
+                    f.atividade?.Indicador.forEach(i => {
+                        i.SerieIndicador.forEach(s => { all_series.push(s) });
+                    });
+
+                    f.variavel?.serie_variavel.forEach(s => { all_series.push(s) });
+                    
+                    f.filhos.forEach(ff => {
+                        ff.variavel?.serie_variavel.forEach(s => { all_series.push(s) })
+                    })
+                });
+            });
+
+            all_series.sort( function compare (a, b) {
+                const date_a = new Date(a.data_valor).getTime();
+                const date_b = new Date(b.data_valor).getTime();
+                return date_a - date_b;
+            });
+
+            const earliest = new Date(all_series[0].data_valor);
+            const latest   = new Date(all_series.at(-1)!.data_valor);
+
+            if (config.periodicidade === Periodicidade.Anual) {
+                const year_diff = await this.yearsDiff(latest.getTime(), earliest.getTime());
+
+                if (year_diff > 0) {
+                    for (let i = 0; i < year_diff; i++) {
+                        const periodo_inicio = moment(earliest).add(i, 'years').toDate();
+                        const periodo_fim    = moment(periodo_inicio).add(1, 'year').toDate();
+
+                        series_template.push({
+                            titulo: periodo_inicio.toLocaleDateString('pt-br'),
+                            periodo_inicio: periodo_inicio,
+                            periodo_fim: periodo_fim,
+                            valores_nominais: ["", "", "", ""]
+                        })
+                    }
+                } else {
+                    series_template.push({
+                        titulo: earliest.toLocaleDateString('pt-BR', {year: 'numeric'}),
+                        periodo_inicio: earliest,
+                        periodo_fim: latest,
+                        valores_nominais: ["", "", "", ""]
+                    })
+                }
+            } else if (
+                config.periodicidade === Periodicidade.Semestral ||
+                config.periodicidade === Periodicidade.Quadrimestral ||
+                config.periodicidade === Periodicidade.Bimestral ||
+                config.periodicidade === Periodicidade.Trimestral ||
+                config.periodicidade === Periodicidade.Mensal) {
+                
+                    let multiplier;
+
+                    switch (config.periodicidade) {
+                        case Periodicidade.Semestral:
+                            multiplier = 6;
+                            break;
+                        case Periodicidade.Quadrimestral:
+                            multiplier = 4
+                            break;
+                        case Periodicidade.Trimestral:
+                            multiplier = 3;
+                            break;
+                        case Periodicidade.Bimestral:
+                            multiplier = 2;
+                            break;
+                        case Periodicidade.Mensal:
+                            multiplier = 1;
+                    }
+
+                    const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
+                    console.debug('months_diff: ' + months_diff)
+                    if (months_diff >= multiplier) {
+                        let i = 0;
+                        while (1) {
+                            const periodo_inicio = moment(earliest).add(multiplier * i, 'months').toDate();
+                            const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
+                            i++;
+
+                            series_template.push({
+                                titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                                periodo_inicio: periodo_inicio,
+                                periodo_fim: periodo_fim,
+                                valores_nominais: ["", "", "", ""]
+                            });
+
+                            if (i >= months_diff) {
+                                break;
+                            }
+                        }
+                    } else {
+                        series_template.push({
+                            titulo: earliest.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                            periodo_inicio: earliest,
+                            periodo_fim: latest,
+                            valores_nominais: ["", "", "", ""]
+                        })
+                    }
+            }
+        }
 
         ret = {
+            mostrar_acumulado: series.mostrar_acumulado,
+            mostrar_acumulado_periodo: series.mostrar_acumulado_periodo,
+            mostrar_indicador: series.mostrar_indicador,
+            mostrar_planejado: series.mostrar_planejado,
             meta: {
                 id: series.meta.id,
                 titulo: series.meta.titulo,
@@ -1123,13 +1265,13 @@ export class PainelService {
                             valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                 const serie_match_arr = series_for_period.filter(sm => {
-                                    if (ix == 0) {
+                                    if (config.mostrar_planejado && ix == 0) {
                                         return sm.serie === 'Previsto'
-                                    } else if (ix == 1) {
+                                    } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                         return sm.serie === 'PrevistoAcumulado'
                                     } else if (ix == 2) {
                                         return sm.serie === 'Realizado'
-                                    } else {
+                                    } else if (config.mostrar_acumulado && ix == 3) {
                                         return sm.serie === 'RealizadoAcumulado'
                                     }
                                 });
@@ -1162,13 +1304,13 @@ export class PainelService {
                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                     const serie_match_arr = series_for_period.filter(sm => {
-                                        if (ix == 0) {
+                                        if (config.mostrar_planejado && ix == 0) {
                                             return sm.serie === 'Previsto'
-                                        } else if (ix == 1) {
+                                        } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                             return sm.serie === 'PrevistoAcumulado'
                                         } else if (ix == 2) {
                                             return sm.serie === 'Realizado'
-                                        } else {
+                                        } else if (config.mostrar_acumulado && ix == 3) {
                                             return sm.serie === 'RealizadoAcumulado'
                                         }
                                     });
@@ -1205,13 +1347,13 @@ export class PainelService {
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                             const serie_match_arr = series_for_period.filter(sm => {
-                                                if (ix == 0) {
+                                                if (config.mostrar_planejado && ix == 0) {
                                                     return sm.serie === 'Previsto'
-                                                } else if (ix == 1) {
+                                                } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                     return sm.serie === 'PrevistoAcumulado'
                                                 } else if (ix == 2) {
                                                     return sm.serie === 'Realizado'
-                                                } else {
+                                                } else if (config.mostrar_acumulado && ix == 3) {
                                                     return sm.serie === 'RealizadoAcumulado'
                                                 }
                                             });
@@ -1245,13 +1387,13 @@ export class PainelService {
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                             const serie_match_arr = series_for_period.filter(sm => {
-                                                if (ix == 0) {
+                                                if (config.mostrar_planejado && ix == 0) {
                                                     return sm.serie === 'Previsto'
-                                                } else if (ix == 1) {
+                                                } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                     return sm.serie === 'PrevistoAcumulado'
                                                 } else if (ix == 2) {
                                                     return sm.serie === 'Realizado'
-                                                } else {
+                                                } else if (config.mostrar_acumulado && ix == 3) {
                                                     return sm.serie === 'RealizadoAcumulado'
                                                 }
                                             });
@@ -1287,13 +1429,13 @@ export class PainelService {
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                                     const serie_match_arr = series_for_period.filter(sm => {
-                                                        if (ix == 0) {
+                                                        if (config.mostrar_planejado && ix == 0) {
                                                             return sm.serie === 'Previsto'
-                                                        } else if (ix == 1) {
+                                                        } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                             return sm.serie === 'PrevistoAcumulado'
                                                         } else if (ix == 2) {
                                                             return sm.serie === 'Realizado'
-                                                        } else {
+                                                        } else if (config.mostrar_acumulado && ix == 3) {
                                                             return sm.serie === 'RealizadoAcumulado'
                                                         }
                                                     });
@@ -1326,13 +1468,13 @@ export class PainelService {
                                             valores_nominais: t.valores_nominais.map((vn, ix) => {
 
                                                 const serie_match_arr = series_for_period.filter(sm => {
-                                                    if (ix == 0) {
+                                                    if (config.mostrar_planejado && ix == 0) {
                                                         return sm.serie === 'Previsto'
-                                                    } else if (ix == 1) {
+                                                    } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
                                                         return sm.serie === 'PrevistoAcumulado'
                                                     } else if (ix == 2) {
                                                         return sm.serie === 'Realizado'
-                                                    } else {
+                                                    } else if (config.mostrar_acumulado && ix == 3) {
                                                         return sm.serie === 'RealizadoAcumulado'
                                                     }
                                                 });
@@ -1351,12 +1493,7 @@ export class PainelService {
                 }
             }),
 
-            ordem_series: [
-                "Previsto",
-                "PrevistoAcumulado",
-                "Realizado",
-                "RealizadoAcumulado"
-            ]
+            ordem_series: series_order
         }
 
         return ret;

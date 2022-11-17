@@ -1,4 +1,5 @@
-import { Type } from "class-transformer";
+import { ApiHideProperty } from "@nestjs/swagger";
+import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsOptional, IsPositive } from "class-validator";
 
 export class FilterCronogramaEtapaDto {
@@ -21,5 +22,9 @@ export class FilterCronogramaEtapaDto {
 
     @IsOptional()
     @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @Transform(({ value }: any) => value === 'true')
     inativo?: boolean
+
+    @ApiHideProperty()
+    cronograma_etapa_ids?: number[];
 }

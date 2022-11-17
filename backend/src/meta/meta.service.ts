@@ -27,10 +27,11 @@ export class MetaService {
             let tags = createMetaDto.tags!;
             delete createMetaDto.tags;
 
+            const now = new Date(Date.now());
             const meta = await prisma.meta.create({
                 data: {
                     criado_por: user.id,
-                    criado_em: new Date(Date.now()),
+                    criado_em: now,
                     status: '',
                     ativo: true,
                     ...createMetaDto,
@@ -48,6 +49,16 @@ export class MetaService {
 
             await prisma.metaTag.createMany({
                 data: await this.buildTags(meta.id, tags)
+            });
+
+            // reagenda o PDM para recalcular as fases
+            await this.prisma.cicloFisico.updateMany({
+                where: {
+                    ativo: true
+                },
+                data: {
+                    acordar_ciclo_em: now
+                },
             });
 
             return meta;
@@ -79,7 +90,7 @@ export class MetaService {
                     meta_id: metaId,
                     pessoa_id: participanteId,
                     orgao_id: orgao.orgao_id,
-                    coorderandor_responsavel_cp: false,
+                    coordenador_responsavel_cp: false,
                 });
             }
         }
@@ -100,7 +111,7 @@ export class MetaService {
                     meta_id: metaId,
                     pessoa_id: CoordenadoriaParticipanteId,
                     orgao_id: orgaoId,
-                    coorderandor_responsavel_cp: true,
+                    coordenador_responsavel_cp: true,
                 });
 
             }
@@ -168,7 +179,7 @@ export class MetaService {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
                         pessoa: { select: { id: true, nome_exibicao: true } },
-                        coorderandor_responsavel_cp: true,
+                        coordenador_responsavel_cp: true,
                     }
                 },
                 meta_tag: {
@@ -198,7 +209,7 @@ export class MetaService {
             }
 
             for (const responsavel of dbMeta.meta_responsavel) {
-                if (responsavel.coorderandor_responsavel_cp) {
+                if (responsavel.coordenador_responsavel_cp) {
                     coordenadores_cp.push({
                         id: responsavel.pessoa.id,
                         nome_exibicao: responsavel.pessoa.nome_exibicao,

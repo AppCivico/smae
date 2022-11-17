@@ -1,23 +1,17 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
+import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { MfService } from 'src/mf/mf.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
 import { VariavelService } from 'src/variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
-type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean };
+type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
-type StatusTracking = {
-    algumaAguardaCp: boolean,
-    algumaAguardaComplementacao: boolean
-    algumaNaoInformada: boolean
-    algumaNaoEnviada: boolean
-    algumaNaoConferida: boolean
-}
 
 type VariavelDetalhe = {
     id: number;
@@ -48,19 +42,18 @@ type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
 export class MetasService {
-
     constructor(
         private readonly variavelService: VariavelService,
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
+        private readonly mfService: MfService,
     ) { }
 
-
-    async metas(config: PessoaAcessoPdm, cicloAtivoId: number): Promise<MfMetaDto[]> {
+    async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
 
         const rows = await this.prisma.meta.findMany({
             where: {
-                id: { in: [...config.metas_cronograma, ...config.metas_variaveis] }
+                id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
             },
             select: {
                 id: true,
@@ -76,7 +69,6 @@ export class MetasService {
                     select: {
                         status_coleta: true,
                         status_cronograma: true,
-                        status_valido: true,
                     }
                 },
                 meta_orgao: {
@@ -93,23 +85,81 @@ export class MetasService {
             }
         });
 
+        let metaStatus: { meta_id: number }[] | undefined = undefined;
+
+        if (params.ciclo_fase == 'Analise') {
+            metaStatus = await this.prisma.metaCicloFisicoAnalise.findMany({
+                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
+                select: { meta_id: true }
+            });
+        } else if (params.ciclo_fase == 'Risco') {
+            metaStatus = await this.prisma.metaCicloFisicoRisco.findMany({
+                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
+                select: { meta_id: true }
+            });
+        } else if (params.ciclo_fase == 'Fechamento') {
+            metaStatus = await this.prisma.metaCicloFisicoFechamento.findMany({
+                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
+                select: { meta_id: true }
+            });
+
+        }
+        const labelsPorStatus: Record<CicloFase, Record<'true' | 'false', string>> = {
+            Analise: {
+                'false': 'Metas sem análise qualitativa',
+                'true': 'Metas com análise qualitativa',
+            },
+            Coleta: {
+                'false': '',
+                'true': '',
+            },
+            Risco: {
+                'false': 'Metas sem análise de risco',
+                'true': 'Metas com análise de risco',
+            },
+            Fechamento: {
+                'false': 'Metas não fechadas',
+                'true': 'Metas fechadas',
+            },
+        };
+        console.log(params.ciclo_fase);
+
+        let metasStatusPorMeta: Record<number, boolean> = {};
+        if (metaStatus) {
+            for (const r of metaStatus) {
+                metasStatusPorMeta[r.meta_id] = true;
+            }
+        }
+
         const out: MfMetaDto[] = [];
-
         for (const r of rows) {
-
-
             let status_coleta = '';
             let status_cronograma = '';
-            if (r.StatusMetaCicloFisico[0] && r.StatusMetaCicloFisico[0].status_coleta) {
+
+            if (r.StatusMetaCicloFisico[0]) {
                 status_coleta = r.StatusMetaCicloFisico[0].status_coleta;
-            }
-            if (r.StatusMetaCicloFisico[0] && r.StatusMetaCicloFisico[0].status_cronograma) {
                 status_cronograma = r.StatusMetaCicloFisico[0].status_cronograma;
+            } else {
+                // atualiza o status
+                await this.prisma.$queryRaw`select atualiza_status_meta_pessoa(${r.id}::int, ${config.pessoa_id}::int, ${cicloAtivoId}::int)`;
+                // busca novamente, há uma pequena chance de já ter sido invalidado, nesse caso, ignora o status nesse render
+                const novoStatus = await this.prisma.statusMetaCicloFisico.findFirst({
+                    where: { ciclo_fisico_id: cicloAtivoId, meta_id: r.id, pessoa_id: config.pessoa_id },
+                    select: { status_coleta: true, status_cronograma: true }
+                });
+                if (novoStatus) {
+                    status_coleta = novoStatus.status_coleta;
+                    status_cronograma = novoStatus.status_cronograma;
+                } else {
+                    status_coleta = 'Status desconhecido, atualize a página';
+                    status_cronograma = 'Status desconhecido, atualize a página';
+                }
             }
 
             const coleta = config.metas_variaveis.includes(r.id);
-            const cronograma = config.metas_variaveis.includes(r.id);
+            const cronograma = config.metas_cronograma.includes(r.id);
             out.push({
+                status_ciclo_fase: params.ciclo_fase ? labelsPorStatus[params.ciclo_fase][metasStatusPorMeta[r.id] ? 'true' : 'false'] : undefined,
                 fase: r.ciclo_fase?.ciclo_fase || '(sem fase)',
                 codigo: r.codigo,
                 id: r.id,
@@ -123,8 +173,8 @@ export class MetasService {
                     participante: cronograma,
                     status: cronograma ? status_cronograma || 'Outros' : ''
                 },
+            });
 
-            })
         }
 
         return out;
@@ -187,73 +237,64 @@ export class MetasService {
         user: PessoaFromJwt
     ): Promise<RetornoMetaVariaveisDto> {
 
-        const totalStatusTracking: StatusTracking = {
-            algumaAguardaComplementacao: false,
-            algumaAguardaCp: false,
-            algumaNaoInformada: false,
-            algumaNaoConferida: false,
-            algumaNaoEnviada: false
-        };
-
-        const currentStatus = await this.prisma.statusMetaCicloFisico.findFirst({
-            where: { meta_id: meta_id, ciclo_fisico_id: cicloFisicoAtivo.id },
-            select: {
-                id: true,
-                status_coleta: true
-            }
-        });
-
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
 
-        const [indicador, calcSerieVariaveis] = await Promise.all([
-            this.prisma.indicador.findFirst({
-                where: {
-                    meta_id: meta_id,
-                    removido_em: null
-                },
-                select: {
-                    titulo: true, id: true, codigo: true
+        const indicadorMeta = await this.prisma.indicador.findFirst({
+            where: {
+                meta_id: meta_id,
+                removido_em: null
+            },
+            select: {
+                titulo: true, id: true, codigo: true,
+                meta: {
+                    select: {
+                        ciclo_fase: {
+                            select: { ciclo_fase: true }
+                        },
+                        codigo: true,
+                        titulo: true,
+                        id: true,
+                        meta_responsavel: {
+                            select: {
+                                pessoa: {
+                                    select: {
+                                        nome_exibicao: true
+                                    },
+                                },
+                                orgao: {
+                                    select: {
+                                        sigla: true
+                                    }
+                                },
+                                coordenador_responsavel_cp: true
+                            }
+                        }
+                    }
                 }
-            }),
-            this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, user, totalStatusTracking),
-        ]);
-
-
-        // provavelmente isso ta muito errado...
-        const status = totalStatusTracking.algumaAguardaComplementacao ? 'Aguardando complementação' :
-            totalStatusTracking.algumaNaoInformada ? 'Aguardando preenchimento' :
-                totalStatusTracking.algumaNaoConferida ? 'Não conferidas' : 'Outras metas';
-
-        if (!currentStatus) {
-            await this.prisma.statusMetaCicloFisico.create({
-                data: {
-                    meta_id: meta_id,
-                    ciclo_fisico_id: cicloFisicoAtivo.id,
-                    status_coleta: status
-                },
-            })
-        } else {
-            if (status !== currentStatus.status_coleta) {
-                await this.prisma.statusMetaCicloFisico.update({
-                    where: {
-                        id: currentStatus.id
-                    },
-                    data: {
-                        status_coleta: status
-                    },
-                })
             }
-        }
+        });
+        if (!indicadorMeta || !indicadorMeta.meta) throw new HttpException('404', 404);
+        let metaEstaFaseColeta = indicadorMeta.meta.ciclo_fase?.ciclo_fase === 'Coleta';
+
+
+        const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, metaEstaFaseColeta);
+
 
         const retorno: RetornoMetaVariaveisDto = {
             perfil: config.perfil,
             ordem_series: calcSerieVariaveis.ordem_series,
             meta: {
-                indicador: indicador,
+                indicador: indicadorMeta,
                 iniciativas: [],
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'meta_id', meta_id, cicloFisicoAtivo),
+                ...this.extraiResponsaveis(indicadorMeta.meta.meta_responsavel),
+                id: meta_id,
+                titulo: indicadorMeta.meta.titulo,
+                codigo: indicadorMeta.meta.codigo,
+                ciclo_fase: indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : ''
             },
-        }
+        };
+        delete (indicadorMeta as any).meta;
 
         // busca apenas iniciativas que tem nas variaveis
         const iniciativas = await this.getIniciativas(meta_id, variaveisMeta);
@@ -263,7 +304,10 @@ export class MetasService {
             const retornoIniciativa: IniciativasRetorno = {
                 atividades: [],
                 indicador: { ...iniciativa.Indicador[0] },
-                iniciativa: { id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo },
+                iniciativa: {
+                    id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo,
+                    ...this.extraiResponsaveis(iniciativa.iniciativa_responsavel)
+                },
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
 
@@ -272,7 +316,10 @@ export class MetasService {
 
                 retornoIniciativa.atividades.push({
                     indicador: { ...atividade.Indicador[0] },
-                    atividade: { id: atividade.id, codigo: atividade.codigo, titulo: atividade.titulo },
+                    atividade: {
+                        id: atividade.id, codigo: atividade.codigo, titulo: atividade.titulo,
+                        ...this.extraiResponsaveis(atividade.atividade_responsavel)
+                    },
                     ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
                 });
 
@@ -285,12 +332,55 @@ export class MetasService {
 
     }
 
+    private extraiResponsaveis(
+        responsaveis: {
+            coordenador_responsavel_cp: boolean,
+            orgao: {
+                sigla: string | null
+            },
+            pessoa: {
+                nome_exibicao: string
+            },
+        }[]
+    ): {
+        orgaos_responsaveis: string[],
+        orgaos_participantes: string[],
+        responsaveis_na_cp: string[]
+    } {
+        let orgaos_responsaveis: string[] = [];
+        let orgaos_participantes: string[] = [];
+        let responsaveis_na_cp: string[] = [];
+
+        for (const r of responsaveis) {
+            const sigla = r.orgao.sigla || '';
+
+            if (r.coordenador_responsavel_cp) {
+                if (orgaos_responsaveis.includes(sigla) == false) {
+                    orgaos_responsaveis.push(sigla)
+                }
+
+                if (responsaveis_na_cp.includes(r.pessoa.nome_exibicao) == false) {
+                    responsaveis_na_cp.push(r.pessoa.nome_exibicao)
+                }
+            }
+
+            if (orgaos_participantes.includes(sigla) == false) {
+                orgaos_participantes.push(sigla)
+            }
+        }
+
+        return {
+            orgaos_responsaveis,
+            orgaos_participantes,
+            responsaveis_na_cp,
+        }
+    }
+
     private async calcSerieVariaveis(
         map: VariavelDetailhePorID,
         config: PessoaAcessoPdm,
         ciclo: CicloAtivoDto,
-        user: PessoaFromJwt,
-        statusTracking: StatusTracking): Promise<{
+        metaEstaFaseColeta: boolean): Promise<{
             ordem_series: Serie[],
             seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>
         }> {
@@ -299,7 +389,7 @@ export class MetasService {
             this.buscaSeriesValores(map, ciclo)
         ]);
 
-        const statusPorVariavel: Record<number, typeof statusVariaveisCorrente[0]> = {};
+        const statusPorVariavel: Record<number, typeof statusVariaveisCorrente[0] | null> = {};
         for (const r of statusVariaveisCorrente) {
             statusPorVariavel[r.variavel_id] = r;
         }
@@ -346,26 +436,11 @@ export class MetasService {
                 this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, serie);
             }
 
-            const permissoes = this.calculaPermissoesSerieCorrente(config, status, porVariavelIdDataSerie, variavel.id, r.data_corrente);
+            const permissoes = this.calculaPermissoesSerieCorrente(config, status, porVariavelIdDataSerie, variavel.id, r.data_corrente, metaEstaFaseColeta);
 
-            const aguarda_complementacao = status && status.aguarda_complementacao;
+            const aguarda_complementacao = status ? status && status.aguarda_complementacao : false;
             // se ja conferiu (mesmo que um valor em branco) então ta pronta
             const nao_preenchida = (status && status.conferida === true) ? false : permissoes.ha_valor === false;
-            // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
-            const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true)
-                ? false : permissoes.ha_valor;
-
-            if (status && status.aguarda_cp) {
-                statusTracking.algumaAguardaCp = true;
-            } else if (aguarda_complementacao) {
-                statusTracking.algumaAguardaComplementacao = true;
-            } else if (nao_preenchida) {
-                statusTracking.algumaNaoInformada = true;
-            } else if (nao_enviada) {
-                statusTracking.algumaNaoEnviada = true;
-            } else if (permissoes.todasConferidas == false) {
-                statusTracking.algumaNaoConferida = true;
-            }
 
             seriesPorVariavel[variavel.id] = [
                 {
@@ -375,7 +450,7 @@ export class MetasService {
                     pode_editar: permissoes.pode_editar,
                     aguarda_cp: status && status.aguarda_cp ? true : false,
                     aguarda_complementacao: aguarda_complementacao,
-                    nao_enviada: nao_enviada,
+                    nao_enviada: permissoes.nao_enviada,
                     nao_preenchida: nao_preenchida
                 },
                 {
@@ -394,21 +469,27 @@ export class MetasService {
         }
     }
 
-    calculaPermissoesSerieCorrente(
+    private calculaPermissoesSerieCorrente(
         config: PessoaAcessoPdm,
-        status: { aguarda_complementacao: boolean; aguarda_cp: boolean; variavel_id: number; },
+        status: { aguarda_complementacao: boolean; aguarda_cp: boolean; variavel_id: number; conferida: boolean } | null,
         porVariavelIdDataSerie: any,
         idVariavel: number,
         dataReferencia: DateYMD,
+        metaEstaFaseColeta: boolean
     ) {
-        // isso ta errado, mas por enquanto tudo bem
-        // o certo é verificar se já houve alguma vez uma submissão para a CP
-        // mesmo que o valor seja vazio
+        // verifica apenas se existe valor
         const existeSerieValorRealizado = porVariavelIdDataSerie[idVariavel]
             && porVariavelIdDataSerie[idVariavel][dataReferencia] &&
             porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado
             && porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
             ? true : false;
+
+        // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
+        // verifica se já foi enviada (se ta conferida, já foi enviada alguma vez)
+        // se ta aguardando_cp, tbm já foi enviado
+        // se tem valor, então suponhamos que não foi enviada ainda mas já foi preenchida
+        const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true)
+            ? false : existeSerieValorRealizado;
 
         let todasConferidas = true;
         let existeValorRealizado = false;
@@ -433,13 +514,19 @@ export class MetasService {
             return {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
-                pode_editar: status.aguarda_complementacao || (!status.aguarda_cp && !existeSerieValorRealizado)
+                nao_enviada: nao_enviada,
+                pode_editar: status ?
+                    (status.aguarda_complementacao ? true :
+                        status.aguarda_cp || status.conferida ? false : metaEstaFaseColeta
+                    )
+                    : metaEstaFaseColeta
             }
         } else {
             return {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
-                pode_editar: true
+                nao_enviada: nao_enviada,
+                pode_editar: true,
             }
         }
     }
@@ -553,6 +640,21 @@ export class MetasService {
                     },
                 },
                 iniciativa_id: true,
+                atividade_responsavel: {
+                    select: {
+                        pessoa: {
+                            select: {
+                                nome_exibicao: true
+                            },
+                        },
+                        orgao: {
+                            select: {
+                                sigla: true
+                            }
+                        },
+                        coordenador_responsavel_cp: true
+                    }
+                }
             }
         });
     }
@@ -582,6 +684,21 @@ export class MetasService {
                     },
                     select: { id: true, titulo: true, codigo: true }
                 },
+                iniciativa_responsavel: {
+                    select: {
+                        pessoa: {
+                            select: {
+                                nome_exibicao: true
+                            },
+                        },
+                        orgao: {
+                            select: {
+                                sigla: true
+                            }
+                        },
+                        coordenador_responsavel_cp: true
+                    }
+                }
             }
         });
     }
@@ -621,6 +738,7 @@ export class MetasService {
                 }
             }
         });
+
         for (const r of variaveis_da_meta) {
             map[r.id] = r;
         }
@@ -654,7 +772,7 @@ export class MetasService {
                     select: {
                         indicador: {
                             select: {
-                                iniciativa_id: true
+                                iniciativa_id: true,
                             }
                         }
                     }
@@ -830,15 +948,7 @@ export class MetasService {
                 }
             });
 
-            await prismaTxn.statusMetaCicloFisico.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    meta_id: meta_id,
-                },
-                data: {
-                    status_valido: false
-                }
-            });
+            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
 
         });
 
@@ -892,18 +1002,8 @@ export class MetasService {
                 }
             });
 
-            await prismaTxn.statusMetaCicloFisico.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    meta_id: meta_id,
-                },
-                data: {
-                    status_valido: false
-                }
-            });
-
+            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
         });
-
     }
 
 
@@ -927,6 +1027,19 @@ export class MetasService {
             throw new HttpException(`Não é possível enviar para cp, pois o seu perfil é ${config.perfil}, e os valores já entram conferidos.`, 400);
         }
 
+        const status = await this.prisma.statusVariavelCicloFisico.findFirst({
+            where: {
+                variavel_id: dto.variavel_id,
+                ciclo_fisico_id: dadosCiclo.id,
+            },
+            select: { aguarda_complementacao: true }
+        });
+
+        if (ehPontoFocal && dadosCiclo.meta_esta_na_coleta == false &&
+            (!status || status.aguarda_complementacao == false)) {
+            throw new HttpException('Você não pode enviar valores fora da fase de Coleta se não há pedido de complementação', 400);
+        }
+
         // o trabalho pra montar um SerieJwt não faz sentido
         // então vamos operar diretamente na SerieVariavel
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
@@ -935,10 +1048,10 @@ export class MetasService {
 
             let needRecalc = false;
             for (const campo of CamposRealizado) {
-                const valor_nominal = dto[campo];
+                const valor_nominal = dto[campo] === null ? '' : dto[campo];
                 if (valor_nominal === undefined) continue;
 
-                const existeValor = await this.prisma.serieVariavel.findFirst({
+                const existeValor = await prismaTxn.serieVariavel.findFirst({
                     where: {
                         variavel_id: dto.variavel_id,
                         serie: CamposRealizadoParaSerie[campo],
@@ -951,7 +1064,7 @@ export class MetasService {
                     // existe o valor, mas é pra remover, então bora
                     needRecalc = true;
 
-                    await this.prisma.serieVariavel.delete({
+                    await prismaTxn.serieVariavel.delete({
                         where: {
                             id: existeValor.id
                         }
@@ -960,7 +1073,7 @@ export class MetasService {
                     // valor não existe, entao vamos criar
                     needRecalc = true;
 
-                    await this.prisma.serieVariavel.create({
+                    await prismaTxn.serieVariavel.create({
                         data: {
                             variavel_id: dto.variavel_id,
                             serie: CamposRealizadoParaSerie[campo],
@@ -983,7 +1096,7 @@ export class MetasService {
                     ) {
                         needRecalc = true;
 
-                        await this.prisma.serieVariavel.update({
+                        await prismaTxn.serieVariavel.update({
                             where: { id: existeValor.id },
                             data: {
                                 valor_nominal: valor_nominal,
@@ -1085,15 +1198,8 @@ export class MetasService {
                 }
             }
 
-            await prismaTxn.statusMetaCicloFisico.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    meta_id: meta_id
-                },
-                data: {
-                    status_valido: false
-                }
-            });
+            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+
             return cfq.id;
         }, {
             isolationLevel: 'Serializable',
@@ -1279,7 +1385,15 @@ export class MetasService {
             select
                 variavel_participa_do_ciclo( v.id, ${dateYMD}::date ) as "variavelParticipa",
                 cf.ativo as ativo,
-                cf.id as id
+                cf.id as id,
+                (
+                    select (
+                        select cff.ciclo_fase
+                        from meta m
+                        join ciclo_fisico_fase cff on cff.id = m.ciclo_fisico_id
+                        where m.id = ${meta_id}
+                    )
+                ) = 'Coleta'::"CicloFase" as meta_esta_na_coleta
             from ciclo_fisico cf,
             variavel v
             where v.id = ${variavel_id}::int
@@ -1290,9 +1404,63 @@ export class MetasService {
         console.log(dadosCiclo);
         if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
         if (!dadosCiclo.variavelParticipa)
-            throw new HttpException(`Nenhum ciclo encontrado para preenchmento em ${dateYMD} na variável ${variavel_id}`, 400);
+            throw new HttpException(`Nenhum ciclo encontrado para preenchimento em ${dateYMD} na variável ${variavel_id}`, 400);
         return dadosCiclo;
     }
 
+
+    async mudarMetaCicloFase(meta_id: number, dto: CicloFaseDto, config: PessoaAcessoPdm, cf: CicloAtivoDto, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
+        if (config.perfil == 'ponto_focal') throw new HttpException('Função não está disponível', 400);
+
+        const meta = await this.prisma.meta.findFirst({
+            where: {
+                id: meta_id,
+            },
+            select: {
+                ciclo_fase: {
+                    select: {
+                        data_inicio: true,
+                        id: true,
+                        ciclo_fase: true
+                    }
+                }
+            }
+        });
+        if (!meta) throw new HttpException('Meta não encontrada', 404);
+        if (!meta.ciclo_fase) throw new HttpException('Meta não tem uma fase de atualmente', 404);
+
+        const cicloFase = await this.prisma.cicloFisicoFase.findFirst({
+            where: {
+                id: dto.ciclo_fase_id,
+                ciclo_fisico_id: cf.id,
+            },
+            select: {
+                data_inicio: true,
+                ciclo_fase: true,
+                id: true,
+            }
+        });
+        if (!cicloFase) throw new HttpException('Fase não encontrada', 404);
+
+        // nada pra fazer, já está na fase desejada
+        if (cicloFase.id == meta.ciclo_fase.id) return;
+
+        if (Date2YMD.toString(meta.ciclo_fase.data_inicio) > Date2YMD.toString(cicloFase.data_inicio)) {
+            throw new HttpException(`A meta está na fase ${meta.ciclo_fase.ciclo_fase} e não pode retroceder para ${cicloFase.ciclo_fase}`, 400);
+        }
+
+        await this.prisma.meta.update({
+            where: {
+                id: meta_id,
+            },
+            data: {
+                ciclo_fase_id: cicloFase.id,
+                atualizado_em: now,
+                atualizado_por: user.id,
+            }
+        });
+
+    }
 
 }

@@ -6,6 +6,7 @@ import { EtapaService } from './etapa.service';
 @Module({
     imports: [PrismaModule],
     controllers: [EtapaController],
-    providers: [EtapaService]
+    providers: [EtapaService],
+    exports: [EtapaService]
 })
 export class EtapaModule { }

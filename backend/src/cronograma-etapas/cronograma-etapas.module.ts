@@ -6,6 +6,7 @@ import { CronogramaEtapaService } from './cronograma-etapas.service';
 @Module({
     imports: [PrismaModule],
     controllers: [CronogramaEtapaController],
-    providers: [CronogramaEtapaService]
+    providers: [CronogramaEtapaService],
+    exports: [CronogramaEtapaService]
 })
 export class CronogramaEtapaModule { }

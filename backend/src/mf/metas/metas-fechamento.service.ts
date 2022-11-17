@@ -78,7 +78,7 @@ export class MetasFechamentoService {
     async addMetaFechamento(dto: FechamentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
-            throw new HttpException('Você não pode listar Fechamentos.', 400);
+            throw new HttpException('Você não pode criar Fechamentos.', 400);
         }
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
