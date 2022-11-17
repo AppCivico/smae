@@ -152,3 +152,4 @@ CREATE TRIGGER trg_indicador_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON i
     EXECUTE FUNCTION f_recalc_acesso_pessoas();
 
 
+drop trigger trg_meta_responsavel_recalc_pessoa on meta ;
