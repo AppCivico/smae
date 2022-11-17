@@ -30,7 +30,7 @@
     const { activePdm } = storeToRefs(PdMStore);
 
     const CiclosStore = useCiclosStore();
-    const { SingleMeta, MetaVars, SingleMetaAnalise, SingleRisco, SingleFechamento } = storeToRefs(CiclosStore);
+    const { SingleMeta, MetaVars, SingleMetaAnalise, SingleMetaAnaliseDocs, SingleRisco, SingleFechamento } = storeToRefs(CiclosStore);
     CiclosStore.getMetaById(meta_id);
     CiclosStore.getMetaVars(meta_id);
 
@@ -89,7 +89,9 @@
         editModalStore.clear();
         editModalStore.modal(modalQualificacaoMeta,{'ciclo_id':ciclo_id,'meta_id':meta_id,'parent':parent,'checkClose':checkClose});
     }
-
+    function vazio(s){
+        return s ? s : '-';
+    }
 </script>
 <template>
     <Dashboard>
@@ -114,8 +116,8 @@
                 <hr class="ml2 f1" />
                 <a class="tprimary ml1" @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
             </div>
-            <div class="label tc600">Comentários</div>
-            <div>{{SingleFechamento.comentario}}</div>
+            <div class="label tc300">Comentários</div>
+            <div>{{vazio(SingleFechamento.comentario)}}</div>
         </div>
         <div v-else-if="SingleFechamento.loading">
             <span class="spinner">Carregando</span>
@@ -130,10 +132,10 @@
                 <hr class="ml2 f1" />
                 <a class="tprimary ml1" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
             </div>
-            <div class="label tc600">Detalhamento</div>
-            <div class="mb2">{{SingleRisco.detalhamento}}</div>
-            <div class="label tc600">Pontos de atenção</div>
-            <div>{{SingleRisco.ponto_de_atencao}}</div>
+            <div class="label tc300">Detalhamento</div>
+            <div class="mb2">{{vazio(SingleRisco.detalhamento)}}</div>
+            <div class="label tc300">Pontos de atenção</div>
+            <div>{{vazio(SingleRisco.ponto_de_atencao)}}</div>
         </div>
         <div v-else-if="SingleRisco.loading">
             <span class="spinner">Carregando</span>
@@ -148,8 +150,26 @@
                 <hr class="ml2 f1" />
                 <a class="tprimary ml1" @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
             </div>
-            <div class="label tc600">Informações complementares</div>
-            <div>{{SingleMetaAnalise.informacoes_complementares}}</div>
+            <div class="label tc300">Informações complementares</div>
+            <div>{{vazio(SingleMetaAnalise.informacoes_complementares)}}</div>
+
+            <table class="tablemain mt2 mb2 pl0">
+                <thead>
+                    <tr>
+                        <th style="width: 30%">Documentos relacionados</th>
+                        <th style="width: 70%">Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template v-if="SingleMetaAnaliseDocs.length">
+                        <tr v-for="subitem in SingleMetaAnaliseDocs" :key="subitem.id">
+                            <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{  vazio(subitem?.arquivo?.nome_original)  }}</a></td>
+                            <td><a :href="baseUrl+'/download/'+subitem?.arquivo?.download_token" download>{{  vazio(subitem?.arquivo?.descricao)  }}</a></td>
+                        </tr>
+                    </template>
+                    <tr v-else><td colspan="60">Nenhum arquivo adicionado</td></tr>
+                </tbody>
+            </table>
         </div>
         <div v-else-if="SingleMetaAnalise.loading">
             <span class="spinner">Carregando</span>
