@@ -51,6 +51,11 @@ export class MetasService {
 
     async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
 
+        // se nao é o ponto_focal, pode simular virar um
+        if (config.perfil !== 'ponto_focal' && params.simular_ponto_focal) {
+            config.perfil = 'ponto_focal'
+        }
+
         const rows = await this.prisma.meta.findMany({
             where: {
                 id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
@@ -1318,7 +1323,7 @@ export class MetasService {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
-                    arquivo: {...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes')},
+                    arquivo: { ...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes') },
                 }
             }),
             analises: analisesResult.map((r) => {
