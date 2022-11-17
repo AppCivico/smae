@@ -249,6 +249,12 @@
 			cursor: default;
 		}
 	}
+	.complementacao{
+		padding: 1rem;
+		border: 1px solid @vermelho;
+		border-top-width: 3px;
+		background: fade(@vermelho, 10%);
+	}
 	.dropbtn{
 		position: relative;
 		padding: .5rem 0;
@@ -349,8 +355,6 @@
 
 				}
 			}
-
-			
 		}
 	}
 	.etapa-edit{
@@ -483,6 +487,35 @@
 			display: block;
 		}
 	}
+	.sidebar-wrap{
+		position: fixed; left: 0; top: 0;
+		width: 100%; height: 100%;
+		height: 100vh;
+		z-index: 9998;
+		overflow: auto;
+		.overlay{
+			position: fixed; left: 0; top: 0;
+			width: 100%; height: 100%;
+			background: fade(@primary, 15%);
+			animation: fadeIn .3s;
+		}
+		.sidebar{
+			animation: entra .3s;
+			position: fixed;
+			right: 0; top: 0;
+			max-width: 480px;
+			height: 100%;
+			overflow: auto;
+			background: @branco; color: @primary;
+			padding: 2rem;
+			box-shadow: -8px 0 16px rgba(21, 39, 65, 0.1);
+			display: block;
+			justify-content: space-between;
+			gap: 1em;
+			width: 80%;
+			margin: auto;
+		}
+	}
 	.suggestion{
 		position: relative;
 		input:focus, input:active{
@@ -551,6 +584,9 @@
 		.tlink{
 			.block; .tprimary; .t12; letter-spacing: .05em; background: @c100; .uc; .w900; .tc; .p1;
 			margin: -1rem -1rem 1em -2rem;
+		}
+		&.pl0{
+			th:first-child,td:first-child{padding-left: 0;}
 		}
 	}
 	.tablepreinfo{

@@ -21,7 +21,7 @@ import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
-import { ListCiclos, ListMonitoramentoMetas, ListMonitoramentoMetasStatus, MonitoramentoMetas } from '@/views/monitoramento';
+import { ListCiclos, ListMonitoramentoMetas, ListMonitoramentoMetasStatus, ListMonitoramentoMetasCronograma, MonitoramentoMetas } from '@/views/monitoramento';
 
 
 export const router = createRouter({
@@ -108,6 +108,7 @@ export const router = createRouter({
                 { path: '', redirect: '/monitoramento/evolucao' },
                 { path: 'fases', component: ListMonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'evolucao', component: ListMonitoramentoMetasStatus,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'cronograma', component: ListMonitoramentoMetasCronograma,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos/fechados', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'metas/:meta_id', component: MonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
