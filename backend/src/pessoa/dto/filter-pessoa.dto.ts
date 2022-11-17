@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsOptional, IsPositive } from "class-validator";
 
@@ -11,6 +12,12 @@ export class FilterPessoaDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     coordenador_responsavel_cp?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    @ApiProperty({deprecated: true})
+    coorderandor_responsavel_cp?: boolean;
 
     /**
    * Filtrar por órgão?
