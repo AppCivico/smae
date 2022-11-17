@@ -38,7 +38,7 @@ export class PainelConteudoMetaSerie {
     id: number
     titulo: string
     codigo: string
-    indicador?: RowWithIdTitleSeries | null
+    indicador?: RowWithIdTitleSeries[] | null
 }
 export class PainelConteudoDetalhesSeries {
     variavel: RowWithIdTitleSeries | null
