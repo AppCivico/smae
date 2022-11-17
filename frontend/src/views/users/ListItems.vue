@@ -61,7 +61,7 @@ function filterPerfil(ids) {
             </div>
             <button @click="filterUsers" class="btn ml2">Filtrar</button>
         </div>
-        <table class="tablemain">
+        <table class="tablemain fix">
             <thead>
                 <tr>
                     <th style="width: 20%">E-mail</th>
