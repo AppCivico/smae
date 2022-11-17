@@ -6,6 +6,7 @@ import { CronogramaService } from 'src/cronograma/cronograma.service';
 import { EtapaModule } from 'src/etapa/etapa.module';
 import { MetasAnaliseQualiController } from 'src/mf/metas/metas-analise-quali.controller';
 import { MetasAnaliseQualiService } from 'src/mf/metas/metas-analise-quali.service';
+import { MetasCronogramaService } from 'src/mf/metas/metas-cronograma.service';
 import { MetasCronogramaController } from 'src/mf/metas/metas-cronogramas.controller';
 import { MetasFechamentoController } from 'src/mf/metas/metas-fechamento.controller';
 import { MetasFechamentoService } from 'src/mf/metas/metas-fechamento.service';
@@ -34,7 +35,7 @@ import { VariavelModule } from 'src/variavel/variavel.module';
         MetasFechamentoService,
         CronogramaService,
         CronogramaEtapaService,
-
+        MetasCronogramaService,
     ]
 })
 export class MetasModule { }
