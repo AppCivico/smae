@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelConferidaDto } from './dto/mf-meta.dto';
+import { CicloFaseDto, FilterMfMetasDto, FilterMfVariaveis, FilterVariavelAnaliseQualitativaDto, ListMfMetasDto, MfListVariavelAnaliseQualitativaDto, RequestInfoDto, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelConferidaDto } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
 
@@ -52,6 +52,7 @@ export class MetasController {
     })
     async metaVariaveis(
         @Param() params: FindOneParams,
+        @Query() opts: FilterMfVariaveis,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RetornoMetaVariaveisDto & RequestInfoDto> {
         const start = Date.now();
@@ -62,6 +63,9 @@ export class MetasController {
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+        if (opts.simular_ponto_focal && config.perfil !== 'ponto_focal') {
+            config.perfil = 'ponto_focal';
+        }
 
         return {
             ...await this.metasService.metaVariaveis(
