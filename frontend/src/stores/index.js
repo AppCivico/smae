@@ -1,5 +1,6 @@
 export * from './alert.store';
 export * from './editModal.store';
+export * from './sideBar.store';
 export * from './auth.store';
 export * from './users.store';
 export * from './organs.store';

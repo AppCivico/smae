@@ -21,9 +21,9 @@
         grupos.value = {loading: true};
         await CiclosStore.getMetas();
         grupos.value = MetasCiclos.value.length ? MetasCiclos.value.reduce(function(r,a) {
-            if(chaves.indexOf(a.coleta.status)==-1)chaves.push(a.coleta.status);
-            r[a.coleta.status] = r[a.coleta.status] || [];
-            r[a.coleta.status].push(a);
+            if(chaves.indexOf(a.cronograma.status)==-1)chaves.push(a.cronograma.status);
+            r[a.cronograma.status] = r[a.cronograma.status] || [];
+            r[a.cronograma.status].push(a);
             return r;
         }, Object.create(null)) : MetasCiclos.value;
     })();
