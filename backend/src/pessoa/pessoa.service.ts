@@ -344,7 +344,7 @@ export class PessoaService {
                 delete updatePessoaDto.grupos;
 
                 for (const grupo of grupos) {
-                    grupos_to_assign.push({grupo_painel_id: grupo})
+                    grupos_to_assign.push({ grupo_painel_id: grupo })
                 }
 
                 await prisma.pessoaGrupoPainel.deleteMany({
@@ -514,7 +514,7 @@ export class PessoaService {
                 delete createPessoaDto.grupos;
 
                 for (const grupo of grupos) {
-                    grupos_to_assign.push({grupo_painel_id: grupo})
+                    grupos_to_assign.push({ grupo_painel_id: grupo })
                 }
             }
 
@@ -575,6 +575,10 @@ export class PessoaService {
                 }
             },
         };
+
+        if (filters?.coorderandor_responsavel_cp !== undefined) {
+            filters.coordenador_responsavel_cp = filters.coorderandor_responsavel_cp;
+        }
 
         let extraFilter: any = {};
         if (filters?.coordenador_responsavel_cp) {

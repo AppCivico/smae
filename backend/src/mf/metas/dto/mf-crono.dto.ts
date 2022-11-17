@@ -1,6 +1,7 @@
 import { Type } from "class-transformer";
 import { IsOptional } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { IdCodTituloRespDto } from "src/mf/metas/dto/mf-meta.dto";
 
 export class MfEtapaDto {
 
@@ -22,4 +23,28 @@ export class MfEtapaDto {
     @Type(() => Date)
     termino_real?: Date
 
+}
+
+
+export class AtividadesCronoRetorno {
+    atividade: IdCodTituloRespDto
+    cronogramas: number[]
+}
+export class IniciativasCronoRetorno {
+    iniciativa: IdCodTituloRespDto
+    atividades: AtividadesCronoRetorno[]
+    cronogramas: number[]
+}
+
+export class RetornoMetaCronogramaDto {
+    meta: {
+        iniciativas: IniciativasCronoRetorno[]
+        cronogramas: number[]
+        codigo: string
+        titulo: string
+        id: number
+        orgaos_responsaveis: string[]
+        orgaos_participantes: string[]
+        responsaveis_na_cp: string[]
+    }
 }
