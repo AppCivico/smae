@@ -219,7 +219,7 @@
 		    <div class="flex spacebetween center mb2">
 		        <hr class="mr2 f1"/>
 		        <button ref="submitBt" type="submit" class="btn outline bgnone tcprimary big mr1" :disabled="isSubmitting">Salvar</button>
-		        <button class="btn big" v-if="!perm.PDM.admin_cp&&!perm.PDM.tecnico_cp" type="button" @click="submeter" :disabled="isSubmitting">Salvar e submeter</button>
+		        <button class="btn big" v-if="!perm.PDM?.admin_cp&&!perm.PDM?.tecnico_cp" type="button" @click="submeter" :disabled="isSubmitting">Salvar e submeter</button>
 		        <hr class="ml2 f1"/>
 		    </div>
 		</Form>
