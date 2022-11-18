@@ -30,9 +30,6 @@ export class MetasFechamentoService {
     }
 
     async getMetaFechamento(dto: FilterFechamentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListFechamentoDto> {
-        if (config.perfil == 'ponto_focal') {
-            throw new HttpException('Você não pode listar Fechamentos.', 400);
-        }
 
         const analisesResult = await this.prisma.metaCicloFisicoFechamento.findMany({
             where: {
