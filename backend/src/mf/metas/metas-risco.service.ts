@@ -30,9 +30,6 @@ export class MetasRiscoService {
     }
 
     async getMetaRisco(dto: FilterRiscoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListRiscoDto> {
-        if (config.perfil == 'ponto_focal') {
-            throw new HttpException('Você não pode listar riscos.', 400);
-        }
 
         const analisesResult = await this.prisma.metaCicloFisicoRisco.findMany({
             where: {

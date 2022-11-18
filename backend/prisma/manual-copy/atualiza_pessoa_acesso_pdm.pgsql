@@ -84,7 +84,34 @@ BEGIN
                 1
             from indicador_variavel iv
             join (
-                 select 123 as indicador_id
+                 -- indicadores do pdm
+                select
+                    im.id as indicador_id
+                from meta m
+                join indicador im on im.meta_id = m.id and im.removido_em is null
+                where m.pdm_id = vPdmId
+                and m.ativo = TRUE
+                and m.removido_em is null
+                UNION ALL
+                select
+                    ii.id as indicador_id
+                from meta m
+                join iniciativa i on i.meta_id = m.id and i.removido_em is null
+                join indicador ii on ii.iniciativa_id = i.id and ii.removido_em is null
+                where m.pdm_id = vPdmId
+                and m.ativo = TRUE
+                and m.removido_em is null
+                UNION ALL
+                select
+                    ia.id as indicador_id
+                from meta m
+                join iniciativa i on i.meta_id = m.id and i.removido_em is null
+                join atividade a on a.iniciativa_id = i.id and a.removido_em is null
+                join indicador ia on ia.atividade_id = a.id and ia.removido_em is null
+                where m.pdm_id = vPdmId
+                and m.ativo = TRUE
+                and m.removido_em is null
+
             ) i on i.indicador_id = iv.indicador_id
             WHERE iv.desativado_em is null
             and vv.id = iv.variavel_id
@@ -99,19 +126,48 @@ BEGIN
         select vpdm.variavel_id
         from variaveis_pdm vpdm
         where
-        exists (
+            (vPerfil = 'admin_cp')
+        OR (
+            vPerfil  = 'ponto_focal'
+            AND EXISTS (
                 select 1
                 from variavel_responsavel vr
-                where vpdm.variavel_id = vr.variavel_id
-            AND (
-                CASE WHEN ( vPerfil IN ('tecnico_cp', 'ponto_focal') ) THEN
-                    vr.pessoa_id = pPessoa_id
-                WHEN (vPerfil IN ('admin_cp')) THEN
-                    TRUE
-                ELSE
-                    FALSE -- zero pra quem sem perfil
-                END
+                where vpdm.variavel_id = vr.variavel_id AND  vr.pessoa_id = pPessoa_id
             )
+        )
+        OR (
+            vPerfil  = 'tecnico_cp'
+
+            AND vpdm.variavel_id IN (
+
+                select iv.variavel_id
+                from meta_responsavel mr
+                join indicador i on i.meta_id = mr.meta_id and i.removido_em is null
+                join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado_em is null
+                where mr.coordenador_responsavel_cp=true
+                AND mr.pessoa_id=pPessoa_id
+
+                UNION ALL
+
+                select iv.variavel_id
+                from iniciativa_responsavel ir
+                join indicador i on i.iniciativa_id = ir.iniciativa_id and i.removido_em is null
+                join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado_em is null
+                where ir.coordenador_responsavel_cp=true
+                AND ir.pessoa_id=pPessoa_id
+
+                UNION ALL
+
+                select iv.variavel_id
+                from atividade_responsavel ar
+                join indicador i on i.atividade_id = ar.atividade_id and i.removido_em is null
+                join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado_em is null
+                where ar.coordenador_responsavel_cp=true
+                AND ar.pessoa_id=pPessoa_id
+
+
+            )
+
         )
     ),
     cronogramas as (

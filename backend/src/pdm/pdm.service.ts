@@ -286,7 +286,7 @@ export class PdmService {
                 locked: boolean,
                 now_ymd: DateYMD
             }[] = await prisma.$queryRaw`SELECT
-                pg_try_advisory_lock(${JOB_LOCK_NUMBER}) as locked,
+                pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked,
                 (now() at time zone 'America/Sao_Paulo')::date::text as now_ymd
             `;
             if (!locked[0].locked) {
@@ -300,7 +300,7 @@ export class PdmService {
         }, {
             maxWait: 30000,
             timeout: 60 * 1000 * 5,
-            isolationLevel: 'ReadCommitted',
+            isolationLevel: 'Serializable',
         });
     }
 
