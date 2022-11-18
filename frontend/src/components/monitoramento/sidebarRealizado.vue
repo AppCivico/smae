@@ -141,18 +141,15 @@
 		    </tbody>
 		</table>
 		
-		<template v-if="perm.PDM.admin_cp||perm.PDM.tecnico_cp">
-			<div class="flex center">
-				<a class="btn mr1" @click="conferir">Conferir</a>
-				<a class="btn outline bgnone tcprimary" @click="solicitarComplementacao">Solicitar{{SingleAnalise.ultimoPedidoComplementacao?' nova':''}} complementação</a>
-			</div>
-		</template>
-		<template v-if="SingleAnalise.ultimoPedidoComplementacao&&!SingleAnalise.ultimoPedidoComplementacao.atendido">
-			<div class="flex center">
-				<a class="btn big" @click="complementar">Complementar</a>
-			</div>
-		</template>
-
+		
+		<div class="flex center">
+			<a class="btn mr1" @click="conferir" v-if="!perm.PDM.tecnico_cp">Conferir</a>
+			<a class="btn mr1 outline bgnone tcprimary" 
+				@click="solicitarComplementacao"
+				v-if="perm.PDM.admin_cp||perm.PDM.tecnico_cp"
+			>Solicitar{{SingleAnalise.ultimoPedidoComplementacao?' nova':''}} complementação</a>
+			<a class="btn " @click="complementar" v-if="SingleAnalise.ultimoPedidoComplementacao&&!SingleAnalise.ultimoPedidoComplementacao.atendido">Complementar</a>
+		</div>
 
 	</template>
 	<template v-if="SingleAnalise?.loading">
