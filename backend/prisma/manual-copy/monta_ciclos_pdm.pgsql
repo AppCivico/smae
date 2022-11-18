@@ -58,7 +58,7 @@ BEGIN
                     gs.gs::date + '1 month'::interval + (duracao || 'days')::interval
                 END)::date AS fim
         FROM
-            generate_series(vPdmInicio, vPdmFim, '1 month'::interval) gs
+            generate_series(date_trunc('month', vPdmInicio), date_trunc('month', vPdmFim), '1 month'::interval) gs
         CROSS JOIN (
             SELECT
                 base.ciclo_fase,
