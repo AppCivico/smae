@@ -20,12 +20,10 @@
     (async()=>{
         grupos.value = {loading: true};
         await CiclosStore.getMetas();
-        console.log(MetasCiclos.value);
         grupos.value = MetasCiclos.value.length ? MetasCiclos.value.reduce(function(r,a) {
-            if(!a.cronograma.status) return r;
-            if(chaves.indexOf(a.cronograma.status)==-1)chaves.push(a.cronograma.status);
-            r[a.cronograma.status] = r[a.cronograma.status] || [];
-            r[a.cronograma.status].push(a);
+            if(chaves.indexOf(a.coleta.status)==-1)chaves.push(a.coleta.status);
+            r[a.coleta.status] = r[a.coleta.status] || [];
+            r[a.coleta.status].push(a);
             return r;
         }, Object.create(null)) : MetasCiclos.value;
     })();
@@ -44,7 +42,7 @@
 </script>
 <template>
     <Dashboard>
-        <div class="label tamarelo">Metas por fase do ciclo</div>
+        <div class="label tamarelo">Metas por fase de evolução</div>
         <div class="mb2">
             <div class="flex spacebetween center">
                 <h1>{{activePdm?.ciclo_fisico_ativo?.data_ciclo ? dateToTitle(activePdm.ciclo_fisico_ativo.data_ciclo) : 'Ciclo ativo'}}</h1>
@@ -63,7 +61,7 @@
                     <div class="t11 tc300 mb2">{{grupos[k]?.length}} meta(s)</div>
                     <ul class="metas">
                         <li class="meta flex center mb1" v-for="m in grupos[k]" :key="m.id">
-                            <router-link :to="`/monitoramento/metas/${m.id}`" class="flex center f1">
+                            <router-link :to="`/monitoramento/evolucao/${m.id}`" class="flex center f1">
                                 <div class="farol"></div>
                                 <div class="t13">Meta {{m.codigo}} - {{m.titulo}}</div>
                             </router-link>
