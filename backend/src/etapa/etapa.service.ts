@@ -123,6 +123,9 @@ export class EtapaService {
                 select: { id: true }
             });
 
+            // apaga tudo por enquanto, não só as que tem algum crono dessa meta
+            await prisma.statusMetaCicloFisico.deleteMany();
+
             return etapa;
         });
 

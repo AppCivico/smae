@@ -10,6 +10,9 @@ vStatusColeta varchar;
 
 vFaseColeta boolean;
 
+vStatusCrono int;
+vCronograma int[];
+
 BEGIN
     -- recebe o pdm_id apenas pq já está calculado no GET pra não ter que buscar novamente pelo ativo aqui dentro
     delete from status_meta_ciclo_fisico where pessoa_id = pPessoaId and meta_id = pMetaId;
@@ -113,10 +116,84 @@ BEGIN
 
     END IF;
 
+    select array_agg(cronograma_id)
+    into vCronograma
+    from (
+        select
+            im.id as cronograma_id
+        from meta m
+        join cronograma im on im.meta_id = m.id and im.removido_em is null
+        where m.id = pMetaId
+        and m.ativo = TRUE
+        and m.removido_em is null
+            UNION ALL
+        select
+            ii.id as cronograma_id
+        from meta m
+        join iniciativa i on i.meta_id = m.id and i.removido_em is null
+        join cronograma ii on ii.iniciativa_id = i.id and ii.removido_em is null
+        where m.id = pMetaId
+        and m.ativo = TRUE
+        and m.removido_em is null
+            UNION ALL
+        select
+            ia.id as cronograma_id
+        from meta m
+        join iniciativa i on i.meta_id = m.id and i.removido_em is null
+        join atividade a on a.iniciativa_id = i.id and a.removido_em is null
+        join cronograma ia on ia.atividade_id = a.id and ia.removido_em is null
+        where m.id = pMetaId
+        and m.ativo = TRUE
+        and m.removido_em is null
+    ) x;
+
+
+    select
+        max(
+            case
+            when inicio_previsto < now() and inicio_real is null then 1
+            when termino_previsto < now() and termino_real is null then 2
+            else 0
+        end)
+     as status into vStatusCrono
+    from etapa e
+    join (
+        select b.id, (select count(1) from etapa x where x.etapa_pai_id = b.id) as filhos
+        from  cronograma_etapa a
+        join etapa b on b.id = a.etapa_id
+        where a.cronograma_id = ANY(vCronograma) and a.inativo = false
+        and etapa_pai_id is null
+
+        union all
+
+        select fase.id, (select count(1) from etapa x where x.etapa_pai_id = fase.id) as filhos
+        from  cronograma_etapa a
+        join etapa e on e.id = a.etapa_id
+        join etapa fase on fase.etapa_pai_id = e.id
+        where a.cronograma_id = ANY(vCronograma) and a.inativo = false
+        and e.etapa_pai_id is null
+
+        union all
+
+        select subfase.id, (select count(1) from etapa x where x.etapa_pai_id = subfase.id) as filhos
+        from  cronograma_etapa a
+        join etapa e on e.id = a.etapa_id
+        join etapa fase on fase.etapa_pai_id = e.id
+        join etapa subfase on subfase.etapa_pai_id = fase.id
+        where a.cronograma_id = ANY(vCronograma) and a.inativo = false
+        and e.etapa_pai_id is null
+    ) sub on sub.id = e.id and sub.filhos = 0;
+
+
 
     insert into status_meta_ciclo_fisico (meta_id, pessoa_id, ciclo_fisico_id, status_coleta, status_cronograma)
-    select pMetaId, pPessoaId, pCicloFisicoIdAtual, vStatusColeta, 'todo-'||random()::text;
-
+    select pMetaId, pPessoaId, pCicloFisicoIdAtual, vStatusColeta,
+    case
+        when vStatusCrono = 0 then 'Em dia'
+        when vStatusCrono = 1 then 'Inicio atrasado'
+        when vStatusCrono = 2 then 'Termino atrasado'
+        else ''
+        end;
 
     --
     RETURN '';
