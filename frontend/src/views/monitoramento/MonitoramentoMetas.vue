@@ -116,7 +116,7 @@
             <div class="flex spacebetween center mb1">
                 <h2>Fechamento do Ciclo</h2>
                 <hr class="ml2 f1" />
-                <a class="tprimary ml1" @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                <a v-if="(perm.PDM.admin_cp||perm.PDM.tecnico_cp)" class="tprimary ml1" @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
             </div>
             <div class="label tc300">Comentários</div>
             <div>{{vazio(SingleFechamento.comentario)}}</div>
@@ -124,7 +124,7 @@
         <div v-else-if="SingleFechamento.loading">
             <span class="spinner">Carregando</span>
         </div>
-        <div class="p1 bgc50 tc mb2" v-else-if="['Fechamento'].includes(SingleMeta.fase)">
+        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM.admin_cp||perm.PDM.tecnico_cp)&&['Fechamento'].includes(SingleMeta.fase)">
             <a class="btn" @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Fechar ciclo</a>
         </div>
 
@@ -132,7 +132,7 @@
             <div class="flex spacebetween center mb1">
                 <h2>Análise de Risco</h2>
                 <hr class="ml2 f1" />
-                <a class="tprimary ml1" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                <a v-if="(perm.PDM.admin_cp||perm.PDM.tecnico_cp)" class="tprimary ml1" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
             </div>
             <div class="label tc300">Detalhamento</div>
             <div class="contentStyle mb2" v-html="SingleRisco.detalhamento"></div>
@@ -142,7 +142,7 @@
         <div v-else-if="SingleRisco.loading">
             <span class="spinner">Carregando</span>
         </div>
-        <div class="p1 bgc50 tc mb2" v-else-if="['Risco','Fechamento'].includes(SingleMeta.fase)">
+        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM.admin_cp||perm.PDM.tecnico_cp)&&['Risco','Fechamento'].includes(SingleMeta.fase)">
             <a class="btn" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Adicionar Análise de Risco</a>
         </div>
 
@@ -150,7 +150,7 @@
             <div class="flex spacebetween center mb1">
                 <h2>Qualificação</h2>
                 <hr class="ml2 f1" />
-                <a class="tprimary ml1" @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
+                <a v-if="(perm.PDM.admin_cp||perm.PDM.tecnico_cp)" class="tprimary ml1" @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></a>
             </div>
             <div class="label tc300">Informações complementares</div>
             <div>{{vazio(SingleMetaAnalise.informacoes_complementares)}}</div>
@@ -176,7 +176,7 @@
         <div v-else-if="SingleMetaAnalise.loading">
             <span class="spinner">Carregando</span>
         </div>
-        <div class="p1 bgc50 tc mb2" v-else-if="['Coleta','Analise','Risco','Fechamento'].includes(SingleMeta.fase)">
+        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM.admin_cp||perm.PDM.tecnico_cp)&&['Coleta','Analise','Risco','Fechamento'].includes(SingleMeta.fase)">
             <a class="btn" @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Qualificar</a>
         </div>
 
