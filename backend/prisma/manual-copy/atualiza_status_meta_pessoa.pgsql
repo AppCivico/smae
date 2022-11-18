@@ -8,15 +8,20 @@ vPerfil varchar;
 vAtrasadaCount int;
 vStatusColeta varchar;
 
+vFaseColeta boolean;
+
 BEGIN
     -- recebe o pdm_id apenas pq já está calculado no GET pra não ter que buscar novamente pelo ativo aqui dentro
     delete from status_meta_ciclo_fisico where pessoa_id = pPessoaId and meta_id = pMetaId;
 
-SELECT
+    SELECT
         cf.data_ciclo INTO vDataCicloCorrente
     FROM
          ciclo_fisico cf  where cf.id = pCicloFisicoIdAtual
     LIMIT 1;
+
+    select cff.ciclo_fase='Coleta' INTO vFaseColeta
+    from meta m join ciclo_fisico_fase cff on cff.id = m.ciclo_fase_id where m.id= pMetaId;
 
     with perfil as (select perfil from pessoa_acesso_pdm where pessoa_id = pPessoaId),
     variaveis_atrasadas as (
@@ -98,8 +103,9 @@ SELECT
             when total = conferidas then 'Todas conferidas'
             when aguarda_complementacao > 0 then 'Aguardando complementação'
             when aguarda_cp = total then 'Aguardando conferencia'
+            when vFaseColeta = false then 'Não atualizadas/em atraso'
             else
-                case when vPerfil = 'ponto_focal' then 'Não atualizadas' else 'Aguardando preenchimento' end
+                case when vPerfil = 'ponto_focal' then 'Não atualizadas' else 'Aguardando coleta pelo ponto focal' end
             end
             into vStatusColeta
         from counts;
