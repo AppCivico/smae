@@ -167,11 +167,11 @@ export class MetasService {
                 codigo_organizacoes: r.meta_orgao ? r.meta_orgao.map(e => e.orgao.sigla || e.orgao.descricao) : ['Sem Organização'],
                 coleta: {
                     participante: coleta,
-                    status: coleta ? status_coleta || 'Outros' : ''
+                    status: coleta ? (status_coleta || 'Outros') : ''
                 },
                 cronograma: {
                     participante: cronograma,
-                    status: cronograma ? status_cronograma || 'Outros' : ''
+                    status: cronograma ? (status_cronograma || 'Outros') : ''
                 },
             });
 
