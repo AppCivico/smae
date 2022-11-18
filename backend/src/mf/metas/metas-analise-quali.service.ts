@@ -32,10 +32,6 @@ export class MetasAnaliseQualiService {
     }
 
     async getMetaAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListAnaliseQualitativaDto> {
-        if (config.perfil == 'ponto_focal') {
-            throw new HttpException('Você não pode listar analise qualitativa.', 400);
-        }
-
         const analisesResult = await this.prisma.metaCicloFisicoAnalise.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
