@@ -97,7 +97,7 @@
 </script>
 <template>
     <Dashboard>
-        <div class="label tamarelo">Metas por fase do ciclo</div>
+        <div class="label tamarelo">Evolução da Meta</div>
         <div class="mb2">
             <div class="flex spacebetween center">
                 <h1>Meta {{SingleMeta.codigo}} - {{SingleMeta.titulo}}</h1>

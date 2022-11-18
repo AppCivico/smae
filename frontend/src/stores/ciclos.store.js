@@ -13,8 +13,25 @@ export const useCiclosStore = defineStore({
         SingleMetaAnaliseDocs: {},
         SingleRisco: {},
         SingleFechamento: {},
+        Cronogramas: {},
+        SingleCronograma: {},
+        SingleCronogramaEtapas: {},
+        Etapas: {},
     }),
     actions: {
+        dateToField(d){
+            var dd=d?new Date(d):false;
+            var dx = (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
+            
+            return dx??'';
+        },
+        fieldToDate(d){
+            if(d){
+                var x=d.split('/');
+                return (x.length==3) ? new Date(Date.UTC(x[2],x[1]-1,x[0])).toISOString().substring(0, 10) : null;
+            }
+            return null;
+        },
         clear (){
             this.MetasCiclos = {};
             this.SingleMeta = {};
@@ -24,6 +41,11 @@ export const useCiclosStore = defineStore({
             this.SingleMetaAnaliseDocs = {};
             this.SingleRisco = {};
             this.SingleFechamento = {};
+            
+            this.Cronogramas = {};
+            this.SingleCronograma = {};
+            this.SingleCronogramaEtapas = {};
+            this.Etapas = {};
         },
         async getMetas() {
             this.MetasCiclos = { loading: true };
@@ -146,6 +168,103 @@ export const useCiclosStore = defineStore({
             if(await requestS.patch(`${baseUrl}/mf/metas/fechamento`, params)) return true;
             return false;
         },
-        
+      
+        //Cronograma
+        async getCronogramas(p_id,parent_field) {
+            try {
+                if(!this.Cronogramas[parent_field]) this.Cronogramas[parent_field] = [];
+                if(!this.Cronogramas[parent_field][p_id]){
+                    this.Cronogramas[parent_field][p_id] = { loading: true };
+                    let r = await requestS.get(`${baseUrl}/mf/metas/cronograma?${parent_field}=${p_id}`);    
+                    this.Cronogramas[parent_field][p_id] = r.linhas.map(x=>{
+                        x.inicio_previsto = this.dateToField(x.inicio_previsto);
+                        x.termino_previsto = this.dateToField(x.termino_previsto);
+                        x.inicio_real = this.dateToField(x.inicio_real);
+                        x.termino_real = this.dateToField(x.termino_real);
+                        return x;
+                    });
+                }
+                return true;
+            } catch (error) {
+                this.Cronogramas[parent_field][p_id] = { error };
+            }
+        },
+        async getCronogramasActiveByParent(p_id,parent_field) {
+            try {
+                this.SingleCronograma = { loading: true };
+                this.SingleCronogramaEtapas = { loading: true };
+                
+                this.SingleCronograma = await this.getCronogramasItemByParent(p_id,parent_field);
+                this.getEtapasByCron(this.SingleCronograma?.id);
+                return true;
+            } catch (error) {
+                this.SingleCronograma = { error };
+            }
+        },
+        async getCronogramasItemByParent(p_id,parent_field) {
+            try {
+                await this.getCronogramas(p_id,parent_field);
+                let r = this.Cronogramas[parent_field][p_id].length? this.Cronogramas[parent_field][p_id][0]:{};
+                return r;
+            } catch (error) {
+                return {error};
+            }
+        },
+        async getEtapasByCron(cronograma_id){
+            try{
+                this.SingleCronogramaEtapas = await this.getEtapasItemsByCron(cronograma_id);
+            }catch(error){
+                this.SingleCronogramaEtapas = { error };
+            }
+        },
+        async getEtapasItemsByCron(cronograma_id){
+            try{
+                if(!cronograma_id) throw "Cronograma inválido";
+                await this.getEtapas(cronograma_id);
+                return this.Etapas[cronograma_id];
+            }catch(error){
+                return { error };
+            }
+        },
+        async getEtapas(cronograma_id) {
+            try {
+                if(!this.Etapas[cronograma_id]){
+                    this.Etapas[cronograma_id] = { loading: true };
+                    let r = await requestS.get(`${baseUrl}/mf/metas/cronograma-etapa?cronograma_id=${cronograma_id}`);    
+                    this.Etapas[cronograma_id] = r.linhas.length ? r.linhas.map(x=>{
+                        if(x.cronograma_origem_etapa&&x.cronograma_origem_etapa.id==cronograma_id) delete x.cronograma_origem_etapa;
+                        x.etapa.inicio_previsto = this.dateToField(x.etapa.inicio_previsto);
+                        x.etapa.termino_previsto = this.dateToField(x.etapa.termino_previsto);
+                        x.etapa.inicio_real = this.dateToField(x.etapa.inicio_real);
+                        x.etapa.termino_real = this.dateToField(x.etapa.termino_real);
+                        x.etapa.prazo = this.dateToField(x.etapa.prazo);
+                        if(x.etapa.etapa_filha){
+                            x.etapa.etapa_filha.map(xx=>{
+                                xx.inicio_previsto = this.dateToField(xx.inicio_previsto);
+                                xx.termino_previsto = this.dateToField(xx.termino_previsto);
+                                xx.inicio_real = this.dateToField(xx.inicio_real);
+                                xx.termino_real = this.dateToField(xx.termino_real);
+                                xx.prazo = this.dateToField(xx.prazo);
+                                if(xx.etapa_filha){
+                                    xx.etapa_filha.map(xxx=>{
+                                        xxx.inicio_previsto = this.dateToField(xxx.inicio_previsto);
+                                        xxx.termino_previsto = this.dateToField(xxx.termino_previsto);
+                                        xxx.inicio_real = this.dateToField(xxx.inicio_real);
+                                        xxx.termino_real = this.dateToField(xxx.termino_real);
+                                        xxx.prazo = this.dateToField(xxx.prazo);
+                                        return xxx;
+                                    })
+                                }
+                                return xx;
+                            });
+                        }
+                        return x;
+                    }).sort((a,b)=>{return a.ordem-b.ordem;}) : r.linhas;
+                }
+                return true;
+            } catch (error) {
+                this.Etapas[cronograma_id] = { error };
+            }
+        },
     },
 });
