@@ -328,7 +328,10 @@ export class MetasService {
                     },
                     ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
                 });
+
             }
+
+            retorno.meta.iniciativas.push(retornoIniciativa)
         }
 
         return retorno;
