@@ -12,6 +12,12 @@ import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto,
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
+type DadosMetaIndicadores = {
+    meta_id: number
+    iniciativa_id: number | null
+    atividade_id: number | null
+    indicador_id: number
+};
 
 type VariavelDetalhe = {
     id: number;
@@ -236,7 +242,7 @@ export class MetasService {
         cicloFisicoAtivo: CicloAtivoDto,
         user: PessoaFromJwt
     ): Promise<RetornoMetaVariaveisDto> {
-
+        const dadosMetas: DadosMetaIndicadores[] = await this.buscaMetaIndicadores(meta_id);
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
 
         const indicadorMeta = await this.prisma.indicador.findFirst({
@@ -297,8 +303,8 @@ export class MetasService {
         delete (indicadorMeta as any).meta;
 
         // busca apenas iniciativas que tem nas variaveis
-        const iniciativas = await this.getIniciativas(meta_id, variaveisMeta);
-        const atividades = await this.getAtividades(meta_id, variaveisMeta);
+        const iniciativas = await this.getIniciativas(meta_id, dadosMetas);
+        const atividades = await this.getAtividades(meta_id, dadosMetas);
 
         for (const iniciativa of iniciativas) {
             const retornoIniciativa: IniciativasRetorno = {
@@ -322,17 +328,54 @@ export class MetasService {
                     },
                     ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
                 });
-
             }
-
-            retorno.meta.iniciativas.push(retornoIniciativa)
         }
 
         return retorno;
 
     }
 
-
+    private async buscaMetaIndicadores(meta_id: number): Promise<DadosMetaIndicadores[]> {
+        return await this.prisma.$queryRaw`
+        select
+            m.id as meta_id,
+            null::int as iniciativa_id,
+            null::int as atividade_id,
+            im.id as indicador_id
+        from meta m
+        join indicador im on im.meta_id = m.id and im.removido_em is null
+        where m.id = ${meta_id}
+        and m.ativo = TRUE
+        and m.removido_em is null
+        group by 1,2,3,4
+            UNION ALL
+        select
+            m.id as meta_id,
+            i.id as iniciativa_id,
+            null::int as atividade_id,
+            ii.id as indicador_id
+        from meta m
+        join iniciativa i on i.meta_id = m.id and i.removido_em is null
+        join indicador ii on ii.iniciativa_id = i.id and ii.removido_em is null
+        where m.id = ${meta_id}
+        and m.ativo = TRUE
+        and m.removido_em is null
+        group by 1,2,3,4
+            UNION ALL
+        select
+            m.id as meta_id,
+            i.id as iniciativa_id,
+            a.id as atividade_id,
+            ia.id as indicador_id
+        from meta m
+        join iniciativa i on i.meta_id = m.id and i.removido_em is null
+        join atividade a on a.iniciativa_id = i.id and a.removido_em is null
+        join indicador ia on ia.atividade_id = a.id and ia.removido_em is null
+        where m.id = ${meta_id}
+        and m.ativo = TRUE
+        and m.removido_em is null
+        group by 1,2,3,4`;
+    }
 
     private async calcSerieVariaveis(
         map: VariavelDetailhePorID,
@@ -571,18 +614,14 @@ export class MetasService {
         });
     }
 
-    private async getAtividades(meta_id: number, map: VariavelDetailhePorID) {
+    private async getAtividades(meta_id: number, dadosMeta: DadosMetaIndicadores[]) {
         return await this.prisma.atividade.findMany({
             where: {
                 removido_em: null,
                 Indicador: {
                     some: {
-                        removido_em: null,
-                        IndicadorVariavel: {
-                            some: {
-                                desativado_em: null,
-                                variavel_id: { in: Object.keys(map).map(n => +n) }
-                            }
+                        id: {
+                            in: dadosMeta.filter(r => r.atividade_id !== null).map(r => r.indicador_id)
                         }
                     }
                 }
@@ -617,19 +656,17 @@ export class MetasService {
         });
     }
 
-    private async getIniciativas(meta_id: number, map: VariavelDetailhePorID) {
+    private async getIniciativas(meta_id: number, dadosMeta: DadosMetaIndicadores[]) {
+        console.log({ dadosMeta, 'ini': dadosMeta.filter(r => r.iniciativa_id !== null).map(r => r.indicador_id) });
+
         return await this.prisma.iniciativa.findMany({
             where: {
                 meta_id: meta_id,
                 removido_em: null,
                 Indicador: {
                     some: {
-                        removido_em: null,
-                        IndicadorVariavel: {
-                            some: {
-                                desativado_em: null,
-                                variavel_id: { in: Object.keys(map).map(n => +n) }
-                            }
+                        id: {
+                            in: dadosMeta.filter(r => r.iniciativa_id !== null).map(r => r.indicador_id)
                         }
                     }
                 }
