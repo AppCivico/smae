@@ -317,21 +317,28 @@ export class MetasService {
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
 
+            let atividadesComVarCount = 0;
             for (const atividade of atividades) {
                 if (+atividade.iniciativa_id != +iniciativa.id) continue;
 
-                retornoIniciativa.atividades.push({
+                let tmp: typeof retornoIniciativa.atividades[0] = {
                     indicador: { ...atividade.Indicador[0] },
                     atividade: {
                         id: atividade.id, codigo: atividade.codigo, titulo: atividade.titulo,
                         ...this.mfService.extraiResponsaveis(atividade.atividade_responsavel)
                     },
                     ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
-                });
+                };
+
+                if (tmp.variaveis.length > 0) {
+                    retornoIniciativa.atividades.push(tmp);
+                    atividadesComVarCount++;
+                }
 
             }
 
-            retorno.meta.iniciativas.push(retornoIniciativa)
+            if (atividadesComVarCount > 0)
+                retorno.meta.iniciativas.push(retornoIniciativa)
         }
 
         return retorno;
