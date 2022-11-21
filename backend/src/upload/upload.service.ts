@@ -40,20 +40,16 @@ export class UploadService {
             });
             if (!tipoDoc) throw new HttpException('Tipo de Documento não encontrado', 404);
 
-            const tipoDocExtensoes = tipoDoc.extensoes?.split(',') || [];
-            if (tipoDocExtensoes?.length == 0) throw new HttpException('Tipo de Documento não possui extensões suportadas cadastradas', 400);
+            const tipoDocExtensoes = tipoDoc.extensoes ? tipoDoc.extensoes.toLowerCase().split(',') || [] : [];
+            if (tipoDocExtensoes.length > 0) {
 
-            // TODO adicionar inteligência para verificar mimetype por ext?
-            const extTestOK = tipoDocExtensoes.some(ext => {
-                const extRegex = new RegExp('\.' + ext, 'i');
+                // TODO adicionar inteligência para verificar mimetype por ext?
+                const extSomeExtExists = tipoDocExtensoes.some(ext => {
+                    return file.originalname.toLocaleLowerCase().endsWith('.' + ext.trim());
+                })
 
-                if (extRegex.test(file.originalname) == true) {
-                    return true;
-                } else {
-                    return false;
-                }
-            })
-            if (!extTestOK) throw new HttpException(`Arquivo deve ser: ${tipoDoc.extensoes}`, 400);
+                if (!extSomeExtExists) throw new HttpException(`Arquivo deve contem um das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`, 400);
+            }
         }
         if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
             if (/\.zip$/i.test(file.originalname) == false || file.mimetype != 'application/zip') {
