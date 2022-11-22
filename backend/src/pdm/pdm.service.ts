@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
-import { CicloFisicoAtivo } from 'src/pdm/dto/list-pdm.dto';
+import { CicloFisicoDto } from 'src/pdm/dto/list-pdm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -499,8 +499,8 @@ export class PdmService {
         });
     }
 
-    async getCicloAtivo(pdm_id: number): Promise<CicloFisicoAtivo | null> {
-        let ciclo: CicloFisicoAtivo | null = null;
+    async getCicloAtivo(pdm_id: number): Promise<CicloFisicoDto | null> {
+        let ciclo: CicloFisicoDto | null = null;
         const found = await this.prisma.cicloFisico.findFirst({
             where: { pdm_id: pdm_id, ativo: true },
             include: {
@@ -512,6 +512,7 @@ export class PdmService {
                 id: found.id,
                 data_ciclo: Date2YMD.toString(found.data_ciclo),
                 fases: [],
+                ativo: found.ativo
             };
             for (const fase of found.fases) {
                 ciclo.fases.push({

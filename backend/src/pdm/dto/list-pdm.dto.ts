@@ -9,13 +9,14 @@ export class CicloFisicoFase {
     fase_corrente: boolean
 }
 
-export class CicloFisicoAtivo {
+export class CicloFisicoDto {
     id: number
     data_ciclo: DateYMD
+    ativo: boolean
     fases: CicloFisicoFase[]
 }
 
 export class ListPdmDto {
     linhas: ListPdm[]
-    ciclo_fisico_ativo?: CicloFisicoAtivo | null
+    ciclo_fisico_ativo?: CicloFisicoDto | null
 }
