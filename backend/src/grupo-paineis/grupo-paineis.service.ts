@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGrupoPaineisDto } from './dto/create-grupo-paineis.dto';
+import { DetailGrupoPaineisDto } from './dto/detail-grupo-paineis.dto';
 import { FilterGrupoPaineisDto } from './dto/filter-grupo-paineis.dto';
 import { UpdateGrupoPaineisDto } from './dto/update-grupo-paineis.dto';
 
@@ -69,5 +70,67 @@ export class GrupoPaineisService {
         });
 
         return created;
+    }
+
+    async getDetail(id: number) {
+        let ret = <DetailGrupoPaineisDto>{};
+
+        const grupo = await this.prisma.grupoPainel.findFirstOrThrow({
+            where: { id: id },
+            select: {
+                id: true,
+                nome: true,
+                ativo: true,
+
+                pessoas: {
+                    select: {
+                        pessoa: {
+                            select: {
+                                id: true,
+                                nome_exibicao: true
+                            }
+                        }
+                    }
+                },
+
+                paineis: {
+                    select: {
+                        painel: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                ativo: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        ret = {
+            id: grupo.id,
+            nome: grupo.nome,
+            ativo: grupo.ativo,
+
+            pessoa_count: grupo?.pessoas ? (grupo!.pessoas.length) : 0,
+            painel_count: grupo?.paineis ? (grupo!.paineis.length) : 0,
+
+            pessoas: grupo.pessoas.map(p => {
+                return {
+                    id: p.pessoa.id,
+                    nome_exibicao: p.pessoa.nome_exibicao
+                }
+            }),
+
+            paineis: grupo.paineis.map(p => {
+                return {
+                    id: p.painel.id,
+                    nome: p.painel.nome,
+                    ativo: p.painel.ativo
+                }
+            })
+        }
+
+        return ret;
     }
 }

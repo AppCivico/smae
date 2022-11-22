@@ -6,6 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateGrupoPaineisDto } from './dto/create-grupo-paineis.dto';
+import { DetailGrupoPaineisDto } from './dto/detail-grupo-paineis.dto';
 import { FilterGrupoPaineisDto } from './dto/filter-grupo-paineis.dto';
 import { ListGrupoPaineisDto } from './dto/list-grupo-paineis.dto';
 import { UpdateGrupoPaineisDto } from './dto/update-grupo-paineis.dto';
@@ -47,6 +48,12 @@ export class GrupoPaineisController {
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.grupoPaineisService.remove(+params.id, user);
         return '';
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async getDetail(@Param() params: FindOneParams): Promise<DetailGrupoPaineisDto> {
+        return await this.grupoPaineisService.getDetail(params.id);
     }
 
 }
