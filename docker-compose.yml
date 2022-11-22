@@ -42,6 +42,7 @@ services:
     networks:
       - postgres
       - minio
+      - api
     depends_on:
       - db
       - minio
@@ -99,9 +100,30 @@ services:
         max-file: '100'
         max-size: 1m
 
+  web:
+    container_name: "${WEB_CONTAINER_NAME}"
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    networks:
+      - api
+    depends_on:
+      - smae_api
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: "${VITE_API_URL}"
+    ports:
+      - "${BIND_INTERFACE}${SMAE_WEB_LISTEN}:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 1MB
+
 networks:
   postgres:
   minio:
+  api:
 
 
 volumes:
