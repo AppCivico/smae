@@ -41,6 +41,7 @@ import { PainelModule } from './painel/painel.module';
 import { MfModule } from './mf/mf.module';
 import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
 import { GrupoPaineisModule } from './grupo-paineis/grupo-paineis.module';
+import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 
 
 @Module({
@@ -74,6 +75,7 @@ import { GrupoPaineisModule } from './grupo-paineis/grupo-paineis.module';
                 ]
             },
         ]),
+        PdmCicloModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
