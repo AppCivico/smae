@@ -12,7 +12,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "172.17.0.1:${PG_DB_LISTEN}:5432"
+      - "${BIND_INTERFACE}${PG_DB_LISTEN}:5432"
     logging:
       driver: "json-file"
       options:
@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "172.17.0.1:${SMAE_API_LISTEN}:3001"
+      - "${BIND_INTERFACE}${SMAE_API_LISTEN}:3001"
     environment:
       DATABASE_URL: "${DATABASE_URL}"
       SESSION_JWT_SECRET: "${SESSION_JWT_SECRET}"
@@ -89,8 +89,8 @@ services:
     networks:
       - minio
     ports:
-      - "172.17.0.1:${MINIO_S3_LISTEN}:9000"
-      - "172.17.0.1:${MINIO_CONSOLE_LISTEN}:9001"
+      - "${BIND_INTERFACE}${MINIO_S3_LISTEN}:9000"
+      - "${BIND_INTERFACE}${MINIO_CONSOLE_LISTEN}:9001"
     volumes:
       - minio_data:/data1
     logging:
