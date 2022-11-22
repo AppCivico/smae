@@ -31,10 +31,16 @@ export class PainelService {
                 }
             }
 
+            const pdm_ativo = await prisma.pdm.findFirstOrThrow({
+                where: { ativo: true },
+                select: { id: true }
+            });
+
             const painel = await prisma.painel.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
+                    pdm_id: pdm_ativo.id,
                     ...createPainelDto,
 
                     grupos: {
