@@ -375,6 +375,8 @@ model Pdm {
     SubTema             SubTema[]
     Meta                Meta[]
 
+    paineis_de_meta Painel[]
+
     logo                String?
     arquivo_logo_id     Int?
     ArquivoLogo         Arquivo?              @relation(fields: [arquivo_logo_id], references: [id])
@@ -1184,6 +1186,9 @@ model Painel {
     nome          String
     periodicidade Periodicidade
     ativo         Boolean       @default(true)
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
 
     mostrar_planejado_por_padrao Boolean @default(true)
     mostrar_acumulado_por_padrao Boolean @default(true)
