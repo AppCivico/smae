@@ -612,6 +612,7 @@ model ArquivoDocumento {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@index([arquivo_id])
+    @@index([pdm_id])
     @@map("arquivo_documento")
 }
 
