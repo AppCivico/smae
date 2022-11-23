@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Date2YMD } from 'src/common/date2ymd';
-import { FilterPdmCiclo } from 'src/pdm-ciclo/dto/update-pdm-ciclo.dto';
+import { FilterPdmCiclo, UpdatePdmCicloDto } from 'src/pdm-ciclo/dto/update-pdm-ciclo.dto';
 import { CicloFisicoV2Dto } from 'src/pdm-ciclo/entities/pdm-ciclo.entity';
 import { CicloFisicoDto } from 'src/pdm/dto/list-pdm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -77,6 +78,122 @@ export class PdmCicloService {
         }
 
         return retorno;
+    }
+
+    async update(id: number, dto: UpdatePdmCicloDto) {
+
+        if (!(Date2YMD.toString(dto.fechamento) > Date2YMD.toString(dto.inicio_fechamento)))
+            throw new HttpException(`Fechamento precisa ser maior que o início do fechamento`, 400);
+
+        if (!(Date2YMD.toString(dto.inicio_fechamento) > Date2YMD.toString(dto.inicio_analise_risco)))
+            throw new HttpException(`Início do fechamento precisa ser maior que o inicio da análise de risco`, 400);
+
+        if (!(Date2YMD.toString(dto.inicio_analise_risco) > Date2YMD.toString(dto.inicio_qualificacao)))
+            throw new HttpException(`Início da análise de risco precisa ser maior que o inicio da qualificação`, 400);
+
+        if (!(Date2YMD.toString(dto.inicio_qualificacao) > Date2YMD.toString(dto.inicio_coleta)))
+            throw new HttpException(`Início da qualificação precisa ser maior que o inicio da coleta`, 400);
+
+        const cicloEscolhido = await this.prisma.cicloFisico.findFirst({
+            where: { id },
+        });
+        if (!cicloEscolhido) throw new HttpException('ciclo não encontrado', 404);
+
+        const cicloAtivo = await this.prisma.cicloFisico.findFirst({
+            where: { pdm_id: cicloEscolhido.pdm_id, ativo: true },
+        });
+        if (cicloAtivo)
+            if (Date2YMD.toString(cicloEscolhido.data_ciclo) <= Date2YMD.toString(cicloAtivo.data_ciclo))
+                throw new HttpException(`Você só pode editar ciclos que ainda não foram iniciados (após ${cicloAtivo.data_ciclo}) ou de PDM não ativos (com nenhum ciclo ativo)`, 404);
+
+        const cicloAnterior = await this.prisma.cicloFisico.findFirst({
+            where: { pdm_id: cicloEscolhido.pdm_id, data_ciclo: { lt: cicloEscolhido.data_ciclo } },
+            orderBy: [{ data_ciclo: 'desc' }],
+            take: 1,
+            include: { fases: true },
+        });
+        const cicloSucessor = await this.prisma.cicloFisico.findFirst({
+            where: { pdm_id: cicloEscolhido.pdm_id, data_ciclo: { gt: cicloEscolhido.data_ciclo } },
+            orderBy: [{ data_ciclo: 'asc' }],
+            take: 1,
+            include: { fases: true },
+        });
+
+        // verificações já que apenas 1 fase é esticada/encolhida por vez
+        if (cicloAnterior) {
+            console.dir({ cicloAnterior }, { depth: null });
+
+            const inicioDoFechamentoAnterior = cicloAnterior.fases.filter(n => n.ciclo_fase == 'Fechamento')[0].data_inicio;
+
+            if (Date2YMD.toString(dto.inicio_coleta) <= Date2YMD.toString(inicioDoFechamentoAnterior)) {
+                throw new HttpException(`início da coleta ${Date2YMD.toString(dto.inicio_coleta)} não pode encolher mais do que o início do fechamento anterior ${Date2YMD.toString(inicioDoFechamentoAnterior)}`, 400);
+            }
+        }
+
+        if (cicloSucessor) {
+            console.dir({ cicloSucessor }, { depth: null });
+            const fimDaColetaSucessor = cicloSucessor.fases.filter(n => n.ciclo_fase == 'Coleta')[0].data_fim;
+            if (Date2YMD.toString(dto.fechamento) >= Date2YMD.toString(fimDaColetaSucessor)) {
+                throw new HttpException(`Fechamento ${Date2YMD.toString(dto.fechamento)} não pode passar do final da próxima coleta ${Date2YMD.toString(fimDaColetaSucessor)}`, 400);
+            }
+        }
+
+
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+
+            if (cicloAnterior) {
+                await this.prisma.cicloFisicoFase.updateMany({
+                    where: { ciclo_fisico_id: cicloAnterior.id, ciclo_fase: 'Fechamento' },
+                    data: {
+                        data_fim: Date2YMD.incDaysFromISO(dto.inicio_coleta, -1)
+                    }
+                });
+            }
+
+            if (cicloSucessor) {
+                await this.prisma.cicloFisicoFase.updateMany({
+                    where: { ciclo_fisico_id: cicloSucessor.id, ciclo_fase: 'Coleta' },
+                    data: {
+                        data_inicio: Date2YMD.incDaysFromISO(dto.fechamento, 1),
+                    }
+                });
+            }
+
+            await this.prisma.cicloFisicoFase.updateMany({
+                where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Coleta' },
+                data: {
+                    data_inicio: dto.inicio_coleta,
+                    data_fim: Date2YMD.incDaysFromISO(dto.inicio_qualificacao, -1),
+                }
+            });
+            await this.prisma.cicloFisicoFase.updateMany({
+                where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Analise' },
+                data: {
+                    data_inicio: dto.inicio_qualificacao,
+                    data_fim: Date2YMD.incDaysFromISO(dto.inicio_analise_risco, -1),
+                }
+            });
+            await this.prisma.cicloFisicoFase.updateMany({
+                where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Risco' },
+                data: {
+                    data_inicio: dto.inicio_analise_risco,
+                    data_fim: Date2YMD.incDaysFromISO(dto.inicio_fechamento, -1),
+                }
+            });
+
+            await this.prisma.cicloFisicoFase.updateMany({
+                where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Fechamento' },
+                data: {
+                    data_inicio: dto.inicio_fechamento,
+                    data_fim: dto.fechamento,
+                }
+            });
+
+        });
+
+        console.log(cicloAnterior, cicloSucessor);
+
+
     }
 
 

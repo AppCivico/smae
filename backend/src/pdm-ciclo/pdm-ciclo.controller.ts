@@ -1,10 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Query } from '@nestjs/common';
 import { PdmCicloService } from './pdm-ciclo.service';
 
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ListPdmCicloDto, ListPdmCicloV2Dto } from 'src/pdm-ciclo/entities/pdm-ciclo.entity';
 import { FilterPdmCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
+import { FindOneParams } from 'src/common/decorators/find-params';
 
 @Controller('pdm-ciclo')
 @ApiTags('PDM - Ciclo físico')
@@ -14,6 +15,7 @@ export class PdmCicloController {
     @Get()
     @ApiBearerAuth('access-token')
     @Roles('CadastroPdm.editar', 'PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiUnauthorizedResponse()
     async findAll(
         @Query() params: FilterPdmCiclo,
     ): Promise<ListPdmCicloDto> {
@@ -23,6 +25,7 @@ export class PdmCicloController {
     @Get('v2')
     @ApiBearerAuth('access-token')
     @Roles('CadastroPdm.editar', 'PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiUnauthorizedResponse()
     async findAllV2(
         @Query() params: FilterPdmCiclo,
     ): Promise<ListPdmCicloV2Dto> {
@@ -30,10 +33,15 @@ export class PdmCicloController {
     }
 
 
+    @Patch(':id')
     @ApiBearerAuth('access-token')
     @Roles('CadastroPdm.editar')
-    update(id: number, updatePdmCicloDto: UpdatePdmCicloDto) {
-        return `This action updates a #${id} pdmCiclo`;
+    @ApiUnauthorizedResponse()
+    @ApiResponse({ description: 'sucesso ao atualizar', status: 204 })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async update(@Param() params: FindOneParams, @Body() dto: UpdatePdmCicloDto) {
+        await this.pdmCicloService.update(params.id, dto);
+        return null;
     }
 
 }
