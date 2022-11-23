@@ -476,10 +476,11 @@ async function atualizar_superadmin() {
         update: {},
         create:
         {
+            senha_bloqueada: true,
             nome_completo: 'super admin',
             nome_exibicao: 'super admin',
             email: 'superadmin@admin.com',
-            senha: '$2y$10$LfpFlFCqBnRQpqETLoNYp.lJWvTz7IhUhvzuwptVRfc4D/F0IzRrW' // "test",
+            senha: '$2y$10$Pto8vYw6kXL3YuMV4baaiOg3I3WqlU9S2Q2VrT7PX6YwQw47L6Jv6' // "viviansatiro",
         },
     });
 
