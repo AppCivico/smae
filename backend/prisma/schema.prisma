@@ -149,7 +149,9 @@ model Pessoa {
     MetaCicloFisicoRiscoRemovedor            MetaCicloFisicoRisco[]            @relation("removedor")
     MetaCicloFisicoAnaliseDocumentoCriador   MetaCicloFisicoAnaliseDocumento[] @relation("criador")
     MetaCicloFisicoAnaliseDocumentoRemovedor MetaCicloFisicoAnaliseDocumento[] @relation("removedor")
+    EtapaResponsavel                         EtapaResponsavel[]
 
+    @@index([email])
     @@map("pessoa")
 }
 
@@ -234,6 +236,7 @@ model PessoaPerfil {
     perfil_acesso    PerfilAcesso @relation(fields: [perfil_acesso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
     pessoa           Pessoa       @relation(fields: [pessoa_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+    @@index([pessoa_id])
     @@map("pessoa_perfil")
 }
 
@@ -383,6 +386,7 @@ model Pdm {
     CicloFasesPdmConfig CicloFasesPdmConfig[]
     CicloFisico         CicloFisico[]
 
+    @@index([ativo])
     @@map("pdm")
 }
 
@@ -503,6 +507,7 @@ model Tag {
     iniciativa_tag IniciativaTag[]
     atividade_tag  AtividadeTag[]
 
+    @@index([pdm_id])
     @@map("tag")
 }
 
@@ -526,6 +531,7 @@ model Tema {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
     Meta        Meta[]
 
+    @@index([pdm_id])
     @@map("objetivo_estrategico")
 }
 
@@ -557,6 +563,7 @@ model Regiao {
     Variavel      Variavel[]
     Etapa         Etapa[]
 
+    @@index([parente_id])
     @@map("regiao")
 }
 
@@ -604,6 +611,7 @@ model ArquivoDocumento {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([arquivo_id])
     @@map("arquivo_documento")
 }
 
@@ -672,6 +680,8 @@ model MetaTag {
     tag_id  Int
     tag     Tag  @relation(fields: [tag_id], references: [id])
 
+    @@index([meta_id])
+    @@index([tag_id])
     @@map("meta_tag")
 }
 
@@ -684,6 +694,8 @@ model MetaOrgao {
     orgao_id    Int
     orgao       Orgao   @relation(fields: [orgao_id], references: [id])
 
+    @@index([orgao_id])
+    @@index([meta_id])
     @@map("meta_orgao")
 }
 
@@ -701,6 +713,7 @@ model MetaResponsavel {
     coordenador_responsavel_cp Boolean // @map("coorderandor_responsavel_cp")
 
     @@index([pessoa_id])
+    @@index([meta_id])
     @@map("meta_responsavel")
 }
 
@@ -817,6 +830,7 @@ model VariavelResponsavel {
     variavel Variavel @relation(fields: [variavel_id], references: [id])
 
     @@index([pessoa_id])
+    @@index([variavel_id])
     @@map("variavel_responsavel")
 }
 
@@ -863,6 +877,7 @@ model Variavel {
     VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
     PedidoComplementacao           PedidoComplementacao[]
 
+    @@index([regiao_id])
     @@map("variavel")
 }
 
@@ -928,6 +943,7 @@ model SerieVariavel {
     conferidor      Pessoa? @relation("Conferidor", fields: [conferida_por], references: [id])
     ciclo_fisico_id Int?
 
+    @@index([variavel_id, data_valor])
     @@index([serie, variavel_id, data_valor], map: "idx_serie_variavel_variavel_id_data_valor")
     @@map("serie_variavel")
 }
@@ -964,6 +980,7 @@ model Iniciativa {
     Cronograma             Cronograma[]
     PainelConteudoDetalhe  PainelConteudoDetalhe[]
 
+    @@index([meta_id])
     @@map("iniciativa")
 }
 
@@ -974,6 +991,7 @@ model IniciativaTag {
     tag_id        Int
     tag           Tag        @relation(fields: [tag_id], references: [id])
 
+    @@index([iniciativa_id])
     @@map("iniciativa_tag")
 }
 
@@ -986,6 +1004,8 @@ model IniciativaOrgao {
     orgao_id      Int
     orgao         Orgao      @relation(fields: [orgao_id], references: [id])
 
+    @@index([iniciativa_id])
+    @@index([orgao_id])
     @@map("iniciativa_orgao")
 }
 
@@ -1001,6 +1021,8 @@ model IniciativaResponsavel {
 
     coordenador_responsavel_cp Boolean
 
+    @@index([iniciativa_id])
+    @@index([orgao_id])
     @@map("iniciativa_responsavel")
 }
 
@@ -1035,6 +1057,7 @@ model Atividade {
     Cronograma            Cronograma[]
     PainelConteudoDetalhe PainelConteudoDetalhe[]
 
+    @@index([iniciativa_id])
     @@map("atividade")
 }
 
@@ -1045,6 +1068,7 @@ model AtividadeTag {
     tag_id       Int
     tag          Tag       @relation(fields: [tag_id], references: [id])
 
+    @@index([atividade_id])
     @@map("atividade_tag")
 }
 
@@ -1057,6 +1081,8 @@ model AtividadeOrgao {
     orgao_id     Int
     orgao        Orgao     @relation(fields: [orgao_id], references: [id])
 
+    @@index([atividade_id])
+    @@index([orgao_id])
     @@map("atividade_orgao")
 }
 
@@ -1072,6 +1098,8 @@ model AtividadeResponsavel {
 
     coordenador_responsavel_cp Boolean
 
+    @@index([atividade_id])
+    @@index([orgao_id])
     @@map("atividade_responsavel")
 }
 
@@ -1111,6 +1139,9 @@ model Cronograma {
 
     etapa Etapa[]
 
+    @@index([atividade_id])
+    @@index([iniciativa_id])
+    @@index([meta_id])
     @@map("cronograma")
 }
 
@@ -1148,7 +1179,26 @@ model Etapa {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    responsaveis EtapaResponsavel[]
+
+    @@index([regiao_id])
+    @@index([etapa_pai_id])
+    @@index([cronograma_id])
     @@map("etapa")
+}
+
+model EtapaResponsavel {
+    id Int @id @default(autoincrement())
+
+    etapa_id  Int
+    pessoa_id Int
+
+    pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
+    etapa  Etapa  @relation(fields: [etapa_id], references: [id])
+
+    @@index([pessoa_id])
+    @@index([etapa_id])
+    @@map("etapa_responsavel")
 }
 
 model CronogramaOrgao {
@@ -1161,6 +1211,8 @@ model CronogramaOrgao {
     pessoa_id     Int
     pessoa        Pessoa     @relation(fields: [pessoa_id], references: [id])
 
+    @@index([cronograma_id])
+    @@index([orgao_id])
     @@map("cronograma_orgao")
 }
 
@@ -1177,6 +1229,8 @@ model CronogramaEtapa {
     data_inativacao DateTime? @db.Timestamptz(6)
 
     @@unique([cronograma_id, etapa_id], name: "CronogramaEtapaUniq")
+    @@index([cronograma_id])
+    @@index([etapa_id])
     @@map("cronograma_etapa")
 }
 
@@ -1208,6 +1262,7 @@ model Painel {
 
     grupos PainelGrupoPainel[]
 
+    @@index([pdm_id])
     @@map("painel")
 }
 
@@ -1242,6 +1297,8 @@ model PainelConteudo {
     indicador                 Indicador?              @relation(fields: [indicador_id], references: [id])
     indicador_id              Int?
 
+    @@index([painel_id])
+    @@index([meta_id])
     @@map("painel_conteudo")
 }
 
@@ -1271,6 +1328,8 @@ model PainelConteudoDetalhe {
     tipo   PainelConteudoTipoDetalhe
     filhos PainelConteudoDetalhe[]   @relation("fk")
 
+    @@index([painel_conteudo_id])
+    @@index([pai_id])
     @@map("painel_conteudo_detalhe")
 }
 
@@ -1302,6 +1361,8 @@ model PessoaGrupoPainel {
     grupo_painel_id Int
     grupo_painel    GrupoPainel @relation(fields: [grupo_painel_id], references: [id])
 
+    @@index([pessoa_id])
+    @@index([grupo_painel_id])
     @@map("pessoa_grupo_painel")
 }
 
@@ -1313,6 +1374,8 @@ model PainelGrupoPainel {
     grupo_painel_id Int
     grupo_painel    GrupoPainel @relation(fields: [grupo_painel_id], references: [id])
 
+    @@index([painel_id])
+    @@index([grupo_painel_id])
     @@map("painel_grupos")
 }
 
@@ -1375,6 +1438,8 @@ model CicloFisico {
     MetaCicloFisicoRisco            MetaCicloFisicoRisco[]
     MetaCicloFisicoFechamento       MetaCicloFisicoFechamento[]
 
+    @@index([pdm_id])
+    @@index([data_ciclo])
     @@map("ciclo_fisico")
 }
 
@@ -1390,6 +1455,7 @@ model CicloFisicoFase {
     ciclo_fase  CicloFase
     metas       Meta[]
 
+    @@index([ciclo_fisico_id])
     @@map("ciclo_fisico_fase")
 }
 
@@ -1411,6 +1477,7 @@ model PessoaAcessoPdm {
 
     pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
 
+    @@index([pessoa_id])
     @@map("pessoa_acesso_pdm")
 }
 
@@ -1460,7 +1527,7 @@ model MetaCicloFisicoAnaliseDocumento {
     pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
     pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
-    @@index([ciclo_fisico_id])
+    @@index([meta_id, ciclo_fisico_id])
     @@map("meta_ciclo_fisico_analise_documento")
 }
 
@@ -1495,8 +1562,8 @@ model MetaCicloFisicoFechamento {
     meta_id         Int
     ciclo_fisico_id Int
 
-    referencia_data  DateTime @db.Date
-    comentario     String?
+    referencia_data DateTime @db.Date
+    comentario      String?
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
@@ -1567,6 +1634,7 @@ model PedidoComplementacao {
     pessoaAtendeu   Pessoa?     @relation("atendeu", fields: [atendido_por], references: [id])
     pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
+    @@index([ciclo_fisico_id, variavel_id, ultima_revisao])
     @@map("variavel_ciclo_fisico_pedido_complementacao")
 }
 
@@ -1593,6 +1661,7 @@ model VariavelCicloFisicoDocumento {
     pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
     pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
+    @@index([ciclo_fisico_id, variavel_id])
     @@map("variavel_ciclo_fisico_documento")
 }
 
@@ -1609,6 +1678,8 @@ model StatusVariavelCicloFisico {
     meta         Meta        @relation(fields: [meta_id], references: [id])
     variavel     Variavel    @relation(fields: [variavel_id], references: [id])
 
+    @@index([variavel_id])
+    @@index([ciclo_fisico_id])
     @@map("status_variavel_ciclo_fisico")
 }
 
@@ -1617,7 +1688,7 @@ model StatusMetaCicloFisico {
     meta_id         Int
     ciclo_fisico_id Int
 
-    pessoa_id Int
+    pessoa_id         Int
     status_coleta     String @default("")
     // nao atualizadas = uma ou mais variaveis não preenchida
     // aguardando complementação = uma ou mais variavel aguarda complementação
@@ -1628,5 +1699,7 @@ model StatusMetaCicloFisico {
     ciclo_fisico CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
     meta         Meta        @relation(fields: [meta_id], references: [id])
 
+    @@index([pessoa_id])
+    @@index([ciclo_fisico_id])
     @@map("status_meta_ciclo_fisico")
 }
