@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from 'src/common/date2ymd';
 import { FilterPdmCiclo } from 'src/pdm-ciclo/dto/update-pdm-ciclo.dto';
+import { CicloFisicoV2Dto } from 'src/pdm-ciclo/entities/pdm-ciclo.entity';
 import { CicloFisicoDto } from 'src/pdm/dto/list-pdm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -15,7 +16,12 @@ export class PdmCicloService {
         const retorno: CicloFisicoDto[] = [];
 
         const ciclos = await this.prisma.cicloFisico.findMany({
-            where: { pdm_id: params.pdm_id },
+            where: {
+                pdm_id: params.pdm_id,
+                data_ciclo: {
+                    gt: params.apenas_futuro ? new Date(Date.now()) : undefined
+                }
+            },
             include: {
                 fases: true
             },
@@ -42,6 +48,32 @@ export class PdmCicloService {
             }
 
             retorno.push(item)
+        }
+
+        return retorno;
+    }
+
+
+    async findAllV2(params: FilterPdmCiclo): Promise<CicloFisicoV2Dto[]> {
+
+        const process = await this.findAll(params);
+
+        const retorno: CicloFisicoV2Dto[] = [];
+        let ativoVisto = params.apenas_futuro ? true : false;
+        for (const ciclo of process) {
+            retorno.push({
+                id: ciclo.id,
+                data_ciclo: ciclo.data_ciclo,
+                ativo: ciclo.ativo,
+                inicio_coleta: ciclo.fases.filter(n => n.ciclo_fase == 'Coleta')[0].data_inicio,
+                inicio_qualificacao: ciclo.fases.filter(n => n.ciclo_fase == 'Analise')[0].data_inicio,
+                inicio_analise_risco: ciclo.fases.filter(n => n.ciclo_fase == 'Risco')[0].data_inicio,
+                inicio_fechamento: ciclo.fases.filter(n => n.ciclo_fase == 'Fechamento')[0].data_inicio,
+                fechamento: ciclo.fases.filter(n => n.ciclo_fase == 'Fechamento')[0].data_fim,
+                pode_editar: ativoVisto
+            });
+
+            if (ciclo.ativo) ativoVisto = true;
         }
 
         return retorno;
