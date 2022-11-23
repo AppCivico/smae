@@ -1,3 +1,4 @@
+import { CicloFase } from "@prisma/client";
 import { DateYMD } from "src/common/date2ymd";
 import { ListPdm } from "src/pdm/entities/list-pdm.entity";
 
@@ -5,7 +6,7 @@ export class CicloFisicoFase {
     id: number
     data_inicio: DateYMD
     data_fim: DateYMD
-    ciclo_fase: string
+    ciclo_fase: CicloFase
     fase_corrente: boolean
 }
 
