@@ -233,6 +233,43 @@ BEGIN
         from public.cronograma_etapa ce
         join cronogramas x on x.cronograma_id = ce.cronograma_id
         where ce.inativo  = false
+        AND
+            (vPerfil = 'admin_cp')
+        OR (
+            vPerfil  = 'ponto_focal'
+            AND EXISTS (
+                select 1
+                from etapa_responsavel er
+                where ce.etapa_id = er.etapa_id AND  er.pessoa_id = pPessoa_id
+            )
+        )
+        OR (
+            vPerfil  = 'tecnico_cp'
+            AND ce.etapa_id IN (
+
+                select iv.etapa_id
+                from meta_responsavel mr
+                join cronograma i on i.meta_id = mr.meta_id and i.removido_em is null
+                join cronograma_etapa iv on iv.cronograma_id = i.id and iv.inativo = false
+                where mr.pessoa_id=pPessoa_id
+
+                UNION ALL
+
+                select iv.etapa_id
+                from iniciativa_responsavel ir
+                join cronograma i on i.iniciativa_id = ir.iniciativa_id and i.removido_em is null
+                join cronograma_etapa iv on iv.cronograma_id = i.id and iv.inativo = false
+                where ir.pessoa_id=pPessoa_id
+
+                UNION ALL
+
+                select iv.etapa_id
+                from atividade_responsavel ar
+                join cronograma i on i.atividade_id = ar.atividade_id and i.removido_em is null
+                join cronograma_etapa iv on iv.cronograma_id = i.id and iv.inativo = false
+                where ar.pessoa_id=pPessoa_id
+            )
+        )
     ),
     -- cruza de volta com os cronogramas, mas passando pela cronograma_etapa e buscando outros cronogramas que indiretamente os cronogramas que a etapa faz parte
     cronogramas_indiretos as (
