@@ -70,6 +70,9 @@ export class MetaOrcamentoService {
                 id: true,
                 meta_id: true,
                 criado_em: true,
+                criador: {
+                    select: { nome_exibicao: true }
+                },
                 ano_referencia: true,
                 custeio_previsto: true,
                 ultima_revisao: true,
@@ -81,10 +84,8 @@ export class MetaOrcamentoService {
                 { criado_em: 'desc' },
             ]
         });
-        console.log(metaOrcamentos);
 
-
-        return [];
+        return metaOrcamentos;
     }
 
     async remove(id: number, user: PessoaFromJwt) {
