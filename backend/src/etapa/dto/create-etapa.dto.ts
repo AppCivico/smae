@@ -5,6 +5,16 @@ import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateEtapaDto {
     /**
+    * lista dos responsáveis pelo preenchimento. Pelo menos uma pessoa
+    * @example "[4, 5, 6]"
+    */
+    @IsOptional()
+    @IsArray({ message: '$property| precisa ser um array' })
+    //@ArrayMinSize(1, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    responsaveis?: number[]
+
+    /**
     * cronograma_id
     */
     @IsPositive({ message: '$property| Cronograma precisa ser um número ou null' })
