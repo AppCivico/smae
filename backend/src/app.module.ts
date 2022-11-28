@@ -42,6 +42,7 @@ import { MfModule } from './mf/mf.module';
 import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
 import { GrupoPaineisModule } from './grupo-paineis/grupo-paineis.module';
 import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
+import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
 
 
 @Module({
@@ -51,6 +52,7 @@ import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
+        MetaOrcamentoModule,
         PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule,
         SubTemaModule,
         MetaModule,
