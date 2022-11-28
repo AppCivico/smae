@@ -11,7 +11,8 @@ function toggleMenu() {
 const props = defineProps(["activate"]);
 
 const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { user, permissions } = storeToRefs(authStore);
+const perm = permissions.value;
 </script>
 
 <template>
@@ -34,6 +35,7 @@ const { user } = storeToRefs(authStore);
         to="/"
         @click="toggleMenu"
         :class="{ active: props.activate == 'SubmenuConfig' }"
+        v-if="!perm.PDM.ponto_focal"
       >
         <span>Administração</span>
         <svg
@@ -50,11 +52,11 @@ const { user } = storeToRefs(authStore);
           />
         </svg>
       </router-link>
-
       <router-link
         to="/metas"
         @click="toggleMenu"
         :class="{ active: props.activate == 'SubmenuMetas' }"
+        v-if="!perm.PDM.ponto_focal"
       >
         <span>Metas</span>
         <svg
@@ -81,6 +83,7 @@ const { user } = storeToRefs(authStore);
         to="/monitoramento"
         @click="toggleMenu"
         :class="{ active: props.activate == 'SubmenuMonitoramento' }"
+        v-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp||perm.PDM?.ponto_focal)"
       >
         <span>Monitoramento</span>
         <svg
@@ -112,7 +115,10 @@ const { user } = storeToRefs(authStore);
           <path d="M9 9a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" />
         </svg>
       </a>
-      <router-link to="/usuarios" @click="toggleMenu">
+      <router-link 
+        to="/usuarios" @click="toggleMenu"
+        v-if="!perm.PDM.ponto_focal"
+      >
         <span>Usuários</span>
         <svg
           width="22"

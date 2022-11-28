@@ -63,7 +63,6 @@ async function checkClose() {
     alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
         editModalStore.clear();
         alertStore.clear();
-        router.go(-1);
     });
 }
 function acumular(a,j){
@@ -80,6 +79,17 @@ function soma(a,j) {
     var x = event.target.value;
     a[j].series[Previsto.value].valor_nominal = x;
 }
+function nestLinhas(l){
+    var a = {};
+    l.forEach(x=>{
+        if(!a[x.agrupador]) a[x.agrupador] = [];
+        a[x.agrupador].push(x);
+    })
+    return Object.entries(a).reverse();
+}
+function openParent(e) {
+    e.target.closest('.accordeon').classList.toggle('active');
+}
 </script>
 
 <template>
@@ -92,23 +102,31 @@ function soma(a,j) {
         <div class="label">Valores previstos e previstos acumulados para cada período <span class="tvermelho">*</span></div>
         <hr class="mb2">
         <form @submit="onSubmit">
-            <div class="flex g2">
-                <div class="f1">
-                    <label class="label tc300">Previsto</label>
-                </div>
-                <div class="f1">
-                    <label class="label tc300">Previsto Acumulado</label>
-                </div>
-            </div>
             <div v-if="Valores[var_id]?.linhas">
-                <div class="flex g2" v-for="(v,i) in Valores[var_id].linhas" :key="i">
-                    <div class="f1">
-                        <label class="label">Previsto {{v.periodo}}</label>
-                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="singleVariaveis.acumulativa&&soma(Valores[var_id].linhas,i)"/>
+                <div class="accordeon" v-for="k in nestLinhas(Valores[var_id].linhas)" :key="k[0]">
+                    <div class="flex center mb1" @click="openParent">
+                        <span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span>
+                        <span class="w700">{{k[0]}}</span>
                     </div>
-                    <div class="f1">
-                        <label class="label">Acumulado {{v.periodo}}</label>
-                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[PrevistoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(Valores[var_id].linhas,i):v.series[PrevistoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa" class="inputtext light mb1"/>
+                    <div class="content">
+                        <div class="flex g2">
+                            <div class="f1">
+                                <label class="label tc300">Previsto</label>
+                            </div>
+                            <div class="f1">
+                                <label class="label tc300">Previsto Acumulado</label>
+                            </div>
+                        </div>
+                        <div class="flex g2" v-for="(v,i) in k[1]" :key="i">
+                            <div class="f1">
+                                <label class="label">{{v.periodo}}</label>
+                                <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Previsto]?.referencia" :value="v.series[Previsto]?.valor_nominal" class="inputtext light mb1" @input="singleVariaveis.acumulativa&&soma(k[1],i)"/>
+                            </div>
+                            <div class="f1">
+                                <label class="label">Acumulado {{v.periodo}}</label>
+                                <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[PrevistoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(k[1],i):v.series[PrevistoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa" class="inputtext light mb1"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

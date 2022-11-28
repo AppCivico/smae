@@ -110,7 +110,12 @@ if (indicador_id) {
 }
 function start(){
     if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
-    if(props.group=='valores')editModalStore.modal(AddEditValores,props);
+    if(props.group=='valores')editModalStore.modal(AddEditValores,{...props,checkClose:()=>{
+        alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
+            editModalStore.clear(); 
+            alertStore.clear(); 
+        })
+    }});
     if(props.group=='retroativos')editModalStore.modal(AddEditRealizado,props);
 }
 onMounted(()=>{start()});
@@ -149,7 +154,9 @@ async function onSubmit(values) {
                     variavel_id:x.variavel_id,
                     usar_serie_acumulada:!!x.usar_serie_acumulada,
                 };
-            });
+            }).filter(x=>{
+                return values.formula.indexOf(x.referencia) != -1;
+            })
 
             if(singleIndicadores.value.id){
                 r = await IndicadoresStore.update(singleIndicadores.value.id, values);

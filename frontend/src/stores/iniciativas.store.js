@@ -26,8 +26,10 @@ export const useIniciativasStore = defineStore({
                     x.compoe_indicador_meta = x.compoe_indicador_meta?'1':false;
                     return x;
                 });
+                return true;
             } catch (error) {
                 this.Iniciativas[meta_id] = { error };
+                return false;
             }
         },
         async getById(meta_id,iniciativa_id) {

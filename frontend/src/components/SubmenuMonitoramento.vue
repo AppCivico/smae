@@ -43,11 +43,13 @@
                 <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled" to="/monitoramento/">Análise de risco</router-link>
                 <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled" to="/monitoramento/">Fechamento</router-link>
             </div>
-            <h2>Configuração</h2>
-            <div class="links-container mb2">
-                <router-link to="/monitoramento/ciclos">Próximos ciclos</router-link>
-                <router-link to="/monitoramento/ciclos/fechados">Ciclos fechados</router-link>
-            </div>
+            <template v-if="perm.CadastroCicloFisico">
+                <h2>Configuração</h2>
+                <div class="links-container mb2">
+                    <router-link to="/monitoramento/ciclos">Próximos ciclos</router-link>
+                    <router-link to="/monitoramento/ciclos/fechados">Ciclos fechados</router-link>
+                </div>
+            </template>
             
         </div>
     </div>

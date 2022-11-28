@@ -23,36 +23,17 @@ const currentEdit = route.path.slice(0,route.path.indexOf('/variaveis'));
 
 const MetasStore = useMetasStore();
 const { singleMeta } = storeToRefs(MetasStore);
-if(!singleMeta?.id || singleMeta.id!=meta_id) MetasStore.getById(meta_id);
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
-if(iniciativa_id)IniciativasStore.getById(meta_id,iniciativa_id);
 
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
-if(atividade_id)AtividadesStore.getById(iniciativa_id,atividade_id);
 
 const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
-if(indicador_id&&(!singleIndicadores?.id || singleIndicadores.id!=indicador_id)){
-    if(atividade_id){
-        IndicadoresStore.getById(indicador_id);
-    }else if(iniciativa_id){
-        IndicadoresStore.getById(indicador_id);
-    }else{
-        IndicadoresStore.getById(indicador_id);
-    }
-}
 
-let lastParent = ref({});
-if(atividade_id){
-    lastParent = singleAtividade.value;
-}else if(iniciativa_id){
-    lastParent = singleIniciativa.value;
-}else{
-    lastParent = singleMeta.value;
-}
+const lastParent = ref({});
 
 const VariaveisStore = useVariaveisStore();
 const { singleVariaveis } = storeToRefs(VariaveisStore);
@@ -69,48 +50,73 @@ let level1 = ref(null);
 let level2 = ref(null);
 let level3 = ref(null);
 let regiao_id_mount = ref(null);
+let periodicidade = ref(null);
 
 const virtualParent = ref({});
-if(var_id){
-    title = 'Editar variável';
-    if(!singleVariaveis.value.id) Promise.all([VariaveisStore.getById(indicador_id,var_id)]).then(()=>{
-        responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map(x=>x.id)??[];
-        orgao_id.value = singleVariaveis.value?.orgao_id;
 
-        if(singleVariaveis.value?.regiao_id){
-            if(singleVariaveis.value.regiao_id) (async()=>{
-                await RegionsStore.filterRegions({id: singleVariaveis.value.regiao_id});
-                level1.value = tempRegions.value[0]?.children[0].index??null;
-                level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
-                level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
-            })();
+(async()=>{
+    if(atividade_id){
+        if(atividade_id) await AtividadesStore.getById(iniciativa_id,atividade_id);
+        lastParent.value = singleAtividade.value;
+    }else if(iniciativa_id){
+        if(iniciativa_id) await IniciativasStore.getById(meta_id,iniciativa_id);
+        lastParent.value = singleIniciativa.value;
+    }else{
+        if(!singleMeta.value?.id || singleMeta.value.id!=meta_id) await MetasStore.getById(meta_id);
+        lastParent.value = singleMeta.value;
+    }
+
+    if(indicador_id&&(!singleIndicadores?.id || singleIndicadores.id!=indicador_id)) await IndicadoresStore.getById(indicador_id);
+    periodicidade.value = singleIndicadores.value.periodicidade;
+
+    if(var_id){
+        title = 'Editar variável';
+        if(!singleVariaveis.value.id){
+            await VariaveisStore.getById(indicador_id,var_id);
+            
+            responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map(x=>x.id)??[];
+            orgao_id.value = singleVariaveis.value?.orgao_id;
+            periodicidade.value = singleVariaveis.value.periodicidade;
+
+            if(singleVariaveis.value?.regiao_id){
+                if(singleVariaveis.value.regiao_id){
+                    await RegionsStore.filterRegions({id: singleVariaveis.value.regiao_id});
+                    level1.value = tempRegions.value[0]?.children[0].index??null;
+                    level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
+                    level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
+                }
+            }
         }
-    });
-}else if(copy_id){
-    if(!singleVariaveis.value.id) Promise.all([VariaveisStore.getById(indicador_id,copy_id)]).then(()=>{
-        responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map(x=>x.id)??[];
-        orgao_id.value = singleVariaveis.value?.orgao_id;
+    }else if(copy_id){
+        if(!singleVariaveis.value.id){
+            await VariaveisStore.getById(indicador_id,copy_id);
 
-        if(singleVariaveis.value?.regiao_id){
-            if(singleVariaveis.value.regiao_id) (async()=>{
-                await RegionsStore.filterRegions({id: singleVariaveis.value.regiao_id});
-                level1.value = tempRegions.value[0]?.children[0].index??null;
-                level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
-                level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
-            })();
+            responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map(x=>x.id)??[];
+            orgao_id.value = singleVariaveis.value?.orgao_id;
+
+            if(singleVariaveis.value?.regiao_id){
+                if(singleVariaveis.value.regiao_id){
+                    await RegionsStore.filterRegions({id: singleVariaveis.value.regiao_id});
+                    level1.value = tempRegions.value[0]?.children[0].index??null;
+                    level2.value = tempRegions.value[0]?.children[0]?.children[0].index??null;
+                    level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
+                }
+            }
+            virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
+            virtualParent.value.casas_decimais = singleVariaveis.value.casas_decimais;
+            virtualParent.value.atraso_meses = singleVariaveis.value.atraso_meses;
+            virtualParent.value.orgao_id = singleVariaveis.value.orgao_id;
+            virtualParent.value.periodicidade = singleVariaveis.value.periodicidade;
+            periodicidade.value = singleVariaveis.value.periodicidade;
+            virtualParent.value.responsaveis = singleVariaveis.value.responsaveis;
+            virtualParent.value.unidade_medida_id = singleVariaveis.value.unidade_medida_id;
+            virtualParent.value.valor_base = singleVariaveis.value.valor_base;
         }
-        virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
-        virtualParent.value.casas_decimais = singleVariaveis.value.casas_decimais;
-        virtualParent.value.orgao_id = singleVariaveis.value.orgao_id;
-        virtualParent.value.periodicidade = singleVariaveis.value.periodicidade;
-        virtualParent.value.peso = singleVariaveis.value.peso;
-        virtualParent.value.responsaveis = singleVariaveis.value.responsaveis;
-        virtualParent.value.unidade_medida_id = singleVariaveis.value.unidade_medida_id;
-        virtualParent.value.valor_base = singleVariaveis.value.valor_base;
-    });
-}
+    }
+})();
 
 
+var regx = /^$|^(?:0[1-9]|1[0-2]|[1-9])\/(?:(?:1[9]|[2-9]\d)?\d{2})$/;
 const schema = Yup.object().shape({
     orgao_id: Yup.string().required('Selecione um orgão'),
     regiao_id: Yup.string().nullable().test('regiao_id','Selecione uma região',(value)=>{ return !singleIndicadores?.value?.regionalizavel || value; }),
@@ -123,7 +129,14 @@ const schema = Yup.object().shape({
     valor_base: Yup.string().required('Preencha o valor base'),
     ano_base: Yup.string().nullable(),
     casas_decimais: Yup.string().nullable(),
-    peso: Yup.string().nullable(),
+    atraso_meses: Yup.string().nullable(),
+
+    inicio_medicao: Yup.string().nullable()
+                    .when('periodicidade', (periodicidade, schema) => { return singleIndicadores?.value?.periodicidade != periodicidade ? schema.required('Selecione a data') : schema; })
+                    .matches(regx,'Formato inválido'),
+    fim_medicao: Yup.string().nullable()
+                    .when('periodicidade', (periodicidade, schema) => { return singleIndicadores?.value?.periodicidade != periodicidade ? schema.required('Selecione a data') : schema; })
+                    .matches(regx,'Formato inválido'),
 
     acumulativa: Yup.string().nullable(),
 
@@ -145,8 +158,11 @@ async function onSubmit(values) {
         values.unidade_medida_id = Number(values.unidade_medida_id);
         values.ano_base = Number(values.ano_base)??null;
         values.casas_decimais = Number(values.casas_decimais);
-        values.peso = values.peso?Number(values.peso):null;
+        values.atraso_meses = values.atraso_meses ? Number(values.atraso_meses) : 0;
         values.responsaveis = responsaveisArr.value.participantes;
+
+        values.inicio_medicao = fieldToDate(values.inicio_medicao);
+        values.fim_medicao = fieldToDate(values.fim_medicao);
         
         var rota = false;
         if (var_id) {
@@ -202,6 +218,26 @@ function buscaCoord(e,parent,item) {
         item.busca="";
     }
 }
+function maskMonth(el){
+    var kC = event.keyCode;
+    var data = el.target.value.replace(/[^0-9/]/g,'');
+    if( kC!=8 && kC!=46 ){
+        if( data.length==2 ){
+            el.target.value = data += '/';
+        }else{
+            el.target.value = data;
+        }
+    }
+}
+function fieldToDate(d){
+    if(d){
+        if(d.length==6){d = '01/0'+d;}
+        else if(d.length==7){d = '01/'+d;}
+        var x=d.split('/');
+        return (x.length==3) ? new Date(Date.UTC(x[2],x[1]-1,x[0])).toISOString().substring(0, 10) : null;
+    }
+    return null;
+}
 </script>
 <template>
     <div class="flex spacebetween center mb2">
@@ -209,7 +245,7 @@ function buscaCoord(e,parent,item) {
         <hr class="ml2 f1"/>
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
-    <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&singleIndicadores?.id">
+    <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&singleIndicadores?.id&&lastParent?.id">
         <Form @submit="onSubmit" :validation-schema="schema" :initial-values="var_id?singleVariaveis:virtualParent" v-slot="{ errors, isSubmitting }">
             <div class="flex g2">
                 <div class="f0">
@@ -236,51 +272,58 @@ function buscaCoord(e,parent,item) {
                 </div>
             </div>
 
-            <div>
-                <label class="label flex center">Periodicidade <span class="tvermelho">*</span></label>
-                <Field v-if="!var_id" name="periodicidade" v-model="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
-                    <option value="">Selecionar</option>
-                    <option value="Mensal">Mensal</option>
-                    <option value="Bimestral">Bimestral</option>
-                    <option value="Trimestral">Trimestral</option>
-                    <option value="Quadrimestral">Quadrimestral</option>
-                    <option value="Semestral">Semestral</option>
-                    <option value="Anual">Anual</option>
-                </Field>
-                <div class="flex center" v-else>
-                    <Field name="periodicidade" type="text" class="inputtext light mb1" disabled :class="{ 'error': errors.periodicidade }" />
-                    <div class="tipinfo right ml1 mb1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Não é permitida a troca da periodicidade</div></div>
+            <div class="flex g2">
+                <div class="f1">
+                    <label class="label flex center">Periodicidade <span class="tvermelho">*</span></label>
+                    <Field name="periodicidade" v-model="periodicidade" as="select" class="inputtext light mb1" :class="{ 'error': errors.periodicidade }">
+                        <option value="">Selecionar</option>
+                        <option value="Mensal">Mensal</option>
+                        <option value="Bimestral">Bimestral</option>
+                        <option value="Trimestral">Trimestral</option>
+                        <option value="Quadrimestral">Quadrimestral</option>
+                        <option value="Semestral">Semestral</option>
+                        <option value="Anual">Anual</option>
+                    </Field>
+                    <div class="error-msg">{{ errors.periodicidade }}</div>
                 </div>
-                <div class="error-msg">{{ errors.periodicidade }}</div>
-            </div>
-
-            <div>
-                <label class="label">Unidade <span class="tvermelho">*</span></label>
-                <Field name="unidade_medida_id" v-model="unidade_medida_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.unidade_medida_id }">
-                    <option value="">Selecione</option>
-                    <option value="1">un - unidades</option>
-                    <option value="2">º - Ordinal</option>
-                    <option value="3">dias - Dias</option>
-                    <option value="4">eventos - Eventos</option>
-                    <option value="5">acidentes - Acidentes</option>
-                    <option value="6">crianças - Crianças</option>
-                    <option value="7">m² - Metros quadrados</option>
-                    <option value="8">hab - Habitantes</option>
-                    <option value="9">nº - Posição nº</option>
-                </Field>
-                <div class="error-msg">{{ errors.unidade_medida_id }}</div>
+                <div class="f1" v-if="singleIndicadores?.periodicidade != periodicidade">
+                    <label class="label">Início da Medição <span class="tvermelho">*</span></label>
+                    <Field name="inicio_medicao" type="text" class="inputtext light mb1" :class="{ 'error': errors.inicio_medicao }" maxlength="7" @keyup="maskMonth" />
+                    <div class="error-msg">{{ errors.inicio_medicao }}</div>
+                </div>
+                <div class="f1" v-if="singleIndicadores?.periodicidade != periodicidade">
+                    <label class="label">Fim da Medição <span class="tvermelho">*</span></label>
+                    <Field name="fim_medicao" type="text" class="inputtext light mb1" :class="{ 'error': errors.fim_medicao }" maxlength="7" @keyup="maskMonth" />
+                    <div class="error-msg">{{ errors.fim_medicao }}</div>
+                </div>
             </div>
 
             <div class="flex g2">
-                <div class="f1">
-                    <label class="label">Peso</label>
-                    <Field name="peso" type="number" class="inputtext light mb1" :class="{ 'error': errors.peso }" />
-                    <div class="error-msg">{{ errors.peso }}</div>
+                <div class="f2">
+                    <label class="label">Unidade <span class="tvermelho">*</span></label>
+                    <Field name="unidade_medida_id" v-model="unidade_medida_id" as="select" class="inputtext light mb1" :class="{ 'error': errors.unidade_medida_id }">
+                        <option value="">Selecione</option>
+                        <option value="1">un - unidades</option>
+                        <option value="2">º - Ordinal</option>
+                        <option value="3">dias - Dias</option>
+                        <option value="4">eventos - Eventos</option>
+                        <option value="5">acidentes - Acidentes</option>
+                        <option value="6">crianças - Crianças</option>
+                        <option value="7">m² - Metros quadrados</option>
+                        <option value="8">hab - Habitantes</option>
+                        <option value="9">nº - Posição nº</option>
+                    </Field>
+                    <div class="error-msg">{{ errors.unidade_medida_id }}</div>
                 </div>
                 <div class="f1">
                     <label class="label">Casas decimais</label>
                     <Field name="casas_decimais" type="number" class="inputtext light mb1" :class="{ 'error': errors.casas_decimais }" />
                     <div class="error-msg">{{ errors.casas_decimais }}</div>
+                </div>
+                <div class="f2">
+                    <label class="label">Defasagem da medição (Meses)</label>
+                    <Field name="atraso_meses" type="number" class="inputtext light mb1" :class="{ 'error': errors.atraso_meses }" />
+                    <div class="error-msg">{{ errors.atraso_meses }}</div>
                 </div>
             </div>
 
@@ -290,13 +333,12 @@ function buscaCoord(e,parent,item) {
                 </label>
                 <div class="error-msg">{{ errors.acumulativa }}</div>
             </div>
-            <div v-if="lastParent?.orgaos_participantes">
+            <div v-if="lastParent?.orgaos_participantes?.length">
                 <label class="label">Orgão responsável <span class="tvermelho">*</span></label>
                 <Field v-if="lastParent?.id" name="orgao_id" v-model="orgao_id" @change="responsaveisArr.participantes.splice(0,responsaveisArr.participantes.length)" as="select" class="inputtext light mb1" :class="{ 'error': errors.orgao_id }">
                     <option v-for="a in lastParent.orgaos_participantes" :key="a.orgao.id" :value="a.orgao.id">{{a.orgao.descricao}}</option>
                 </Field>
                 <div class="error-msg">{{ errors.orgao_id }}</div>
-
 
                 <label class="label">Responsável(eis)* <span class="tvermelho">*</span></label>
                 <div class="mb1" v-if="lastParent?.orgaos_participantes?.length&&orgao_id">
@@ -354,12 +396,12 @@ function buscaCoord(e,parent,item) {
             </div>
         </Form>
     </template>
-    <template v-if="singleVariaveis?.loading">
+    <template v-if="singleVariaveis?.loading||lastParent?.loading">
         <span class="spinner">Carregando</span>
     </template>
-    <template v-if="singleVariaveis?.error||error">
+    <template v-if="singleVariaveis?.error||lastParent?.error||error">
         <div class="error p1">
-            <div class="error-msg">{{singleVariaveis.error??error}}</div>
+            <div class="error-msg">{{singleVariaveis.error??lastParent?.error??error}}</div>
         </div>
     </template>
 </template>
