@@ -35,7 +35,7 @@ const perm = permissions.value;
         to="/"
         @click="toggleMenu"
         :class="{ active: props.activate == 'SubmenuConfig' }"
-        v-if="!perm.PDM.ponto_focal"
+        v-if="!perm.PDM?.ponto_focal"
       >
         <span>Administração</span>
         <svg
@@ -56,7 +56,7 @@ const perm = permissions.value;
         to="/metas"
         @click="toggleMenu"
         :class="{ active: props.activate == 'SubmenuMetas' }"
-        v-if="!perm.PDM.ponto_focal"
+        v-if="!perm.PDM?.ponto_focal"
       >
         <span>Metas</span>
         <svg
@@ -117,7 +117,7 @@ const perm = permissions.value;
       </a>
       <router-link 
         to="/usuarios" @click="toggleMenu"
-        v-if="!perm.PDM.ponto_focal"
+        v-if="!perm.PDM?.ponto_focal"
       >
         <span>Usuários</span>
         <svg
