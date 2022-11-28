@@ -13,19 +13,26 @@ export class EtapaService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
+        const cronogramaId = createEtapaDto.cronograma_id;
+        const ordem = createEtapaDto.ordem ? createEtapaDto.ordem : null;
+        const responsaveis = createEtapaDto.responsaveis || [];
+        delete createEtapaDto.ordem;
+        delete createEtapaDto.responsaveis;
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const cronogramaId = createEtapaDto.cronograma_id;
-            const ordem = createEtapaDto.ordem ? createEtapaDto.ordem : null;
-            delete createEtapaDto.ordem;
 
             const etapa = await prisma.etapa.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     ...createEtapaDto,
+                    responsaveis: undefined
                 },
                 select: { id: true }
+            });
+
+            await prisma.etapaResponsavel.createMany({
+                data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
             });
 
             await prisma.cronogramaEtapa.create({
@@ -68,7 +75,7 @@ export class EtapaService {
                 },
                 CronogramaEtapa: {
                     every: {
-                        cronograma_id:  cronogramaId
+                        cronograma_id: cronogramaId
                     }
                 }
             },
@@ -111,6 +118,8 @@ export class EtapaService {
 
     async update(id: number, updateEtapaDto: UpdateEtapaDto, user: PessoaFromJwt) {
 
+        const responsaveis = updateEtapaDto.responsaveis === null ? [] : updateEtapaDto.responsaveis;
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const etapa = await prisma.etapa.update({
@@ -119,9 +128,15 @@ export class EtapaService {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                     ...updateEtapaDto,
+                    responsaveis: undefined
                 },
                 select: { id: true }
             });
+
+            if (Array.isArray(responsaveis))
+                await prisma.etapaResponsavel.createMany({
+                    data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
+                });
 
             // apaga tudo por enquanto, não só as que tem algum crono dessa meta
             await prisma.statusMetaCicloFisico.deleteMany();
@@ -142,6 +157,17 @@ export class EtapaService {
         });
 
         return removed;
+    }
+
+    async buildEtapaResponsaveis(etapaId: number, responsaveis: number[]): Promise<Prisma.EtapaResponsavelCreateManyInput[]> {
+        const arr: Prisma.EtapaResponsavelCreateManyInput[] = [];
+        for (const pessoaId of responsaveis) {
+            arr.push({
+                etapa_id: etapaId,
+                pessoa_id: pessoaId
+            });
+        }
+        return arr;
     }
 
 }

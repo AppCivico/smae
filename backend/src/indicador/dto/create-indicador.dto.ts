@@ -104,5 +104,5 @@ export class CreateIndicadorDto {
 
     @IsOptional()
     @IsString({ message: '$property| Precisa ser uma string' })
-    observacao?: string | null
+    complemento?: string | null
 }

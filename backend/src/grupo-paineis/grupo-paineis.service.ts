@@ -5,6 +5,7 @@ import { CreateGrupoPaineisDto } from './dto/create-grupo-paineis.dto';
 import { DetailGrupoPaineisDto } from './dto/detail-grupo-paineis.dto';
 import { FilterGrupoPaineisDto } from './dto/filter-grupo-paineis.dto';
 import { UpdateGrupoPaineisDto } from './dto/update-grupo-paineis.dto';
+import { GrupoPaineis } from './entities/grupo-paineis.entity';
 
 @Injectable()
 export class GrupoPaineisService {
@@ -42,10 +43,59 @@ export class GrupoPaineisService {
             select: {
                 id: true,
                 nome: true,
-                ativo: true
+                ativo: true,
+                pessoas: {
+                    select: {
+                        pessoa: {
+                            select: {
+                                id: true,
+                                nome_exibicao: true
+                            }
+                        }
+                    }
+                },
+
+                paineis: {
+                    select: {
+                        painel: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                ativo: true
+                            }
+                        }
+                    }
+                }
             }
         });
-        return listActive;
+
+        const ret: GrupoPaineis[] = listActive.map(g => {
+            return {
+                id: g.id,
+                nome: g.nome,
+                ativo: g.ativo,
+
+                pessoa_count: g?.pessoas ? (g!.pessoas.length) : 0,
+                painel_count: g?.paineis ? (g!.paineis.length) : 0,
+
+                pessoas: g.pessoas.map(p => {
+                    return {
+                        id: p.pessoa.id,
+                        nome_exibicao: p.pessoa.nome_exibicao
+                    }
+                }),
+    
+                paineis: g.paineis.map(p => {
+                    return {
+                        id: p.painel.id,
+                        nome: p.painel.nome,
+                        ativo: p.painel.ativo
+                    }
+                })
+            }
+        });
+
+        return ret;
     }
 
     async update(id: number, updateGrupoPaineisDto: UpdateGrupoPaineisDto, user: PessoaFromJwt) {
