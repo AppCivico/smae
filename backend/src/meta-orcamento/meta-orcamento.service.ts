@@ -59,6 +59,31 @@ export class MetaOrcamentoService {
 
     async findAll(filters?: FilterMetaOrcamentoDto): Promise<MetaOrcamento[]> {
 
+        const metaOrcamentos = await this.prisma.metaOrcamento.findMany({
+            where: {
+                meta_id: filters?.meta_id,
+                ano_referencia: filters?.ano_referencia,
+                ultima_revisao: (filters?.apenas_ultima_revisao == undefined ? true : filters?.apenas_ultima_revisao) ? true : undefined,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                meta_id: true,
+                criado_em: true,
+                ano_referencia: true,
+                custeio_previsto: true,
+                ultima_revisao: true,
+                investimento_previsto: true,
+                parte_dotacao: true,
+            },
+            orderBy: [
+                { meta_id: 'asc' },
+                { criado_em: 'desc' },
+            ]
+        });
+        console.log(metaOrcamentos);
+
+
         return [];
     }
 
