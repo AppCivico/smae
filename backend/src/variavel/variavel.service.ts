@@ -294,6 +294,9 @@ export class VariavelService {
                 codigo: true,
                 acumulativa: true,
                 casas_decimais: true,
+                fim_medicao: true,
+                inicio_medicao: true,
+                atraso_meses: true,
                 unidade_medida: {
                     select: {
                         id: true,
@@ -444,7 +447,11 @@ export class VariavelService {
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
 
-        if (selfIdicadorVariavel.variavel.periodicidade === indicador.periodicidade) {
+        let oldValue = selfIdicadorVariavel.variavel.periodicidade;
+        if (updateVariavelDto.periodicidade)
+            oldValue = updateVariavelDto.periodicidade;
+
+        if (oldValue === indicador.periodicidade) {
             updateVariavelDto.fim_medicao = null;
             updateVariavelDto.inicio_medicao = null;
         } else {
