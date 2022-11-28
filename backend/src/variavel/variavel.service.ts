@@ -412,6 +412,8 @@ export class VariavelService {
 
             return {
                 ...row,
+                inicio_medicao: Date2YMD.toStringOrNull(row.inicio_medicao),
+                fim_medicao: Date2YMD.toStringOrNull(row.fim_medicao),
                 variavel_responsavel: undefined,
                 indicador_variavel: indicador_variavel,
                 responsaveis: responsaveis
