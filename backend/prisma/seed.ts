@@ -90,6 +90,7 @@ const PrivConfig: any = {
         ['CadastroMeta.remover', 'Remover Metas'],
         ['CadastroMeta.inativar', 'Inativar Metas'],
         ['CadastroMeta.ativar', 'Ativar Metas'],
+        ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária'],
     ],
     CadastroIndicador: [
         // quem puder editar ou inserir indicador, vai poder gerenciar as variáveis
@@ -157,7 +158,8 @@ const PrivConfig: any = {
         ['PDM.tecnico_cp', '(PDM) Técnico CP'],
         ['PDM.admin_cp', '(PDM) Administrador CP'],
         ['PDM.ponto_focal', '(PDM) Ponto Focal'],
-    ]
+    ],
+
 };
 
 const ModuloDescricao: any = {
