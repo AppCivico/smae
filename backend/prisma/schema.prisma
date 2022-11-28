@@ -150,6 +150,12 @@ model Pessoa {
     MetaCicloFisicoAnaliseDocumentoCriador   MetaCicloFisicoAnaliseDocumento[] @relation("criador")
     MetaCicloFisicoAnaliseDocumentoRemovedor MetaCicloFisicoAnaliseDocumento[] @relation("removedor")
     EtapaResponsavel                         EtapaResponsavel[]
+    MetaOrcamentoCriados                     MetaOrcamento[]                   @relation("criador")
+    MetaOrcamentoRemovidos                   MetaOrcamento[]                   @relation("removedor")
+    OrcamentoPlanejadoCriados                OrcamentoPlanejado[]              @relation("criador")
+    OrcamentoPlanejadoRemovidos              OrcamentoPlanejado[]              @relation("removedor")
+    OrcamentoRealizadoCriados                OrcamentoRealizado[]              @relation("criador")
+    OrcamentoRealizadoRemovidos              OrcamentoRealizado[]              @relation("removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -1755,9 +1761,12 @@ model MetaOrcamento {
     investimento_previsto Float  @db.DoublePrecision
     parte_dotacao         String @default("")
 
-    meta Meta @relation(fields: [meta_id], references: [id])
+    meta      Meta    @relation(fields: [meta_id], references: [id])
+    criador   Pessoa  @relation("criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("removedor", fields: [removido_por], references: [id])
 
-    @@index([meta_id])
+    @@index([criado_em])
+    @@index([meta_id, ultima_revisao])
     @@map("meta_orcamento")
 }
 
@@ -1781,6 +1790,8 @@ model OrcamentoPlanejado {
     meta       Meta        @relation(fields: [meta_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+    criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
     @@index([meta_id])
     @@map("orcamento_planejado")
@@ -1809,6 +1820,8 @@ model OrcamentoRealizado {
     meta       Meta        @relation(fields: [meta_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+    criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
     @@index([meta_id])
     @@map("orcamento_realizado")
