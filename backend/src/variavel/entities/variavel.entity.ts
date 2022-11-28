@@ -54,6 +54,9 @@ export class Variavel {
     responsaveis?: IdNomeExibicao[]
     ano_base?: number | null
     codigo: string
+    atraso_meses: number
+    inicio_medicao: Date | null
+    fim_medicao: Date | null
 }
 
 export class SerieValorNomimal {

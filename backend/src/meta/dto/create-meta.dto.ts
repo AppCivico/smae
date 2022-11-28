@@ -121,7 +121,6 @@ export class CreateMetaDto {
     */
     @IsOptional()
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
-    @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     tags?: number[]
 }
