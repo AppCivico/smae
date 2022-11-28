@@ -361,6 +361,8 @@ model Pdm {
     rotulo_iniciativa          String @default("Iniciativa")
     rotulo_atividade           String @default("Atividade")
 
+    nivel_orcamento NivelOrcamento @default(Meta)
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -385,6 +387,7 @@ model Pdm {
     ArquivoLogo         Arquivo?              @relation(fields: [arquivo_logo_id], references: [id])
     CicloFasesPdmConfig CicloFasesPdmConfig[]
     CicloFisico         CicloFisico[]
+    PdmOrcamentoConfig  PdmOrcamentoConfig[]
 
     @@index([ativo])
     @@map("pdm")
@@ -669,6 +672,9 @@ model Meta {
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
     MetaCicloFisicoRisco            MetaCicloFisicoRisco[]
     MetaCicloFisicoFechamento       MetaCicloFisicoFechamento[]
+    MetaOrcamento                   MetaOrcamento[]
+    OrcamentoPlanejado              OrcamentoPlanejado[]
+    OrcamentoRealizado              OrcamentoRealizado[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -722,6 +728,12 @@ enum Polaridade {
     Neutra
     Positiva
     Negativa
+}
+
+enum NivelOrcamento {
+    Meta
+    Iniciativa
+    Atividade
 }
 
 enum Periodicidade {
@@ -980,6 +992,8 @@ model Iniciativa {
     atividade              Atividade[]
     Cronograma             Cronograma[]
     PainelConteudoDetalhe  PainelConteudoDetalhe[]
+    OrcamentoPlanejado     OrcamentoPlanejado[]
+    OrcamentoRealizado     OrcamentoRealizado[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -1057,6 +1071,8 @@ model Atividade {
     Indicador             Indicador[]
     Cronograma            Cronograma[]
     PainelConteudoDetalhe PainelConteudoDetalhe[]
+    OrcamentoPlanejado    OrcamentoPlanejado[]
+    OrcamentoRealizado    OrcamentoRealizado[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -1703,4 +1719,97 @@ model StatusMetaCicloFisico {
     @@index([pessoa_id])
     @@index([ciclo_fisico_id])
     @@map("status_meta_ciclo_fisico")
+}
+
+model PdmOrcamentoConfig {
+    id     Int @id @default(autoincrement())
+    pdm_id Int
+
+    ano_referencia Int
+
+    previsao_custo_disponivel Boolean @default(true)
+    planejado_disponivel      Boolean @default(false)
+    execucao_disponivel       Boolean @default(false)
+
+    pdm Pdm @relation(fields: [pdm_id], references: [id])
+
+    @@index([pdm_id])
+    @@map("meta_orcamento_config")
+}
+
+model MetaOrcamento {
+    id      Int @id @default(autoincrement())
+    meta_id Int
+
+    ano_referencia Int
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    custeio_previsto      Float  @db.DoublePrecision
+    investimento_previsto Float  @db.DoublePrecision
+    parte_dotacao         String @default("")
+
+    meta Meta @relation(fields: [meta_id], references: [id])
+
+    @@index([meta_id])
+    @@map("meta_orcamento")
+}
+
+model OrcamentoPlanejado {
+    id            Int  @id @default(autoincrement())
+    meta_id       Int
+    iniciativa_id Int?
+    atividade_id  Int?
+
+    ano_referencia  Int
+    valor_planejado Float  @db.DoublePrecision
+    dotacao         String
+    valor_dotacao   Float? @db.DoublePrecision
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    @@index([meta_id])
+    @@map("orcamento_planejado")
+}
+
+model OrcamentoRealizado {
+    id            Int  @id @default(autoincrement())
+    meta_id       Int
+    iniciativa_id Int?
+    atividade_id  Int?
+
+    ano             Int
+    mes             Int
+    dotacao         String
+    processo        String?
+    nota_empenho    String?
+    valor_empenhado Float   @db.DoublePrecision
+    valor_liquidado Float   @db.DoublePrecision
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    @@index([meta_id])
+    @@map("orcamento_realizado")
 }
