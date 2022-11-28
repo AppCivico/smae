@@ -24,8 +24,11 @@ export const useMetasStore = defineStore({
             this.singleMeta = {};
             this.activePdm = {};
         },
+        waitFor(resolve, reject) {
+            if (!this.Metas.loading) resolve(1);
+            else setTimeout(this.waitFor.bind(this, resolve, reject), 300);
+        },
         async getPdM() {
-            this.activePdm = {};
             const PdMStore = usePdMStore();
             if(!PdMStore.activePdm.id){
                 await PdMStore.getActive();
@@ -36,26 +39,31 @@ export const useMetasStore = defineStore({
         async getAll() {
             try {
                 if(!this.activePdm.id) await this.getPdM();
-                if(this.Metas.loading) return;
-                this.Metas = { loading: true };
-                let r = await requestS.get(`${baseUrl}/meta?pdm_id=${this.activePdm.id}`);    
-                this.Metas = r.linhas;
+                if(this.Metas.loading){
+                    await new Promise(this.waitFor);
+                }else{
+                    this.Metas = { loading: true };
+                    let r = await requestS.get(`${baseUrl}/meta?pdm_id=${this.activePdm.id}`);    
+                    this.Metas = r.linhas;
+                }
+                return true;
             } catch (error) {
                 this.Metas = { error };
+                return false;
             }
         },
         async getById(id) {
-            this.singleMeta = { loading: true };
             try {
+                this.singleMeta = { loading: true };
                 if(!this.Metas.length){
                     await this.getAll();
                 }
-                if(this.Metas.length) this.singleMeta = this.Metas.find((u)=>u.id == id);
+                if(this.Metas.length) this.singleMeta = await this.Metas.find((u)=>u.id == id);
                 if(!this.singleMeta) throw 'Meta não encontrada';
                 return true;
             } catch (error) {
                 this.singleMeta = { error };
-                return true;
+                return false;
             }
         },
         async insert(params) {
@@ -91,7 +99,8 @@ export const useMetasStore = defineStore({
                 var g = f.groupBy??'macro_tema';
                 if(this.activePdm['possui_'+g]){
                     this.groupedMetas = Object.values(this.tempMetas.reduce((r, u) => {
-                        if(!r[u[g].id]){
+                        if(!u[g]) u[g] = {descricao: '-', id: 0};
+                        if(!r[u[g]?.id]){
                             r[u[g].id] = u[g];
                             r[u[g].id].children = [];
                         }

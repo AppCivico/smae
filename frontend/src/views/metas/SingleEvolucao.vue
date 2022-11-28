@@ -3,13 +3,14 @@ import { ref, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { Dashboard} from '@/components';
-import { useEditModalStore, useAuthStore, useMetasStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useAuthStore, useMetasStore, useIndicadoresStore, useVariaveisStore } from '@/stores';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
+import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
 
-
+const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
@@ -54,8 +55,14 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 })();
 
 function start(){
+    console.log(props)
     if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
-    if(props.group=='valores')editModalStore.modal(AddEditValores,props);
+    if(props.group=='valores')editModalStore.modal(AddEditValores,{...props,checkClose:()=>{
+        alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
+            editModalStore.clear(); 
+            alertStore.clear(); 
+        })
+    }});
     if(props.group=='retroativos')editModalStore.modal(AddEditRealizado,props);
 }
 onMounted(()=>{start()});
@@ -114,19 +121,7 @@ onUpdated(()=>{start()});
                                         <th style="width: 5%"></th>
                                     </tr>
                                 </thead>
-                                <tr v-for="(val, i) in ValoresInd[ind.id]?.linhas" :key="i">
-                                    <td><div class="flex center"><div class="farol i1"></div> <span>{{val.periodo}}</span></div></td>
-                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
-                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
-                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
-                                    <td>{{val.series[ValoresInd[ind.id].ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
-                                    <td style="white-space: nowrap; text-align: right;">
-                                        <!-- <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link> -->
-                                    </td>
-                                </tr>
-                                <tr v-if="ValoresInd[ind.id]?.loading">
-                                    <td colspan="555"><span class="spinner">Carregando</span></td>
-                                </tr>
+                                <GruposDeSerie :g="ValoresInd[ind.id]" />
                             </table>
                         </div>
                     </div>
@@ -177,49 +172,7 @@ onUpdated(()=>{start()});
                                             <th style="width: 5%"></th>
                                         </tr>
                                     </thead>
-                                    <tr v-for="val in Valores[v.id]?.linhas" :key="val.id">
-                                        <td><div class="flex center"><div class="farol i1"></div> <span>{{val.periodo}}</span></div></td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('Previsto')]?.valor_nominal??'-'}}</td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('Realizado')]?.valor_nominal??'-'}}</td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('PrevistoAcumulado')]?.valor_nominal??'-'}}</td>
-                                        <td>{{val.series[Valores[v.id].ordem_series.indexOf('RealizadoAcumulado')]?.valor_nominal??'-'}}</td>
-                                        <td style="white-space: nowrap; text-align: right;">
-                                            <!-- <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link> -->
-                                        </td>
-                                    </tr>
-                                    <tr v-if="Valores[v.id]?.loading">
-                                        <td colspan="555"><span class="spinner">Carregando</span></td>
-                                    </tr>
-                                    <!-- <tr class="tzaccordeon" @click="toggleAccordeon">
-                                        <td colspan="56"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>2020</span></td>
-                                    </tr>
-                                    <tbody>
-                                        <tr>
-                                            <td><div class="flex center"><div class="farol"></div> <span>01/2020</span></div></td>
-                                            <td>5</td>
-                                            <td>10</td>
-                                            <td>15</td>
-                                            <td>20</td>
-                                            <td style="white-space: nowrap; text-align: right;">
-                                                <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tr class="tzaccordeon" @click="toggleAccordeon">
-                                        <td colspan="56"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg> <span>2021</span></td>
-                                    </tr>
-                                    <tbody>
-                                        <tr>
-                                            <td><div class="flex center"><div class="farol i1"></div> <span>01/2020</span></div></td>
-                                            <td>5</td>
-                                            <td>10</td>
-                                            <td>15</td>
-                                            <td>20</td>
-                                            <td style="white-space: nowrap; text-align: right;">
-                                                <router-link :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
-                                            </td>
-                                        </tr>
-                                    </tbody> -->
+                                    <GruposDeSerie :g="Valores[v.id]" />
                                 </table>
                             </div>
                         </div>

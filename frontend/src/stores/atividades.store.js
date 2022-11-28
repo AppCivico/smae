@@ -26,8 +26,10 @@ export const useAtividadesStore = defineStore({
                     x.compoe_indicador_iniciativa = x.compoe_indicador_iniciativa?"1":false;
                     return x;
                 });
+                return true;
             } catch (error) {
                 this.Atividades[iniciativa_id] = { error };
+                return false;
             }
         },
         async getById(iniciativa_id,atividade_id) {
@@ -42,6 +44,7 @@ export const useAtividadesStore = defineStore({
                 return true;
             } catch (error) {
                 this.singleAtividade = { error };
+                return false;
             }
         },
         async insert(params) {

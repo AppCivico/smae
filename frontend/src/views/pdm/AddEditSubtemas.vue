@@ -54,9 +54,9 @@ const schema = Yup.object().shape({
 
 onMounted(()=>{
     if(props.props.parentPage=='metas'){
-        label.value = activePdm.value.rotulo_Sub_tema??"Subtema";
+        label.value = activePdm.value.rotulo_sub_tema??"Subtema";
     }else{
-        label.value = singlePdm.value.rotulo_Sub_tema??"Subtema";
+        label.value = singlePdm.value.rotulo_sub_tema??"Subtema";
     }
 });
 

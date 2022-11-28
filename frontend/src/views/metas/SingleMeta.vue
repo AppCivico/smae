@@ -66,17 +66,17 @@ if(!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
                     </div>
                 </div>
                 <hr class="mt2 mb2"/>
-                <div class="" v-if="activePdm.possui_contexto_meta">
+                <div class="" v-if="activePdm.possui_contexto_meta&&singleMeta.contexto">
                     <h4>{{activePdm.rotulo_contexto_meta}}</h4>
                     <div>{{singleMeta.contexto}}</div>
-                </div>
                 <hr class="mt2 mb2"/>
-                <div class="" v-if="activePdm.possui_complementacao_meta">
+                </div>
+                <div class="" v-if="activePdm.possui_complementacao_meta&&singleMeta.complemento">
                     <h4>{{activePdm.rotulo_complementacao_meta}}</h4>
                     <div>{{singleMeta.complemento}}</div>
+                <hr class="mt2 mb2"/>
                 </div>
                 
-                <hr class="mt2 mb2"/>
 
                 <SimpleIndicador 
                     :parentlink="parentlink"

@@ -80,6 +80,17 @@ function soma(a,j) {
     var x = event.target.value;
     a[j].series[Realizado.value].valor_nominal = x;
 }
+function nestLinhas(l){
+    var a = {};
+    l.forEach(x=>{
+        if(!a[x.agrupador]) a[x.agrupador] = [];
+        a[x.agrupador].push(x);
+    })
+    return Object.entries(a).reverse();
+}
+function openParent(e) {
+    e.target.closest('.accordeon').classList.toggle('active');
+}
 </script>
 
 <template>
@@ -92,25 +103,34 @@ function soma(a,j) {
         <div class="label">Valores realizados e realizados acumulados para cada período <span class="tvermelho">*</span></div>
         <hr class="mb2">
         <form @submit="onSubmit">
-            <div class="flex g2">
-                <div class="f1">
-                    <label class="label tc300">Realizado</label>
-                </div>
-                <div class="f1">
-                    <label class="label tc300">Realizado Acumulado</label>
-                </div>
-            </div>
             <div v-if="Valores[var_id]?.linhas">
-                <div class="flex g2" v-for="(v,i) in Valores[var_id].linhas" :key="i">
-                    <div class="f1">
-                        <label class="label">Realizado {{v.periodo}}</label>
-                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Realizado]?.referencia" :disabled="!v.series[Realizado]?.referencia" :value="v.series[Realizado]?.valor_nominal" class="inputtext light mb1" @input="singleVariaveis.acumulativa&&soma(Valores[var_id].linhas,i)"/>
+                <div class="accordeon" v-for="k in nestLinhas(Valores[var_id].linhas)" :key="k[0]">
+                    <div class="flex center mb1" @click="openParent">
+                        <span class="t0"><svg class="arrow" width="13" height="8"><use xlink:href="#i_down"></use></svg></span>
+                        <span class="w700">{{k[0]}}</span>
                     </div>
-                    <div class="f1">
-                        <label class="label">Acumulado {{v.periodo}}</label>
-                        <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[RealizadoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(Valores[var_id].linhas,i):v.series[RealizadoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa||!v.series[RealizadoAcumulado]?.referencia" class="inputtext light mb1"/>
+                    <div class="content">
+                        <div class="flex g2">
+                            <div class="f1">
+                                <label class="label tc300">Previsto</label>
+                            </div>
+                            <div class="f1">
+                                <label class="label tc300">Previsto Acumulado</label>
+                            </div>
+                        </div>
+                        <div class="flex g2" v-for="(v,i) in k[1]" :key="i">
+                            <div class="f1">
+                                <label class="label">{{v.periodo}}</label>
+                                <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[Realizado]?.referencia" :disabled="!v.series[Realizado]?.referencia" :value="v.series[Realizado]?.valor_nominal" class="inputtext light mb1" @input="singleVariaveis.acumulativa&&soma(k[1],i)"/>
+                            </div>
+                            <div class="f1">
+                                <label class="label">Acumulado {{v.periodo}}</label>
+                                <input type="number" :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')" :name="v.series[RealizadoAcumulado]?.referencia" :value="singleVariaveis.acumulativa?acumular(k[1],i):v.series[RealizadoAcumulado]?.valor_nominal" :disabled="singleVariaveis.acumulativa||!v.series[RealizadoAcumulado]?.referencia" class="inputtext light mb1"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
             </div>
 
             <div class="flex spacebetween center mb2 mt2">

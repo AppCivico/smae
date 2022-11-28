@@ -107,6 +107,15 @@
 		      	.merge(gXaxis).transition().duration(this.transitionDuration)
 		      		.attr("transform", 'translate(0,'+(this.sizes.height - this.sizes.margin.bottom)+')')
 		      		.call(xAxis)
+		      		.selectAll("text")
+		      		.call(x=>toomuch(this.sizes.width,x))
+
+      		function toomuch(w,s,d){
+      			let ss = s.size();
+      			let m = Math.round(w/50);
+  				let dif = ss > m ? Math.floor(ss/m) : 1;
+      			s.style('opacity',(d,i)=>{ return i%dif==0?1:0});
+      		}
 
 		    //Draw X-Axis2
 		    this.rangeYearsLines(svg, ticksYears, xDomain, xScale, this.sizes, this.transitionDuration);
