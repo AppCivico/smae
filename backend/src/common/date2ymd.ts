@@ -7,6 +7,11 @@ export class Date2YMD {
         return str.substring(0, 10)
     }
 
+    static toStringOrNull(d: Date | null): DateYMD | null {
+        if (d === null) return null;
+        return Date2YMD.toString(d);
+    }
+
     static fromString(data: string) {
         try {
             const year = +data.substring(0, 4);
