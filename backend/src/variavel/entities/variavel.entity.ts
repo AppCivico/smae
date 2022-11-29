@@ -55,8 +55,8 @@ export class Variavel {
     ano_base?: number | null
     codigo: string
     atraso_meses: number
-    inicio_medicao: Date | null
-    fim_medicao: Date | null
+    inicio_medicao: String | null
+    fim_medicao: String | null
 }
 
 export class SerieValorNomimal {

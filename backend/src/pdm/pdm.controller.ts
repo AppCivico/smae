@@ -7,7 +7,7 @@ import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params'
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { EixoService } from 'src/eixo/eixo.service';
 import { ObjetivoEstrategicoService } from 'src/objetivo-estrategico/objetivo-estrategico.service';
-import { CicloFisicoDto, ListPdmDto } from 'src/pdm/dto/list-pdm.dto';
+import { CicloFisicoDto, ListPdmDto, OrcamentoConfig } from 'src/pdm/dto/list-pdm.dto';
 import { Pdm } from 'src/pdm/dto/pdm.dto';
 import { UpdatePdmDto } from 'src/pdm/dto/update-pdm.dto';
 import { SubTemaService } from 'src/subtema/subtema.service';
@@ -47,14 +47,17 @@ export class PdmController {
 
         const linhas = await this.pdmService.findAll(filters);
         let ciclo_fisico_ativo: CicloFisicoDto | null | undefined = undefined;
+        let orcamento_config: OrcamentoConfig[] | null | undefined = undefined;
 
-        if (filters.ativo && linhas[0] && linhas[0].id){
+        if (filters.ativo && linhas[0] && linhas[0].id) {
             ciclo_fisico_ativo = await this.pdmService.getCicloAtivo(linhas[0].id);
+            orcamento_config = await this.pdmService.getOrcamentoConfig(linhas[0].id);
         }
 
         return {
             'linhas': linhas,
-            ciclo_fisico_ativo: ciclo_fisico_ativo,
+            ciclo_fisico_ativo,
+            orcamento_config,
         };
     }
 
