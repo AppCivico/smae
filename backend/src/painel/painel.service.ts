@@ -1219,6 +1219,10 @@ export class PainelService {
                     if (months_diff >= multiplier) {
                         let i = 0;
                         while (1) {
+                            if (i >= months_diff) {
+                                break;
+                            }
+
                             const periodo_inicio = moment(earliest).add(multiplier * i, 'months').toDate();
                             const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
                             i++;
@@ -1229,10 +1233,6 @@ export class PainelService {
                                 periodo_fim: periodo_fim,
                                 valores_nominais: ["", "", "", ""]
                             });
-
-                            if (i >= months_diff) {
-                                break;
-                            }
                         }
                     } else {
                         series_template.push({
