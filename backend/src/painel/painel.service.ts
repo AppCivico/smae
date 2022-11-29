@@ -1228,6 +1228,10 @@ export class PainelService {
                             const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
                             i++;
 
+                            console.debug('i: ' + i)
+                            console.debug('periodo_inicio: ' + periodo_inicio)
+                            console.debug('periodo_fim: ' + periodo_fim)
+
                             series_template.push({
                                 titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
                                 periodo_inicio: periodo_inicio,
