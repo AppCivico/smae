@@ -1216,6 +1216,7 @@ export class PainelService {
 
                     const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
                     console.debug('months_diff: ' + months_diff)
+                    console.debug('multiplier: ' + multiplier)
                     if (months_diff >= multiplier) {
                         let i = 0;
                         while (1) {
