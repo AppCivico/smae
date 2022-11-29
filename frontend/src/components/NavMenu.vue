@@ -13,6 +13,7 @@ const props = defineProps(["activate"]);
 const authStore = useAuthStore();
 const { user, permissions } = storeToRefs(authStore);
 const perm = permissions.value;
+authStore.getDados();
 </script>
 
 <template>
@@ -32,10 +33,10 @@ const perm = permissions.value;
         </svg>
       </a>
       <router-link
-        to="/"
+        to="/administracao"
         @click="toggleMenu"
         :class="{ active: props.activate == 'SubmenuConfig' }"
-        v-if="!perm.PDM?.ponto_focal"
+        v-if="perm.algumAdmin"
       >
         <span>Administração</span>
         <svg
@@ -56,7 +57,7 @@ const perm = permissions.value;
         to="/metas"
         @click="toggleMenu"
         :class="{ active: props.activate == 'SubmenuMetas' }"
-        v-if="!perm.PDM?.ponto_focal"
+        v-if="perm.CadastroMeta"
       >
         <span>Metas</span>
         <svg
