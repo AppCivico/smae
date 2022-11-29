@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from 'src/common/date2ymd';
-import { CicloFisicoDto } from 'src/pdm/dto/list-pdm.dto';
+import { CicloFisicoDto, OrcamentoConfig } from 'src/pdm/dto/list-pdm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -214,6 +214,8 @@ export class PdmService {
             this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${updatePdmDto.id}::int, false)`));
 
         });
+
+        await this.getOrcamentoConfig(id, true);
 
         return { id: id };
     }
@@ -526,6 +528,70 @@ export class PdmService {
         }
 
         return ciclo;
+    }
+
+
+
+    async getOrcamentoConfig(pdm_id: number, deleteExtraYears: boolean = false): Promise<OrcamentoConfig[] | null> {
+        const pdm = await this.prisma.pdm.findFirstOrThrow({
+            where: { id: pdm_id },
+            select: {
+                data_inicio: true,
+                data_fim: true,
+            }
+        });
+
+        const rows: {
+            ano_referencia: number
+            id: number
+            pdm_id: number
+            previsao_custo_disponivel: boolean
+            planejado_disponivel: boolean
+            execucao_disponivel: boolean
+        }[] = await this.prisma.$queryRaw`
+            select
+                extract('year' from x.x)::int as ano_referencia,
+                ${pdm_id}::int as pdm_id,
+                coalesce(previsao_custo_disponivel, true) as previsao_custo_disponivel,
+                coalesce(planejado_disponivel, false) as planejado_disponivel,
+                coalesce(execucao_disponivel, false) as execucao_disponivel,
+                oc.id as id
+            FROM generate_series(${pdm.data_inicio}, ${pdm.data_fim} - '1 year'::interval, '1 year'::interval) x
+            LEFT JOIN meta_orcamento_config oc ON oc.pdm_id = ${pdm_id}::int AND oc.ano_referencia = extract('year' from x.x)
+        `;
+
+        let anoVistos: number[] = [];
+        for (const r of rows) {
+            anoVistos.push(r.ano_referencia);
+            if (r.id === null) {
+                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                    await this.prisma.pdmOrcamentoConfig.deleteMany({
+                        where: {
+                            ano_referencia: r.ano_referencia,
+                            pdm_id: pdm_id
+                        }
+                    });
+                    await this.prisma.pdmOrcamentoConfig.create({
+                        data: {
+                            ano_referencia: r.ano_referencia,
+                            pdm_id: pdm_id
+                        }
+                    });
+                }, { isolationLevel: 'Serializable' });
+            }
+            delete (r as any).id;
+        }
+
+        if (deleteExtraYears)
+            // just in case, apagar anos que estão fora do periodo
+            await this.prisma.pdmOrcamentoConfig.deleteMany({
+                where: {
+                    ano_referencia: { notIn: anoVistos },
+                    pdm_id: pdm_id
+                }
+            });
+
+        return rows;
     }
 
 
