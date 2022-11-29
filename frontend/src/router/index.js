@@ -21,7 +21,7 @@ import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
 import { ListRegions } from '@/views/regions';
 import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
-import { ListCiclos, ListMonitoramentoMetas, ListMonitoramentoMetasEvolucao, ListMonitoramentoMetasCronograma, MonitoramentoMetas, MonitoramentoMetasCronograma } from '@/views/monitoramento';
+import { ListCiclos, ListCiclosPassados, ListMonitoramentoMetas, ListMonitoramentoMetasEvolucao, ListMonitoramentoMetasCronograma, MonitoramentoMetas, MonitoramentoMetasCronograma } from '@/views/monitoramento';
 
 
 export const router = createRouter({
@@ -112,7 +112,8 @@ export const router = createRouter({
                 { path: 'cronograma', component: ListMonitoramentoMetasCronograma,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'cronograma/:meta_id', component: MonitoramentoMetasCronograma,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
-                { path: 'ciclos/fechados', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'ciclos/fechados', component: ListCiclosPassados,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'ciclos/:ciclo_id', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'metas/:meta_id', component: MonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
             ]
         },

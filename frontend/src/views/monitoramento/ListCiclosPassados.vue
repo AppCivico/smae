@@ -1,14 +1,8 @@
 <script setup>
-    import { ref, reactive, onMounted, onUpdated } from 'vue';
+    import { ref, reactive } from 'vue';
     import { storeToRefs } from 'pinia';
     import { Dashboard} from '@/components';
-    import { useRoute } from 'vue-router';
-    import { default as AddEditCiclo } from '@/views/monitoramento/AddEditCiclo.vue';
-    import { useAuthStore, useEditModalStore, useCiclosStore } from '@/stores';
-    
-    const route = useRoute();
-    const ciclo_id = route.params.ciclo_id;
-    const editModalStore = useEditModalStore();
+    import { useAuthStore, useCiclosStore } from '@/stores';
 
     const authStore = useAuthStore();
     const { permissions } = storeToRefs(authStore);
@@ -17,17 +11,6 @@
     const CiclosStore = useCiclosStore();
     const { Ciclos } = storeToRefs(CiclosStore);
     CiclosStore.getCiclos();
-
-    function start(){
-        if(ciclo_id) editModalStore.modal(AddEditCiclo);
-    }
-    onMounted(()=>{start()});
-    onUpdated(()=>{start()});
-
-    function dateToField(d){
-        var dd=d?new Date(d):false;
-        return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
-    }
     function dateToTitle(d) {
         var dd=d?new Date(d):false;
         if(!dd) return d;
@@ -43,7 +26,7 @@
             <router-link to="/monitoramento/ciclos">Próximos Ciclos</router-link>
         </div>
         <div class="flex spacebetween center mb2">
-            <h1>Próximos Ciclos</h1>
+            <h1>Ciclos fechados</h1>
             <hr class="ml2 f1" />
         </div>
 
@@ -62,7 +45,7 @@
             </thead>
             <tbody>
                 <template v-if="!Ciclos.loading&&Ciclos?.length">
-                    <tr v-for="c in Ciclos.filter(x=>x.ativo||x.data_ciclo > new Date().toISOString())" :key="c.id">
+                    <tr v-for="c in Ciclos.filter(x=>x.data_ciclo < new Date().toISOString()).reverse()" :key="c.id">
                         <td>{{dateToTitle(c.data_ciclo)}}</td>
                         <td>{{c.inicio_coleta}}</td>
                         <td>{{c.inicio_qualificacao}}</td>

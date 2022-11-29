@@ -1,10 +1,13 @@
 import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import { usePdMStore } from '@/stores';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useCiclosStore = defineStore({
     id: 'Ciclos',
     state: () => ({
+        Ciclos: {},
+        SingleCiclo: {},
         MetasCiclos: {},
         SingleMeta: {},
         MetaVars: {},
@@ -17,6 +20,7 @@ export const useCiclosStore = defineStore({
         SingleCronograma: {},
         SingleCronogramaEtapas: {},
         Etapas: {},
+        activePdm: null,
     }),
     actions: {
         dateToField(d){
@@ -46,7 +50,60 @@ export const useCiclosStore = defineStore({
             this.SingleCronograma = {};
             this.SingleCronogramaEtapas = {};
             this.Etapas = {};
+            
+            this.Ciclos = {};
+            this.SingleCiclo = {};
         },
+        
+        // Ciclos
+        async getPdM() {
+            const PdMStore = usePdMStore();
+            if(!PdMStore.activePdm.id){
+                await PdMStore.getActive();
+            }
+            this.activePdm = PdMStore.activePdm;
+            return this.activePdm;
+        },
+        async getCiclos() {
+            try {
+                this.Ciclos = { loading: true };
+                if(!this.activePdm) await this.getPdM();
+                let r = await requestS.get(`${baseUrl}/pdm-ciclo/v2?pdm_id=${this.activePdm.id}`);    
+                this.Ciclos = r.linhas.map(x=>{
+                    x.inicio_coleta = this.dateToField(x.inicio_coleta);
+                    x.inicio_qualificacao = this.dateToField(x.inicio_qualificacao);
+                    x.inicio_analise_risco = this.dateToField(x.inicio_analise_risco);
+                    x.inicio_fechamento = this.dateToField(x.inicio_fechamento);
+                    x.fechamento = this.dateToField(x.fechamento);
+                    return x;
+                });;
+            } catch (error) {
+                this.Ciclos = { error };
+            }
+        },
+        async getCicloById(ciclo_id){
+            try {
+                this.SingleCiclo = { loading: true };
+                if(!this.Ciclos.length&&!this.Ciclos.loading){
+                    await this.getCiclos();
+                }
+                await new Promise(this.waitForLoad).then(()=>{
+                    this.SingleCiclo = this.Ciclos.find(x=>x.id==ciclo_id);
+                });
+            } catch (error) {
+                this.SingleCiclo = { error };
+            }
+        },
+        waitForLoad(resolve, reject) {
+            if (this.Ciclos.length) resolve(1);
+            else setTimeout(this.waitForLoad.bind(this, resolve, reject), 300);
+        },
+        async updateCiclos(id, params) {
+            if(await requestS.patch(`${baseUrl}/pdm-ciclo/${id}`, params)) return true;
+            return false;
+        },
+
+        // Metas
         async getMetas() {
             this.MetasCiclos = { loading: true };
             try {
