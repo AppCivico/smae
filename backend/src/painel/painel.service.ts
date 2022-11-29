@@ -1220,7 +1220,7 @@ export class PainelService {
                     if (months_diff >= multiplier) {
                         let i = 0;
                         while (1) {
-                            if (i + 1 >= months_diff) {
+                            if (multiplier * i >= months_diff) {
                                 break;
                             }
 
