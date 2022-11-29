@@ -17,7 +17,18 @@ export class CicloFisicoDto {
     fases: CicloFisicoFase[]
 }
 
+
+export class OrcamentoConfig {
+    ano_referencia: number
+    pdm_id: number
+    previsao_custo_disponivel: boolean
+    planejado_disponivel: boolean
+    execucao_disponivel: boolean
+}
+
+
 export class ListPdmDto {
     linhas: ListPdm[]
     ciclo_fisico_ativo?: CicloFisicoDto | null
+    orcamento_config?: OrcamentoConfig[] | null
 }

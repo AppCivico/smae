@@ -1,5 +1,5 @@
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator";
+import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
 export class CreateMetaOrcamentoDto {
@@ -46,6 +46,9 @@ export class CreateMetaOrcamentoDto {
     */
     @IsString()
     @MaxLength(40)
+    // faz o match parcial, mas alguns campos precisam ser completos
+    @Matches(/^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2}(\-\d)?)?)?)?)?)?)?)?)?$/, {message: 'Dotação parcial não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00-0'})
+    @ValidateIf((object, value) => value !== '')
     parte_dotacao: string;
 
 }
