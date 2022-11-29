@@ -1,0 +1,1 @@
+from .endpoints.empenhos import app as empenhos_routes

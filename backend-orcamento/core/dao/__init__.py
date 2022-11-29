@@ -1,0 +1,1 @@
+from .empenhos import EmpenhosLiquidacoes as DaoEmpenhos
