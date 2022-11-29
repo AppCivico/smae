@@ -28,13 +28,21 @@ export const useAuthStore = defineStore({
                 this.token = token.access_token;
                 localStorage.setItem('token', JSON.stringify(token.access_token));
                 
+                await this.getDados();
+
+                router.push(this.returnUrl || '/');
+            } catch (error) {
+                const alertStore = useAlertStore();
+                alertStore.error(error);                
+            }
+        },
+        async getDados(){
+            try {
                 const user = await requestS.get(`${baseUrl}/minha-conta`);    
                 this.user = user.sessao;
                 localStorage.setItem('user', JSON.stringify(user.sessao));
                 
                 this.setPermissions();
-
-                router.push(this.returnUrl || '/');
             } catch (error) {
                 const alertStore = useAlertStore();
                 alertStore.error(error);                
@@ -95,6 +103,35 @@ export const useAuthStore = defineStore({
                     per[c[0]][c[1]] = 1;
                 }
             });
+
+            let a = ["CadastroAtividade",
+            "CadastroCicloFisico",
+            "CadastroCronograma",
+            "CadastroEtapa",
+            "CadastroFonteRecurso",
+            "CadastroGrupoPaineis",
+            "CadastroIndicador",
+            "CadastroIniciativa",
+            "CadastroMacroTema",
+            "CadastroMeta",
+            "CadastroOds",
+            "CadastroOrgao",
+            "CadastroPainel",
+            "CadastroPdm",
+            "CadastroPessoa",
+            "CadastroRegiao",
+            "CadastroSubTema",
+            "CadastroTag",
+            "CadastroTema",
+            "CadastroTipoDocumento",
+            "CadastroTipoOrgao",
+            "CadastroUnidadeMedida"];
+            for(const c in a){
+                if(per[a[c]]){
+                    per.algumAdmin = 1;
+                    break;
+                }
+            }
 
             localStorage.setItem('permissions', JSON.stringify(per));
             return this.permissions = per;

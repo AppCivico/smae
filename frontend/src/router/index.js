@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores';
 
 // Views
-import { Home } from '@/views';
+import { Home, Administracao } from '@/views';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
 import { default as SubmenuMonitoramento } from '@/components/SubmenuMonitoramento.vue';
@@ -28,7 +28,8 @@ export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     linkActiveClass: 'active',
     routes: [
-        { path: '/', name: 'home', component: Home, props:{submenu:SubmenuConfig} },
+        { path: '/', component: Home, props:{submenu: false}},
+        { path: '/administracao', component: Administracao, props:{submenu: SubmenuConfig}},
         { path: '/login', component: Login },
         { path: '/esqueci-minha-senha', component: LostPassword },
         { path: '/nova-senha', component: NewPassword },
