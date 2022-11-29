@@ -98,10 +98,10 @@ export class UploadService {
         await this.storage.putBlob(key, file.buffer, {
             'Content-Type': file.mimetype || 'application/octet-stream',
             'x-user-id': user.id,
-            'x-orgao-id': user.orgao_id,
+            'x-orgao-id': user.orgao_id || 'sem-orgao',
             'x-tipo': createUploadDto.tipo,
-            'x-tipo-documento-id': createUploadDto.tipo_documento_id,
-            'x-uploaded-ip': ip,
+            'x-tipo-documento-id': createUploadDto.tipo_documento_id || 'sem-tipo',
+            'x-uploaded-ip': ip || 'sem-ip',
         });
 
         await this.prisma.arquivo.create({
