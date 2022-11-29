@@ -18,6 +18,12 @@ export const useVariaveisStore = defineStore({
         clearEdit (){
             this.singleVariaveis = {};
         },
+        dateToField(d){
+            var dd=d?new Date(d):false;
+            var dx = (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
+            
+            return dx?dx.slice(3,10):'';
+        },
         async getAll(indicador_id) {
             try {
                 if(!indicador_id) throw "Indicador inválido";
@@ -29,6 +35,8 @@ export const useVariaveisStore = defineStore({
                     x.regiao_id = x.regiao?.id ?? null;
                     x.unidade_medida_id = x.unidade_medida?.id ?? null;
                     x.acumulativa = x.acumulativa?"1":false;
+                    x.inicio_medicao = this.dateToField(x.inicio_medicao);
+                    x.fim_medicao = this.dateToField(x.fim_medicao);
                     return x;
                 });
             } catch (error) {
