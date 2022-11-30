@@ -23,8 +23,6 @@ class SofClient:
         return f'https://{self.host}{self.base_path}{self.version}/'
 
     def __build_headers(self):
-        print f"header => ${self.auth_token}"
-
 
         return {"Authorization" : f"Bearer {self.auth_token}",
                 "Accept": "application/json"}
