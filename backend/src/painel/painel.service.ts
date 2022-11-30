@@ -1215,8 +1215,6 @@ export class PainelService {
                     }
 
                     const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
-                    console.debug('months_diff: ' + months_diff)
-                    console.debug('multiplier: ' + multiplier)
                     if (months_diff >= multiplier) {
                         let i = 0;
                         while (1) {
@@ -1224,10 +1222,6 @@ export class PainelService {
                             const periodo_inicio = moment(earliest).add(multiplier * i, 'months').toDate();
                             const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
                             i++;
-
-                            console.debug('i: ' + i)
-                            console.debug('periodo_inicio: ' + periodo_inicio)
-                            console.debug('periodo_fim: ' + periodo_fim)
 
                             series_template.push({
                                 titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
