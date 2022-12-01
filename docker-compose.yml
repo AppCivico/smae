@@ -43,9 +43,28 @@ services:
       - postgres
       - minio
       - api
+      - api_orcamento
     depends_on:
       - db
       - minio
+      - smae_orcamento
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  smae_orcamento:
+    container_name: "${API_CONTAINER_NAME}_orcamento"
+    build:
+      context: ./backend-orcamento/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SOF_API_TOKEN: "${SOF_API_TOKEN}"
+      PORT: 80
+    networks:
+      - api_orcamento
     logging:
       driver: "json-file"
       options:
@@ -124,6 +143,7 @@ networks:
   postgres:
   minio:
   api:
+  api_orcamento:
 
 
 volumes:
