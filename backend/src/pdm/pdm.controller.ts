@@ -101,7 +101,7 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.editar')
-    async updatePdmOrcamentoConfig(@Param() params: FindOneParams, @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto[], @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId[]> {
+    async updatePdmOrcamentoConfig(@Param() params: FindOneParams, @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId[]> {
         return await this.pdmService.updatePdmOrcamentoConfig(+params.id, updatePdmOrcamentoConfigDto);
     }
 
