@@ -43,6 +43,7 @@ import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
 import { GrupoPaineisModule } from './grupo-paineis/grupo-paineis.module';
 import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
+import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 
 
 @Module({
@@ -78,6 +79,7 @@ import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
             },
         ]),
         PdmCicloModule,
+        OrcamentoPlanejadoModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

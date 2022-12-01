@@ -9,6 +9,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
+import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { PdmDocument } from './entities/pdm-document.entity';
 const JOB_LOCK_NUMBER = 65656565;
@@ -594,5 +595,35 @@ export class PdmService {
         return rows;
     }
 
+    async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto) {
+        
+        return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            const operations = [];
+            for (const orcamentoConfig of updatePdmOrcamentoConfigDto.orcamento_config) {
+                const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
+                    where: {
+                        pdm_id: pdm_id,
+                        id: orcamentoConfig.id
+                    }
+                });
+                if (!pdmOrcamentoConfig) continue;
+
+                operations.push(
+                    prisma.pdmOrcamentoConfig.update({
+                        where: { id: pdmOrcamentoConfig.id },
+                        data: {
+                            previsao_custo_disponivel: orcamentoConfig.previsao_custo_disponivel,
+                            planejado_disponivel: orcamentoConfig.planejado_disponivel,
+                            execucao_disponivel: orcamentoConfig.execucao_disponivel
+                        },
+                        select: {id: true}
+                    })
+                )
+            }
+
+            return await Promise.all(operations);
+        });
+
+    }
 
 }
