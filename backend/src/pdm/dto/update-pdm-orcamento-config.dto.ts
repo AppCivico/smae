@@ -1,6 +1,10 @@
 import { IsBoolean, IsNumber, IsOptional, ValidateIf } from 'class-validator';
 
 export class UpdatePdmOrcamentoConfigDto {
+    orcamento_config:PdmOrcamentoConfig[]
+}
+
+export class PdmOrcamentoConfig {
     @IsNumber()
     id: number
 

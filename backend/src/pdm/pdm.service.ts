@@ -595,11 +595,11 @@ export class PdmService {
         return rows;
     }
 
-    async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto[]) {
+    async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto) {
         
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
-            for (const orcamentoConfig of updatePdmOrcamentoConfigDto) {
+            for (const orcamentoConfig of updatePdmOrcamentoConfigDto.orcamento_config) {
                 const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
                     where: {
                         pdm_id: pdm_id,
