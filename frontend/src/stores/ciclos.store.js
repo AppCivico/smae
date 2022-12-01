@@ -19,6 +19,7 @@ export const useCiclosStore = defineStore({
         Cronogramas: {},
         SingleCronograma: {},
         SingleCronogramaEtapas: {},
+        SingleEtapa: {},
         Etapas: {},
         activePdm: null,
     }),
@@ -50,7 +51,8 @@ export const useCiclosStore = defineStore({
             this.SingleCronograma = {};
             this.SingleCronogramaEtapas = {};
             this.Etapas = {};
-            
+            this.SingleEtapa = {};
+
             this.Ciclos = {};
             this.SingleCiclo = {};
         },
@@ -322,6 +324,26 @@ export const useCiclosStore = defineStore({
             } catch (error) {
                 this.Etapas[cronograma_id] = { error };
             }
+        },
+        async getEtapaById(cronograma_id,etapa_id){
+            try {
+                this.SingleEtapa = { loading: true };
+                let r = await requestS.get(`${baseUrl}/mf/metas/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);    
+                this.SingleEtapa = r.linhas.length ? r.linhas.map(x=>{
+                    if(x.etapa.inicio_previsto) x.etapa.inicio_previsto = this.dateToField(x.etapa.inicio_previsto);
+                    if(x.etapa.termino_previsto) x.etapa.termino_previsto = this.dateToField(x.etapa.termino_previsto);
+                    if(x.etapa.inicio_real) x.etapa.inicio_real = this.dateToField(x.etapa.inicio_real);
+                    if(x.etapa.termino_real) x.etapa.termino_real = this.dateToField(x.etapa.termino_real);
+                    if(x.etapa.prazo) x.etapa.prazo = this.dateToField(x.etapa.prazo);
+                    return x;
+                })[0].etapa : {};
+            } catch (error) {
+                this.SingleEtapa = { error };
+            }
+        },
+        async updateEtapa(id, params) {
+            if(await requestS.patch(`${baseUrl}/mf/metas/cronograma/etapa/${id}`, params)) return true;
+            return false;
         },
     },
 });
