@@ -1770,16 +1770,33 @@ model MetaOrcamento {
     @@map("meta_orcamento")
 }
 
+model Dotacao {
+    id Int @id @default(autoincrement())
+
+    informacao_valida Boolean
+    sincronizado_em   DateTime? @default(now()) @db.Timestamptz(6)
+
+    ano_referencia       Int
+    mes_referencia       Int
+    dotacao              String
+    empenho_liquido      Float   @db.DoublePrecision
+    valor_liquidado      Float   @db.DoublePrecision
+    pressao_orcamentaria Boolean
+
+    @@unique([ano_referencia, mes_referencia, dotacao])
+    @@map("dotacao")
+}
+
 model OrcamentoPlanejado {
     id            Int  @id @default(autoincrement())
     meta_id       Int
     iniciativa_id Int?
     atividade_id  Int?
 
-    ano_referencia  Int
     valor_planejado Float  @db.DoublePrecision
+    ano_referencia  Int
+    mes_referencia  Int
     dotacao         String
-    valor_dotacao   Float? @db.DoublePrecision
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
@@ -1803,8 +1820,8 @@ model OrcamentoRealizado {
     iniciativa_id Int?
     atividade_id  Int?
 
-    ano             Int
-    mes             Int
+    ano_referencia  Int
+    mes_referencia  Int
     dotacao         String
     processo        String?
     nota_empenho    String?
