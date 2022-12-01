@@ -1,5 +1,7 @@
 export class OrcamentoPlanejado {
     meta_id: number
+    atividade_id: number | null
+    iniciativa_id: number | null
     valor_planejado: number
     ano_referencia: number
     dotacao: string
