@@ -112,6 +112,7 @@ export const router = createRouter({
                 { path: 'evolucao/:meta_id', component: MonitoramentoMetas,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'cronograma', component: ListMonitoramentoMetasCronograma,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'cronograma/:meta_id', component: MonitoramentoMetasCronograma,  props:{submenu:SubmenuMonitoramento} },
+                { path: 'cronograma/:meta_id/:cron_id/:etapa_id', component: MonitoramentoMetasCronograma, props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos/fechados', component: ListCiclosPassados,  props:{submenu:SubmenuMonitoramento} },
                 { path: 'ciclos/:ciclo_id', component: ListCiclos,  props:{submenu:SubmenuMonitoramento} },

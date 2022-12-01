@@ -1,15 +1,18 @@
 <script setup>
-    import { ref, reactive } from 'vue';
+    import { ref, reactive, onMounted, onUpdated } from 'vue';
     import { storeToRefs } from 'pinia';
     import { Dashboard} from '@/components';
     import { useEditModalStore, useAlertStore, useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
     import { useRoute } from 'vue-router';
     import { router } from '@/router';
+    import { default as AddEditEtapa } from '@/views/monitoramento/AddEditEtapa.vue';
     
     const baseUrl = `${import.meta.env.VITE_API_URL}`;
     
     const route = useRoute();
     const meta_id = route.params.meta_id;
+    const cron_id = route.params.cron_id;
+    const etapa_id = route.params.etapa_id;
 
     const editModalStore = useEditModalStore();
     const alertStore = useAlertStore();
@@ -25,6 +28,12 @@
     const { SingleMeta, SingleCronograma, SingleCronogramaEtapas } = storeToRefs(CiclosStore);
     CiclosStore.getMetaById(meta_id);
     CiclosStore.getCronogramasActiveByParent(meta_id,'meta_id');
+    
+    function start(){
+        if(cron_id&&etapa_id) editModalStore.modal(AddEditEtapa);
+    }
+    onMounted(()=>{start()});
+    onUpdated(()=>{start()});
 
     function dateToField(d){
         var dd=d?new Date(d):false;
@@ -59,6 +68,7 @@
                         <div class="ml1 f0" style="flex-basis:20px;"></div>
                     </div>
                     <hr/>
+
                     
                     <div class="pl3 flex center t13">
                         <div class="f1">{{r.etapa.inicio_previsto}}</div>
@@ -67,32 +77,21 @@
                         <div class="ml1 f1">{{r.etapa.inicio_real}}</div>
                         <div class="ml1 f1">{{r.etapa.termino_real}}</div>
                         <div class="ml1 f1">{{r.etapa.atraso??'-'}}</div>
-                        <div class="ml1 f0" style="flex-basis:20px; height: calc(20px + 1rem);">
-                            <div class="dropbtn right" v-if="perm?.CadastroEtapa?.editar">
-                                <span class=""><svg width="20" height="20"><use xlink:href="#i_more"></use></svg></span>
-                                <ul>
-                                    <li><router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==SingleCronograma?.id)" :to="`${parentlink}/cronograma/${SingleCronograma?.id}/etapas/${r.etapa.id}`">Editar Etapa</router-link></li>
-                                    <li><router-link v-if="r.cronograma_origem_etapa&&r.cronograma_origem_etapa?.id!=SingleCronograma?.id" :to="`${parentlink}/cronograma/${SingleCronograma?.id}/monitorar/${r.etapa.id}`">Editar Monitoramento</router-link></li>
-                                </ul>
-                            </div>
+                        <div class="ml1 f0 flex center" style="flex-basis:20px; height: calc(20px + 1rem);">
+                            <router-link 
+                                :to="`/monitoramento/cronograma/${meta_id}/${r.cronograma_id}/${r.etapa.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                         </div>
                     </div>
                     <hr class="mb05" />
                     <div class="pl3 flex center t11 w700 tc600" v-if="r.cronograma_origem_etapa&&r.cronograma_origem_etapa?.id!=SingleCronograma?.id">
-                        <router-link 
-                            v-if="r.cronograma_origem_etapa.atividade" 
-                            :to="`/metas/${r.cronograma_origem_etapa.atividade.iniciativa.meta.id}/iniciativas/${r.cronograma_origem_etapa.atividade.iniciativa.id}/atividades/${r.cronograma_origem_etapa.atividade.id}/cronograma`"
-                        >
+                        <template v-if="r.cronograma_origem_etapa.atividade" >
                             <svg class="mr1" width="12" height="14" viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg"><use xlink:href="#i_atividade"></use></svg>
                             <span>Etapa via atividade {{r.cronograma_origem_etapa.atividade.codigo}} {{r.cronograma_origem_etapa.atividade.titulo}}</span>
-                        </router-link>
-                        <router-link 
-                            v-else-if="r.cronograma_origem_etapa.iniciativa" 
-                            :to="`/metas/${r.cronograma_origem_etapa.iniciativa.meta.id}/iniciativas/${r.cronograma_origem_etapa.iniciativa.id}/cronograma`"
-                        >
+                        </template>
+                        <template v-else-if="r.cronograma_origem_etapa.iniciativa" >
                             <svg class="mr1" width="12" height="14" viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg"><use xlink:href="#i_iniciativa"></use></svg>
                             <span>Etapa via iniciativa {{r.cronograma_origem_etapa.iniciativa.codigo}} {{r.cronograma_origem_etapa.iniciativa.titulo}}</span>
-                        </router-link>
+                        </template>
                     </div>
 
                     <div class="etapa sub" v-for="(rr, rrindex) in r.etapa.etapa_filha" :key="rr.id">
@@ -115,8 +114,9 @@
                             <div class="ml1 f1">{{rr.inicio_real}}</div>
                             <div class="ml1 f1">{{rr.termino_real}}</div>
                             <div class="ml1 f1">{{rr.atraso??'-'}}</div>
-                            <div class="ml1 f0" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                <router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==SingleCronograma?.id)" :to="`${parentlink}/cronograma/${SingleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            <div class="ml1 f0 flex center" style="flex-basis:20px; height: calc(20px + 1rem);">
+                                <router-link 
+                                    :to="`/monitoramento/cronograma/${meta_id}/${r.cronograma_id}/${rr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </div>
                         </div>
                         <hr class="mb3" />
@@ -144,25 +144,14 @@
                                     <div class="ml1 f1">{{rrr.termino_real}}</div>
                                     <div class="ml1 f1">{{rrr.atraso??'-'}}</div>
                                     <div class="ml1 f0 flex center mr05" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                        <router-link v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==SingleCronograma?.id)" :to="`${parentlink}/cronograma/${SingleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                        <router-link 
+                                            :to="`/monitoramento/cronograma/${meta_id}/${r.cronograma_id}/${rrr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                     </div>
                                 </div>
                                 <hr/>
                             </template>
                         </div>
-                        <div class="pl3">
-                            <router-link 
-                                v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==SingleCronograma?.id)" 
-                                :to="`${parentlink}/cronograma/${SingleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`" 
-                                class="addlink mt05 mb05"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Subfase</span></router-link>
-                        </div>
                         <hr class="mb1" />
-                    </div>
-                    <div class="pl1">
-                        <router-link 
-                        v-if="(!r.cronograma_origem_etapa||r.cronograma_origem_etapa.id==SingleCronograma?.id)" 
-                        :to="`${parentlink}/cronograma/${SingleCronograma?.id}/etapas/${r.etapa.id}/novo`" 
-                        class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar Fase</span></router-link>
                     </div>
                 </div>
             </div>
@@ -170,9 +159,7 @@
                 <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
             </template>
             <div class="p1 bgc50" v-else>
-                <div class="tc">
-                    <router-link :to="`${parentlink}/cronograma/${SingleCronograma?.id}/etapas/novo`" class="btn mt1 mb1"><span>Adicionar Etapa</span></router-link>
-                </div>
+                <div class="p1"><span>Nenhuma etapa encontrada</span></div>
             </div>
         </template>
         <template v-else-if="SingleCronograma?.loading">
