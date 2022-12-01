@@ -16,6 +16,7 @@ import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDetailDto, FilterPdmDto } from './dto/filter-pdm.dto';
+import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
 import { PdmService } from './pdm.service';
 
@@ -61,7 +62,6 @@ export class PdmController {
         };
     }
 
-
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
@@ -95,6 +95,14 @@ export class PdmController {
         return {
             pdm, tema, sub_tema, eixo, tag,
         }
+    }
+
+    @Patch(':id/orcamento-config')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroPdm.editar')
+    async updatePdmOrcamentoConfig(@Param() params: FindOneParams, @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto[], @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId[]> {
+        return await this.pdmService.updatePdmOrcamentoConfig(+params.id, updatePdmOrcamentoConfigDto);
     }
 
     @Post(':id/documento')
