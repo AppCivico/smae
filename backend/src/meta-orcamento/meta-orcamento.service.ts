@@ -21,9 +21,7 @@ export class MetaOrcamentoService {
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
             where: { pdm_id: meta.pdm_id, ano_referencia: dto.ano_referencia, previsao_custo_disponivel: true }
         });
-        // aguardar o Lucas fazer a parte que popula essa tabela quando muda o PDM
-        // pra fazer esse HttpException
-        //if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
+        if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
