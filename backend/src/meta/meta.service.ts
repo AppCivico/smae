@@ -340,13 +340,15 @@ export class MetaService {
             join iniciativa i on i.meta_id = m.id and i.removido_em is null
             where m.id = ${meta_id}
             union all
-            select 'atividade' as tipo, m.id as meta_id, i.id as iniciativa_id, a.id, a.codigo, a.titulo
+            select 'atividade' as tipo, m.id as meta_id, i.id as iniciativa_id, a.id as atividade_id, a.codigo, a.titulo
             from meta m
             join iniciativa i on i.meta_id = m.id and i.removido_em is null
             join atividade a on a.iniciativa_id = i.id and a.removido_em is null
             where m.id = ${meta_id}`;
 
             if (rows.length == 0) throw new HttpException(`Meta ${meta_id} não encontrada`, 404);
+            console.log(rows);
+
 
             const meta: DadosCodTituloMetaDto = {
                 id: rows[0].meta_id,
@@ -366,9 +368,9 @@ export class MetaService {
                     for (const r2 of rows) {
                         if (r2.tipo === 'atividade' && r2.iniciativa_id == r.iniciativa_id) {
                             iniciativa.atividades.push({
-                                id: r.atividade_id!,
-                                codigo: r.codigo,
-                                titulo: r.titulo,
+                                id: r2.atividade_id!,
+                                codigo: r2.codigo,
+                                titulo: r2.titulo,
                             });
                         }
                     }
