@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
+import { CreateMetaDto, DadosMetaIniciativaAtividadesDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
@@ -308,7 +308,7 @@ export class MetaService {
                     removido_em: new Date(Date.now()),
                 },
             });
-    
+
             // Caso a Meta seja removida, é necessário remover relacionamentos com Painel
             // public.painel_conteudo e public.painel_conteudo_detalhe
             await prisma.painelConteudo.deleteMany({ where: { meta_id: id } });
@@ -316,4 +316,32 @@ export class MetaService {
             return removed;
         });
     }
+
+    async buscaMetasIniciativaAtividades(metas: number[]): Promise<DadosMetaIniciativaAtividadesDto[]> {
+        const list: DadosMetaIniciativaAtividadesDto[] = [];
+
+        for (const meta_id of metas) {
+            const rows: DadosMetaIniciativaAtividadesDto[] = await this.prisma.$queryRaw`
+            select 'meta' as tipo, m.id as meta_id, null::int as iniciativa_id, null::int as atividade_id, m.codigo, m.titulo
+            from meta m
+            where m.id = ${meta_id}
+            union all
+            select 'iniciativa' as tipo, m.id as meta_id, i.id , null, i.codigo, i.titulo
+            from meta m
+            join iniciativa i on i.meta_id = m.id and i.removido_em is null
+            where m.id = ${meta_id}
+            union all
+            select 'atividade' as tipo, m.id as meta_id, i.id as iniciativa_id, a.id, a.codigo, a.titulo
+            from meta m
+            join iniciativa i on i.meta_id = m.id and i.removido_em is null
+            join atividade a on a.iniciativa_id = i.id and a.removido_em is null
+            where m.id = ${meta_id}`;
+
+            if (rows.length == 0) throw new HttpException(`Meta ${meta_id} não encontrada`, 404);
+            list.push(...rows);
+        }
+
+        return list;
+    }
+
 }
