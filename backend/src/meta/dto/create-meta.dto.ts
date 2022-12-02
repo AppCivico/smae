@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 
 
 export class MetaOrgaoParticipante {
@@ -125,15 +125,28 @@ export class CreateMetaDto {
     tags?: number[]
 }
 
-export class DadosMetaIniciativaAtividadesDto {
-    tipo: string
-    meta_id: number
-    iniciativa_id: number | null
-    atividade_id: number | null
+
+export class DadosCodTituloAtividadeDto {
+    id: number
     codigo: string
     titulo: string
 };
 
+export class DadosCodTituloIniciativaDto {
+    id: number
+    codigo: string
+    titulo: string
+    atividades: DadosCodTituloAtividadeDto[]
+};
+
+
+export class DadosCodTituloMetaDto {
+    id: number
+    codigo: string
+    titulo: string
+    iniciativas: DadosCodTituloIniciativaDto[]
+};
+
 export class ListDadosMetaIniciativaAtividadesDto {
-    linhas: DadosMetaIniciativaAtividadesDto[]
+    linhas: DadosCodTituloMetaDto[]
 }

@@ -3,10 +3,19 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateMetaDto, DadosMetaIniciativaAtividadesDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
+import { CreateMetaDto, DadosCodTituloIniciativaDto, DadosCodTituloMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
+
+type DadosMetaIniciativaAtividadesDto = {
+    tipo: string
+    meta_id: number
+    iniciativa_id: number | null
+    atividade_id: number | null
+    codigo: string
+    titulo: string
+};
 
 @Injectable()
 export class MetaService {
@@ -317,8 +326,8 @@ export class MetaService {
         });
     }
 
-    async buscaMetasIniciativaAtividades(metas: number[]): Promise<DadosMetaIniciativaAtividadesDto[]> {
-        const list: DadosMetaIniciativaAtividadesDto[] = [];
+    async buscaMetasIniciativaAtividades(metas: number[]): Promise<DadosCodTituloMetaDto[]> {
+        const list: DadosCodTituloMetaDto[] = [];
 
         for (const meta_id of metas) {
             const rows: DadosMetaIniciativaAtividadesDto[] = await this.prisma.$queryRaw`
@@ -338,7 +347,36 @@ export class MetaService {
             where m.id = ${meta_id}`;
 
             if (rows.length == 0) throw new HttpException(`Meta ${meta_id} não encontrada`, 404);
-            list.push(...rows);
+
+            const meta: DadosCodTituloMetaDto = {
+                id: rows[0].meta_id,
+                codigo: rows[0].codigo,
+                titulo: rows[0].titulo,
+                iniciativas: []
+            };
+            for (const r of rows) {
+                if (r.tipo == 'iniciativa') {
+                    const iniciativa: DadosCodTituloIniciativaDto = {
+                        id: r.iniciativa_id!,
+                        codigo: r.codigo,
+                        titulo: r.titulo,
+                        atividades: []
+                    };
+
+                    for (const r2 of rows) {
+                        if (r2.tipo === 'atividade' && r2.iniciativa_id == r.iniciativa_id) {
+                            iniciativa.atividades.push({
+                                id: r.atividade_id!,
+                                codigo: r.codigo,
+                                titulo: r.titulo,
+                            });
+                        }
+                    }
+                    meta.iniciativas.push(iniciativa);
+                }
+            }
+
+            list.push(meta);
         }
 
         return list;

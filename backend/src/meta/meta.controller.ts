@@ -5,7 +5,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateMetaDto, DadosMetaIniciativaAtividadesDto, ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
+import { CreateMetaDto,  ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
