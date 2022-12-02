@@ -55,6 +55,17 @@ export class CronogramaEtapaService {
                         termino_real: true,
                         prazo: true,
                         titulo: true,
+                        // responsaveis: true,
+                        responsaveis: {
+                            select: {
+                                pessoa: {
+                                    select: {
+                                        id: true,
+                                        nome_exibicao: true
+                                    }
+                                }                                
+                            }
+                        },
 
                         cronograma: {
                             select: {
@@ -125,6 +136,16 @@ export class CronogramaEtapaService {
                                 termino_real: true,
                                 prazo: true,
                                 titulo: true,
+                                responsaveis: {
+                                    select: {
+                                        pessoa: {
+                                            select: {
+                                                id: true,
+                                                nome_exibicao: true
+                                            }
+                                        }
+                                    }
+                                },
                                 CronogramaEtapa: {
                                     orderBy: { ordem: 'asc' }
                                 },
@@ -142,6 +163,16 @@ export class CronogramaEtapaService {
                                         termino_real: true,
                                         prazo: true,
                                         titulo: true,
+                                        responsaveis: {
+                                            select: {
+                                                pessoa: {
+                                                    select: {
+                                                        id: true,
+                                                        nome_exibicao: true
+                                                    }
+                                                }
+                                            }
+                                        },
 
                                         CronogramaEtapa: {
                                             orderBy: { ordem: 'asc' }
@@ -192,7 +223,13 @@ export class CronogramaEtapaService {
                     termino_real: cronogramaEtapa.etapa.termino_real,
                     prazo: cronogramaEtapa.etapa.prazo,
                     titulo: cronogramaEtapa.etapa.titulo,
-                    etapa_filha: cronogramaEtapa.etapa.etapa_filha
+                    etapa_filha: cronogramaEtapa.etapa.etapa_filha,
+                    responsaveis: cronogramaEtapa.etapa.responsaveis.map(r => {
+                        return {
+                            id: r.pessoa.id,
+                            nome_exibicao: r.pessoa.nome_exibicao
+                        }
+                    })
                 },
 
                 cronograma_origem_etapa: {
