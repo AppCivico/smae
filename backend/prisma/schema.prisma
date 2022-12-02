@@ -1770,20 +1770,22 @@ model MetaOrcamento {
     @@map("meta_orcamento")
 }
 
-model DotacaoPlanejado {
+model Dotacao {
     id Int @id @default(autoincrement())
 
     informacao_valida Boolean
     sincronizado_em   DateTime? @default(now()) @db.Timestamptz(6)
 
     ano_referencia       Int
+    mes_utilizado        Int
+
     dotacao              String
     empenho_liquido      Float   @db.DoublePrecision
     valor_liquidado      Float   @db.DoublePrecision
     pressao_orcamentaria Boolean
 
     @@unique([ano_referencia, dotacao])
-    @@map("dotacao_planejado")
+    @@map("dotacao")
 }
 
 model OrcamentoPlanejado {

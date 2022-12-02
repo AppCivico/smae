@@ -1,4 +1,5 @@
 
+import { ApiParam } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from "class-validator";
 import { OrcamentoPlanejado } from "../entities/orcamento-planejado.entity";
@@ -6,13 +7,31 @@ import { OrcamentoPlanejado } from "../entities/orcamento-planejado.entity";
 export class CreateOrcamentoPlanejadoDto {
 
     /**
-    * ano_referencia
+    * meta_id, se for por meta
     * @example "42"
     */
     @IsOptional()
     @IsPositive({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
-    meta_id: number;
+    meta_id?: number;
+
+    /**
+    * iniciativa_id, se for por iniciativa
+    * @example "42"
+    */
+    @IsOptional()
+    @IsPositive({ message: '$property| iniciativa_id precisa ser positivo' })
+    @Type(() => Number)
+    iniciativa_id?: number;
+
+    /**
+    * atividade_id, se for por atividade
+    * @example "42"
+    */
+    @IsOptional()
+    @IsPositive({ message: '$property| atividade_id precisa ser positivo' })
+    @Type(() => Number)
+    atividade_id?: number;
 
     /**
     * ano_referencia
@@ -44,8 +63,8 @@ export class CreateOrcamentoPlanejadoDto {
 
 export class FilterOrcamentoPlanejadoDto {
     /**
-   * Filtrar por meta_id
-   * @example "42"
+   * Filtrar por meta_id: eg: 205
+   * @example ""
     */
     @IsOptional()
     @IsPositive({ message: '$property| meta_id precisa ser positivo' })
@@ -53,8 +72,16 @@ export class FilterOrcamentoPlanejadoDto {
     meta_id?: number;
 
     /**
-   * Filtrar por ano_referencia?
-   * @example "2022"
+  * Filtrar por meta_id: eg: 00.00.00.000.0000.0.000.00000000.00
+  * @example ""
+   */
+    @IsOptional()
+    @IsString()
+    dotacao?: string;
+
+    /**
+   * Filtrar por ano_referencia? eg: 2022
+   * @example ""
     */
     @IsOptional()
     @IsPositive({ message: '$property| ano_referencia precisa ser positivo' })
