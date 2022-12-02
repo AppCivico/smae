@@ -133,10 +133,27 @@ export class EtapaService {
                 select: { id: true }
             });
 
-            if (Array.isArray(responsaveis))
-                await prisma.etapaResponsavel.createMany({
-                    data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
-                });
+            if (Array.isArray(responsaveis)) {
+
+                const operations = [];
+                for (const responsavel of responsaveis) {
+                    operations.push(prisma.etapaResponsavel.upsert({
+                        where: {
+                            etapa_pessoa_uniq: {
+                                pessoa_id: responsavel,
+                                etapa_id: etapa.id
+                            }
+                        },
+                        create: {
+                            pessoa_id: responsavel,
+                            etapa_id: etapa.id
+                        },
+                        update: {}
+                    }));
+                }
+
+                await Promise.all(operations);
+            }
 
             // apaga tudo por enquanto, não só as que tem algum crono dessa meta
             await prisma.statusMetaCicloFisico.deleteMany();

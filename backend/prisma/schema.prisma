@@ -1221,6 +1221,7 @@ model EtapaResponsavel {
 
     @@index([pessoa_id])
     @@index([etapa_id])
+    @@unique([pessoa_id, etapa_id], name: "etapa_pessoa_uniq")
     @@map("etapa_responsavel")
 }
 
