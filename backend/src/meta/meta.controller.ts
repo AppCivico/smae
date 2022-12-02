@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseArrayPipe, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateMetaDto } from './dto/create-meta.dto';
+import { CreateMetaDto, DadosMetaIniciativaAtividadesDto, ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
@@ -49,6 +49,15 @@ export class MetaController {
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.metaService.remove(+params.id, user);
         return '';
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('iniciativas-atividades')
+    //@Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal', '')
+    async buscaMetasIniciativaAtividades(
+        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
+    ): Promise<ListDadosMetaIniciativaAtividadesDto> {
+        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
     }
 
 }

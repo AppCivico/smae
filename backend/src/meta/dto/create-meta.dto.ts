@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator";
 
 
 export class MetaOrgaoParticipante {
@@ -123,4 +123,17 @@ export class CreateMetaDto {
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     tags?: number[]
+}
+
+export class DadosMetaIniciativaAtividadesDto {
+    tipo: string
+    meta_id: number
+    iniciativa_id: number | null
+    atividade_id: number | null
+    codigo: string
+    titulo: string
+};
+
+export class ListDadosMetaIniciativaAtividadesDto {
+    linhas: DadosMetaIniciativaAtividadesDto[]
 }
