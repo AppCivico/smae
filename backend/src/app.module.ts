@@ -44,6 +44,8 @@ import { GrupoPaineisModule } from './grupo-paineis/grupo-paineis.module';
 import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
+import { DotacaoModule } from './dotacao/dotacao.module';
+import { SofApiModule } from './sof-api/sof-api.module';
 
 
 @Module({
@@ -53,6 +55,7 @@ import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planej
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
+        SofApiModule,
         MetaOrcamentoModule,
         PrismaModule, PessoaModule, AuthModule, MinhaContaModule, OrgaoModule, TipoOrgaoModule, OdsModule, EixoModule, PdmModule, FonteRecursoModule, TipoDocumentoModule, TagModule, ObjetivoEstrategicoModule, RegiaoModule, UploadModule,
         SubTemaModule,
@@ -80,6 +83,7 @@ import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planej
         ]),
         PdmCicloModule,
         OrcamentoPlanejadoModule,
+        DotacaoModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
