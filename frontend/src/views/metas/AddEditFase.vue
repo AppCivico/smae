@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { useAlertStore, useEditModalStore, useRegionsStore, useCronogramasStore, useEtapasStore } from '@/stores';
+import { default as AutocompleteField} from '@/components/AutocompleteField.vue';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -49,13 +50,19 @@ let currentId = group.value=='subfase' ? subfase_id : fase_id;
 let currentFase = ref({});
 let oktogo = ref(0);
 let minLevel = ref(0);
+
+const usersAvailable = ref([]);
+const responsaveis = ref({participantes:[], busca:''});
 (async()=>{
     await EtapasStore.getById(cronograma_id,etapa_id);
+    var p0 = singleEtapa.value.etapa;
+    var pc;
     var p1;
     var noregion = true;
     if(group.value=='subfase'&&subfase_id){
         title.value = `Editar subfase`;
-        p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        p1 = await p0?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        pc = p1;
         var p2 = p1?.etapa_filha?.find(x=>x.id==subfase_id)??{};
         currentFase.value = p2.id ? p2 : {error: 'Subfase não encontrada'};
         if(p1?.regiao_id){
@@ -65,7 +72,8 @@ let minLevel = ref(0);
 
     }else if(group.value=='subfase'){
         title.value = `Adicionar subfase`;
-        p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        p1 = await p0?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        pc = p1;
         if(p1?.regiao_id){
             getRegionByParent(p1.regiao_id);
             noregion = false;
@@ -73,13 +81,21 @@ let minLevel = ref(0);
 
     }else if(group.value=='fase'&&fase_id){
         title.value = `Editar ${group.value}`;
-        p1 = await singleEtapa.value.etapa?.etapa_filha?.find(x=>x.id==fase_id)??{};
+        pc = p0;
+        p1 = await p0?.etapa_filha?.find(x=>x.id==fase_id)??{};
         currentFase.value = p1.id ? p1 : {error: 'Fase não encontrada'};
         if(p1?.regiao_id){
             getRegionByParent(singleEtapa.value.etapa.regiao_id,p1?.regiao_id);
             noregion = false;
         }
     }
+    if(currentFase.value?.responsaveis){
+        responsaveis.value.participantes = currentFase.value.responsaveis.map(x=>x.id);
+    }
+    if(pc.responsaveis){
+        usersAvailable.value = pc.responsaveis;
+    }
+
     if(noregion && singleEtapa.value?.etapa?.regiao_id) getRegionByParent(singleEtapa.value.etapa.regiao_id);
     oktogo.value = 1;
 })();
@@ -129,6 +145,7 @@ async function onSubmit(values) {
         var msg;
         var r;
 
+        values.responsaveis = responsaveis.value.participantes;
 
         values.regiao_id = singleCronograma.value.regionalizavel&&Number(values.regiao_id)? Number(values.regiao_id):null;
         values.ordem = Number(values.ordem)??null;
@@ -236,6 +253,17 @@ function maskDate(el){
                     <Field name="descricao" as="textarea" rows="3" class="inputtext light mb1" :class="{ 'error': errors.descricao }" />
                     <div class="error-msg">{{ errors.descricao }}</div>
                 </div>
+
+                <hr class="mt2 mb2"/>
+
+                <label class="label">Responsável(eis)<span class="tvermelho">*</span></label>
+                <div class="flex">
+                    <div class="f1">
+                        <AutocompleteField :controlador="responsaveis" :grupo="usersAvailable" label="nome_exibicao" />
+                    </div>
+                </div>
+
+                <hr class="mt2 mb2"/>
 
                 <div v-if="singleCronograma.regionalizavel&&tempRegions.length">
                         

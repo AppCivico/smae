@@ -5,7 +5,8 @@ import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
-import { useAlertStore, useEditModalStore, useRegionsStore, useMetasStore, useCronogramasStore, useEtapasStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useRegionsStore, useMetasStore, useIniciativasStore, useAtividadesStore, useCronogramasStore, useEtapasStore } from '@/stores';
+import { default as AutocompleteField} from '@/components/AutocompleteField.vue';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -22,8 +23,14 @@ const parentField = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':me
 const currentEdit = route.path.slice(0,route.path.indexOf('/cronograma')+11);
 
 const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
+const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getPdM();
+
+const IniciativasStore = useIniciativasStore();
+const { singleIniciativa } = storeToRefs(IniciativasStore);
+
+const AtividadesStore = useAtividadesStore();
+const { singleAtividade } = storeToRefs(AtividadesStore);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
@@ -50,6 +57,9 @@ let acumulativa_iniciativa_o = ref(0);
 let acumulativa_meta = ref(0);
 let acumulativa_meta_o = ref(0);
 
+const lastParent = ref({});
+const usersAvailable = ref([]);
+const responsaveis = ref({participantes:[], busca:''});
 const virtualParent = ref({});
 if(etapa_id){
     title = 'Editar etapa';
@@ -62,8 +72,28 @@ if(etapa_id){
                 level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index??null;
             })();
         }
+        if(singleEtapa.value.etapa.responsaveis){
+            responsaveis.value.participantes = singleEtapa.value.etapa.responsaveis.map(x=>x.id);
+        }
     });
     (async()=>{
+        if(atividade_id){
+            if(atividade_id) await AtividadesStore.getById(iniciativa_id,atividade_id);
+            lastParent.value = singleAtividade.value;
+        }else if(iniciativa_id){
+            if(iniciativa_id) await IniciativasStore.getById(meta_id,iniciativa_id);
+            lastParent.value = singleIniciativa.value;
+        }else{
+            if(!singleMeta.value?.id || singleMeta.value.id!=meta_id) await MetasStore.getById(meta_id);
+            lastParent.value = singleMeta.value;
+        }
+
+        if(lastParent.value.orgaos_participantes){
+            lastParent.value.orgaos_participantes.forEach(x=>{
+                usersAvailable.value = usersAvailable.value.concat(x.participantes);
+            })
+        }
+
         var p_cron, mon;
         if(atividade_id) acumulativa_iniciativa.value = {loading:true};
         if(iniciativa_id) acumulativa_meta.value = {loading:true};
@@ -113,6 +143,8 @@ async function onSubmit(values) {
         values.peso = Number(values.peso)??null;
         values.ordem = Number(values.ordem)??null;
         values.etapa_pai_id = null;
+
+        values.responsaveis = responsaveis.value.participantes;
 
         var rota = false;
         var etapa_id_gen = false;
@@ -244,6 +276,16 @@ function maskDate(el){
                 <div class="error-msg">{{ errors.descricao }}</div>
             </div>
 
+            <hr class="mt2 mb2"/>
+
+            <label class="label">Responsável(eis)<span class="tvermelho">*</span></label>
+            <div class="flex">
+                <div class="f1">
+                    <AutocompleteField :controlador="responsaveis" :grupo="usersAvailable" label="nome_exibicao" />
+                </div>
+            </div>
+
+            <hr class="mt2 mb2"/>
             <div v-if="singleCronograma.regionalizavel&&regions">
                     
                 <label class="label">Região</label>

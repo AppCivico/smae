@@ -340,7 +340,7 @@ function fieldToDate(d){
                 </Field>
                 <div class="error-msg">{{ errors.orgao_id }}</div>
 
-                <label class="label">Responsável(eis)* <span class="tvermelho">*</span></label>
+                <label class="label">Responsável(eis) <span class="tvermelho">*</span></label>
                 <div class="mb1" v-if="lastParent?.orgaos_participantes?.length&&orgao_id">
                     <template v-for="c in [lastParent.orgaos_participantes.find(x=>x.orgao.id==orgao_id)]" :key="c.orgao.id">
                         <div class="suggestion search">
