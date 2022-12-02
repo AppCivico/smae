@@ -52,7 +52,7 @@ export class CreateOrcamentoPlanejadoDto {
     valor_planejado: number;
 
     /**
-    * parte_dotacao: esperado exatamente
+    * dotacao: esperado exatamente
     * @example "00.00.00.000.0000.0.000.00000000.00"
     */
     @IsString()
