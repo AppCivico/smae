@@ -115,14 +115,12 @@ export const useCiclosStore = defineStore({
                 this.MetasCiclos = { error };
             }
         },
-        async getMetaById(id) {
+        async getMetaById(meta_id) {
             this.SingleMeta = { loading: true };
             try {
-                if(!this.MetasCiclos.length){
-                    await this.getMetas();
-                }
-                this.SingleMeta = this.MetasCiclos.find((u)=>u.id == id);
-                if(!this.SingleMeta) throw 'Meta não encontrada';
+                this.SingleMeta = { loading: true };
+                let r = await requestS.get(`${baseUrl}/mf/metas/${meta_id}/iniciativas-e-atividades`);    
+                this.SingleMeta = r.meta?r:{};
             } catch (error) {
                 this.SingleMeta = { error };
             }

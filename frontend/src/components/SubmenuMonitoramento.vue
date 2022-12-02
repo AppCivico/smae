@@ -1,7 +1,10 @@
 <script setup>
+    import { ref, watch } from 'vue';
     import { useRoute } from 'vue-router';
     import { storeToRefs } from 'pinia';
     import { useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
+
+    const props = defineProps(["parentPage"]);
 
     const authStore = useAuthStore();
     const { permissions } = storeToRefs(authStore);
@@ -9,6 +12,8 @@
 
     const route = useRoute();
     const meta_id = route.params.meta_id;
+    const iniciativa_id = route.params.iniciativa_id;
+    const atividade_id = route.params.atividade_id;
 
     const PdMStore = usePdMStore();
     const { activePdm } = storeToRefs(PdMStore);
@@ -16,7 +21,15 @@
 
     const CiclosStore = useCiclosStore();
     const { SingleMeta } = storeToRefs(CiclosStore);
-    if(meta_id && SingleMeta?.id != meta_id) CiclosStore.getMetaById(meta_id);
+    let CurrentMeta = ref('');
+    let CurrentIniciativa = ref('');
+    let CurrentAtividade = ref('');
+    if(meta_id)(async ()=>{
+        await CiclosStore.getMetaById(meta_id);
+        CurrentMeta.value = SingleMeta.value;
+        if(iniciativa_id) CurrentIniciativa.value = CurrentMeta.value?.meta?.iniciativas.find(x=>x.iniciativa.id==iniciativa_id);
+        if(atividade_id) CurrentAtividade.value = CurrentIniciativa.value?.atividades.find(x=>x.atividade.id==atividade_id);
+    })();
 
     function dateToTitle(d) {
         var dd=d?new Date(d):false;
@@ -30,8 +43,26 @@
 <template>
     <div id="submenu">
         <div v-if="meta_id" class="breadcrumbmenu">
-            <router-link to="/monitoramento/evolucao"><span>{{activePdm?.ciclo_fisico_ativo?.data_ciclo ? dateToTitle(activePdm.ciclo_fisico_ativo.data_ciclo) : 'Ciclo ativo'}}</span></router-link>
-            <router-link v-if="SingleMeta?.id" :to="`/monitoramento/metas/${meta_id}`">Meta {{SingleMeta.codigo}} - {{SingleMeta.titulo}}</router-link>
+            <router-link :to="`/monitoramento/${parentPage}`"><span>{{activePdm?.ciclo_fisico_ativo?.data_ciclo ? dateToTitle(activePdm.ciclo_fisico_ativo.data_ciclo) : 'Ciclo ativo'}}</span></router-link>
+
+            <router-link 
+                v-if="meta_id&&CurrentMeta.meta?.id" 
+                :to="`/monitoramento/${parentPage}/${meta_id}`"
+            >
+                <span>Meta {{CurrentMeta.meta?.codigo}} {{CurrentMeta.meta?.titulo}}</span>
+            </router-link>
+            <router-link 
+                v-if="iniciativa_id&&activePdm.possui_iniciativa&&CurrentIniciativa.iniciativa?.id" 
+                :to="`/monitoramento/${parentPage}/${meta_id}/${iniciativa_id}`"
+            >
+                <span>{{activePdm.rotulo_iniciativa}} {{CurrentIniciativa.iniciativa?.codigo}} {{CurrentIniciativa.iniciativa?.titulo}}</span>
+            </router-link>
+            <router-link 
+                v-if="atividade_id&&activePdm.possui_atividade&&CurrentAtividade.atividade?.id" 
+                :to="`/monitoramento/${parentPage}/${meta_id}/${iniciativa_id}/${atividade_id}`"
+            >
+                <span>{{activePdm.rotulo_atividade}} {{CurrentAtividade.atividade?.codigo}} {{CurrentAtividade.atividade?.titulo}}</span>
+            </router-link>
         </div>
         <div class="subpadding">
             <h2>Ciclo vigente</h2>

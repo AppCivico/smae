@@ -83,7 +83,7 @@
         <hr class="ml2 f1"/>
         <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
     </div>
-    <template v-if="!(SingleEtapa?.loading || SingleEtapa?.error)">
+    <template v-if="!(SingleEtapa?.loading || SingleEtapa?.error)&&SingleEtapa?.id">
         <Form @submit="onSubmit" :validation-schema="schema" :initial-values="SingleEtapa" v-slot="{ errors, isSubmitting }">
             <div class="flex g2 mb2">
                 <div class="f1">
