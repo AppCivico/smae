@@ -55,6 +55,7 @@ export class CronogramaEtapaService {
                         termino_real: true,
                         prazo: true,
                         titulo: true,
+                        responsaveis: true,
 
                         cronograma: {
                             select: {
@@ -125,6 +126,7 @@ export class CronogramaEtapaService {
                                 termino_real: true,
                                 prazo: true,
                                 titulo: true,
+                                responsaveis: true,
                                 CronogramaEtapa: {
                                     orderBy: { ordem: 'asc' }
                                 },
@@ -142,6 +144,7 @@ export class CronogramaEtapaService {
                                         termino_real: true,
                                         prazo: true,
                                         titulo: true,
+                                        responsaveis: true,
 
                                         CronogramaEtapa: {
                                             orderBy: { ordem: 'asc' }
@@ -192,7 +195,8 @@ export class CronogramaEtapaService {
                     termino_real: cronogramaEtapa.etapa.termino_real,
                     prazo: cronogramaEtapa.etapa.prazo,
                     titulo: cronogramaEtapa.etapa.titulo,
-                    etapa_filha: cronogramaEtapa.etapa.etapa_filha
+                    etapa_filha: cronogramaEtapa.etapa.etapa_filha,
+                    responsaveis: cronogramaEtapa.etapa.responsaveis
                 },
 
                 cronograma_origem_etapa: {
