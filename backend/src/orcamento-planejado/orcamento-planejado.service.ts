@@ -80,7 +80,53 @@ export class OrcamentoPlanejadoService {
 
     async findAll(filters?: FilterOrcamentoPlanejadoDto): Promise<OrcamentoPlanejado[]> {
 
-        return [];
+        const queryRows = await this.prisma.orcamentoPlanejado.findMany({
+            where: {
+                dotacao: filters?.dotacao,
+                meta_id: filters?.meta_id,
+                ano_referencia: filters?.ano_referencia,
+            },
+            select: {
+                criador: { select: { nome_exibicao: true } },
+                meta: { select: { id: true, codigo: true, titulo: true } },
+                atividade: { select: { id: true, codigo: true, titulo: true } },
+                iniciativa: { select: { id: true, codigo: true, titulo: true } },
+                valor_planejado: true,
+                ano_referencia: true,
+                dotacao: true,
+                criado_em: true,
+                id: true,
+            },
+            orderBy: [
+                { meta_id: 'asc' },
+                { iniciativa_id: 'asc' },
+                { atividade_id: 'asc' },
+            ]
+        });
+
+        const rows: OrcamentoPlanejado[] = [];
+
+        for (const op of queryRows) {
+
+            rows.push({
+                id: op.id,
+                ano_referencia: op.ano_referencia,
+                meta: op.meta,
+                iniciativa: op.iniciativa,
+                atividade: op.atividade,
+                criado_em: op.criado_em,
+                criador: op.criador,
+                dotacao: op.dotacao,
+                valor_planejado: op.valor_planejado,
+                empenho_dotacao: null,
+                pressao_orcamentaria: null
+            });
+
+        }
+console.log(rows);
+
+
+        return rows;
     }
 
     async remove(id: number, user: PessoaFromJwt) {

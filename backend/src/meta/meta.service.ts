@@ -347,8 +347,6 @@ export class MetaService {
             where m.id = ${meta_id}`;
 
             if (rows.length == 0) throw new HttpException(`Meta ${meta_id} não encontrada`, 404);
-            console.log(rows);
-
 
             const meta: DadosCodTituloMetaDto = {
                 id: rows[0].meta_id,
