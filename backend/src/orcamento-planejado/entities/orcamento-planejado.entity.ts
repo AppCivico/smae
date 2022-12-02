@@ -1,7 +1,9 @@
+import { IdCodTituloDto } from "../../common/dto/IdCodTituloDto"
+
 export class OrcamentoPlanejado {
-    meta_id: number
-    atividade_id: number | null
-    iniciativa_id: number | null
+    meta: IdCodTituloDto
+    atividade: IdCodTituloDto | null
+    iniciativa: IdCodTituloDto | null
     valor_planejado: number
     ano_referencia: number
     dotacao: string

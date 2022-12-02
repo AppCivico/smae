@@ -124,3 +124,29 @@ export class CreateMetaDto {
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     tags?: number[]
 }
+
+
+export class DadosCodTituloAtividadeDto {
+    id: number
+    codigo: string
+    titulo: string
+};
+
+export class DadosCodTituloIniciativaDto {
+    id: number
+    codigo: string
+    titulo: string
+    atividades: DadosCodTituloAtividadeDto[]
+};
+
+
+export class DadosCodTituloMetaDto {
+    id: number
+    codigo: string
+    titulo: string
+    iniciativas: DadosCodTituloIniciativaDto[]
+};
+
+export class ListDadosMetaIniciativaAtividadesDto {
+    linhas: DadosCodTituloMetaDto[]
+}

@@ -4,6 +4,7 @@ import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
+import { IdCodTituloDto } from "../../../common/dto/IdCodTituloDto";
 
 export class FilterMfMetasDto {
     /**
@@ -81,12 +82,6 @@ export class ListMfMetasDto {
     linhas: MfMetaDto[]
     perfil: string
     ciclo_ativo: CicloAtivoDto
-}
-
-export class IdCodTituloDto {
-    id: number
-    codigo: string
-    titulo: string
 }
 
 export class IdCodTituloRespDto {
