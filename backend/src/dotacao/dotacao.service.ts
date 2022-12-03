@@ -27,7 +27,8 @@ export class DotacaoService {
             return {
                 empenho_liquido: dotacaoExistente.empenho_liquido,
                 id: dotacaoExistente.id,
-                informacao_valida: dotacaoExistente.informacao_valida
+                informacao_valida: dotacaoExistente.informacao_valida,
+                smae_soma_valor_planejado:  dotacaoExistente.smae_soma_valor_planejado,
             }
         }
 
@@ -46,7 +47,8 @@ export class DotacaoService {
         return {
             id: dotacaoPlanejado.id,
             empenho_liquido: dotacaoPlanejado.empenho_liquido,
-            informacao_valida: dotacaoPlanejado.informacao_valida
+            informacao_valida: dotacaoPlanejado.informacao_valida,
+            smae_soma_valor_planejado:  dotacaoPlanejado.smae_soma_valor_planejado,
         }
 
     }
@@ -96,7 +98,8 @@ export class DotacaoService {
                                 mes_utilizado: 1,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,
-                                pressao_orcamentaria: false
+                                pressao_orcamentaria: false,
+                                smae_soma_valor_planejado: 0
                             },
                             select: { id: true },
                         });
@@ -137,7 +140,8 @@ export class DotacaoService {
                                 mes_utilizado: 1,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,
-                                pressao_orcamentaria: false
+                                pressao_orcamentaria: false,
+                                smae_soma_valor_planejado: 0,
                             },
                             select: { id: true },
                         });

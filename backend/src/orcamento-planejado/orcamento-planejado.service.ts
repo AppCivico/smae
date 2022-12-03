@@ -12,6 +12,12 @@ export class OrcamentoPlanejadoService {
 
     async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
+        const dotacao = await this.prisma.dotacao.findFirst({
+            where: { dotacao: dto.dotacao, ano_referencia: dto.ano_referencia },
+            select: { id: true }
+        });
+        if (!dotacao) throw new HttpException('Dotação não foi ainda não foi importada no banco de dados', 400);
+
         let meta_id: number;
         let iniciativa_id: number | undefined;
         let atividade_id: number | undefined;
@@ -55,7 +61,7 @@ export class OrcamentoPlanejadoService {
 
             const now = new Date(Date.now());
 
-            const oP = await prisma.orcamentoPlanejado.create({
+            const orcamentoPlanejado = await prisma.orcamentoPlanejado.create({
                 data: {
                     criado_por: user.id,
                     criado_em: now,
@@ -66,11 +72,26 @@ export class OrcamentoPlanejadoService {
                     dotacao: dto.dotacao,
                     valor_planejado: dto.valor_planejado,
                 },
-                select: { id: true }
+                select: { id: true, valor_planejado: true }
             });
 
-            return oP;
+            const dotacaoAgora = await this.prisma.dotacao.findFirstOrThrow({
+                where: { id: dotacao.id },
+                select: { smae_soma_valor_planejado: true, empenho_liquido: true }
+            });
+
+            const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado + orcamentoPlanejado.valor_planejado;
+            await this.prisma.dotacao.update({
+                where: { id: dotacao.id },
+                data: {
+                    pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,
+                    smae_soma_valor_planejado: smae_soma_valor_planejado
+                }
+            });
+
+            return orcamentoPlanejado;
         }, {
+            isolationLevel: 'Serializable',
             maxWait: 5000,
             timeout: 100000
         });
@@ -123,23 +144,45 @@ export class OrcamentoPlanejadoService {
             });
 
         }
-console.log(rows);
+        console.log(rows);
 
 
         return rows;
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const op = await this.prisma.orcamentoPlanejado.count({
-            where: { id: +id, removido_em: null }
+        const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
+            where: { id: +id, removido_em: null },
         });
-        if (!op) throw new HttpException('orcamento planejado não encontrada', 400);
+        if (!orcamentoPlanejado) throw new HttpException('orcamento planejado não encontrada', 400);
 
         const now = new Date(Date.now());
-        await this.prisma.orcamentoPlanejado.updateMany({
-            where: { id: +id, removido_em: null },
-            data: { removido_em: now, removido_por: user.id }
+
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            const linhasAfetadas = await this.prisma.orcamentoPlanejado.updateMany({
+                where: { id: +id, removido_em: null }, // nao apagar duas vezes
+                data: { removido_em: now, removido_por: user.id }
+            });
+
+            if (linhasAfetadas.count == 1) {
+                const dotacaoAgora = await this.prisma.dotacao.findFirstOrThrow({
+                    where: { dotacao: orcamentoPlanejado.dotacao, ano_referencia: orcamentoPlanejado.ano_referencia },
+                    select: { smae_soma_valor_planejado: true, empenho_liquido: true, id: true }
+                });
+
+                const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado - orcamentoPlanejado.valor_planejado;
+                await this.prisma.dotacao.update({
+                    where: { id: dotacaoAgora.id },
+                    data: {
+                        pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,
+                        smae_soma_valor_planejado: smae_soma_valor_planejado
+                    }
+                });
+            }
+        }, {
+            isolationLevel: 'Serializable',
         });
+
     }
 
 

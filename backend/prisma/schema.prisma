@@ -1784,6 +1784,7 @@ model Dotacao {
     empenho_liquido      Float   @db.DoublePrecision
     valor_liquidado      Float   @db.DoublePrecision
     pressao_orcamentaria Boolean
+    smae_soma_valor_planejado Float
 
     @@unique([ano_referencia, dotacao])
     @@map("dotacao")
