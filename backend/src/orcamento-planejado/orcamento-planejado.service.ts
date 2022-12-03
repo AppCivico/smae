@@ -57,11 +57,11 @@ export class OrcamentoPlanejadoService {
         });
         if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com o planejamento liberado', 400);
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+        const created = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const now = new Date(Date.now());
 
-            const orcamentoPlanejado = await prisma.orcamentoPlanejado.create({
+            const orcamentoPlanejado = await prismaTxn.orcamentoPlanejado.create({
                 data: {
                     criado_por: user.id,
                     criado_em: now,
@@ -75,13 +75,13 @@ export class OrcamentoPlanejadoService {
                 select: { id: true, valor_planejado: true }
             });
 
-            const dotacaoAgora = await this.prisma.dotacao.findFirstOrThrow({
+            const dotacaoAgora = await prismaTxn.dotacao.findFirstOrThrow({
                 where: { id: dotacao.id },
                 select: { smae_soma_valor_planejado: true, empenho_liquido: true }
             });
 
             const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado + orcamentoPlanejado.valor_planejado;
-            await this.prisma.dotacao.update({
+            await prismaTxn.dotacao.update({
                 where: { id: dotacao.id },
                 data: {
                     pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,
@@ -158,20 +158,20 @@ export class OrcamentoPlanejadoService {
 
         const now = new Date(Date.now());
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-            const linhasAfetadas = await this.prisma.orcamentoPlanejado.updateMany({
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            const linhasAfetadas = await prismaTxn.orcamentoPlanejado.updateMany({
                 where: { id: +id, removido_em: null }, // nao apagar duas vezes
                 data: { removido_em: now, removido_por: user.id }
             });
 
             if (linhasAfetadas.count == 1) {
-                const dotacaoAgora = await this.prisma.dotacao.findFirstOrThrow({
+                const dotacaoAgora = await prismaTxn.dotacao.findFirstOrThrow({
                     where: { dotacao: orcamentoPlanejado.dotacao, ano_referencia: orcamentoPlanejado.ano_referencia },
                     select: { smae_soma_valor_planejado: true, empenho_liquido: true, id: true }
                 });
 
                 const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado - orcamentoPlanejado.valor_planejado;
-                await this.prisma.dotacao.update({
+                await prismaTxn.dotacao.update({
                     where: { id: dotacaoAgora.id },
                     data: {
                         pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,
