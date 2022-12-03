@@ -108,13 +108,13 @@ export class OrcamentoPlanejadoService {
         return { meta_id: meta_id, iniciativa_id, atividade_id };
     }
 
-    async findAll(filters?: FilterOrcamentoPlanejadoDto): Promise<OrcamentoPlanejado[]> {
+    async findAll(filters: FilterOrcamentoPlanejadoDto): Promise<OrcamentoPlanejado[]> {
 
         const queryRows = await this.prisma.orcamentoPlanejado.findMany({
             where: {
                 dotacao: filters?.dotacao,
                 meta_id: filters?.meta_id,
-                ano_referencia: filters?.ano_referencia,
+                ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
             },
             select: {
                 criador: { select: { nome_exibicao: true } },
@@ -134,22 +134,61 @@ export class OrcamentoPlanejadoService {
             ]
         });
 
+        const dotacoesEncontradas: Record<string, boolean> = {};
+        for (const op of queryRows) {
+            if (dotacoesEncontradas[op.dotacao] == undefined) dotacoesEncontradas[op.dotacao] = true;
+        }
+        const dotacoesInfo = await this.prisma.dotacao.findMany({
+            where: {
+                dotacao: { in: Object.keys(dotacoesEncontradas) },
+                ano_referencia: filters.ano_referencia,
+            },
+            select: {
+                pressao_orcamentaria: true,
+                empenho_liquido: true,
+                smae_soma_valor_planejado: true,
+                dotacao: true,
+            }
+        });
+        const dotacoesRef: Record<string, typeof dotacoesInfo[0]> = {};
+        for (const dotacao of dotacoesInfo) {
+            dotacoesRef[dotacao.dotacao] = dotacao;
+        }
+
         const rows: OrcamentoPlanejado[] = [];
 
-        for (const op of queryRows) {
+        for (const orcamentoPlanejado of queryRows) {
+
+            let pressao_orcamentaria: boolean | null = null;
+            let pressao_orcamentaria_valor: number | null = null;
+            let smae_soma_valor_planejado: number | null = null;
+            let empenho_liquido: number | null = null;
+
+            let dotacaoInfo = dotacoesRef[orcamentoPlanejado.dotacao];
+            if (dotacaoInfo) {
+                pressao_orcamentaria = dotacaoInfo.pressao_orcamentaria;
+                if (pressao_orcamentaria) {
+                    pressao_orcamentaria_valor = dotacaoInfo.smae_soma_valor_planejado - dotacaoInfo.empenho_liquido;
+                }
+
+                smae_soma_valor_planejado = dotacaoInfo.smae_soma_valor_planejado;
+                empenho_liquido = dotacaoInfo.empenho_liquido;
+            }
 
             rows.push({
-                id: op.id,
-                ano_referencia: op.ano_referencia,
-                meta: op.meta,
-                iniciativa: op.iniciativa,
-                atividade: op.atividade,
-                criado_em: op.criado_em,
-                criador: op.criador,
-                dotacao: op.dotacao,
-                valor_planejado: op.valor_planejado,
-                empenho_dotacao: null,
-                pressao_orcamentaria: null
+                id: orcamentoPlanejado.id,
+                ano_referencia: orcamentoPlanejado.ano_referencia,
+                meta: orcamentoPlanejado.meta,
+                iniciativa: orcamentoPlanejado.iniciativa,
+                atividade: orcamentoPlanejado.atividade,
+                criado_em: orcamentoPlanejado.criado_em,
+                criador: orcamentoPlanejado.criador,
+                dotacao: orcamentoPlanejado.dotacao,
+                valor_planejado: orcamentoPlanejado.valor_planejado,
+                pressao_orcamentaria,
+                pressao_orcamentaria_valor,
+                smae_soma_valor_planejado,
+                empenho_liquido,
             });
 
         }

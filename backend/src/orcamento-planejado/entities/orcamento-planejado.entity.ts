@@ -9,7 +9,9 @@ export class OrcamentoPlanejado {
     dotacao: string
 
     pressao_orcamentaria: boolean | null
-    empenho_dotacao: number | null
+    pressao_orcamentaria_valor: number | null
+    smae_soma_valor_planejado: number | null
+    empenho_liquido: number | null
 
     criado_em: Date
     criador: {

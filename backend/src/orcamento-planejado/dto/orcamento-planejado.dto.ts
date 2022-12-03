@@ -80,13 +80,12 @@ export class FilterOrcamentoPlanejadoDto {
     dotacao?: string;
 
     /**
-   * Filtrar por ano_referencia? eg: 2022
+   * Sempre é necessário passar o ano_referencia eg: 2022
    * @example ""
     */
-    @IsOptional()
     @IsPositive({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
-    ano_referencia?: number;
+    ano_referencia: number;
 
 }
 
