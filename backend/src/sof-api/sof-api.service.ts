@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import got, { Got } from 'got';
 
 type RetornoEmpenho = {
@@ -91,17 +91,23 @@ export class SofApiService {
 
 
     async empenhoDotacao(input: InputDotacao): Promise<ApiResponse> {
-        const endpoint = '/v1/empnhos/dotacao';
+        const endpoint = 'v1/empnhos/dotacao';
         this.logger.debug(`empenhoDotacao - chamando ${endpoint} com ${JSON.stringify(input)}`);
         try {
-            const res: ApiResponse = await this.got.post(endpoint, {
+            const data = await this.got.post<ApiResponse>(endpoint, {
                 json: input
             }).json();
 
-            return res;
 
-        } catch (error) {
-            console.log(error);
+            console.log({ data });
+            throw '';
+        } catch (error: any) {
+            if (error instanceof got.HTTPError) {
+                if (error.response.statusCode == 404) {
+                    throw new HttpException('Dotação não foi encontrada, confira o valor informado.', 404);
+                }
+            }
+
             return { detail: `Falha ao acessar serviço: ${error}` } as ErrorHttpResponse;
         }
     }

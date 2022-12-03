@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService } from '../sof-api/sof-api.service';
@@ -11,7 +12,30 @@ export class DotacaoService {
         private readonly sof: SofApiService,
     ) { }
 
-    validate(createDotacaoDto: ValidateDotacaoDto) {
+    async validate(dto: ValidateDotacaoDto) {
+
+
+        if (dto.planejado) {
+            const r = await this.sof.empenhoDotacao({
+                dotacao: dto.dotacao,
+                ano: dto.ano,
+                mes: 1
+            });
+            console.log(r);
+
+
+        } else {
+
+            const currentMonth = DateTime.now().month;
+            await this.sof.empenhoDotacao({
+                dotacao: dto.dotacao,
+                ano: dto.ano,
+                mes: DateTime.now().year < dto.ano ? 12 : currentMonth
+            });
+
+        }
+
+
         return 'This action adds a new dotacao';
     }
 
