@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores';
 
 // Views
-import { Home, Administracao } from '@/views';
+import { Home, Administracao, Compare } from '@/views';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
 import { default as SubmenuMonitoramento } from '@/components/SubmenuMonitoramento.vue';
@@ -33,6 +33,7 @@ export const router = createRouter({
         { path: '/login', component: Login },
         { path: '/esqueci-minha-senha', component: LostPassword },
         { path: '/nova-senha', component: NewPassword },
+        { path: '/compare', component: Compare },
         { path: '/usuarios',
             children: [
                 { path: '', component: ListUsers, props:{submenu:SubmenuConfig} },

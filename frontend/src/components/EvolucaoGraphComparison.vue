@@ -451,15 +451,184 @@
 
 	const chart = new smaeChart();
 
+	///TEMP
+	let dataserie = {
+	    
+	    "linhas": [
+	        {
+	            "periodo": "2020-01",
+	            "agrupador": "2020",
+	            "series": [
+	                {
+	                    "data_valor": "2020-01-01",
+	                    "valor_nominal": "4",
+	                    "referencia": "",
+	                    "conferida": false
+	                },
+	                {
+	                    "data_valor": "2020-01-01",
+	                    "referencia": "",
+	                    "valor_nominal": "5"
+	                },
+	                {
+	                    "data_valor": "2020-01-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-01-01",
+	                    "referencia": "",
+	                    "valor_nominal": "2"
+	                }
+	            ]
+	        },
+	        {
+	            "periodo": "2020-02",
+	            "agrupador": "2020",
+	            "series": [
+	                {
+	                    "data_valor": "2020-02-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-02-01",
+	                    "referencia": "",
+	                    "valor_nominal": "7"
+	                },
+	                {
+	                    "data_valor": "2020-02-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-02-01",
+	                    "referencia": "",
+	                    "valor_nominal": "3"
+	                }
+	            ]
+	        },
+	        {
+	            "periodo": "2020-03",
+	            "agrupador": "2020",
+	            "series": [
+	                {
+	                    "data_valor": "2020-03-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-03-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-03-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-03-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                }
+	            ]
+	        },
+	        {
+	            "periodo": "2020-04",
+	            "agrupador": "2020",
+	            "series": [
+	                {
+	                    "data_valor": "2020-04-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-04-01",
+	                    "referencia": "",
+	                    "valor_nominal": "7"
+	                },
+	                {
+	                    "data_valor": "2020-04-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-04-01",
+	                    "referencia": "",
+	                    "valor_nominal": "5"
+	                }
+	            ]
+	        },
+	        {
+	            "periodo": "2020-05",
+	            "agrupador": "2020",
+	            "series": [
+	                {
+	                    "data_valor": "2020-05-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-05-01",
+	                    "referencia": "",
+	                    "valor_nominal": "11"
+	                },
+	                {
+	                    "data_valor": "2020-05-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-05-01",
+	                    "referencia": "",
+	                    "valor_nominal": "10"
+	                }
+	            ]
+	        },
+	        {
+	            "periodo": "2020-06",
+	            "agrupador": "2020",
+	            "series": [
+	                {
+	                    "data_valor": "2020-06-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-06-01",
+	                    "referencia": "",
+	                    "valor_nominal": "14"
+	                },
+	                {
+	                    "data_valor": "2020-06-01",
+	                    "referencia": "",
+	                    "valor_nominal": ""
+	                },
+	                {
+	                    "data_valor": "2020-06-01",
+	                    "referencia": "",
+	                    "valor_nominal": "11"
+	                }
+	            ]
+	        }
+	    ],
+	    "ordem_series": [
+	        "Previsto",
+	        "PrevistoAcumulado",
+	        "Realizado",
+	        "RealizadoAcumulado"
+	    ]
+	};
+
 	function start(){
-		console.log(props.dataserie);
-		if(props.dataserie?.linhas && evolucao.value){
+		if(dataserie?.linhas && evolucao.value){
 			let data = {};
 
-			let iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
-			let iRealizadoAcumulado = props.dataserie.ordem_series.indexOf('RealizadoAcumulado');
-			data.projetado = props.dataserie.linhas.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
-			data.realizado = props.dataserie.linhas.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
+			let iPrevistoAcumulado = dataserie.ordem_series.indexOf('PrevistoAcumulado');
+			let iRealizadoAcumulado = dataserie.ordem_series.indexOf('RealizadoAcumulado');
+			data.projetado = dataserie.linhas.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
+			data.realizado = dataserie.linhas.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
 			chart.drawChart(data,evolucao.value);
 		}
 	}
