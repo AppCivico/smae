@@ -131,7 +131,7 @@ export class DotacaoService {
                     // se ainda não existe (pode ter iniciado já por causa do lock)
                     if (!jaExiste) {
 
-                        await this.prisma.dotacao.create({
+                        await prisma.dotacao.create({
                             data: {
                                 informacao_valida: false,
                                 sincronizado_em: null,
