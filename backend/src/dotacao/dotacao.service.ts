@@ -1,8 +1,10 @@
 import { DateTime } from "luxon";
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SofApiService } from '../sof-api/sof-api.service';
-import { ValidateDotacaoDto } from './dto/dotacao.dto';
+import { SofApiService, SofError } from '../sof-api/sof-api.service';
+import { DotacaoValorPlanejadoDto } from './dto/dotacao.dto';
+import { Prisma } from "@prisma/client";
+import { ValorPlanejadoDto } from "./entities/dotacao.entity";
 
 @Injectable()
 export class DotacaoService {
@@ -12,31 +14,139 @@ export class DotacaoService {
         private readonly sof: SofApiService,
     ) { }
 
-    async validate(dto: ValidateDotacaoDto) {
+    async valorPlanejado(dto: DotacaoValorPlanejadoDto): Promise<ValorPlanejadoDto> {
+
+        const dotacaoExistente = await this.prisma.dotacao.findFirst({
+            where: {
+                ano_referencia: dto.ano,
+                dotacao: dto.dotacao,
+            }
+        });
+
+        if (dotacaoExistente && dotacaoExistente.informacao_valida) {
+            return {
+                empenho_liquido: dotacaoExistente.empenho_liquido,
+                id: dotacaoExistente.id,
+                informacao_valida: dotacaoExistente.informacao_valida
+            }
+        }
+
+        if (dotacaoExistente)
+            await this.prisma.dotacao.delete({ where: { id: dotacaoExistente.id } });
+
+        await this.sincronizarDotacao(dto);
+
+        const dotacaoPlanejado = await this.prisma.dotacao.findFirstOrThrow({
+            where: {
+                ano_referencia: dto.ano,
+                dotacao: dto.dotacao,
+            }
+        });
+
+        return {
+            id: dotacaoPlanejado.id,
+            empenho_liquido: dotacaoPlanejado.empenho_liquido,
+            informacao_valida: dotacaoPlanejado.informacao_valida
+        }
+
+    }
 
 
-        if (dto.planejado) {
+
+    private async sincronizarDotacao(dto: DotacaoValorPlanejadoDto) {
+        const now = new Date(Date.now());
+        try {
             const r = await this.sof.empenhoDotacao({
                 dotacao: dto.dotacao,
                 ano: dto.ano,
                 mes: 1
             });
-            console.log(r);
+
+            for (const dotacao of r.data) {
+                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                    const jaExiste = await prisma.dotacao.findFirst({
+                        where: {
+                            ano_referencia: dto.ano,
+                            dotacao: dto.dotacao,
+                        }
+                    });
+
+                    // se ja existe, atualiza caso estiver com dados inválidos, ou se o valor for diferente no empenho_liquido
+                    if (jaExiste && (!jaExiste.informacao_valida || Number(jaExiste.empenho_liquido) != Number(dotacao.empenho_liquido))) {
+
+                        await prisma.dotacao.update({
+                            where: {
+                                id: jaExiste.id
+                            },
+                            data: {
+                                informacao_valida: true,
+                                sincronizado_em: now,
+                                empenho_liquido: Number(dotacao.empenho_liquido),
+                            }
+                        });
+                    }
+
+                    if (!jaExiste) {
+                        await prisma.dotacao.create({
+                            data: {
+                                informacao_valida: true,
+                                sincronizado_em: now,
+                                empenho_liquido: Number(dotacao.empenho_liquido),
+                                valor_liquidado: Number(dotacao.val_liquidado),
+                                mes_utilizado: 1,
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                                pressao_orcamentaria: false
+                            },
+                            select: { id: true },
+                        });
+
+                    }
+
+                }, {
+                    isolationLevel: 'Serializable',
+                    maxWait: 15000,
+                    timeout: 60000,
+                });
+            }
 
 
-        } else {
+        } catch (error) {
+            if (error instanceof HttpException)
+                throw error;
+            if (error instanceof SofError) {
 
-            const currentMonth = DateTime.now().month;
-            await this.sof.empenhoDotacao({
-                dotacao: dto.dotacao,
-                ano: dto.ano,
-                mes: DateTime.now().year < dto.ano ? 12 : currentMonth
-            });
+                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
+                    const jaExiste = await prisma.dotacao.findFirst({
+                        where: {
+                            ano_referencia: dto.ano,
+                            dotacao: dto.dotacao,
+                        }
+                    });
+
+                    // se ainda não existe (pode ter iniciado já por causa do lock)
+                    if (!jaExiste) {
+
+                        await this.prisma.dotacao.create({
+                            data: {
+                                informacao_valida: false,
+                                sincronizado_em: null,
+                                empenho_liquido: 0,
+                                valor_liquidado: 0,
+                                mes_utilizado: 1,
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                                pressao_orcamentaria: false
+                            },
+                            select: { id: true },
+                        });
+                    }
+                }, {
+                    isolationLevel: 'Serializable'
+                });
+            }
         }
-
-
-        return 'This action adds a new dotacao';
     }
 
 }
