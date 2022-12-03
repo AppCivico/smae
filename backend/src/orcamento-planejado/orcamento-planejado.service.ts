@@ -18,33 +18,7 @@ export class OrcamentoPlanejadoService {
         });
         if (!dotacao) throw new HttpException('Dotação não foi ainda não foi importada no banco de dados', 400);
 
-        let meta_id: number;
-        let iniciativa_id: number | undefined;
-        let atividade_id: number | undefined;
-        if (dto.atividade_id) {  // prioridade buscar pela atividade
-            const atividade = await this.prisma.atividade.findFirst({
-                where: { id: dto.atividade_id, removido_em: null },
-                select: { id: true, iniciativa_id: true, iniciativa: { select: { meta_id: true } } }
-            });
-            if (!atividade) throw new HttpException('atividade não encontrada', 400);
-            atividade_id = atividade.id;
-            iniciativa_id = atividade.iniciativa_id;
-            meta_id = atividade.iniciativa.meta_id;
-
-        } else if (dto.iniciativa_id) {
-            const iniciativa = await this.prisma.iniciativa.findFirst({
-                where: { id: dto.iniciativa_id, removido_em: null },
-                select: { id: true, meta_id: true }
-            });
-            if (!iniciativa) throw new HttpException('iniciativa não encontrada', 400);
-            iniciativa_id = iniciativa.id;
-            meta_id = iniciativa.meta_id;
-
-        } else if (dto.meta_id) {
-            meta_id = dto.meta_id;
-        } else {
-            new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
-        }
+        const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: meta_id!, removido_em: null },
@@ -65,7 +39,7 @@ export class OrcamentoPlanejadoService {
                 data: {
                     criado_por: user.id,
                     criado_em: now,
-                    meta_id,
+                    meta_id: meta_id!,
                     iniciativa_id,
                     atividade_id,
                     ano_referencia: dto.ano_referencia,
@@ -97,6 +71,41 @@ export class OrcamentoPlanejadoService {
         });
 
         return created;
+    }
+
+    private async validaMetaIniAtv(dto: CreateOrcamentoPlanejadoDto) {
+        let meta_id: number | undefined;
+        let iniciativa_id: number | undefined;
+        let atividade_id: number | undefined;
+        if (dto.atividade_id) { // prioridade buscar pela atividade
+            const atividade = await this.prisma.atividade.findFirst({
+                where: { id: dto.atividade_id, removido_em: null },
+                select: { id: true, iniciativa_id: true, iniciativa: { select: { meta_id: true } } }
+            });
+            if (!atividade)
+                throw new HttpException('atividade não encontrada', 400);
+            atividade_id = atividade.id;
+            iniciativa_id = atividade.iniciativa_id;
+            meta_id = atividade.iniciativa.meta_id;
+
+        } else if (dto.iniciativa_id) {
+            const iniciativa = await this.prisma.iniciativa.findFirst({
+                where: { id: dto.iniciativa_id, removido_em: null },
+                select: { id: true, meta_id: true }
+            });
+            if (!iniciativa)
+                throw new HttpException('iniciativa não encontrada', 400);
+            iniciativa_id = iniciativa.id;
+            meta_id = iniciativa.meta_id;
+
+        } else if (dto.meta_id) {
+            meta_id = dto.meta_id;
+        }
+
+        if (meta_id === undefined)
+            new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
+
+        return { meta_id: meta_id, iniciativa_id, atividade_id };
     }
 
     async findAll(filters?: FilterOrcamentoPlanejadoDto): Promise<OrcamentoPlanejado[]> {
