@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator";
 
 
 export class MetaOrgaoParticipante {
@@ -25,6 +25,7 @@ export class MetaOrgaoParticipante {
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(1, { message: '$property| precisa ter um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     participantes: number[]
 
 }
@@ -101,18 +102,21 @@ export class CreateMetaDto {
 
 
     /**
-    * Quais são os orgaos participantes e seus membros responsáveis
+    * Quais são os órgãos participantes e seus membros responsáveis
     */
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
+    @ValidateNested({ each: true })
+    @Type(() => MetaOrgaoParticipante)
     orgaos_participantes?: MetaOrgaoParticipante[]
 
     /**
-    * ID das pessoas que são coordenadores
+    * ID das pessoas que são coordenadores, para editar, necessário enviar orgaos_participantes
     * @example "[1, 2, 3]"
     */
     @IsArray({ message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório' })
     @ArrayMinSize(1, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     coordenadores_cp?: number[]
 
     /**
@@ -122,6 +126,7 @@ export class CreateMetaDto {
     @IsOptional()
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     tags?: number[]
 }
 
