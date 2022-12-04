@@ -1,14 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseArrayPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, ParseArrayPipe, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateMetaDto,  ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
+import { CreateMetaDto, ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
+import { Meta } from "./entities/meta.entity";
 import { MetaService } from './meta.service';
 
 @ApiTags('Meta')
@@ -18,7 +19,7 @@ export class MetaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.inserir' })
     @Roles('CadastroMeta.inserir')
     async create(@Body() createMetaDto: CreateMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.metaService.create(createMetaDto, user);
@@ -28,8 +29,17 @@ export class MetaController {
     @Get()
     //@Roles('CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover')
     async findAll(@Query() filters: FilterMetaDto): Promise<ListMetaDto> {
-        // TODO filtrar por apenas painels , se a pessoa nao tiver essas permissoes acima
+        // TODO filtrar por apenas painel , se a pessoa nao tiver essas permissoes acima
         return { 'linhas': await this.metaService.findAll(filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @ApiNotFoundResponse()
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<Meta> {
+        const r = await this.metaService.findAll({ id: params.id });
+        if (!r.length) throw new HttpException('Meta não encontrada.', 404);
+        return r[0];
     }
 
     @Patch(':id')
@@ -42,7 +52,7 @@ export class MetaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.remover' })
     @Roles('CadastroMeta.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
