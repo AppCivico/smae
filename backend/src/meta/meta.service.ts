@@ -160,12 +160,12 @@ export class MetaService {
     }
 
     async findAll(filters: FilterMetaDto | undefined = undefined) {
-        let pdmId = filters?.pdm_id;
 
-        let listActive = await this.prisma.meta.findMany({
+        const listActive = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
-                pdm_id: pdmId,
+                pdm_id: filters?.pdm_id,
+                id: filters?.id,
             },
             orderBy: [
                 { codigo: 'asc' },
@@ -263,9 +263,9 @@ export class MetaService {
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
 
-        let op = updateMetaDto.orgaos_participantes;
-        let cp = updateMetaDto.coordenadores_cp;
-        let tags = updateMetaDto.tags;
+        const op = updateMetaDto.orgaos_participantes;
+        const cp = updateMetaDto.coordenadores_cp;
+        const tags = updateMetaDto.tags;
         delete updateMetaDto.orgaos_participantes;
         delete updateMetaDto.coordenadores_cp;
         delete updateMetaDto.tags;

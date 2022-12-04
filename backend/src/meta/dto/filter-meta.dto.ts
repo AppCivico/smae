@@ -10,4 +10,13 @@ export class FilterMetaDto {
     @IsPositive({ message: '$property| pdm_id' })
     @Type(() => Number)
     pdm_id?: number;
+
+    /**
+      * Filtrar por id?
+      * @example "1"
+    */
+    @IsOptional()
+    @IsPositive({ message: '$property| id' })
+    @Type(() => Number)
+    id?: number;
 }
