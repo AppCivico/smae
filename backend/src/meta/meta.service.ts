@@ -317,7 +317,7 @@ export class MetaService {
     async remove(id: number, user: PessoaFromJwt) {
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
             const removed = await prisma.meta.updateMany({
-                where: { id: id },
+                where: { id: id, removido_em: null },
                 data: {
                     removido_por: user.id,
                     removido_em: new Date(Date.now()),

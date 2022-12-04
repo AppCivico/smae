@@ -44,7 +44,7 @@ export class MetaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.editar' })
     @Roles('CadastroMeta.editar')
     async update(@Param() params: FindOneParams, @Body() updateMetaDto: UpdateMetaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.metaService.update(+params.id, updateMetaDto, user);
