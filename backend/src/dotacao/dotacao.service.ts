@@ -16,10 +16,12 @@ export class DotacaoService {
 
     async valorPlanejado(dto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {
 
-        const dotacaoExistente = await this.prisma.dotacaoPlanejado.findFirst({
+        const dotacaoExistente = await this.prisma.dotacaoPlanejado.findUnique({
             where: {
-                ano_referencia: dto.ano,
-                dotacao: dto.dotacao,
+                ano_referencia_dotacao: {
+                    ano_referencia: dto.ano,
+                    dotacao: dto.dotacao,
+                }
             }
         });
 
@@ -55,10 +57,12 @@ export class DotacaoService {
 
     async valorRealizadoDotacao(dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto[]> {
 
-        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findFirst({
+        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findUnique({
             where: {
-                ano_referencia: dto.ano,
-                dotacao: dto.dotacao,
+                ano_referencia_dotacao: {
+                    ano_referencia: dto.ano,
+                    dotacao: dto.dotacao,
+                }
             }
         });
 
@@ -72,10 +76,12 @@ export class DotacaoService {
 
         await this.sincronizarDotacaoRealizado(dto, mesMaisAtual);
 
-        const dotacaoRealizado = await this.prisma.dotacaoRealizado.findFirstOrThrow({
+        const dotacaoRealizado = await this.prisma.dotacaoRealizado.findUniqueOrThrow({
             where: {
-                ano_referencia: dto.ano,
-                dotacao: dto.dotacao,
+                ano_referencia_dotacao: {
+                    ano_referencia: dto.ano,
+                    dotacao: dto.dotacao,
+                }
             }
         });
 
@@ -123,10 +129,12 @@ export class DotacaoService {
 
             for (const dotacao of r.data) {
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacaoRealizado.findFirst({
+                    const jaExiste = await prisma.dotacaoRealizado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            }
                         }
                     });
 
@@ -184,10 +192,12 @@ export class DotacaoService {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
-                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
+                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            }
                         }
                     });
 
@@ -228,10 +238,12 @@ export class DotacaoService {
 
             for (const dotacao of r.data) {
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
+                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            },
                         }
                     });
 
@@ -286,10 +298,12 @@ export class DotacaoService {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
-                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
+                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            }
                         }
                     });
 
