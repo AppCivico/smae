@@ -6,7 +6,6 @@ import { DotacaoService } from './dotacao.service';
 import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto } from './dto/dotacao.dto';
 import { ListValorRealizadoDotacaoDto, ListValorRealizadoNotaEmpenhoDto, ListValorRealizadoProcessoDto, ValorPlanejadoDto } from './entities/dotacao.entity';
 
-@ApiTags('Orçamento')
 @Controller('dotacao')
 export class DotacaoController {
     constructor(
@@ -16,12 +15,14 @@ export class DotacaoController {
 
     ) { }
 
+    @ApiTags('Orçamento - Planejado')
     @Patch('valor-planejado')
     @ApiBearerAuth('access-token')
     async valorPlanejado(@Body() createDotacaoDto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {
         return await this.dotacaoService.valorPlanejado(createDotacaoDto);
     }
 
+    @ApiTags('Orçamento - Realizado')
     @Patch('valor-realizado')
     @ApiBearerAuth('access-token')
     async valorRealizadoDotacao(@Body() createDotacaoDto: AnoDotacaoDto): Promise<ListValorRealizadoDotacaoDto> {
@@ -30,6 +31,7 @@ export class DotacaoController {
         }
     }
 
+    @ApiTags('Orçamento - Realizado')
     @Patch('valor-realizado-processo')
     @ApiBearerAuth('access-token')
     async valorRealizadoDotacaoProcesso(@Body() dto: AnoDotacaoProcessoDto): Promise<ListValorRealizadoProcessoDto> {
@@ -38,6 +40,7 @@ export class DotacaoController {
         }
     }
 
+    @ApiTags('Orçamento - Realizado')
     @Patch('valor-realizado-nota-empenho')
     @ApiBearerAuth('access-token')
     async valorRealizadoDotacaoNotaEmpenho(@Body() dto: AnoDotacaoNotaEmpenhoDto): Promise<ListValorRealizadoNotaEmpenhoDto> {

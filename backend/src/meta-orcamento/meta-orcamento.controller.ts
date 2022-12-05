@@ -9,7 +9,7 @@ import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, ListMetaOrcamentoDto } 
 import { MetaOrcamentoService } from './meta-orcamento.service';
 
 @Controller('meta-orcamento')
-@ApiTags('Orçamento')
+@ApiTags('Orçamento - Meta (Custeio e Investimento)')
 export class MetaOrcamentoController {
     constructor(private readonly metaOrcamentoService: MetaOrcamentoService) { }
 
@@ -25,7 +25,6 @@ export class MetaOrcamentoController {
     @Get()
     @Roles('CadastroMeta.orcamento')
     async findAll(@Query() filters: FilterMetaOrcamentoDto): Promise<ListMetaOrcamentoDto> {
-
         return { 'linhas': await this.metaOrcamentoService.findAll(filters) };
     }
 
