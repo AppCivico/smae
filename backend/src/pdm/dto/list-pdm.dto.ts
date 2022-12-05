@@ -19,6 +19,7 @@ export class CicloFisicoDto {
 
 
 export class OrcamentoConfig {
+    id: number
     ano_referencia: number
     pdm_id: number
     previsao_custo_disponivel: boolean
