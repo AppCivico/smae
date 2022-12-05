@@ -1,10 +1,10 @@
-import { DateTime } from "luxon";
 import { HttpException, Injectable } from '@nestjs/common';
+import { Prisma } from "@prisma/client";
+import { DateTime } from 'luxon';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
-import { DotacaoValorPlanejadoDto } from './dto/dotacao.dto';
-import { Prisma } from "@prisma/client";
-import { ValorPlanejadoDto } from "./entities/dotacao.entity";
+import { AnoDotacaoDto } from './dto/dotacao.dto';
+import { ValorPlanejadoDto, ValorRealizadoDotacaoDto } from "./entities/dotacao.entity";
 
 @Injectable()
 export class DotacaoService {
@@ -14,9 +14,9 @@ export class DotacaoService {
         private readonly sof: SofApiService,
     ) { }
 
-    async valorPlanejado(dto: DotacaoValorPlanejadoDto): Promise<ValorPlanejadoDto> {
+    async valorPlanejado(dto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {
 
-        const dotacaoExistente = await this.prisma.dotacao.findFirst({
+        const dotacaoExistente = await this.prisma.dotacaoPlanejado.findFirst({
             where: {
                 ano_referencia: dto.ano,
                 dotacao: dto.dotacao,
@@ -28,16 +28,16 @@ export class DotacaoService {
                 empenho_liquido: dotacaoExistente.empenho_liquido,
                 id: dotacaoExistente.id,
                 informacao_valida: dotacaoExistente.informacao_valida,
-                smae_soma_valor_planejado:  dotacaoExistente.smae_soma_valor_planejado,
+                smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado,
             }
         }
 
         if (dotacaoExistente)
-            await this.prisma.dotacao.delete({ where: { id: dotacaoExistente.id } });
+            await this.prisma.dotacaoPlanejado.delete({ where: { id: dotacaoExistente.id } });
 
         await this.sincronizarDotacao(dto);
 
-        const dotacaoPlanejado = await this.prisma.dotacao.findFirstOrThrow({
+        const dotacaoPlanejado = await this.prisma.dotacaoPlanejado.findFirstOrThrow({
             where: {
                 ano_referencia: dto.ano,
                 dotacao: dto.dotacao,
@@ -48,14 +48,56 @@ export class DotacaoService {
             id: dotacaoPlanejado.id,
             empenho_liquido: dotacaoPlanejado.empenho_liquido,
             informacao_valida: dotacaoPlanejado.informacao_valida,
-            smae_soma_valor_planejado:  dotacaoPlanejado.smae_soma_valor_planejado,
+            smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado,
+        }
+    }
+
+
+    async valorRealizadoDotacao(dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto[]> {
+
+        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findFirst({
+            where: {
+                ano_referencia: dto.ano,
+                dotacao: dto.dotacao,
+            }
+        });
+
+        const mes_corrente = this.realizadoMesMaisAtual(dto.ano);
+
+        if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mes_corrente) {
+            return [
+                {
+                    id: dotacaoRealizadoExistente.id,
+                    dotacao: dotacaoRealizadoExistente.dotacao,
+                    informacao_valida: dotacaoRealizadoExistente.informacao_valida,
+                    empenho_liquido: dotacaoRealizadoExistente.empenho_liquido,
+                    valor_liquidado: dotacaoRealizadoExistente.valor_liquidado,
+
+                    smae_soma_valor_empenho: dotacaoRealizadoExistente.smae_soma_valor_empenho,
+                    smae_soma_valor_liquidado: dotacaoRealizadoExistente.smae_soma_valor_liquidado,
+                }
+            ]
         }
 
+        throw ''
+    }
+
+    realizadoMesMaisAtual(ano: number): number {
+        const nowSp = DateTime.local({ zone: "America/Sao_Paulo" });
+
+        const anoCorrente = nowSp.month;
+        if (anoCorrente == +ano)
+            return nowSp.month;
+
+        if (+ano > anoCorrente)
+            throw new HttpException('Não é possível buscar por realizado no futuro', 400);
+
+        return 12; // mes mais recente do ano pesquisado
     }
 
 
 
-    private async sincronizarDotacao(dto: DotacaoValorPlanejadoDto) {
+    private async sincronizarDotacao(dto: AnoDotacaoDto) {
         const now = new Date(Date.now());
         try {
             const r = await this.sof.empenhoDotacao({
@@ -66,7 +108,7 @@ export class DotacaoService {
 
             for (const dotacao of r.data) {
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacao.findFirst({
+                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
                         where: {
                             ano_referencia: dto.ano,
                             dotacao: dto.dotacao,
@@ -76,7 +118,7 @@ export class DotacaoService {
                     // se ja existe, atualiza caso estiver com dados inválidos, ou se o valor for diferente no empenho_liquido
                     if (jaExiste && (!jaExiste.informacao_valida || Number(jaExiste.empenho_liquido) != Number(dotacao.empenho_liquido))) {
 
-                        await prisma.dotacao.update({
+                        await prisma.dotacaoPlanejado.update({
                             where: {
                                 id: jaExiste.id
                             },
@@ -89,7 +131,7 @@ export class DotacaoService {
                     }
 
                     if (!jaExiste) {
-                        await prisma.dotacao.create({
+                        await prisma.dotacaoPlanejado.create({
                             data: {
                                 informacao_valida: true,
                                 sincronizado_em: now,
@@ -121,7 +163,7 @@ export class DotacaoService {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
-                    const jaExiste = await prisma.dotacao.findFirst({
+                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
                         where: {
                             ano_referencia: dto.ano,
                             dotacao: dto.dotacao,
@@ -131,7 +173,7 @@ export class DotacaoService {
                     // se ainda não existe (pode ter iniciado já por causa do lock)
                     if (!jaExiste) {
 
-                        await prisma.dotacao.create({
+                        await prisma.dotacaoPlanejado.create({
                             data: {
                                 informacao_valida: false,
                                 sincronizado_em: null,
