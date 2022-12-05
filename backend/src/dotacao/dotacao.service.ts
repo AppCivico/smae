@@ -173,8 +173,6 @@ export class DotacaoService {
 
 
         } catch (error) {
-            if (error instanceof HttpException)
-                throw error;
             if (error instanceof SofError) {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
@@ -208,6 +206,7 @@ export class DotacaoService {
                     isolationLevel: 'Serializable'
                 });
             }
+            throw error;
         }
     }
 
@@ -277,8 +276,6 @@ export class DotacaoService {
 
 
         } catch (error) {
-            if (error instanceof HttpException)
-                throw error;
             if (error instanceof SofError) {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
@@ -313,7 +310,10 @@ export class DotacaoService {
                 }, {
                     isolationLevel: 'Serializable'
                 });
+                return;
             }
+
+            throw error;
         }
     }
 
