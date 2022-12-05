@@ -25,6 +25,8 @@ export class FilterCronogramaEtapaDto {
     @Transform(({ value }: any) => value === 'true')
     inativo?: boolean
 
+    // filtro usado apenas internamente na parte do monitoramento, para forçar um
+    // filtro por determinadas etapas
     @ApiHideProperty()
     cronograma_etapa_ids?: number[];
 }

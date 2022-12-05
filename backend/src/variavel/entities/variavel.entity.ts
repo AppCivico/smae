@@ -1,10 +1,9 @@
-import { ApiExtraModels, ApiHideProperty, ApiOkResponse, ApiProperty, OmitType, PartialType, refs } from "@nestjs/swagger"
-import { Periodicidade, Prisma, Serie, VariavelResponsavel } from "@prisma/client"
+import { ApiProperty, OmitType, refs } from "@nestjs/swagger"
+import { Periodicidade, Serie } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
 import { IsString } from "class-validator"
 import { DateYMD } from "src/common/date2ymd"
 import { OrgaoResumo } from "src/orgao/entities/orgao.entity"
-import { Pessoa } from "src/pessoa/entities/pessoa.entity"
 import { Regiao } from "src/regiao/entities/regiao.entity"
 import { UnidadeMedida } from "src/unidade-medida/entities/unidade-medida.entity"
 
