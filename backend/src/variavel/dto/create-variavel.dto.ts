@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsNumberString, IsOptional, IsPositive, IsString, Max, Min, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumberString, IsOptional, IsString, Max, Min, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateVariavelDto {
@@ -9,7 +9,7 @@ export class CreateVariavelDto {
     /**
     * ID do indicador (é required para criar já o relacionamento)
     */
-    @IsPositive({ message: '$property| indicador precisa existir' })
+    @IsInt({ message: '$property| indicador precisa existir' })
     @Type(() => Number)
     indicador_id?: number
 
@@ -25,7 +25,7 @@ export class CreateVariavelDto {
     /**
     * ID do órgão
     */
-    @IsPositive({ message: '$property| órgão responsável' })
+    @IsInt({ message: '$property| órgão responsável' })
     @Type(() => Number)
     orgao_id: number
 
@@ -33,7 +33,7 @@ export class CreateVariavelDto {
     * ID da região (opcional)
     */
     @IsOptional()
-    @IsPositive({ message: '$property| região é opcional via (null) ou precisa ser um numérico' })
+    @IsInt({ message: '$property| região é opcional via (null) ou precisa ser um numérico' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
     regiao_id?: number
@@ -65,7 +65,7 @@ export class CreateVariavelDto {
     })
     periodicidade: Periodicidade
 
-    @IsPositive({ message: '$property| unidade de medida precisa ser numérico' })
+    @IsInt({ message: '$property| unidade de medida precisa ser numérico' })
     @Type(() => Number)
     unidade_medida_id: number
 

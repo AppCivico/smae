@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from "class-validator";
 
 export class AtividadeOrgaoParticipante {
     /**
@@ -13,7 +13,7 @@ export class AtividadeOrgaoParticipante {
     * órgão
     * @example 1
     */
-    @IsPositive({ message: '$property| orgao_id' })
+    @IsInt({ message: '$property| orgao_id' })
     @Type(() => Number)
     orgao_id: number;
 
@@ -33,7 +33,7 @@ export class CreateAtividadeDto {
     /**
     * iniciativa_id
     */
-    @IsPositive({ message: '$property| tema precisa ser um número ou null' })
+    @IsInt({ message: '$property| tema precisa ser um número ou null' })
     @Type(() => Number)
     iniciativa_id: number
 

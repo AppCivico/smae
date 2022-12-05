@@ -1,6 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { IsBoolean, IsInt, IsOptional, IsString, ValidateIf } from "class-validator";
 
 // export class MetaOrgaoParticipante {
 //     /**
@@ -14,7 +13,7 @@ import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 //     * órgão
 //     * @example 1
 //     */
-//     @IsPositive({ message: '$property| orgao_id' })
+//     @IsInt({ message: '$property| orgao_id' })
 //     @Type(() => Number)
 //     orgao_id: number;
 
@@ -33,7 +32,7 @@ export class CreateCronogramaDto {
     /**
     * meta_id
     */
-    @IsPositive({ message: '$property| meta precisa ser um número ou null' })
+    @IsInt({ message: '$property| meta precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -42,7 +41,7 @@ export class CreateCronogramaDto {
     /**
     * iniciativa_id
     */
-    @IsPositive({ message: '$property| iniciativa precisa ser um número ou null' })
+    @IsInt({ message: '$property| iniciativa precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -51,7 +50,7 @@ export class CreateCronogramaDto {
     /**
     * atividade_id
     */
-    @IsPositive({ message: '$property| atividade precisa ser um número ou null' })
+    @IsInt({ message: '$property| atividade precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -74,7 +73,7 @@ export class CreateCronogramaDto {
     @IsBoolean({ message: '$property| precisa ser um boolean' })
     regionalizavel: boolean
 
-    @IsPositive({ message: '$property| atividade precisa ser um número ou null' })
+    @IsInt({ message: '$property| atividade precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()

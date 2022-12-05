@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
+import { IsInt, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class CreateOrgaoDto {
     /**
@@ -20,7 +20,7 @@ export class CreateOrgaoDto {
     /**
     * Tipo do Órgão
     */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     tipo_orgao_id: number
 

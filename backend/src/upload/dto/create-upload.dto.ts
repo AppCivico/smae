@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsEnum, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
 import { TipoUpload } from "src/upload/entities/tipo-upload";
 
 
@@ -20,7 +20,7 @@ export class CreateUploadDto {
      * @example 1
     * */
     @IsOptional()
-    @IsPositive({ message: '$property| Necessário ID do Tipo Documento' })
+    @IsInt({ message: '$property| Necessário ID do Tipo Documento' })
     @ValidateIf((object: CreateUploadDto) => object.tipo === TipoUpload.DOCUMENTO)
     @Type(() => Number)
     tipo_documento_id?: number | null
