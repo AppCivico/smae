@@ -112,6 +112,7 @@
 	.flex{
 		display: flex;
 		&.spacebetween{justify-content: space-between;}
+		&.justifycenter{justify-content: center;}
 		&.center{align-items: center;}
 		&.end{align-items: flex-end;}
 		&.column{flex-direction: column;}
@@ -218,6 +219,9 @@
 		.transition;
 		&:hover{color: @primary; background: @amarelo;}
 		svg{display: block; height: 1em; width: auto; margin: 0 auto;}
+		&.bgnone{
+			background: none;
+		}
 		&.amarelo{
 			background: @amarelo; color: @primary;
 			&:hover{background: @c300;}
@@ -236,11 +240,13 @@
 			display: block;
 			width: 100%;
 		}
-		&.bgnone{
-			background: none;
-		}
 		&.tcprimary{
 			color: @primary;
+			&:hover{color: @c300;}
+		}
+		&.tcamarelo{
+			color: @amarelo;
+			&:hover{color: @c300;}
 		}
 		&:disabled{
 			cursor: wait;

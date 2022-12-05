@@ -11,7 +11,6 @@ const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
-console.log(perm);
 const props = defineProps(['group','type','parentPage']);
 
 const MetasStore = useMetasStore();

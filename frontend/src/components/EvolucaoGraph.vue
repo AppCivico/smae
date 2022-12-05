@@ -452,7 +452,6 @@
 	const chart = new smaeChart();
 
 	function start(){
-		console.log(props.dataserie);
 		if(props.dataserie?.linhas && evolucao.value){
 			let data = {};
 

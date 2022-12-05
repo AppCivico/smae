@@ -20,7 +20,6 @@
     (async()=>{
         grupos.value = {loading: true};
         await CiclosStore.getMetas();
-        console.log(MetasCiclos.value);
         grupos.value = MetasCiclos.value.length ? MetasCiclos.value.reduce(function(r,a) {
             if(!a.cronograma.status) return r;
             if(chaves.indexOf(a.cronograma.status)==-1)chaves.push(a.cronograma.status);
