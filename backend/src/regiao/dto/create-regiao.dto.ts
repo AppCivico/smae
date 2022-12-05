@@ -1,12 +1,12 @@
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, isPositive, IsPositive, IsString, Max, MaxLength, Min, MinLength, ValidateIf } from "class-validator";
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from "class-validator";
 
 export class CreateRegiaoDto {
     /**
    * Nivel (1 até 4) [1=cidade, 2=norte/sul, 3=prefeitura, 4=subprefeitura]
    * @example 2
     */
-    @IsPositive({ message: '$property| Precisa ser um número' })
+    @IsInt({ message: '$property| Precisa ser um número' })
     @Min(1, { message: "$property| região mínima nível 1" })
     @Max(4, { message: "$property| região máxima nível 4" })
     @Type(() => Number)
@@ -17,7 +17,7 @@ export class CreateRegiaoDto {
       * @example 27
        */
     @IsOptional()
-    @IsPositive({ message: '$property| Precisa ser um número' })
+    @IsInt({ message: '$property| Precisa ser um número' })
     @Type(() => Number)
     codigo?: number;
 
@@ -34,7 +34,7 @@ export class CreateRegiaoDto {
        * ID da região acima
     */
     @IsOptional()
-    @IsPositive({ message: '$property| Precisa ser nulo ou o ID' })
+    @IsInt({ message: '$property| Precisa ser nulo ou o ID' })
     @ValidateIf((object, value) => value !== null)
     parente_id: number | undefined;
 

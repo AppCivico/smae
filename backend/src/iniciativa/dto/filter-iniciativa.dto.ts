@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsOptional, IsPositive } from "class-validator";
+import { IsInt, IsOptional } from "class-validator";
 
 export class FilterIniciativaDto {
     /**
@@ -7,7 +7,7 @@ export class FilterIniciativaDto {
    * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| meta_id' })
+    @IsInt({ message: '$property| meta_id' })
     @Type(() => Number)
     meta_id?: number;
 }

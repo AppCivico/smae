@@ -1,7 +1,3 @@
-import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import { IsBoolean, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class Pdm {
     nome: string

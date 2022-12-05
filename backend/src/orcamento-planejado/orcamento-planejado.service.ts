@@ -12,33 +12,13 @@ export class OrcamentoPlanejadoService {
 
     async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
-        let meta_id: number;
-        let iniciativa_id: number | undefined;
-        let atividade_id: number | undefined;
-        if (dto.atividade_id) {  // prioridade buscar pela atividade
-            const atividade = await this.prisma.atividade.findFirst({
-                where: { id: dto.atividade_id, removido_em: null },
-                select: { id: true, iniciativa_id: true, iniciativa: { select: { meta_id: true } } }
-            });
-            if (!atividade) throw new HttpException('atividade não encontrada', 400);
-            atividade_id = atividade.id;
-            iniciativa_id = atividade.iniciativa_id;
-            meta_id = atividade.iniciativa.meta_id;
+        const dotacao = await this.prisma.dotacaoPlanejado.findFirst({
+            where: { dotacao: dto.dotacao, ano_referencia: dto.ano_referencia },
+            select: { id: true }
+        });
+        if (!dotacao) throw new HttpException('Dotação não foi ainda não foi importada no banco de dados', 400);
 
-        } else if (dto.iniciativa_id) {
-            const iniciativa = await this.prisma.iniciativa.findFirst({
-                where: { id: dto.iniciativa_id, removido_em: null },
-                select: { id: true, meta_id: true }
-            });
-            if (!iniciativa) throw new HttpException('iniciativa não encontrada', 400);
-            iniciativa_id = iniciativa.id;
-            meta_id = iniciativa.meta_id;
-
-        } else if (dto.meta_id) {
-            meta_id = dto.meta_id;
-        } else {
-            new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
-        }
+        const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: meta_id!, removido_em: null },
@@ -51,26 +31,41 @@ export class OrcamentoPlanejadoService {
         });
         if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com o planejamento liberado', 400);
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+        const created = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const now = new Date(Date.now());
 
-            const oP = await prisma.orcamentoPlanejado.create({
+            const orcamentoPlanejado = await prismaTxn.orcamentoPlanejado.create({
                 data: {
                     criado_por: user.id,
                     criado_em: now,
-                    meta_id,
+                    meta_id: meta_id!,
                     iniciativa_id,
                     atividade_id,
                     ano_referencia: dto.ano_referencia,
                     dotacao: dto.dotacao,
                     valor_planejado: dto.valor_planejado,
                 },
-                select: { id: true }
+                select: { id: true, valor_planejado: true }
             });
 
-            return oP;
+            const dotacaoAgora = await prismaTxn.dotacaoPlanejado.findFirstOrThrow({
+                where: { id: dotacao.id },
+                select: { smae_soma_valor_planejado: true, empenho_liquido: true }
+            });
+
+            const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado + orcamentoPlanejado.valor_planejado;
+            await prismaTxn.dotacaoPlanejado.update({
+                where: { id: dotacao.id },
+                data: {
+                    pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,
+                    smae_soma_valor_planejado: smae_soma_valor_planejado
+                }
+            });
+
+            return orcamentoPlanejado;
         }, {
+            isolationLevel: 'Serializable',
             maxWait: 5000,
             timeout: 100000
         });
@@ -78,13 +73,52 @@ export class OrcamentoPlanejadoService {
         return created;
     }
 
-    async findAll(filters?: FilterOrcamentoPlanejadoDto): Promise<OrcamentoPlanejado[]> {
+    async validaMetaIniAtv(dto: {
+        meta_id?: number
+        iniciativa_id?: number
+        atividade_id?: number
+    }) {
+        let meta_id: number | undefined;
+        let iniciativa_id: number | undefined;
+        let atividade_id: number | undefined;
+        if (dto.atividade_id) { // prioridade buscar pela atividade
+            const atividade = await this.prisma.atividade.findFirst({
+                where: { id: dto.atividade_id, removido_em: null },
+                select: { id: true, iniciativa_id: true, iniciativa: { select: { meta_id: true } } }
+            });
+            if (!atividade)
+                throw new HttpException('atividade não encontrada', 400);
+            atividade_id = atividade.id;
+            iniciativa_id = atividade.iniciativa_id;
+            meta_id = atividade.iniciativa.meta_id;
+
+        } else if (dto.iniciativa_id) {
+            const iniciativa = await this.prisma.iniciativa.findFirst({
+                where: { id: dto.iniciativa_id, removido_em: null },
+                select: { id: true, meta_id: true }
+            });
+            if (!iniciativa)
+                throw new HttpException('iniciativa não encontrada', 400);
+            iniciativa_id = iniciativa.id;
+            meta_id = iniciativa.meta_id;
+
+        } else if (dto.meta_id) {
+            meta_id = dto.meta_id;
+        }
+
+        if (meta_id === undefined)
+            new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
+
+        return { meta_id: meta_id, iniciativa_id, atividade_id };
+    }
+
+    async findAll(filters: FilterOrcamentoPlanejadoDto): Promise<OrcamentoPlanejado[]> {
 
         const queryRows = await this.prisma.orcamentoPlanejado.findMany({
             where: {
                 dotacao: filters?.dotacao,
                 meta_id: filters?.meta_id,
-                ano_referencia: filters?.ano_referencia,
+                ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
             },
             select: {
                 criador: { select: { nome_exibicao: true } },
@@ -104,42 +138,103 @@ export class OrcamentoPlanejadoService {
             ]
         });
 
+        const dotacoesEncontradas: Record<string, boolean> = {};
+        for (const op of queryRows) {
+            if (dotacoesEncontradas[op.dotacao] == undefined) dotacoesEncontradas[op.dotacao] = true;
+        }
+        const dotacoesInfo = await this.prisma.dotacaoPlanejado.findMany({
+            where: {
+                dotacao: { in: Object.keys(dotacoesEncontradas) },
+                ano_referencia: filters.ano_referencia,
+            },
+            select: {
+                pressao_orcamentaria: true,
+                empenho_liquido: true,
+                smae_soma_valor_planejado: true,
+                dotacao: true,
+            }
+        });
+        const dotacoesRef: Record<string, typeof dotacoesInfo[0]> = {};
+        for (const dotacao of dotacoesInfo) {
+            dotacoesRef[dotacao.dotacao] = dotacao;
+        }
+
         const rows: OrcamentoPlanejado[] = [];
 
-        for (const op of queryRows) {
+        for (const orcamentoPlanejado of queryRows) {
+
+            let pressao_orcamentaria: boolean | null = null;
+            let pressao_orcamentaria_valor: number | null = null;
+            let smae_soma_valor_planejado: number | null = null;
+            let empenho_liquido: number | null = null;
+
+            let dotacaoInfo = dotacoesRef[orcamentoPlanejado.dotacao];
+            if (dotacaoInfo) {
+                pressao_orcamentaria = dotacaoInfo.pressao_orcamentaria;
+                if (pressao_orcamentaria) {
+                    pressao_orcamentaria_valor = dotacaoInfo.smae_soma_valor_planejado - dotacaoInfo.empenho_liquido;
+                }
+
+                smae_soma_valor_planejado = dotacaoInfo.smae_soma_valor_planejado;
+                empenho_liquido = dotacaoInfo.empenho_liquido;
+            }
 
             rows.push({
-                id: op.id,
-                ano_referencia: op.ano_referencia,
-                meta: op.meta,
-                iniciativa: op.iniciativa,
-                atividade: op.atividade,
-                criado_em: op.criado_em,
-                criador: op.criador,
-                dotacao: op.dotacao,
-                valor_planejado: op.valor_planejado,
-                empenho_dotacao: null,
-                pressao_orcamentaria: null
+                id: orcamentoPlanejado.id,
+                ano_referencia: orcamentoPlanejado.ano_referencia,
+                meta: orcamentoPlanejado.meta,
+                iniciativa: orcamentoPlanejado.iniciativa,
+                atividade: orcamentoPlanejado.atividade,
+                criado_em: orcamentoPlanejado.criado_em,
+                criador: orcamentoPlanejado.criador,
+                dotacao: orcamentoPlanejado.dotacao,
+                valor_planejado: orcamentoPlanejado.valor_planejado,
+                pressao_orcamentaria,
+                pressao_orcamentaria_valor,
+                smae_soma_valor_planejado,
+                empenho_liquido,
             });
 
         }
-console.log(rows);
+        console.log(rows);
 
 
         return rows;
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const op = await this.prisma.orcamentoPlanejado.count({
-            where: { id: +id, removido_em: null }
+        const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
+            where: { id: +id, removido_em: null },
         });
-        if (!op) throw new HttpException('orcamento planejado não encontrada', 400);
+        if (!orcamentoPlanejado) throw new HttpException('orcamento planejado não encontrada', 400);
 
         const now = new Date(Date.now());
-        await this.prisma.orcamentoPlanejado.updateMany({
-            where: { id: +id, removido_em: null },
-            data: { removido_em: now, removido_por: user.id }
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            const linhasAfetadas = await prismaTxn.orcamentoPlanejado.updateMany({
+                where: { id: +id, removido_em: null }, // nao apagar duas vezes
+                data: { removido_em: now, removido_por: user.id }
+            });
+
+            if (linhasAfetadas.count == 1) {
+                const dotacaoAgora = await prismaTxn.dotacaoPlanejado.findFirstOrThrow({
+                    where: { dotacao: orcamentoPlanejado.dotacao, ano_referencia: orcamentoPlanejado.ano_referencia },
+                    select: { smae_soma_valor_planejado: true, empenho_liquido: true, id: true }
+                });
+
+                const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado - orcamentoPlanejado.valor_planejado;
+                await prismaTxn.dotacaoPlanejado.update({
+                    where: { id: dotacaoAgora.id },
+                    data: {
+                        pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,
+                        smae_soma_valor_planejado: smae_soma_valor_planejado
+                    }
+                });
+            }
+        }, {
+            isolationLevel: 'Serializable',
         });
+
     }
 
 

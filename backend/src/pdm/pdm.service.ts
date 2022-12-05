@@ -149,7 +149,6 @@ export class PdmService {
         let pdm = await this.prisma.pdm.count({ where: { id: id } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        updatePdmDto.id = id
         await this.verificarPrivilegiosEdicao(updatePdmDto, user);
 
         if (updatePdmDto.nome) {
@@ -212,7 +211,7 @@ export class PdmService {
             });
 
             this.logger.log(`chamando monta_ciclos_pdm...`)
-            this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${updatePdmDto.id}::int, false)`));
+            this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
 
         });
 
@@ -596,7 +595,7 @@ export class PdmService {
     }
 
     async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto) {
-        
+
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
             for (const orcamentoConfig of updatePdmOrcamentoConfigDto.orcamento_config) {

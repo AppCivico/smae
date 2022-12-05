@@ -1219,6 +1219,7 @@ model EtapaResponsavel {
     pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
     etapa  Etapa  @relation(fields: [etapa_id], references: [id])
 
+    @@unique([pessoa_id, etapa_id], name: "etapa_pessoa_uniq")
     @@index([pessoa_id])
     @@index([etapa_id])
     @@map("etapa_responsavel")
@@ -1770,22 +1771,87 @@ model MetaOrcamento {
     @@map("meta_orcamento")
 }
 
-model Dotacao {
+model DotacaoPlanejado {
     id Int @id @default(autoincrement())
 
     informacao_valida Boolean
     sincronizado_em   DateTime? @default(now()) @db.Timestamptz(6)
 
-    ano_referencia       Int
-    mes_utilizado        Int
+    ano_referencia Int
+    mes_utilizado  Int
 
-    dotacao              String
-    empenho_liquido      Float   @db.DoublePrecision
-    valor_liquidado      Float   @db.DoublePrecision
-    pressao_orcamentaria Boolean
+    dotacao                   String
+    empenho_liquido           Float   @db.DoublePrecision
+    valor_liquidado           Float   @db.DoublePrecision
+    pressao_orcamentaria      Boolean
+    smae_soma_valor_planejado Float
 
     @@unique([ano_referencia, dotacao])
-    @@map("dotacao")
+    @@map("dotacao_planejado")
+}
+
+model DotacaoRealizado {
+    id Int @id @default(autoincrement())
+
+    informacao_valida Boolean
+    sincronizado_em   DateTime? @default(now()) @db.Timestamptz(6)
+
+    ano_referencia Int
+    mes_utilizado  Int
+
+    dotacao                   String
+    empenho_liquido           Float   @db.DoublePrecision
+    valor_liquidado           Float   @db.DoublePrecision
+
+    smae_soma_valor_empenho   Float @default(0)
+    smae_soma_valor_liquidado Float @default(0)
+
+    @@unique([ano_referencia, dotacao])
+    @@map("dotacao_realizado")
+}
+
+model DotacaoProcesso {
+    id Int @id @default(autoincrement())
+
+    informacao_valida Boolean
+    sincronizado_em   DateTime? @default(now()) @db.Timestamptz(6)
+
+    ano_referencia Int
+    mes_utilizado  Int
+
+    dotacao          String
+    dotacao_processo String
+    empenho_liquido  Float  @db.DoublePrecision
+    valor_liquidado  Float  @db.DoublePrecision
+
+    smae_soma_valor_empenho   Float @default(0)
+    smae_soma_valor_liquidado Float @default(0)
+
+    @@unique([ano_referencia, dotacao, dotacao_processo])
+    @@map("dotacao_processo")
+}
+
+model DotacaoProcessoNota {
+    id Int @id @default(autoincrement())
+
+    informacao_valida Boolean
+    sincronizado_em   DateTime? @default(now()) @db.Timestamptz(6)
+
+    ano_referencia Int
+    mes_utilizado  Int
+
+    dotacao               String
+    dotacao_processo      String
+    dotacao_processo_nota String
+
+    empenho_liquido           Float   @db.DoublePrecision
+    valor_liquidado           Float   @db.DoublePrecision
+    pressao_orcamentaria      Boolean
+    smae_soma_valor_empenho   Float @default(0)
+    smae_soma_valor_liquidado Float @default(0)
+
+    @@unique([ano_referencia, dotacao, dotacao_processo, dotacao_processo_nota])
+    @@map("dotacao_processo_nota")
 }
 
 model OrcamentoPlanejado {
@@ -1821,7 +1887,7 @@ model OrcamentoRealizado {
     atividade_id  Int?
 
     ano_referencia  Int
-    mes_referencia  Int
+    mes_utilizado   Int
     dotacao         String
     processo        String?
     nota_empenho    String?

@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsOptional, IsPositive } from "class-validator";
+import { IsInt, IsOptional } from "class-validator";
 
 export class FilterAtividadeDto {
     /**
@@ -7,7 +7,7 @@ export class FilterAtividadeDto {
    * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| iniciativa_id' })
+    @IsInt({ message: '$property| iniciativa_id' })
     @Type(() => Number)
     iniciativa_id?: number;
 }

@@ -1,5 +1,5 @@
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
 export class CreateMetaOrcamentoDto {
@@ -9,7 +9,7 @@ export class CreateMetaOrcamentoDto {
     * @example "42"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id: number;
 
@@ -18,7 +18,7 @@ export class CreateMetaOrcamentoDto {
     * @example "2022"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 
@@ -59,7 +59,7 @@ export class FilterMetaOrcamentoDto {
    * @example "42"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -68,7 +68,7 @@ export class FilterMetaOrcamentoDto {
    * @example "2022"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia?: number;
 

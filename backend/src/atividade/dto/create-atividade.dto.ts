@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from "class-validator";
 
 export class AtividadeOrgaoParticipante {
     /**
@@ -13,7 +13,7 @@ export class AtividadeOrgaoParticipante {
     * órgão
     * @example 1
     */
-    @IsPositive({ message: '$property| orgao_id' })
+    @IsInt({ message: '$property| orgao_id' })
     @Type(() => Number)
     orgao_id: number;
 
@@ -24,6 +24,7 @@ export class AtividadeOrgaoParticipante {
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(1, { message: '$property| precisa ter um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     participantes: number[]
 
 }
@@ -32,9 +33,8 @@ export class CreateAtividadeDto {
     /**
     * iniciativa_id
     */
-    @IsPositive({ message: '$property| tema precisa ser um número ou null' })
+    @IsInt({ message: '$property| tema precisa ser um número ou null' })
     @Type(() => Number)
-    @ValidateIf((object, value) => value !== null)
     iniciativa_id: number
 
     /**
@@ -86,6 +86,8 @@ export class CreateAtividadeDto {
     * Quais são os orgaos participantes e seus membros responsáveis
     */
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
+    @ValidateNested({ each: true })
+    @Type(() => AtividadeOrgaoParticipante)
     orgaos_participantes?: AtividadeOrgaoParticipante[]
 
     /**
@@ -95,6 +97,7 @@ export class CreateAtividadeDto {
     @IsArray({ message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório' })
     @ArrayMinSize(1, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     coordenadores_cp?: number[]
 
     /**
@@ -105,6 +108,7 @@ export class CreateAtividadeDto {
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
     @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     tags?: number[]
 
     @IsOptional()

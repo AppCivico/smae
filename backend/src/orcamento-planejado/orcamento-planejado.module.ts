@@ -6,6 +6,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
     imports: [PrismaModule],
     controllers: [OrcamentoPlanejadoController],
-    providers: [OrcamentoPlanejadoService]
+    providers: [OrcamentoPlanejadoService],
+    exports: [OrcamentoPlanejadoService]
 })
 export class OrcamentoPlanejadoModule { }

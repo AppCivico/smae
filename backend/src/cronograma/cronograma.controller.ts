@@ -6,7 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateEtapaDto } from 'src/etapa/dto/create-etapa.dto';
-import { FilterEtapaDto } from 'src/etapa/dto/filter-etapa.dto';
+import { FilterEtapaDto, FilterEtapaSemCronoIdDto } from 'src/etapa/dto/filter-etapa.dto';
 import { ListEtapaDto } from 'src/etapa/dto/list-etapa.dto';
 import { EtapaService } from 'src/etapa/etapa.service';
 import { CronogramaService } from './cronograma.service';
@@ -61,15 +61,18 @@ export class CronogramaController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.inserir')
     async createEtapa(@Body() createEtapaDto: CreateEtapaDto, @Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        createEtapaDto.cronograma_id = +params.id;
-        return await this.etapaService.create(createEtapaDto, user);
+        return await this.etapaService.create(+params.id, createEtapaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id/etapa')
-    async findAllEtapas(@Query() filters: FilterEtapaDto, @Param() params: FindOneParams): Promise<ListEtapaDto> {
-        filters.cronograma_id = +params.id;
-        return { 'linhas': await this.etapaService.findAll(filters) };
+    async findAllEtapas(@Query() filters: FilterEtapaSemCronoIdDto, @Param() params: FindOneParams): Promise<ListEtapaDto> {
+        return {
+            'linhas': await this.etapaService.findAll({
+                ...filters,
+                cronograma_id: +params.id
+            })
+        };
     }
 
 }

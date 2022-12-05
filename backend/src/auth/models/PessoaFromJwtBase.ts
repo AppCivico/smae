@@ -1,4 +1,4 @@
-import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 export class PessoaFromJwtBase {
     @ApiProperty({ description: 'ID da Pessoa' })
     id: number;
@@ -13,6 +13,5 @@ export class PessoaFromJwtBase {
     @ApiProperty({ description: 'Lista de Módulos' })
     modulos: string[];
 
-    @ApiHideProperty()
     orgao_id: undefined | number;
 }
