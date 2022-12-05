@@ -1,3 +1,4 @@
+import { OmitType, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsInt, IsOptional } from "class-validator";
 
@@ -37,5 +38,11 @@ export class FilterEtapaDto {
     @IsInt({ message: '$property| cronograma_pai_id' })
     @Type(() => Number)
     cronograma_pai_id?: number;
+
+}
+
+export class FilterEtapaSemCronoIdDto extends PartialType(OmitType(FilterEtapaDto, [
+    'cronograma_id',
+])) {
 
 }
