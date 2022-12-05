@@ -61,8 +61,7 @@ export class CronogramaController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.inserir')
     async createEtapa(@Body() createEtapaDto: CreateEtapaDto, @Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        createEtapaDto.cronograma_id = +params.id;
-        return await this.etapaService.create(createEtapaDto, user);
+        return await this.etapaService.create(+params.id, createEtapaDto, user);
     }
 
     @ApiBearerAuth('access-token')
