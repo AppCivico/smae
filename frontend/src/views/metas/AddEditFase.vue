@@ -90,10 +90,10 @@ const responsaveis = ref({participantes:[], busca:''});
         }
     }
     if(currentFase.value?.responsaveis){
-        responsaveis.value.participantes = currentFase.value.responsaveis.map(x=>x.id);
+        responsaveis.value.participantes = currentFase.value.responsaveis.map(x=>x.id?x.id:x.pessoa?x.pessoa.id:null);
     }
     if(pc.responsaveis){
-        usersAvailable.value = pc.responsaveis;
+        usersAvailable.value = pc.responsaveis.map(x=>x.id?x:x.pessoa?x.pessoa:null);
     }
 
     if(noregion && singleEtapa.value?.etapa?.regiao_id) getRegionByParent(singleEtapa.value.etapa.regiao_id);
@@ -182,12 +182,11 @@ async function onSubmit(values) {
             CronogramasStore.clear();
             (async()=>{
                 await EtapasStore.getAll(cronograma_id);
-                CronogramasStore.getById(parentVar,parentField,cronograma_id);
+                await CronogramasStore.getById(parentVar,parentField,cronograma_id);
+                router.push(rota);
             })();
-            
             alertStore.success(msg);
             editModalStore.clear();
-            if(rota)router.push(rota);
         }
 
     } catch (error) {

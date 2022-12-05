@@ -73,7 +73,6 @@ if(etapa_id){
             })();
         }
         if(singleEtapa.value.etapa.responsaveis){
-            console.log(singleEtapa.value.etapa.responsaveis);
             responsaveis.value.participantes = singleEtapa.value.etapa.responsaveis.map(x=>x.id);
         }
     });
@@ -145,8 +144,7 @@ async function onSubmit(values) {
         values.ordem = Number(values.ordem)??null;
         values.etapa_pai_id = null;
 
-        values.responsaveis = [];
-        console.log(values.responsaveis); return;
+        values.responsaveis = responsaveis.value.participantes;
 
         var rota = false;
         var etapa_id_gen = false;
@@ -198,7 +196,6 @@ async function onSubmit(values) {
                     }
                 }
             }else{
-                console.log(r);
                 throw 'Ocorreu um erro inesperado.';
             }
 

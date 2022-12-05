@@ -188,6 +188,8 @@ export const usePdMStore = defineStore({
                 rotulo_atividade: params.rotulo_atividade,
 
                 upload_logo: params.upload_logo,
+
+                controle_orcamento: params.controle_orcamento
             };
             if(await requestS.post(`${baseUrl}/pdm`, m)){
                 this.activePdm = {};
@@ -225,6 +227,8 @@ export const usePdMStore = defineStore({
                 rotulo_atividade: params.rotulo_atividade,
               
                 upload_logo: params.upload_logo,
+
+                controle_orcamento: params.controle_orcamento
             };
             if(await requestS.patch(`${baseUrl}/pdm/${id}`, m)){
                 this.activePdm = {};
@@ -276,5 +280,14 @@ export const usePdMStore = defineStore({
                 this.arquivos[pdm_id] = { error };
             }
         },
+
+        async updatePermissoesOrcamento(id,params){
+            if(await requestS.patch(`${baseUrl}/pdm/${id}/orcamento-config`, params)){
+                this.activePdm = {};
+                return true;
+            }
+            return false;
+        }
+
     }
 });

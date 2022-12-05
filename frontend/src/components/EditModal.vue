@@ -22,7 +22,7 @@ async function checkClose() {
 <template>
     <div v-if="editModal" class="editModal-wrap">
         <div class="overlay" @click="checkClose"></div>
-        <div class="editModal" :class="editModal.classes">
+        <div class="editModal" :class="editModal.type">
             <div>
                 <editModal.content :props="editModal.props" />
             </div>

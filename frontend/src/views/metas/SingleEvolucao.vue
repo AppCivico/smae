@@ -55,7 +55,6 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 })();
 
 function start(){
-    console.log(props)
     if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
     if(props.group=='valores')editModalStore.modal(AddEditValores,{...props,checkClose:()=>{
         alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 

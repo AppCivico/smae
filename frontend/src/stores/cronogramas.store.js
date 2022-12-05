@@ -97,7 +97,6 @@ export const useCronogramasStore = defineStore({
         async delete(cronograma_id) {
             let r = await requestS.delete(`${baseUrl}/cronograma/${cronograma_id}`);
             if(r) return true;
-            console.log(r);
             return false;
         },
         async getEtapasByCron(cronograma_id){

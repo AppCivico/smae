@@ -62,6 +62,7 @@
                 <router-link :to="`/metas/${meta_id}/painel`">Painel da meta</router-link>
                 <router-link :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/evolucao`">Evolução</router-link>
                 <router-link :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/cronograma`">Cronograma</router-link>
+                <router-link :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/orcamento`">Execução Orçamentária</router-link>
             </div>
         </div>
     </div>
