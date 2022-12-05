@@ -12,7 +12,7 @@ export class OrcamentoPlanejadoService {
 
     async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
-        const dotacao = await this.prisma.dotacao.findFirst({
+        const dotacao = await this.prisma.dotacaoPlanejado.findFirst({
             where: { dotacao: dto.dotacao, ano_referencia: dto.ano_referencia },
             select: { id: true }
         });
@@ -49,13 +49,13 @@ export class OrcamentoPlanejadoService {
                 select: { id: true, valor_planejado: true }
             });
 
-            const dotacaoAgora = await prismaTxn.dotacao.findFirstOrThrow({
+            const dotacaoAgora = await prismaTxn.dotacaoPlanejado.findFirstOrThrow({
                 where: { id: dotacao.id },
                 select: { smae_soma_valor_planejado: true, empenho_liquido: true }
             });
 
             const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado + orcamentoPlanejado.valor_planejado;
-            await prismaTxn.dotacao.update({
+            await prismaTxn.dotacaoPlanejado.update({
                 where: { id: dotacao.id },
                 data: {
                     pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,
@@ -73,7 +73,11 @@ export class OrcamentoPlanejadoService {
         return created;
     }
 
-    private async validaMetaIniAtv(dto: CreateOrcamentoPlanejadoDto) {
+    async validaMetaIniAtv(dto: {
+        meta_id?: number
+        iniciativa_id?: number
+        atividade_id?: number
+    }) {
         let meta_id: number | undefined;
         let iniciativa_id: number | undefined;
         let atividade_id: number | undefined;
@@ -138,7 +142,7 @@ export class OrcamentoPlanejadoService {
         for (const op of queryRows) {
             if (dotacoesEncontradas[op.dotacao] == undefined) dotacoesEncontradas[op.dotacao] = true;
         }
-        const dotacoesInfo = await this.prisma.dotacao.findMany({
+        const dotacoesInfo = await this.prisma.dotacaoPlanejado.findMany({
             where: {
                 dotacao: { in: Object.keys(dotacoesEncontradas) },
                 ano_referencia: filters.ano_referencia,
@@ -213,13 +217,13 @@ export class OrcamentoPlanejadoService {
             });
 
             if (linhasAfetadas.count == 1) {
-                const dotacaoAgora = await prismaTxn.dotacao.findFirstOrThrow({
+                const dotacaoAgora = await prismaTxn.dotacaoPlanejado.findFirstOrThrow({
                     where: { dotacao: orcamentoPlanejado.dotacao, ano_referencia: orcamentoPlanejado.ano_referencia },
                     select: { smae_soma_valor_planejado: true, empenho_liquido: true, id: true }
                 });
 
                 const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado - orcamentoPlanejado.valor_planejado;
-                await prismaTxn.dotacao.update({
+                await prismaTxn.dotacaoPlanejado.update({
                     where: { id: dotacaoAgora.id },
                     data: {
                         pressao_orcamentaria: smae_soma_valor_planejado > dotacaoAgora.empenho_liquido,

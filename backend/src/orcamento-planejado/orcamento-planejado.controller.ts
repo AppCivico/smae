@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -13,13 +13,15 @@ import { OrcamentoPlanejadoService } from './orcamento-planejado.service';
 export class OrcamentoPlanejadoController {
     constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) { }
 
-    @Patch()
+    @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.orcamento')
-    async upsert(@Body() createMetaDto: CreateOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(@Body() createMetaDto: CreateOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.orcamentoPlanejadoService.create(createMetaDto, user);
     }
+
+    // TODO: update
 
     @ApiBearerAuth('access-token')
     @Get()

@@ -46,6 +46,7 @@ import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { SofApiModule } from './sof-api/sof-api.module';
+import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
 
 
 @Module({
@@ -84,6 +85,7 @@ import { SofApiModule } from './sof-api/sof-api.module';
         PdmCicloModule,
         OrcamentoPlanejadoModule,
         DotacaoModule,
+        OrcamentoRealizadoModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
