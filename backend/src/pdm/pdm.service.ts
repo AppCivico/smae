@@ -579,7 +579,6 @@ export class PdmService {
                     });
                 }, { isolationLevel: 'Serializable' });
             }
-            delete (r as any).id;
         }
 
         if (deleteExtraYears)
@@ -598,6 +597,8 @@ export class PdmService {
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
+
+            console.debug(updatePdmOrcamentoConfigDto.orcamento_config);
             for (const orcamentoConfig of updatePdmOrcamentoConfigDto.orcamento_config) {
                 const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
                     where: {
