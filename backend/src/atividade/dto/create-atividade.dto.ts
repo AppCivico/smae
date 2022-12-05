@@ -35,7 +35,6 @@ export class CreateAtividadeDto {
     */
     @IsPositive({ message: '$property| tema precisa ser um número ou null' })
     @Type(() => Number)
-    @ValidateIf((object, value) => value !== null)
     iniciativa_id: number
 
     /**
