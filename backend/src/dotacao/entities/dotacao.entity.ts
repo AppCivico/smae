@@ -11,6 +11,7 @@ export class ValorRealizadoDotacaoDto {
     informacao_valida: boolean
     empenho_liquido: number
     valor_liquidado: number
+    mes_utilizado: number
 
     smae_soma_valor_empenho: number
     smae_soma_valor_liquidado: number
