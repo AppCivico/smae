@@ -1,3 +1,4 @@
+import { ApiHideProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { ArrayMaxSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
@@ -13,12 +14,6 @@ export class CreateEtapaDto {
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     responsaveis?: number[]
 
-    /**
-    * cronograma_id - obrigatório
-    */
-    @IsInt({ message: '$property| Cronograma precisa ser um número ou null' })
-    @Type(() => Number)
-    cronograma_id: number
 
     /**
     * etapa_pai_id

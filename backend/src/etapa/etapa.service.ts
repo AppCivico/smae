@@ -12,8 +12,7 @@ import { Etapa } from './entities/etapa.entity';
 export class EtapaService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
-        const cronogramaId = createEtapaDto.cronograma_id;
+    async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
         const ordem = createEtapaDto.ordem ? createEtapaDto.ordem : null;
         const responsaveis = createEtapaDto.responsaveis || [];
         delete createEtapaDto.ordem;
@@ -26,6 +25,7 @@ export class EtapaService {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     ...createEtapaDto,
+                    cronograma_id: cronogramaId,
                     responsaveis: undefined
                 },
                 select: { id: true }
