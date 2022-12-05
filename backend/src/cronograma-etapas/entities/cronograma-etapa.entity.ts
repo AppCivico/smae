@@ -30,18 +30,18 @@ export class CronogramaWithParents {
     atividade?: Atividade | null
 }
 
-export class CronogramaEtapa {
+export class CronogramaEtapaDto {
     id: number
     cronograma_id: number
-    etapa_id: number    
+    etapa_id: number
     ordem: number | null
     inativo: boolean
 
-    etapa: CronoEtapa | null
+    etapa: CEEtapaDto | null
     cronograma_origem_etapa?: CronogramaWithParents
 }
 
-export class CronoEtapa {
+export class CEEtapaDto {
     id: number
     etapa_pai_id: number | null
     regiao_id: number | null
@@ -55,7 +55,10 @@ export class CronoEtapa {
     titulo: string | null
 
     responsaveis: CronogramaEtapaResponsavel[] | null
-    etapa_filha?: CronoEtapa[] | null
+    etapa_filha?: CEEtapaDto[] | null
+    CronogramaEtapa: {
+        cronograma_id: number
+    }[]
 }
 
 export class CronogramaEtapaResponsavel {

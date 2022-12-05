@@ -7,7 +7,7 @@ import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-crono
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
-import { CronogramaEtapa } from './entities/cronograma-etapa.entity';
+import { CronogramaEtapaDto } from './entities/cronograma-etapa.entity';
 
 @Injectable()
 export class CronogramaEtapaService {
@@ -19,7 +19,6 @@ export class CronogramaEtapaService {
         let etapaId = filters?.etapa_id;
         let inativo = filters?.inativo;
 
-        let ret: CronogramaEtapa[] = [];
 
         if (filters && filters.cronograma_etapa_ids && etapaId) {
             if (filters.cronograma_etapa_ids.includes(etapaId)) {
@@ -63,7 +62,7 @@ export class CronogramaEtapaService {
                                         id: true,
                                         nome_exibicao: true
                                     }
-                                }                                
+                                }
                             }
                         },
 
@@ -189,6 +188,7 @@ export class CronogramaEtapaService {
             ]
         });
 
+        let ret: CronogramaEtapaDto[] = [];
         let lastOrdemVal = 0;
         for (const cronogramaEtapa of cronogramaEtapas) {
 
@@ -212,6 +212,8 @@ export class CronogramaEtapaService {
                 ordem: ordem,
 
                 etapa: {
+                    CronogramaEtapa: [{ cronograma_id: cronogramaEtapa.cronograma_id }],
+
                     id: cronogramaEtapa.etapa.id,
                     etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,
                     regiao_id: cronogramaEtapa.etapa.regiao_id,
@@ -232,8 +234,10 @@ export class CronogramaEtapaService {
                     }),
 
                     etapa_filha: cronogramaEtapa.etapa.etapa_filha.map(f => {
-                        
+
                         return {
+                            CronogramaEtapa: f.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
+
                             id: f.id,
                             etapa_pai_id: f.etapa_pai_id,
                             regiao_id: f.regiao_id,
@@ -246,6 +250,7 @@ export class CronogramaEtapaService {
                             prazo: f.prazo,
                             titulo: f.titulo,
 
+
                             responsaveis: f.responsaveis.map(r => {
                                 return {
                                     id: r.pessoa.id,
@@ -256,6 +261,8 @@ export class CronogramaEtapaService {
                             etapa_filha: f.etapa_filha.map(ff => {
 
                                 return {
+                                    CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
+
                                     id: ff.id,
                                     etapa_pai_id: ff.etapa_pai_id,
                                     regiao_id: ff.regiao_id,
