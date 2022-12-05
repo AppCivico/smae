@@ -14,6 +14,6 @@ export class DotacaoValorPlanejadoDto {
     * ano: ano para pesquisa
     * @example "2022"
     */
-    @IsInt()
+    @IsInt({ message: '$property| ano precisa ser positivo' })
     ano: number
 }
