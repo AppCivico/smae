@@ -134,7 +134,7 @@ export class SofApiService {
                     data: response.data.map((d) => {
                         return {
                             dotacao: d.dotacao,
-                            processo: d.processo,
+                            processo: String(d.processo),
                             empenho_liquido: Number(d.empenho_liquido),
                             val_liquidado: Number(d.val_liquidado),
                         }

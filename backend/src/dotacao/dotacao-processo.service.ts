@@ -95,10 +95,9 @@ export class DotacaoProcessoService {
 
 
         } catch (error) {
-            if (error instanceof HttpException)
-                throw error;
             if (error instanceof SofError)
                 throw new HttpException('No momento, o serviço SOF está indisponível, e não é possível criar um Processo manualmente nesta versão do SMAE. Tente novamente mais tarde', 400);
+            throw error;
         }
 
         const list = (await this.prisma.dotacaoProcesso.findMany({
