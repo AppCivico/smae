@@ -10,7 +10,7 @@ import { storeToRefs } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 import { useAlertStore, useEditModalStore, useAuthStore, usePdMStore } from '@/stores';
-import { default as EdicaoOrcamento } from '@/views/pdm/EdicaoOrcamento.vue';
+
 const editModalStore = useEditModalStore();
 
 const alertStore = useAlertStore();
@@ -70,7 +70,7 @@ const schema = Yup.object().shape({
 
     upload_logo: Yup.string().nullable(),
    
-    controle_orcamento: Yup.string().nullable(),
+    nivel_orcamento: Yup.string().nullable(),
 });
 
 async function onSubmit(values) {
@@ -132,17 +132,6 @@ async function uploadshape(e){
         curfile.loading = null;
         singlePdm.value.upload_logo = curfile.name;
     }
-}
-
-function abreEdicaoOrcamento() {
-    editModalStore.modal(EdicaoOrcamento,{
-        checkClose: ()=>{
-            alertStore.confirmAction('Deseja sair sem salvar as alterações?',()=>{
-                editModalStore.clear(); 
-                alertStore.clear(); 
-            })
-        }
-    },'small');
 }
 
 </script>
@@ -339,15 +328,12 @@ function abreEdicaoOrcamento() {
                 <div class="flex center g2">
                     <div class="f1">
                         <label class="label">Nível de controle orçamentário</label>
-                        <Field name="controle_orcamento" as="select" class="inputtext light mb1" :class="{ 'error': errors.controle_orcamento }">
-                            <option value="meta">Meta</option>
-                            <option value="iniciativa">Iniciativa</option>
-                            <option value="atividade">Atividade</option>
+                        <Field name="nivel_orcamento" as="select" class="inputtext light mb1" :class="{ 'error': errors.nivel_orcamento }">
+                            <option value="Meta">Meta</option>
+                            <option value="Iniciativa">Iniciativa</option>
+                            <option value="Atividade">Atividade</option>
                         </Field>
-                        <div class="error-msg">{{ errors.controle_orcamento }}</div>
-                    </div>
-                    <div class="f0">
-                        <a @click="abreEdicaoOrcamento" class="btn outline bgnone tcprimary">Permissões para edição do orçamento</a>
+                        <div class="error-msg">{{ errors.nivel_orcamento }}</div>
                     </div>
                 </div>
                 
