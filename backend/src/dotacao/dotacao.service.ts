@@ -16,10 +16,12 @@ export class DotacaoService {
 
     async valorPlanejado(dto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {
 
-        const dotacaoExistente = await this.prisma.dotacaoPlanejado.findFirst({
+        const dotacaoExistente = await this.prisma.dotacaoPlanejado.findUnique({
             where: {
-                ano_referencia: dto.ano,
-                dotacao: dto.dotacao,
+                ano_referencia_dotacao: {
+                    ano_referencia: dto.ano,
+                    dotacao: dto.dotacao,
+                }
             }
         });
 
@@ -55,14 +57,16 @@ export class DotacaoService {
 
     async valorRealizadoDotacao(dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto[]> {
 
-        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findFirst({
+        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findUnique({
             where: {
-                ano_referencia: dto.ano,
-                dotacao: dto.dotacao,
+                ano_referencia_dotacao: {
+                    ano_referencia: dto.ano,
+                    dotacao: dto.dotacao,
+                }
             }
         });
 
-        const mesMaisAtual = this.realizadoMesMaisAtual(dto.ano);
+        const mesMaisAtual = this.sof.realizadoMesMaisAtual(dto.ano);
 
         if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual) {
             return [
@@ -72,10 +76,12 @@ export class DotacaoService {
 
         await this.sincronizarDotacaoRealizado(dto, mesMaisAtual);
 
-        const dotacaoRealizado = await this.prisma.dotacaoRealizado.findFirstOrThrow({
+        const dotacaoRealizado = await this.prisma.dotacaoRealizado.findUniqueOrThrow({
             where: {
-                ano_referencia: dto.ano,
-                dotacao: dto.dotacao,
+                ano_referencia_dotacao: {
+                    ano_referencia: dto.ano,
+                    dotacao: dto.dotacao,
+                }
             }
         });
 
@@ -98,19 +104,6 @@ export class DotacaoService {
         };
     }
 
-    realizadoMesMaisAtual(ano: number): number {
-        const nowSp = DateTime.local({ zone: "America/Sao_Paulo" });
-
-        const anoCorrente = nowSp.year;
-        if (anoCorrente == +ano)
-            return nowSp.month;
-
-        if (+ano > anoCorrente)
-            throw new HttpException('Não é possível buscar por realizado no futuro', 400);
-
-        return 12; // mes mais recente do ano pesquisado
-    }
-
 
     private async sincronizarDotacaoRealizado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
@@ -123,10 +116,12 @@ export class DotacaoService {
 
             for (const dotacao of r.data) {
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacaoRealizado.findFirst({
+                    const jaExiste = await prisma.dotacaoRealizado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            }
                         }
                     });
 
@@ -178,33 +173,31 @@ export class DotacaoService {
 
 
         } catch (error) {
-            if (error instanceof HttpException)
-                throw error;
             if (error instanceof SofError) {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
-                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
+                    const jaExiste = await prisma.dotacaoRealizado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            }
                         }
                     });
 
                     // se ainda não existe (pode ter iniciado já por causa do lock)
                     if (!jaExiste) {
 
-                        await prisma.dotacaoPlanejado.create({
+                        await prisma.dotacaoRealizado.create({
                             data: {
                                 informacao_valida: false,
                                 sincronizado_em: null,
                                 empenho_liquido: 0,
                                 valor_liquidado: 0,
-                                mes_utilizado: 1,
+                                mes_utilizado: mes,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,
-                                pressao_orcamentaria: false,
-                                smae_soma_valor_planejado: 0,
                             },
                             select: { id: true },
                         });
@@ -213,6 +206,7 @@ export class DotacaoService {
                     isolationLevel: 'Serializable'
                 });
             }
+            throw error;
         }
     }
 
@@ -228,10 +222,12 @@ export class DotacaoService {
 
             for (const dotacao of r.data) {
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
+                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            },
                         }
                     });
 
@@ -280,16 +276,16 @@ export class DotacaoService {
 
 
         } catch (error) {
-            if (error instanceof HttpException)
-                throw error;
             if (error instanceof SofError) {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
-                    const jaExiste = await prisma.dotacaoPlanejado.findFirst({
+                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
                         where: {
-                            ano_referencia: dto.ano,
-                            dotacao: dto.dotacao,
+                            ano_referencia_dotacao: {
+                                ano_referencia: dto.ano,
+                                dotacao: dto.dotacao,
+                            }
                         }
                     });
 
@@ -314,7 +310,10 @@ export class DotacaoService {
                 }, {
                     isolationLevel: 'Serializable'
                 });
+                return;
             }
+
+            throw error;
         }
     }
 
