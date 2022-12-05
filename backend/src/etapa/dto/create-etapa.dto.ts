@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, IsArray, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { ArrayMaxSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateEtapaDto {
@@ -16,14 +16,14 @@ export class CreateEtapaDto {
     /**
     * cronograma_id - obrigatório
     */
-    @IsPositive({ message: '$property| Cronograma precisa ser um número ou null' })
+    @IsInt({ message: '$property| Cronograma precisa ser um número ou null' })
     @Type(() => Number)
     cronograma_id: number
 
     /**
     * etapa_pai_id
     */
-    @IsPositive({ message: '$property| Etapa pai precisa ser um número ou null' })
+    @IsInt({ message: '$property| Etapa pai precisa ser um número ou null' })
     @Type(() => Number)
     @IsOptional()
     etapa_pai_id?: number
@@ -31,7 +31,7 @@ export class CreateEtapaDto {
     /**
     * regiao_id
     */
-    @IsPositive({ message: '$property| região precisa ser um número ou null' })
+    @IsInt({ message: '$property| região precisa ser um número ou null' })
     @Type(() => Number)
     @IsOptional()
     regiao_id?: number
@@ -53,7 +53,7 @@ export class CreateEtapaDto {
     status?: string
 
     @IsNumber()
-    @IsPositive({ message: '$property| ordem precisa ser um número ou null' })
+    @IsInt({ message: '$property| ordem precisa ser um número ou null' })
     @IsOptional()
     ordem?: number
 
@@ -103,7 +103,7 @@ export class CreateEtapaDto {
     termino_real?: Date
 
     @IsOptional()
-    @IsPositive({ message: '$property| Peso precisa ser um número ou null' })
+    @IsInt({ message: '$property| Peso precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     peso?: number

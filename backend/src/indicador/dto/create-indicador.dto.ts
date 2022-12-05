@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Polaridade } from "@prisma/client";
 import { Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsOptional, IsPositive, IsString, MaxLength, ValidateIf } from "class-validator";
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 
@@ -50,7 +50,7 @@ export class CreateIndicadorDto {
     * nivel_regionalizacao
     */
     @IsOptional()
-    @IsPositive({ message: '$property| nivel_regionalizacao precisa ser um número ou null' })
+    @IsInt({ message: '$property| nivel_regionalizacao precisa ser um número ou null' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
     nivel_regionalizacao?: number | null
@@ -77,7 +77,7 @@ export class CreateIndicadorDto {
     /**
     * meta_id
     */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     @IsOptional()
     meta_id?: number
@@ -85,7 +85,7 @@ export class CreateIndicadorDto {
     /**
     * iniciativa_id
     */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     @IsOptional()
     iniciativa_id?: number
@@ -93,7 +93,7 @@ export class CreateIndicadorDto {
     /**
     * atividade_id
     */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     @IsOptional()
     atividade_id?: number

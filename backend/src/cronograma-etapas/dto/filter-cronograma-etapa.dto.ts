@@ -1,13 +1,13 @@
 import { ApiHideProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsOptional, IsPositive } from "class-validator";
+import { IsBoolean, IsInt, IsOptional } from "class-validator";
 
 export class FilterCronogramaEtapaDto {
     /**
    * Filtrar por cronograma_id?
    * @example "1"
     */
-    @IsPositive({ message: '$property| cronograma_id' })
+    @IsInt({ message: '$property| cronograma_id' })
     @Type(() => Number)
     cronograma_id: number;
 
@@ -16,7 +16,7 @@ export class FilterCronogramaEtapaDto {
     * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| etapa_id' })
+    @IsInt({ message: '$property| etapa_id' })
     @Type(() => Number)
     etapa_id?: number;
 

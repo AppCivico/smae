@@ -1,4 +1,4 @@
-import { IsBoolean, IsPositive, IsString, Matches, MaxLength } from "class-validator";
+import { IsInt, IsString, Matches, MaxLength } from "class-validator";
 
 export class DotacaoValorPlanejadoDto {
     /**
@@ -14,6 +14,6 @@ export class DotacaoValorPlanejadoDto {
     * ano: ano para pesquisa
     * @example "2022"
     */
-    @IsPositive()
+    @IsInt()
     ano: number
 }

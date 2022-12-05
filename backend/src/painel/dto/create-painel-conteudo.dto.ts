@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Periodo } from "@prisma/client";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, ValidateIf } from "class-validator";
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateParamsPainelConteudoDto {
@@ -12,22 +12,22 @@ export class CreateParamsPainelConteudoDto {
 }
 
 export class CreatePainelConteudoDto {
-    @IsPositive({ message: '$property| painel precisa ser um número' })
+    @IsInt({ message: '$property| painel precisa ser um número' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     painel_id: number
 
-    @IsPositive({ message: '$property| meta precisa ser um número' })
+    @IsInt({ message: '$property| meta precisa ser um número' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     meta_id: number
 
-    @IsPositive({ message: '$property| indicador precisa ser um número ou null' })
+    @IsInt({ message: '$property| indicador precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     indicador_id?: number
 
-    @IsPositive({ message: '$property| tema precisa ser um número ou null' })
+    @IsInt({ message: '$property| tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     ordem?: number

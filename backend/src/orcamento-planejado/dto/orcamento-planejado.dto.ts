@@ -1,7 +1,6 @@
 
-import { ApiParam } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from "class-validator";
+import { IsInt, IsNumber, IsOptional, IsString, Matches, MaxLength } from "class-validator";
 import { OrcamentoPlanejado } from "../entities/orcamento-planejado.entity";
 
 export class CreateOrcamentoPlanejadoDto {
@@ -11,7 +10,7 @@ export class CreateOrcamentoPlanejadoDto {
     * @example "42"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -20,7 +19,7 @@ export class CreateOrcamentoPlanejadoDto {
     * @example "42"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| iniciativa_id precisa ser positivo' })
+    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
     @Type(() => Number)
     iniciativa_id?: number;
 
@@ -29,7 +28,7 @@ export class CreateOrcamentoPlanejadoDto {
     * @example "42"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| atividade_id precisa ser positivo' })
+    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
     @Type(() => Number)
     atividade_id?: number;
 
@@ -38,7 +37,7 @@ export class CreateOrcamentoPlanejadoDto {
     * @example "2022"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 
@@ -47,7 +46,7 @@ export class CreateOrcamentoPlanejadoDto {
     * @example "42343.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Planejado com até duas casas decimais' })
-    @IsPositive({ message: '$property| Investimento precisa ser positivo' })
+    @IsInt({ message: '$property| Investimento precisa ser positivo' })
     @Type(() => Number)
     valor_planejado: number;
 
@@ -67,7 +66,7 @@ export class FilterOrcamentoPlanejadoDto {
    * @example ""
     */
     @IsOptional()
-    @IsPositive({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -83,7 +82,7 @@ export class FilterOrcamentoPlanejadoDto {
    * Sempre é necessário passar o ano_referencia eg: 2022
    * @example ""
     */
-    @IsPositive({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 
