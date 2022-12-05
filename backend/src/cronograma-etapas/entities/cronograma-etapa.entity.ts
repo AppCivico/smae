@@ -37,6 +37,28 @@ export class CronogramaEtapa {
     ordem: number | null
     inativo: boolean
 
-    etapa: any
+    etapa: CronoEtapa | null
     cronograma_origem_etapa?: CronogramaWithParents
+}
+
+export class CronoEtapa {
+    id: number
+    etapa_pai_id: number | null
+    regiao_id: number | null
+    nivel: string | null
+    descricao: string | null
+    inicio_previsto: Date | null
+    termino_previsto: Date | null
+    inicio_real: Date | null
+    termino_real: Date | null
+    prazo: number | null
+    titulo: string | null
+
+    responsaveis: CronogramaEtapaResponsavel[] | null
+    etapa_filha?: CronoEtapa[] | null
+}
+
+export class CronogramaEtapaResponsavel {
+    id: number
+    nome_exibicao: string
 }
