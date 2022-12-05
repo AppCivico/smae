@@ -19,10 +19,10 @@ export class DotacaoProcessoNotaService {
 
         // sempre sincroniza, pois pode haver mais de uma dotação no processo e não sabemos
         // quando elas aparecem
-        return await this.sincronizarNotaEmpenhoRealizado(dto, mesMaisAtual);
+        const list = await this.sincronizarNotaEmpenhoRealizado(dto, mesMaisAtual);
+        if (list.length > 1) throw new HttpException('Era esperado apenas um retorno de Dotação na busca por Nota de Empenho. Necessária atualização do SMAE', 400);
+        return list;
     }
-
-
 
     private async sincronizarNotaEmpenhoRealizado(dto: AnoDotacaoNotaEmpenhoDto, mes: number): Promise<ValorRealizadoNotaEmpenhoDto[]> {
         const now = new Date(Date.now());
