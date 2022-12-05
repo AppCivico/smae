@@ -128,6 +128,7 @@ export class SofApiService {
             const response: ApiResponse = await this.got.post<ApiResponse>(endpoint, {
                 json: input
             }).json();
+            this.logger.debug(`resposta: ${JSON.stringify(response)}`);
             if ("metadados" in response && response.metadados.sucess) {
                 return {
                     data: response.data.map((d) => {

@@ -2,47 +2,50 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from "@prisma/client";
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
-import { AnoDotacaoProcessoDto } from './dto/dotacao.dto';
-import { ValorRealizadoProcessoDto } from "./entities/dotacao.entity";
+import { AnoDotacaoNotaEmpenhoDto } from './dto/dotacao.dto';
+import { ValorRealizadoNotaEmpenhoDto } from "./entities/dotacao.entity";
 
 @Injectable()
-export class DotacaoProcessoService {
+export class DotacaoProcessoNotaService {
 
     constructor(
         private readonly prisma: PrismaService,
         private readonly sof: SofApiService,
     ) { }
 
-    async valorRealizadoProcesso(dto: AnoDotacaoProcessoDto): Promise<ValorRealizadoProcessoDto[]> {
+    async valorRealizadoNotaEmpenho(dto: AnoDotacaoNotaEmpenhoDto): Promise<ValorRealizadoNotaEmpenhoDto[]> {
 
         const mesMaisAtual = this.sof.realizadoMesMaisAtual(dto.ano);
 
         // sempre sincroniza, pois pode haver mais de uma dotação no processo e não sabemos
         // quando elas aparecem
-        return await this.sincronizarProcessoRealizado(dto, mesMaisAtual);
+        return await this.sincronizarNotaEmpenhoRealizado(dto, mesMaisAtual);
     }
 
 
 
-    private async sincronizarProcessoRealizado(dto: AnoDotacaoProcessoDto, mes: number): Promise<ValorRealizadoProcessoDto[]> {
+    private async sincronizarNotaEmpenhoRealizado(dto: AnoDotacaoNotaEmpenhoDto, mes: number): Promise<ValorRealizadoNotaEmpenhoDto[]> {
         const now = new Date(Date.now());
-        dto.processo = dto.processo.replace(/[^0-9]/g, '');
+        dto.nota_empenho = dto.nota_empenho.replace(/[^0-9]/g, '');
 
         try {
-            const r = await this.sof.empenhoProcesso({
-                processo: dto.processo,
+            const r = await this.sof.empenhoNotaEmpenho({
+                nota_empenho: dto.nota_empenho,
                 ano: dto.ano,
                 mes: mes
             });
 
             for (const dotacaoProcesso of r.data) {
+                console.log({dotacaoProcesso});
+
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacaoProcesso.findUnique({
+                    const jaExiste = await prisma.dotacaoProcessoNota.findUnique({
                         where: {
-                            ano_referencia_dotacao_dotacao_processo: {
+                            ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
                                 dotacao: dotacaoProcesso.dotacao,
+                                dotacao_processo: dotacaoProcesso.processo,
+                                dotacao_processo_nota: dto.nota_empenho,
                                 ano_referencia: dto.ano,
-                                dotacao_processo: dto.processo,
                             }
                         }
                     });
@@ -54,7 +57,7 @@ export class DotacaoProcessoService {
                         || (jaExiste.empenho_liquido.toFixed(2) != dotacaoProcesso.empenho_liquido.toFixed(2))
                         || (jaExiste.mes_utilizado != mes)
                     )) {
-                        await prisma.dotacaoProcesso.update({
+                        await prisma.dotacaoProcessoNota.update({
                             where: {
                                 id: jaExiste.id
                             },
@@ -69,7 +72,7 @@ export class DotacaoProcessoService {
                     }
 
                     if (!jaExiste) {
-                        await prisma.dotacaoProcesso.create({
+                        await prisma.dotacaoProcessoNota.create({
                             data: {
                                 informacao_valida: true,
                                 sincronizado_em: now,
@@ -78,7 +81,8 @@ export class DotacaoProcessoService {
                                 mes_utilizado: mes,
                                 ano_referencia: dto.ano,
                                 dotacao: dotacaoProcesso.dotacao,
-                                dotacao_processo: dto.processo,
+                                dotacao_processo: dotacaoProcesso.processo,
+                                dotacao_processo_nota: dto.nota_empenho,
                                 smae_soma_valor_empenho: 0,
                                 smae_soma_valor_liquidado: 0,
                             },
@@ -101,10 +105,10 @@ export class DotacaoProcessoService {
                 throw new HttpException('No momento, o serviço SOF está indisponível, e não é possível criar um Processo manualmente nesta versão do SMAE. Tente novamente mais tarde', 400);
         }
 
-        const list = (await this.prisma.dotacaoProcesso.findMany({
+        const list = (await this.prisma.dotacaoProcessoNota.findMany({
             where: {
                 ano_referencia: dto.ano,
-                dotacao_processo: dto.processo,
+                dotacao_processo_nota: dto.nota_empenho,
             },
             select: {
                 id: true,
@@ -115,13 +119,16 @@ export class DotacaoProcessoService {
                 mes_utilizado: true,
                 smae_soma_valor_empenho: true,
                 smae_soma_valor_liquidado: true,
-                dotacao_processo: true
+                dotacao_processo: true,
+                dotacao_processo_nota: true,
             }
         })).map((r) => {
             return {
                 ...r,
                 dotacao_processo: undefined,
+                dotacao_processo_nota: undefined,
                 processo: r.dotacao_processo,
+                nota_empenho: r.dotacao_processo_nota,
             }
         });
 
