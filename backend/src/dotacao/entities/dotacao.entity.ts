@@ -29,7 +29,7 @@ export class ListValorRealizadoProcessoDto {
     linhas: ValorRealizadoProcessoDto[]
 }
 
-export class ValorRealizadoNotaEmpenhoDto extends ListValorRealizadoProcessoDto {
+export class ValorRealizadoNotaEmpenhoDto extends ValorRealizadoProcessoDto {
     nota_empenho: string
 }
 

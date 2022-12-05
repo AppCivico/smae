@@ -1,5 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import got, { Got } from 'got';
+import { DateTime } from 'luxon';
 
 export class SofError extends Error {
     constructor(msg: string) {
@@ -61,6 +62,19 @@ export class SofApiService {
         this.SOF_API_PREFIX = process.env.SOF_API_PREFIX || 'http://smae_api_orcamento:80/'
     }
 
+    realizadoMesMaisAtual(ano: number): number {
+        const nowSp = DateTime.local({ zone: "America/Sao_Paulo" });
+
+        const anoCorrente = nowSp.year;
+        if (anoCorrente == +ano)
+            return nowSp.month;
+
+        if (+ano > anoCorrente)
+            throw new HttpException('Não é possível buscar por realizado no futuro', 400);
+
+        return 12; // mes mais recente do ano pesquisado
+    }
+
 
     onModuleInit() {
         this.got = got.extend({
@@ -114,12 +128,13 @@ export class SofApiService {
             const response: ApiResponse = await this.got.post<ApiResponse>(endpoint, {
                 json: input
             }).json();
+            this.logger.debug(`resposta: ${JSON.stringify(response)}`);
             if ("metadados" in response && response.metadados.sucess) {
                 return {
                     data: response.data.map((d) => {
                         return {
                             dotacao: d.dotacao,
-                            processo: d.processo,
+                            processo: String(d.processo),
                             empenho_liquido: Number(d.empenho_liquido),
                             val_liquidado: Number(d.val_liquidado),
                         }
