@@ -564,20 +564,25 @@ export class PdmService {
         for (const r of rows) {
             anoVistos.push(r.ano_referencia);
             if (r.id === null) {
-                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                const created_orcamento_config = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
                     await this.prisma.pdmOrcamentoConfig.deleteMany({
                         where: {
                             ano_referencia: r.ano_referencia,
                             pdm_id: pdm_id
                         }
                     });
-                    await this.prisma.pdmOrcamentoConfig.create({
+                    
+                    return await this.prisma.pdmOrcamentoConfig.create({
                         data: {
                             ano_referencia: r.ano_referencia,
                             pdm_id: pdm_id
-                        }
+                        },
+                        select: { id: true }
                     });
                 }, { isolationLevel: 'Serializable' });
+
+                const row_without_id_idx = rows.findIndex(rwi => rwi.ano_referencia === r.ano_referencia);
+                rows[row_without_id_idx].id = created_orcamento_config.id
             }
         }
 
