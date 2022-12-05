@@ -383,6 +383,7 @@
 			const gCircles = gName.selectAll("circle").data(data);
 			gCircles
 				.enter()
+					.filter(function (d) { return d.value !== ""; })
 					.append('circle')
 					.attr('class', name+'-circle' )
 					.attr('r', r )
@@ -401,7 +402,8 @@
 
 			//Creating Path between Data Points
 			let line = d3.line()
-				.x( d => xScale( new Date(d.date) ) ).y( d => yScale( d.value ) );
+				.x( d => xScale( new Date(d.date) ) ).y( d => yScale( d.value ) )
+				.defined(function (d) { return d.value !== ""; });
 
 			let flatline = d3.line()
 				.x( d => xScale( new Date(d.date) ) ).y( sizes.height - sizes.margin.bottom );
