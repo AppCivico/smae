@@ -88,11 +88,13 @@ const responsaveis = ref({participantes:[], busca:''});
             getRegionByParent(singleEtapa.value.etapa.regiao_id,p1?.regiao_id);
             noregion = false;
         }
+    }else{
+        pc = p0;
     }
     if(currentFase.value?.responsaveis){
         responsaveis.value.participantes = currentFase.value.responsaveis.map(x=>x.id?x.id:x.pessoa?x.pessoa.id:null);
     }
-    if(pc.responsaveis){
+    if(pc?.responsaveis){
         usersAvailable.value = pc.responsaveis.map(x=>x.id?x:x.pessoa?x.pessoa:null);
     }
 

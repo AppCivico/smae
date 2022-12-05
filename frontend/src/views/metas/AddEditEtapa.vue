@@ -76,28 +76,29 @@ if(etapa_id){
             responsaveis.value.participantes = singleEtapa.value.etapa.responsaveis.map(x=>x.id);
         }
     });
-    (async()=>{
-        if(atividade_id){
-            if(atividade_id) await AtividadesStore.getById(iniciativa_id,atividade_id);
-            lastParent.value = singleAtividade.value;
-        }else if(iniciativa_id){
-            if(iniciativa_id) await IniciativasStore.getById(meta_id,iniciativa_id);
-            lastParent.value = singleIniciativa.value;
-        }else{
-            if(!singleMeta.value?.id || singleMeta.value.id!=meta_id) await MetasStore.getById(meta_id);
-            lastParent.value = singleMeta.value;
-        }
+}
+(async()=>{
+    if(atividade_id){
+        if(atividade_id) await AtividadesStore.getById(iniciativa_id,atividade_id);
+        lastParent.value = singleAtividade.value;
+    }else if(iniciativa_id){
+        if(iniciativa_id) await IniciativasStore.getById(meta_id,iniciativa_id);
+        lastParent.value = singleIniciativa.value;
+    }else{
+        if(!singleMeta.value?.id || singleMeta.value.id!=meta_id) await MetasStore.getById(meta_id);
+        lastParent.value = singleMeta.value;
+    }
+    if(lastParent.value.orgaos_participantes){
+        lastParent.value.orgaos_participantes.forEach(x=>{
+            usersAvailable.value = usersAvailable.value.concat(x.participantes);
+        })
+    }
 
-        if(lastParent.value.orgaos_participantes){
-            lastParent.value.orgaos_participantes.forEach(x=>{
-                usersAvailable.value = usersAvailable.value.concat(x.participantes);
-            })
-        }
-
-        var p_cron, mon;
+    if(etapa_id){
         if(atividade_id) acumulativa_iniciativa.value = {loading:true};
         if(iniciativa_id) acumulativa_meta.value = {loading:true};
 
+        var p_cron, mon;
         if(atividade_id){
             p_cron = await CronogramasStore.getItemByParent(iniciativa_id,'iniciativa_id');
             mon = await EtapasStore.getMonitoramento(p_cron.id,etapa_id);
@@ -114,8 +115,8 @@ if(etapa_id){
                 acumulativa_meta_o.value = mon.ordem;
             }
         }
-    })();
-}
+    }
+})();
 
 
 var regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;

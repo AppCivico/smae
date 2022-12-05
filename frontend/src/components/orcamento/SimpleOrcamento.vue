@@ -35,9 +35,9 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>{{item.custeio_previsto}}</td>
+                        <td clas="w700">{{item.investimento_previsto+item.custeio_previsto}}</td>
                         <td>{{item.investimento_previsto}}</td>
-                        <td></td>
+                        <td>{{item.custeio_previsto}}</td>
                         <td>{{item.parte_dotacao}}</td>
                         <td>{{dateToField(item.criado_em)}}</td>
                         <td></td>
