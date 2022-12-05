@@ -7,7 +7,7 @@ import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-crono
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
-import { CronogramaEtapaDto } from './entities/cronograma-etapa.entity';
+import { CECronogramaEtapaDto } from './entities/cronograma-etapa.entity';
 
 @Injectable()
 export class CronogramaEtapaService {
@@ -188,7 +188,7 @@ export class CronogramaEtapaService {
             ]
         });
 
-        let ret: CronogramaEtapaDto[] = [];
+        let ret: CECronogramaEtapaDto[] = [];
         let lastOrdemVal = 0;
         for (const cronogramaEtapa of cronogramaEtapas) {
 
