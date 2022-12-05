@@ -579,7 +579,6 @@ export class PdmService {
                     });
                 }, { isolationLevel: 'Serializable' });
             }
-            delete (r as any).id;
         }
 
         if (deleteExtraYears)
