@@ -1,7 +1,3 @@
-import { ApiHideProperty } from "@nestjs/swagger";
-import { PessoaFisica } from "@prisma/client";
-import { Orgao } from "src/orgao/entities/orgao.entity";
-
 export class ListPessoa {
 
     id: number;
@@ -21,7 +17,4 @@ export class ListPessoa {
     cargo?: string | null
     registro_funcionario?: string | null
     cpf?: string | null
-
-    @ApiHideProperty()
-    PessoaFisica?: PessoaFisica
 }

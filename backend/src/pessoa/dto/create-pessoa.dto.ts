@@ -1,18 +1,12 @@
-import { Pessoa } from '../entities/pessoa.entity';
-
+import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
     IsArray,
-    IsEmail,
-    IsNumber,
-    IsOptional,
-    IsPositive,
-    IsString,
+    IsEmail, IsInt, IsOptional, IsString,
     MaxLength,
-    MinLength,
+    MinLength
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class CreatePessoaDto {
     /**
@@ -65,7 +59,7 @@ export class CreatePessoaDto {
        * @example 1
     */
     @IsOptional()
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     orgao_id?: number;
 

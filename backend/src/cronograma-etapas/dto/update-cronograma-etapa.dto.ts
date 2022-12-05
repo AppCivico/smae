@@ -1,6 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { IsBoolean, IsInt, IsNumber, IsOptional, ValidateIf } from "class-validator";
 
 export class UpdateCronogramaEtapaDto {
     /**
@@ -13,7 +12,7 @@ export class UpdateCronogramaEtapaDto {
     /**
     * ordem
     */
-    @IsPositive({ message: '$property| ordem precisa ser um número ou null' })
+    @IsInt({ message: '$property| ordem precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()

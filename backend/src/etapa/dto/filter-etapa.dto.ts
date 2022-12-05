@@ -1,5 +1,6 @@
+import { OmitType, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsOptional, IsPositive } from "class-validator";
+import { IsInt, IsOptional } from "class-validator";
 
 export class FilterEtapaDto {
     /**
@@ -7,7 +8,7 @@ export class FilterEtapaDto {
    * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| etapa_pai_id' })
+    @IsInt({ message: '$property| etapa_pai_id' })
     @Type(() => Number)
     etapa_pai_id?: number;
 
@@ -16,7 +17,7 @@ export class FilterEtapaDto {
     * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| regiao_id' })
+    @IsInt({ message: '$property| regiao_id' })
     @Type(() => Number)
     regiao_id?: number;
 
@@ -25,7 +26,7 @@ export class FilterEtapaDto {
     * @example "1"
     */
     @IsOptional()
-    @IsPositive({ message: '$property| cronograma_id' })
+    @IsInt({ message: '$property| cronograma_id' })
     @Type(() => Number)
     cronograma_id?: number;
 
@@ -34,8 +35,14 @@ export class FilterEtapaDto {
   * @example "1"
    */
     @IsOptional()
-    @IsPositive({ message: '$property| cronograma_pai_id' })
+    @IsInt({ message: '$property| cronograma_pai_id' })
     @Type(() => Number)
     cronograma_pai_id?: number;
+
+}
+
+export class FilterEtapaSemCronoIdDto extends PartialType(OmitType(FilterEtapaDto, [
+    'cronograma_id',
+])) {
 
 }

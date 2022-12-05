@@ -12,8 +12,7 @@ import { Etapa } from './entities/etapa.entity';
 export class EtapaService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
-        const cronogramaId = createEtapaDto.cronograma_id;
+    async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
         const ordem = createEtapaDto.ordem ? createEtapaDto.ordem : null;
         const responsaveis = createEtapaDto.responsaveis || [];
         delete createEtapaDto.ordem;
@@ -26,6 +25,7 @@ export class EtapaService {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     ...createEtapaDto,
+                    cronograma_id: cronogramaId,
                     responsaveis: undefined
                 },
                 select: { id: true }
@@ -133,10 +133,27 @@ export class EtapaService {
                 select: { id: true }
             });
 
-            if (Array.isArray(responsaveis))
-                await prisma.etapaResponsavel.createMany({
-                    data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
-                });
+            if (Array.isArray(responsaveis)) {
+
+                const operations = [];
+                for (const responsavel of responsaveis) {
+                    operations.push(prisma.etapaResponsavel.upsert({
+                        where: {
+                            etapa_pessoa_uniq: {
+                                pessoa_id: responsavel,
+                                etapa_id: etapa.id
+                            }
+                        },
+                        create: {
+                            pessoa_id: responsavel,
+                            etapa_id: etapa.id
+                        },
+                        update: {}
+                    }));
+                }
+
+                await Promise.all(operations);
+            }
 
             // apaga tudo por enquanto, não só as que tem algum crono dessa meta
             await prisma.statusMetaCicloFisico.deleteMany();

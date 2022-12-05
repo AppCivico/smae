@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsPositive } from "class-validator";
+import { IsInt, IsOptional } from "class-validator";
 
 export class FilterIndicadorDto {
     /**

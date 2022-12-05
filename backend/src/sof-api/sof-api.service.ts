@@ -1,5 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import got, { Got } from 'got';
+
+export class SofError extends Error {
+    constructor(msg: string) {
+        console.log(`SOF ERROR: ${msg}`)
+        super(msg);
+        Object.setPrototypeOf(this, SofError.prototype);
+    }
+}
 
 type RetornoEmpenho = {
     empenho_liquido: number
@@ -21,13 +29,8 @@ type SuccessEmpenhosResponse = {
 type ErrorHttpResponse = {
     detail: string
 };
-type ValidationError = {
-    loc: string
-    msg: string
-    type: string
-};
 
-export type ApiResponse = SuccessEmpenhosResponse | ErrorHttpResponse | ValidationError;
+type ApiResponse = SuccessEmpenhosResponse | ErrorHttpResponse;
 
 export type InputDotacao = {
     ano: number
@@ -89,23 +92,57 @@ export class SofApiService {
         this.logger.debug(`API SOF configurada para usar endereço ${this.SOF_API_PREFIX}`);
     }
 
-
-    async empenhoDotacao(input: InputDotacao): Promise<ApiResponse> {
-        const endpoint = '/v1/empnhos/dotacao';
-        this.logger.debug(`empenhoDotacao - chamando ${endpoint} com ${JSON.stringify(input)}`);
-        try {
-            const res: ApiResponse = await this.got.post(endpoint, {
-                json: input
-            }).json();
-
-            return res;
-
-        } catch (error) {
-            console.log(error);
-            return { detail: `Falha ao acessar serviço: ${error}` } as ErrorHttpResponse;
-        }
+    async empenhoDotacao(input: InputDotacao): Promise<SuccessEmpenhosResponse> {
+        const endpoint = 'v1/empenhos/dotacao';
+        return await this.doRequest(endpoint, input);
     }
 
+    async empenhoNotaEmpenho(input: InputNotaEmpenho): Promise<SuccessEmpenhosResponse> {
+        const endpoint = 'v1/empenhos/nota_empenho';
+        return await this.doRequest(endpoint, input);
+    }
+
+    async empenhoProcesso(input: InputProcesso): Promise<SuccessEmpenhosResponse> {
+        const endpoint = 'v1/empenhos/processo';
+        return await this.doRequest(endpoint, input);
+    }
+
+    private async doRequest(endpoint: string, input: InputDotacao | InputProcesso | InputNotaEmpenho): Promise<SuccessEmpenhosResponse> {
+
+        this.logger.debug(`chamando ${endpoint} com ${JSON.stringify(input)}`);
+        try {
+            const response: ApiResponse = await this.got.post<ApiResponse>(endpoint, {
+                json: input
+            }).json();
+            if ("metadados" in response && response.metadados.sucess) {
+                return {
+                    data: response.data.map((d) => {
+                        return {
+                            dotacao: d.dotacao,
+                            processo: d.processo,
+                            empenho_liquido: Number(d.empenho_liquido),
+                            val_liquidado: Number(d.val_liquidado),
+                        }
+                    }),
+                    metadados: response.metadados
+                };
+            }
+
+            throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
+        } catch (error: any) {
+            this.logger.debug(`${endpoint} falhou: ${error}`);
+            if (error instanceof got.HTTPError) {
+                this.logger.debug(`${endpoint}.res.body: ${error.response.body}`);
+                if (error.response.statusCode == 404) {
+                    throw new HttpException('Dotação/Processo ou Nota de Empenho não foi encontrada, confira os valores informados.', 400);
+                } else if (error.response.statusCode == 422) {
+                    throw new HttpException(`Confira os valores informados: ${error.response.body}`, 400);
+                }
+            }
+
+            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}`)
+        }
+    }
 
 }
 

@@ -1,5 +1,6 @@
-import { ApiHideProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNumber, IsOptional } from 'class-validator';
+import { OmitType, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNumber, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreatePainelConteudoDto } from './create-painel-conteudo.dto';
 
@@ -16,6 +17,9 @@ export class UpdatePainelConteudoDetalheDto {
 
     @IsArray()
     @IsOptional()
+    @ValidateNested()
+    @Type(() => UpdatePainelConteudoDetalheRowsDto)
+    @ValidateIf((object, value) => value !== null)
     detalhes?: UpdatePainelConteudoDetalheRowsDto[] | null
 }
 

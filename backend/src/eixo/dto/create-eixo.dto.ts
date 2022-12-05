@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsNumber, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
+import { IsInt, IsString, MaxLength } from "class-validator";
 export class CreateEixoDto {
     /**
     * Descrição
@@ -11,7 +11,7 @@ export class CreateEixoDto {
     /**
    * pdm_id
    */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     pdm_id: number
 }

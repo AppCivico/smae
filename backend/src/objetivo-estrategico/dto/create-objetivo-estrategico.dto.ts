@@ -1,5 +1,5 @@
 import { Type } from "class-transformer"
-import { IsPositive, IsString, MaxLength } from "class-validator"
+import { IsInt, IsString, MaxLength } from "class-validator"
 
 export class CreateObjetivoEstrategicoDto {
     /**
@@ -12,7 +12,7 @@ export class CreateObjetivoEstrategicoDto {
     /**
    * pdm_id
    */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     pdm_id: number
 

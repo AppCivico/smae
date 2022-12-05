@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, IsPositive, IsString, Matches, ValidateIf, ValidateNested } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Matches, ValidateIf, ValidateNested } from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
 export class FormulaVariaveis {
@@ -31,7 +31,7 @@ export class FormulaVariaveis {
     /**
      * ID da variavel
     */
-    @IsPositive({ message: '$property| precisa ser um número' })
+    @IsInt({ message: '$property| precisa ser um número' })
     variavel_id: number
 
     /**

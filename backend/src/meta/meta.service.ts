@@ -56,9 +56,10 @@ export class MetaService {
                 data: await this.buildMetaResponsaveis(meta.id, op, cp),
             });
 
-            await prisma.metaTag.createMany({
-                data: await this.buildTags(meta.id, tags)
-            });
+            if (tags.length > 0)
+                await prisma.metaTag.createMany({
+                    data: await this.buildTags(meta.id, tags)
+                });
 
             // reagenda o PDM para recalcular as fases
             await this.prisma.cicloFisico.updateMany({
@@ -159,12 +160,12 @@ export class MetaService {
     }
 
     async findAll(filters: FilterMetaDto | undefined = undefined) {
-        let pdmId = filters?.pdm_id;
 
-        let listActive = await this.prisma.meta.findMany({
+        const listActive = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
-                pdm_id: pdmId,
+                pdm_id: filters?.pdm_id,
+                id: filters?.id,
             },
             orderBy: [
                 { codigo: 'asc' },
@@ -262,13 +263,16 @@ export class MetaService {
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
 
+        const op = updateMetaDto.orgaos_participantes;
+        const cp = updateMetaDto.coordenadores_cp;
+        const tags = updateMetaDto.tags;
+        delete updateMetaDto.orgaos_participantes;
+        delete updateMetaDto.coordenadores_cp;
+        delete updateMetaDto.tags;
+        if (cp && !op)
+            throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            let op = updateMetaDto.orgaos_participantes!;
-            let cp = updateMetaDto.coordenadores_cp!;
-            let tags = updateMetaDto.tags!;
-            delete updateMetaDto.orgaos_participantes;
-            delete updateMetaDto.coordenadores_cp;
-            delete updateMetaDto.tags;
 
             const meta = await prisma.meta.update({
                 where: { id: id },
@@ -281,23 +285,25 @@ export class MetaService {
                 },
                 select: { id: true }
             });
-            await Promise.all([
-                prisma.metaOrgao.deleteMany({ where: { meta_id: id } }),
-                prisma.metaResponsavel.deleteMany({ where: { meta_id: id } }),
-                prisma.metaTag.deleteMany({ where: { meta_id: id } })
-            ]);
 
-            await Promise.all([
+            if (op) {
+                await prisma.metaOrgao.deleteMany({ where: { meta_id: id } });
                 await prisma.metaOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(meta.id, op),
-                }),
-                await prisma.metaResponsavel.createMany({
-                    data: await this.buildMetaResponsaveis(meta.id, op, cp),
-                }),
-                await prisma.metaTag.createMany({
-                    data: await this.buildTags(meta.id, tags)
-                })
-            ]);
+                });
+
+                if (cp) {
+                    await prisma.metaResponsavel.deleteMany({ where: { meta_id: id } });
+                    await prisma.metaResponsavel.createMany({
+                        data: await this.buildMetaResponsaveis(meta.id, op, cp),
+                    });
+                }
+            }
+
+            if (tags) {
+                await prisma.metaTag.deleteMany({ where: { meta_id: id } });
+                await prisma.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
+            }
 
             return meta;
         }, {
@@ -311,7 +317,7 @@ export class MetaService {
     async remove(id: number, user: PessoaFromJwt) {
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
             const removed = await prisma.meta.updateMany({
-                where: { id: id },
+                where: { id: id, removido_em: null },
                 data: {
                     removido_por: user.id,
                     removido_em: new Date(Date.now()),
