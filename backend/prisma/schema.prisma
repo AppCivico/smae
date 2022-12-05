@@ -1771,7 +1771,7 @@ model MetaOrcamento {
     @@map("meta_orcamento")
 }
 
-model Dotacao {
+model DotacaoPlanejado {
     id Int @id @default(autoincrement())
 
     informacao_valida Boolean
@@ -1785,11 +1785,29 @@ model Dotacao {
     valor_liquidado           Float   @db.DoublePrecision
     pressao_orcamentaria      Boolean
     smae_soma_valor_planejado Float
+
+    @@unique([ano_referencia, dotacao])
+    @@map("dotacao_planejado")
+}
+
+model DotacaoRealizado {
+    id Int @id @default(autoincrement())
+
+    informacao_valida Boolean
+    sincronizado_em   DateTime? @default(now()) @db.Timestamptz(6)
+
+    ano_referencia Int
+    mes_utilizado  Int
+
+    dotacao                   String
+    empenho_liquido           Float   @db.DoublePrecision
+    valor_liquidado           Float   @db.DoublePrecision
+
     smae_soma_valor_empenho   Float @default(0)
     smae_soma_valor_liquidado Float @default(0)
 
     @@unique([ano_referencia, dotacao])
-    @@map("dotacao")
+    @@map("dotacao_realizado")
 }
 
 model DotacaoProcesso {
