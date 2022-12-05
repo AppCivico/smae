@@ -161,13 +161,13 @@ export class PessoaService {
 
     }
 
-    async verificarPrivilegiosEdicao(updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+    async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
 
         let pessoaCurrentOrgao = await this.prisma.pessoaFisica.findFirst({
             where: {
                 pessoa: {
                     some: {
-                        id: updatePessoaDto.id
+                        id: id
                     }
                 }
             },
@@ -295,8 +295,7 @@ export class PessoaService {
     }
 
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
-        updatePessoaDto.id = pessoaId;
-        await this.verificarPrivilegiosEdicao(updatePessoaDto, user);
+        await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
         this.verificarCPFObrigatorio(updatePessoaDto);
         this.verificarRFObrigatorio(updatePessoaDto);
 

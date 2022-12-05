@@ -1,4 +1,4 @@
-import { ApiHideProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNumber, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
