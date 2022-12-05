@@ -598,8 +598,7 @@ export class PdmService {
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
 
-            console.debug(updatePdmOrcamentoConfigDto.orcamento_config);
-            for (const orcamentoConfig of updatePdmOrcamentoConfigDto.orcamento_config) {
+            for (const orcamentoConfig of Object.values(updatePdmOrcamentoConfigDto.orcamento_config)) {
                 const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
                     where: {
                         pdm_id: pdm_id,
