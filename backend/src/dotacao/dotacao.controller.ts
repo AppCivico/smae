@@ -37,7 +37,7 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados da dotação, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
-            '** Retorna sempre apenas uma linha **'
+            '**Retorna sempre apenas uma linha**'
     })
     async valorRealizadoDotacao(@Body() createDotacaoDto: AnoDotacaoDto): Promise<ListValorRealizadoDotacaoDto> {
         return {
@@ -53,7 +53,7 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados de dotação a partir do Processo SEI, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
-            '** Retorna mais de uma linha, todas as dotações ficam disponíveis para utilizar no Orçamento Realizado **'
+            '**Retorna mais de uma linha, todas as dotações ficam disponíveis para utilizar no Orçamento Realizado**'
     })
     async valorRealizadoDotacaoProcesso(@Body() dto: AnoDotacaoProcessoDto): Promise<ListValorRealizadoProcessoDto> {
         return {
@@ -69,7 +69,7 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados de dotação a partir da Nota de Empenho, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
-            '** (em teoria) Retorna sempre apenas uma linha **'
+            '**(em teoria) Retorna sempre apenas uma linha**'
     })
     async valorRealizadoDotacaoNotaEmpenho(@Body() dto: AnoDotacaoNotaEmpenhoDto): Promise<ListValorRealizadoNotaEmpenhoDto> {
         return {
