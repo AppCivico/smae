@@ -87,25 +87,27 @@ export const usePdMStore = defineStore({
         async getById(id) {
             this.singlePdm = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/pdm/${id}`);    
-                if(r.nome){
+                let r = await requestS.get(`${baseUrl}/pdm/${id}?incluir_auxiliares=true`);    
+                console.log(r);
+                if(r.pdm){
                     this.singlePdm = (x=>{
-                        x.data_inicio = this.dateToField(x.data_inicio);
-                        x.data_fim = this.dateToField(x.data_fim);
-                        x.data_publicacao = this.dateToField(x.data_publicacao);
-                        x.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
-                        x.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
-                        x.ativo = x.ativo?'1':false;
+                        x.pdm.data_inicio = this.dateToField(x.data_inicio);
+                        x.pdm.data_fim = this.dateToField(x.data_fim);
+                        x.pdm.data_publicacao = this.dateToField(x.data_publicacao);
+                        x.pdm.periodo_do_ciclo_participativo_inicio = this.dateToField(x.periodo_do_ciclo_participativo_inicio);
+                        x.pdm.periodo_do_ciclo_participativo_fim = this.dateToField(x.periodo_do_ciclo_participativo_fim);
+                        x.pdm.ativo = x.ativo?'1':false;
 
-                        x.possui_macro_tema = x.possui_macro_tema?'1':false;
-                        x.possui_tema = x.possui_tema?'1':false;
-                        x.possui_sub_tema = x.possui_sub_tema?'1':false;
-                        x.possui_contexto_meta = x.possui_contexto_meta?'1':false;
-                        x.possui_complementacao_meta = x.possui_complementacao_meta?'1':false;
-                        x.possui_iniciativa = x.possui_iniciativa?'1':false;
-                        x.possui_atividade = x.possui_atividade?'1':false;
+                        x.pdm.possui_macro_tema = x.possui_macro_tema?'1':false;
+                        x.pdm.possui_tema = x.possui_tema?'1':false;
+                        x.pdm.possui_sub_tema = x.possui_sub_tema?'1':false;
+                        x.pdm.possui_contexto_meta = x.possui_contexto_meta?'1':false;
+                        x.pdm.possui_complementacao_meta = x.possui_complementacao_meta?'1':false;
+                        x.pdm.possui_iniciativa = x.possui_iniciativa?'1':false;
+                        x.pdm.possui_atividade = x.possui_atividade?'1':false;
 
-                        return x;
+                        x.pdm.orcamento_config = x.orcamento_config;
+                        return x.pdm;
                     })(r);
                 }else{
                     this.singlePdm = r;

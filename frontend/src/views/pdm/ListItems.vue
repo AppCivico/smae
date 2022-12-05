@@ -8,6 +8,7 @@ import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
 import { default as AddEditArquivos } from '@/views/pdm/AddEditArquivos.vue';
+import { default as EdicaoOrcamento } from '@/views/pdm/EdicaoOrcamento.vue';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const alertStore = useAlertStore();
@@ -48,6 +49,18 @@ function deleteArquivo(pdmid,id){
         PdMStore.deleteArquivo(pdmid,id);
     },'Remover');
 }
+
+function abreEdicaoOrcamento(id) {
+    editModalStore.modal(EdicaoOrcamento,{
+        pdm_id: id,
+        checkClose: ()=>{
+            alertStore.confirmAction('Deseja sair sem salvar as alterações?',()=>{
+                editModalStore.clear(); 
+                alertStore.clear(); 
+            })
+        }
+    },'small');
+}
 </script>
 <template>
     <Dashboard>
@@ -62,14 +75,14 @@ function deleteArquivo(pdmid,id){
             </div>
         </div>
         
-        <table class="tablemain">
+        <table class="tablemain fix">
             <thead>
                 <tr>
-                    <th style="width: 25%">Nome</th>
-                    <th style="width: 25%">Descrição</th>
+                    <th style="width: 35%">Nome</th>
+                    <th style="width: 35%">Descrição</th>
                     <th style="width: 15%">Prefeito</th>
                     <th style="width: 10%">Ativo</th>
-                    <th style="width: 10%"></th>
+                    <th style="width: 82px"></th>
                 </tr>
             </thead>
             <tbody>
@@ -81,6 +94,9 @@ function deleteArquivo(pdmid,id){
                             <td>{{ item.prefeito }}</td>
                             <td>{{ item.ativo?'Sim':'Não' }}</td>
                             <td style="white-space: nowrap; text-align: right;">
+                                <a v-if="perm?.CadastroPdm?.editar" @click="abreEdicaoOrcamento(item.id)" class="tprimary mr1">
+                                    <svg width="20" height="20"><use xlink:href="#i_calendar"></use></svg>
+                                </a>
                                 <template v-if="perm?.CadastroPdm?.editar">
                                     <router-link :to="`/pdm/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                 </template>

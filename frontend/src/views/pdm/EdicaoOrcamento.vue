@@ -3,24 +3,33 @@
 	import { Form, Field } from 'vee-validate';
 	import { storeToRefs } from 'pinia';
 	import { useAlertStore, useEditModalStore, usePdMStore } from '@/stores';
-	const PdMStore = usePdMStore();
-	const { singlePdm } = storeToRefs(PdMStore);
-	
 	const pr = defineProps(['props']);
 	const props = pr.props
+	const pdm_id = props.pdm_id;
+
 	const alertStore = useAlertStore();
 	const editModalStore = useEditModalStore();
 
-	let anosOrcamento = ref(singlePdm.value.orcamento_config);
+	const PdMStore = usePdMStore();
+	const { singlePdm } = storeToRefs(PdMStore);
+
+
+	let anosOrcamento = ref({});
+	(async()=>{
+		await PdMStore.getById(pdm_id);
+		anosOrcamento.value = singlePdm.value.orcamento_config;
+	})();
 
 	async function onSubmit(values) {
 	    try {
 	        var msg;
 	        var r;
 
+	        values.orcamento_config = anosOrcamento.value;
+
             r = await PdMStore.updatePermissoesOrcamento(singlePdm.value.id, values);
             msg = 'Dados salvos com sucesso!';
-	        
+
 	        if(r == true){
 	            editModalStore.clear();
 	            alertStore.success(msg);
@@ -38,15 +47,15 @@
 	</div>
 	<hr class="mt2 mb2">
 	<Form @submit="onSubmit" v-slot="{ errors, isSubmitting }">
-		<div v-for="y in anosOrcamento" :key="y.ano_referencia" class="mb2">
+		<div v-for="y in anosOrcamento" :key="y.id" class="mb2">
 			<h4>{{y.ano_referencia}}</h4>
-			<label class="block mb05"><Field v-model="y.previsao_custo_disponivel" class="inputcheckbox" type="checkbox" value=true /><span>Previsão de custo</span></label>
-			<label class="block mb05"><Field v-model="y.planejado_disponivel" class="inputcheckbox" type="checkbox" value=true /><span>Orçamento planejado</span></label>
-			<label class="block mb05"><Field v-model="y.execucao_disponivel" class="inputcheckbox" type="checkbox" value=true /><span>Execução orçamentária</span></label>
+			<label class="block mb05"><input v-model="y.previsao_custo_disponivel" class="inputcheckbox" type="checkbox" value=true /><span>Previsão de custo</span></label>
+			<label class="block mb05"><input v-model="y.planejado_disponivel" class="inputcheckbox" type="checkbox" value=true /><span>Orçamento planejado</span></label>
+			<label class="block mb05"><input v-model="y.execucao_disponivel" class="inputcheckbox" type="checkbox" value=true /><span>Execução orçamentária</span></label>
 		</div>
 		<div class="flex spacebetween center mb2">
 		    <hr class="mr2 f1"/>
-		    <button class="btn outline tcprimary bgnone mr1" @click="props.checkClose">Cancelar</button>
+		    <button class="btn outline tcprimary bgnone mr1" type="button" @click="props.checkClose">Cancelar</button>
 		    <button class="btn" :disabled="isSubmitting">Salvar</button>
 		    <hr class="ml2 f1"/>
 		</div>

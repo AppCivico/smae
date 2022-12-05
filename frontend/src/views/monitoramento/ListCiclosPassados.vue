@@ -45,7 +45,7 @@
             </thead>
             <tbody>
                 <template v-if="!Ciclos.loading&&Ciclos?.length">
-                    <tr v-for="c in Ciclos.filter(x=>!x.ativo||x.data_ciclo < new Date().toISOString()).reverse()" :key="c.id">
+                    <tr v-for="c in Ciclos.filter(x=>!x.ativo&&x.data_ciclo < new Date().toISOString()).reverse()" :key="c.id">
                         <td>{{dateToTitle(c.data_ciclo)}}</td>
                         <td>{{c.inicio_coleta}}</td>
                         <td>{{c.inicio_qualificacao}}</td>
