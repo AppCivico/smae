@@ -4,6 +4,7 @@ import { ObjetivoEstrategico } from "src/objetivo-estrategico/entities/objetivo-
 import { SubTema } from "src/subtema/entities/subtema.entity";
 import { Tag } from "src/tag/entities/tag.entity";
 import { ListPdm } from "../entities/list-pdm.entity";
+import { OrcamentoConfig } from "./list-pdm.dto";
 
 export class DetalhePdmDto {
 
@@ -42,4 +43,6 @@ export class DetalhePdmDto {
    * @example Tag[]
     */
     tag?: Tag[]
+
+    orcamento_config: OrcamentoConfig[] | null
 }
