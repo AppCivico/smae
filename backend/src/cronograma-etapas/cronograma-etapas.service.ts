@@ -223,13 +223,61 @@ export class CronogramaEtapaService {
                     termino_real: cronogramaEtapa.etapa.termino_real,
                     prazo: cronogramaEtapa.etapa.prazo,
                     titulo: cronogramaEtapa.etapa.titulo,
-                    etapa_filha: cronogramaEtapa.etapa.etapa_filha,
+
                     responsaveis: cronogramaEtapa.etapa.responsaveis.map(r => {
                         return {
                             id: r.pessoa.id,
                             nome_exibicao: r.pessoa.nome_exibicao
                         }
-                    })
+                    }),
+
+                    etapa_filha: cronogramaEtapa.etapa.etapa_filha.map(f => {
+                        
+                        return {
+                            id: f.id,
+                            etapa_pai_id: f.etapa_pai_id,
+                            regiao_id: f.regiao_id,
+                            nivel: f.nivel,
+                            descricao: f.descricao,
+                            inicio_previsto: f.inicio_previsto,
+                            termino_previsto: f.termino_previsto,
+                            inicio_real: f.inicio_real,
+                            termino_real: f.termino_real,
+                            prazo: f.prazo,
+                            titulo: f.titulo,
+
+                            responsaveis: f.responsaveis.map(r => {
+                                return {
+                                    id: r.pessoa.id,
+                                    nome_exibicao: r.pessoa.nome_exibicao
+                                }
+                            }),
+
+                            etapa_filha: f.etapa_filha.map(ff => {
+
+                                return {
+                                    id: ff.id,
+                                    etapa_pai_id: ff.etapa_pai_id,
+                                    regiao_id: ff.regiao_id,
+                                    nivel: ff.nivel,
+                                    descricao: ff.descricao,
+                                    inicio_previsto: ff.inicio_previsto,
+                                    termino_previsto: ff.termino_previsto,
+                                    inicio_real: ff.inicio_real,
+                                    termino_real: ff.termino_real,
+                                    prazo: ff.prazo,
+                                    titulo: ff.titulo,
+
+                                    responsaveis: ff.responsaveis.map(r => {
+                                        return {
+                                            id: r.pessoa.id,
+                                            nome_exibicao: r.pessoa.nome_exibicao
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    }),
                 },
 
                 cronograma_origem_etapa: {
