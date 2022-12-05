@@ -1,12 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Periodo } from "@prisma/client";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsPositive, ValidateIf } from "class-validator";
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateParamsPainelConteudoDto {
 
     @IsArray({ message: '$property| precisa ser uma array, campo obrigatório' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     metas: number[]
 }
 
