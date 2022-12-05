@@ -66,7 +66,7 @@ export class DotacaoService {
             }
         });
 
-        const mesMaisAtual = this.realizadoMesMaisAtual(dto.ano);
+        const mesMaisAtual = this.sof.realizadoMesMaisAtual(dto.ano);
 
         if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual) {
             return [
@@ -102,19 +102,6 @@ export class DotacaoService {
             smae_soma_valor_empenho: dotacao.smae_soma_valor_empenho,
             smae_soma_valor_liquidado: dotacao.smae_soma_valor_liquidado,
         };
-    }
-
-    realizadoMesMaisAtual(ano: number): number {
-        const nowSp = DateTime.local({ zone: "America/Sao_Paulo" });
-
-        const anoCorrente = nowSp.year;
-        if (anoCorrente == +ano)
-            return nowSp.month;
-
-        if (+ano > anoCorrente)
-            throw new HttpException('Não é possível buscar por realizado no futuro', 400);
-
-        return 12; // mes mais recente do ano pesquisado
     }
 
 
@@ -192,7 +179,7 @@ export class DotacaoService {
 
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
-                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
+                    const jaExiste = await prisma.dotacaoRealizado.findUnique({
                         where: {
                             ano_referencia_dotacao: {
                                 ano_referencia: dto.ano,
@@ -204,17 +191,15 @@ export class DotacaoService {
                     // se ainda não existe (pode ter iniciado já por causa do lock)
                     if (!jaExiste) {
 
-                        await prisma.dotacaoPlanejado.create({
+                        await prisma.dotacaoRealizado.create({
                             data: {
                                 informacao_valida: false,
                                 sincronizado_em: null,
                                 empenho_liquido: 0,
                                 valor_liquidado: 0,
-                                mes_utilizado: 1,
+                                mes_utilizado: mes,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,
-                                pressao_orcamentaria: false,
-                                smae_soma_valor_planejado: 0,
                             },
                             select: { id: true },
                         });
