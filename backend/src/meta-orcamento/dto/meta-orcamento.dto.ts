@@ -1,5 +1,5 @@
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
 export class CreateMetaOrcamentoDto {
@@ -27,7 +27,7 @@ export class CreateMetaOrcamentoDto {
     * @example "2341242423.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custeio até duas casas decimais' })
-    @IsInt({ message: '$property| Custeio precisa ser positivo' })
+    @IsPositive({ message: '$property| Custeio precisa ser positivo' })
     @Type(() => Number)
     custeio_previsto: number;
 
@@ -36,7 +36,7 @@ export class CreateMetaOrcamentoDto {
     * @example "42343.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Investimento até duas casas decimais' })
-    @IsInt({ message: '$property| Investimento precisa ser positivo' })
+    @IsPositive({ message: '$property| Investimento precisa ser positivo' })
     @Type(() => Number)
     investimento_previsto: number;
 

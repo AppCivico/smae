@@ -1,6 +1,6 @@
 
 import { Type } from "class-transformer";
-import { IsInt, IsNumber, IsOptional, IsString, Matches, MaxLength } from "class-validator";
+import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from "class-validator";
 import { OrcamentoPlanejado } from "../entities/orcamento-planejado.entity";
 
 export class CreateOrcamentoPlanejadoDto {
@@ -46,7 +46,7 @@ export class CreateOrcamentoPlanejadoDto {
     * @example "42343.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Planejado com até duas casas decimais' })
-    @IsInt({ message: '$property| Investimento precisa ser positivo' })
+    @IsPositive({ message: '$property| Investimento precisa ser positivo' })
     @Type(() => Number)
     valor_planejado: number;
 
