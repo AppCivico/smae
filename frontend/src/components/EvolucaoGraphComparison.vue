@@ -34,6 +34,58 @@
 		/*DRAW CHART*/
 		drawChart(data, el){
 
+			let dataMult = [
+				{
+					"id": "indicador1",
+					"label": "Indicador 1",
+					"series": data
+				},
+				{
+					"id": "indicador2",
+					"label": "Indicador 2",
+					"series": {
+							"projetado": [
+								{"date":"2020-01-01","value":"8"},
+								{"date":"2020-02-01","value":"5"},
+								{"date":"2020-03-01","value":"16"},
+								{"date":"2020-04-01","value":"7"},
+								{"date":"2020-05-01","value":"10"},
+								{"date":"2020-06-01","value":""}
+							],
+							"realizado": [
+								{"date":"2020-01-01","value":"3"},
+								{"date":"2020-02-01","value":"5"},
+								{"date":"2020-03-01","value":"2"},
+								{"date":"2020-04-01","value":""},
+								{"date":"2020-05-01","value":"6"},
+								{"date":"2020-09-01","value":"18"}
+							]
+					}
+				},
+				{
+					"id": "indicador3",
+					"label": "Indicador 3",
+					"series": {
+							"projetado": [
+								{"date":"2020-01-01","value":"2"},
+								{"date":"2020-02-01","value":"4"},
+								{"date":"2020-03-01","value":"6"},
+								{"date":"2020-04-01","value":"8"},
+								{"date":"2020-05-01","value":"10"},
+								{"date":"2020-06-01","value":"12"}
+							],
+							"realizado": [
+								{"date":"2020-01-01","value":"1"},
+								{"date":"2020-02-01","value":"3"},
+								{"date":"2020-03-01","value":"5"},
+								{"date":"2020-04-01","value":""},
+								{"date":"2020-05-01","value":"9"},
+								{"date":"2020-09-01","value":"11"}
+							]
+					}
+				}
+			];
+
 			/*UPDATING SIZE*/
 			this.sizes.width = el.getBoundingClientRect().width;
 			this.sizes.height = 350;
@@ -45,16 +97,26 @@
 
 			/*MANIPULATING DATA*/
 			//Eval xDomain and xScale for dates
-			const Xp = d3.map(data.projetado, d => new Date(d.date));
-			const Xr = d3.map(data.realizado, d => new Date(d.date));
-			let X = Xp.concat(Xr).sort(function(a,b){ return a - b; });
+			let X = [];
+			dataMult.forEach( ( data ) => {
+				const Xp = d3.map(data.series.projetado, d => new Date(d.date));
+				const Xr = d3.map(data.series.realizado, d => new Date(d.date));
+				X = X.concat(Xp);
+				X = X.concat(Xr);
+			} );
+			X.sort(function(a,b){ return a - b; });
+		
 			const xDomain = d3.extent(X);
 			const xScale = d3.scaleUtc(xDomain, [this.sizes.margin.left, this.sizes.width - this.sizes.margin.left - this.sizes.margin.right]);
 
 			//Eval yDomain and yScale for linear
-			const Yp = d3.map(data.projetado, d => +d.value);
-			const Yr = d3.map(data.realizado, d => +d.value);
-			const Y = Yp.concat(Yr);
+			let Y = [];
+			dataMult.forEach( ( data ) => {
+				const Yp = d3.map(data.series.projetado, d => +d.value);
+				const Yr = d3.map(data.series.realizado, d => +d.value);
+				Y = Y.concat(Yp);
+				Y = Y.concat(Yr);
+			});
 			const yDomain = d3.extent(Y);
 			const yScale = d3.scaleLinear(yDomain, [this.sizes.height - this.sizes.margin.bottom, this.sizes.margin.top]);
 
@@ -137,21 +199,27 @@
 			      		.attr('rx', 11);
 
 		    /*DRAW PROJETADO*/
-			this.drawDataPoints(svg, data.projetado, xScale, yScale, this.sizes, { name: 'projetado', transitionDuration: this.transitionDuration });
+			dataMult.forEach( (data, i) => {
+				this.drawDataPoints(svg, data.series.projetado, xScale, yScale, this.sizes, { name: "p"+(i+1), transitionDuration: this.transitionDuration });
+			} );
 
 			/*DRAW REALIZADO*/
-			this.drawDataPoints(svg, data.realizado, xScale, yScale, this.sizes, { name: 'realizado', transitionDuration: this.transitionDuration });
+			dataMult.forEach( (data, i) => {
+				this.drawDataPoints(svg, data.series.realizado, xScale, yScale, this.sizes, { name: "r"+(i+1), transitionDuration: this.transitionDuration });
+			} );
 
 			/*DRAW META*/
-			const metaVal = Yp[Yp.length-1];
+			const metaVal = null;
+			let meta = null;
+			/*const metaVal = Yp[Yp.length-1];
 			let meta = [
 				{"date": d3.min(X),"value": metaVal},
 				{"date": Xp[Xp.length-1],"value": metaVal}
 			];
-			this.drawDataPoints(svg, meta, xScale, yScale, this.sizes, { name: 'meta', r: 10, strokeW: 4, firstCircle: false, transitionDuration: this.transitionDuration } );
+			this.drawDataPoints(svg, meta, xScale, yScale, this.sizes, { name: 'meta', r: 10, strokeW: 4, firstCircle: false, transitionDuration: this.transitionDuration } );*/
 
 			/*DRAW INVISIBLE LINES FOR MOUSE EVENTS*/
-			this.drawDataToolTipsBars(svg, data, xScale, yScale, X, metaVal, this.sizes, 'rect');
+			this.drawDataToolTipsBars(svg, dataMult, xScale, yScale, X, metaVal, this.sizes, 'rect');
 		}
 
 		/*DRAW INVISIBLE LINES FOR MOUSE EVENTS*/
@@ -172,6 +240,7 @@
 
 			//Prepare new data for tooltips
 			let tipArray = this.mergeDataForTooltips(data, X);
+			console.log(tipArray);
 
 			const g = svg.selectAll("g.tooltipslines").data([true]);
 			g.enter().append("g").attr("class", 'tooltipslines');
@@ -231,7 +300,7 @@
 			//Creating tooltip element
 			let mes = this.locale.utcFormat("%B/%Y")(d.date);
 			let tipHtml = `<p class="t14 data tprimary">${mes}</p>
-				<p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>
+				<!--<p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>-->
 				<p class="tc300 t14">
 					Previsto acumulado até ${mes}: <span>${d.projetadoAcum || '-'}</span><br />
 					<span class="tamarelo">Realizado acumulado até ${mes}: ${d.realizadoAcum || '-'}</span>
@@ -271,21 +340,26 @@
 			let aux = {};
 
 			//Merging all data points for tips info into Tip Array
-			const dataKeys = Object.keys(data);
-			for( var i=0;i<dataKeys.length;i++ ){
-				for( var j=0;j<data[dataKeys[i]].length;j++ ){
-					for( var k=0;k<tipArray.length;k++ ){
-						if( tipArray[k].date.getTime() == (new Date(data[dataKeys[i]][j].date)).getTime() ){
-							aux[dataKeys[i]] = aux[dataKeys[i]] || 0;
-							tipArray[k][dataKeys[i]+'Acum'] = data[dataKeys[i]][j].value || 0;
-							tipArray[k][dataKeys[i]] = data[dataKeys[i]][j].value - aux[dataKeys[i]];
-							aux[dataKeys[i]] = data[dataKeys[i]][j].value;
-							break;
+			data.forEach( ( data ) => {
+				const dataKeys = Object.keys(data.series);
+				for( var i=0;i<dataKeys.length;i++ ){
+					for( var j=0;j<data.series[dataKeys[i]].length;j++ ){
+						for( var k=0;k<tipArray.length;k++ ){
+
+
+							if( tipArray[k].date.getTime() == (new Date(data.series[dataKeys[i]][j].date)).getTime() ){
+								aux[dataKeys[i]] = aux[dataKeys[i]] || 0;
+								tipArray[k][dataKeys[i]+'Acum'] = data.series[dataKeys[i]][j].value || 0;
+								tipArray[k][dataKeys[i]] = data.series[dataKeys[i]][j].value - aux[dataKeys[i]];
+								aux[dataKeys[i]] = data.series[dataKeys[i]][j].value;
+								break;
+							}
+
+							
 						}
 					}
 				}
-			}
-
+			} );
 			return tipArray;
 		}
 
@@ -385,7 +459,7 @@
 				.enter()
 					.filter(function (d) { return d.value !== ""; })
 					.append('circle')
-					.attr('class', name+'-circle' )
+					.attr('class', 'circle-'+name )
 					.attr('r', r )
 					.attr('cy', sizes.height - sizes.margin.bottom )
 					.attr('cx', d => xScale( new Date(d.date) ) )
@@ -414,7 +488,7 @@
 					.append('path')
 						.data(data)
 							.attr('d', function(d, i){ return i!=0 ? flatline([d, data[i-1]]) : 'M0 0'; })
-							.attr('class', name+'-line')
+							.attr('class', 'line-'+name)
 							.attr('stroke-width', strokeW)
 				.merge(path)
 					.transition().duration(transitionDuration)
@@ -455,7 +529,7 @@
 
 	///TEMP
 	let dataserie = {
-	    
+
 	    "linhas": [
 	        {
 	            "periodo": "2020-01",
@@ -653,20 +727,32 @@
 		text{
 			text-transform: uppercase;
 		}
-		.realizado-line{
-			stroke: #F7C234;
-			fill: none;
+
+		@cores:
+			#C25E0A,
+			#8B9BB1,
+			#92D505,
+			#89049F,
+			#679504,
+			#FF9CAE,
+			#3B5881,
+			#D33939,
+			#F8AD6D,
+			#C99FCF,
+			#F7D479,
+			#7C3B03;
+			
+
+		.color-classes(@i: length(@cores)) when (@i > 0) {
+		    .color-classes(@i - 1);
+		    @cor: extract(@cores, @i);
+		    .line-r@{i}{ stroke: @cor; stroke-dasharray: 3 3; fill: none; }
+			.circle-r@{i}{ fill: @cor;	}
+			.line-p@{i}{ stroke: @cor; fill: none; }
+			.circle-p@{i}{ fill: @cor; }
 		}
-		.realizado-circle{
-			fill: #F7C234;
-		}
-		.projetado-line{
-			stroke: #B8C0CC;
-			fill: none;
-		}
-		.projetado-circle{
-			fill: #B8C0CC;
-		}
+		.color-classes();
+
 		.meta-circle{
 			fill: #152741;
 		}
