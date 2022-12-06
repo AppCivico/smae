@@ -1799,9 +1799,9 @@ model DotacaoRealizado {
     ano_referencia Int
     mes_utilizado  Int
 
-    dotacao                   String
-    empenho_liquido           Float   @db.DoublePrecision
-    valor_liquidado           Float   @db.DoublePrecision
+    dotacao         String
+    empenho_liquido Float  @db.DoublePrecision
+    valor_liquidado Float  @db.DoublePrecision
 
     smae_soma_valor_empenho   Float @default(0)
     smae_soma_valor_liquidado Float @default(0)
@@ -1828,6 +1828,7 @@ model DotacaoProcesso {
     smae_soma_valor_liquidado Float @default(0)
 
     @@unique([ano_referencia, dotacao, dotacao_processo])
+    @@unique([ano_referencia, dotacao_processo])
     @@map("dotacao_processo")
 }
 
@@ -1844,12 +1845,13 @@ model DotacaoProcessoNota {
     dotacao_processo      String
     dotacao_processo_nota String
 
-    empenho_liquido           Float   @db.DoublePrecision
-    valor_liquidado           Float   @db.DoublePrecision
+    empenho_liquido           Float @db.DoublePrecision
+    valor_liquidado           Float @db.DoublePrecision
     smae_soma_valor_empenho   Float @default(0)
     smae_soma_valor_liquidado Float @default(0)
 
     @@unique([ano_referencia, dotacao, dotacao_processo, dotacao_processo_nota])
+    @@unique([ano_referencia, dotacao_processo_nota])
     @@map("dotacao_processo_nota")
 }
 
@@ -1876,6 +1878,9 @@ model OrcamentoPlanejado {
     removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
     @@index([meta_id])
+    @@index([ano_referencia, meta_id])
+    @@index([ano_referencia, iniciativa_id])
+    @@index([ano_referencia, atividade_id])
     @@map("orcamento_planejado")
 }
 
@@ -1890,7 +1895,7 @@ model OrcamentoRealizado {
     dotacao         String
     processo        String?
     nota_empenho    String?
-    valor_empenho Float   @db.DoublePrecision @map("valor_empenhado")
+    valor_empenho   Float   @map("valor_empenhado") @db.DoublePrecision
     valor_liquidado Float   @db.DoublePrecision
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
@@ -1906,5 +1911,8 @@ model OrcamentoRealizado {
     removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
     @@index([meta_id])
+    @@index([ano_referencia, meta_id])
+    @@index([ano_referencia, iniciativa_id])
+    @@index([ano_referencia, atividade_id])
     @@map("orcamento_realizado")
 }

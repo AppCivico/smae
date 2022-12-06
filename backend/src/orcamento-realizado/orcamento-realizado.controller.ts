@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
+import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto, ListOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizadoService } from './orcamento-realizado.service';
 
 @ApiTags('Orçamento - Realizado')
@@ -19,6 +19,13 @@ export class OrcamentoRealizadoController {
     @Roles('CadastroMeta.orcamento')
     async create(@Body() createMetaDto: CreateOrcamentoRealizadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.orcamentoRealizadoService.create(createMetaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles('CadastroMeta.orcamento')
+    async findAll(@Query() filters: FilterOrcamentoRealizadoDto): Promise<ListOrcamentoRealizadoDto> {
+        return { 'linhas': await this.orcamentoRealizadoService.findAll(filters) };
     }
 
     @Delete(':id')

@@ -1,6 +1,7 @@
 import { OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, Min } from "class-validator";
+import { OrcamentoRealizado } from "../entities/orcamento-realizado.entity";
 
 export class CreateOrcamentoRealizadoDto {
 
@@ -137,5 +138,5 @@ export class FilterOrcamentoRealizadoDto {
 }
 
 export class ListOrcamentoRealizadoDto {
-    //linhas: OrcamentoRealizado[]
+    linhas: OrcamentoRealizado[]
 }

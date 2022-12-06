@@ -1,11 +1,12 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { HTTPError } from 'got/dist/source';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { OrcamentoPlanejado } from '../orcamento-planejado/entities/orcamento-planejado.entity';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
+import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
+import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 
 @Injectable()
 export class OrcamentoRealizadoService {
@@ -244,6 +245,147 @@ export class OrcamentoRealizadoService {
         }
     }
 
+
+    async findAll(filters: FilterOrcamentoRealizadoDto): Promise<OrcamentoRealizado[]> {
+
+        const queryRows = await this.prisma.orcamentoRealizado.findMany({
+            where: {
+                removido_em: null,
+                dotacao: filters?.dotacao,
+                meta_id: filters?.meta_id,
+                processo: filters?.processo,
+                nota_empenho: filters?.nota_empenho,
+                ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
+            },
+            select: {
+                criador: { select: { nome_exibicao: true } },
+                meta: { select: { id: true, codigo: true, titulo: true } },
+                atividade: { select: { id: true, codigo: true, titulo: true } },
+                iniciativa: { select: { id: true, codigo: true, titulo: true } },
+                valor_empenho: true,
+                valor_liquidado: true,
+                ano_referencia: true,
+                dotacao: true,
+                nota_empenho: true,
+                processo: true,
+                criado_em: true,
+                id: true,
+            },
+            orderBy: [
+                { meta_id: 'asc' },
+                { iniciativa_id: 'asc' },
+                { atividade_id: 'asc' },
+                { id: 'asc' }
+            ]
+        });
+
+        const notaEncontradas: Record<string, boolean> = {};
+        const processosEncontrados: Record<string, boolean> = {};
+        const dotacoesEncontradas: Record<string, boolean> = {};
+        // levantando os dados para o 'poor's mans join'
+        for (const op of queryRows) {
+            if (op.nota_empenho) {
+                if (notaEncontradas[op.dotacao] == undefined) notaEncontradas[op.nota_empenho] = true;
+            } else if (op.processo) {
+                if (processosEncontrados[op.dotacao] == undefined) processosEncontrados[op.processo] = true;
+            } else {
+                if (dotacoesEncontradas[op.dotacao] == undefined) dotacoesEncontradas[op.dotacao] = true;
+            }
+        }
+        // cruza as nota-empenho
+        const notasInfo = await this.prisma.dotacaoProcessoNota.findMany({
+            where: {
+                dotacao_processo_nota: { in: Object.keys(notaEncontradas) },
+                ano_referencia: filters.ano_referencia,
+            },
+            select: {
+                smae_soma_valor_empenho: true,
+                smae_soma_valor_liquidado: true,
+                dotacao_processo_nota: true,
+            }
+        });
+        const notasInfoRef: Record<string, typeof notasInfo[0]> = {};
+        for (const nota of notasInfo) {
+            notasInfoRef[nota.dotacao_processo_nota] = nota;
+        }
+
+        // cruza os processos
+        const processoInfo = await this.prisma.dotacaoProcesso.findMany({
+            where: {
+                dotacao_processo: { in: Object.keys(processosEncontrados) },
+                ano_referencia: filters.ano_referencia,
+            },
+            select: {
+                smae_soma_valor_empenho: true,
+                smae_soma_valor_liquidado: true,
+                dotacao_processo: true,
+            }
+        });
+        const processoInfoRef: Record<string, typeof processoInfo[0]> = {};
+        for (const processo of processoInfo) {
+            processoInfoRef[processo.dotacao_processo] = processo;
+        }
+
+        // cruza as dotações
+        const dotacoesInfo = await this.prisma.dotacaoRealizado.findMany({
+            where: {
+                dotacao: { in: Object.keys(dotacoesEncontradas) },
+                ano_referencia: filters.ano_referencia,
+            },
+            select: {
+                smae_soma_valor_empenho: true,
+                smae_soma_valor_liquidado: true,
+                dotacao: true,
+            }
+        });
+        const dotacoesInfoRef: Record<string, typeof dotacoesInfo[0]> = {};
+        for (const dotacao of dotacoesInfo) {
+            dotacoesInfoRef[dotacao.dotacao] = dotacao;
+        }
+
+
+        const rows: OrcamentoRealizado[] = [];
+
+        for (const orcaRealizado of queryRows) {
+
+            let smae_soma_valor_empenho: string | null = null;
+            let smae_soma_valor_liquidado: string | null = null;
+
+            if (orcaRealizado.nota_empenho) {
+                const notaInfo = notasInfoRef[orcaRealizado.nota_empenho];
+                smae_soma_valor_empenho = notaInfo.smae_soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = notaInfo.smae_soma_valor_liquidado.toFixed(2);
+            } else if (orcaRealizado.processo) {
+                const processoInfo = processoInfoRef[orcaRealizado.processo];
+                smae_soma_valor_empenho = processoInfo.smae_soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = processoInfo.smae_soma_valor_liquidado.toFixed(2);
+            } else {
+                const dotacaoInfo = dotacoesInfoRef[orcaRealizado.dotacao];
+                smae_soma_valor_empenho = dotacaoInfo.smae_soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = dotacaoInfo.smae_soma_valor_liquidado.toFixed(2);
+            }
+
+            rows.push({
+                id: orcaRealizado.id,
+                ano_referencia: orcaRealizado.ano_referencia,
+                meta: orcaRealizado.meta,
+                iniciativa: orcaRealizado.iniciativa,
+                atividade: orcaRealizado.atividade,
+                criado_em: orcaRealizado.criado_em,
+                criador: orcaRealizado.criador,
+                dotacao: orcaRealizado.dotacao,
+                nota_empenho: orcaRealizado.nota_empenho,
+                processo: orcaRealizado.processo,
+                valor_empenho: orcaRealizado.valor_empenho.toFixed(2),
+                valor_liquidado: orcaRealizado.valor_liquidado.toFixed(2),
+                smae_soma_valor_empenho,
+                smae_soma_valor_liquidado
+            });
+
+        }
+
+        return rows;
+    }
 
     async remove(id: number, user: PessoaFromJwt) {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.count({
