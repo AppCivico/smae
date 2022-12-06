@@ -57,6 +57,7 @@ export class CEEtapaDto {
     termino_real: Date | null
     prazo: number | null
     titulo: string | null
+    duracao: string
 
     responsaveis: CronogramaEtapaResponsavel[] | null
     etapa_filha?: CEEtapaDto[] | null

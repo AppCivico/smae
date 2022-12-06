@@ -5,7 +5,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-cronograma-etapa.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-
+import { DateTime, Duration } from "luxon";
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto } from './entities/cronograma-etapa.entity';
 
@@ -226,6 +226,10 @@ export class CronogramaEtapaService {
                     prazo: cronogramaEtapa.etapa.prazo,
                     titulo: cronogramaEtapa.etapa.titulo,
 
+                    // Cálculo de duração e atraso
+                    duracao: await this.getDuracao(cronogramaEtapa.etapa.inicio_real, cronogramaEtapa.etapa.termino_real),
+                    // atraso: await this.getAtraso(cronogramaEtapa.etapa.inicio_previsto, cronogramaEtapa.etapa.termino_previsto),
+
                     responsaveis: cronogramaEtapa.etapa.responsaveis.map(r => {
                         return {
                             id: r.pessoa.id,
@@ -233,8 +237,7 @@ export class CronogramaEtapaService {
                         }
                     }),
 
-                    etapa_filha: cronogramaEtapa.etapa.etapa_filha.map(f => {
-
+                    etapa_filha: await Promise.all( cronogramaEtapa.etapa.etapa_filha.map( async f => {
                         return {
                             CronogramaEtapa: f.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
 
@@ -249,7 +252,7 @@ export class CronogramaEtapaService {
                             termino_real: f.termino_real,
                             prazo: f.prazo,
                             titulo: f.titulo,
-
+                            duracao: await this.getDuracao(f.inicio_real, f.termino_real),
 
                             responsaveis: f.responsaveis.map(r => {
                                 return {
@@ -258,7 +261,7 @@ export class CronogramaEtapaService {
                                 }
                             }),
 
-                            etapa_filha: f.etapa_filha.map(ff => {
+                            etapa_filha: await Promise.all( f.etapa_filha.map( async ff => {
 
                                 return {
                                     CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
@@ -274,6 +277,7 @@ export class CronogramaEtapaService {
                                     termino_real: ff.termino_real,
                                     prazo: ff.prazo,
                                     titulo: ff.titulo,
+                                    duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
 
                                     responsaveis: ff.responsaveis.map(r => {
                                         return {
@@ -282,9 +286,11 @@ export class CronogramaEtapaService {
                                         }
                                     })
                                 }
-                            })
+                            }))
                         }
-                    }),
+                        }),
+                    )
+                    
                 },
 
                 cronograma_origem_etapa: {
@@ -325,6 +331,35 @@ export class CronogramaEtapaService {
         return { id };
     }
 
+    async getDuracao(inicio_real: Date | null, termino_real: Date | null): Promise<string> {
+        if (!inicio_real) return '';
 
+        const start: DateTime = DateTime.fromJSDate(inicio_real);
+        const end: DateTime   = termino_real ? ( DateTime.fromJSDate(termino_real) ) : ( DateTime.now() );
+        
+        const duration: Duration = end.diff(start, ['years', 'months', 'days']);
+
+        return await this.buildDuracaoRetString(duration)
+    }
+
+    // async getAtraso(inicio_previsto: Date | null, inicio_real: Date | null, termino_previsto : Date | null, termino_real: Date | null): Promise<String> {
+    //     if (termino_real) {
+
+    //     } else if (inicio_real) 
+    // }
+
+    async buildDuracaoRetString (duration: Duration): Promise<string> {
+        let string_format: string;
+
+        if (duration.years > 0) {
+            string_format = "y ano(s), M mês(es), d dia(s)";
+        } else if (duration.months > 0) {
+            string_format = "M mês(es), d dia(s)";
+        } else {
+            string_format = "d dia(s)";
+        }
+
+        return duration.toFormat(string_format);
+    }
 
 }
