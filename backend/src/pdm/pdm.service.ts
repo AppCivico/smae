@@ -282,6 +282,8 @@ export class PdmService {
 
     @Cron('0 * * * * *')
     async handleCron() {
+        if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
             const locked: {
@@ -564,20 +566,25 @@ export class PdmService {
         for (const r of rows) {
             anoVistos.push(r.ano_referencia);
             if (r.id === null) {
-                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                const created_orcamento_config = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
                     await this.prisma.pdmOrcamentoConfig.deleteMany({
                         where: {
                             ano_referencia: r.ano_referencia,
                             pdm_id: pdm_id
                         }
                     });
-                    await this.prisma.pdmOrcamentoConfig.create({
+
+                    return await this.prisma.pdmOrcamentoConfig.create({
                         data: {
                             ano_referencia: r.ano_referencia,
                             pdm_id: pdm_id
-                        }
+                        },
+                        select: { id: true }
                     });
                 }, { isolationLevel: 'Serializable' });
+
+                const row_without_id_idx = rows.findIndex(rwi => rwi.ano_referencia === r.ano_referencia);
+                rows[row_without_id_idx].id = created_orcamento_config.id
             }
         }
 
@@ -595,11 +602,14 @@ export class PdmService {
 
     async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto) {
 
+        console.log("log debug");
+        console.log(updatePdmOrcamentoConfigDto);
+        console.log(updatePdmOrcamentoConfigDto.orcamento_config);
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
 
-            console.debug(updatePdmOrcamentoConfigDto.orcamento_config);
-            for (const orcamentoConfig of updatePdmOrcamentoConfigDto.orcamento_config) {
+
+            for (const orcamentoConfig of Object.values(updatePdmOrcamentoConfigDto.orcamento_config)) {
                 const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
                     where: {
                         pdm_id: pdm_id,
@@ -616,7 +626,7 @@ export class PdmService {
                             planejado_disponivel: orcamentoConfig.planejado_disponivel,
                             execucao_disponivel: orcamentoConfig.execucao_disponivel
                         },
-                        select: {id: true}
+                        select: { id: true }
                     })
                 )
             }

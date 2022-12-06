@@ -1,7 +1,11 @@
-import { IsBoolean, IsNumber, IsOptional, ValidateIf } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNumber, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 
 export class UpdatePdmOrcamentoConfigDto {
-    orcamento_config:PdmOrcamentoConfig[]
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PdmOrcamentoConfig)
+    orcamento_config: PdmOrcamentoConfig[]
 }
 
 export class PdmOrcamentoConfig {

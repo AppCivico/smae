@@ -1,4 +1,5 @@
 
+import { OmitType, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from "class-validator";
 import { OrcamentoPlanejado } from "../entities/orcamento-planejado.entity";
@@ -59,6 +60,8 @@ export class CreateOrcamentoPlanejadoDto {
     @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, { message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00' })
     dotacao: string;
 }
+
+export class UpdateOrcamentoPlanejadoDto extends OmitType(CreateOrcamentoPlanejadoDto, ['ano_referencia', 'dotacao']) { }
 
 export class FilterOrcamentoPlanejadoDto {
     /**
