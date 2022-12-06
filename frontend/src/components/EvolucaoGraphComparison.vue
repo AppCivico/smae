@@ -2,9 +2,14 @@
 	import { ref, onMounted, onUpdated } from 'vue';
 	import * as d3 from 'd3';
 
-	const props = defineProps(['dataserie']);
+	const props = defineProps(['single','dataserie']);
 	const evolucao = ref(null);
 	const tooltipEl = ref(null);
+
+	let iP = ref(-1);
+	let iR = ref(-1);
+	let iPA = ref(-1);
+	let iRA = ref(-1);
 
 	class smaeChart {
 		constructor(ratio, sizes, transitionDuration, locale){
@@ -47,8 +52,8 @@
 			//Eval xDomain and xScale for dates
 			let X = [];
 			dataMult.forEach( ( data ) => {
-				const Xp = d3.map(data.series.projetado, d => new Date(d.date));
-				const Xr = d3.map(data.series.realizado, d => new Date(d.date));
+				const Xp = d3.map(data.series.projetadoAcu, d => new Date(d.date));
+				const Xr = d3.map(data.series.realizadoAcu, d => new Date(d.date));
 				X = X.concat(Xp);
 				X = X.concat(Xr);
 			} );
@@ -60,8 +65,8 @@
 			//Eval yDomain and yScale for linear
 			let Y = [];
 			dataMult.forEach( ( data ) => {
-				const Yp = d3.map(data.series.projetado, d => +d.value);
-				const Yr = d3.map(data.series.realizado, d => +d.value);
+				const Yp = d3.map(data.series.projetadoAcu, d => +d.value);
+				const Yr = d3.map(data.series.realizadoAcu, d => +d.value);
 				Y = Y.concat(Yp);
 				Y = Y.concat(Yr);
 			});
@@ -148,12 +153,12 @@
 
 		    /*DRAW PROJETADO*/
 			dataMult.forEach( (data, i) => {
-				this.drawDataPoints(svg, data.series.projetado, xScale, yScale, this.sizes, { name: "p"+(i+1), transitionDuration: this.transitionDuration });
+				this.drawDataPoints(svg, data.series.projetadoAcu, xScale, yScale, this.sizes, { name: "p"+(i+1), transitionDuration: this.transitionDuration });
 			} );
 
 			/*DRAW REALIZADO*/
 			dataMult.forEach( (data, i) => {
-				this.drawDataPoints(svg, data.series.realizado, xScale, yScale, this.sizes, { name: "r"+(i+1), transitionDuration: this.transitionDuration });
+				this.drawDataPoints(svg, data.series.realizadoAcu, xScale, yScale, this.sizes, { name: "r"+(i+1), transitionDuration: this.transitionDuration });
 			} );
 
 			/*DRAW META*/
@@ -207,7 +212,7 @@
 							.attr('height', sizes.height - sizes.margin.bottom - sizes.margin.top )
 							.attr('fill', 'black')
 							.attr('opacity', 0)
-							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcum, d.projetadoAcum]) ) } ) )
+							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcu, d.projetadoAcu]) ) } ) )
 							.on("mouseleave", () => this.hideTooltip(guideLine) )
 							.on("mousemove", (e) => this.moveTooltip(e) );
 					tipsRects.exit().remove();
@@ -225,7 +230,7 @@
 							.attr('y2', sizes.height - sizes.margin.bottom )
 							.attr('stroke', 'transparent')
 							.attr('stroke-width', 10)
-							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcum, d.projetadoAcum]) ) } ) )
+							.on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale( d.date ), y: yScale( d3.max([d.realizadoAcu, d.projetadoAcu]) ) } ) )
 							.on("mouseleave", () => this.hideTooltip(guideLine) )
 							.on("mousemove", (e) => this.moveTooltip(e) );
 					tipsLines.exit().remove();
@@ -251,8 +256,8 @@
 			d.indicadores.forEach(function(el, i){
 				tipHtml += `<p class="t14 indicador tprimary">${el.label}</p>
 					<div class="t14 index${i+1}">
-						<p><i></i> Previsto acumulado: <span>${el.projetadoAcum || '-'}</span> (<span>${el.projetado || '-'}</span>)</p>
-						<p><i></i> Realizado acumulado: <span>${el.realizadoAcum || '-'}</span> (<span>${el.realizado || '-'}</span>)</p>
+						<p><i></i> Previsto acumulado: <span>${el.projetadoAcu || '-'}</span> (<span>${el.projetado || '-'}</span>)</p>
+						<p><i></i> Realizado acumulado: <span>${el.realizadoAcu || '-'}</span> (<span>${el.realizado || '-'}</span>)</p>
 					</div>`;
 			});
 
@@ -294,7 +299,6 @@
 								aux[index][dataKeys[i]] = aux[index][dataKeys[i]] || 0;
 								tipArray[k]['indicadores'] = tipArray[k]['indicadores'] || [];
 								tipArray[k]['indicadores'][index] = tipArray[k]['indicadores'][index] || { "id": data.id, "label": data.label };
-								tipArray[k]['indicadores'][index][dataKeys[i]+"Acum"] = data.series[dataKeys[i]][j].value || '-';
 								tipArray[k]['indicadores'][index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value - aux[index][dataKeys[i]] : '-';
 								aux[index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value : aux[index][dataKeys[i]];
 								break;
@@ -303,6 +307,7 @@
 					}
 				}
 			} );
+			console.log(tipArray);
 			return tipArray;
 		}
 
@@ -471,84 +476,29 @@
 	const chart = new smaeChart();
 
 	function start(){
-		if(props.dataserie?.linhas && evolucao.value){
-			let data = {};
+		if(props.single){
+			iP.value = props.single.ordem_series?.indexOf('Previsto');
+			iR.value = props.single.ordem_series?.indexOf('Realizado');
+			iPA.value = props.single.ordem_series?.indexOf('PrevistoAcumulado');
+			iRA.value = props.single.ordem_series?.indexOf('RealizadoAcumulado');
+		}
 
-			let iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
-			let iRealizadoAcumulado = props.dataserie.ordem_series.indexOf('RealizadoAcumulado');
-			data.projetado = props.dataserie.linhas.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
-			data.realizado = props.dataserie.linhas.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
-
-			let dataMult = [
-				{
-					"id": "indicador2",
-					"label": "Indicador 2",
-					"series": {
-							"projetado": [
-								{"date":"2020-01-01","value":"8"},
-								{"date":"2020-02-01","value":"5"},
-								{"date":"2020-03-01","value":"16"},
-								{"date":"2020-04-01","value":"7"},
-								{"date":"2020-05-01","value":"10"},
-								{"date":"2020-06-01","value":""}
-							],
-							"realizado": [
-								{"date":"2020-01-01","value":"3"},
-								{"date":"2020-02-01","value":"5"},
-								{"date":"2020-05-01","value":"6"},
-								{"date":"2020-09-01","value":"18"}
-							]
-					}
+		if(props.dataserie?.length && props.dataserie[0] && evolucao.value){
+			let data = [];
+			props.dataserie.forEach(ind=>{
+				let a = {
+					id: ind.id,
+					label: ind.codigo+' - '+ind.titulo,
+					series:{}
 				}
-			];
+				a.series.projetadoAcu = ind.series.map(x=>{ return {date: x.periodo_inicio, value: x.valores_nominais[iPA.value]}; });
+				a.series.realizadoAcu = ind.series.map(x=>{ return {date: x.periodo_inicio, value: x.valores_nominais[iRA.value]}; });
+				a.series.projetado = ind.series.map(x=>{ return {date: x.periodo_inicio, value: x.valores_nominais[iP.value]}; });
+				a.series.realizado = ind.series.map(x=>{ return {date: x.periodo_inicio, value: x.valores_nominais[iR.value]}; });
+				data.push(a);
+			});
 
 			chart.drawChart(data,evolucao.value);
-		}else if(evolucao.value){
-			let dataMult = [
-				{
-					"id": "indicador1",
-					"label": "Indicador 1",
-					"series": {
-							"projetado": [
-								{"date":"2020-01-01","value":"1"},
-								{"date":"2020-02-01","value":"3"},
-								{"date":"2020-03-01","value":"5"},
-								{"date":"2020-04-01","value":"9"},
-								{"date":"2020-05-01","value":"10"},
-								{"date":"2020-06-01","value":"16"}
-							],
-							"realizado": [
-								{"date":"2020-01-01","value":"3"},
-								{"date":"2020-02-01","value":"5"},
-								{"date":"2020-05-01","value":"6"},
-								{"date":"2020-09-01","value":"18"}
-							]
-					}
-				}
-				,{
-					"id": "indicador2",
-					"label": "Indicador 2",
-					"series": {
-							"projetado": [
-								{"date":"2020-01-01","value":"8"},
-								{"date":"2020-02-01","value":"5"},
-								{"date":"2020-03-01","value":"16"},
-								{"date":"2020-04-01","value":"7"},
-								{"date":"2020-05-01","value":"10"},
-								{"date":"2020-06-01","value":""}
-							],
-							"realizado": [
-								{"date":"2020-01-01","value":"3"},
-								{"date":"2020-02-01","value":"5"},
-								{"date":"2020-05-01","value":"6"},
-								{"date":"2020-09-01","value":"18"}
-							]
-					}
-				}
-
-			];
-
-			chart.drawChart(dataMult,evolucao.value);
 		}
 	}
 	onMounted(start);
