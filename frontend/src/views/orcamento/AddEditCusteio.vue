@@ -4,6 +4,7 @@
 	import { Form, Field } from 'vee-validate';
 	import * as Yup from 'yup';
 	import { storeToRefs } from 'pinia';
+	import { router } from '@/router';
 	import { useRoute } from 'vue-router';
 	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 	
@@ -42,8 +43,8 @@
 
 	        values.meta_id = meta_id;
 	        values.ano_referencia = ano;
-	        values.custeio_previsto = values.custeio_previsto.replace(/\./g, '').replace(',','.');
-	        values.investimento_previsto = values.investimento_previsto.replace(/\./g, '').replace(',','.');
+	        if(isNaN(values.custeio_previsto)) values.custeio_previsto = values.custeio_previsto.replace(/\./g, '').replace(',','.');
+	        if(isNaN(values.investimento_previsto)) values.investimento_previsto = values.investimento_previsto.replace(/\./g, '').replace(',','.');
 
             r = await OrcamentosStore.updateOrcamentoCusteio(values);
             msg = 'Dados salvos com sucesso!';
