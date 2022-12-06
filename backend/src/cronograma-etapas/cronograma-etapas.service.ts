@@ -228,7 +228,7 @@ export class CronogramaEtapaService {
 
                     // Cálculo de duração e atraso
                     duracao: await this.getDuracao(cronogramaEtapa.etapa.inicio_real, cronogramaEtapa.etapa.termino_real),
-                    // atraso: await this.getAtraso(cronogramaEtapa.etapa.inicio_previsto, cronogramaEtapa.etapa.termino_previsto),
+                    atraso: await this.getAtraso(cronogramaEtapa.etapa.termino_previsto, cronogramaEtapa.etapa.termino_real),
 
                     responsaveis: cronogramaEtapa.etapa.responsaveis.map(r => {
                         return {
@@ -253,6 +253,7 @@ export class CronogramaEtapaService {
                             prazo: f.prazo,
                             titulo: f.titulo,
                             duracao: await this.getDuracao(f.inicio_real, f.termino_real),
+                            atraso: await this.getAtraso(f.termino_previsto, f.termino_real),
 
                             responsaveis: f.responsaveis.map(r => {
                                 return {
@@ -278,6 +279,7 @@ export class CronogramaEtapaService {
                                     prazo: ff.prazo,
                                     titulo: ff.titulo,
                                     duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
+                                    atraso: await this.getAtraso(ff.termino_previsto, ff.termino_real),
 
                                     responsaveis: ff.responsaveis.map(r => {
                                         return {
@@ -337,23 +339,26 @@ export class CronogramaEtapaService {
         const start: DateTime = DateTime.fromJSDate(inicio_real);
         const end: DateTime   = termino_real ? ( DateTime.fromJSDate(termino_real) ) : ( DateTime.now() );
         
-        const duration: Duration = end.diff(start, ['years', 'months', 'days']);
+        const duration: Duration = end.diff(start, 'days');
 
-        return await this.buildDuracaoRetString(duration)
+        return await this.durationInDaysHuman(duration)
     }
 
-    // async getAtraso(inicio_previsto: Date | null, inicio_real: Date | null, termino_previsto : Date | null, termino_real: Date | null): Promise<String> {
-    //     if (termino_real) {
+    async getAtraso(termino_previsto : Date | null, termino_real: Date | null): Promise<string> {
+        if (!termino_real || !termino_previsto) return '';
 
-    //     } else if (inicio_real) 
-    // }
+        const start: DateTime = DateTime.fromJSDate(termino_previsto);
+        const end: DateTime   = DateTime.fromJSDate(termino_real);
 
-    async buildDuracaoRetString (duration: Duration): Promise<string> {
+        const duration: Duration = end.diff(start, 'days');
+
+        return await this.durationInDaysHuman(duration)
+    }
+
+    async durationInDaysHuman (duration: Duration): Promise<string> {
         let string_format: string;
 
-        duration.as('days');
-
-        if (duration.days == 1) {
+        if (duration.days === 1) {
             string_format = "d 'dia'";
         } else {
             string_format = "d 'dias'";
