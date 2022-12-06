@@ -20,6 +20,10 @@ class Dao:
 
     def __parse_single_resp(self, data:dict, attr_keys:list)->list:
 
+        #se nao definir, retorna como esta
+        if attr_keys is None:
+            return [data]
+
         parsed = {key : data[key] for key in 
                 attr_keys}
             
@@ -29,8 +33,12 @@ class Dao:
 
         parsed = []
         for item in data:
-            parsed_item = {key : item[key] for key in 
-            attr_keys}
+            #se nao definir keys, retorna como esta
+            if attr_keys is not None:
+                parsed_item = {key : item[key] for key in 
+                attr_keys}
+            else:
+                parsed_item = item
             parsed.append(parsed_item)
         return parsed
 

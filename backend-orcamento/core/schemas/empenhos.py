@@ -54,6 +54,8 @@ class Processo(BuscaEmpenho):
     def format_proc(cls, v):
 
         valor_original = v
+        if type(valor_original) != str:
+            v = str(v)
         formatado = v.replace('.', '').replace('/', '')
         formatado = formatado.strip()
 

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from v1 import empenhos_routes
+from v1 import empenhos_routes, itens_dotacao_routes
 
 
 #pode colocar markdown
@@ -26,3 +26,5 @@ app = FastAPI(openapi_url="/",
 
     
 app.include_router(empenhos_routes, prefix="/v1/empenhos")
+app.include_router(itens_dotacao_routes, prefix="/v1/itens_dotacao")
+
