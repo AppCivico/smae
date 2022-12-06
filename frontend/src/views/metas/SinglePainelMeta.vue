@@ -114,7 +114,7 @@ function dateToTitle(d) {
                     </select>
 
                     <div>
-                        <EvolucaoGraphComparison :single="SingleSerie" :dataserie="[SingleSerie.meta?.indicador]"/>
+                        <EvolucaoGraphComparison :single="SingleSerie" :dataserie="[SingleSerie.meta?.indicador].concat(SingleSerie?.detalhes?.filter(x=>x?.iniciativa?.id)?.map(x=>x.iniciativa.indicador[0]))"/>
                     </div>
 
                     <div class="evolucaoTable" ref="tableScroll" 
