@@ -10,7 +10,7 @@ const { user } = storeToRefs(authStore);
 <template>
     <Dashboard>
         <div>
-            <EvolucaoGraphComparison />
+            <EvolucaoGraphComparison/>
         </div>
     </Dashboard>
 </template>
