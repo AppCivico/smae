@@ -138,7 +138,8 @@
                             <div class="ml1 f1">{{rr.termino_real}}</div>
                             <div class="ml1 f1">{{rr.atraso??'-'}}</div>
                             <div class="ml1 f0 flex center" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                <router-link 
+                                <router-link
+                                    v-if="rr.CronogramaEtapa" 
                                     :to="`/monitoramento/cronograma/${parentlink}/editar/${rr.CronogramaEtapa[0].cronograma_id}/${rr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </div>
                         </div>
@@ -167,7 +168,8 @@
                                     <div class="ml1 f1">{{rrr.termino_real}}</div>
                                     <div class="ml1 f1">{{rrr.atraso??'-'}}</div>
                                     <div class="ml1 f0 flex center" style="flex-basis:20px; height: calc(20px + 1rem);">
-                                        <router-link 
+                                        <router-link
+                                            v-if="rrr.CronogramaEtapa" 
                                             :to="`/monitoramento/cronograma/${parentlink}/editar/${rrr.CronogramaEtapa[0].cronograma_id}/${rrr.id}`"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                                     </div>
                                 </div>

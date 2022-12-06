@@ -120,7 +120,7 @@ export const usePdMStore = defineStore({
             try {
                 if(!this.activePdm.id&&!this.activePdm.loading){
                     this.activePdm = { loading: true };
-                    let r = await requestS.get(`${baseUrl}/pdm?ativo=true`);    
+                    let r = await requestS.get(`${baseUrl}/pdm?ativo=true&incluir_auxiliares=true`);    
                     if(r.linhas.length){
                         this.activePdm = (x=>{
                             x.data_inicio = this.dateToField(x.data_inicio);
@@ -140,9 +140,8 @@ export const usePdMStore = defineStore({
 
                             return x;
                         })(r.linhas[0]);
-                        if(r.ciclo_fisico_ativo){
-                            this.activePdm.ciclo_fisico_ativo = r.ciclo_fisico_ativo;
-                        }
+                        if(r.ciclo_fisico_ativo) this.activePdm.ciclo_fisico_ativo = r.ciclo_fisico_ativo;
+                        if(r.orcamento_config) this.activePdm.orcamento_config = r.orcamento_config;
                         return this.activePdm;
                     }else{
                         const alertStore = useAlertStore();
