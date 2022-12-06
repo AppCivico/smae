@@ -54,7 +54,8 @@ const schema = Yup.object().shape({
     titulo: Yup.string().required('Preencha o título'), //  : "string",
     polaridade: Yup.string().required('Selecione a polaridade'), //  : "Neutra",
     periodicidade: Yup.string().required('Selecione a periodicidade'), //  : "Diario",
-    
+    casas_decimais: Yup.string().nullable(),
+
     inicio_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
     fim_medicao: Yup.string().required('Preencha a data').matches(regx,'Formato inválido'), //  : "YYYY-MM-DD",
     
@@ -129,7 +130,8 @@ async function onSubmit(values) {
         values.fim_medicao = fieldToDate(values.fim_medicao);
         values.regionalizavel = !!values.regionalizavel;
         values.nivel_regionalizacao = values.regionalizavel ? Number(values.nivel_regionalizacao) : null;
-        
+        values.casas_decimais = values.casas_decimais ? Number(values.casas_decimais) : null;
+
         //Parent
         if(atividade_id){
             values.atividade_id = Number(atividade_id);
@@ -398,6 +400,11 @@ async function addFunction(f){
                             <option value="Negativa">Negativa</option>
                         </Field>
                         <div class="error-msg">{{ errors.polaridade }}</div>
+                    </div>
+                    <div class="f1">
+                        <label class="label">Casas decimais</label>
+                        <Field name="casas_decimais" type="number" class="inputtext light mb1" :class="{ 'error': errors.casas_decimais }" />
+                        <div class="error-msg">{{ errors.casas_decimais }}</div>
                     </div>
                     <div class="f1">
                         <label class="label flex center">Periodicidade <span class="tvermelho">*</span></label>
