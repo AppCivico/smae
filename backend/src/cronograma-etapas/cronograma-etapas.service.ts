@@ -360,6 +360,8 @@ export class CronogramaEtapaService {
 
         if (duration.days === 1) {
             string_format = "d 'dia'";
+        } else if (duration.days <= 0) {
+            return ''
         } else {
             string_format = "d 'dias'";
         }
