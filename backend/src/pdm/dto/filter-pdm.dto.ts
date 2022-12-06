@@ -14,7 +14,7 @@ export class FilterPdmDto {
 
 export class FilterPdmDetailDto {
     /**
-   * Filtrar Pdm com Ativo?
+   * Incluir dados auxiliares
    * @example "true"
     */
     @IsBoolean()
