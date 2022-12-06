@@ -65,8 +65,9 @@
 			//Eval yDomain and yScale for linear
 			let Y = [];
 			dataMult.forEach( ( data ) => {
-				const Yp = d3.map(data.series.projetadoAcu, d => +d.value);
-				const Yr = d3.map(data.series.realizadoAcu, d => +d.value);
+				const Yp = d3.map(data.series.projetadoAcu, d => d.value).filter(x=>x);
+				const Yr = d3.map(data.series.realizadoAcu, d => d.value).filter(x=>x);
+				console.log(Yr);
 				Y = Y.concat(Yp);
 				Y = Y.concat(Yr);
 			});
@@ -287,7 +288,6 @@
 			for(var i=0;i<X.length;i++){
 				tipArray[i] = { 'date': X[i] }
 			}
-			let aux = {};
 			//Merging all data points for tips info into Tip Array
 			data.forEach( ( data, index ) => {
 				const dataKeys = Object.keys(data.series);
@@ -295,19 +295,15 @@
 					for( var j=0;j<data.series[dataKeys[i]].length;j++ ){
 						for( var k=0;k<tipArray.length;k++ ){
 							if( tipArray[k].date.getTime() == (new Date(data.series[dataKeys[i]][j].date)).getTime() ){
-								aux[index] = aux[index] || {};
-								aux[index][dataKeys[i]] = aux[index][dataKeys[i]] || 0;
 								tipArray[k]['indicadores'] = tipArray[k]['indicadores'] || [];
-								tipArray[k]['indicadores'][index] = tipArray[k]['indicadores'][index] || { "id": data.id, "label": data.label };
-								tipArray[k]['indicadores'][index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value - aux[index][dataKeys[i]] : '-';
-								aux[index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value : aux[index][dataKeys[i]];
+								if(!tipArray[k]['indicadores'][index]) tipArray[k]['indicadores'][index] = { "id": data.id, "label": data.label };
+								tipArray[k]['indicadores'][index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value : '-';
 								break;
 							}
 						}
 					}
 				}
 			} );
-			console.log(tipArray);
 			return tipArray;
 		}
 
@@ -402,10 +398,10 @@
 			g.enter().append("g").attr("id", name);
 
 			const gName = svg.selectAll("g#"+name);
-			const gCircles = gName.selectAll("circle").data(data);
+			const gCircles = gName.selectAll("circle").data(data.filter(x=>{return x.value!==undefined}));
 			gCircles
 				.enter()
-					.filter(function (d) { return d.value !== ""; })
+					//.filter(function (d) { return d.value !== ""; })
 					.append('circle')
 					.attr('class', 'circle-'+name )
 					.attr('r', r )
@@ -424,20 +420,20 @@
 
 			//Creating Path between Data Points
 			let line = d3.line()
-				.x( d => xScale( new Date(d.date) ) ).y( d => yScale( d.value ) )
+				.x( d => xScale( new Date(d.date) ) )
+				.y( d => yScale( d.value ) )
 				.defined(function (d) { return d.value !== ""; });
 
 			let flatline = d3.line()
 				.x( d => xScale( new Date(d.date) ) ).y( sizes.height - sizes.margin.bottom );
 
-			const path = gName.selectAll('path').data(data);
+			const path = gName.selectAll('path').data(data.filter(x=>x.value!==undefined));
 			path
 				.enter()
 					.append('path')
-						.data(data)
-							.attr('d', function(d, i){ return i!=0 ? flatline([d, data[i-1]]) : 'M0 0'; })
-							.attr('class', 'line-'+name)
-							.attr('stroke-width', strokeW)
+						.attr('d', function(d, i){ return i!=0 ? flatline([d, data[i-1]]) : 'M0 0'; })
+						.attr('class', 'line-'+name)
+						.attr('stroke-width', strokeW)
 				.merge(path)
 					.transition().duration(transitionDuration)
 					.attr('d', function(d, i){ return i!=0 ? line([d, data[i-1]]) : 'M0 0'; })
