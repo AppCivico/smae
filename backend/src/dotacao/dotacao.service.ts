@@ -244,7 +244,7 @@ export class DotacaoService {
                                 informacao_valida: true,
                                 sincronizado_em: now,
                                 empenho_liquido: dotacao.empenho_liquido,
-                                pressao_orcamentaria: jaExiste.smae_soma_valor_planejado > dotacao.empenho_liquido,
+                                pressao_orcamentaria: Math.round(jaExiste.smae_soma_valor_planejado * 100) > Math.round(dotacao.empenho_liquido * 100),
                             }
                         });
                     }
