@@ -1890,7 +1890,7 @@ model OrcamentoRealizado {
     dotacao         String
     processo        String?
     nota_empenho    String?
-    valor_empenhado Float   @db.DoublePrecision
+    valor_empenho Float   @db.DoublePrecision @map("valor_empenhado")
     valor_liquidado Float   @db.DoublePrecision
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
