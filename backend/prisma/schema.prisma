@@ -1828,7 +1828,6 @@ model DotacaoProcesso {
     smae_soma_valor_liquidado Float @default(0)
 
     @@unique([ano_referencia, dotacao, dotacao_processo])
-    @@unique([ano_referencia, dotacao_processo])
     @@map("dotacao_processo")
 }
 
