@@ -188,7 +188,6 @@
 
 			//Prepare new data for tooltips
 			let tipArray = this.mergeDataForTooltips(data, X);
-			console.log(tipArray);
 
 			const g = svg.selectAll("g.tooltipslines").data([true]);
 			g.enter().append("g").attr("class", 'tooltipslines');
@@ -247,17 +246,15 @@
 
 			//Creating tooltip element
 			let mes = this.locale.utcFormat("%B/%Y")(d.date);
-			let tipHtml = `<p class="t14 data tprimary">${mes}</p>
-				<!--<p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>-->
-				<p class="tc300 t14">
-					Previsto acumulado até ${mes}: <span>${d.projetadoAcum || '-'}</span><br />
-					<span class="tamarelo">Realizado acumulado até ${mes}: ${d.realizadoAcum || '-'}</span>
-				
-				</p>
-				<p class="tc300 t11 mb0">
-					Previsto ${mes}: <span>${d.projetado || '-'}</span><br />
-					Relizado ${mes}: <span class="tamarelo">${d.realizado || '-'}</span>
-				</p>`;
+			let tipHtml = `<p class="t14 tprimary">${mes}</p>`;
+
+			d.indicadores.forEach(function(el, i){
+				tipHtml += `<p class="t14 indicador tprimary">${el.label}</p>
+					<div class="t14 index${i+1}">
+						<p><i></i> Previsto acumulado: <span>${el.projetadoAcum || '-'}</span> (<span>${el.projetado || '-'}</span>)</p>
+						<p><i></i> Realizado acumulado: <span>${el.realizadoAcum || '-'}</span> (<span>${el.realizado || '-'}</span>)</p>
+					</div>`;
+			});
 
 			el.html(tipHtml);
 		}
@@ -286,24 +283,22 @@
 				tipArray[i] = { 'date': X[i] }
 			}
 			let aux = {};
-
 			//Merging all data points for tips info into Tip Array
-			data.forEach( ( data ) => {
+			data.forEach( ( data, index ) => {
 				const dataKeys = Object.keys(data.series);
 				for( var i=0;i<dataKeys.length;i++ ){
 					for( var j=0;j<data.series[dataKeys[i]].length;j++ ){
 						for( var k=0;k<tipArray.length;k++ ){
-
-
 							if( tipArray[k].date.getTime() == (new Date(data.series[dataKeys[i]][j].date)).getTime() ){
-								aux[dataKeys[i]] = aux[dataKeys[i]] || 0;
-								tipArray[k][dataKeys[i]+'Acum'] = data.series[dataKeys[i]][j].value || 0;
-								tipArray[k][dataKeys[i]] = data.series[dataKeys[i]][j].value - aux[dataKeys[i]];
-								aux[dataKeys[i]] = data.series[dataKeys[i]][j].value;
+								aux[index] = aux[index] || {};
+								aux[index][dataKeys[i]] = aux[index][dataKeys[i]] || 0;
+								tipArray[k]['indicadores'] = tipArray[k]['indicadores'] || [];
+								tipArray[k]['indicadores'][index] = tipArray[k]['indicadores'][index] || { "id": data.id, "label": data.label };
+								tipArray[k]['indicadores'][index][dataKeys[i]+"Acum"] = data.series[dataKeys[i]][j].value || '-';
+								tipArray[k]['indicadores'][index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value - aux[index][dataKeys[i]] : '-';
+								aux[index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value : aux[index][dataKeys[i]];
 								break;
 							}
-
-							
 						}
 					}
 				}
@@ -568,28 +563,27 @@
 </template>
 <style lang="less">
     @import '@/_less/variables.less';
-	
+
+	@cores:
+		#C25E0A,
+		#8B9BB1,
+		#92D505,
+		#89049F,
+		#679504,
+		#FF9CAE,
+		#3B5881,
+		#D33939,
+		#F8AD6D,
+		#C99FCF,
+		#F7D479,
+		#7C3B03;
+
 	.lineGraph{
 		width: 100%; height: auto; margin: 0 auto; overflow: visible;
 		foreignObject{ overflow: visible; }
 		text{
 			text-transform: uppercase;
 		}
-
-		@cores:
-			#C25E0A,
-			#8B9BB1,
-			#92D505,
-			#89049F,
-			#679504,
-			#FF9CAE,
-			#3B5881,
-			#D33939,
-			#F8AD6D,
-			#C99FCF,
-			#F7D479,
-			#7C3B03;
-			
 
 		.color-classes(@i: length(@cores)) when (@i > 0) {
 		    .color-classes(@i - 1);
@@ -668,7 +662,26 @@
 		z-index: 999;
 		p{
 			font-family: sans-serif;
-			&.data, span{ font-weight: 700; }
+			span{ font-weight: 700; }
+			&.indicador{
+				font-weight: 700; margin-bottom: 3px;
+				& + div{
+					margin-bottom: 10px;
+					p{
+						margin-bottom: 3px; width: max-content;
+						display: flex; align-items: center; justify-content: flex-start;
+						i{ display: inline-block; margin-right: 3px; height: 0px; width: 20px; border-bottom: solid 2px black; }
+						&:last-child i{ border-bottom-style: dashed; }
+					}
+					
+					.color-classes(@i: length(@cores)) when (@i > 0) {
+					    .color-classes(@i - 1);
+					    @cor: extract(@cores, @i);
+						&.index@{i} p i{ border-bottom-color: @cor; }
+					}
+					.color-classes();
+				}
+			}
 		}
 		&::after{
 			content: ''; display: block; position: absolute;
