@@ -67,7 +67,6 @@
 			dataMult.forEach( ( data ) => {
 				const Yp = d3.map(data.series.projetadoAcu, d => d.value).filter(x=>x);
 				const Yr = d3.map(data.series.realizadoAcu, d => d.value).filter(x=>x);
-				console.log(Yr);
 				Y = Y.concat(Yp);
 				Y = Y.concat(Yr);
 			});
@@ -152,14 +151,17 @@
 			      		.attr('height', 22)
 			      		.attr('rx', 11);
 
+  			svg.selectAll('g.grupos').remove();
+      		const grupos = svg.append('g').attr('class','grupos');
+
 		    /*DRAW PROJETADO*/
 			dataMult.forEach( (data, i) => {
-				this.drawDataPoints(svg, data.series.projetadoAcu, xScale, yScale, this.sizes, { name: "p"+(i+1), transitionDuration: this.transitionDuration });
+				this.drawDataPoints(grupos, data.series.projetadoAcu, xScale, yScale, this.sizes, { name: "p"+(i+1), transitionDuration: this.transitionDuration });
 			} );
 
 			/*DRAW REALIZADO*/
 			dataMult.forEach( (data, i) => {
-				this.drawDataPoints(svg, data.series.realizadoAcu, xScale, yScale, this.sizes, { name: "r"+(i+1), transitionDuration: this.transitionDuration });
+				this.drawDataPoints(grupos, data.series.realizadoAcu, xScale, yScale, this.sizes, { name: "r"+(i+1), transitionDuration: this.transitionDuration });
 			} );
 
 			/*DRAW META*/
@@ -256,7 +258,7 @@
 
 			d.indicadores.forEach(function(el, i){
 				tipHtml += `<p class="t14 indicador tprimary">${el.label}</p>
-					<div class="t14 index${i+1}">
+					<div class="t11 index${i+1}">
 						<p><i></i> Previsto acumulado: <span>${el.projetadoAcu || '-'}</span> (<span>${el.projetado || '-'}</span>)</p>
 						<p><i></i> Realizado acumulado: <span>${el.realizadoAcu || '-'}</span> (<span>${el.realizado || '-'}</span>)</p>
 					</div>`;
@@ -394,11 +396,10 @@
 			}
 
 			//Creating Data Points
-			const g = svg.selectAll("g#"+name).data([true]);
-			g.enter().append("g").attr("id", name);
+			const g = svg.selectAll("g#"+name).data([true])
+						.enter().append("g").attr("id", name);
 
-			const gName = svg.selectAll("g#"+name);
-			const gCircles = gName.selectAll("circle").data(data.filter(x=>{return x.value!==undefined}));
+			const gCircles = g.selectAll("circle").data(data.filter(x=>{return x.value!==undefined}));
 			gCircles
 				.enter()
 					//.filter(function (d) { return d.value !== ""; })
@@ -427,7 +428,7 @@
 			let flatline = d3.line()
 				.x( d => xScale( new Date(d.date) ) ).y( sizes.height - sizes.margin.bottom );
 
-			const path = gName.selectAll('path').data(data.filter(x=>x.value!==undefined));
+			const path = g.selectAll('path').data(data.filter(x=>x.value!==undefined));
 			path
 				.enter()
 					.append('path')
@@ -614,9 +615,8 @@
 				& + div{
 					margin-bottom: 10px;
 					p{
-						margin-bottom: 3px; width: max-content;
-						display: flex; align-items: center; justify-content: flex-start;
-						i{ display: inline-block; margin-right: 3px; height: 0px; width: 20px; border-bottom: solid 2px black; }
+						margin-bottom: 3px;
+						i{ display: inline-block; vertical-align: middle; margin-right: 3px; height: 0px; width: 20px; border-bottom: solid 2px black; }
 						&:last-child i{ border-bottom-style: dashed; }
 					}
 					
