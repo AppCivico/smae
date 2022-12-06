@@ -244,4 +244,94 @@ export class OrcamentoRealizadoService {
         }
     }
 
+
+    async remove(id: number, user: PessoaFromJwt) {
+        const orcamentoRealizado = await this.prisma.orcamentoRealizado.count({
+            where: { id: +id, removido_em: null },
+        });
+        if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
+
+        const now = new Date(Date.now());
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            const linhasAfetadas = await prismaTxn.orcamentoRealizado.updateMany({
+                where: { id: +id, removido_em: null }, // nao apagar duas vezes
+                data: { removido_em: now, removido_por: user.id }
+            });
+
+            if (linhasAfetadas.count == 1) {
+                const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+
+                if (orcRealizado.nota_empenho) {
+                    const notaTx = await prismaTxn.dotacaoProcessoNota.findUnique({
+                        where: {
+                            ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
+                                ano_referencia: orcRealizado.ano_referencia,
+                                dotacao: orcRealizado.dotacao,
+                                dotacao_processo: orcRealizado.processo!,
+                                dotacao_processo_nota: orcRealizado.nota_empenho
+                            }
+                        },
+                    });
+                    if (!notaTx) throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
+
+                    const smae_soma_valor_empenho = notaTx.smae_soma_valor_empenho - orcRealizado.valor_empenho;
+                    const smae_soma_valor_liquidado = notaTx.smae_soma_valor_liquidado - orcRealizado.valor_liquidado;
+                    await prismaTxn.dotacaoProcessoNota.update({
+                        where: { id: notaTx.id },
+                        data: {
+                            smae_soma_valor_empenho,
+                            smae_soma_valor_liquidado,
+                        }
+                    });
+                } else if (orcRealizado.processo) {
+                    const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
+                        where: {
+                            ano_referencia_dotacao_dotacao_processo: {
+                                ano_referencia: orcRealizado.ano_referencia,
+                                dotacao: orcRealizado.dotacao,
+                                dotacao_processo: orcRealizado.processo,
+                            }
+                        },
+                    });
+                    if (!processoTx) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
+
+                    const smae_soma_valor_empenho = processoTx.smae_soma_valor_empenho - orcRealizado.valor_empenho;
+                    const smae_soma_valor_liquidado = processoTx.smae_soma_valor_liquidado - orcRealizado.valor_liquidado;
+                    await prismaTxn.dotacaoProcesso.update({
+                        where: { id: processoTx.id },
+                        data: {
+                            smae_soma_valor_empenho,
+                            smae_soma_valor_liquidado,
+                        }
+                    });
+                } else if (orcRealizado.dotacao) {
+                    const processoTx = await prismaTxn.dotacaoRealizado.findUnique({
+                        where: {
+                            ano_referencia_dotacao: {
+                                ano_referencia: orcRealizado.ano_referencia,
+                                dotacao: orcRealizado.dotacao,
+                            }
+                        },
+                    });
+                    if (!processoTx) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
+
+                    const smae_soma_valor_empenho = processoTx.smae_soma_valor_empenho - orcRealizado.valor_empenho;
+                    const smae_soma_valor_liquidado = processoTx.smae_soma_valor_liquidado - orcRealizado.valor_liquidado;
+                    await prismaTxn.dotacaoRealizado.update({
+                        where: { id: processoTx.id },
+                        data: {
+                            smae_soma_valor_empenho,
+                            smae_soma_valor_liquidado,
+                        }
+                    });
+                }
+            }
+        }, {
+            isolationLevel: 'Serializable',
+        });
+
+    }
+
+
 }
