@@ -32,59 +32,7 @@
 		}
 
 		/*DRAW CHART*/
-		drawChart(data, el){
-
-			let dataMult = [
-				{
-					"id": "indicador1",
-					"label": "Indicador 1",
-					"series": data
-				},
-				{
-					"id": "indicador2",
-					"label": "Indicador 2",
-					"series": {
-							"projetado": [
-								{"date":"2020-01-01","value":"8"},
-								{"date":"2020-02-01","value":"5"},
-								{"date":"2020-03-01","value":"16"},
-								{"date":"2020-04-01","value":"7"},
-								{"date":"2020-05-01","value":"10"},
-								{"date":"2020-06-01","value":""}
-							],
-							"realizado": [
-								{"date":"2020-01-01","value":"3"},
-								{"date":"2020-02-01","value":"5"},
-								{"date":"2020-03-01","value":"2"},
-								{"date":"2020-04-01","value":""},
-								{"date":"2020-05-01","value":"6"},
-								{"date":"2020-09-01","value":"18"}
-							]
-					}
-				},
-				{
-					"id": "indicador3",
-					"label": "Indicador 3",
-					"series": {
-							"projetado": [
-								{"date":"2020-01-01","value":"2"},
-								{"date":"2020-02-01","value":"4"},
-								{"date":"2020-03-01","value":"6"},
-								{"date":"2020-04-01","value":"8"},
-								{"date":"2020-05-01","value":"10"},
-								{"date":"2020-06-01","value":"12"}
-							],
-							"realizado": [
-								{"date":"2020-01-01","value":"1"},
-								{"date":"2020-02-01","value":"3"},
-								{"date":"2020-03-01","value":"5"},
-								{"date":"2020-04-01","value":""},
-								{"date":"2020-05-01","value":"9"},
-								{"date":"2020-09-01","value":"11"}
-							]
-					}
-				}
-			];
+		drawChart(dataMult, el){
 
 			/*UPDATING SIZE*/
 			this.sizes.width = el.getBoundingClientRect().width;
@@ -527,185 +475,85 @@
 
 	const chart = new smaeChart();
 
-	///TEMP
-	let dataserie = {
-
-	    "linhas": [
-	        {
-	            "periodo": "2020-01",
-	            "agrupador": "2020",
-	            "series": [
-	                {
-	                    "data_valor": "2020-01-01",
-	                    "valor_nominal": "4",
-	                    "referencia": "",
-	                    "conferida": false
-	                },
-	                {
-	                    "data_valor": "2020-01-01",
-	                    "referencia": "",
-	                    "valor_nominal": "5"
-	                },
-	                {
-	                    "data_valor": "2020-01-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-01-01",
-	                    "referencia": "",
-	                    "valor_nominal": "2"
-	                }
-	            ]
-	        },
-	        {
-	            "periodo": "2020-02",
-	            "agrupador": "2020",
-	            "series": [
-	                {
-	                    "data_valor": "2020-02-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-02-01",
-	                    "referencia": "",
-	                    "valor_nominal": "7"
-	                },
-	                {
-	                    "data_valor": "2020-02-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-02-01",
-	                    "referencia": "",
-	                    "valor_nominal": "3"
-	                }
-	            ]
-	        },
-	        {
-	            "periodo": "2020-03",
-	            "agrupador": "2020",
-	            "series": [
-	                {
-	                    "data_valor": "2020-03-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-03-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-03-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-03-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                }
-	            ]
-	        },
-	        {
-	            "periodo": "2020-04",
-	            "agrupador": "2020",
-	            "series": [
-	                {
-	                    "data_valor": "2020-04-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-04-01",
-	                    "referencia": "",
-	                    "valor_nominal": "7"
-	                },
-	                {
-	                    "data_valor": "2020-04-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-04-01",
-	                    "referencia": "",
-	                    "valor_nominal": "5"
-	                }
-	            ]
-	        },
-	        {
-	            "periodo": "2020-05",
-	            "agrupador": "2020",
-	            "series": [
-	                {
-	                    "data_valor": "2020-05-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-05-01",
-	                    "referencia": "",
-	                    "valor_nominal": "11"
-	                },
-	                {
-	                    "data_valor": "2020-05-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-05-01",
-	                    "referencia": "",
-	                    "valor_nominal": "10"
-	                }
-	            ]
-	        },
-	        {
-	            "periodo": "2020-06",
-	            "agrupador": "2020",
-	            "series": [
-	                {
-	                    "data_valor": "2020-06-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-06-01",
-	                    "referencia": "",
-	                    "valor_nominal": "14"
-	                },
-	                {
-	                    "data_valor": "2020-06-01",
-	                    "referencia": "",
-	                    "valor_nominal": ""
-	                },
-	                {
-	                    "data_valor": "2020-06-01",
-	                    "referencia": "",
-	                    "valor_nominal": "11"
-	                }
-	            ]
-	        }
-	    ],
-	    "ordem_series": [
-	        "Previsto",
-	        "PrevistoAcumulado",
-	        "Realizado",
-	        "RealizadoAcumulado"
-	    ]
-	};
-
 	function start(){
-		if(dataserie?.linhas && evolucao.value){
+		if(props.dataserie?.linhas && evolucao.value){
 			let data = {};
 
-			let iPrevistoAcumulado = dataserie.ordem_series.indexOf('PrevistoAcumulado');
-			let iRealizadoAcumulado = dataserie.ordem_series.indexOf('RealizadoAcumulado');
-			data.projetado = dataserie.linhas.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
-			data.realizado = dataserie.linhas.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
+			let iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
+			let iRealizadoAcumulado = props.dataserie.ordem_series.indexOf('RealizadoAcumulado');
+			data.projetado = props.dataserie.linhas.map(x=>{ return {date: x.series[iPrevistoAcumulado].data_valor, value: x.series[iPrevistoAcumulado].valor_nominal}; });
+			data.realizado = props.dataserie.linhas.map(x=>{ return {date: x.series[iRealizadoAcumulado].data_valor, value: x.series[iRealizadoAcumulado].valor_nominal}; });
+
+			let dataMult = [
+				{
+					"id": "indicador2",
+					"label": "Indicador 2",
+					"series": {
+							"projetado": [
+								{"date":"2020-01-01","value":"8"},
+								{"date":"2020-02-01","value":"5"},
+								{"date":"2020-03-01","value":"16"},
+								{"date":"2020-04-01","value":"7"},
+								{"date":"2020-05-01","value":"10"},
+								{"date":"2020-06-01","value":""}
+							],
+							"realizado": [
+								{"date":"2020-01-01","value":"3"},
+								{"date":"2020-02-01","value":"5"},
+								{"date":"2020-05-01","value":"6"},
+								{"date":"2020-09-01","value":"18"}
+							]
+					}
+				}
+			];
+
 			chart.drawChart(data,evolucao.value);
+		}else if(evolucao.value){
+			let dataMult = [
+				{
+					"id": "indicador1",
+					"label": "Indicador 1",
+					"series": {
+							"projetado": [
+								{"date":"2020-01-01","value":"1"},
+								{"date":"2020-02-01","value":"3"},
+								{"date":"2020-03-01","value":"5"},
+								{"date":"2020-04-01","value":"9"},
+								{"date":"2020-05-01","value":"10"},
+								{"date":"2020-06-01","value":"16"}
+							],
+							"realizado": [
+								{"date":"2020-01-01","value":"3"},
+								{"date":"2020-02-01","value":"5"},
+								{"date":"2020-05-01","value":"6"},
+								{"date":"2020-09-01","value":"18"}
+							]
+					}
+				}
+				,{
+					"id": "indicador2",
+					"label": "Indicador 2",
+					"series": {
+							"projetado": [
+								{"date":"2020-01-01","value":"8"},
+								{"date":"2020-02-01","value":"5"},
+								{"date":"2020-03-01","value":"16"},
+								{"date":"2020-04-01","value":"7"},
+								{"date":"2020-05-01","value":"10"},
+								{"date":"2020-06-01","value":""}
+							],
+							"realizado": [
+								{"date":"2020-01-01","value":"3"},
+								{"date":"2020-02-01","value":"5"},
+								{"date":"2020-05-01","value":"6"},
+								{"date":"2020-09-01","value":"18"}
+							]
+					}
+				}
+
+			];
+
+			chart.drawChart(dataMult,evolucao.value);
 		}
 	}
 	onMounted(start);

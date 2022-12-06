@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard} from '@/components';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import { default as EvolucaoGraphComparison } from '@/components/EvolucaoGraphComparison.vue';
 import { useAuthStore, useMetasStore, usePaineisStore } from '@/stores';
 import { useRoute } from 'vue-router';
 
@@ -62,6 +63,35 @@ function dateToTitle(d) {
     var year = dd.getUTCFullYear();
     return `${month}/${year}`;
 }
+
+// Tables
+    let tableScroll = ref(null);
+    let pos = { top: 0, left: 0, x: 0, y: 0 };
+    let draggin = false;
+    const mouseDownHandler = function (e) {
+        tableScroll.value.style.cursor = 'grabbing';
+        tableScroll.value.style.userSelect = 'none';
+        pos = {
+            left: tableScroll.value.scrollLeft,
+            top: tableScroll.value.scrollTop,
+            x: e.clientX,
+            y: e.clientY,
+        };
+        draggin = true;
+    };
+    const mouseMoveHandler = function (e) {
+        if(draggin){
+            const dx = e.clientX - pos.x;
+            const dy = e.clientY - pos.y;
+            tableScroll.value.scrollTop = pos.top - dy;
+            tableScroll.value.scrollLeft = pos.left - dx;
+        }
+    };
+    const mouseUpHandler = function (e) {
+        tableScroll.value.style.cursor = 'grab';
+        tableScroll.value.style.removeProperty('user-select');
+        draggin = false;
+    };
 </script>
 <template>
     <Dashboard>
@@ -83,7 +113,15 @@ function dateToTitle(d) {
                         <option v-for="p in tempPaineis" :key="p.id" :value="p.id">{{p.nome}}</option>
                     </select>
 
-                    <div class="evolucaoTable">
+                    <div>
+                        <EvolucaoGraphComparison />
+                    </div>
+
+                    <div class="evolucaoTable" ref="tableScroll" 
+                        @mousedown="mouseDownHandler"
+                        @mousemove="mouseMoveHandler"
+                        @mouseup="mouseUpHandler"
+                    >
                         <div class="flex header bb" :style="{width: ((ModeloSerie.length+1)*400)+'px'}">
                             <div class="flex center p1 f0 g1 stickyleft br">
                                 <svg class="f0" style="flex-basis: 2rem;" width="28" height="28" viewBox="0 0 28 28" color="#F2890D" xmlns="http://www.w3.org/2000/svg"><use xlink:href="#i_indicador" /></svg>
