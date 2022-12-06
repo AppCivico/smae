@@ -1,5 +1,7 @@
+import { OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from "class-validator";
+import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, Min, ValidateIf } from "class-validator";
+import { OrcamentoRealizado } from "../entities/orcamento-realizado.entity";
 
 export class CreateOrcamentoRealizadoDto {
 
@@ -40,21 +42,21 @@ export class CreateOrcamentoRealizadoDto {
     ano_referencia: number;
 
     /**
-    * Valor Empenho para meta
+    * Valor Empenho para meta - no momento aceitando zero, mas é meio sem sentido IMHO, uma vez que se ta registrando é pq ta alocado!
     * @example "42343.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Empenho com até duas casas decimais' })
-    @IsPositive({ message: '$property| Valor Empenhado precisa ser positivo' })
+    @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
     @Type(() => Number)
     valor_empenho: number;
 
 
     /**
-    * Valor Liquidado para meta
+    * Valor Liquidado para meta - zero ou mais
     * @example "42343.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Liquidado com até duas casas decimais' })
-    @IsPositive({ message: '$property| Valor Liquidado precisa ser positivo' })
+    @Min(0, { message: '$property| Valor Liquidado precisa ser positivo ou zero', })
     @Type(() => Number)
     valor_liquidado: number;
 
@@ -70,22 +72,28 @@ export class CreateOrcamentoRealizadoDto {
     /**
     * processo: esperado algo como "6016.2021/00532295", "6016.2021/0053229-5" ou "6016202100532295"
     * no banco será normalizado para o valor o número sozinho
-    * @example "6016202100532295"
+    * @example "6016202100711203"
     */
+    @IsOptional()
     @IsString()
     @MaxLength(20)
     @Matches(/^\d{4}\.?\d{4}\/?\d{7}\-?\d$/, { message: 'Processo não está no formato esperado: 0000.0000/0000000-0' })
-    processo: string;
+    @ValidateIf((object, value) => value !== null && value !== '')
+    processo?: string | null;
 
     /**
     * dotacao: esperado exatamente 5 dígitos
     * @example "00000"
     */
+    @IsOptional()
     @IsString()
     @MaxLength(6)
     @Matches(/^\d{5}$/, { message: 'Nota não está no formato esperado: 00000' })
-    nota_empenho: string;
+    @ValidateIf((object, value) => value !== null && value !== '')
+    nota_empenho?: string | null;
 }
+
+export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, ['ano_referencia', 'dotacao', 'processo', 'nota_empenho']) { }
 
 export class FilterOrcamentoRealizadoDto {
     /**
@@ -98,12 +106,30 @@ export class FilterOrcamentoRealizadoDto {
     meta_id?: number;
 
     /**
-  * Filtrar por meta_id: eg: 00.00.00.000.0000.0.000.00000000.00
+  * Filtrar por dotacao: eg: 00.00.00.000.0000.0.000.00000000.00
   * @example ""
    */
     @IsOptional()
     @IsString()
     dotacao?: string;
+
+    /**
+    * Filtrar por processo
+    * @example ""
+    */
+    @IsOptional()
+    @IsString()
+    @MaxLength(20)
+    processo?: string;
+
+    /**
+   * Filtrar por nota_empenho
+   * @example ""
+   */
+    @IsOptional()
+    @IsString()
+    @MaxLength(6)
+    nota_empenho?: string;
 
     /**
    * Sempre é necessário passar o ano_referencia eg: 2022
@@ -116,5 +142,5 @@ export class FilterOrcamentoRealizadoDto {
 }
 
 export class ListOrcamentoRealizadoDto {
-    //linhas: OrcamentoRealizado[]
+    linhas: OrcamentoRealizado[]
 }

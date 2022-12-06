@@ -7,7 +7,7 @@ import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-crono
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
-import { CronogramaEtapa } from './entities/cronograma-etapa.entity';
+import { CECronogramaEtapaDto } from './entities/cronograma-etapa.entity';
 
 @Injectable()
 export class CronogramaEtapaService {
@@ -19,7 +19,6 @@ export class CronogramaEtapaService {
         let etapaId = filters?.etapa_id;
         let inativo = filters?.inativo;
 
-        let ret: CronogramaEtapa[] = [];
 
         if (filters && filters.cronograma_etapa_ids && etapaId) {
             if (filters.cronograma_etapa_ids.includes(etapaId)) {
@@ -63,7 +62,7 @@ export class CronogramaEtapaService {
                                         id: true,
                                         nome_exibicao: true
                                     }
-                                }                                
+                                }
                             }
                         },
 
@@ -189,6 +188,7 @@ export class CronogramaEtapaService {
             ]
         });
 
+        let ret: CECronogramaEtapaDto[] = [];
         let lastOrdemVal = 0;
         for (const cronogramaEtapa of cronogramaEtapas) {
 
@@ -212,6 +212,8 @@ export class CronogramaEtapaService {
                 ordem: ordem,
 
                 etapa: {
+                    CronogramaEtapa: [{ cronograma_id: cronogramaEtapa.cronograma_id }],
+
                     id: cronogramaEtapa.etapa.id,
                     etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,
                     regiao_id: cronogramaEtapa.etapa.regiao_id,
@@ -223,13 +225,66 @@ export class CronogramaEtapaService {
                     termino_real: cronogramaEtapa.etapa.termino_real,
                     prazo: cronogramaEtapa.etapa.prazo,
                     titulo: cronogramaEtapa.etapa.titulo,
-                    etapa_filha: cronogramaEtapa.etapa.etapa_filha,
+
                     responsaveis: cronogramaEtapa.etapa.responsaveis.map(r => {
                         return {
                             id: r.pessoa.id,
                             nome_exibicao: r.pessoa.nome_exibicao
                         }
-                    })
+                    }),
+
+                    etapa_filha: cronogramaEtapa.etapa.etapa_filha.map(f => {
+
+                        return {
+                            CronogramaEtapa: f.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
+
+                            id: f.id,
+                            etapa_pai_id: f.etapa_pai_id,
+                            regiao_id: f.regiao_id,
+                            nivel: f.nivel,
+                            descricao: f.descricao,
+                            inicio_previsto: f.inicio_previsto,
+                            termino_previsto: f.termino_previsto,
+                            inicio_real: f.inicio_real,
+                            termino_real: f.termino_real,
+                            prazo: f.prazo,
+                            titulo: f.titulo,
+
+
+                            responsaveis: f.responsaveis.map(r => {
+                                return {
+                                    id: r.pessoa.id,
+                                    nome_exibicao: r.pessoa.nome_exibicao
+                                }
+                            }),
+
+                            etapa_filha: f.etapa_filha.map(ff => {
+
+                                return {
+                                    CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
+
+                                    id: ff.id,
+                                    etapa_pai_id: ff.etapa_pai_id,
+                                    regiao_id: ff.regiao_id,
+                                    nivel: ff.nivel,
+                                    descricao: ff.descricao,
+                                    inicio_previsto: ff.inicio_previsto,
+                                    termino_previsto: ff.termino_previsto,
+                                    inicio_real: ff.inicio_real,
+                                    termino_real: ff.termino_real,
+                                    prazo: ff.prazo,
+                                    titulo: ff.titulo,
+
+                                    responsaveis: ff.responsaveis.map(r => {
+                                        return {
+                                            id: r.pessoa.id,
+                                            nome_exibicao: r.pessoa.nome_exibicao
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    }),
                 },
 
                 cronograma_origem_etapa: {

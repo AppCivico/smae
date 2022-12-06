@@ -86,6 +86,8 @@ export class DotacaoProcessoService {
                         });
                     }
 
+                    // nao se atualiza as tabelas de Dotação aqui, pois os valores são de outro endpoint
+
                 }, {
                     isolationLevel: 'Serializable',
                     maxWait: 15000,
