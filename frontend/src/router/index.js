@@ -19,7 +19,7 @@ import { AddEditPdM, ListPdM } from '@/views/pdm';
 import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao, SinglePainelMeta } from '@/views/metas';
 import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade, SingleAtividade } from '@/views/metas';
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
-import { MetaOrcamento } from '@/views/orcamento';
+import { MetaOrcamento, AddEditCusteio } from '@/views/orcamento';
 import { ListRegions } from '@/views/regions';
 import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
 import { ListCiclos, ListCiclosPassados, ListMonitoramentoMetas, ListMonitoramentoMetasEvolucao, ListMonitoramentoMetasCronograma, MonitoramentoMetas, MonitoramentoMetasCronograma } from '@/views/monitoramento';
@@ -171,6 +171,7 @@ export const router = createRouter({
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/atividade', component: SingleCronograma, props:{group:"monitorar",recorte:"atividade",submenu:SubmenuMetas} },
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/:etapa_id', component: SingleCronograma, props:{group:"monitorar",submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento', component: MetaOrcamento, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/custeio/:ano', component: AddEditCusteio, props:{submenu:SubmenuMetas} },
                 
                 { path: ':meta_id/iniciativas',
                     children: [

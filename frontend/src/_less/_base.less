@@ -142,6 +142,7 @@
 		&:hover{
 			.tamarelo;
 		}
+		&.disabled{cursor: default; .tc200;}
 	}
 	.alert-wrap{
 		position: fixed; left: 0; top: 0;
@@ -618,7 +619,7 @@
 			position: absolute; bottom: ~"calc(100% + .5rem)"; right: 50%; transform: translateX(50%);
 		    width: max-content; max-width: 200px; background: @primary; color: white;
 			border-radius: .5rem; padding: 1rem; display: none;
-			.t11; text-align: center; line-height: 1.4;
+			.t11; .w400; text-align: center; text-transform: none; line-height: 1.4;
 			animation: fadeIn .5s; z-index: 99;
 			.bs(0px 8px 16px rgba(21, 39, 65, 0.1));
 			&:before{

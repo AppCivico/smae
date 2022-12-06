@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router';
 import { Dashboard} from '@/components';
 import { default as SimpleOrcamento} from '@/components/orcamento/SimpleOrcamento.vue';
 
-import { useAlertStore, useEditModalStore, useAuthStore, useMetasStore, useOrcamentosStore } from '@/stores';
+import { useAlertStore, useEditModalStore, useAuthStore, usePdMStore, useMetasStore, useOrcamentosStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
@@ -27,70 +27,14 @@ const parent_id = atividade_id??iniciativa_id??meta_id??false;
 const parent_field = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
 let parentLabel = ref(atividade_id?'-':iniciativa_id?'-':meta_id?'Meta':false);
 
+const OrcamentosStore = useOrcamentosStore();
+OrcamentosStore.clear();
+
 (async()=>{
     await MetasStore.getPdM();
     if(atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
     else if(iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
 })();
-
-const OrcamentosStore = useOrcamentosStore();
-//const { metaOrcamentos } = storeToRefs(OrcamentosStore);
-//OrcamentosStore.getById(meta_id);
-
-let metaOrcamentos = ref([
-    {
-      "meta_id": 205,
-      "ano_referencia": 2022,
-      "custeio_previsto": 12,
-      "investimento_previsto": 23,
-      "parte_dotacao": "12.1233.1233.33",
-      "ultima_revisao": true,
-      "criado_em": "2022-12-05T12:48:40.075Z",
-      "criador": {
-        "nome_exibicao": "Nome"
-      },
-      "id": 1
-    },
-    {
-      "meta_id": 205,
-      "ano_referencia": 2021,
-      "custeio_previsto": null,
-      "investimento_previsto": null,
-      "parte_dotacao": "",
-      "ultima_revisao": true,
-      "criado_em": "2022-12-05T12:48:40.075Z",
-      "criador": {
-        "nome_exibicao": "Nome"
-      },
-      "id": 1
-    },
-    {
-      "meta_id": 205,
-      "ano_referencia": 2019,
-      "custeio_previsto": null,
-      "investimento_previsto": null,
-      "parte_dotacao": "",
-      "ultima_revisao": true,
-      "criado_em": "2022-12-05T12:48:40.075Z",
-      "criador": {
-        "nome_exibicao": "Nome"
-      },
-      "id": 1
-    },
-    {
-      "meta_id": 205,
-      "ano_referencia": 2020,
-      "custeio_previsto": null,
-      "investimento_previsto": null,
-      "parte_dotacao": "",
-      "ultima_revisao": true,
-      "criado_em": "2022-12-05T12:48:40.075Z",
-      "criador": {
-        "nome_exibicao": "Nome"
-      },
-      "id": 1
-    },
-])
 
 function start(){
 }
@@ -108,37 +52,34 @@ onUpdated(()=>{start()});
         </div>
         
         <div class="boards">
-            <template v-if="metaOrcamentos?.length">
-                <template v-if="fs = metaOrcamentos.filter(x=>x.ano_referencia==new Date().getUTCFullYear())">
+            <template v-if="activePdm.id">
+                <template v-if="fs = activePdm.orcamento_config.filter(x=>x.ano_referencia==new Date().getUTCFullYear())">
                     <h2 v-if="fs.length" class="mb2">Ano corrente</h2>
                     <template v-for="orc in fs" :key="orc.ano_referencia">
-                        <SimpleOrcamento :item="orc" :parentlink="parentlink" />
+                        <SimpleOrcamento :meta_id="meta_id" :config="orc" :parentlink="parentlink" />
                     </template>
                     
                 </template>
 
-                <template v-if="fs = metaOrcamentos.filter(x=>x.ano_referencia>new Date().getUTCFullYear()).sort((a,b)=>b.ano_referencia-a.ano_referencia)">
+                <template v-if="fs = activePdm.orcamento_config.filter(x=>x.ano_referencia>new Date().getUTCFullYear()).sort((a,b)=>b.ano_referencia-a.ano_referencia)">
                     <h2 v-if="fs.length" class="mb2">Próximos anos</h2>
                     <template v-for="orc in fs" :key="orc.ano_referencia">
-                        <SimpleOrcamento :item="orc" :parentlink="parentlink" />
+                        <SimpleOrcamento :meta_id="meta_id" :config="orc" :parentlink="parentlink" />
                     </template>
                 </template>
-                <template v-if="fs = metaOrcamentos.filter(x=>x.ano_referencia<new Date().getUTCFullYear()).sort((a,b)=>b.ano_referencia-a.ano_referencia)">
+                <template v-if="fs = activePdm.orcamento_config.filter(x=>x.ano_referencia<new Date().getUTCFullYear()).sort((a,b)=>b.ano_referencia-a.ano_referencia)">
                     <h2 v-if="fs.length" class="mb2">Anos anteriores</h2>
                     <template v-for="orc in fs" :key="orc.ano_referencia">
-                        <SimpleOrcamento :item="orc" :parentlink="parentlink" />
+                        <SimpleOrcamento :meta_id="meta_id" :config="orc" :parentlink="parentlink" />
                     </template>
                     
                 </template>
             </template>
-            <template v-else-if="metaOrcamentos.loading">
+            <template v-else-if="activePdm.loading">
                 <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
             </template>
-            <template v-else-if="metaOrcamentos.error">
-                <div class="error p1"><p class="error-msg">Error: {{metaOrcamentos.error}}</p></div>
-            </template>
-            <template v-else>
-                <div class="error p1"><p class="error-msg">Nenhum item encontrado.</p></div>
+            <template v-else-if="activePdm.error">
+                <div class="error p1"><p class="error-msg">Error: {{activePdm.error}}</p></div>
             </template>
         </div>
     </Dashboard>

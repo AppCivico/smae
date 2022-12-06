@@ -13,7 +13,6 @@
 	const PdMStore = usePdMStore();
 	const { singlePdm } = storeToRefs(PdMStore);
 
-
 	let anosOrcamento = ref({});
 	(async()=>{
 		await PdMStore.getById(pdm_id);

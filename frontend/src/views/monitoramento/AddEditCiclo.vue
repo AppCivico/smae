@@ -29,9 +29,16 @@
         try {
             var msg;
             var r;
+
+            values.inicio_coleta = fieldToDate(values.inicio_coleta);
+            values.inicio_qualificacao = fieldToDate(values.inicio_qualificacao);
+            values.inicio_analise_risco = fieldToDate(values.inicio_analise_risco);
+            values.inicio_fechamento = fieldToDate(values.inicio_fechamento);
+            values.fechamento = fieldToDate(values.fechamento);
+
             r = await CiclosStore.updateCiclos(SingleCiclo.value.id, values);
             msg = 'Dados salvos com sucesso!';
-            
+
             if(r == true){
                 CiclosStore.clear();
                 CiclosStore.getCiclos();
@@ -56,6 +63,13 @@
         var month = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"][dd.getUTCMonth()];
         var year = dd.getUTCFullYear();
         return `${month} ${year}`;
+    }
+    function fieldToDate(d){
+        if(d){
+            var x=d.split('/');
+            return (x.length==3) ? new Date(Date.UTC(x[2],x[1]-1,x[0])).toISOString().substring(0, 10) : null;
+        }
+        return null;
     }
     function maskDate(el){
         var kC = event.keyCode;
