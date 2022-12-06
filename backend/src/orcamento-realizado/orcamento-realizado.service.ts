@@ -5,7 +5,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { OrcamentoPlanejado } from '../orcamento-planejado/entities/orcamento-planejado.entity';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
+import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto, UpdateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 
 @Injectable()
@@ -74,6 +74,120 @@ export class OrcamentoRealizadoService {
 
         return created;
 
+    }
+
+    async update(id: number, dto: UpdateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
+            where: { id: +id, removido_em: null },
+        });
+        if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
+        console.log(dto);
+
+        const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
+
+        const meta = await this.prisma.meta.findFirst({
+            where: { id: meta_id!, removido_em: null },
+            select: { pdm_id: true, id: true }
+        });
+        if (!meta) throw new HttpException('meta não encontrada', 400);
+        const anoCount = await this.prisma.pdmOrcamentoConfig.count({
+            where: { pdm_id: meta.pdm_id, ano_referencia: orcamentoRealizado.ano_referencia, execucao_disponivel: true }
+        });
+        if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
+
+        const updated = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+
+            const now = new Date(Date.now());
+
+            const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+
+            if (orcRealizado.nota_empenho) {
+                const notaTx = await prismaTxn.dotacaoProcessoNota.findUnique({
+                    where: {
+                        ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
+                            ano_referencia: orcRealizado.ano_referencia,
+                            dotacao: orcRealizado.dotacao,
+                            dotacao_processo: orcRealizado.processo!,
+                            dotacao_processo_nota: orcRealizado.nota_empenho
+                        }
+                    },
+                });
+                if (!notaTx) throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
+
+                const smae_soma_valor_empenho = notaTx.smae_soma_valor_empenho - orcRealizado.valor_empenho + dto.valor_empenho;
+                const smae_soma_valor_liquidado = notaTx.smae_soma_valor_liquidado - orcRealizado.valor_liquidado + dto.valor_liquidado;
+                await prismaTxn.dotacaoProcessoNota.update({
+                    where: { id: notaTx.id },
+                    data: {
+                        smae_soma_valor_empenho,
+                        smae_soma_valor_liquidado,
+                    }
+                });
+            } else if (orcRealizado.processo) {
+                const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
+                    where: {
+                        ano_referencia_dotacao_dotacao_processo: {
+                            ano_referencia: orcRealizado.ano_referencia,
+                            dotacao: orcRealizado.dotacao,
+                            dotacao_processo: orcRealizado.processo,
+                        }
+                    },
+                });
+                if (!processoTx) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
+
+                const smae_soma_valor_empenho = processoTx.smae_soma_valor_empenho - orcRealizado.valor_empenho + dto.valor_empenho;
+                const smae_soma_valor_liquidado = processoTx.smae_soma_valor_liquidado - orcRealizado.valor_liquidado + dto.valor_liquidado;
+                await prismaTxn.dotacaoProcesso.update({
+                    where: { id: processoTx.id },
+                    data: {
+                        smae_soma_valor_empenho,
+                        smae_soma_valor_liquidado,
+                    }
+                });
+            } else if (orcRealizado.dotacao) {
+                const processoTx = await prismaTxn.dotacaoRealizado.findUnique({
+                    where: {
+                        ano_referencia_dotacao: {
+                            ano_referencia: orcRealizado.ano_referencia,
+                            dotacao: orcRealizado.dotacao,
+                        }
+                    },
+                });
+                if (!processoTx) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
+
+                const smae_soma_valor_empenho = processoTx.smae_soma_valor_empenho - orcRealizado.valor_empenho + dto.valor_empenho;
+                const smae_soma_valor_liquidado = processoTx.smae_soma_valor_liquidado - orcRealizado.valor_liquidado + dto.valor_liquidado;
+                await prismaTxn.dotacaoRealizado.update({
+                    where: { id: processoTx.id },
+                    data: {
+                        smae_soma_valor_empenho,
+                        smae_soma_valor_liquidado,
+                    }
+                });
+            }
+
+            const updated = await prismaTxn.orcamentoRealizado.update({
+                where: {
+                    id: orcRealizado.id,
+                },
+                data: {
+                    meta_id: meta_id!,
+                    iniciativa_id,
+                    atividade_id,
+                    valor_empenho: dto.valor_empenho,
+                    valor_liquidado: dto.valor_liquidado,
+                },
+            });
+
+
+            return updated;
+        }, {
+            isolationLevel: 'Serializable',
+            maxWait: 5000,
+            timeout: 100000
+        });
+
+        return updated;
     }
 
     private async atualizaDotacao(prismaTxn: Prisma.TransactionClient, dto: CreateOrcamentoRealizadoDto, dotacao: string) {
