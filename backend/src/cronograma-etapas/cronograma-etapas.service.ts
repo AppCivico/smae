@@ -351,12 +351,12 @@ export class CronogramaEtapaService {
     async buildDuracaoRetString (duration: Duration): Promise<string> {
         let string_format: string;
 
-        if (duration.years > 0) {
-            string_format = "y ano(s), M mês(es), d dia(s)";
-        } else if (duration.months > 0) {
-            string_format = "M mês(es), d dia(s)";
+        duration.as('days');
+
+        if (duration.days == 1) {
+            string_format = "d 'dia'";
         } else {
-            string_format = "d dia(s)";
+            string_format = "d 'dias'";
         }
 
         return duration.toFormat(string_format);
