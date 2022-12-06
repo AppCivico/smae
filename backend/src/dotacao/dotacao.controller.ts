@@ -69,7 +69,7 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados de dotação a partir da Nota de Empenho, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
-            '**(em teoria) Retorna sempre apenas uma linha**'
+            '**Retorna sempre apenas uma linha, se voltar mais de uma no SOF, retorna erro 400**'
     })
     async valorRealizadoDotacaoNotaEmpenho(@Body() dto: AnoDotacaoNotaEmpenhoDto): Promise<ListValorRealizadoNotaEmpenhoDto> {
         return {

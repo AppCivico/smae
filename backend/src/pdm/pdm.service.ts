@@ -282,6 +282,8 @@ export class PdmService {
 
     @Cron('0 * * * * *')
     async handleCron() {
+        if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
             const locked: {
@@ -571,7 +573,7 @@ export class PdmService {
                             pdm_id: pdm_id
                         }
                     });
-                    
+
                     return await this.prisma.pdmOrcamentoConfig.create({
                         data: {
                             ano_referencia: r.ano_referencia,
@@ -624,7 +626,7 @@ export class PdmService {
                             planejado_disponivel: orcamentoConfig.planejado_disponivel,
                             execucao_disponivel: orcamentoConfig.execucao_disponivel
                         },
-                        select: {id: true}
+                        select: { id: true }
                     })
                 )
             }
