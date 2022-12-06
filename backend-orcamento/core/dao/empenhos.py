@@ -3,7 +3,7 @@ from functools import partial
 from collections import defaultdict
 
 from .base import Dao
-from .api_client import SofClient
+from .api_client import ClientEmpenhos as SofClient
 from ..utils.utils_dotacao import ReconstructDotacao
 
 from config import SOF_API_TOKEN
