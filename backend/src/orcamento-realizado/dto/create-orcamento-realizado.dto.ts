@@ -1,6 +1,6 @@
 import { OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, Min } from "class-validator";
+import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, Min, ValidateIf } from "class-validator";
 import { OrcamentoRealizado } from "../entities/orcamento-realizado.entity";
 
 export class CreateOrcamentoRealizadoDto {
@@ -74,18 +74,22 @@ export class CreateOrcamentoRealizadoDto {
     * no banco será normalizado para o valor o número sozinho
     * @example "6016202100711203"
     */
+    @IsOptional()
     @IsString()
     @MaxLength(20)
     @Matches(/^\d{4}\.?\d{4}\/?\d{7}\-?\d$/, { message: 'Processo não está no formato esperado: 0000.0000/0000000-0' })
+    @ValidateIf((object, value) => value !== null && value !== '')
     processo?: string | null;
 
     /**
     * dotacao: esperado exatamente 5 dígitos
     * @example "00000"
     */
+    @IsOptional()
     @IsString()
     @MaxLength(6)
     @Matches(/^\d{5}$/, { message: 'Nota não está no formato esperado: 00000' })
+    @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
 }
 

@@ -319,11 +319,12 @@ export class OrcamentoRealizadoService {
                 smae_soma_valor_empenho: true,
                 smae_soma_valor_liquidado: true,
                 dotacao_processo: true,
+                dotacao: true,
             }
         });
         const processoInfoRef: Record<string, typeof processoInfo[0]> = {};
         for (const processo of processoInfo) {
-            processoInfoRef[processo.dotacao_processo] = processo;
+            processoInfoRef[processo.dotacao + '_' + processo.dotacao_processo] = processo;
         }
 
         // cruza as dotações
@@ -356,7 +357,7 @@ export class OrcamentoRealizadoService {
                 smae_soma_valor_empenho = notaInfo.smae_soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = notaInfo.smae_soma_valor_liquidado.toFixed(2);
             } else if (orcaRealizado.processo) {
-                const processoInfo = processoInfoRef[orcaRealizado.processo];
+                const processoInfo = processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
                 smae_soma_valor_empenho = processoInfo.smae_soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = processoInfo.smae_soma_valor_liquidado.toFixed(2);
             } else {
