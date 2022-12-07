@@ -27,10 +27,10 @@ export class DotacaoService {
 
         if (dotacaoExistente && dotacaoExistente.informacao_valida) {
             return {
-                empenho_liquido: dotacaoExistente.empenho_liquido,
+                empenho_liquido: dotacaoExistente.empenho_liquido.toFixed(2),
                 id: dotacaoExistente.id,
                 informacao_valida: dotacaoExistente.informacao_valida,
-                smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado,
+                smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado.toFixed(2),
             }
         }
 
@@ -48,9 +48,9 @@ export class DotacaoService {
 
         return {
             id: dotacaoPlanejado.id,
-            empenho_liquido: dotacaoPlanejado.empenho_liquido,
+            empenho_liquido: dotacaoPlanejado.empenho_liquido.toFixed(2),
             informacao_valida: dotacaoPlanejado.informacao_valida,
-            smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado,
+            smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado.toFixed(2),
         }
     }
 
@@ -95,12 +95,12 @@ export class DotacaoService {
             id: dotacao.id,
             dotacao: dotacao.dotacao,
             informacao_valida: dotacao.informacao_valida,
-            empenho_liquido: dotacao.empenho_liquido,
-            valor_liquidado: dotacao.valor_liquidado,
+            empenho_liquido: dotacao.empenho_liquido.toFixed(2),
+            valor_liquidado: dotacao.valor_liquidado.toFixed(2),
             mes_utilizado: dotacao.mes_utilizado,
 
-            smae_soma_valor_empenho: dotacao.smae_soma_valor_empenho,
-            smae_soma_valor_liquidado: dotacao.smae_soma_valor_liquidado,
+            smae_soma_valor_empenho: dotacao.smae_soma_valor_empenho.toFixed(2),
+            smae_soma_valor_liquidado: dotacao.smae_soma_valor_liquidado.toFixed(2),
         };
     }
 
