@@ -1,20 +1,20 @@
 export class ValorPlanejadoDto {
     informacao_valida: boolean
-    empenho_liquido: number
+    empenho_liquido: string
     id: number
-    smae_soma_valor_planejado: number
+    smae_soma_valor_planejado: string
 }
 
 export class ValorRealizadoDotacaoDto {
     id: number
     dotacao: string
     informacao_valida: boolean
-    empenho_liquido: number
-    valor_liquidado: number
+    empenho_liquido: string
+    valor_liquidado: string
     mes_utilizado: number
 
-    smae_soma_valor_empenho: number
-    smae_soma_valor_liquidado: number
+    smae_soma_valor_empenho: string
+    smae_soma_valor_liquidado: string
 }
 
 export class ListValorRealizadoDotacaoDto {

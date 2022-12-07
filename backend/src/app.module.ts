@@ -47,6 +47,7 @@ import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planej
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { SofApiModule } from './sof-api/sof-api.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
+import { SofEntidadeModule } from './sof-entidade/sof-entidade.module';
 
 
 @Module({
@@ -100,6 +101,7 @@ import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realiz
             },
         ]),
         PdmCicloModule,
+        SofEntidadeModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

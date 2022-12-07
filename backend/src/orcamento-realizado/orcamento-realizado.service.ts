@@ -8,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto, UpdateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 
+const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
+
 @Injectable()
 export class OrcamentoRealizadoService {
     constructor(
@@ -207,13 +209,13 @@ export class OrcamentoRealizadoService {
         const novaSomaLiquido = dotacaoTx.smae_soma_valor_liquidado + dto.valor_liquidado;
 
         if (Math.round(novaSomaEmpenho * 100) > Math.round(dotacaoTx.empenho_liquido * 100)) {
-            throw new HttpException(`Novo valor de empenho no SMAE ${novaSomaEmpenho.toFixed(2)} seria maior do que o valor de empenho para a Dotação ${dotacaoTx.empenho_liquido.toFixed(2)}.` +
-                'Revise os valores ou utilize o botão "Validar" para atualizar os valores', 400);
+            throw new HttpException(`Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para a Dotação ${dotacaoTx.empenho_liquido.toFixed(2)}.` +
+                FRASE_FIM, 400);
         }
 
         if (Math.round(novaSomaLiquido * 100) > Math.round(dotacaoTx.valor_liquidado * 100)) {
-            throw new HttpException(`Novo valor de empenho no SMAE ${novaSomaLiquido.toFixed(2)} seria maior do que o valor de empenho para a Dotação ${dotacaoTx.valor_liquidado.toFixed(2)}.` +
-                'Revise os valores ou utilize o botão "Validar" para atualizar os valores', 400);
+            throw new HttpException(`Novo valor de liquidado no SMAE (${novaSomaLiquido.toFixed(2)}) seria maior do que o valor de liquidado para a Dotação (${dotacaoTx.valor_liquidado.toFixed(2)}).` +
+                FRASE_FIM, 400);
         }
 
         await prismaTxn.dotacaoRealizado.update({
@@ -244,13 +246,13 @@ export class OrcamentoRealizadoService {
         const novaSomaLiquido = processoTx.smae_soma_valor_liquidado + dto.valor_liquidado;
 
         if (Math.round(novaSomaEmpenho * 100) > Math.round(processoTx.empenho_liquido * 100)) {
-            throw new HttpException(`Novo valor de empenho no SMAE ${novaSomaEmpenho.toFixed(2)} seria maior do que o valor de empenho para o Processo ${processoTx.empenho_liquido.toFixed(2)}.` +
-                'Revise os valores ou utilize o botão "Validar" para atualizar os valores', 400);
+            throw new HttpException(`Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para o Processo (${processoTx.empenho_liquido.toFixed(2)}).` +
+                FRASE_FIM, 400);
         }
 
         if (Math.round(novaSomaLiquido * 100) > Math.round(processoTx.valor_liquidado * 100)) {
-            throw new HttpException(`Novo valor de empenho no SMAE ${novaSomaLiquido.toFixed(2)} seria maior do que o valor de empenho para o Processo ${processoTx.valor_liquidado.toFixed(2)}.` +
-                'Revise os valores ou utilize o botão "Validar" para atualizar os valores', 400);
+            throw new HttpException(`Novo valor de liquidado no SMAE (${novaSomaLiquido.toFixed(2)}) seria maior do que o valor liquidado para o Processo (${processoTx.valor_liquidado.toFixed(2)}).` +
+                FRASE_FIM, 400);
         }
 
         await prismaTxn.dotacaoProcesso.update({
@@ -282,13 +284,13 @@ export class OrcamentoRealizadoService {
         const novaSomaLiquido = notaEmpenhoTx.smae_soma_valor_liquidado + dto.valor_liquidado;
 
         if (Math.round(novaSomaEmpenho * 100) > Math.round(notaEmpenhoTx.empenho_liquido * 100)) {
-            throw new HttpException(`Novo valor de empenho no SMAE ${novaSomaEmpenho.toFixed(2)} seria maior do que o valor de empenho para a Nota-Empenho ${notaEmpenhoTx.empenho_liquido.toFixed(2)}.` +
-                'Revise os valores ou utilize o botão "Validar" para atualizar os valores', 400);
+            throw new HttpException(`Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para a Nota-Empenho (${notaEmpenhoTx.empenho_liquido.toFixed(2)}).` +
+                FRASE_FIM, 400);
         }
 
         if (Math.round(novaSomaLiquido * 100) > Math.round(notaEmpenhoTx.valor_liquidado * 100)) {
-            throw new HttpException(`Novo valor de empenho no SMAE ${novaSomaLiquido.toFixed(2)} seria maior do que o valor de empenho para a Nota-Empenho ${notaEmpenhoTx.valor_liquidado.toFixed(2)}.` +
-                'Revise os valores ou utilize o botão "Validar" para atualizar os valores', 400);
+            throw new HttpException(`Novo valor de liquidado no SMAE (${novaSomaLiquido.toFixed(2)}) seria maior do que o valor liquidado para a Nota-Empenho (${notaEmpenhoTx.valor_liquidado.toFixed(2)}).` +
+                FRASE_FIM, 400);
         }
 
         await prismaTxn.dotacaoProcessoNota.update({
