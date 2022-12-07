@@ -1,7 +1,7 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNumber, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreatePainelConteudoDto } from './create-painel-conteudo.dto';
 
 export class UpdatePainelConteudoVisualizacaoDto extends PartialType(OmitType(CreatePainelConteudoDto, [

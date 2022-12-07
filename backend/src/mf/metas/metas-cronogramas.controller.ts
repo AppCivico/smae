@@ -1,18 +1,18 @@
 import { Body, Controller, Get, HttpException, Param, Patch, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams } from 'src/common/decorators/find-params';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-cronograma-etapa.dto';
-import { ListCronogramaEtapaDto } from 'src/cronograma-etapas/dto/list-cronograma-etapa.dto';
-import { CronogramaService } from 'src/cronograma/cronograma.service';
-import { FilterCronogramaDto } from 'src/cronograma/dto/fillter-cronograma.dto';
-import { ListCronogramaDto } from 'src/cronograma/dto/list-cronograma.dto';
-import { EtapaService } from 'src/etapa/etapa.service';
-import { MfEtapaDto, RetornoMetaCronogramaDto } from 'src/mf/metas/dto/mf-crono.dto';
-import { MetasCronogramaService } from 'src/mf/metas/metas-cronograma.service';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { FindOneParams } from '../../common/decorators/find-params';
+import { CronogramaEtapaService } from '../../cronograma-etapas/cronograma-etapas.service';
+import { FilterCronogramaEtapaDto } from '../../cronograma-etapas/dto/filter-cronograma-etapa.dto';
+import { ListCronogramaEtapaDto } from '../../cronograma-etapas/dto/list-cronograma-etapa.dto';
+import { CronogramaService } from '../../cronograma/cronograma.service';
+import { FilterCronogramaDto } from '../../cronograma/dto/fillter-cronograma.dto';
+import { ListCronogramaDto } from '../../cronograma/dto/list-cronograma.dto';
+import { EtapaService } from '../../etapa/etapa.service';
+import { MfEtapaDto, RetornoMetaCronogramaDto } from './../metas/dto/mf-crono.dto';
+import { MetasCronogramaService } from './../metas/metas-cronograma.service';
 import { MfService } from '../mf.service';
 import { RequestInfoDto } from './dto/mf-meta.dto';
 
@@ -96,15 +96,18 @@ export class MetasCronogramaController {
     }
 
     @Get(':id/iniciativas-e-atividades')
+    @ApiOperation({ summary: 'Para uso apenas quando existir CRONOGRAMA na meta, se não irá voltar meta=null' })
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     async iniciativa_atividades(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RetornoMetaCronogramaDto> {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
-        if (config.metas_cronograma.includes(params.id) == false && Boolean(process.env.PROD) == false) {
-            throw new HttpException('Meta não encontrada no ciclo', 404);
+        if (config.metas_cronograma.includes(params.id) == false) {
+            return { meta: null }
+            //throw new HttpException('Meta não encontrada no ciclo', 404);
         }
+
         const ret = await this.metasCronogramaService.metaIniciativaAtividadesComCrono(params.id);
 
         return ret;

@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { FechamentoDto, FilterFechamentoDto, MfListFechamentoDto } from 'src/mf/metas/dto/mf-meta-fechamento.dto';
-import { RequestInfoDto } from 'src/mf/metas/dto/mf-meta.dto';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { FechamentoDto, FilterFechamentoDto, MfListFechamentoDto } from './../metas/dto/mf-meta-fechamento.dto';
+import { RequestInfoDto } from './../metas/dto/mf-meta.dto';
 import { MfService } from '../mf.service';
 import { MetasFechamentoService } from './metas-fechamento.service';
 

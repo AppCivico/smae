@@ -46,5 +46,5 @@ export class RetornoMetaCronogramaDto {
         orgaos_responsaveis: string[]
         orgaos_participantes: string[]
         responsaveis_na_cp: string[]
-    }
+    } | null
 }

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateEixoDto } from './dto/create-eixo.dto';
 import { FilterEixoDto } from './dto/filter-eixo.dto';
 import { UpdateEixoDto } from './dto/update-eixo.dto';

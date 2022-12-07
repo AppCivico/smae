@@ -1,8 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateMetaDto, DadosCodTituloIniciativaDto, DadosCodTituloMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';

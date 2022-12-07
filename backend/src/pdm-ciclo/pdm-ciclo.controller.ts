@@ -2,10 +2,10 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Query } from
 import { PdmCicloService } from './pdm-ciclo.service';
 
 import { ApiBearerAuth, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { ListPdmCicloDto, ListPdmCicloV2Dto } from 'src/pdm-ciclo/entities/pdm-ciclo.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { ListPdmCicloDto, ListPdmCicloV2Dto } from './entities/pdm-ciclo.entity';
 import { FilterPdmCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
-import { FindOneParams } from 'src/common/decorators/find-params';
+import { FindOneParams } from '../common/decorators/find-params';
 
 @Controller('pdm-ciclo')
 @ApiTags('PDM - Ciclo físico')

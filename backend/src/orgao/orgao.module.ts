@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OrgaoService } from './orgao.service';
 import { OrgaoController } from './orgao.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
     imports: [PrismaModule],

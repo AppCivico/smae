@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateGrupoPaineisDto } from './dto/create-grupo-paineis.dto';
 import { DetailGrupoPaineisDto } from './dto/detail-grupo-paineis.dto';
 import { FilterGrupoPaineisDto } from './dto/filter-grupo-paineis.dto';

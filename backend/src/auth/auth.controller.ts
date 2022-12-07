@@ -9,14 +9,14 @@ import {
     UseGuards
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { AuthRequestLogin } from 'src/auth/models/AuthRequestLogin';
-import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
-import { LoginRequestBody } from 'src/auth/models/LoginRequestBody.dto';
-import { PerfilDeAcessoLinhaDto } from 'src/auth/models/PerfilDeAcesso.dto';
-import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
-import { SolicitarNovaSenhaRequestBody } from 'src/auth/models/SolicitarNovaSenhaRequestBody.dto';
-import { Pessoa } from 'src/pessoa/entities/pessoa.entity';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthRequestLogin } from './models/AuthRequestLogin';
+import { EscreverNovaSenhaRequestBody } from './models/EscreverNovaSenhaRequestBody.dto';
+import { LoginRequestBody } from './models/LoginRequestBody.dto';
+import { PerfilDeAcessoLinhaDto } from './models/PerfilDeAcesso.dto';
+import { ReducedAccessToken } from './models/ReducedAccessToken';
+import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
+import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { AuthService } from './auth.service';
 import { IsPublic } from './decorators/is-public.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guard';

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { IniciativasCronoRetorno, RetornoMetaCronogramaDto } from 'src/mf/metas/dto/mf-crono.dto';
-import { MfService } from 'src/mf/mf.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { IniciativasCronoRetorno, RetornoMetaCronogramaDto } from './../metas/dto/mf-crono.dto';
+import { MfService } from './../mf.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 
 @Injectable()
@@ -184,7 +184,7 @@ export class MetasCronogramaService {
                 });
             }
 
-            retorno.meta.iniciativas.push(retornoIniciativa)
+            retorno.meta!.iniciativas.push(retornoIniciativa)
         }
 
         return retorno;
