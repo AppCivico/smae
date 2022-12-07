@@ -58,22 +58,23 @@
 	        var r;
 
 	        values.meta_id = meta_id;
-	        values.ano_referencia = ano;
+	        values.ano_referencia = Number(ano);
 	        if(isNaN(values.valor_planejado)) values.valor_planejado = toFloat(values.valor_planejado);
 
 	        if(values.location[0] == "a"){
-	        	values.atividade_id = values.location.slice(1);
+	        	values.atividade_id = Number(values.location.slice(1));
 	        }else if(values.location[0] == "i"){
-	        	values.iniciativa_id = values.location.slice(1);
+	        	values.iniciativa_id = Number(values.location.slice(1));
 	        }else if(values.location[0] == "m"){
-	        	values.meta_id = values.location.slice(1);
+	        	values.meta_id = Number(values.location.slice(1));
 	        }
 
             if(id){
 	            r = await OrcamentosStore.updateOrcamentoPlanejado(id,values);
 	            msg = 'Dados salvos com sucesso!';
             }else{
-
+            	r = await OrcamentosStore.insertOrcamentoPlanejado(values);
+            	msg = 'Dados salvos com sucesso!';
             }
 	        
 	        if(r == true){
@@ -90,9 +91,6 @@
 	}
 	async function checkDelete(id) {
 	    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await OrcamentosStore.deleteOrcamentoPlanejado(id)) router.push(`${parentlink}/orcamento`)},'Remover');
-	}
-	async function validar() {
-		
 	}
 	function maskFloat(el){
 	    var value = el.target.value.replace(/[\D]/g, '');
@@ -133,17 +131,14 @@
 	}
 	async function validarDota() {
 		try{
-			console.log(1);
+			respostasof.value = {loading:true}
 			let val = await schema.validate({ dotacao: dota.value, valor_planejado:1 });
-
-			console.log(val);
 			if(val){
 				let r = await OrcamentosStore.getDotacaoPlanejado(dota.value,ano);
-				console.log(r);
 				respostasof.value = r;
 			}
 		}catch(error){
-	        alertStore.error(error);
+	        respostasof.value = error;
 		}
 	}
 </script>
@@ -160,8 +155,10 @@
 	            <div class="flex center g2">
 	                <div class="f1">
 	                    <label class="label">Dotação <span class="tvermelho">*</span></label>
-	                    <Field name="dotacao" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskDotacao" :class="{ 'error': errors.dotacao }" />
+	                    <Field name="dotacao" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskDotacao" :class="{ 'error': errors.dotacao||respostasof.informacao_valida===false, 'loading': respostasof.loading}" />
 	                    <div class="error-msg">{{ errors.dotacao }}</div>
+	                    <div class="t13 mb1 tc300" v-if="respostasof.loading">Aguardando resposta do SOF</div>
+	                    <div class="t13 mb1 tvermelho" v-if="respostasof.informacao_valida===false">Dotação não encontrada</div>
 	                </div>
 	                <div class="f0">
 	                	<a @click="validarDota()" class="btn outline bgnone tcprimary">Validar via SOF</a>
@@ -198,7 +195,7 @@
 	                    <label class="label">Valor planejado<span class="tvermelho">*</span></label>
 	                    <Field name="valor_planejado" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_planejado }" />
 	                    <div class="error-msg">{{ errors.valor_planejado }}</div>
-	                    <div class="flex center" v-if="val=currentEdit.empenho_liquido??respostasof.empenho_liquido">
+	                    <div class="flex center" v-if="val=respostasof.empenho_liquido??currentEdit.empenho_liquido">
 	                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
 	                    	<span class="t14">R$ {{dinheiro(val)}}</span>
 	                    	<span v-if="toFloat(values.valor_planejado) > toFloat(val)" class="tvermelho w700">(Valor acima da dotação)</span>

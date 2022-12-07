@@ -63,6 +63,10 @@ export const useOrcamentosStore = defineStore({
             if(await requestS.patch(`${baseUrl}/orcamento-planejado/${id}`, params)) return true;
             return false;
         },
+        async insertOrcamentoPlanejado(params) {
+            if(await requestS.post(`${baseUrl}/orcamento-planejado/`, params)) return true;
+            return false;
+        },
         async deleteOrcamentoPlanejado(id) {
             if(await requestS.delete(`${baseUrl}/orcamento-planejado/${id}`)) return true;
             return false;
