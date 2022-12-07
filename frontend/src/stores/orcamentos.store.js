@@ -43,8 +43,8 @@ export const useOrcamentosStore = defineStore({
         async getOrcamentoRealizadoById(id,ano) {
             try {
                 this.OrcamentoRealizado[ano] = { loading: true };
-                //let r = await requestS.get(`${baseUrl}/orcamento-realizado/?meta_id=${id}&ano_referencia=${ano}`);    
-                //this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
+                let r = await requestS.get(`${baseUrl}/orcamento-realizado/?meta_id=${id}&ano_referencia=${ano}`);    
+                this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
             } catch (error) {
                 this.OrcamentoRealizado[ano] = { error };
             }
@@ -59,6 +59,7 @@ export const useOrcamentosStore = defineStore({
             return false;
         },
 
+        //Planejado
         async updateOrcamentoPlanejado(id,params) {
             if(await requestS.patch(`${baseUrl}/orcamento-planejado/${id}`, params)) return true;
             return false;
@@ -72,10 +73,48 @@ export const useOrcamentosStore = defineStore({
             return false;
         },
 
+        //Realizado
+        async updateOrcamentoRealizado(id,params) {
+            if(await requestS.patch(`${baseUrl}/orcamento-realizado/${id}`, params)) return true;
+            return false;
+        },
+        async insertOrcamentoRealizado(params) {
+            if(await requestS.post(`${baseUrl}/orcamento-realizado/`, params)) return true;
+            return false;
+        },
+        async deleteOrcamentoRealizado(id) {
+            if(await requestS.delete(`${baseUrl}/orcamento-realizado/${id}`)) return true;
+            return false;
+        },
+
         // Dotacoes
         async getDotacaoPlanejado(dotacao,ano) {
             try {
                 let r = await requestS.patch(`${baseUrl}/dotacao/valor-planejado`,{dotacao:dotacao,ano:Number(ano)});    
+                return r;
+            } catch (error) {
+                return {error}
+            }
+        },
+        async getDotacaoRealizado(dotacao,ano) {
+            try {
+                let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado`,{dotacao:dotacao,ano:Number(ano)});    
+                return r;
+            } catch (error) {
+                return {error}
+            }
+        },
+        async getDotacaoRealizadoProcesso(processo,ano) {
+            try {
+                let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`,{processo:processo,ano:Number(ano)});    
+                return r;
+            } catch (error) {
+                return {error}
+            }
+        },
+        async getDotacaoRealizadoNota(nota_empenho,ano) {
+            try {
+                let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`,{nota_empenho:nota_empenho,ano:Number(ano)});    
                 return r;
             } catch (error) {
                 return {error}

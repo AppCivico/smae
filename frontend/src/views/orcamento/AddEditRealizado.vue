@@ -27,16 +27,16 @@
 	const parent_item = ref(meta_id?singleMeta:false);
 
 	const OrcamentosStore = useOrcamentosStore();
-	const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
+	const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 	const currentEdit = ref({});
 	const dota = ref('');
 	const respostasof = ref({});
 
 	(async()=>{
 		if(id){
-			await OrcamentosStore.getOrcamentoPlanejadoById(meta_id,ano);
-			currentEdit.value = OrcamentoPlanejado.value[ano].find(x=>x.id==id);
-			currentEdit.value.valor_planejado = dinheiro(currentEdit.value.valor_planejado);
+			await OrcamentosStore.getOrcamentoRealizadoById(meta_id,ano);
+			currentEdit.value = OrcamentoRealizado.value[ano].find(x=>x.id==id);
+			currentEdit.value.valor_empenho = dinheiro(currentEdit.value.valor_empenho);
 			dota.value = currentEdit.value.dotacao;
 
 			currentEdit.value.location =  
@@ -48,7 +48,8 @@
 
 	var regdota = /^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/;
 	const schema = Yup.object().shape({
-		valor_planejado: Yup.string().required('Preencha o valor planejado.'),
+		valor_empenho: Yup.string().required('Preencha o valor empenho.'),
+		valor_liquidado: Yup.string().required('Preencha o valor liquidado.'),
 		dotacao: Yup.string().required('Preencha a dotação.').matches(regdota,'Formato inválido')
 	});
 
@@ -59,7 +60,8 @@
 
 	        values.meta_id = meta_id;
 	        values.ano_referencia = Number(ano);
-	        if(isNaN(values.valor_planejado)) values.valor_planejado = toFloat(values.valor_planejado);
+	        if(isNaN(values.valor_empenho)) values.valor_empenho = toFloat(values.valor_empenho);
+	        if(isNaN(values.valor_liquidado)) values.valor_liquidado = toFloat(values.valor_liquidado);
 
 	        if(values.location[0] == "a"){
 	        	values.atividade_id = Number(values.location.slice(1));
@@ -70,10 +72,10 @@
 	        }
 
             if(id){
-	            r = await OrcamentosStore.updateOrcamentoPlanejado(id,values);
+	            r = await OrcamentosStore.updateOrcamentoRealizado(id,values);
 	            msg = 'Dados salvos com sucesso!';
             }else{
-            	r = await OrcamentosStore.insertOrcamentoPlanejado(values);
+            	r = await OrcamentosStore.insertOrcamentoRealizado(values);
             	msg = 'Dados salvos com sucesso!';
             }
 	        
@@ -90,7 +92,7 @@
 	    alertStore.confirm('Deseja sair sem salvar as alterações?',`${parentlink}/orcamento`);
 	}
 	async function checkDelete(id) {
-	    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await OrcamentosStore.deleteOrcamentoPlanejado(id)) router.push(`${parentlink}/orcamento`)},'Remover');
+	    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento`)},'Remover');
 	}
 	function maskFloat(el){
 	    var value = el.target.value.replace(/[\D]/g, '');
@@ -106,7 +108,7 @@
 	}
 	function maskDotacao(el){
 	    var kC = event.keyCode;
-	    var data = el.target.value.replace(/[^0-9\.-]/g,'');
+	    var data = el.target.value.replace(/[^0-9\.\-]/g,'');
 	    if( kC!=8 && kC!=46 ){
 	        if( data.length==2 ){
 	            el.target.value = data += '.';
@@ -132,9 +134,9 @@
 	async function validarDota() {
 		try{
 			respostasof.value = {loading:true}
-			let val = await schema.validate({ dotacao: dota.value, valor_planejado:1 });
+			let val = await schema.validate({ dotacao: dota.value, valor_empenho:1, valor_liquidado:1 });
 			if(val){
-				let r = await OrcamentosStore.getDotacaoPlanejado(dota.value,ano);
+				let r = await OrcamentosStore.getDotacaoRealizado(dota.value,ano);
 				respostasof.value = r;
 			}
 		}catch(error){
@@ -145,12 +147,12 @@
 <template>
 	<Dashboard>
 	    <div class="flex spacebetween center">
-	        <h1>Adicionar dotação</h1>
+	        <h1>Empenho/Liquidação</h1>
 	        <hr class="ml2 f1"/>
 	        <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
 	    </div>
         <h3 class="mb2"><strong>{{ano}}</strong> - {{parent_item.codigo}} - {{parent_item.titulo}}</h3>
-	    <template v-if="!(OrcamentoPlanejado[ano]?.loading || OrcamentoPlanejado[ano]?.error)">
+	    <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
 	        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
 	            <div class="flex center g2">
 	                <div class="f1">
@@ -192,13 +194,22 @@
 	            </div>
 	            <div class="flex g2 mb2">
 	                <div class="f1">
-	                    <label class="label">Valor planejado<span class="tvermelho">*</span></label>
-	                    <Field name="valor_planejado" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_planejado }" />
-	                    <div class="error-msg">{{ errors.valor_planejado }}</div>
-	                    <div class="flex center" v-if="val=respostasof.empenho_liquido??currentEdit.empenho_liquido">
+	                    <label class="label">Valor empenho<span class="tvermelho">*</span></label>
+	                    <Field name="valor_empenho" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
+	                    <div class="error-msg">{{ errors.valor_empenho }}</div>
+	                    <div class="flex center" v-if="val=respostasof.smae_soma_valor_empenho??currentEdit.valor_empenho">
+	                    	<span class="label mb0 tc300 mr1">Saldo empenho</span>
+	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_empenho))}}</span>
+	                    </div>
+	                </div>
+	                <div class="f1">
+	                    <label class="label">Valor liquidado<span class="tvermelho">*</span></label>
+	                    <Field name="valor_liquidado" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
+	                    <div class="error-msg">{{ errors.valor_liquidado }}</div>
+	                    <div class="flex center" v-if="val=respostasof.smae_soma_valor_liquidado??currentEdit.valor_liquidado">
 	                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
-	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_planejado))}}</span>
-	                    	<span v-if="val - toFloat(values.valor_planejado) < 0" class="tvermelho w700">(Valor acima da dotação)</span>
+	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_liquidado))}}</span>
+	                    	<span v-if="val - toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>
 	                    </div>
 	                </div>
 	            </div>
@@ -212,12 +223,12 @@
 	    <template v-if="currentEdit&&currentEdit?.id">
 	        <button @click="checkDelete(currentEdit.id)" class="btn amarelo big">Remover item</button>
 	    </template>
-	    <template v-if="OrcamentoPlanejado[ano]?.loading">
+	    <template v-if="OrcamentoRealizado[ano]?.loading">
 	        <span class="spinner">Carregando</span>
 	    </template>
-	    <template v-if="OrcamentoPlanejado[ano]?.error||error">
+	    <template v-if="OrcamentoRealizado[ano]?.error||error">
 	        <div class="error p1">
-	            <div class="error-msg">{{OrcamentoPlanejado[ano].error??error}}</div>
+	            <div class="error-msg">{{OrcamentoRealizado[ano].error??error}}</div>
 	        </div>
 	    </template>
 	</Dashboard>
