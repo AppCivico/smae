@@ -39,6 +39,7 @@ services:
       S3_HOST: "${S3_HOST}"
       CPF_OBRIGATORIO_SEM_RF: "${CPF_OBRIGATORIO_SEM_RF}"
       MATCH_EMAIL_RF_OBRIGATORIO: "${MATCH_EMAIL_RF_OBRIGATORIO}"
+      SOF_API_PREFIX: "${SOF_API_PREFIX}"
     networks:
       - postgres
       - minio

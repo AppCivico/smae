@@ -59,7 +59,7 @@ export class SofApiService {
     SOF_API_PREFIX: string;
 
     constructor() {
-        this.SOF_API_PREFIX = process.env.SOF_API_PREFIX || 'http://smae_api_orcamento:80/'
+        this.SOF_API_PREFIX = process.env.SOF_API_PREFIX || 'http://smae_orcamento:80/'
     }
 
     realizadoMesMaisAtual(ano: number): number {
