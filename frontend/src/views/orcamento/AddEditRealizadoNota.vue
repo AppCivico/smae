@@ -106,12 +106,14 @@
 	function toFloat(v){
 		return isNaN(v) ? Number( v.replace(/\./g, '').replace(',','.')) : v;
 	}
-	function maskProcesso(el){
+	function maskNota(el){
 	    var kC = event.keyCode;
-	    var data = el.target.value.replace(/[^0-9]/g,'');
-	    if( kC!=8 && kC!=46 ){
-            el.target.value = data.slice(0,5);
-	    }
+	    el.target.value = formatNota(el.target.value);
+	}
+	function formatNota(d){
+	    var data = String(d).replace(/[\D]/g,'').slice(0,5);
+        var s = data.slice(0,5);
+		return s;
 	}
 	async function validarDota() {
 		try{
@@ -139,7 +141,7 @@
 	            <div class="flex center g2">
 	                <div class="f1">
 	                    <label class="label">Nota de empenho <span class="tvermelho">*</span></label>
-	                    <Field name="nota_empenho" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskProcesso" :class="{ 'error': errors.nota_empenho||respostasof.informacao_valida===false, 'loading': respostasof.loading}" />
+	                    <Field name="nota_empenho" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskNota" :class="{ 'error': errors.nota_empenho||respostasof.informacao_valida===false, 'loading': respostasof.loading}" />
 	                    <div class="error-msg">{{ errors.nota_empenho }}</div>
 	                    <div class="t13 mb1 tc300" v-if="respostasof.loading">Aguardando resposta do SOF</div>
 	                    <div class="t13 mb1 tvermelho" v-if="respostasof.informacao_valida===false">Dotação não encontrada</div>
