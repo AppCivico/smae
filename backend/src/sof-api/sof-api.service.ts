@@ -22,16 +22,42 @@ type MetaDados = {
     message: string
 }
 
+type Entidade = {
+    codigo: string
+    descricao: string
+}
+
+type EntidadeUnidade = {
+    codigo: string
+    descricao: string
+    cod_orgao: string
+}
+
 type SuccessEmpenhosResponse = {
     data: RetornoEmpenho[]
     metadados: MetaDados
+};
+
+type SuccessEntidadesResponse = {
+    metadados: MetaDados
+    orgaos: Entidade[],
+    unidades: EntidadeUnidade[],
+    funcoes: Entidade[]
+    subfuncoes: Entidade[]
+    programas: Entidade[]
+    projetos_atividades: Entidade[]
+    categorias: Entidade[]
+    grupos: Entidade[]
+    modalidades: Entidade[]
+    elementos: Entidade[]
+    fonte_recursos: Entidade[]
 };
 
 type ErrorHttpResponse = {
     detail: string
 };
 
-type ApiResponse = SuccessEmpenhosResponse | ErrorHttpResponse;
+type ApiResponse = SuccessEmpenhosResponse | ErrorHttpResponse | SuccessEntidadesResponse;
 
 export type InputDotacao = {
     ano: number
@@ -108,20 +134,25 @@ export class SofApiService {
 
     async empenhoDotacao(input: InputDotacao): Promise<SuccessEmpenhosResponse> {
         const endpoint = 'v1/empenhos/dotacao';
-        return await this.doRequest(endpoint, input);
+        return await this.doRequest(endpoint, input) as SuccessEmpenhosResponse;
     }
 
     async empenhoNotaEmpenho(input: InputNotaEmpenho): Promise<SuccessEmpenhosResponse> {
         const endpoint = 'v1/empenhos/nota_empenho';
-        return await this.doRequest(endpoint, input);
+        return await this.doRequest(endpoint, input) as SuccessEmpenhosResponse;
     }
 
     async empenhoProcesso(input: InputProcesso): Promise<SuccessEmpenhosResponse> {
         const endpoint = 'v1/empenhos/processo';
-        return await this.doRequest(endpoint, input);
+        return await this.doRequest(endpoint, input) as SuccessEmpenhosResponse;
     }
 
-    private async doRequest(endpoint: string, input: InputDotacao | InputProcesso | InputNotaEmpenho): Promise<SuccessEmpenhosResponse> {
+    async entidades(input: InputProcesso): Promise<SuccessEntidadesResponse> {
+        const endpoint = 'v1/itens_dotacao/all_items';
+        return await this.doRequest(endpoint, input) as SuccessEntidadesResponse;
+    }
+
+    private async doRequest(endpoint: string, input: InputDotacao | InputProcesso | InputNotaEmpenho): Promise<SuccessEmpenhosResponse | SuccessEntidadesResponse> {
 
         this.logger.debug(`chamando ${endpoint} com ${JSON.stringify(input)}`);
         try {
@@ -129,9 +160,9 @@ export class SofApiService {
                 json: input
             }).json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
-            if ("metadados" in response && response.metadados.sucess) {
+            if ("metadados" in response && response.metadados.sucess && endpoint.includes('v1/empenhos/')) {
                 return {
-                    data: response.data.map((d) => {
+                    data: (response as SuccessEmpenhosResponse).data.map((d) => {
                         return {
                             dotacao: d.dotacao,
                             processo: String(d.processo),
@@ -141,6 +172,8 @@ export class SofApiService {
                     }),
                     metadados: response.metadados
                 };
+            } else if ("metadados" in response && response.metadados.sucess && endpoint.includes('v1/itens_dotacao/')) {
+                return response;
             }
 
             throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
