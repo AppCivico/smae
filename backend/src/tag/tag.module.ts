@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { UploadModule } from 'src/upload/upload.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { UploadModule } from '../upload/upload.module';
 import { TagController } from './tag.controller';
 import { TagService } from './tag.service';
 

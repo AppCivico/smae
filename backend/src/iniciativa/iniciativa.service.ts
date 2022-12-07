@@ -1,14 +1,14 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
-import { VariavelService } from 'src/variavel/variavel.service';
+import { VariavelService } from '../variavel/variavel.service';
 
 @Injectable()
 export class IniciativaService {

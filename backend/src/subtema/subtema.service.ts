@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubTemaDto } from './dto/create-subtema.dto';
 import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';

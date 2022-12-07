@@ -1,14 +1,14 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListObjetivoEstrategicoDto } from './dto/list-objetivo-estrategico.dto';
 import { ObjetivoEstrategicoService } from './objetivo-estrategico.service';
 import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
-import { FindOneParams } from 'src/common/decorators/find-params';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { FindOneParams } from '../common/decorators/find-params';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { filter } from 'rxjs';
 import { FilterObjetivoEstrategicoDto } from './dto/filter-objetivo-estrategico.dto';
 

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { create } from 'domain';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { FilterCronogramaEtapaDto } from 'src/cronograma-etapas/dto/filter-cronograma-etapa.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
+import { PrismaService } from '../prisma/prisma.service';
 import { DateTime, Duration } from "luxon";
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto } from './entities/cronograma-etapa.entity';
