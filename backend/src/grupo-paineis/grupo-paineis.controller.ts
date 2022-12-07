@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams } from 'src/common/decorators/find-params';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { FindOneParams } from '../common/decorators/find-params';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateGrupoPaineisDto } from './dto/create-grupo-paineis.dto';
 import { DetailGrupoPaineisDto } from './dto/detail-grupo-paineis.dto';
 import { FilterGrupoPaineisDto } from './dto/filter-grupo-paineis.dto';

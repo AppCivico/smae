@@ -1,11 +1,11 @@
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { Date2YMD, DateYMD } from 'src/common/date2ymd';
-import { CicloFisicoDto, OrcamentoConfig } from 'src/pdm/dto/list-pdm.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UploadService } from 'src/upload/upload.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { CicloFisicoDto, OrcamentoConfig } from './dto/list-pdm.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';

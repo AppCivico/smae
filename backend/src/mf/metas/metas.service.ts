@@ -1,13 +1,13 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { Date2YMD, DateYMD } from 'src/common/date2ymd';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { MfService } from 'src/mf/mf.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UploadService } from 'src/upload/upload.service';
-import { SerieValorNomimal } from 'src/variavel/entities/variavel.entity';
-import { VariavelService } from 'src/variavel/variavel.service';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { Date2YMD, DateYMD } from '../../common/date2ymd';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { MfService } from './../mf.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { UploadService } from '../../upload/upload.service';
+import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
+import { VariavelService } from '../../variavel/variavel.service';
 import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };

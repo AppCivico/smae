@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from 'src/mf/metas/dto/mf-meta-risco.dto';
-import { RequestInfoDto } from 'src/mf/metas/dto/mf-meta.dto';
-import { MetasRiscoService } from 'src/mf/metas/metas-risco.service';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from './../metas/dto/mf-meta-risco.dto';
+import { RequestInfoDto } from './../metas/dto/mf-meta.dto';
+import { MetasRiscoService } from './../metas/metas-risco.service';
 import { MfService } from '../mf.service';
 
 

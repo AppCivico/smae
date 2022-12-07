@@ -1,14 +1,14 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from 'src/auth/strategies/local.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { PessoaModule } from 'src/pessoa/pessoa.module';
+import { PessoaModule } from '../pessoa/pessoa.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginValidationMiddleware } from './middlewares/login-validation.middleware';
-import { EscreverNovaSenhaValidationMiddleware } from 'src/auth/middlewares/escrever-nova-senha-validation.middleware';
-import { SolicitarNovaSenhaValidationMiddleware } from 'src/auth/middlewares/solicitar-nova-senha-validation.middleware';
+import { EscreverNovaSenhaValidationMiddleware } from './middlewares/escrever-nova-senha-validation.middleware';
+import { SolicitarNovaSenhaValidationMiddleware } from './middlewares/solicitar-nova-senha-validation.middleware';
 
 @Module({
     imports: [

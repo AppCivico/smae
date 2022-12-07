@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTipoOrgaoDto } from './dto/create-tipo-orgao.dto';
 import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
 

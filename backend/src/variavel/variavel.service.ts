@@ -1,14 +1,14 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, Serie } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { Date2YMD, DateYMD } from 'src/common/date2ymd';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ExistingSerieJwt, NonExistingSerieJwt, SerieJwt, SerieUpsert, ValidatedUpsert } from 'src/variavel/dto/batch-serie-upsert.dto';
-import { FilterVariavelDto } from 'src/variavel/dto/filter-variavel.dto';
-import { ListSeriesAgrupadas } from 'src/variavel/dto/list-variavel.dto';
-import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from 'src/variavel/entities/variavel.entity';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { ExistingSerieJwt, NonExistingSerieJwt, SerieJwt, SerieUpsert, ValidatedUpsert } from './dto/batch-serie-upsert.dto';
+import { FilterVariavelDto } from './dto/filter-variavel.dto';
+import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
+import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from './entities/variavel.entity';
 import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 

@@ -5,12 +5,12 @@ import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
 import { JwtPessoaPayload } from './models/JwtPessoaPayload';
 import { AccessToken } from './models/AccessToken';
-import { ReducedAccessToken } from 'src/auth/models/ReducedAccessToken';
-import { JwtReducedAccessToken } from 'src/auth/models/JwtReducedAccessToken';
-import { EscreverNovaSenhaRequestBody } from 'src/auth/models/EscreverNovaSenhaRequestBody.dto';
-import { SolicitarNovaSenhaRequestBody } from 'src/auth/models/SolicitarNovaSenhaRequestBody.dto';
+import { ReducedAccessToken } from './models/ReducedAccessToken';
+import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
+import { EscreverNovaSenhaRequestBody } from './models/EscreverNovaSenhaRequestBody.dto';
+import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
 import { PerfilAcesso } from '@prisma/client';
-import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
+import { PerfilAcessoPrivilegios } from '../pessoa/dto/perifl-acesso-privilegios.dto';
 
 @Injectable()
 export class AuthService {

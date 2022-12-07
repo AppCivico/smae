@@ -5,14 +5,14 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PessoaModule } from './pessoa/pessoa.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD, RouterModule } from '@nestjs/core';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { MinhaContaController } from './minha-conta/minha-conta.controller';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
 import { OrgaoModule } from './orgao/orgao.module';
 import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { OdsModule } from './ods/ods.module';

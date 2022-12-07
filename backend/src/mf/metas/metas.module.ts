@@ -1,23 +1,23 @@
 import { Module } from '@nestjs/common';
-import { CronogramaEtapaModule } from 'src/cronograma-etapas/cronograma-etapas.module';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { CronogramaModule } from 'src/cronograma/cronograma.module';
-import { CronogramaService } from 'src/cronograma/cronograma.service';
-import { EtapaModule } from 'src/etapa/etapa.module';
-import { MetasAnaliseQualiController } from 'src/mf/metas/metas-analise-quali.controller';
-import { MetasAnaliseQualiService } from 'src/mf/metas/metas-analise-quali.service';
-import { MetasCronogramaService } from 'src/mf/metas/metas-cronograma.service';
-import { MetasCronogramaController } from 'src/mf/metas/metas-cronogramas.controller';
-import { MetasFechamentoController } from 'src/mf/metas/metas-fechamento.controller';
-import { MetasFechamentoService } from 'src/mf/metas/metas-fechamento.service';
-import { MetasRiscoController } from 'src/mf/metas/metas-risco.controller';
-import { MetasRiscoService } from 'src/mf/metas/metas-risco.service';
-import { MetasController } from 'src/mf/metas/metas.controller';
-import { MetasService } from 'src/mf/metas/metas.service';
-import { MfModule } from 'src/mf/mf.module';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { UploadModule } from 'src/upload/upload.module';
-import { VariavelModule } from 'src/variavel/variavel.module';
+import { CronogramaEtapaModule } from '../../cronograma-etapas/cronograma-etapas.module';
+import { CronogramaEtapaService } from '../../cronograma-etapas/cronograma-etapas.service';
+import { CronogramaModule } from '../../cronograma/cronograma.module';
+import { CronogramaService } from '../../cronograma/cronograma.service';
+import { EtapaModule } from '../../etapa/etapa.module';
+import { MetasAnaliseQualiController } from './../metas/metas-analise-quali.controller';
+import { MetasAnaliseQualiService } from './../metas/metas-analise-quali.service';
+import { MetasCronogramaService } from './../metas/metas-cronograma.service';
+import { MetasCronogramaController } from './../metas/metas-cronogramas.controller';
+import { MetasFechamentoController } from './../metas/metas-fechamento.controller';
+import { MetasFechamentoService } from './../metas/metas-fechamento.service';
+import { MetasRiscoController } from './../metas/metas-risco.controller';
+import { MetasRiscoService } from './../metas/metas-risco.service';
+import { MetasController } from './../metas/metas.controller';
+import { MetasService } from './../metas/metas.service';
+import { MfModule } from './../mf.module';
+import { PrismaModule } from '../../prisma/prisma.module';
+import { UploadModule } from '../../upload/upload.module';
+import { VariavelModule } from '../../variavel/variavel.module';
 
 @Module({
     imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule, CronogramaEtapaModule, EtapaModule],
