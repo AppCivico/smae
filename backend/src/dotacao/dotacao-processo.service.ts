@@ -123,6 +123,10 @@ export class DotacaoProcessoService {
                 ...r,
                 dotacao_processo: undefined,
                 processo: r.dotacao_processo,
+                smae_soma_valor_empenho: r.smae_soma_valor_empenho.toFixed(2),
+                smae_soma_valor_liquidado: r.smae_soma_valor_liquidado.toFixed(2),
+                empenho_liquido: r.empenho_liquido.toFixed(2),
+                valor_liquidado: r.valor_liquidado.toFixed(2),
             }
         });
 
