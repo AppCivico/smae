@@ -151,9 +151,9 @@ export class OrcamentoPlanejadoService {
         iniciativa_id?: number
         atividade_id?: number
     }) {
-        let meta_id: number | undefined;
-        let iniciativa_id: number | undefined;
-        let atividade_id: number | undefined;
+        let meta_id: number | null = null;
+        let iniciativa_id: number | null = null;
+        let atividade_id: number | null = null;
         if (dto.atividade_id) { // prioridade buscar pela atividade
             const atividade = await this.prisma.atividade.findFirst({
                 where: { id: dto.atividade_id, removido_em: null },
