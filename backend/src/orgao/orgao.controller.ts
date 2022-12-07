@@ -1,14 +1,14 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { ListOrgaoDto } from 'src/orgao/dto/list-orgao.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { ListOrgaoDto } from './dto/list-orgao.dto';
 import { OrgaoService } from './orgao.service';
 import { CreateOrgaoDto } from './dto/create-orgao.dto';
 import { UpdateOrgaoDto } from './dto/update-orgao.dto';
-import { FindOneParams } from 'src/common/decorators/find-params';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { FindOneParams } from '../common/decorators/find-params';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 
 @ApiTags('Órgão')
 @Controller('orgao')

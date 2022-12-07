@@ -2,12 +2,12 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, Upl
 import { UploadService } from './upload.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { IpAddress } from 'src/common/decorators/current-ip';
-import { Upload } from 'src/upload/entities/upload.entity';
-import { IsPublic } from 'src/auth/decorators/is-public.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { IpAddress } from '../common/decorators/current-ip';
+import { Upload } from './entities/upload.entity';
+import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { Stream } from 'stream';
 import { createReadStream } from 'fs';
 import { Response } from 'express';

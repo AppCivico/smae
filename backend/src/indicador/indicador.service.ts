@@ -1,11 +1,11 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { Date2YMD, DateYMD } from 'src/common/date2ymd';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ListSeriesAgrupadas } from 'src/variavel/dto/list-variavel.dto';
-import { SerieIndicadorValorPorPeriodo, SerieIndicadorValorNominal, ValorSerieExistente } from 'src/variavel/entities/variavel.entity';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
+import { SerieIndicadorValorPorPeriodo, SerieIndicadorValorNominal, ValorSerieExistente } from '../variavel/entities/variavel.entity';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';

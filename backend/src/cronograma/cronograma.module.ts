@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { EtapaService } from 'src/etapa/etapa.service';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { EtapaService } from '../etapa/etapa.service';
+import { PrismaModule } from '../prisma/prisma.module';
 import { CronogramaController } from './cronograma.controller';
 import { CronogramaService } from './cronograma.service';
 

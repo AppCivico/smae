@@ -1,10 +1,10 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { Date2YMD } from 'src/common/date2ymd';
-import { FilterPdmCiclo, UpdatePdmCicloDto } from 'src/pdm-ciclo/dto/update-pdm-ciclo.dto';
-import { CicloFisicoV2Dto } from 'src/pdm-ciclo/entities/pdm-ciclo.entity';
-import { CicloFisicoDto } from 'src/pdm/dto/list-pdm.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Date2YMD } from '../common/date2ymd';
+import { FilterPdmCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
+import { CicloFisicoV2Dto } from './entities/pdm-ciclo.entity';
+import { CicloFisicoDto } from '../pdm/dto/list-pdm.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PdmCicloService {

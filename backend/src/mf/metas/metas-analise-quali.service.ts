@@ -1,11 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaAcessoPdm, Prisma } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { Date2YMD } from 'src/common/date2ymd';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from 'src/mf/metas/dto/mf-meta-analise-quali.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UploadService } from 'src/upload/upload.service';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { Date2YMD } from '../../common/date2ymd';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from './../metas/dto/mf-meta-analise-quali.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { UploadService } from '../../upload/upload.service';
 
 
 @Injectable()

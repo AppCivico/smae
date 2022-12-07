@@ -1,12 +1,12 @@
 import { ReadStream } from 'fs';
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { StorageService } from 'src/upload/storage-service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from './storage-service';
 import { CreateUploadDto } from './dto/create-upload.dto';
-import { Upload } from 'src/upload/entities/upload.entity';
+import { Upload } from './entities/upload.entity';
 import { JwtService } from '@nestjs/jwt';
-import { UploadBody } from 'src/upload/entities/upload.body';
+import { UploadBody } from './entities/upload.body';
 import { DownloadBody } from './entities/download.body';
 import { Download } from './entities/download.entity';
 import { TipoUpload } from './entities/tipo-upload';

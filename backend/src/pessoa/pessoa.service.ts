@@ -1,14 +1,14 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { NovaSenhaDto } from 'src/minha-conta/models/nova-senha.dto';
-import { DetalhePessoaDto } from 'src/pessoa/dto/detalhe-pessoa.dto';
-import { PerfilAcessoPrivilegios } from 'src/pessoa/dto/perifl-acesso-privilegios.dto';
-import { UpdatePessoaDto } from 'src/pessoa/dto/update-pessoa.dto';
-import { ListaPrivilegiosModulos } from 'src/pessoa/entities/ListaPrivilegiosModulos';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { NovaSenhaDto } from '../minha-conta/models/nova-senha.dto';
+import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
+import { PerfilAcessoPrivilegios } from './dto/perifl-acesso-privilegios.dto';
+import { UpdatePessoaDto } from './dto/update-pessoa.dto';
+import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 

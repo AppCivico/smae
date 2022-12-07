@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UnidadeMedidaService } from './unidade-medida.service';
 import { UnidadeMedidaController } from './unidade-medida.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
     imports: [PrismaModule],
