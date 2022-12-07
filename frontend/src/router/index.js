@@ -19,7 +19,7 @@ import { AddEditPdM, ListPdM } from '@/views/pdm';
 import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao, SinglePainelMeta } from '@/views/metas';
 import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade, SingleAtividade } from '@/views/metas';
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
-import { MetaOrcamento, AddEditCusteio, AddEditPlanejado } from '@/views/orcamento';
+import { MetaOrcamento, AddEditCusteio, AddEditPlanejado, AddEditRealizado, AddEditRealizadoProcesso, AddEditRealizadoNota } from '@/views/orcamento';
 import { ListRegions } from '@/views/regions';
 import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
 import { ListCiclos, ListCiclosPassados, ListMonitoramentoMetas, ListMonitoramentoMetasEvolucao, ListMonitoramentoMetasCronograma, MonitoramentoMetas, MonitoramentoMetasCronograma } from '@/views/monitoramento';
@@ -173,6 +173,16 @@ export const router = createRouter({
                 { path: ':meta_id/orcamento/custeio/:ano', component: AddEditCusteio, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/planejado/:ano', component: AddEditPlanejado, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/planejado/:ano/:id', component: AddEditPlanejado, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/dotacao', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/dotacao/:id', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/processo', component: AddEditRealizadoProcesso, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/processo/:id', component: AddEditRealizadoProcesso, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/nota', component: AddEditRealizadoNota, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/nota/:id', component: AddEditRealizadoNota, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/:id', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
+                
+                
+                
                 
                 { path: ':meta_id/iniciativas',
                     children: [
