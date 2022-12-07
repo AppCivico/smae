@@ -46,11 +46,12 @@
 		}
 	})();
 
-	var regdota = /^\d{4}\.?\d{4}\/?\d{7}\-?\d$/;
+	var regprocesso = /^\d{4}\.?\d{4}\/?\d{7}\-?\d$/;
 	const schema = Yup.object().shape({
 		valor_empenho: Yup.string().required('Preencha o valor empenho.'),
 		valor_liquidado: Yup.string().required('Preencha o valor liquidado.'),
-		processo: Yup.string().required('Preencha o processo.').matches(regdota,'Formato inválido')
+		processo: Yup.string().required('Preencha o processo.').matches(regprocesso,'Formato inválido'),
+		dotacao: Yup.string()
 	});
 
 	async function onSubmit(values) {
@@ -62,6 +63,10 @@
 	        values.ano_referencia = Number(ano);
 	        if(isNaN(values.valor_empenho)) values.valor_empenho = toFloat(values.valor_empenho);
 	        if(isNaN(values.valor_liquidado)) values.valor_liquidado = toFloat(values.valor_liquidado);
+
+	        values.atividade_id = null;
+	        values.iniciativa_id = null;
+	        values.meta_id = null;
 
 	        if(values.location[0] == "a"){
 	        	values.atividade_id = Number(values.location.slice(1));
@@ -95,16 +100,14 @@
 	    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento`)},'Remover');
 	}
 	function maskFloat(el){
-	    var value = el.target.value.replace(/[\D]/g, '');
-		if(!value) return;
-    	var result = dinheiro(parseFloat(value/100));
-    	el.target.value=result;
+    	el.target.value=dinheiro(Number(el.target.value.replace(/[\D]/g, ''))/100);
+    	el.target?._vei?.onChange(el);
 	}
 	function dinheiro(v){
-		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(v)
+		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v))
 	}
 	function toFloat(v){
-		return isNaN(v) ? Number( v.replace(/\./g, '').replace(',','.')) : v;
+		return isNaN(v) || String(v).indexOf(',') !== -1 ? Number( String(v).replace(/[^0-9\,]/g, '').replace(',','.') ) : Math.round(Number(v)*100)/100;
 	}
 	function maskProcesso(el){
 	    var kC = event.keyCode;
@@ -141,70 +144,84 @@
         <h3 class="mb2"><strong>{{ano}}</strong> - {{parent_item.codigo}} - {{parent_item.titulo}}</h3>
 	    <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
 	        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
-	            <div class="flex center g2">
+	            <div class="flex center g2 mb2">
 	                <div class="f1">
 	                    <label class="label">Processo SEI <span class="tvermelho">*</span></label>
-	                    <Field name="processo" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskProcesso" :class="{ 'error': errors.processo||respostasof.informacao_valida===false, 'loading': respostasof.loading}" />
+	                    <Field name="processo" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskProcesso" :class="{ 'error': errors.processo, 'loading': respostasof.loading}" />
 	                    <div class="error-msg">{{ errors.processo }}</div>
 	                    <div class="t13 mb1 tc300" v-if="respostasof.loading">Aguardando resposta do SOF</div>
-	                    <div class="t13 mb1 tvermelho" v-if="respostasof.informacao_valida===false">Dotação não encontrada</div>
 	                </div>
 	                <div class="f0">
 	                	<a @click="validarDota()" class="btn outline bgnone tcprimary">Validar via SOF</a>
 	                </div>
 	            </div>
-	            <div>
-                    <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
-                    
-                    <div v-for="m in singleMeta.children" :key="m.id">
-                    	<div class="label tc300">Meta</div>
-                    	<label class="block mb1">
-                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
-                    		<span>{{m.codigo}} - {{m.titulo}}</span>
-                    	</label>
-                    	<div v-if="m?.iniciativas?.length" class="label tc300">Iniciativas e atividades</div>
-                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
-                    		<label class="block mb1">
-                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
-                    			<span>{{i.codigo}} - {{i.titulo}}</span>
-                    		</label>
-                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
-                    			<label class="block mb1">
-                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
-                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-                    			</label>	
-                    		</div>
-                    	</div>	
-                    </div>
-                    
-                    <div class="error-msg">{{ errors.location }}</div>
+	            6016201700379910 
+	            <div v-if="respostasof.length" class="mb2">
+                    <label class="label">Dotação vinculada* <span class="tvermelho">*</span></label>
+	            	<label class="block mb1" v-for="(d,i) in respostasof" :key="d.id">
+	            		<Field name="dotacao" type="radio" :value="d.dotacao" class="inputcheckbox"/> 
+	            		<span>{{d.dotacao}}</span>
+	            	</label>
 	            </div>
-	            <div class="flex g2 mb2">
-	                <div class="f1">
-	                    <label class="label">Valor empenho<span class="tvermelho">*</span></label>
-	                    <Field name="valor_empenho" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
-	                    <div class="error-msg">{{ errors.valor_empenho }}</div>
-	                    <div class="flex center" v-if="val=respostasof.smae_soma_valor_empenho??currentEdit.valor_empenho">
-	                    	<span class="label mb0 tc300 mr1">Saldo empenho</span>
-	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_empenho))}}</span>
+
+	            <template v-if="respostasof.length&&values.dotacao">
+		            <div>
+	                    <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
+	                    
+	                    <div v-for="m in singleMeta.children" :key="m.id">
+	                    	<div class="label tc300">Meta</div>
+	                    	<label class="block mb1">
+	                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
+	                    		<span>{{m.codigo}} - {{m.titulo}}</span>
+	                    	</label>
+	                    	<div v-if="m?.iniciativas?.length" class="label tc300">Iniciativas e atividades</div>
+	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
+	                    		<label class="block mb1">
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
+	                    		</label>
+	                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
+	                    			<label class="block mb1">
+	                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+	                    				<span>{{a.codigo}} - {{a.titulo}}</span>
+	                    			</label>	
+	                    		</div>
+	                    	</div>	
 	                    </div>
-	                </div>
-	                <div class="f1">
-	                    <label class="label">Valor liquidado<span class="tvermelho">*</span></label>
-	                    <Field name="valor_liquidado" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
-	                    <div class="error-msg">{{ errors.valor_liquidado }}</div>
-	                    <div class="flex center" v-if="val=respostasof.smae_soma_valor_liquidado??currentEdit.valor_liquidado">
-	                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
-	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_liquidado))}}</span>
-	                    	<span v-if="val - toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>
-	                    </div>
-	                </div>
-	            </div>
-	            <div class="flex spacebetween center mb2">
-	                <hr class="mr2 f1"/>
-	                <button class="btn big" :disabled="isSubmitting">Salvar</button>
-	                <hr class="ml2 f1"/>
-	            </div>
+	                    
+	                    <div class="error-msg">{{ errors.location }}</div>
+		            </div>
+		            <div class="flex g2 mb2">
+		            	{{ (selecionado = respostasof.find(x=>x.dotacao==values.dotacao)) ? '':'' }}
+		                <div class="f1">
+		                    <label class="label">Valor empenho<span class="tvermelho">*</span></label>
+		                    <Field name="valor_empenho" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
+		                    <div class="error-msg">{{ errors.valor_empenho }}</div>
+		                    <div class="flex center" v-if="selecionado.smae_soma_valor_empenho!=undefined">
+		                    	{{(saldo = toFloat(toFloat(selecionado.smae_soma_valor_empenho)-toFloat(selecionado.valor_empenho)))?'':''}}
+		                    	<span class="label mb0 tc300 mr1">Saldo empenho</span>
+		                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_empenho))}}</span>
+		                    	<span v-if="saldo-toFloat(values.valor_empenho) < 0" class="tvermelho w700">(Valor superior ao saldo para empenho)</span>
+		                    </div>
+		                </div>
+		                <div class="f1">
+		                    <label class="label">Valor liquidado<span class="tvermelho">*</span></label>
+		                    <Field name="valor_liquidado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
+		                    <div class="error-msg">{{ errors.valor_liquidado }}</div>
+		                    <div class="flex center" v-if="selecionado.smae_soma_valor_liquidado!=undefined">
+		                    	{{(saldo = toFloat(toFloat(selecionado.smae_soma_valor_liquidado)-toFloat(selecionado.valor_liquidado)))?'':''}}
+		                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
+		                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_liquidado))}}</span>
+		                    	<span v-if="saldo-toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>
+		                    </div>
+		                </div>
+		            </div>
+		            <div class="flex spacebetween center mb2">
+		                <hr class="mr2 f1"/>
+		                <button class="btn big" :disabled="isSubmitting">Salvar</button>
+		                <hr class="ml2 f1"/>
+		            </div>
+	            </template>
 	        </Form>
 	    </template>
 	    <template v-if="currentEdit&&currentEdit?.id">

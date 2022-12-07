@@ -176,9 +176,7 @@ export const router = createRouter({
                 { path: ':meta_id/orcamento/realizado/:ano/dotacao', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/realizado/:ano/dotacao/:id', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/realizado/:ano/processo', component: AddEditRealizadoProcesso, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/realizado/:ano/processo/:id', component: AddEditRealizadoProcesso, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/realizado/:ano/nota', component: AddEditRealizadoNota, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/realizado/:ano/nota/:id', component: AddEditRealizadoNota, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/realizado/:ano/:id', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
                 
                 
