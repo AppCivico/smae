@@ -102,26 +102,39 @@
                 <thead>
                     <tr>
                         <th style="width: 50%">Dotação</th>
-                        <th>planejado para meta</th>
+                        <th style="width: 30%">planejado para meta</th>
                         <th style="width: 210px; overflow: visible;"><span>pressão orçamentária</span> <div class="tipinfo right"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Excedente no PdM em relação ao valor da dotação</div></div></th>
                         <th style="width: 50px"></th>
                     </tr>
                 </thead>
-                <tbody>
                     <template v-if="groups=agrupaFilhos(OrcamentoPlanejado[ano])">
-                        <LinhaPlanejado :group="groups" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>
+                        <tbody>
+                            <LinhaPlanejado :group="groups" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>
+                        </tbody>
                         
                         <template v-for="(g,k) in groups.filhos">
-                            <tr>
-                                <td>{{g.label}}</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td></td>
-                            </tr>
-                            <LinhaPlanejado :group="g" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>
+                            <tbody>
+                                <tr>
+                                    <td class="tc600 w700 pl1">{{g.label}}</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td></td>
+                                </tr>
+                                <LinhaPlanejado :group="g" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>
+                            </tbody>
+                            <template v-for="(gg,kk) in g.filhos">
+                                <tbody>
+                                    <tr>
+                                        <td class="tc600 w700 pl2">{{gg.label}}</td>
+                                        <td class="w700">{{formataValor(gg.items.reduce((red,x)=>red+x.valor_planejado,0))}}</td>
+                                        <td class="w700 tvermelho">{{formataValor(gg.items.reduce((red,x)=>red+Number(x.pressao_orcamentaria_valor),0))}}</td>
+                                        <td></td>
+                                    </tr>
+                                    <LinhaPlanejado :group="gg" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>
+                                </tbody>
+                            </template>
                         </template>
                     </template>
-                </tbody>
             </table>
             <div class="tc">
                 <router-link 

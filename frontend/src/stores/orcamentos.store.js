@@ -58,6 +58,25 @@ export const useOrcamentosStore = defineStore({
             if(await requestS.delete(`${baseUrl}/meta-orcamento/${id}`)) return true;
             return false;
         },
+
+        async updateOrcamentoPlanejado(id,params) {
+            if(await requestS.patch(`${baseUrl}/orcamento-planejado/${id}`, params)) return true;
+            return false;
+        },
+        async deleteOrcamentoPlanejado(id) {
+            if(await requestS.delete(`${baseUrl}/orcamento-planejado/${id}`)) return true;
+            return false;
+        },
+
+        // Dotacoes
+        async getDotacaoPlanejado(dotacao,ano) {
+            try {
+                let r = await requestS.patch(`${baseUrl}/dotacao/valor-planejado`,{dotacao:dotacao,ano:Number(ano)});    
+                return r;
+            } catch (error) {
+                return {error}
+            }
+        },
         
     }
 });
