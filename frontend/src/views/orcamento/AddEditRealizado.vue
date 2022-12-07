@@ -108,28 +108,20 @@
 	}
 	function maskDotacao(el){
 	    var kC = event.keyCode;
-	    var data = el.target.value.replace(/[^0-9\.\-]/g,'');
-	    if( kC!=8 && kC!=46 ){
-	        if( data.length==2 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==5 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==8 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==12 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==17 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==19 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==23 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==32 ){
-	            el.target.value = data += '.';
-	        }else{
-	            el.target.value = data.slice(0,35);
-	        }
-	    }
+	    el.target.value = formatDota(el.target.value);
+	}
+	function formatDota(d){
+	    var data = String(d).replace(/[\D]/g,'').slice(0,27);
+        var s = data.slice(0,2);
+        if( data.length>2 ) s += '.'+data.slice(2,4);
+        if( data.length>4 ) s += '.'+data.slice(4,6);
+        if( data.length>6 ) s += '.'+data.slice(6,9);
+        if( data.length>9 ) s += '.'+data.slice(9,13);
+        if( data.length>13 ) s += '.'+data.slice(13,14);
+        if( data.length>14 ) s += '.'+data.slice(14,17);
+        if( data.length>17 ) s += '.'+data.slice(17,25);
+        if( data.length>25 ) s += '.'+data.slice(25);
+		return s;
 	}
 	async function validarDota() {
 		try{

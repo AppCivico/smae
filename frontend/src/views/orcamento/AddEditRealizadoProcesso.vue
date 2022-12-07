@@ -108,19 +108,15 @@
 	}
 	function maskProcesso(el){
 	    var kC = event.keyCode;
-	    var data = el.target.value.replace(/[^0-9\.\-\/]/g,'');
-		var regdota = /^\d{4}\.?\d{4}\/?\d{7}\-?\d$/;
-	    if( kC!=8 && kC!=46 ){
-	        if( data.length==4 ){
-	            el.target.value = data += '.';
-	        }else if( data.length==9 ){
-	            el.target.value = data += '/';
-	        }else if( data.length==17 ){
-	            el.target.value = data += '-';
-	        }else{
-	            el.target.value = data.slice(0,19);
-	        }
-	    }
+	    el.target.value = formatProcesso(el.target.value);
+	}
+	function formatProcesso(d){
+	    var data = String(d).replace(/[\D]/g,'').slice(0,16);
+        var s = data.slice(0,4);
+        if( data.length>4 ) s += '.'+data.slice(4,8);
+        if( data.length>8 ) s += '/'+data.slice(8,15);
+        if( data.length>15 ) s += '-'+data.slice(15,16);
+		return s;
 	}
 	async function validarDota() {
 		try{
