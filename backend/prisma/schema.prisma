@@ -1915,3 +1915,12 @@ model OrcamentoRealizado {
     @@index([ano_referencia, atividade_id])
     @@map("orcamento_realizado")
 }
+
+model SofEntidade {
+    ano Int @id
+
+    atualizado_em       DateTime @default(now()) @db.Timestamptz(6)
+    dados               Json     @default("{}") @db.Json
+
+    @@map("sof_entidade")
+}
