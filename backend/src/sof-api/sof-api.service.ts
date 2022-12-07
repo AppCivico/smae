@@ -147,12 +147,32 @@ export class SofApiService {
         return await this.doRequest(endpoint, input) as SuccessEmpenhosResponse;
     }
 
-    async entidades(input: InputProcesso): Promise<SuccessEntidadesResponse> {
-        const endpoint = 'v1/itens_dotacao/all_items';
-        return await this.doRequest(endpoint, input) as SuccessEntidadesResponse;
+    async entidades(ano: number): Promise<SuccessEntidadesResponse> {
+        const endpoint = 'v1/itens_dotacao/all_items?ano=' + encodeURIComponent(ano);
+        return await this.doGetRequest(endpoint) as SuccessEntidadesResponse;
     }
 
-    private async doRequest(endpoint: string, input: InputDotacao | InputProcesso | InputNotaEmpenho): Promise<SuccessEmpenhosResponse | SuccessEntidadesResponse> {
+
+    private async doGetRequest(endpoint: string): Promise<SuccessEntidadesResponse> {
+
+        this.logger.debug(`chamando GET ${endpoint}`);
+        try {
+            const response: ApiResponse = await this.got.get<ApiResponse>(endpoint).json();
+            this.logger.debug(`resposta: ${JSON.stringify(response)}`);
+            if ("metadados" in response && response.metadados.sucess && endpoint.includes('v1/itens_dotacao/')) {
+                return response as SuccessEntidadesResponse;
+            }
+
+            throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
+        } catch (error: any) {
+            this.logger.debug(`${endpoint} falhou: ${error}`);
+
+            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}`)
+        }
+    }
+
+
+    private async doRequest(endpoint: string, input: InputDotacao | InputProcesso | InputNotaEmpenho): Promise<SuccessEmpenhosResponse> {
 
         this.logger.debug(`chamando ${endpoint} com ${JSON.stringify(input)}`);
         try {
@@ -172,8 +192,6 @@ export class SofApiService {
                     }),
                     metadados: response.metadados
                 };
-            } else if ("metadados" in response && response.metadados.sucess && endpoint.includes('v1/itens_dotacao/')) {
-                return response;
             }
 
             throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
