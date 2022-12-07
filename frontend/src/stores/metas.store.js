@@ -55,11 +55,23 @@ export const useMetasStore = defineStore({
         async getById(id) {
             try {
                 this.singleMeta = { loading: true };
-                if(!this.Metas.length){
-                    await this.getAll();
-                }
-                if(this.Metas.length) this.singleMeta = await this.Metas.find((u)=>u.id == id);
+                let r = await requestS.get(`${baseUrl}/meta/${id}`);    
+                this.singleMeta = r.id ? r : false;
                 if(!this.singleMeta) throw 'Meta não encontrada';
+                return true;
+            } catch (error) {
+                this.singleMeta = { error };
+                return false;
+            }
+        },
+        async getChildren(id) {
+            try {
+                if(!this.singleMeta.id){
+                    await this.getById(id);
+                }
+                this.singleMeta.children = {loading:true};
+                let r = await requestS.get(`${baseUrl}/meta/iniciativas-atividades/?meta_ids="${id}"`);    
+                this.singleMeta.children = r.linhas ? r.linhas : [];
                 return true;
             } catch (error) {
                 this.singleMeta = { error };

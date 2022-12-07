@@ -27,9 +27,15 @@
 
 	const OrcamentosStore = useOrcamentosStore();
 	const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
-	OrcamentosStore.getOrcamentoCusteioById(meta_id,ano);
+	(async()=>{
+		await OrcamentosStore.getOrcamentoCusteioById(meta_id,ano);
+		OrcamentoCusteio.value[ano].map(x=>{
+			x.custeio_previsto = dinheiro(x.custeio_previsto);
+			x.investimento_previsto = dinheiro(x.investimento_previsto);
+		})
+	})();
 
-	var regdota = /^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2}(\-\d)?)?)?)?)?)?)?)?)?$/;
+	var regdota = /^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2})?)?)?)?)?)?)?)?$/;
 	const schema = Yup.object().shape({
 		custeio_previsto: Yup.string().required('Preencha o custeio.'),
 		investimento_previsto: Yup.string().required('Preencha o investimento.'),
@@ -50,8 +56,8 @@
             msg = 'Dados salvos com sucesso!';
 	        
 	        if(r == true){
-	            await router.push(`${parentlink}/orcamento`);
 	            alertStore.success(msg);
+	            await router.push(`${parentlink}/orcamento`);
 	        }
 	    } catch (error) {
 	        alertStore.error(error);
@@ -68,10 +74,38 @@
 		
 	}
 	function maskFloat(el){
-	    var value = el.target.value.replace('.', '').replace(',', '').replace(/\D/g, '');
+	    var value = el.target.value.replace(/[\D]/g, '');
 		if(!value) return;
-    	var result = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(parseFloat(value) / 100);
+    	var result = dinheiro(parseFloat(value/100));
     	el.target.value=result;
+	}
+	function maskDotacao(el){
+	    var kC = event.keyCode;
+	    var data = el.target.value.replace(/[^0-9\.-]/g,'');
+	    if( kC!=8 && kC!=46 ){
+	        if( data.length==2 ){
+	            el.target.value = data += '.';
+	        }else if( data.length==5 ){
+	            el.target.value = data += '.';
+	        }else if( data.length==8 ){
+	            el.target.value = data += '.';
+	        }else if( data.length==12 ){
+	            el.target.value = data += '.';
+	        }else if( data.length==17 ){
+	            el.target.value = data += '.';
+	        }else if( data.length==19 ){
+	            el.target.value = data += '.';
+	        }else if( data.length==23 ){
+	            el.target.value = data += '.';
+	        }else if( data.length==32 ){
+	            el.target.value = data += '.';
+	        }else{
+	            el.target.value = data.slice(0,35);
+	        }
+	    }
+	}
+	function dinheiro(v){
+		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(v)
 	}
 </script>
 <template>
@@ -87,23 +121,20 @@
 	            <div class="flex g2 mb2">
 	                <div class="f1">
 	                    <label class="label">Previsão de investimento<span class="tvermelho">*</span></label>
-	                    <Field name="custeio_previsto" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.custeio_previsto }" />
+	                    <Field name="custeio_previsto" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.custeio_previsto }" />
 	                    <div class="error-msg">{{ errors.custeio_previsto }}</div>
 	                </div>
 	                <div class="f1">
 	                    <label class="label">Previsão de custeio <span class="tvermelho">*</span></label>
-	                    <Field name="investimento_previsto" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.investimento_previsto }" />
+	                    <Field name="investimento_previsto" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.investimento_previsto }" />
 	                    <div class="error-msg">{{ errors.investimento_previsto }}</div>
 	                </div>
 	            </div>
 	            <div class="flex center g2">
 	                <div class="f1">
 	                    <label class="label">Parte da dotação <span class="tvermelho">*</span></label>
-	                    <Field name="parte_dotacao" type="text" class="inputtext light mb1" :class="{ 'error': errors.parte_dotacao }" />
+	                    <Field name="parte_dotacao" type="text" class="inputtext light mb1" @keyup="maskDotacao" :class="{ 'error': errors.parte_dotacao }" />
 	                    <div class="error-msg">{{ errors.parte_dotacao }}</div>
-	                </div>
-	                <div class="f0">
-	                	<a @click="validar" class="btn outline bgnone tcprimary">Validar via SOF</a>
 	                </div>
 	            </div>
 	            <div class="flex spacebetween center mb2">
