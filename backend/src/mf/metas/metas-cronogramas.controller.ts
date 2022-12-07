@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpException, Param, Patch, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -96,15 +96,18 @@ export class MetasCronogramaController {
     }
 
     @Get(':id/iniciativas-e-atividades')
+    @ApiOperation({ summary: 'Para uso apenas quando existir CRONOGRAMA na meta, se não irá voltar meta=null' })
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     async iniciativa_atividades(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RetornoMetaCronogramaDto> {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
-        if (config.metas_cronograma.includes(params.id) == false && Boolean(process.env.PROD) == false) {
-            throw new HttpException('Meta não encontrada no ciclo', 404);
+        if (config.metas_cronograma.includes(params.id) == false) {
+            return { meta: null }
+            //throw new HttpException('Meta não encontrada no ciclo', 404);
         }
+
         const ret = await this.metasCronogramaService.metaIniciativaAtividadesComCrono(params.id);
 
         return ret;
