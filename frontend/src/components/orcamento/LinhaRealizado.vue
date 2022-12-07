@@ -15,7 +15,7 @@
         <td style="white-space: nowrap; text-align: right">
             <router-link 
                 v-if="permissao"
-                :to="`${parentlink}/orcamento/realizado/${item.ano_referencia}/${item.nota_empenho?'nota':item.processo?'processo':'dotacao'}/${item.id}`" 
+                :to="`${parentlink}/orcamento/realizado/${item.ano_referencia}/${item.id}`" 
                 class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
         </td>
     </tr>

@@ -90,8 +90,6 @@ export const usePdMStore = defineStore({
                 let r = await requestS.get(`${baseUrl}/pdm/${id}?incluir_auxiliares=true`);    
                 if(r.pdm){
                     this.singlePdm = (x=>{
-                        console.log(x);
-                        
                         x.pdm.data_inicio = this.dateToField(x.pdm.data_inicio);
                         x.pdm.data_fim = this.dateToField(x.pdm.data_fim);
                         x.pdm.data_publicacao = this.dateToField(x.pdm.data_publicacao);

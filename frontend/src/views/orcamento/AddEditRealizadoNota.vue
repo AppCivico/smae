@@ -50,7 +50,9 @@
 	const schema = Yup.object().shape({
 		valor_empenho: Yup.string().required('Preencha o valor empenho.'),
 		valor_liquidado: Yup.string().required('Preencha o valor liquidado.'),
-		nota_empenho: Yup.string().required('Preencha o nota_empenho.').matches(regdota,'Formato inválido')
+		nota_empenho: Yup.string().required('Preencha o nota_empenho.').matches(regdota,'Formato inválido'),
+		dotacao: Yup.string(),
+		processo: Yup.string()
 	});
 
 	async function onSubmit(values) {
@@ -62,6 +64,10 @@
 	        values.ano_referencia = Number(ano);
 	        if(isNaN(values.valor_empenho)) values.valor_empenho = toFloat(values.valor_empenho);
 	        if(isNaN(values.valor_liquidado)) values.valor_liquidado = toFloat(values.valor_liquidado);
+
+	        values.atividade_id = null;
+	        values.iniciativa_id = null;
+	        values.meta_id = null;
 
 	        if(values.location[0] == "a"){
 	        	values.atividade_id = Number(values.location.slice(1));
@@ -95,16 +101,14 @@
 	    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento`)},'Remover');
 	}
 	function maskFloat(el){
-	    var value = el.target.value.replace(/[\D]/g, '');
-		if(!value) return;
-    	var result = dinheiro(parseFloat(value/100));
-    	el.target.value=result;
+    	el.target.value=dinheiro(Number(el.target.value.replace(/[\D]/g, ''))/100);
+    	el.target?._vei?.onChange(el);
 	}
 	function dinheiro(v){
-		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(v)
+		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v))
 	}
 	function toFloat(v){
-		return isNaN(v) ? Number( v.replace(/\./g, '').replace(',','.')) : v;
+		return isNaN(v) || String(v).indexOf(',') !== -1 ? Number( String(v).replace(/[^0-9\,]/g, '').replace(',','.') ) : Math.round(Number(v)*100)/100;
 	}
 	function maskNota(el){
 	    var kC = event.keyCode;
@@ -145,6 +149,12 @@
 	                    <div class="error-msg">{{ errors.nota_empenho }}</div>
 	                    <div class="t13 mb1 tc300" v-if="respostasof.loading">Aguardando resposta do SOF</div>
 	                    <div class="t13 mb1 tvermelho" v-if="respostasof.informacao_valida===false">Dotação não encontrada</div>
+	                    <div class="t13 mb1 tc300" v-if="respostasof.dotacao">Dotação: <strong>{{respostasof.dotacao}}</strong>
+	                    	<Field name="dotacao" type="hidden" :value="respostasof.dotacao" class="inputcheckbox"/>
+	                    </div>
+	                    <div class="t13 mb1 tc300" v-if="respostasof.processo">Processo: <strong>{{respostasof.processo}}</strong>
+	                    	<Field name="processo" type="hidden" :value="respostasof.processo" class="inputcheckbox"/>
+	                    </div>
 	                </div>
 	                <div class="f0">
 	                	<a @click="validarDota()" class="btn outline bgnone tcprimary">Validar via SOF</a>
@@ -179,21 +189,24 @@
 	            <div class="flex g2 mb2">
 	                <div class="f1">
 	                    <label class="label">Valor empenho<span class="tvermelho">*</span></label>
-	                    <Field name="valor_empenho" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
+	                    <Field name="valor_empenho" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
 	                    <div class="error-msg">{{ errors.valor_empenho }}</div>
-	                    <div class="flex center" v-if="val=respostasof.smae_soma_valor_empenho??currentEdit.valor_empenho">
+	                    <div class="flex center" v-if="respostasof.smae_soma_valor_empenho!=undefined">
+	                    	{{(saldo = toFloat(toFloat(respostasof.smae_soma_valor_empenho)-toFloat(respostasof.valor_empenho)))?'':''}}
 	                    	<span class="label mb0 tc300 mr1">Saldo empenho</span>
-	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_empenho))}}</span>
+	                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_empenho))}}</span>
+	                    	<span v-if="saldo-toFloat(values.valor_empenho) < 0" class="tvermelho w700">(Valor superior ao saldo para empenho)</span>
 	                    </div>
 	                </div>
 	                <div class="f1">
 	                    <label class="label">Valor liquidado<span class="tvermelho">*</span></label>
-	                    <Field name="valor_liquidado" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
+	                    <Field name="valor_liquidado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
 	                    <div class="error-msg">{{ errors.valor_liquidado }}</div>
-	                    <div class="flex center" v-if="val=respostasof.smae_soma_valor_liquidado??currentEdit.valor_liquidado">
+	                    <div class="flex center" v-if="respostasof.smae_soma_valor_liquidado!=undefined">
+	                    	{{(saldo = toFloat(toFloat(respostasof.smae_soma_valor_liquidado)-toFloat(respostasof.valor_liquidado)))?'':''}}
 	                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
-	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_liquidado))}}</span>
-	                    	<span v-if="val - toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>
+	                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_liquidado))}}</span>
+	                    	<span v-if="saldo-toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>
 	                    </div>
 	                </div>
 	            </div>

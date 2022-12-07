@@ -99,15 +99,7 @@ export const useOrcamentosStore = defineStore({
         async getDotacaoRealizado(dotacao,ano) {
             try {
                 let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado`,{dotacao:dotacao,ano:Number(ano)});    
-                return r;
-            } catch (error) {
-                return {error}
-            }
-        },
-        async getDotacaoRealizadoProcesso(processo,ano) {
-            try {
-                let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`,{processo:processo,ano:Number(ano)});    
-                return r;
+                return r.linhas.length ? r.linhas[0] : {} ;
             } catch (error) {
                 return {error}
             }
@@ -115,7 +107,15 @@ export const useOrcamentosStore = defineStore({
         async getDotacaoRealizadoNota(nota_empenho,ano) {
             try {
                 let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`,{nota_empenho:nota_empenho,ano:Number(ano)});    
-                return r;
+                return r.linhas.length ? r.linhas[0] : {} ;
+            } catch (error) {
+                return {error}
+            }
+        },
+        async getDotacaoRealizadoProcesso(processo,ano) {
+            try {
+                let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`,{processo:processo,ano:Number(ano)});    
+                return r.linhas ;
             } catch (error) {
                 return {error}
             }

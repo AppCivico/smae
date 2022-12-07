@@ -61,6 +61,10 @@
 	        values.ano_referencia = Number(ano);
 	        if(isNaN(values.valor_planejado)) values.valor_planejado = toFloat(values.valor_planejado);
 
+	        values.atividade_id = null;
+	        values.iniciativa_id = null;
+	        values.meta_id = null;
+
 	        if(values.location[0] == "a"){
 	        	values.atividade_id = Number(values.location.slice(1));
 	        }else if(values.location[0] == "i"){
@@ -93,16 +97,14 @@
 	    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await OrcamentosStore.deleteOrcamentoPlanejado(id)) router.push(`${parentlink}/orcamento`)},'Remover');
 	}
 	function maskFloat(el){
-	    var value = el.target.value.replace(/[\D]/g, '');
-		if(!value) return;
-    	var result = dinheiro(parseFloat(value/100));
-    	el.target.value=result;
+    	el.target.value=dinheiro(Number(el.target.value.replace(/[\D]/g, ''))/100);
+    	el.target?._vei?.onChange(el);
 	}
 	function dinheiro(v){
-		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(v)
+		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v))
 	}
 	function toFloat(v){
-		return isNaN(v) ? Number( v.replace(/\./g, '').replace(',','.')) : v;
+		return isNaN(v) || String(v).indexOf(',') !== -1 ? Number( String(v).replace(/[^0-9\,]/g, '').replace(',','.') ) : Math.round(Number(v)*100)/100;
 	}
 	function maskDotacao(el){
 	    var kC = event.keyCode;
@@ -185,15 +187,17 @@
 	            <div class="flex g2 mb2">
 	                <div class="f1">
 	                    <label class="label">Valor planejado<span class="tvermelho">*</span></label>
-	                    <Field name="valor_planejado" @keyup="maskFloat" @change="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_planejado }" />
+	                    <Field name="valor_planejado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_planejado }" />
 	                    <div class="error-msg">{{ errors.valor_planejado }}</div>
-	                    <div class="flex center" v-if="val=respostasof.empenho_liquido??currentEdit.empenho_liquido">
-	                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
-	                    	<span class="t14">R$ {{dinheiro(val - toFloat(values.valor_planejado))}}</span>
-	                    	<span v-if="val - toFloat(values.valor_planejado) < 0" class="tvermelho w700">(Valor acima da dotação)</span>
+	                    <div class="flex center" v-if="respostasof.smae_soma_valor_planejado!=undefined">
+	                    	{{(saldo = toFloat(toFloat(respostasof.smae_soma_valor_planejado)-toFloat(respostasof.empenho_liquido)))?'':''}}
+	                    	<span class="label mb0 tc300 mr1">Saldo disponível</span>
+	                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_planejado))}}</span>
+	                    	<span v-if="saldo-toFloat(values.valor_planejado) < 0" class="tvermelho w700">(Valor superior ao saldo)</span>
 	                    </div>
 	                </div>
 	            </div>
+
 	            <div class="flex spacebetween center mb2">
 	                <hr class="mr2 f1"/>
 	                <button class="btn big" :disabled="isSubmitting">Salvar</button>

@@ -74,10 +74,14 @@
 		
 	}
 	function maskFloat(el){
-	    var value = el.target.value.replace(/[\D]/g, '');
-		if(!value) return;
-    	var result = dinheiro(parseFloat(value/100));
-    	el.target.value=result;
+    	el.target.value=dinheiro(Number(el.target.value.replace(/[\D]/g, ''))/100);
+    	el.target?._vei?.onChange(el);
+	}
+	function dinheiro(v){
+		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v))
+	}
+	function toFloat(v){
+		return isNaN(v) || String(v).indexOf(',') !== -1 ? Number( String(v).replace(/[^0-9\,]/g, '').replace(',','.') ) : Math.round(Number(v)*100)/100;
 	}
 	function maskDotacao(el){
 	    var kC = event.keyCode;
@@ -95,9 +99,6 @@
         if( data.length>17 ) s += '.'+data.slice(17,25);
         if( data.length>25 ) s += '.'+data.slice(25);
 		return s;
-	}
-	function dinheiro(v){
-		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(v)
 	}
 </script>
 <template>
