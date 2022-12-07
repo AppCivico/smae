@@ -1154,94 +1154,96 @@ export class PainelService {
                 });
             });
 
-            all_series.sort( function compare (a, b) {
-                const date_a = new Date(a.data_valor).getTime();
-                const date_b = new Date(b.data_valor).getTime();
-                return date_a - date_b;
-            });
-
-            const earliest = new Date(all_series[0].data_valor);
-            const latest   = new Date(all_series.at(-1)!.data_valor);
-            console.log("earliest: " + earliest.getTime());
-            console.log("latest: " + latest.getTime());
-
-            if (config.periodicidade === Periodicidade.Anual) {
-                const year_diff = await this.yearsDiff(latest.getTime(), earliest.getTime());
-
-                if (year_diff > 0) {
-                    for (let i = 0; i < year_diff; i++) {
-                        const periodo_inicio = moment(earliest).add(i, 'years').toDate();
-                        const periodo_fim    = moment(periodo_inicio).add(1, 'year').toDate();
-
-                        series_template.push({
-                            titulo: periodo_inicio.toLocaleDateString('pt-br'),
-                            periodo_inicio: periodo_inicio,
-                            periodo_fim: periodo_fim,
-                            valores_nominais: ["", "", "", ""]
-                        })
-                    }
-                } else {
-                    series_template.push({
-                        titulo: earliest.toLocaleDateString('pt-BR', {year: 'numeric'}),
-                        periodo_inicio: earliest,
-                        periodo_fim: latest,
-                        valores_nominais: ["", "", "", ""]
-                    })
-                }
-            } else if (
-                config.periodicidade === Periodicidade.Semestral ||
-                config.periodicidade === Periodicidade.Quadrimestral ||
-                config.periodicidade === Periodicidade.Bimestral ||
-                config.periodicidade === Periodicidade.Trimestral ||
-                config.periodicidade === Periodicidade.Mensal) {
-                
-                    let multiplier;
-
-                    switch (config.periodicidade) {
-                        case Periodicidade.Semestral:
-                            multiplier = 6;
-                            break;
-                        case Periodicidade.Quadrimestral:
-                            multiplier = 4
-                            break;
-                        case Periodicidade.Trimestral:
-                            multiplier = 3;
-                            break;
-                        case Periodicidade.Bimestral:
-                            multiplier = 2;
-                            break;
-                        case Periodicidade.Mensal:
-                            multiplier = 1;
-                    }
-
-                    const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
-                    if (months_diff >= multiplier) {
-                        let i = 0;
-                        while (1) {
-
-                            const periodo_inicio = moment(earliest).add(multiplier * i, 'months').toDate();
-                            const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
-                            i++;
-
+            if (all_series.length > 0) {
+                all_series.sort( function compare (a, b) {
+                    const date_a = new Date(a.data_valor).getTime();
+                    const date_b = new Date(b.data_valor).getTime();
+                    return date_a - date_b;
+                });
+    
+                const earliest = new Date(all_series[0].data_valor);
+                const latest   = new Date(all_series.at(-1)!.data_valor);
+                console.log("earliest: " + earliest.getTime());
+                console.log("latest: " + latest.getTime());
+    
+                if (config.periodicidade === Periodicidade.Anual) {
+                    const year_diff = await this.yearsDiff(latest.getTime(), earliest.getTime());
+    
+                    if (year_diff > 0) {
+                        for (let i = 0; i < year_diff; i++) {
+                            const periodo_inicio = moment(earliest).add(i, 'years').toDate();
+                            const periodo_fim    = moment(periodo_inicio).add(1, 'year').toDate();
+    
                             series_template.push({
-                                titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                                titulo: periodo_inicio.toLocaleDateString('pt-br'),
                                 periodo_inicio: periodo_inicio,
                                 periodo_fim: periodo_fim,
                                 valores_nominais: ["", "", "", ""]
-                            });
-
-                            if (multiplier * i >= months_diff) {
-                                break;
-                            }
+                            })
                         }
                     } else {
                         series_template.push({
-                            titulo: earliest.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                            titulo: earliest.toLocaleDateString('pt-BR', {year: 'numeric'}),
                             periodo_inicio: earliest,
                             periodo_fim: latest,
                             valores_nominais: ["", "", "", ""]
                         })
                     }
+                } else if (
+                    config.periodicidade === Periodicidade.Semestral ||
+                    config.periodicidade === Periodicidade.Quadrimestral ||
+                    config.periodicidade === Periodicidade.Bimestral ||
+                    config.periodicidade === Periodicidade.Trimestral ||
+                    config.periodicidade === Periodicidade.Mensal) {
+                    
+                        let multiplier;
+    
+                        switch (config.periodicidade) {
+                            case Periodicidade.Semestral:
+                                multiplier = 6;
+                                break;
+                            case Periodicidade.Quadrimestral:
+                                multiplier = 4
+                                break;
+                            case Periodicidade.Trimestral:
+                                multiplier = 3;
+                                break;
+                            case Periodicidade.Bimestral:
+                                multiplier = 2;
+                                break;
+                            case Periodicidade.Mensal:
+                                multiplier = 1;
+                        }
+    
+                        const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
+                        if (months_diff >= multiplier) {
+                            let i = 0;
+                            while (1) {
+    
+                                const periodo_inicio = moment(earliest).add(multiplier * i, 'months').toDate();
+                                const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
+                                i++;
+    
+                                series_template.push({
+                                    titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                                    periodo_inicio: periodo_inicio,
+                                    periodo_fim: periodo_fim,
+                                    valores_nominais: ["", "", "", ""]
+                                });
+    
+                                if (multiplier * i >= months_diff) {
+                                    break;
+                                }
+                            }
+                        } else {
+                            series_template.push({
+                                titulo: earliest.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
+                                periodo_inicio: earliest,
+                                periodo_fim: latest,
+                                valores_nominais: ["", "", "", ""]
+                            })
+                        }
+                }
             }
         }
 
