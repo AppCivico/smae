@@ -184,7 +184,7 @@ export class MetasCronogramaService {
                 });
             }
 
-            retorno.meta.iniciativas.push(retornoIniciativa)
+            retorno.meta!.iniciativas.push(retornoIniciativa)
         }
 
         return retorno;
