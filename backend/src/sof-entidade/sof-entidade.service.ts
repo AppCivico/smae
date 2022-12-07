@@ -3,12 +3,16 @@ import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
+import { SofApiService } from '../sof-api/sof-api.service';
 const JOB_LOCK_NUMBER = 65656564;
 
 @Injectable()
 export class SofEntidadeService {
     private readonly logger = new Logger(SofEntidadeService.name);
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly sof: SofApiService
+    ) { }
 
 
     async findByYear(ano: number) {
@@ -21,7 +25,7 @@ export class SofEntidadeService {
         };
     }
 
-    @Cron('0 * * * * *')
+    @Cron('5 0 * * * *')
     async handleCron() {
         if (Boolean(process.env['DISABLE_SOF_CRONTAB'])) return;
 
@@ -31,7 +35,7 @@ export class SofEntidadeService {
             }[] = await prisma.$queryRaw`
                 select ano
                 from (
-                    select extract('year' from dt) as ano,
+                    select extract('year' from dt)::int as ano,
                     case when dt.dt > now() - '1 year'::interval then
                         se.ano is null or now() - se.atualizado_em > '24 hours'::interval
                     else
@@ -71,8 +75,21 @@ export class SofEntidadeService {
     }
 
     async atualizaSof(ano: number) {
+        ano = Number(ano);
 
-
+        const data = await this.sof.entidades(ano);
+        await this.prisma.sofEntidade.upsert({
+            where: { ano: ano },
+            create: {
+                ano: ano,
+                atualizado_em: new Date(Date.now()),
+                dados: data,
+            },
+            update: {
+                atualizado_em: new Date(Date.now()),
+                dados: data
+            }
+        });
     }
 
 }
