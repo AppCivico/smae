@@ -9,8 +9,10 @@ import { UploadService } from 'src/upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
+import { Pdm } from './dto/pdm.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
+import { ListPdm } from './entities/list-pdm.entity';
 import { PdmDocument } from './entities/pdm-document.entity';
 const JOB_LOCK_NUMBER = 65656565;
 
@@ -61,7 +63,7 @@ export class PdmService {
         return created;
     }
 
-    async findAll(filters: FilterPdmDto | undefined = undefined) {
+    async findAll(filters: FilterPdmDto | undefined = undefined): Promise<ListPdm[]> {
         const active = filters?.ativo;
 
         const listActive = await this.prisma.pdm.findMany({
@@ -98,9 +100,7 @@ export class PdmService {
             }
         });
 
-        type tmp = Omit<typeof listActive[0], 'arquivo_logo_id'> & { logo: string | null };
-
-        const listActiveTmp: tmp[] = listActive.map(pdm => {
+        const listActiveTmp = listActive.map(pdm => {
             let logo = null;
             if (pdm.arquivo_logo_id) {
                 logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token
@@ -109,14 +109,19 @@ export class PdmService {
             return {
                 ...pdm,
                 arquivo_logo_id: undefined,
-                logo: logo
+                logo: logo,
+                data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
+                data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
+                data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
+                periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
+                periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
             }
         });
 
         return listActiveTmp;
     }
 
-    async getDetail(id: number, user: PessoaFromJwt) {
+    async getDetail(id: number, user: PessoaFromJwt): Promise<Pdm> {
         let pdm = await this.prisma.pdm.findFirst({
             where: {
                 id: id
@@ -127,7 +132,15 @@ export class PdmService {
         if (pdm.arquivo_logo_id) {
             pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token
         }
-        return pdm;
+
+        return {
+            ...pdm,
+            data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
+            data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
+            data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
+            periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
+            periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
+        };
     }
 
     async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {

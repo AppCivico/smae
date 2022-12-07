@@ -34,6 +34,16 @@ export class MetaController {
     }
 
     @ApiBearerAuth('access-token')
+    @Get('iniciativas-atividades')
+    //@Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal', '')
+    async buscaMetasIniciativaAtividades(
+        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
+    ): Promise<ListDadosMetaIniciativaAtividadesDto> {
+        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
+    }
+
+    // precisa ficar depois
+    @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get(':id')
     async findOne(@Param() params: FindOneParams): Promise<Meta> {
@@ -61,13 +71,5 @@ export class MetaController {
         return '';
     }
 
-    @ApiBearerAuth('access-token')
-    @Get('iniciativas-atividades')
-    //@Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal', '')
-    async buscaMetasIniciativaAtividades(
-        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
-    ): Promise<ListDadosMetaIniciativaAtividadesDto> {
-        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
-    }
 
 }

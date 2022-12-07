@@ -25,14 +25,14 @@ export class ListPdm {
     */
     @IsISO8601({ strict: true, message: '$property| data_inicio: Precisa ser uma data' })
     @Length(10, 10)
-    data_inicio?: Date | null
+    data_inicio?: string | null
 
     /**
     * Data de fim
     */
     @IsISO8601({ strict: true, message: '$property| data_fim: Precisa ser uma data' })
     @Length(10, 10)
-    data_fim?: Date | null
+    data_fim?: string | null
 
     /**
     * Ativo
@@ -42,9 +42,9 @@ export class ListPdm {
 
 
     prefeito: string
-    data_publicacao: Date | null
-    periodo_do_ciclo_participativo_inicio: Date | null
-    periodo_do_ciclo_participativo_fim: Date | null
+    data_publicacao: string | null
+    periodo_do_ciclo_participativo_inicio: string | null
+    periodo_do_ciclo_participativo_fim: string | null
 
 
     rotulo_macro_tema: string
@@ -62,6 +62,8 @@ export class ListPdm {
     possui_iniciativa: boolean
     possui_atividade: boolean
     logo: string | null
+
+    id: number
 
 
 }
