@@ -174,38 +174,9 @@ export class DotacaoService {
 
         } catch (error) {
             if (error instanceof SofError) {
-
-                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-
-                    const jaExiste = await prisma.dotacaoRealizado.findUnique({
-                        where: {
-                            ano_referencia_dotacao: {
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                            }
-                        }
-                    });
-
-                    // se ainda não existe (pode ter iniciado já por causa do lock)
-                    if (!jaExiste) {
-
-                        await prisma.dotacaoRealizado.create({
-                            data: {
-                                informacao_valida: false,
-                                sincronizado_em: null,
-                                empenho_liquido: 0,
-                                valor_liquidado: 0,
-                                mes_utilizado: mes,
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                            },
-                            select: { id: true },
-                        });
-                    }
-                }, {
-                    isolationLevel: 'Serializable'
-                });
+                throw new HttpException('No momento, o serviço SOF está indisponível, e não é possível criar uma dotação de realizado manualmente nesta versão do SMAE.\n\nTente novamente mais tarde', 400);
             }
+
             throw error;
         }
     }
