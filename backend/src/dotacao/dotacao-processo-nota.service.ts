@@ -102,7 +102,7 @@ export class DotacaoProcessoNotaService {
 
         } catch (error) {
             if (error instanceof SofError)
-                throw new HttpException('No momento, o serviço SOF está indisponível, e não é possível criar um Processo manualmente nesta versão do SMAE. Tente novamente mais tarde', 400);
+                throw new HttpException('No momento, o serviço SOF está indisponível, e não é possível criar um Processo manualmente nesta versão do SMAE.\n\nTente novamente mais tarde', 400);
             throw error;
         }
 

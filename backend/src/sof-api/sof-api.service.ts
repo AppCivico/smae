@@ -166,8 +166,13 @@ export class SofApiService {
             throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
         } catch (error: any) {
             this.logger.debug(`${endpoint} falhou: ${error}`);
+            let body = '';
+            if (error instanceof got.HTTPError) {
+                body = String(error.response.body);
+                this.logger.debug(`${endpoint}.res.body: ${body}`);
+            }
 
-            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}`)
+            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}\n\nResponse.Body: ${body}`)
         }
     }
 
@@ -197,16 +202,18 @@ export class SofApiService {
             throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
         } catch (error: any) {
             this.logger.debug(`${endpoint} falhou: ${error}`);
+            let body = '';
             if (error instanceof got.HTTPError) {
-                this.logger.debug(`${endpoint}.res.body: ${error.response.body}`);
+                body = String(error.response.body);
+                this.logger.debug(`${endpoint}.res.body: ${body}`);
                 if (error.response.statusCode == 404) {
                     throw new HttpException('Dotação/Processo ou Nota de Empenho não foi encontrada, confira os valores informados.', 400);
                 } else if (error.response.statusCode == 422) {
-                    throw new HttpException(`Confira os valores informados: ${error.response.body}`, 400);
+                    throw new HttpException(`Confira os valores informados: ${body}`, 400);
                 }
             }
 
-            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}`)
+            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}\n\nResponse.Body: ${body}`)
         }
     }
 
