@@ -155,7 +155,6 @@
 	                	<a @click="validarDota()" class="btn outline bgnone tcprimary">Validar via SOF</a>
 	                </div>
 	            </div>
-	            6016201700379910 
 	            <div v-if="respostasof.length" class="mb2">
                     <label class="label">Dotação vinculada* <span class="tvermelho">*</span></label>
 	            	<label class="block mb1" v-for="(d,i) in respostasof" :key="d.id">
