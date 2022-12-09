@@ -17,7 +17,7 @@
     <mj-section background-color="#fff">
       <mj-column>
         <mj-text>
-          <p>[% IF solicitadoPeloUsuario %]Recebemos uma solicitação para uma nova senha[%ELSE%] Sua conta foi bloqueada após [% tentativas %] inválidas[%END%]. Uma nova senha temporária foi criada:</p>
+          <p>[% IF solicitadoPeloUsuario == true %]Recebemos uma solicitação para uma nova senha[%ELSE%] Sua conta foi bloqueada após [% tentativas %] tentativas inválidas[%END%]. Uma nova senha temporária foi criada:</p>
         </mj-text>
 
         <mj-text>
