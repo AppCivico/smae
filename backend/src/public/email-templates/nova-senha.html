@@ -112,9 +112,9 @@
                                                             style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                                             <div
                                                                 style="font-family:'Arial', 'Helvetica Neue', 'Helvetica', sans-serif;font-size:16px;line-height:24px;text-align:left;color:#202020;">
-                                                                <p>[% IF solicitadoPeloUsuario %]Recebemos uma
+                                                                <p>[% IF solicitadoPeloUsuario == true %]Recebemos uma
                                                                     solicitação para uma nova senha[%ELSE%] Sua conta
-                                                                    foi bloqueada após [% tentativas %]
+                                                                    foi bloqueada após [% tentativas %] tentativas
                                                                     inválidas[%END%]. Uma nova senha temporária foi
                                                                     criada:</p>
                                                             </div>
