@@ -134,6 +134,8 @@ export class DotacaoProcessoNotaService {
                 smae_soma_valor_liquidado: r.smae_soma_valor_liquidado.toFixed(2),
                 empenho_liquido: r.empenho_liquido.toFixed(2),
                 valor_liquidado: r.valor_liquidado.toFixed(2),
+                saldo_sof: 'maybe TODO',
+                mes_utilizado: r.mes_utilizado
             }
         });
 
