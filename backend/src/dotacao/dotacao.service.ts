@@ -25,19 +25,23 @@ export class DotacaoService {
             }
         });
 
-        if (dotacaoExistente && dotacaoExistente.informacao_valida) {
+        const mesMaisAtual = this.sof.realizadoMesMaisAtual(dto.ano);
+
+        if (dotacaoExistente && dotacaoExistente.informacao_valida && dotacaoExistente.mes_utilizado == mesMaisAtual) {
             return {
                 empenho_liquido: dotacaoExistente.empenho_liquido.toFixed(2),
                 id: dotacaoExistente.id,
                 informacao_valida: dotacaoExistente.informacao_valida,
                 smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado.toFixed(2),
+                saldo_sof: 'TODO',
+                mes_utilizado: dotacaoExistente.mes_utilizado
             }
         }
 
         if (dotacaoExistente)
             await this.prisma.dotacaoPlanejado.delete({ where: { id: dotacaoExistente.id } });
 
-        await this.sincronizarDotacaoPlanejado(dto);
+        await this.sincronizarDotacaoPlanejado(dto, mesMaisAtual);
 
         const dotacaoPlanejado = await this.prisma.dotacaoPlanejado.findFirstOrThrow({
             where: {
@@ -51,6 +55,8 @@ export class DotacaoService {
             empenho_liquido: dotacaoPlanejado.empenho_liquido.toFixed(2),
             informacao_valida: dotacaoPlanejado.informacao_valida,
             smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado.toFixed(2),
+            saldo_sof: 'TODO',
+            mes_utilizado: dotacaoPlanejado.mes_utilizado
         }
     }
 
@@ -101,6 +107,8 @@ export class DotacaoService {
 
             smae_soma_valor_empenho: dotacao.smae_soma_valor_empenho.toFixed(2),
             smae_soma_valor_liquidado: dotacao.smae_soma_valor_liquidado.toFixed(2),
+
+            saldo_sof: 'TODO',
         };
     }
 
@@ -182,13 +190,13 @@ export class DotacaoService {
     }
 
 
-    private async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto) {
+    private async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
         try {
             const r = await this.sof.empenhoDotacao({
                 dotacao: dto.dotacao,
                 ano: dto.ano,
-                mes: 1
+                mes: mes
             });
 
             for (const dotacao of r.data) {
