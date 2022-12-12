@@ -3,6 +3,8 @@ export class ValorPlanejadoDto {
     empenho_liquido: string
     id: number
     smae_soma_valor_planejado: string
+    mes_utilizado: number
+    saldo_sof: string
 }
 
 export class ValorRealizadoDotacaoDto {
@@ -15,6 +17,8 @@ export class ValorRealizadoDotacaoDto {
 
     smae_soma_valor_empenho: string
     smae_soma_valor_liquidado: string
+
+    saldo_sof: string
 }
 
 export class ListValorRealizadoDotacaoDto {
