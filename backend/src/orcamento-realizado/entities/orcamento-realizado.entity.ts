@@ -1,5 +1,11 @@
 import { IdCodTituloDto } from "../../common/dto/IdCodTituloDto"
 
+export class OrcamentoRealizadoItem {
+    valor_empenho: string
+    valor_liquidado: string
+    mes: number
+}
+
 export class OrcamentoRealizado {
     meta: IdCodTituloDto
     atividade: IdCodTituloDto | null
@@ -9,8 +15,8 @@ export class OrcamentoRealizado {
     processo: string | null
     nota_empenho: string | null
 
-    valor_empenho: string
-    valor_liquidado: string
+    soma_valor_empenho: string
+    soma_valor_liquidado: string
 
     smae_soma_valor_empenho: string | null
     smae_soma_valor_liquidado: string | null
@@ -20,4 +26,6 @@ export class OrcamentoRealizado {
         nome_exibicao: string
     }
     id: number
+
+    itens: OrcamentoRealizadoItem[]
 }
