@@ -7,7 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorPorPeriodo, SerieIndicadorValorNominal, ValorSerieExistente } from '../variavel/entities/variavel.entity';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
-import { FilterIndicadorDto } from './dto/filter-indicador.dto';
+import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 
 // @ts-ignore
@@ -190,7 +190,7 @@ export class IndicadorService {
         console.log({ formula_variaveis });
 
         const oldVersion = IndicadorService.getIndicadorHash(indicador);
-        this.logger.debug({oldVersion});
+        this.logger.debug({ oldVersion });
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
@@ -207,9 +207,9 @@ export class IndicadorService {
             });
 
             const newVersion = IndicadorService.getIndicadorHash(indicador);
-            this.logger.debug({oldVersion ,  newVersion});
+            this.logger.debug({ oldVersion, newVersion });
 
-            if (formula_variaveis ) {
+            if (formula_variaveis) {
                 await prisma.indicadorFormulaVariavel.deleteMany({
                     where: { indicador_id: indicador.id }
                 })
@@ -303,14 +303,40 @@ export class IndicadorService {
         return porPeriodo;
     }
 
-    async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade): Promise<DateYMD[]> {
+    async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade, filters: FilterIndicadorSerieDto): Promise<DateYMD[]> {
         const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
 
-        const dados: Record<string, string>[] = await this.prisma.$queryRaw`
+        const filterStart = Date2YMD.toStringOrNull(filters.data_inicio || null);
+        const filterEnd = Date2YMD.toStringOrNull(filters.data_fim || null);
+
+        if (filterStart || filterEnd) {
+            // versão com filtros
+            const dados: Record<string, string>[] = await this.prisma.$queryRaw`
             select to_char(p.p, 'yyyy-mm-dd') as dt
-            from generate_series(${startStr}::date, ${endStr}::date, (select periodicidade_intervalo(${periodicidade}::"Periodicidade"))) p
+            from generate_series(
+                CASE WHEN ${filterStart}::date IS NULL THEN
+                    ${startStr}::date
+                ELSE
+                    GREATEST(${filterStart}::date, ${startStr}::date) -- mais recente entre as datas
+                END,
+                CASE WHEN ${filterEnd}::date IS NULL THEN
+                    ${endStr}::date
+                ELSE
+                    LEAST(${filterEnd}::date, ${endStr}::date) -- mais velhas entre as datas
+                END
+                (select periodicidade_intervalo(${periodicidade}::"Periodicidade"))
+            ) p
         `;
-        return dados.map((e) => e.dt);
+            return dados.map((e) => e.dt);
+
+        } else {
+            // versao otimizada e sem chance de bugs
+            const dados: Record<string, string>[] = await this.prisma.$queryRaw`
+                select to_char(p.p, 'yyyy-mm-dd') as dt
+                from generate_series(${startStr}::date, ${endStr}::date, (select periodicidade_intervalo(${periodicidade}::"Periodicidade"))) p
+            `;
+            return dados.map((e) => e.dt);
+        }
     }
 
     async getValorSerieExistente(indicadorId: number, series: Serie[]): Promise<ValorSerieExistente[]> {
@@ -335,7 +361,7 @@ export class IndicadorService {
         });
     }
 
-    async getSeriesIndicador(id: number, user: PessoaFromJwt): Promise<ListSeriesAgrupadas> {
+    async getSeriesIndicador(id: number, user: PessoaFromJwt, filters: FilterIndicadorSerieDto): Promise<ListSeriesAgrupadas> {
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: +id },
             select: { id: true, inicio_medicao: true, fim_medicao: true, periodicidade: true }
@@ -351,7 +377,7 @@ export class IndicadorService {
         const valoresExistentes = await this.getValorSerieExistente(indicador.id, ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
 
-        const todosPeriodos = await this.gerarPeriodosEntreDatas(indicador.inicio_medicao, indicador.fim_medicao, indicador.periodicidade);
+        const todosPeriodos = await this.gerarPeriodosEntreDatas(indicador.inicio_medicao, indicador.fim_medicao, indicador.periodicidade, filters);
 
         for (const periodoYMD of todosPeriodos) {
             const seriesExistentes: SerieIndicadorValorNominal[] = [];
