@@ -1,26 +1,8 @@
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from "class-validator";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
-export class CreateMetaOrcamentoDto {
-
-    /**
-    * ano_referencia
-    * @example "42"
-    */
-    @IsOptional()
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
-    @Type(() => Number)
-    meta_id: number;
-
-    /**
-    * ano_referencia
-    * @example "2022"
-    */
-    @IsOptional()
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
-    @Type(() => Number)
-    ano_referencia: number;
+export class MetaOrcamentoItemDto {
 
     /**
     * Custeio previsto
@@ -47,10 +29,34 @@ export class CreateMetaOrcamentoDto {
     @IsString()
     @MaxLength(40)
     // faz o match parcial, mas alguns campos precisam ser completos
-    @Matches(/^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2}(\-\d)?)?)?)?)?)?)?)?)?$/, {message: 'Dotação parcial não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00-0'})
+    @Matches(/^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2}(\-\d)?)?)?)?)?)?)?)?)?$/, { message: 'Dotação parcial não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00-0' })
     @ValidateIf((object, value) => value !== '')
     parte_dotacao: string;
+}
 
+export class CreateMetaOrcamentoDto {
+
+    /**
+    * ano_referencia
+    * @example "42"
+    */
+    @IsOptional()
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @Type(() => Number)
+    meta_id: number;
+
+    /**
+    * ano_referencia
+    * @example "2022"
+    */
+    @IsOptional()
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @Type(() => Number)
+    ano_referencia: number;
+
+    @ValidateNested({ each: true })
+    @Type(() => MetaOrcamentoItemDto)
+    itens: MetaOrcamentoItemDto[]
 }
 
 export class FilterMetaOrcamentoDto {
