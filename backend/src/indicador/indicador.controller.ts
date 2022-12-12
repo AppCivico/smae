@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -8,7 +8,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from '../variavel/entities/variavel.entity';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
-import { FilterIndicadorDto } from './dto/filter-indicador.dto';
+import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorService } from './indicador.service';
@@ -57,8 +57,16 @@ export class IndicadorController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar')
-    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListSeriesAgrupadas> {
-        return await this.indicadorService.getSeriesIndicador(params.id, user);
+    @ApiOperation({
+        summary: 'Recebe o ID do indicador como parâmetro',
+        description: 'Filtros só podem ser usados encurtar os períodos do indicador, não é possivel puxar dados fora dos períodos existentes (será ignorado)'
+    })
+    async getSeriePrevistoRealizado(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @Query() filters: FilterIndicadorSerieDto
+    ): Promise<ListSeriesAgrupadas> {
+        return await this.indicadorService.getSeriesIndicador(params.id, user, filters || {});
     }
 
 }
