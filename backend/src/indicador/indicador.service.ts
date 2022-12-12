@@ -9,15 +9,20 @@ import { SerieIndicadorValorPorPeriodo, SerieIndicadorValorNominal, ValorSerieEx
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
+import { JwtService } from '@nestjs/jwt';
 
 // @ts-ignore
 import * as FP from "../../public/js/formula_parser.js";
+import { VariavelService } from 'src/variavel/variavel.service';
 
 @Injectable()
 export class IndicadorService {
     private readonly logger = new Logger(IndicadorService.name);
 
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService,
+    ) { }
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         console.log({ createIndicadorDto });
@@ -32,8 +37,130 @@ export class IndicadorService {
                     criado_em: new Date(Date.now()),
                     ...createIndicadorDto,
                 },
-                select: { id: true }
+                select: {
+                    id: true,
+                    meta: {
+                        select: {
+                            iniciativa: {
+                                where: { compoe_indicador_meta: true },
+                                select: {
+                                    Indicador: {
+                                        select: {
+                                            id: true,
+                                            iniciativa_id: true,
+                                            IndicadorVariavel: {
+                                                select: {
+                                                    variavel_id: true
+                                                }
+                                            }
+                                        }
+                                    },
+
+                                    atividade: {
+                                        where: { compoe_indicador_iniciativa: true },
+                                        select: {
+                                            Indicador: {
+                                                select: {
+                                                    id: true,
+                                                    atividade_id: true,
+                                                    IndicadorVariavel: {
+                                                        select: {
+                                                            variavel_id: true
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    iniciativa: {
+                        select: {
+                            Indicador: {
+                                select: {
+                                    id: true,
+                                    iniciativa_id: true,
+                                    IndicadorVariavel: {
+                                        select: {
+                                            variavel_id: true
+                                        }
+                                    }
+                                }
+                            },
+
+                            atividade: {
+                                where: { compoe_indicador_iniciativa: true },
+                                select: {
+                                    Indicador: {
+                                        select: {
+                                            id: true,
+                                            atividade_id: true,                                                
+                                            IndicadorVariavel: {
+                                                select: {
+                                                    variavel_id: true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             });
+
+            // Verifica se há variaveis que devem ser 'herdadas'
+            if (indicador.meta) {
+                for (const iniciativa of indicador.meta.iniciativa) {
+                    for (const indicador of iniciativa.Indicador) {
+                        for (const variavel of indicador.IndicadorVariavel) {
+                            const indicador_for_sync = {
+                                id: indicador.id,
+                                iniciativa_id: indicador.iniciativa_id,
+                                meta_id: null,
+                                atividade_id: null
+                            };
+
+                            await this.variavelService.resyncIndicadorVariavel(indicador_for_sync, variavel.variavel_id, prisma);
+                        }
+                    }
+
+                    for (const atividade of iniciativa.atividade) {
+                        for (const indicador of atividade.Indicador) {
+                            for (const variavel of indicador.IndicadorVariavel) {
+                                const indicador_for_sync = {
+                                    id: indicador.id,
+                                    atividade_id: indicador.atividade_id,
+                                    meta_id: null,
+                                    iniciativa_id: null
+                                };
+    
+                                await this.variavelService.resyncIndicadorVariavel(indicador_for_sync, variavel.variavel_id, prisma);
+                            }
+                        }
+                    }
+                }
+            } else if (indicador.iniciativa) {
+                for (const atividade of indicador.iniciativa.atividade) {
+                    for (const indicador of atividade.Indicador) {
+                        for (const variavel of indicador.IndicadorVariavel) {
+                            const indicador_for_sync = {
+                                id: indicador.id,
+                                atividade_id: indicador.atividade_id,
+                                meta_id: null,
+                                iniciativa_id: null
+                            };
+
+                            await this.variavelService.resyncIndicadorVariavel(indicador_for_sync, variavel.variavel_id, prisma);
+                        }
+                    }
+                }
+            } else {
+                // Indicador de atividade já é o 'último nível'
+            }
 
             return indicador;
         });
