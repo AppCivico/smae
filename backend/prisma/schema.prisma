@@ -1744,6 +1744,18 @@ model PdmOrcamentoConfig {
     @@map("meta_orcamento_config")
 }
 
+model MetaOrcamentoItem {
+    id Int @id @default(autoincrement())
+
+    custeio_previsto      Float         @db.DoublePrecision
+    investimento_previsto Float         @db.DoublePrecision
+    parte_dotacao         String        @default("")
+    MetaOrcamento         MetaOrcamento @relation(fields: [meta_orcamento_id], references: [id])
+    meta_orcamento_id       Int
+
+    @@map("meta_orcamento_item")
+}
+
 model MetaOrcamento {
     id      Int @id @default(autoincrement())
     meta_id Int
@@ -1758,9 +1770,9 @@ model MetaOrcamento {
     removido_em  DateTime?
     removido_por Int?
 
-    custeio_previsto      Float  @db.DoublePrecision
-    investimento_previsto Float  @db.DoublePrecision
-    parte_dotacao         String @default("")
+    itens                      MetaOrcamentoItem[]
+    soma_custeio_previsto      Float               @db.DoublePrecision
+    soma_investimento_previsto Float               @db.DoublePrecision
 
     meta      Meta    @relation(fields: [meta_id], references: [id])
     criador   Pessoa  @relation("criador", fields: [criado_por], references: [id])
@@ -1919,8 +1931,8 @@ model OrcamentoRealizado {
 model SofEntidade {
     ano Int @id
 
-    atualizado_em       DateTime @default(now()) @db.Timestamptz(6)
-    dados               Json     @default("{}") @db.Json
+    atualizado_em DateTime @default(now()) @db.Timestamptz(6)
+    dados         Json     @default("{}") @db.Json
 
     @@map("sof_entidade")
 }
