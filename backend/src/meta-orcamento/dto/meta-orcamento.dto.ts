@@ -1,5 +1,5 @@
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from "class-validator";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
 export class MetaOrcamentoItemDto {
@@ -56,6 +56,8 @@ export class CreateMetaOrcamentoDto {
 
     @ValidateNested({ each: true })
     @Type(() => MetaOrcamentoItemDto)
+    @ArrayMinSize(1)
+    @ArrayMaxSize(1024)
     itens: MetaOrcamentoItemDto[]
 }
 
