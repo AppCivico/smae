@@ -96,7 +96,19 @@ export class MetaOrcamentoService {
             ]
         });
 
-        return metaOrcamentos;
+        return metaOrcamentos.map((r) => {
+
+            return {
+                ...r,
+                itens: r.itens.map((item) => {
+                    return {
+                        ...item,
+                        custeio_previsto: item.custeio_previsto.toFixed(2),
+                        investimento_previsto: item.investimento_previsto.toFixed(2),
+                    }
+                })
+            }
+        });
     }
 
     async remove(id: number, user: PessoaFromJwt) {
