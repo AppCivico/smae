@@ -1,7 +1,39 @@
 import { OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, Min, ValidateIf } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsIn, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, Max, MaxLength, Min, ValidateIf, ValidateNested } from "class-validator";
 import { OrcamentoRealizado } from "../entities/orcamento-realizado.entity";
+
+export class CreateOrcamentoRealizadoItemDto {
+
+    /**
+    * Valor Empenho para meta - no momento aceitando zero, mas é meio sem sentido IMHO, uma vez que se ta registrando é pq ta alocado!
+    * @example "42343.34"
+    */
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Empenho com até duas casas decimais' })
+    @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
+    @Type(() => Number)
+    valor_empenho: number;
+
+
+    /**
+    * Valor Liquidado para meta - zero ou mais
+    * @example "42343.34"
+    */
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Liquidado com até duas casas decimais' })
+    @Min(0, { message: '$property| Valor Liquidado precisa ser positivo ou zero', })
+    @Type(() => Number)
+    valor_liquidado: number;
+
+
+    /**
+    * Valor Liquidado para meta - zero ou mais
+    * @example "42343.34"
+    */
+    @IsInt({ message: '$property| Mês informado precisa ser entre 1 e 12' })
+    @Min(1, { message: '$property| Mês informado precisa ser entre 1 e 12' })
+    @Max(12, { message: '$property| Mês informado precisa ser entre 1 e 12' })
+    mes: number;
+}
 
 export class CreateOrcamentoRealizadoDto {
 
@@ -42,25 +74,6 @@ export class CreateOrcamentoRealizadoDto {
     ano_referencia: number;
 
     /**
-    * Valor Empenho para meta - no momento aceitando zero, mas é meio sem sentido IMHO, uma vez que se ta registrando é pq ta alocado!
-    * @example "42343.34"
-    */
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Empenho com até duas casas decimais' })
-    @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
-    @Type(() => Number)
-    valor_empenho: number;
-
-
-    /**
-    * Valor Liquidado para meta - zero ou mais
-    * @example "42343.34"
-    */
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Liquidado com até duas casas decimais' })
-    @Min(0, { message: '$property| Valor Liquidado precisa ser positivo ou zero', })
-    @Type(() => Number)
-    valor_liquidado: number;
-
-    /**
     * dotacao: esperado exatamente
     * @example "00.00.00.000.0000.0.000.00000000.00"
     */
@@ -91,6 +104,12 @@ export class CreateOrcamentoRealizadoDto {
     @Matches(/^\d{5}$/, { message: 'Nota não está no formato esperado: 00000' })
     @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
+
+    @ValidateNested({ each: true })
+    @Type(() => CreateOrcamentoRealizadoItemDto)
+    @ArrayMinSize(1)
+    @ArrayMaxSize(1024) // talvez seja 12, 1 pra cada mês
+    itens: CreateOrcamentoRealizadoItemDto[]
 }
 
 export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, ['ano_referencia', 'dotacao', 'processo', 'nota_empenho']) { }
