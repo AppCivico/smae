@@ -32,6 +32,9 @@ export class MetaOrcamentoService {
                 data: { ultima_revisao: false },
             });
 
+            const soma_custeio_previsto = dto.itens.reduce((acc, item) => acc + item.custeio_previsto, 0);
+            const soma_investimento_previsto = dto.itens.reduce((acc, item) => acc + item.investimento_previsto, 0);
+
             const metaOrcamento = await prisma.metaOrcamento.create({
                 data: {
                     criado_por: user.id,
@@ -39,9 +42,19 @@ export class MetaOrcamentoService {
                     ultima_revisao: true,
                     meta_id: meta.id,
                     ano_referencia: dto.ano_referencia,
-                    custeio_previsto: dto.custeio_previsto,
-                    investimento_previsto: dto.investimento_previsto,
-                    parte_dotacao: dto.parte_dotacao
+                    soma_custeio_previsto,
+                    soma_investimento_previsto,
+                    itens: {
+                        createMany: {
+                            data: dto.itens.map((item) => {
+                                return {
+                                    custeio_previsto: item.custeio_previsto,
+                                    investimento_previsto: item.investimento_previsto,
+                                    parte_dotacao: item.parte_dotacao,
+                                }
+                            })
+                        }
+                    }
                 },
                 select: { id: true }
             });
@@ -72,10 +85,10 @@ export class MetaOrcamentoService {
                     select: { nome_exibicao: true }
                 },
                 ano_referencia: true,
-                custeio_previsto: true,
+                soma_custeio_previsto: true,
                 ultima_revisao: true,
-                investimento_previsto: true,
-                parte_dotacao: true,
+                soma_investimento_previsto: true,
+                itens: true
             },
             orderBy: [
                 { meta_id: 'asc' },
