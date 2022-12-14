@@ -1000,6 +1000,7 @@ model Iniciativa {
     PainelConteudoDetalhe  PainelConteudoDetalhe[]
     OrcamentoPlanejado     OrcamentoPlanejado[]
     OrcamentoRealizado     OrcamentoRealizado[]
+    MetaOrcamento          MetaOrcamento[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -1079,6 +1080,7 @@ model Atividade {
     PainelConteudoDetalhe PainelConteudoDetalhe[]
     OrcamentoPlanejado    OrcamentoPlanejado[]
     OrcamentoRealizado    OrcamentoRealizado[]
+    MetaOrcamento         MetaOrcamento[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -1744,42 +1746,31 @@ model PdmOrcamentoConfig {
     @@map("meta_orcamento_config")
 }
 
-model MetaOrcamentoItem {
-    id Int @id @default(autoincrement())
-
-    custeio_previsto      Float         @db.DoublePrecision
-    investimento_previsto Float         @db.DoublePrecision
-    parte_dotacao         String        @default("")
-    MetaOrcamento         MetaOrcamento @relation(fields: [meta_orcamento_id], references: [id])
-    meta_orcamento_id     Int
-
-    @@map("meta_orcamento_item")
-}
-
 model MetaOrcamento {
-    id      Int @id @default(autoincrement())
-    meta_id Int
+    id            Int  @id @default(autoincrement())
+    meta_id       Int
+    iniciativa_id Int?
+    atividade_id  Int?
 
     ano_referencia Int
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
 
-    ultima_revisao Boolean
-
     removido_em  DateTime?
     removido_por Int?
 
-    itens                      MetaOrcamentoItem[]
-    soma_custeio_previsto      Float               @db.DoublePrecision
-    soma_investimento_previsto Float               @db.DoublePrecision
+    custeio_previsto      Float  @db.DoublePrecision
+    investimento_previsto Float  @db.DoublePrecision
+    parte_dotacao         String @default("")
 
-    meta      Meta    @relation(fields: [meta_id], references: [id])
-    criador   Pessoa  @relation("criador", fields: [criado_por], references: [id])
-    removedor Pessoa? @relation("removedor", fields: [removido_por], references: [id])
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+    criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
-    @@index([criado_em])
-    @@index([meta_id, ultima_revisao])
+    @@index([meta_id, criado_em])
     @@map("meta_orcamento")
 }
 
@@ -1900,7 +1891,7 @@ model OrcamentoRealizadoItem {
 
     valor_empenho   Float @db.DoublePrecision
     valor_liquidado Float @db.DoublePrecision
-    mes  Int
+    mes             Int
 
     OrcamentoRealizado     OrcamentoRealizado @relation(fields: [orcamento_realizado_id], references: [id])
     orcamento_realizado_id Int
@@ -1922,7 +1913,7 @@ model OrcamentoRealizado {
 
     soma_valor_empenho   Float
     soma_valor_liquidado Float
-    itens OrcamentoRealizadoItem[]
+    itens                OrcamentoRealizadoItem[]
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
@@ -1930,11 +1921,11 @@ model OrcamentoRealizado {
     removido_em  DateTime?
     removido_por Int?
 
-    meta                   Meta                     @relation(fields: [meta_id], references: [id])
-    iniciativa             Iniciativa?              @relation(fields: [iniciativa_id], references: [id])
-    atividade              Atividade?               @relation(fields: [atividade_id], references: [id])
-    criador                Pessoa                   @relation("criador", fields: [criado_por], references: [id])
-    removedor              Pessoa?                  @relation("removedor", fields: [removido_por], references: [id])
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+    criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
     @@index([meta_id])
     @@index([ano_referencia, meta_id])
