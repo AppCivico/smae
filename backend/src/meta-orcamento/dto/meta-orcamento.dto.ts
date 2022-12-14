@@ -1,8 +1,46 @@
-import { Transform, Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from "class-validator";
+import { OmitType, PartialType } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
-export class MetaOrcamentoItemDto {
+export class CreateMetaOrcamentoDto {
+
+    /**
+    * meta_id, se for por meta
+    * @example "42"
+    */
+    @IsOptional()
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @Type(() => Number)
+    meta_id?: number;
+
+    /**
+    * iniciativa_id, se for por iniciativa
+    * @example "42"
+    */
+    @IsOptional()
+    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @Type(() => Number)
+    iniciativa_id?: number;
+
+    /**
+    * atividade_id, se for por atividade
+    * @example "42"
+    */
+    @IsOptional()
+    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @Type(() => Number)
+    atividade_id?: number;
+
+
+    /**
+    * ano_referencia
+    * @example "2022"
+    */
+    @IsOptional()
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @Type(() => Number)
+    ano_referencia: number;
 
     /**
     * Custeio previsto
@@ -34,32 +72,8 @@ export class MetaOrcamentoItemDto {
     parte_dotacao: string;
 }
 
-export class CreateMetaOrcamentoDto {
-
-    /**
-    * ano_referencia
-    * @example "42"
-    */
-    @IsOptional()
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
-    @Type(() => Number)
-    meta_id: number;
-
-    /**
-    * ano_referencia
-    * @example "2022"
-    */
-    @IsOptional()
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
-    @Type(() => Number)
-    ano_referencia: number;
-
-    @ValidateNested({ each: true })
-    @Type(() => MetaOrcamentoItemDto)
-    @ArrayMinSize(1)
-    @ArrayMaxSize(1024)
-    itens: MetaOrcamentoItemDto[]
-}
+// deixa mudar praticamente tudo, pois não há contas, então pode mudar a parte-dotação e etc
+export class UpdateMetaOrcamentoDto extends OmitType(PartialType(CreateMetaOrcamentoDto), ['ano_referencia']) { }
 
 export class FilterMetaOrcamentoDto {
     /**
@@ -80,14 +94,6 @@ export class FilterMetaOrcamentoDto {
     @Type(() => Number)
     ano_referencia?: number;
 
-    /**
-   * trazer apenas os registros mais recentes?
-   * @example "true"
-    */
-    @IsBoolean()
-    @IsOptional()
-    @Transform(({ value }: any) => value === 'true')
-    apenas_ultima_revisao?: boolean;
 }
 
 export class ListMetaOrcamentoDto {
