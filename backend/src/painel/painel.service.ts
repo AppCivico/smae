@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PainelConteudoTipoDetalhe, PainelGrupoPainel, Periodicidade, Periodo, Prisma } from '@prisma/client';
 import { time } from 'console';
+import { DateTime } from 'luxon';
 import * as moment from 'moment';
 import { every } from 'rxjs';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -12,6 +13,11 @@ import { PainelConteudoSerie, SerieRow, SeriesTemplate } from './dto/detalhe-pai
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
+
+export class PainelDateRange {
+    start: Date
+    end: Date
+}
 
 @Injectable()
 export class PainelService {
@@ -653,6 +659,90 @@ export class PainelService {
         return months;
     }
 
+    async buildSeriesOrder(mostrar_planejado: boolean, mostrar_acumulado: boolean): Promise<string[]> {
+        const ret: string[] = ['Realizado'];
+
+        if (mostrar_planejado) {
+            ret.push('Previsto');
+
+            if (mostrar_acumulado) ret.push('PrevistoAcumulado');
+        }
+
+        if (mostrar_acumulado) {
+            ret.push('RealizadoAcumulado');
+        }
+
+        return ret;
+    }
+
+    async getMultiplierForPeriodicidade (periodicidade: Periodicidade): Promise<number> {
+        let multiplier: number;
+
+        switch (periodicidade) {
+            case Periodicidade.Anual:
+            case Periodicidade.Mensal:
+                multiplier = 1;
+                break;
+            case Periodicidade.Bimestral:
+                multiplier = 2;
+                break;
+            case Periodicidade.Trimestral:
+                multiplier = 3;
+                break;
+            case Periodicidade.Quadrimestral:
+                multiplier = 4
+                break;
+            case Periodicidade.Quinquenal:
+                multiplier = 5;
+                break;
+            case Periodicidade.Semestral:
+                multiplier = 6;
+                break;
+            case Periodicidade.Secular:
+                multiplier = 100;
+        }
+
+        return multiplier;
+    }
+
+    async getStartDate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null): Promise<PainelDateRange> {
+        let ret: {
+            start: Date,
+            end: Date
+        } = {
+            start: new Date(0),
+            end: new Date()
+        };
+    
+        if (periodo === Periodo.Anteriores) {
+            if (!periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
+
+            const multiplier = await this.getMultiplierForPeriodicidade(periodicidade);
+
+            if ( periodicidade === Periodicidade.Anual ||
+                 periodicidade === Periodicidade.Quinquenal ||
+                 periodicidade === Periodicidade.Secular) {
+
+                ret.start = new Date( new Date().getFullYear() - periodo_valor * multiplier, 0, 1);
+                ret.end   = new Date( new Date().getFullYear(), 0, 1 );
+            } else if (
+                periodicidade === Periodicidade.Semestral ||
+                periodicidade === Periodicidade.Quadrimestral ||
+                periodicidade === Periodicidade.Bimestral ||
+                periodicidade === Periodicidade.Trimestral ||
+                periodicidade === Periodicidade.Mensal) {
+
+                const luxon_start: DateTime = DateTime.now().minus({months: multiplier * periodo_valor}).startOf('month');
+                const luxon_end:   DateTime = luxon_start.plus({months: multiplier * periodo_valor}).endOf('month');
+
+                ret.start = luxon_start.toJSDate();
+                ret.end   = luxon_end.toJSDate();
+            }
+        }
+
+        return ret;
+    }
+
     async getPainelConteudoSerie (painel_conteudo_id: number): Promise<PainelConteudoSerie> {
         let ret = <PainelConteudoSerie>{};
         const config = await this.getPainelConteudoVisualizacao(painel_conteudo_id);
@@ -664,17 +754,7 @@ export class PainelService {
         let gte;
         let lte;
 
-        let template_values = [];
-        const series_order: string[] = [];
-
-        if (config.mostrar_planejado) {
-            series_order.push('Previsto');
-
-            if (config.mostrar_acumulado) series_order.push('PrevistoAcumulado');
-        }
-
-        series_order.push('Realizado');
-        if (config.mostrar_acumulado) series_order.push('RealizadoAcumulado');
+        const series_order = await this.buildSeriesOrder(config.mostrar_planejado, config.mostrar_acumulado);
 
         if (config.periodo === Periodo.Corrente) {
             if (config.periodicidade === Periodicidade.Anual) {
