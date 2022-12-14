@@ -15,11 +15,11 @@ export class DotacaoProcessoNotaService {
 
     async valorRealizadoNotaEmpenho(dto: AnoDotacaoNotaEmpenhoDto): Promise<ValorRealizadoNotaEmpenhoDto[]> {
 
-        const mesMaisAtual = this.sof.realizadoMesMaisAtual(dto.ano);
+        const mes = dto.mes ? dto.mes : this.sof.mesMaisAntigoDoAno(dto.ano);
 
         // sempre sincroniza, pois pode haver mais de uma dotação no processo e não sabemos
         // quando elas aparecem
-        const list = await this.sincronizarNotaEmpenhoRealizado(dto, mesMaisAtual);
+        const list = await this.sincronizarNotaEmpenhoRealizado(dto, mes);
         if (list.length > 1) throw new HttpException('Era esperado apenas um retorno de Dotação na busca por Nota de Empenho. Necessária atualização do SMAE', 400);
         return list;
     }
