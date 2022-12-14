@@ -88,7 +88,10 @@ export class SofApiService {
         this.SOF_API_PREFIX = process.env.SOF_API_PREFIX || 'http://smae_orcamento:80/'
     }
 
-    realizadoMesMaisAtual(ano: number): number {
+    /**
+     * recebe um ano, retorna o mês mais velho, desde q não esteja no futuro
+    **/
+    mesMaisAntigoDoAno(ano: number): number {
         const nowSp = DateTime.local({ zone: "America/Sao_Paulo" });
 
         const anoCorrente = nowSp.year;
