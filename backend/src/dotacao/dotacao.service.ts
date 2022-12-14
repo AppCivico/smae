@@ -25,7 +25,7 @@ export class DotacaoService {
             }
         });
 
-        const mesMaisAtual = this.sof.realizadoMesMaisAtual(dto.ano);
+        const mesMaisAtual = this.sof.mesMaisAntigoDoAno(dto.ano);
 
         if (dotacaoExistente && dotacaoExistente.informacao_valida && dotacaoExistente.mes_utilizado == mesMaisAtual) {
             return {
@@ -72,7 +72,7 @@ export class DotacaoService {
             }
         });
 
-        const mesMaisAtual = this.sof.realizadoMesMaisAtual(dto.ano);
+        const mesMaisAtual = this.sof.mesMaisAntigoDoAno(dto.ano);
 
         if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual) {
             return [

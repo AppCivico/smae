@@ -1,4 +1,5 @@
-import { IsInt, IsString, Matches, MaxLength } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, ValidateIf } from "class-validator";
 
 export class AnoDotacaoDto {
     /**
@@ -15,6 +16,9 @@ export class AnoDotacaoDto {
     * @example "2022"
     */
     @IsInt({ message: '$property| ano precisa ser positivo' })
+    @Min(2003)
+    @Max(2050)
+    @Type(() => Number)
     ano: number
 }
 
@@ -34,6 +38,9 @@ export class AnoDotacaoProcessoDto {
     * @example "2022"
     */
     @IsInt({ message: '$property| ano precisa ser positivo' })
+    @Min(2003)
+    @Max(2050)
+    @Type(() => Number)
     ano: number
 }
 
@@ -53,5 +60,19 @@ export class AnoDotacaoNotaEmpenhoDto {
    * @example "2022"
    */
     @IsInt({ message: '$property| ano precisa ser positivo' })
+    @Min(2003)
+    @Max(2050)
+    @Type(() => Number)
     ano: number
+
+    /**
+   * mes: padrão é o mes mais velho do ano
+   * @example "1"
+   */
+    @IsOptional()
+    @IsInt({ message: '$property| mês precisa ser positivo' })
+    @Min(1)
+    @Max(12)
+    @Transform(({ value }: any) => +value)
+    mes?: number
 }
