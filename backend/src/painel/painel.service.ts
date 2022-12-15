@@ -705,7 +705,7 @@ export class PainelService {
         return multiplier;
     }
 
-    async getStartDate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null): Promise<PainelDateRange> {
+    async getStartEndDate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null, periodo_inicio: Date | null, periodo_fim: Date | null): Promise<PainelDateRange> {
         let ret: {
             start: Date,
             end: Date
@@ -725,22 +725,57 @@ export class PainelService {
 
                 ret.start = new Date( new Date().getFullYear() - periodo_valor * multiplier, 0, 1);
                 ret.end   = new Date( new Date().getFullYear(), 0, 1 );
-            } else if (
-                periodicidade === Periodicidade.Semestral ||
-                periodicidade === Periodicidade.Quadrimestral ||
-                periodicidade === Periodicidade.Bimestral ||
-                periodicidade === Periodicidade.Trimestral ||
-                periodicidade === Periodicidade.Mensal) {
+            } else if (periodicidade === Periodicidade.Semestral) {
+                const year_start_epoch = new Date(new Date().getFullYear(), 0, 1).getTime();
+                const half_year_epoch  = new Date(new Date().getFullYear(), 5, 1).getTime();
+                const current_epoch    = Date.now();
 
-                const luxon_start: DateTime = DateTime.now().minus({months: multiplier * periodo_valor}).startOf('month');
-                const luxon_end:   DateTime = luxon_start.plus({months: multiplier * periodo_valor}).endOf('month');
+                if (current_epoch >= half_year_epoch) {
+                    ret.start = new Date(half_year_epoch - 183 * 86400000 * periodo_valor);
+                    ret.end = new Date(half_year_epoch);
+                } else {
+                    ret.start = new Date(year_start_epoch - 183 * 86400000 * periodo_valor);
+                    ret.end = new Date(year_start_epoch);
+                }
+            } else if (periodicidade === Periodicidade.Trimestral) {
+                ret.start = DateTime.now().minus({quarter: periodo_valor}).startOf('quarter').toJSDate();
+                ret.end   = DateTime.now().startOf('quarter').toJSDate();
+            } else if (periodicidade === Periodicidade.Bimestral) {
+                const current_month = new Date().getUTCMonth();
+                const current_year = new Date().getUTCFullYear();
 
-                ret.start = luxon_start.toJSDate();
-                ret.end   = luxon_end.toJSDate();
+                if (current_month % 2) {
+                    ret.start = moment(new Date( current_year, current_month - 1, 1)).subtract(periodo_valor * 2, 'months').toDate();
+                    ret.end = new Date( current_year, current_month, 31);
+                } else {
+                    ret.start = moment(new Date( current_year, current_month - 2, 1)).subtract(periodo_valor * 2, 'months').toDate();
+                    ret.end = new Date( current_year, current_month - 1, 31);
+                }
+            } else if (periodicidade === Periodicidade.Mensal) {
+                const current_month = new Date().getUTCMonth();
+                const current_year = new Date().getUTCFullYear();
+
+                ret.start = moment(new Date( current_year, current_month - 1, 1)).subtract(periodo_valor, 'months').toDate();
+                ret.end = new Date( current_year, current_month - 1, 31);
+            } else {
+                throw new Error('faltando tratamento para periodicidade: ' + periodicidade)
             }
+        } else if (periodo === Periodo.EntreDatas) {
+            if (!periodo_inicio || !periodo_fim)
+              throw new Error('Faltando configuração de periodos');
+
+            ret.start = periodo_inicio;
+            ret.end   = periodo_fim;
+        } else {
+            ret.start = new Date(0);
+            ret.end   = new Date();
         }
 
         return ret;
+    }
+
+    async buildSeriesTemplate (start: Date, end: Date) {
+
     }
 
     async getPainelConteudoSerie (painel_conteudo_id: number): Promise<PainelConteudoSerie> {
