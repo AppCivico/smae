@@ -14,6 +14,52 @@ export class DotacaoService {
         private readonly sof: SofApiService,
     ) { }
 
+    async getOneProjetoAtividade(ano: number, dotacao: string): Promise<string> {
+        // código é feito juntando o 6º com o 7º campo da dotação
+        // const x = '16.10.12.122.3024.2.100.33903500.00';
+        // const a = x.split('.');
+        // codigo = [a[5], a[6]].join('');
+        const codigo = dotacao.split('.').slice(5, 7).join('');
+
+        const r: {
+            descricao: string
+        }[] = await this.prisma.$queryRaw`select descricao from sof_entidades_linhas where col = 'projetos_atividades' and ano = ${ano}::int and codigo = ${codigo}`;
+        if (r.length > 0) return r[0].descricao;
+        return `(projeto/atividade ${codigo} não foi encontrado)`;
+    }
+
+    async setManyProjetoAtividade(srcDestList: { dotacao: string, projeto_atividade: string, ano_referencia: number }[]) {
+        const byYear: Record<string, Record<string, boolean>> = {};
+        for (const r of srcDestList) {
+            const codigo = r.dotacao.split('.').slice(5, 7).join('');
+            if (!byYear[r.ano_referencia]) byYear[r.ano_referencia] = {};
+            if (!byYear[r.ano_referencia][codigo]) byYear[r.ano_referencia][codigo] = true;
+        }
+
+        const results: Record<string, Record<string, string>> = {};
+
+        for (const ano in byYear) {
+            const codigos = Object.keys(byYear[ano]);
+            const rows: {
+                codigo: string
+                descricao: string
+            }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'projetos_atividades'
+            and ano = ${ano}::int
+            and codigo = ANY(${codigos}::varchar[])`;
+
+            if (!results[ano]) results[ano] = {};
+            for (const r of rows) {
+                results[ano][r.codigo] = r.descricao;
+            }
+        }
+
+        for (const r of srcDestList) {
+            const codigo = r.dotacao.split('.').slice(5, 7).join('');
+            r.projeto_atividade = results[r.ano_referencia] && results[r.ano_referencia][codigo] ? results[r.ano_referencia][codigo] : '';
+        }
+
+    }
+
     async valorPlanejado(dto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {
 
         const dotacaoExistente = await this.prisma.dotacaoPlanejado.findUnique({
@@ -25,7 +71,7 @@ export class DotacaoService {
             }
         });
 
-        const mesMaisAtual = this.sof.mesMaisAntigoDoAno(dto.ano);
+        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
 
         if (dotacaoExistente && dotacaoExistente.informacao_valida && dotacaoExistente.mes_utilizado == mesMaisAtual) {
             return {
@@ -33,8 +79,8 @@ export class DotacaoService {
                 id: dotacaoExistente.id,
                 informacao_valida: dotacaoExistente.informacao_valida,
                 smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado.toFixed(2),
-                saldo_sof: 'TODO',
-                mes_utilizado: dotacaoExistente.mes_utilizado
+                mes_utilizado: dotacaoExistente.mes_utilizado,
+                projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
             }
         }
 
@@ -55,8 +101,8 @@ export class DotacaoService {
             empenho_liquido: dotacaoPlanejado.empenho_liquido.toFixed(2),
             informacao_valida: dotacaoPlanejado.informacao_valida,
             smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado.toFixed(2),
-            saldo_sof: 'TODO',
-            mes_utilizado: dotacaoPlanejado.mes_utilizado
+            mes_utilizado: dotacaoPlanejado.mes_utilizado,
+            projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
         }
     }
 
@@ -72,11 +118,11 @@ export class DotacaoService {
             }
         });
 
-        const mesMaisAtual = this.sof.mesMaisAntigoDoAno(dto.ano);
+        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
 
         if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual) {
             return [
-                this.renderDotacaoRealizado(dotacaoRealizadoExistente)
+                await this.renderDotacaoRealizado(dotacaoRealizadoExistente)
             ]
         }
 
@@ -92,11 +138,11 @@ export class DotacaoService {
         });
 
         return [
-            this.renderDotacaoRealizado(dotacaoRealizado)
+            await this.renderDotacaoRealizado(dotacaoRealizado)
         ]
     }
 
-    private renderDotacaoRealizado(dotacao: DotacaoRealizado): ValorRealizadoDotacaoDto {
+    private async renderDotacaoRealizado(dotacao: DotacaoRealizado): Promise<ValorRealizadoDotacaoDto> {
         return {
             id: dotacao.id,
             dotacao: dotacao.dotacao,
@@ -108,7 +154,7 @@ export class DotacaoService {
             smae_soma_valor_empenho: dotacao.smae_soma_valor_empenho.toFixed(2),
             smae_soma_valor_liquidado: dotacao.smae_soma_valor_liquidado.toFixed(2),
 
-            saldo_sof: 'TODO',
+            projeto_atividade: await this.getOneProjetoAtividade(dotacao.ano_referencia, dotacao.dotacao),
         };
     }
 
@@ -235,7 +281,7 @@ export class DotacaoService {
                                 sincronizado_em: now,
                                 empenho_liquido: Number(dotacao.empenho_liquido),
                                 valor_liquidado: Number(dotacao.val_liquidado),
-                                mes_utilizado: 1,
+                                mes_utilizado: mes,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,
                                 pressao_orcamentaria: false,
@@ -277,7 +323,7 @@ export class DotacaoService {
                                 sincronizado_em: null,
                                 empenho_liquido: 0,
                                 valor_liquidado: 0,
-                                mes_utilizado: 1,
+                                mes_utilizado: mes,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,
                                 pressao_orcamentaria: false,

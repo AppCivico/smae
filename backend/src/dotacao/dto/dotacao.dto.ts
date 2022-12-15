@@ -26,7 +26,7 @@ export class AnoDotacaoProcessoDto {
     /**
     * processo: esperado algo como "6016.2021/00532295", "6016.2021/0053229-5" ou "6016202100532295"
     * no banco será normalizado para o valor o número sozinho
-    * @example "6016202100532295"
+    * @example "6016201700379910"
     */
     @IsString()
     @MaxLength(20)

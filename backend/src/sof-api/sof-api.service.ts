@@ -89,9 +89,9 @@ export class SofApiService {
     }
 
     /**
-     * recebe um ano, retorna o mês mais velho, desde q não esteja no futuro
+     * recebe um ano, retorna o mês mais recente, desde q não esteja no futuro
     **/
-    mesMaisAntigoDoAno(ano: number): number {
+    mesMaisRecenteDoAno(ano: number): number {
         const nowSp = DateTime.local({ zone: "America/Sao_Paulo" });
 
         const anoCorrente = nowSp.year;
