@@ -42,3 +42,7 @@ export class ValorRealizadoNotaEmpenhoDto extends ValorRealizadoProcessoDto {
 export class ListValorRealizadoNotaEmpenhoDto {
     linhas: ValorRealizadoNotaEmpenhoDto[]
 }
+
+export class OrcadoProjetoDto {
+
+}
