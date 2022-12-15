@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { PessoaModule } from './pessoa/pessoa.module';
 import { AuthModule } from './auth/auth.module';
-import { APP_GUARD, RouterModule } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, RouterModule } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { MinhaContaController } from './minha-conta/minha-conta.controller';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
@@ -48,6 +48,7 @@ import { DotacaoModule } from './dotacao/dotacao.module';
 import { SofApiModule } from './sof-api/sof-api.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
 import { SofEntidadeModule } from './sof-entidade/sof-entidade.module';
+import { ContentInterceptor } from './content.interceptor';
 
 
 @Module({
@@ -114,7 +115,12 @@ import { SofEntidadeModule } from './sof-entidade/sof-entidade.module';
             provide: APP_GUARD,
             useClass: RolesGuard,
         },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: ContentInterceptor
+        }
     ],
+
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
