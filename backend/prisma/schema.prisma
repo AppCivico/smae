@@ -1940,5 +1940,8 @@ model SofEntidade {
     atualizado_em DateTime @default(now()) @db.Timestamptz(6)
     dados         Json     @default("{}") @db.Json
 
+    // marca se acontecer erro ao atualizar a materialized view
+    errmsg         String?
+
     @@map("sof_entidade")
 }
