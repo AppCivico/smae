@@ -291,6 +291,7 @@ export class DotacaoService {
                 ...this.getDotacaoOrgaoUnidadeProjFonte(dto.dotacao)
             });
 
+            // na teoria só volta 1 item
             for (const dotacao of r.data) {
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
                     const jaExiste = await prisma.dotacaoPlanejado.findUnique({
