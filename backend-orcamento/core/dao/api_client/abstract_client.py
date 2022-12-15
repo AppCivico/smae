@@ -49,17 +49,20 @@ class Client:
     def get(self, endpoint:str, headers:dict=None, **query_params:dict)->dict:
 
         url = self.__build_url(endpoint, **query_params)
+        print(f'Get request por url: {url}')
         with requests.get(url, headers=headers) as resp:
             self.__assert_200_code(resp)
-
+            print('Response obtained')
             return resp.json()
 
     def post(self, endpoint:str, data:dict=None, headers:dict=None,
             **query_params:dict)->dict:
 
         url = self.__build_url(endpoint, **query_params)
+        print(f'Post request por url: {url}')
         with requests.post(url, data=data, headers=headers) as resp:
             self.__assert_200_or_201_code(resp)
+            print('Response obtained')
             return resp.json()
 
     def put(self):

@@ -83,6 +83,7 @@ class RetornoEmpenho(BaseModel):
 
     empenho_liquido: float
     val_liquidado: float
+    projeto_atividade: str
     dotacao: str
     processo: Optional[int]
 
