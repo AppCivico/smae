@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
 import { DotacaoService } from './dotacao.service';
-import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto } from './dto/dotacao.dto';
-import { ListValorRealizadoDotacaoDto, ListValorRealizadoNotaEmpenhoDto, ListValorRealizadoProcessoDto, ValorPlanejadoDto } from './entities/dotacao.entity';
+import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto, AnoParteDotacaoDto, ParteDotacaoDto } from './dto/dotacao.dto';
+import { ListValorRealizadoDotacaoDto, ListValorRealizadoNotaEmpenhoDto, ListValorRealizadoProcessoDto, OrcadoProjetoDto, ValorPlanejadoDto } from './entities/dotacao.entity';
 
 @Controller('dotacao')
 export class DotacaoController {
@@ -74,6 +74,19 @@ export class DotacaoController {
     async valorRealizadoDotacaoNotaEmpenho(@Body() dto: AnoDotacaoNotaEmpenhoDto): Promise<ListValorRealizadoNotaEmpenhoDto> {
         return {
             linhas: await this.notaEmpenhoService.valorRealizadoNotaEmpenho(dto)
+        }
+    }
+
+    @ApiTags('Orçamento - Meta (Custeio e Investimento)')
+    @Patch('orcado-projeto')
+    @ApiBearerAuth('access-token')
+    @ApiOperation({
+        summary: 'Consulta SOF fazendo o parse da dotação parcial, retornando Orçamento Inicial/Atualizado e saldo',
+        description: 'Não salva nenhum retorno no banco.'
+    })
+    async orcadoProjeto(@Body() dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
+        return {
+            linhas: await this.dotacaoService.orcadoProjeto(dto)
         }
     }
 
