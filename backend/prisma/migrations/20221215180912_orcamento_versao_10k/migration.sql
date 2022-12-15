@@ -11,6 +11,7 @@
 -- AlterTable
 
 delete from dotacao_planejado;
+update public.orcamento_planejado set valor_planejado=0;
 
 ALTER TABLE "dotacao_planejado" DROP COLUMN "empenho_liquido",
 DROP COLUMN "valor_liquidado",

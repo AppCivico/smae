@@ -11,8 +11,24 @@ export class OrcamentoPlanejado {
 
     pressao_orcamentaria: boolean | null
     pressao_orcamentaria_valor: string | null
+
+    /**
+    * campo vem do cruzamento com o SOF
+    */
     smae_soma_valor_planejado: string | null
-    empenho_liquido: string | null
+    /**
+    * campo vem do cruzamento com o SOF
+    */
+    val_orcado_atualizado: string | null
+    /**
+    * campo vem do cruzamento com o SOF
+    */
+    val_orcado_inicial: string | null
+    /**
+    * campo vem do cruzamento com o SOF
+    */
+    saldo_disponivel: string | null
+
 
     criado_em: Date
     criador: {
