@@ -737,6 +737,20 @@ export class PainelService {
                     ret.start = new Date(year_start_epoch - 183 * 86400000 * periodo_valor);
                     ret.end = new Date(year_start_epoch);
                 }
+            } else if (periodicidade === Periodicidade.Quadrimestral) {
+                const current_month = new Date().getUTCMonth();
+                const current_year = new Date().getUTCFullYear();
+
+                if (current_month <= 4) {
+                    ret.start = moment(new Date( current_year, 0, 1)).subtract(periodo_valor * 4, 'months').toDate();
+                    ret.end = new Date( current_year, 0, 1);
+                } else if (current_month > 4 && current_month <= 8) {
+                    ret.start = moment(new Date( current_year, 4, 1)).subtract(periodo_valor * 4, 'months').toDate();
+                    ret.end = new Date( current_year, 4, 1);
+                } else {
+                    ret.start = moment(new Date( current_year, 8, 1)).subtract(periodo_valor * 4, 'months').toDate();
+                    ret.end = new Date( current_year, 11, 31);
+                }
             } else if (periodicidade === Periodicidade.Trimestral) {
                 ret.start = DateTime.now().minus({quarter: periodo_valor}).startOf('quarter').toJSDate();
                 ret.end   = DateTime.now().startOf('quarter').toJSDate();
@@ -774,9 +788,6 @@ export class PainelService {
         return ret;
     }
 
-    async buildSeriesTemplate (start: Date, end: Date) {
-
-    }
 
     async getPainelConteudoSerie (painel_conteudo_id: number): Promise<PainelConteudoSerie> {
         let ret = <PainelConteudoSerie>{};
@@ -854,9 +865,11 @@ export class PainelService {
         else if (config.periodo === Periodo.Anteriores) {
             if (!config.periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
 
+            const date_range = await this.getStartEndDate(config.periodo, config.periodicidade, config.periodo_valor, config.periodo_fim, config.periodo_fim);
+            gte = date_range.start;
+            lte = date_range.end;
+
             if (config.periodicidade === Periodicidade.Anual) {
-                gte = new Date( new Date().getFullYear() - config.periodo_valor, 0, 1);
-                lte = new Date( new Date().getFullYear(), 0, 1);
 
                 for (let i = 0; i < config.periodo_valor; i++) {
                     const periodo_inicio = new Date( new Date().getFullYear() - config.periodo_valor + i, 0, 1);
@@ -870,17 +883,6 @@ export class PainelService {
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Semestral) {
-                const year_start_epoch = new Date(new Date().getFullYear(), 0, 1).getTime();
-                const half_year_epoch  = new Date(new Date().getFullYear(), 5, 1).getTime();
-                const current_epoch    = Date.now();
-
-                if (current_epoch >= half_year_epoch) {
-                    gte = new Date(half_year_epoch - 183 * 86400000 * config.periodo_valor);
-                    lte = new Date(half_year_epoch);
-                } else {
-                    gte = new Date(year_start_epoch - 183 * 86400000 * config.periodo_valor);
-                    lte = new Date(year_start_epoch);
-                }
 
                 for (let i = 0; i < config.periodo_valor; i++) {
                     const periodo_inicio = new Date(gte.getTime() + 183 * 86400000 * (config.periodo_valor + i));
@@ -894,8 +896,6 @@ export class PainelService {
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Trimestral) {
-                gte = moment().subtract(config.periodo_valor, 'quarter').startOf('quarter').toDate();
-                lte = moment().startOf('quarter').toDate();
 
                 for (let i = 0; i < config.periodo_valor; i++) {
                     const periodo_inicio = moment(gte).add(i, 'quarter').toDate();
@@ -910,17 +910,6 @@ export class PainelService {
                 }
             } else if (config.periodicidade === Periodicidade.Quadrimestral) {
 
-                if (current_month <= 4) {
-                    gte = moment(new Date( current_year, 0, 1)).subtract(config.periodo_valor * 4, 'months').toDate();
-                    lte = new Date( current_year, 0, 1);
-                } else if (current_month > 4 && current_month <= 8) {
-                    gte = moment(new Date( current_year, 4, 1)).subtract(config.periodo_valor * 4, 'months').toDate();
-                    lte = new Date( current_year, 4, 1);
-                } else {
-                    gte = moment(new Date( current_year, 8, 1)).subtract(config.periodo_valor * 4, 'months').toDate();
-                    lte = new Date( current_year, 11, 31);
-                }
-
                 for (let i = 0; i < config.periodo_valor; i++) {
                     const periodo_inicio = moment(gte).add(i * 4, 'months').toDate();
                     const periodo_fim    = moment(gte).add(i * 4 + 4, 'months').toDate();
@@ -934,14 +923,6 @@ export class PainelService {
                 }
             } else if (config.periodicidade === Periodicidade.Bimestral) {
 
-                if (current_month % 2) {
-                    gte = moment(new Date( current_year, current_month - 1, 1)).subtract(config.periodo_valor * 2, 'months').toDate();
-                    lte = new Date( current_year, current_month, 31);
-                } else {
-                    gte = moment(new Date( current_year, current_month - 2, 1)).subtract(config.periodo_valor * 2, 'months').toDate();
-                    lte = new Date( current_year, current_month - 1, 31);
-                }
-
                 for (let i = 0; i < config.periodo_valor; i++) {
                     const periodo_inicio = moment(gte).add(i * 2, 'months').toDate();
                     const periodo_fim    = moment(gte).add(i * 2 + 2, 'months').toDate();
@@ -954,8 +935,6 @@ export class PainelService {
                     })
                 }
             } else if (config.periodicidade === Periodicidade.Mensal) {
-                gte = moment(new Date( current_year, current_month - 1, 1)).subtract(config.periodo_valor, 'months').toDate();
-                lte = new Date( current_year, current_month - 1, 31);
 
                 for (let i = 0; i < config.periodo_valor; i++) {
                     const periodo_inicio = moment(gte).add(i * 1, 'months').toDate();
