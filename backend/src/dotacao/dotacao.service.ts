@@ -28,10 +28,31 @@ export class DotacaoService {
         return `(projeto/atividade ${codigo} não foi encontrado)`;
     }
 
-    async setManyProjetoAtividade(srcDestList: { dotacao: string, projeto_atividade: string, ano_referencia: number }[]) {
+    async setManyProjetoAtividade(srcDestList:
+        { dotacao: string, projeto_atividade: string, ano_referencia: number }[]
+        |
+        { parte_dotacao: string, projeto_atividade: string, ano_referencia: number }[]
+    ) {
         const byYear: Record<string, Record<string, boolean>> = {};
         for (const r of srcDestList) {
-            const codigo = r.dotacao.split('.').slice(5, 7).join('');
+            let codigo: string;
+            if ("dotacao" in r && r.dotacao.length >= 35) {
+                codigo = r.dotacao.split('.').slice(5, 7).join('');
+            } else if ("parte_dotacao" in r && r.parte_dotacao) {
+                const split = r.parte_dotacao.split('.');
+                const joined = [split[5], split[6]].join('');
+
+                // se ficou com 4 dígitos, então é válido ir buscar
+                if (joined.length == 4) {
+                    codigo = joined;
+                } else {
+                    continue
+                }
+            } else {
+                continue;
+            }
+            (r as any).__codigo = codigo;
+
             if (!byYear[r.ano_referencia]) byYear[r.ano_referencia] = {};
             if (!byYear[r.ano_referencia][codigo]) byYear[r.ano_referencia][codigo] = true;
         }
@@ -54,10 +75,14 @@ export class DotacaoService {
         }
 
         for (const r of srcDestList) {
-            const codigo = r.dotacao.split('.').slice(5, 7).join('');
-            r.projeto_atividade = results[r.ano_referencia] && results[r.ano_referencia][codigo] ? results[r.ano_referencia][codigo] : '';
+            const codigo = (r as any).__codigo as string | undefined;
+            if (codigo !== undefined) {
+                delete (r as any).__codigo;
+                r.projeto_atividade = results[r.ano_referencia] && results[r.ano_referencia][codigo] ? results[r.ano_referencia][codigo] : '';
+            } else {
+                r.projeto_atividade = ''
+            }
         }
-
     }
 
     async valorPlanejado(dto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {

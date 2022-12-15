@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { MetaOrcamentoService } from './meta-orcamento.service';
-import { MetaOrcamentoController } from './meta-orcamento.controller';
-import { PrismaModule } from '../prisma/prisma.module';
+import { DotacaoModule } from '../dotacao/dotacao.module';
 import { OrcamentoPlanejadoModule } from '../orcamento-planejado/orcamento-planejado.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { MetaOrcamentoController } from './meta-orcamento.controller';
+import { MetaOrcamentoService } from './meta-orcamento.service';
 
 @Module({
-    imports: [PrismaModule, OrcamentoPlanejadoModule],
+    imports: [PrismaModule, OrcamentoPlanejadoModule, DotacaoModule],
     controllers: [MetaOrcamentoController],
-    providers: [MetaOrcamentoService]
+    providers: [MetaOrcamentoService],
 })
 export class MetaOrcamentoModule { }
