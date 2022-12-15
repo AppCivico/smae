@@ -65,7 +65,7 @@ class Dao:
         first_resp = get_func(**func_kwargs)
         #pegando a quantidade de paginas
         num_pag = self.__get_num_pages(first_resp)
-
+        print(f"Total pages: {num_pag}")
         #guarda os dados
         parsed_pages = []
 
@@ -77,9 +77,10 @@ class Dao:
         if num_pag > 1:
             #range comeca em 2, pois ja pegamos primeira pagina
             for pag in range(2,num_pag+1):
+                print(f'Getting page: {pag}')
                 func_kwargs['num_pag']=pag
                 resp = get_func(**func_kwargs)
-                parsed_page = self.__parse_resp(resp)
+                parsed_page = self.__parse_resp(resp, data_key, attr_keys)
                 parsed_pages.extend(parsed_page)
         
         return parsed_pages
