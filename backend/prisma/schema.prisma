@@ -1784,8 +1784,9 @@ model DotacaoPlanejado {
     mes_utilizado  Int
 
     dotacao                   String
-    empenho_liquido           Float   @db.DoublePrecision
-    valor_liquidado           Float   @db.DoublePrecision
+    val_orcado_inicial        Float   @db.DoublePrecision
+    val_orcado_atualizado     Float   @db.DoublePrecision
+    saldo_disponivel          Float   @db.DoublePrecision
     pressao_orcamentaria      Boolean
     smae_soma_valor_planejado Float
 
@@ -1941,7 +1942,7 @@ model SofEntidade {
     dados         Json     @default("{}") @db.Json
 
     // marca se acontecer erro ao atualizar a materialized view
-    errmsg         String?
+    errmsg String?
 
     @@map("sof_entidade")
 }
