@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from "@prisma/client";
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
+import { DotacaoService } from './dotacao.service';
 import { AnoDotacaoNotaEmpenhoDto } from './dto/dotacao.dto';
 import { ValorRealizadoNotaEmpenhoDto } from "./entities/dotacao.entity";
 
@@ -11,11 +12,12 @@ export class DotacaoProcessoNotaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly sof: SofApiService,
+        private readonly dotacaoService: DotacaoService,
     ) { }
 
     async valorRealizadoNotaEmpenho(dto: AnoDotacaoNotaEmpenhoDto): Promise<ValorRealizadoNotaEmpenhoDto[]> {
 
-        const mes = dto.mes ? dto.mes : this.sof.mesMaisAntigoDoAno(dto.ano);
+        const mes = dto.mes ? dto.mes : this.sof.mesMaisRecenteDoAno(dto.ano);
 
         // sempre sincroniza, pois pode haver mais de uma dotação no processo e não sabemos
         // quando elas aparecem
@@ -106,7 +108,7 @@ export class DotacaoProcessoNotaService {
             throw error;
         }
 
-        const list = (await this.prisma.dotacaoProcessoNota.findMany({
+        const dbList = (await this.prisma.dotacaoProcessoNota.findMany({
             where: {
                 ano_referencia: dto.ano,
                 dotacao_processo_nota: dto.nota_empenho,
@@ -118,12 +120,15 @@ export class DotacaoProcessoNotaService {
                 empenho_liquido: true,
                 valor_liquidado: true,
                 mes_utilizado: true,
+                ano_referencia: true,
                 smae_soma_valor_empenho: true,
                 smae_soma_valor_liquidado: true,
                 dotacao_processo: true,
                 dotacao_processo_nota: true,
             }
-        })).map((r) => {
+        }));
+
+        const list = dbList.map((r) => {
             return {
                 ...r,
                 dotacao_processo: undefined,
@@ -134,10 +139,11 @@ export class DotacaoProcessoNotaService {
                 smae_soma_valor_liquidado: r.smae_soma_valor_liquidado.toFixed(2),
                 empenho_liquido: r.empenho_liquido.toFixed(2),
                 valor_liquidado: r.valor_liquidado.toFixed(2),
-                saldo_sof: 'maybe TODO',
-                mes_utilizado: r.mes_utilizado
+                mes_utilizado: r.mes_utilizado,
+                projeto_atividade: ''
             }
         });
+        await this.dotacaoService.setManyProjetoAtividade(list);
 
         return list;
     }
