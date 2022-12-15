@@ -7,6 +7,7 @@ export class OrcamentoPlanejado {
     valor_planejado: number
     ano_referencia: number
     dotacao: string
+    projeto_atividade: string
 
     pressao_orcamentaria: boolean | null
     pressao_orcamentaria_valor: string | null
