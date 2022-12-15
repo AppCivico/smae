@@ -1,9 +1,10 @@
 import { OmitType, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { ParteDotacaoDto } from "../../dotacao/dto/dotacao.dto";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
-export class CreateMetaOrcamentoDto {
+export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
 
     /**
     * meta_id, se for por meta
@@ -60,21 +61,6 @@ export class CreateMetaOrcamentoDto {
     @Type(() => Number)
     investimento_previsto: number;
 
-    /**
-    * parte_dotacao
-    *
-    * Aceita dotações parcialmente, onde os órgão, unidade, função, subfunção, projeto/atividade e fonte são obrigatórios
-    *
-    * @example ""
-    */
-    @IsString()
-    @MaxLength(40)
-    // faz o match parcial, mas alguns campos precisam ser completos
-    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.(\d{4}|\*)\.\d\.\d{3}\.(\d{8}|\*)\.\d{2}$/, {
-        message: 'Dotação parcial não está no formato esperado: 00.00.00.000.*.0.000.*.00, podendo estar parcialmente preenchida com * nos campos faltantes'
-    })
-    @ValidateIf((object, value) => value !== '')
-    parte_dotacao: string;
 }
 
 // deixa mudar praticamente tudo, pois não há contas, então pode mudar a parte-dotação e etc

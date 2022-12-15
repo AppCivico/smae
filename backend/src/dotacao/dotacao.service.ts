@@ -3,8 +3,8 @@ import { DotacaoRealizado, Prisma } from "@prisma/client";
 import { DateTime } from 'luxon';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
-import { AnoDotacaoDto } from './dto/dotacao.dto';
-import { ValorPlanejadoDto, ValorRealizadoDotacaoDto } from "./entities/dotacao.entity";
+import { AnoDotacaoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
+import { OrcadoProjetoDto, ValorPlanejadoDto, ValorRealizadoDotacaoDto } from "./entities/dotacao.entity";
 
 @Injectable()
 export class DotacaoService {
@@ -13,6 +13,33 @@ export class DotacaoService {
         private readonly prisma: PrismaService,
         private readonly sof: SofApiService,
     ) { }
+
+    async orcadoProjeto(dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
+        try {
+
+            const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
+            const r = await this.sof.orcadoProjeto({
+                ano: dto.ano,
+                mes: mesMaisAtual,
+                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.parte_dotacao)
+            });
+
+            const dotacao = r.data[0];
+
+            return {
+                val_orcado_atualizado: dotacao.val_orcado_atualizado,
+                val_orcado_inicial: dotacao.val_orcado_inicial,
+                saldo_disponivel: dotacao.saldo_disponivel,
+            }
+
+        } catch (error) {
+            if (error instanceof SofError) {
+                throw new HttpException(error.message, 400)
+            }
+
+            throw error;
+        }
+    }
 
     private getDotacaoOrgaoUnidadeProjFonte(dotacao: string): {
         orgao: string
