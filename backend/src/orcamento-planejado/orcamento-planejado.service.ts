@@ -2,13 +2,17 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { DotacaoService } from '../dotacao/dotacao.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrcamentoPlanejadoDto, FilterOrcamentoPlanejadoDto, UpdateOrcamentoPlanejadoDto } from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejado } from './entities/orcamento-planejado.entity';
 
 @Injectable()
 export class OrcamentoPlanejadoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly dotacaoService: DotacaoService,
+    ) { }
 
     async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
@@ -268,9 +272,10 @@ export class OrcamentoPlanejadoService {
                 pressao_orcamentaria_valor,
                 smae_soma_valor_planejado,
                 empenho_liquido,
+                projeto_atividade: ''
             });
-
         }
+        await this.dotacaoService.setManyProjetoAtividade(rows);
 
         return rows;
     }
