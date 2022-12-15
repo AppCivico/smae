@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejado } from '../orcamento-planejado/entities/orcamento-planejado.entity';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,6 +20,7 @@ export class OrcamentoRealizadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
+        private readonly dotacaoService: DotacaoService,
     ) { }
 
     async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -575,6 +577,7 @@ export class OrcamentoRealizadoService {
                 soma_valor_liquidado: orcaRealizado.soma_valor_liquidado.toFixed(2),
                 smae_soma_valor_empenho,
                 smae_soma_valor_liquidado,
+                projeto_atividade: '',
                 itens: orcaRealizado.itens.map((item) => {
                     return {
                         ...item,
@@ -583,8 +586,9 @@ export class OrcamentoRealizadoService {
                     }
                 })
             });
-
         }
+
+        await this.dotacaoService.setManyProjetoAtividade(rows);
 
         return rows;
     }
