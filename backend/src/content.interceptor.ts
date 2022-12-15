@@ -4,7 +4,12 @@ import { map } from 'rxjs/operators';
 import { Request, Response } from 'express';
 const { Parser, transforms: { flatten, unwind } } = require('json2csv');
 
-const linhasTransforms = [unwind({ paths: ['linhas'] }), flatten({ paths: [] })];
+const linhasTransforms = [unwind({
+    paths: [
+        'linhas',
+        'meta.indicador.series'
+    ]
+}), flatten({ paths: [] })];
 const allTransforms = [unwind(), flatten({ paths: [] })];
 
 const contType = 'Content-Type';
