@@ -206,7 +206,7 @@ export class SofApiService {
         let endpoint = 'v1/orcado/orcado_projeto';
 
         endpoint += '?ano=' + encodeURIComponent(input.ano);
-        endpoint += '?mes=' + encodeURIComponent(input.mes);
+        endpoint += '&mes=' + encodeURIComponent(input.mes);
         endpoint += '&orgao=' + encodeURIComponent(input.orgao);
         endpoint += '&unidade=' + encodeURIComponent(input.unidade);
         endpoint += '&proj_atividade=' + encodeURIComponent(input.proj_atividade);
