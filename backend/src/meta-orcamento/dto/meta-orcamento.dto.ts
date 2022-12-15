@@ -63,18 +63,23 @@ export class CreateMetaOrcamentoDto {
     /**
     * parte_dotacao
     *
-    * Aceita partes da dotacao incompleta, aceitando * no lugar
+    * Aceita partes da dotacao incompleta, aceitando * no lugar dos dígitos
     *
-    * eg: 00.00.00.*.0000.0.000.00000000.00
-    * eg: 00.00.*.*.0000.0.000.00000000.00
+    * - `00.00.00.*.0000.0.000.00000000.00`
     *
-    * embora alguma combinações não façam sentido, por exemplo
-    * eg: *.01.*.*.0000.0.000.00000000.00
+    * - `00.00.*.*.0000.0.000.00000000.00`
     *
-    * se existe o código 01 na unidade (segunda posição) sempre deveria existir um órgão
+    * Algumas combinações não façam sentido, mas estão sendo aceitas no momento:
     *
-    * e também não pode cortar o projeto/atividade (sempre vir junto, separando o código com um 'ponto')
-    * que é a sexta e sétima posição se contar os pontos. eg: `*.*.*.*.*.0.000.*.*` é válido, mas `*.*.*.*.*.*.000.*.*` ou `*.*.*.*.*.0.*.*.*` não é
+    * - `*.01.*.*.0000.0.000.00000000.00`
+    *
+    * > Se existe o código 01 na unidade (segunda posição), em teoria, sempre deveria existir um órgão (primeira posição)
+    *
+    * ⚠️ Entretanto, não pode enviar incompleto o par de projeto/atividade, que deve sempre vir junto,
+    * separando o código retornado na api de entidades.
+    * que é a sexta e sétima posição se contar os pontos.
+    * `*.*.*.*.*.2.100.*.*` é válido (em 2022, é o projeto/atividade `Administração da Unidade`),
+    * mas `*.*.*.*.*.*.100.*.*` ou `*.*.*.*.*.2.*.*.*` não é válido
     *
     * @example "00.00.00.000.0000.0.000.00000000.00"
     */
