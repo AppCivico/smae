@@ -1,6 +1,8 @@
 export class ValorPlanejadoDto {
     informacao_valida: boolean
-    empenho_liquido: string
+    val_orcado_atualizado: string
+    val_orcado_inicial: string
+    saldo_disponivel: string
     id: number
     smae_soma_valor_planejado: string
     mes_utilizado: number

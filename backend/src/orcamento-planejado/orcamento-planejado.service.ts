@@ -55,7 +55,7 @@ export class OrcamentoPlanejadoService {
 
             const dotacaoTx = await prismaTxn.dotacaoPlanejado.findFirst({
                 where: { id: dotacao.id },
-                select: { smae_soma_valor_planejado: true, empenho_liquido: true }
+                select: { smae_soma_valor_planejado: true, val_orcado_atualizado: true }
             });
             if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.', 400);
 
@@ -63,7 +63,7 @@ export class OrcamentoPlanejadoService {
             await prismaTxn.dotacaoPlanejado.update({
                 where: { id: dotacao.id },
                 data: {
-                    pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoTx.empenho_liquido * 100),
+                    pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoTx.val_orcado_atualizado * 100),
                     smae_soma_valor_planejado: smae_soma_valor_planejado
                 }
             });
@@ -118,7 +118,7 @@ export class OrcamentoPlanejadoService {
             if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.', 400);
 
             const novo_saldo = dotacaoTx.smae_soma_valor_planejado - orcamentoPlanejadoTx.valor_planejado + dto.valor_planejado;
-            const nova_pressao = Math.round(novo_saldo * 100) > Math.round(dotacaoTx.empenho_liquido * 100);
+            const nova_pressao = Math.round(novo_saldo * 100) > Math.round(dotacaoTx.val_orcado_atualizado * 100);
 
             await prismaTxn.orcamentoPlanejado.update({
                 where: {
@@ -228,7 +228,7 @@ export class OrcamentoPlanejadoService {
             },
             select: {
                 pressao_orcamentaria: true,
-                empenho_liquido: true,
+                val_orcado_atualizado: true,
                 smae_soma_valor_planejado: true,
                 dotacao: true,
             }
@@ -251,11 +251,11 @@ export class OrcamentoPlanejadoService {
             if (dotacaoInfo) {
                 pressao_orcamentaria = dotacaoInfo.pressao_orcamentaria;
                 if (pressao_orcamentaria) {
-                    pressao_orcamentaria_valor = Number(dotacaoInfo.smae_soma_valor_planejado - dotacaoInfo.empenho_liquido).toFixed(2);
+                    pressao_orcamentaria_valor = Number(dotacaoInfo.smae_soma_valor_planejado - dotacaoInfo.val_orcado_atualizado).toFixed(2);
                 }
 
                 smae_soma_valor_planejado = dotacaoInfo.smae_soma_valor_planejado.toFixed(2);
-                empenho_liquido = dotacaoInfo.empenho_liquido.toFixed(2);
+                empenho_liquido = dotacaoInfo.val_orcado_atualizado.toFixed(2);
             }
 
             rows.push({
@@ -297,14 +297,14 @@ export class OrcamentoPlanejadoService {
             if (linhasAfetadas.count == 1) {
                 const dotacaoAgora = await prismaTxn.dotacaoPlanejado.findFirstOrThrow({
                     where: { dotacao: orcamentoPlanejado.dotacao, ano_referencia: orcamentoPlanejado.ano_referencia },
-                    select: { smae_soma_valor_planejado: true, empenho_liquido: true, id: true }
+                    select: { smae_soma_valor_planejado: true, val_orcado_atualizado: true, id: true }
                 });
 
                 const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado - orcamentoPlanejado.valor_planejado;
                 await prismaTxn.dotacaoPlanejado.update({
                     where: { id: dotacaoAgora.id },
                     data: {
-                        pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoAgora.empenho_liquido * 100),
+                        pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoAgora.val_orcado_atualizado * 100),
                         smae_soma_valor_planejado: smae_soma_valor_planejado
                     }
                 });
