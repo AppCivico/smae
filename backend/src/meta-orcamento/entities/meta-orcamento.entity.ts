@@ -12,5 +12,8 @@ export class MetaOrcamento {
     investimento_previsto: string;
     parte_dotacao: string;
 
+    // best effort pra buscar o projeto/atividade a partir da parte da dotacao
+    projeto_atividade: string | null;
+
     id: number
 }
