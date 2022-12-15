@@ -20,6 +20,8 @@ export class ContentInterceptor implements NestInterceptor {
         const content = req.header('Accept');
         return next.handle().pipe(
             map((data) => {
+                if (typeof data !== 'object') return data;
+
                 switch (content) {
                     case csv:
                         res.header(contType, csv);
