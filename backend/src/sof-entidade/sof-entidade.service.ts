@@ -49,7 +49,6 @@ export class SofEntidadeService {
             `;
             if (jobs.length == 0) return;
 
-            this.logger.debug(`Adquirindo lock para verificação do SOF`);
             const locked: {
                 locked: boolean,
                 now_ymd: DateYMD
@@ -58,7 +57,6 @@ export class SofEntidadeService {
                 (now() at time zone 'America/Sao_Paulo')::date::text as now_ymd
             `;
             if (!locked[0].locked) {
-                this.logger.debug(`Já está em processamento...`);
                 return;
             }
 
@@ -76,7 +74,8 @@ export class SofEntidadeService {
 
     async atualizaSof(ano: number) {
         ano = Number(ano);
-
+        const before = Date.now();
+        this.logger.log(`Atualizando SOF -- ${ano}`);
         const data = await this.sof.entidades(ano);
         await this.prisma.sofEntidade.upsert({
             where: { ano: ano },
@@ -87,9 +86,27 @@ export class SofEntidadeService {
             },
             update: {
                 atualizado_em: new Date(Date.now()),
-                dados: data
+                dados: data,
             }
         });
+        this.logger.log(`Atualização SOF concluída em ${Math.round((Date.now() - before) / 1000)} segundos, atualizando MV sof_entidades_linhas`);
+
+        try {
+            await this.prisma.$queryRaw`refresh materialized view sof_entidades_linhas;`;
+            this.logger.log(`MV sof_entidades_linhas atualizada com sucesso.`);
+        } catch (error) {
+            const errmsg = `Erro ao atualizar materialized view sof_entidades_linhas após atualização deste ano: ${error.toString()}`;
+            this.logger.error(errmsg);
+
+            await this.prisma.sofEntidade.updateMany({
+                where: { ano: ano },
+                data: {
+                    errmsg: errmsg
+                }
+            });
+            console.log(error);
+        }
+
     }
 
 }
