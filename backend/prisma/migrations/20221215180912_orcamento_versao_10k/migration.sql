@@ -9,6 +9,9 @@
 
 */
 -- AlterTable
+
+delete from dotacao_planejado;
+
 ALTER TABLE "dotacao_planejado" DROP COLUMN "empenho_liquido",
 DROP COLUMN "valor_liquidado",
 ADD COLUMN     "saldo_disponivel" DOUBLE PRECISION NOT NULL,
