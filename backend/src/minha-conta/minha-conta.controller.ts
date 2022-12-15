@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiProduces, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { MinhaContaDto } from './models/minha-conta.dto';
@@ -17,6 +17,7 @@ export class MinhaContaController {
     getMe(@CurrentUser() user: PessoaFromJwt): MinhaContaDto {
         return { 'sessao': user };
     }
+
 
     @Post('trocar-senha')
     @ApiBearerAuth('access-token')
