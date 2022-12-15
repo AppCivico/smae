@@ -9,6 +9,7 @@ import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 @Module({
     imports: [PrismaModule, SofApiModule],
     controllers: [DotacaoController],
-    providers: [DotacaoService, DotacaoProcessoService, DotacaoProcessoNotaService]
+    providers: [DotacaoService, DotacaoProcessoService, DotacaoProcessoNotaService],
+    exports: [DotacaoService]
 })
 export class DotacaoModule { }

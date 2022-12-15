@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, UpdateMetaOrcamentoDto } from './dto/meta-orcamento.dto';
@@ -12,6 +13,7 @@ export class MetaOrcamentoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
+        private readonly dotacaoService: DotacaoService,
     ) { }
 
     async create(dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -86,13 +88,17 @@ export class MetaOrcamentoService {
             ]
         });
 
-        return metaOrcamentos.map((r) => {
+        let list =  metaOrcamentos.map((r) => {
             return {
                 ...r,
                 custeio_previsto: r.custeio_previsto.toFixed(2),
                 investimento_previsto: r.investimento_previsto.toFixed(2),
+                projeto_atividade: ''
             }
-        })
+        });
+        await this.dotacaoService.setManyProjetoAtividade(list);
+
+        return list;
     }
 
     async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {

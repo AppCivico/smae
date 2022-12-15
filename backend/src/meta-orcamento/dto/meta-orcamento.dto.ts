@@ -62,12 +62,28 @@ export class CreateMetaOrcamentoDto {
 
     /**
     * parte_dotacao
-    * @example "00.00.00.000.0000.0.000.00000000.00-0"
+    *
+    * Aceita partes da dotacao incompleta, aceitando * no lugar
+    *
+    * eg: 00.00.00.*.0000.0.000.00000000.00
+    * eg: 00.00.*.*.0000.0.000.00000000.00
+    *
+    * embora alguma combinações não façam sentido, por exemplo
+    * eg: *.01.*.*.0000.0.000.00000000.00
+    *
+    * se existe o código 01 na unidade (segunda posição) sempre deveria existir um órgão
+    *
+    * e também não pode cortar o projeto/atividade (sempre vir junto, separando o código com um 'ponto')
+    * que é a sexta e sétima posição se contar os pontos. eg: `*.*.*.*.*.0.000.*.*` é válido, mas `*.*.*.*.*.*.000.*.*` ou `*.*.*.*.*.0.*.*.*` não é
+    *
+    * @example "00.00.00.000.0000.0.000.00000000.00"
     */
     @IsString()
     @MaxLength(40)
     // faz o match parcial, mas alguns campos precisam ser completos
-    @Matches(/^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2}(\-\d)?)?)?)?)?)?)?)?)?$/, { message: 'Dotação parcial não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00-0' })
+    @Matches(/^((\d{2}|\*)(\.(\d{2}|\*)(\.(\d{2}|\*)(\.(\d{3}|\*)(\.(\d{4}|\*)((?:\.(\d\.\d{3}|\*))(\.(\d{8}|\*)(\.(\d{2}|\*)(\-\d)?)?)?)?)?)?)?)?)?$/, {
+        message: 'Dotação parcial não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00, podendo estar parcialmente preenchida com * nos campos faltantes'
+    })
     @ValidateIf((object, value) => value !== '')
     parte_dotacao: string;
 }
