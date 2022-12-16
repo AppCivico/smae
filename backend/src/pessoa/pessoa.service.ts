@@ -97,6 +97,8 @@ export class PessoaService {
     }
 
     async enviaPrimeiraSenha(pessoa: Pessoa, senha: string, prisma: Prisma.TransactionClient) {
+        const tosText = (await prisma.textoConfig.findFirstOrThrow({ where: { id: 1 } })).bemvindo_email;
+
         await prisma.emaildbQueue.create({
             data: {
                 config_id: 1,
@@ -105,6 +107,7 @@ export class PessoaService {
                 to: pessoa.email,
                 variables: {
                     nome_exibicao: pessoa.nome_exibicao,
+                    tos: tosText,
                     link: this.#urlLoginSMAE,
                     nova_senha: senha,
                 },
