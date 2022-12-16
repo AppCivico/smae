@@ -18,6 +18,7 @@
       <mj-column>
         <mj-text>
           <p>Bem vindo ao SMAE, [% nome_exibicao %]. Uma senha temporária foi criada para o primeiro acesso:</p>
+          <p>[% tos | raw %]</p>
         </mj-text>
 
         <mj-text>
