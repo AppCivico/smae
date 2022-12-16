@@ -25,5 +25,6 @@ export class Pdm {
     rotulo_atividade: string
     possui_iniciativa: boolean
     possui_atividade: boolean
+    nivel_orcamento: string
     id: number
 }
