@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, Min, ValidateIf } from "class-validator";
 import { ParteDotacaoDto } from "../../dotacao/dto/dotacao.dto";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
@@ -48,7 +48,7 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
     * @example "2341242423.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custeio até duas casas decimais' })
-    @IsPositive({ message: '$property| Custeio precisa ser positivo' })
+    @Min(0, { message: '$property| Custeio precisa ser positivo' })
     @Type(() => Number)
     custeio_previsto: number;
 
@@ -57,7 +57,7 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
     * @example "42343.34"
     */
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Investimento até duas casas decimais' })
-    @IsPositive({ message: '$property| Investimento precisa ser positivo' })
+    @Min(0, { message: '$property| Investimento precisa ser positivo' })
     @Type(() => Number)
     investimento_previsto: number;
 
