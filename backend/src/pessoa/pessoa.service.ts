@@ -107,6 +107,7 @@ export class PessoaService {
                 to: pessoa.email,
                 variables: {
                     nome_exibicao: pessoa.nome_exibicao,
+                    tos: tosText,
                     link: this.#urlLoginSMAE + '?referencia=primeiro-acesso',
                     nova_senha: senha,
                 },
