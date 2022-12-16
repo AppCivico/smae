@@ -153,6 +153,9 @@ const PrivConfig: any = {
         ['CadastroGrupoPaineis.inativar', 'Inativar Painéis'],
         ['CadastroGrupoPaineis.ativar', 'Ativar Painéis'],
     ],
+    Config: [
+        ['Config.editar', 'Editar configuração de textos do sistema'],
+    ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
         ['PDM.tecnico_cp', '(PDM) Técnico CP'],
@@ -185,6 +188,7 @@ const ModuloDescricao: any = {
     CadastroCicloFisico: 'Cadastro de Ciclos Físicos',
     CadastroPainel: 'Cadastro de Painéis',
     CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
+    Config: 'Configurações do Sistema',
     PDM: 'Regras de Negocio do PDM',
 };
 
@@ -251,6 +255,7 @@ console.log(PerfilAcessoConfig);
 
 async function main() {
     await criar_emaildb_config();
+    await criar_texto_config();
     await atualizar_modulos_e_privilegios();
     await atualizar_perfil_acesso();
 
@@ -391,6 +396,18 @@ async function atualizar_modulos_e_privilegios() {
         }
     });
 
+}
+
+async function criar_texto_config() {
+    await prisma.textoConfig.upsert({
+        where: { id: 1 },
+        update: {},
+        create:
+        {
+            bemvindo_email: 'Ao acessar o SMAE, Você está ciente e autoriza...',
+            tos: '...O acesso ao SMAE indica ciencia e concordancia com os termos acima',
+        },
+    });
 }
 
 async function criar_emaildb_config() {
