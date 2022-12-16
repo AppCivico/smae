@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { useAuthStore } from '@/stores';
 
 const schema = Yup.object().shape({
-    password: Yup.string().required('Preencha sua nova senha').matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,'Deve conter pelo menos: um número, um caractere maiúsculo e um caractere especial'),
+    password: Yup.string().required('Preencha sua nova senha').matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[\!\@\#\$\%\^\&\*])(?=.{8,})/,'Deve conter pelo menos: um número, um caractere maiúsculo e um caractere especial'),
     passwordConfirmation: Yup.string().required('Repita sua senha')
          .oneOf([Yup.ref('password'), null], 'Senhas não coincidem')
 
