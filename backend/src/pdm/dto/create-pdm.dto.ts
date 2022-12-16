@@ -1,5 +1,7 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { NivelOrcamento } from "@prisma/client";
 import { Type } from "class-transformer";
-import { IsBoolean, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 import { Pdm } from "src/pdm/dto/pdm.dto";
 
@@ -199,5 +201,10 @@ export class CreatePdmDto {
     @IsString({ message: '$property| Precisa ser uma string' })
     contexto?: string | null
 
-
+    @IsOptional()
+    @ApiProperty({ enum: NivelOrcamento, enumName: 'NivelOrcamento' })
+    @IsEnum(NivelOrcamento, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(NivelOrcamento).join(', ')
+    })
+    nivel_orcamento: NivelOrcamento
 }
