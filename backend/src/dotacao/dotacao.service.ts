@@ -3,8 +3,8 @@ import { DotacaoRealizado, Prisma } from "@prisma/client";
 import { DateTime } from 'luxon';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
-import { AnoDotacaoDto } from './dto/dotacao.dto';
-import { ValorPlanejadoDto, ValorRealizadoDotacaoDto } from "./entities/dotacao.entity";
+import { AnoDotacaoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
+import { OrcadoProjetoDto, ValorPlanejadoDto, ValorRealizadoDotacaoDto } from "./entities/dotacao.entity";
 
 @Injectable()
 export class DotacaoService {
@@ -13,6 +13,48 @@ export class DotacaoService {
         private readonly prisma: PrismaService,
         private readonly sof: SofApiService,
     ) { }
+
+    async orcadoProjeto(dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
+        try {
+
+            const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
+            const r = await this.sof.orcadoProjeto({
+                ano: dto.ano,
+                mes: mesMaisAtual,
+                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.parte_dotacao)
+            });
+
+            const dotacao = r.data[0];
+
+            return {
+                val_orcado_atualizado: dotacao.val_orcado_atualizado,
+                val_orcado_inicial: dotacao.val_orcado_inicial,
+                saldo_disponivel: dotacao.saldo_disponivel,
+            }
+
+        } catch (error) {
+            if (error instanceof SofError) {
+                throw new HttpException(error.message, 400)
+            }
+
+            throw error;
+        }
+    }
+
+    private getDotacaoOrgaoUnidadeProjFonte(dotacao: string): {
+        orgao: string
+        unidade: string
+        proj_atividade: string
+        fonte: string
+    } {
+        const partes = dotacao.split('.');
+        return {
+            orgao: partes[0],
+            unidade: partes[1],
+            proj_atividade: partes.slice(5, 7).join(''),
+            fonte: partes[8]
+        }
+    }
 
     async getOneProjetoAtividade(ano: number, dotacao: string): Promise<string> {
         // código é feito juntando o 6º com o 7º campo da dotação
@@ -100,7 +142,10 @@ export class DotacaoService {
 
         if (dotacaoExistente && dotacaoExistente.informacao_valida && dotacaoExistente.mes_utilizado == mesMaisAtual) {
             return {
-                empenho_liquido: dotacaoExistente.empenho_liquido.toFixed(2),
+                val_orcado_atualizado: dotacaoExistente.val_orcado_atualizado.toFixed(2),
+                val_orcado_inicial: dotacaoExistente.val_orcado_inicial.toFixed(2),
+                saldo_disponivel: dotacaoExistente.saldo_disponivel.toFixed(2),
+
                 id: dotacaoExistente.id,
                 informacao_valida: dotacaoExistente.informacao_valida,
                 smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado.toFixed(2),
@@ -123,7 +168,9 @@ export class DotacaoService {
 
         return {
             id: dotacaoPlanejado.id,
-            empenho_liquido: dotacaoPlanejado.empenho_liquido.toFixed(2),
+            val_orcado_atualizado: dotacaoPlanejado.val_orcado_atualizado.toFixed(2),
+            val_orcado_inicial: dotacaoPlanejado.val_orcado_inicial.toFixed(2),
+            saldo_disponivel: dotacaoPlanejado.saldo_disponivel.toFixed(2),
             informacao_valida: dotacaoPlanejado.informacao_valida,
             smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado.toFixed(2),
             mes_utilizado: dotacaoPlanejado.mes_utilizado,
@@ -264,12 +311,14 @@ export class DotacaoService {
     private async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
         try {
-            const r = await this.sof.empenhoDotacao({
-                dotacao: dto.dotacao,
+
+            const r = await this.sof.orcadoProjeto({
                 ano: dto.ano,
-                mes: mes
+                mes: mes,
+                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.dotacao)
             });
 
+            // na teoria só volta 1 item
             for (const dotacao of r.data) {
                 await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
                     const jaExiste = await prisma.dotacaoPlanejado.findUnique({
@@ -284,7 +333,8 @@ export class DotacaoService {
                     // se ja existe, atualiza caso estiver com dados inválidos, ou se o valor for diferente no empenho_liquido
                     if (jaExiste && (
                         jaExiste.informacao_valida == false
-                        || (jaExiste.empenho_liquido.toFixed(2) != dotacao.empenho_liquido.toFixed(2))
+                        || (jaExiste.val_orcado_atualizado.toFixed(2) != dotacao.val_orcado_atualizado.toFixed(2))
+                        || (jaExiste.val_orcado_inicial.toFixed(2) != dotacao.val_orcado_inicial.toFixed(2))
                     )) {
                         await prisma.dotacaoPlanejado.update({
                             where: {
@@ -293,8 +343,10 @@ export class DotacaoService {
                             data: {
                                 informacao_valida: true,
                                 sincronizado_em: now,
-                                empenho_liquido: dotacao.empenho_liquido,
-                                pressao_orcamentaria: Math.round(jaExiste.smae_soma_valor_planejado * 100) > Math.round(dotacao.empenho_liquido * 100),
+                                val_orcado_atualizado: dotacao.val_orcado_atualizado,
+                                val_orcado_inicial: dotacao.val_orcado_inicial,
+                                saldo_disponivel: dotacao.saldo_disponivel,
+                                pressao_orcamentaria: Math.round(jaExiste.smae_soma_valor_planejado * 100) > Math.round(dotacao.val_orcado_atualizado * 100),
                             }
                         });
                     }
@@ -304,8 +356,9 @@ export class DotacaoService {
                             data: {
                                 informacao_valida: true,
                                 sincronizado_em: now,
-                                empenho_liquido: Number(dotacao.empenho_liquido),
-                                valor_liquidado: Number(dotacao.val_liquidado),
+                                val_orcado_atualizado: dotacao.val_orcado_atualizado,
+                                val_orcado_inicial: dotacao.val_orcado_inicial,
+                                saldo_disponivel: dotacao.saldo_disponivel,
                                 mes_utilizado: mes,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,
@@ -346,8 +399,9 @@ export class DotacaoService {
                             data: {
                                 informacao_valida: false,
                                 sincronizado_em: null,
-                                empenho_liquido: 0,
-                                valor_liquidado: 0,
+                                val_orcado_atualizado: 0,
+                                val_orcado_inicial: 0,
+                                saldo_disponivel: 0,
                                 mes_utilizado: mes,
                                 ano_referencia: dto.ano,
                                 dotacao: dto.dotacao,

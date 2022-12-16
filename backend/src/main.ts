@@ -1,15 +1,21 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { TrimPipe } from './common/pipes/trim-pipe';
 import { AppModule } from './app.module';
+import { TrimPipe } from './common/pipes/trim-pipe';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
     const config = new DocumentBuilder()
         .setTitle('SMAE - OpenAPI file')
-        .setDescription('SMAE')
+        .setDescription('*SMAE*\n\n' +
+            '**CONVERSÃO AUTOMÁTICA PARA CSV**' +
+            '\n\nTodos os endpoints que devolvem `application/json` também podem devolver CSV, utilize o' +
+            'header `Accept: text/csv` para explodir apenas as linhas, ou então `Accept: text/csv; unwind-all` (mais lento, que expande tudo) que transforma todas as arrays em items. ' +
+            '\n\nPor padrão todos os campos deep são achatados (flatten).'+
+            '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.'
+        )
         .addBearerAuth({
             type: 'http', scheme: 'bearer', bearerFormat: 'Bearer',
         }, 'access-token')

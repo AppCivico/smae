@@ -1,9 +1,10 @@
 import { OmitType, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { ParteDotacaoDto } from "../../dotacao/dto/dotacao.dto";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
-export class CreateMetaOrcamentoDto {
+export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
 
     /**
     * meta_id, se for por meta
@@ -60,37 +61,6 @@ export class CreateMetaOrcamentoDto {
     @Type(() => Number)
     investimento_previsto: number;
 
-    /**
-    * parte_dotacao
-    *
-    * Aceita partes da dotacao incompleta, aceitando * no lugar dos dígitos
-    *
-    * - `00.00.00.*.0000.0.000.00000000.00`
-    *
-    * - `00.00.*.*.0000.0.000.00000000.00`
-    *
-    * Algumas combinações não façam sentido, mas estão sendo aceitas no momento:
-    *
-    * - `*.01.*.*.0000.0.000.00000000.00`
-    *
-    * > Se existe o código 01 na unidade (segunda posição), em teoria, sempre deveria existir um órgão (primeira posição)
-    *
-    * ⚠️ Entretanto, não pode enviar incompleto o par de projeto/atividade, que deve sempre vir junto,
-    * separando o código retornado na api de entidades.
-    * que é a sexta e sétima posição se contar os pontos.
-    * `*.*.*.*.*.2.100.*.*` é válido (em 2022, é o projeto/atividade `Administração da Unidade`),
-    * mas `*.*.*.*.*.*.100.*.*` ou `*.*.*.*.*.2.*.*.*` não é válido
-    *
-    * @example "00.00.00.000.0000.0.000.00000000.00"
-    */
-    @IsString()
-    @MaxLength(40)
-    // faz o match parcial, mas alguns campos precisam ser completos
-    @Matches(/^((\d{2}|\*)(\.(\d{2}|\*)(\.(\d{2}|\*)(\.(\d{3}|\*)(\.(\d{4}|\*)((?:\.(\d\.\d{3}|\*))(\.(\d{8}|\*)(\.(\d{2}|\*)(\-\d)?)?)?)?)?)?)?)?)?$/, {
-        message: 'Dotação parcial não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00, podendo estar parcialmente preenchida com * nos campos faltantes'
-    })
-    @ValidateIf((object, value) => value !== '')
-    parte_dotacao: string;
 }
 
 // deixa mudar praticamente tudo, pois não há contas, então pode mudar a parte-dotação e etc

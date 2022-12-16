@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, ParseArrayPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiProduces, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -27,6 +27,7 @@ export class MetaController {
 
     @ApiBearerAuth('access-token')
     @Get()
+    @ApiProduces("application/json", "text/csv", "text/csv; unwind-all")
     //@Roles('CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover')
     async findAll(@Query() filters: FilterMetaDto): Promise<ListMetaDto> {
         // TODO filtrar por apenas painel , se a pessoa nao tiver essas permissoes acima
