@@ -93,12 +93,13 @@ function abreEdicaoOrcamento(id) {
                             <td>{{ item.descricao }}</td>
                             <td>{{ item.prefeito }}</td>
                             <td>{{ item.ativo?'Sim':'Não' }}</td>
-                            <td style="white-space: nowrap; text-align: right;">
-                                <a v-if="perm?.CadastroPdm?.editar" @click="abreEdicaoOrcamento(item.id)" class="tprimary mr1">
+                            <td style="text-align: right;">
+                                <a v-if="perm?.CadastroPdm?.editar" @click="abreEdicaoOrcamento(item.id)" class="tprimary mr1 tipinfo right">
                                     <svg width="20" height="20"><use xlink:href="#i_calendar"></use></svg>
+                                    <div>Permissões para edições no orçamento</div>
                                 </a>
                                 <template v-if="perm?.CadastroPdm?.editar">
-                                    <router-link :to="`/pdm/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                                    <router-link :to="`/pdm/${item.id}`" class="tprimary tipinfo right"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg><div>Editar</div></router-link>
                                 </template>
                             </td>
                         </tr>
