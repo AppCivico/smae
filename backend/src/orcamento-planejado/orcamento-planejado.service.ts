@@ -20,7 +20,7 @@ export class OrcamentoPlanejadoService {
             where: { dotacao: dto.dotacao, ano_referencia: dto.ano_referencia },
             select: { id: true }
         });
-        if (!dotacao) throw new HttpException('Dotação não foi ainda não foi importada no banco de dados', 400);
+        if (!dotacao) throw new HttpException('Dotação/projeto não foi ainda não foi importada no banco de dados', 400);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
 
@@ -55,7 +55,7 @@ export class OrcamentoPlanejadoService {
 
             const dotacaoTx = await prismaTxn.dotacaoPlanejado.findFirst({
                 where: { id: dotacao.id },
-                select: { smae_soma_valor_planejado: true, empenho_liquido: true }
+                select: { smae_soma_valor_planejado: true, val_orcado_atualizado: true }
             });
             if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.', 400);
 
@@ -63,7 +63,7 @@ export class OrcamentoPlanejadoService {
             await prismaTxn.dotacaoPlanejado.update({
                 where: { id: dotacao.id },
                 data: {
-                    pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoTx.empenho_liquido * 100),
+                    pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoTx.val_orcado_atualizado * 100),
                     smae_soma_valor_planejado: smae_soma_valor_planejado
                 }
             });
@@ -98,9 +98,7 @@ export class OrcamentoPlanejadoService {
         });
         if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com o planejamento liberado', 400);
 
-        const updated = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-
-            const now = new Date(Date.now());
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
 
             const orcamentoPlanejadoTx = await this.prisma.orcamentoPlanejado.findFirst({
                 where: { id: +id, removido_em: null, },
@@ -118,7 +116,7 @@ export class OrcamentoPlanejadoService {
             if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.', 400);
 
             const novo_saldo = dotacaoTx.smae_soma_valor_planejado - orcamentoPlanejadoTx.valor_planejado + dto.valor_planejado;
-            const nova_pressao = Math.round(novo_saldo * 100) > Math.round(dotacaoTx.empenho_liquido * 100);
+            const nova_pressao = Math.round(novo_saldo * 100) > Math.round(dotacaoTx.val_orcado_atualizado * 100);
 
             await prismaTxn.orcamentoPlanejado.update({
                 where: {
@@ -140,14 +138,14 @@ export class OrcamentoPlanejadoService {
                 }
             });
 
-            return orcamentoPlanejadoTx;
+
         }, {
             isolationLevel: 'Serializable',
             maxWait: 5000,
             timeout: 100000
         });
 
-        return updated;
+        return { id: orcamentoPlanejado.id };
     }
 
     async validaMetaIniAtv(dto: {
@@ -183,8 +181,8 @@ export class OrcamentoPlanejadoService {
             meta_id = dto.meta_id;
         }
 
-        if (meta_id === undefined)
-            new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
+        if (meta_id === undefined || meta_id == null)
+            throw new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
 
         return { meta_id: meta_id, iniciativa_id, atividade_id };
     }
@@ -228,7 +226,9 @@ export class OrcamentoPlanejadoService {
             },
             select: {
                 pressao_orcamentaria: true,
-                empenho_liquido: true,
+                val_orcado_atualizado: true,
+                val_orcado_inicial: true,
+                saldo_disponivel: true,
                 smae_soma_valor_planejado: true,
                 dotacao: true,
             }
@@ -245,17 +245,22 @@ export class OrcamentoPlanejadoService {
             let pressao_orcamentaria: boolean | null = null;
             let pressao_orcamentaria_valor: string | null = null;
             let smae_soma_valor_planejado: string | null = null;
-            let empenho_liquido: string | null = null;
+
+            let val_orcado_atualizado: string | null = null;
+            let val_orcado_inicial: string | null = null;
+            let saldo_disponivel: string | null = null;
 
             let dotacaoInfo = dotacoesRef[orcamentoPlanejado.dotacao];
             if (dotacaoInfo) {
                 pressao_orcamentaria = dotacaoInfo.pressao_orcamentaria;
                 if (pressao_orcamentaria) {
-                    pressao_orcamentaria_valor = Number(dotacaoInfo.smae_soma_valor_planejado - dotacaoInfo.empenho_liquido).toFixed(2);
+                    pressao_orcamentaria_valor = Number(dotacaoInfo.smae_soma_valor_planejado - dotacaoInfo.val_orcado_atualizado).toFixed(2);
                 }
 
                 smae_soma_valor_planejado = dotacaoInfo.smae_soma_valor_planejado.toFixed(2);
-                empenho_liquido = dotacaoInfo.empenho_liquido.toFixed(2);
+                val_orcado_atualizado = dotacaoInfo.val_orcado_atualizado.toFixed(2);
+                val_orcado_inicial = dotacaoInfo.val_orcado_inicial.toFixed(2);
+                saldo_disponivel = dotacaoInfo.saldo_disponivel.toFixed(2);
             }
 
             rows.push({
@@ -270,8 +275,13 @@ export class OrcamentoPlanejadoService {
                 valor_planejado: orcamentoPlanejado.valor_planejado,
                 pressao_orcamentaria,
                 pressao_orcamentaria_valor,
+
+                // campos da dotação/sof
                 smae_soma_valor_planejado,
-                empenho_liquido,
+                val_orcado_atualizado,
+                val_orcado_inicial,
+                saldo_disponivel,
+                // campos pra ser populado depois
                 projeto_atividade: ''
             });
         }
@@ -297,14 +307,14 @@ export class OrcamentoPlanejadoService {
             if (linhasAfetadas.count == 1) {
                 const dotacaoAgora = await prismaTxn.dotacaoPlanejado.findFirstOrThrow({
                     where: { dotacao: orcamentoPlanejado.dotacao, ano_referencia: orcamentoPlanejado.ano_referencia },
-                    select: { smae_soma_valor_planejado: true, empenho_liquido: true, id: true }
+                    select: { smae_soma_valor_planejado: true, val_orcado_atualizado: true, id: true }
                 });
 
                 const smae_soma_valor_planejado = dotacaoAgora.smae_soma_valor_planejado - orcamentoPlanejado.valor_planejado;
                 await prismaTxn.dotacaoPlanejado.update({
                     where: { id: dotacaoAgora.id },
                     data: {
-                        pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoAgora.empenho_liquido * 100),
+                        pressao_orcamentaria: Math.round(smae_soma_valor_planejado * 100) > Math.round(dotacaoAgora.val_orcado_atualizado * 100),
                         smae_soma_valor_planejado: smae_soma_valor_planejado
                     }
                 });
