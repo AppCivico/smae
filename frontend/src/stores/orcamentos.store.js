@@ -9,6 +9,7 @@ export const useOrcamentosStore = defineStore({
         OrcamentoCusteio: {},
         OrcamentoPlanejado: {},
         OrcamentoRealizado: {},
+        DotacaoSegmentos: {},
     }),
     actions: {
         clear (){
@@ -25,7 +26,7 @@ export const useOrcamentosStore = defineStore({
         async getOrcamentoCusteioById(id,ano) {
             try {
                 this.OrcamentoCusteio[ano] = { loading: true };
-                let r = await requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}&apenas_ultima_revisao=true`);    
+                let r = await requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);    
                 this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
             } catch (error) {
                 this.OrcamentoCusteio[ano] = { error };
@@ -50,8 +51,12 @@ export const useOrcamentosStore = defineStore({
             }
         },
 
-        async updateOrcamentoCusteio(params) {
-            if(await requestS.patch(`${baseUrl}/meta-orcamento`, params)) return true;
+        async updateOrcamentoCusteio(id,params) {
+            if(await requestS.patch(`${baseUrl}/meta-orcamento/${id}`, params)) return true;
+            return false;
+        },
+        async insertOrcamentoCusteio(params) {
+            if(await requestS.post(`${baseUrl}/meta-orcamento/`, params)) return true;
             return false;
         },
         async deleteOrcamentoCusteio(id) {
@@ -88,6 +93,19 @@ export const useOrcamentosStore = defineStore({
         },
 
         // Dotacoes
+        async getDotacaoSegmentos(ano){
+            try {
+                if(!this.DotacaoSegmentos[ano] || this.DotacaoSegmentos[ano]?.atualizado_em != new Date().toISOString().substring(0, 10)) this.DotacaoSegmentos[ano] = {loading: true};
+                
+                let r = await requestS.get(`${baseUrl}/sof-entidade/${ano}`);
+                if(r.dados){
+                    this.DotacaoSegmentos[ano] = r.dados;
+                    this.DotacaoSegmentos[ano].atualizado_em = r.atualizado_em;
+                }
+            } catch (error) {
+                this.DotacaoSegmentos[ano] = {error};
+            }
+        },
         async getDotacaoPlanejado(dotacao,ano) {
             try {
                 let r = await requestS.patch(`${baseUrl}/dotacao/valor-planejado`,{dotacao:dotacao,ano:Number(ano)});    

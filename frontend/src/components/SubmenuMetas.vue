@@ -62,7 +62,12 @@
                 <router-link v-if="!iniciativa_id" :to="`/metas/${meta_id}/painel`">Painel da meta</router-link>
                 <router-link :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/evolucao`">Evolução</router-link>
                 <router-link :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/cronograma`">Cronograma</router-link>
-                <router-link v-if="!iniciativa_id" :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/orcamento`">Execução Orçamentária</router-link>
+            </div>
+            <h2>Visão orçamentária</h2>
+            <div class="links-container mb2">
+                <router-link v-if="!iniciativa_id" :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/orcamento/custeio`">Previsão de custo</router-link>
+                <router-link v-if="!iniciativa_id" :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/orcamento/planejado`">Orçamento planejado</router-link>
+                <router-link v-if="!iniciativa_id" :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/orcamento/realizado`">Execução orçamentária</router-link>
             </div>
         </div>
     </div>

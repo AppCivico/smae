@@ -197,7 +197,7 @@
 		                    <Field name="valor_empenho" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
 		                    <div class="error-msg">{{ errors.valor_empenho }}</div>
 		                    <div class="flex center" v-if="selecionado.smae_soma_valor_empenho!=undefined">
-		                    	{{(saldo = toFloat(toFloat(selecionado.smae_soma_valor_empenho)-toFloat(selecionado.valor_empenho)))?'':''}}
+		                    	{{(saldo = toFloat(toFloat(selecionado.valor_empenho)-toFloat(selecionado.smae_soma_valor_empenho)))?'':''}}
 		                    	<span class="label mb0 tc300 mr1">Saldo empenho</span>
 		                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_empenho))}}</span>
 		                    	<span v-if="saldo-toFloat(values.valor_empenho) < 0" class="tvermelho w700">(Valor superior ao saldo para empenho)</span>
@@ -208,7 +208,7 @@
 		                    <Field name="valor_liquidado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
 		                    <div class="error-msg">{{ errors.valor_liquidado }}</div>
 		                    <div class="flex center" v-if="selecionado.smae_soma_valor_liquidado!=undefined">
-		                    	{{(saldo = toFloat(toFloat(selecionado.smae_soma_valor_liquidado)-toFloat(selecionado.valor_liquidado)))?'':''}}
+		                    	{{(saldo = toFloat(toFloat(selecionado.valor_liquidado)-toFloat(selecionado.smae_soma_valor_liquidado)))?'':''}}
 		                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
 		                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_liquidado))}}</span>
 		                    	<span v-if="saldo-toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>

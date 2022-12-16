@@ -3,7 +3,9 @@ import { ref, onMounted, onUpdated  } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { Dashboard} from '@/components';
-import { default as SimpleOrcamento} from '@/components/orcamento/SimpleOrcamento.vue';
+import { default as SimpleOrcamentoCusteio} from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
+import { default as SimpleOrcamentoPlanejado} from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
+import { default as SimpleOrcamentoRealizado} from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 
 import { useAlertStore, useEditModalStore, useAuthStore, usePdMStore, useMetasStore, useOrcamentosStore } from '@/stores';
 
@@ -13,7 +15,8 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 const editModalStore = useEditModalStore();
 
-const props = defineProps(['group']);
+const props = defineProps(['area']);
+const SimpleOrcamento = props.area=='Realizado'?SimpleOrcamentoRealizado:props.area=='Planejado'?SimpleOrcamentoPlanejado:SimpleOrcamentoCusteio;
 
 const route = useRoute();
 const meta_id = route.params.meta_id;
