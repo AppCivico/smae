@@ -48,6 +48,7 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
+import { TextoConfigModule } from './texto-config/texto-config.module';
 
 
 @Module({
@@ -102,6 +103,7 @@ import { VariavelModule } from './variavel/variavel.module';
         ]),
         PdmCicloModule,
         SofEntidadeModule,
+        TextoConfigModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
