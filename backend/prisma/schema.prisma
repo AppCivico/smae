@@ -1946,3 +1946,12 @@ model SofEntidade {
 
     @@map("sof_entidade")
 }
+
+model TextoConfig {
+    id Int @id @default(1)
+
+    bemvindo_email String
+    tos String
+
+    @@map("texto_config")
+}
