@@ -96,7 +96,8 @@ export class PdmService {
                 possui_complementacao_meta: true,
                 possui_atividade: true,
                 possui_iniciativa: true,
-                arquivo_logo_id: true
+                arquivo_logo_id: true,
+                nivel_orcamento: true
             }
         });
 
