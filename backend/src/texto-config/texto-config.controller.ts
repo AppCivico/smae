@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { textoTosDto } from './entities/texto-config.entity';
@@ -11,6 +12,7 @@ export class TextoConfigController {
         private readonly prisma: PrismaService,
     ) { }
 
+    @ApiTags('Público')
     @IsPublic()
     @Get('/texto-tos')
     async textoTos(): Promise<textoTosDto> {
