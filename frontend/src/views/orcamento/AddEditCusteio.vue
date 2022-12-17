@@ -17,7 +17,8 @@
 	const ano = route.params.ano;
 
 	const MetasStore = useMetasStore();
-    const { singleMeta } = storeToRefs(MetasStore);
+    const { singleMeta, activePdm } = storeToRefs(MetasStore);
+    MetasStore.getPdM();
     MetasStore.getChildren(meta_id);
 	const IniciativasStore = useIniciativasStore();
     const { singleIniciativa } = storeToRefs(IniciativasStore);
@@ -189,7 +190,7 @@
 </script>
 <template>
 	<Dashboard>
-	    <div class="flex spacebetween center">
+		<div class="flex spacebetween center">
 	        <h1>Previsão de custo</h1>
 	        <hr class="ml2 f1"/>
 	        <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
@@ -218,8 +219,10 @@
 		                </div>
 		                <div class="f1">
 		                    <label class="label tc300">Unidade <span class="tvermelho">*</span></label>
-		                    <Field name="d_unidade" v-model="d_unidade" @change="montaDotacao" as="select" class="inputtext light mb1">
-		                    	<option v-for="i in DotacaoSegmentos[ano].unidades" :key="i.codigo" :value="i.codigo">{{i.codigo+' - '+i.descricao}}</option>
+		                    <Field name="d_unidade" v-model="d_unidade" @change="montaDotacao" as="select" class="inputtext light mb1" :disabled="!d_orgao">
+		                    	{{ (orgs = DotacaoSegmentos[ano].unidades.filter(x=>x.cod_orgao==d_orgao)) ? '':'' }}
+		                    	<option v-if="!orgs.length" value="00">00 - Nenhum encontrado</option>
+		                    	<option v-for="i in orgs" :key="i.codigo" :value="i.codigo">{{i.codigo+' - '+i.descricao}}</option>
 		                    </Field>
 		                    <div class="t12 tc500" v-if="d_unidade">
 		                    	{{ (it = DotacaoSegmentos[ano].unidades.find(x=>x.codigo==d_unidade)) ? `${it.codigo} - ${it.descricao}` : '' }}
@@ -271,8 +274,7 @@
 		                </div>
 		                <div class="f1">
 		                    <label class="label tc300">Conta despesa</label>
-		                    <Field name="d_contadespesa" v-model="d_contadespesa" @change="montaDotacao" as="select" class="inputtext light mb1">
-		                    	<option value="********">********</option>
+		                    <Field name="d_contadespesa" v-model="d_contadespesa" @input="montaDotacao" type="text" class="inputtext light mb1">
 		                    </Field>
 		                </div>
 		                <div class="f1">
@@ -297,19 +299,23 @@
                     		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
                     		<span>{{m.codigo}} - {{m.titulo}}</span>
                     	</label>
-                    	<div v-if="m?.iniciativas?.length" class="label tc300">Iniciativas e atividades</div>
-                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
-                    		<label class="block mb1">
-                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
-                    			<span>{{i.codigo}} - {{i.titulo}}</span>
-                    		</label>
-                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
-                    			<label class="block mb1">
-                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
-                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-                    			</label>	
-                    		</div>
-                    	</div>	
+                    	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
+	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
+	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
+	                    		<label class="block mb1">
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
+	                    		</label>
+	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
+		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
+		                    			<label class="block mb1">
+		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
+		                    			</label>	
+		                    		</div>
+	                    		</template>
+	                    	</div>	
+                    	</template>
                     </div>
                     <div class="error-msg">{{ errors.location }}</div>
 	            </div>

@@ -1,0 +1,299 @@
+<script setup>
+	import { ref  } from 'vue';
+	import { Dashboard} from '@/components';
+	import { Form, Field } from 'vee-validate';
+	import * as Yup from 'yup';
+	import { storeToRefs } from 'pinia';
+	import { router } from '@/router';
+	import { useRoute } from 'vue-router';
+	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
+	import { default as ItensRealizado} from '@/components/orcamento/ItensRealizado.vue';
+	
+	const alertStore = useAlertStore();
+	const route = useRoute();
+	const meta_id = route.params.meta_id;
+	const ano = route.params.ano;
+	const id = route.params.id;
+
+	const MetasStore = useMetasStore();
+    const { singleMeta, activePdm } = storeToRefs(MetasStore);
+    MetasStore.getPdM();
+    MetasStore.getChildren(meta_id);
+	
+	const IniciativasStore = useIniciativasStore();
+    const { singleIniciativa } = storeToRefs(IniciativasStore);
+	const AtividadesStore = useAtividadesStore();
+    const { singleAtividade } = storeToRefs(AtividadesStore);
+
+	const parentlink = `${meta_id?'/metas/'+meta_id:''}`;
+	const parent_item = ref(meta_id?singleMeta:false);
+
+	const OrcamentosStore = useOrcamentosStore();
+	const { OrcamentoRealizado, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
+	const currentEdit = ref({});
+	const dota = ref('');
+	const respostasof = ref({});
+
+	const d_orgao = ref('');
+	const d_unidade = ref('');
+	const d_funcao = ref('');
+	const d_subfuncao = ref('');
+	const d_programa = ref('');
+	const d_projetoatividade = ref('');
+	const d_contadespesa = ref('');
+	const d_fonte = ref('');
+
+	const itens = ref([]);
+
+	(async()=>{
+		await OrcamentosStore.getDotacaoSegmentos(ano);
+		if(id){
+			await OrcamentosStore.getOrcamentoRealizadoById(meta_id,ano);
+			currentEdit.value = OrcamentoRealizado.value[ano].find(x=>x.id==id);
+
+			currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x,i)=>{
+				if(x.indexOf('*')!=-1){
+					if(i==4){
+						return "****";
+					}else if(i==7){
+						return "********";
+					}
+				}
+				return x;
+			}).join('.');
+			dota.value = currentEdit.value.dotacao;
+			validaPartes(currentEdit.value.dotacao);
+
+			currentEdit.value.location =  
+				currentEdit.value.atividade?.id?'a'+currentEdit.value.atividade.id:
+				currentEdit.value.iniciativa?.id?'i'+currentEdit.value.iniciativa.id:
+				currentEdit.value.meta?.id?'m'+currentEdit.value.meta.id:'m'+meta_id;
+
+			respostasof.value.projeto_atividade = currentEdit.value.projeto_atividade;
+			respostasof.value.smae_soma_valor_empenho = toFloat(currentEdit.value.smae_soma_valor_empenho) - toFloat(currentEdit.value.soma_valor_empenho);
+			respostasof.value.smae_soma_valor_liquidado = toFloat(currentEdit.value.smae_soma_valor_liquidado) - toFloat(currentEdit.value.soma_valor_liquidado);
+
+			itens.value = currentEdit.value.itens;
+		}
+	})();
+
+	async function onSubmit(values) {
+	    try {
+	        var msg;
+	        var r;
+
+	        values.atividade_id = null;
+	        values.iniciativa_id = null;
+	        values.meta_id = null;
+	        if(values.location[0] == "a"){
+	        	values.atividade_id = Number(values.location.slice(1));
+	        }else if(values.location[0] == "i"){
+	        	values.iniciativa_id = Number(values.location.slice(1));
+	        }else if(values.location[0] == "m"){
+	        	values.meta_id = Number(values.location.slice(1));
+	        }
+	        values.itens = itens.value.map(x=>{
+	        	x.valor_empenho = toFloat(x.valor_empenho);
+	        	x.valor_liquidado = toFloat(x.valor_liquidado);
+	        	return {mes:x.mes,valor_empenho:x.valor_empenho,valor_liquidado:x.valor_liquidado};
+	        });
+
+            r = await OrcamentosStore.updateOrcamentoRealizado(id,values);
+            msg = 'Dados salvos com sucesso!';
+	        
+	        if(r == true){
+	            alertStore.success(msg);
+	            await router.push(`${parentlink}/orcamento/realizado`);
+	        }
+	    } catch (error) {
+	        alertStore.error(error);
+	    }
+	}
+
+	async function checkClose() {
+	    alertStore.confirm('Deseja sair sem salvar as alterações?',`${parentlink}/orcamento`);
+	}
+	async function checkDelete(id) {
+	    alertStore.confirmAction('Deseja mesmo remover esse item?',async()=>{if(await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento`)},'Remover');
+	}
+
+	function dinheiro(v){
+		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v))
+	}
+	function toFloat(v){
+		return isNaN(v) || String(v).indexOf(',') !== -1 ? Number( String(v).replace(/[^0-9\,]/g, '').replace(',','.') ) : Math.round(Number(v)*100)/100;
+	}
+	function validaPartes(a){
+		let v = a.split('.');
+		if(v.length){
+			d_orgao.value = (v[0]) ? v[0] : '';
+			d_unidade.value = (v[1]) ? v[1] : '';
+			d_funcao.value = (v[2]) ? v[2] : '';
+			d_subfuncao.value = (v[3]) ? v[3] : '';
+			d_programa.value = (v[4]) ? v[4] : '';
+			d_projetoatividade.value = (v[5]&&v[6]) ? v[5]+''+v[6] : '';
+			d_contadespesa.value = (v[7]) ? v[7] : '';
+			d_fonte.value = (v[8]) ? v[8] : '';
+		}
+	}
+	
+
+</script>
+<template>
+	<Dashboard>
+	    <div class="flex spacebetween center">
+	        <h1>Empenho/Liquidação</h1>
+	        <hr class="ml2 f1"/>
+	        <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
+	    </div>
+        <h3 class="mb2"><strong>{{ano}}</strong> - {{parent_item.codigo}} - {{parent_item.titulo}}</h3>
+	    <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
+	        <Form @submit="onSubmit" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
+	            
+                <div v-if="currentEdit.processo">
+                    <label class="label">Processo</label>
+                    <input :value="currentEdit.processo" type="text" disabled class="inputtext light mb1 disabled" />
+                </div>
+                <div v-if="currentEdit.nota_empenho">
+                    <label class="label">Nota de empenho</label>
+                    <input :value="currentEdit.nota_empenho" type="text" disabled class="inputtext light mb1 disabled" />
+                </div>
+                <div>
+                    <label class="label">Dotação</label>
+                    <input v-model="dota" type="text" disabled class="inputtext light mb1 disabled" />
+                </div>
+	            <template v-if="DotacaoSegmentos[ano]?.atualizado_em">
+	                <label class="label mb1">parte da dotação - por segmento</label>
+		            <div class="flex g2 mb2">
+		                <div class="f1">
+		                	<label class="label tc300">Órgão</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].orgaos.find(x=>x.codigo==d_orgao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+		                    <div class="t12 tc500" v-if="d_orgao">
+		                    	{{ (it = DotacaoSegmentos[ano].orgaos.find(x=>x.codigo==d_orgao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+		                    </div>
+		                </div>
+		                <div class="f1">
+		                    <label class="label tc300">Unidade</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].unidades.find(x=>x.codigo==d_unidade)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+		                    <div class="t12 tc500" v-if="d_unidade">
+		                    	{{ (it = DotacaoSegmentos[ano].unidades.find(x=>x.codigo==d_unidade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+		                    </div>
+		                </div>
+		                <div class="f1">
+		                    <label class="label tc300">Função</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].funcoes.find(x=>x.codigo==d_funcao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+		                    <div class="t12 tc500" v-if="d_funcao">
+		                    	{{ (it = DotacaoSegmentos[ano].funcoes.find(x=>x.codigo==d_funcao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+		                    </div>
+		                </div>
+		                <div class="f1">
+		                    <label class="label tc300">Subfunção</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].subfuncoes.find(x=>x.codigo==d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+		                    <div class="t12 tc500" v-if="d_subfuncao">
+		                    	{{ (it = DotacaoSegmentos[ano].subfuncoes.find(x=>x.codigo==d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+		                    </div>
+		                </div>
+		                <div class="f1">
+		                    <label class="label tc300">Programa</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].programas.find(x=>x.codigo==d_programa)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+		                    <div class="t12 tc500" v-if="d_programa">
+		                    	{{ (it = DotacaoSegmentos[ano].programas.find(x=>x.codigo==d_programa)) ? `${it.codigo} - ${it.descricao}` : '' }}
+		                    </div>
+		                </div>
+		            </div>
+		            <!-- categorias -->
+		            <!-- elementos -->
+		            <!-- grupos -->
+		            <!-- modalidades -->
+
+		            <div class="flex g2 mb2">
+		                <div class="f1">
+		                    <label class="label tc300">Projeto/atividade</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].projetos_atividades.find(x=>x.codigo==d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+		                    <div class="t12 tc500" v-if="d_projetoatividade">
+		                    	{{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x=>x.codigo==d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+		                    </div>
+		                </div>
+		                <div class="f1">
+		                    <label class="label tc300">Conta despesa</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="d_contadespesa" disabled />
+		                </div>
+		                <div class="f1">
+		                    <label class="label tc300">Fonte</label>
+		                    <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].fonte_recursos.find(x=>x.codigo==d_fonte)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+		                    <div class="t12 tc500" v-if="d_fonte">
+		                    	{{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x=>x.codigo==d_fonte)) ? `${it.codigo} - ${it.descricao}` : '' }}
+		                    </div>
+		                </div>
+		            </div>
+	            </template>
+
+	            <table class="tablemain mb4" v-if="respostasof.projeto_atividade!=undefined">
+            	    <thead>
+            	        <tr>
+            	            <th style="width: 25%">Nome do projeto/atividade</th>
+            	            <th style="width: 25%">Valor Empenho</th>
+            	            <th style="width: 25%">Valor Liquidado</th>
+            	        </tr>
+            	    </thead>
+            	    <tbody>
+            	        <tr>
+            	            <td class="w700">{{respostasof.projeto_atividade}}</td>
+            	            <td>R$ {{dinheiro(toFloat(respostasof.empenho_liquido))}}</td>
+            	            <td>R$ {{dinheiro(toFloat(respostasof.valor_liquidado))}}</td>
+            	        </tr>
+            	    </tbody>
+            	</table>
+
+	            <div>
+                    <label class="label">Vincular dotaçã</label>
+                    
+                    <div v-for="m in singleMeta.children" :key="m.id">
+                    	<div class="label tc300">Meta</div>
+                    	<label class="block mb1">
+                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
+                    		<span>{{m.codigo}} - {{m.titulo}}</span>
+                    	</label>
+                    	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
+	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
+	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
+	                    		<label class="block mb1">
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
+	                    		</label>
+	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
+		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
+		                    			<label class="block mb1">
+		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
+		                    			</label>	
+		                    		</div>
+	                    		</template>
+	                    	</div>	
+                    	</template>
+                    </div>
+                    <div class="error-msg">{{ errors.location }}</div>
+	            </div>
+
+	            <ItensRealizado :controlador="itens" :respostasof="respostasof" />
+
+	            <div class="flex spacebetween center mb2">
+	                <hr class="mr2 f1"/>
+	                <button class="btn big" :disabled="isSubmitting">Salvar</button>
+	                <hr class="ml2 f1"/>
+	            </div>
+	        </Form>
+	    </template>
+	    <template v-if="currentEdit&&currentEdit?.id">
+	        <button @click="checkDelete(currentEdit.id)" class="btn amarelo big">Remover item</button>
+	    </template>
+	    <template v-if="OrcamentoRealizado[ano]?.loading">
+	        <span class="spinner">Carregando</span>
+	    </template>
+	    <template v-if="OrcamentoRealizado[ano]?.error||error">
+	        <div class="error p1">
+	            <div class="error-msg">{{OrcamentoRealizado[ano].error??error}}</div>
+	        </div>
+	    </template>
+	</Dashboard>
+</template>

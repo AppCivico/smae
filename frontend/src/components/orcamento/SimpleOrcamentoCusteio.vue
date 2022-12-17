@@ -60,7 +60,7 @@
             <div class="tablepreinfo">
                 <div class="flex spacebetween">
                     <div class="flex center">
-                        <div class="t12 lh1 w700">Previsão de custeio</div>
+                        <div class="t12 lh1 w700">Previsão de custo</div>
                     </div>
                 </div>
             </div>

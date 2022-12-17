@@ -15,7 +15,7 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 const editModalStore = useEditModalStore();
 
-const props = defineProps(['area']);
+const props = defineProps(['area','title']);
 const SimpleOrcamento = props.area=='Realizado'?SimpleOrcamentoRealizado:props.area=='Planejado'?SimpleOrcamentoPlanejado:SimpleOrcamentoCusteio;
 
 const route = useRoute();
@@ -49,7 +49,7 @@ onUpdated(()=>{start()});
         <div class="flex spacebetween center mb2">
             <div>
                 <div class="t12 uc w700 tamarelo">{{parentLabel}}</div>
-                <h1>Evolução da {{parentLabel}}</h1>
+                <h1>{{title}}</h1>
             </div>
             <hr class="ml2 f1"/>
         </div>
