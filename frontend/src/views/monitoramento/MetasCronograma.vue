@@ -42,7 +42,7 @@
     let currentParent = ref({});
     CiclosStore.getCronogramasActiveByParent(parentVar,parentFieldId);
     (async ()=>{
-        await CiclosStore.getMetaById(meta_id);
+        await CiclosStore.getMetaByIdCron(meta_id);
         currentParent.value = SingleMeta.value;
         if(iniciativa_id) currentParent.value = currentParent.value?.meta?.iniciativas.find(x=>x.iniciativa.id==iniciativa_id);
         if(atividade_id) currentParent.value = currentParent.value?.atividades.find(x=>x.atividade.id==atividade_id);
