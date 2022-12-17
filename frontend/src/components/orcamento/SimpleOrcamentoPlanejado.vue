@@ -74,7 +74,7 @@
                             <tr>
                                 <td class="tc600 w700 pl1">{{g.label}}</td>
                                 <td class="w700">{{g.items.length?formataValor(g.items.reduce((red,x)=>red+Number(x.valor_planejado),0)):'-'}}</td>
-                                <td class="w700 tvermelho">{{g.items.length?formataValor(g.items.reduce((red,x)=>red+Number(x.pressao_orcamentaria_valor),0)):'-'}}</td>
+                                <td class="w700"></td>
                                 <td></td>
                             </tr>
                             <LinhaPlanejado :group="g" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>
@@ -84,7 +84,7 @@
                                 <tr>
                                     <td class="tc600 w700 pl2">{{gg.label}}</td>
                                     <td class="w700">{{gg.items.length?formataValor(gg.items.reduce((red,x)=>red+Number(x.valor_planejado),0)):'-'}}</td>
-                                    <td class="w700 tvermelho">{{gg.items.length?formataValor(gg.items.reduce((red,x)=>red+Number(x.pressao_orcamentaria_valor),0)):'-'}}</td>
+                                    <td class="w700"></td>
                                     <td></td>
                                 </tr>
                                 <LinhaPlanejado :group="gg" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>

@@ -7,6 +7,7 @@
 	import { router } from '@/router';
 	import { useRoute } from 'vue-router';
 	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
+	import { default as ItensRealizado} from '@/components/orcamento/ItensRealizado.vue';
 	
 	const alertStore = useAlertStore();
 	const route = useRoute();
@@ -15,7 +16,8 @@
 	const id = route.params.id;
 
 	const MetasStore = useMetasStore();
-    const { singleMeta } = storeToRefs(MetasStore);
+    const { singleMeta, activePdm } = storeToRefs(MetasStore);
+    MetasStore.getPdM();
     MetasStore.getChildren(meta_id);
 	
 	const IniciativasStore = useIniciativasStore();
@@ -27,29 +29,16 @@
 	const parent_item = ref(meta_id?singleMeta:false);
 
 	const OrcamentosStore = useOrcamentosStore();
-	const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
+	const { OrcamentoRealizado, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
+	OrcamentosStore.getDotacaoSegmentos(ano);
 	const currentEdit = ref({});
 	const dota = ref('');
 	const respostasof = ref({});
 
-	(async()=>{
-		if(id){
-			await OrcamentosStore.getOrcamentoRealizadoById(meta_id,ano);
-			currentEdit.value = OrcamentoRealizado.value[ano].find(x=>x.id==id);
-			currentEdit.value.valor_empenho = dinheiro(currentEdit.value.valor_empenho);
-			dota.value = currentEdit.value.processo;
-
-			currentEdit.value.location =  
-				currentEdit.value.atividade?.id?'a'+currentEdit.value.atividade.id:
-				currentEdit.value.iniciativa?.id?'i'+currentEdit.value.iniciativa.id:
-				currentEdit.value.meta?.id?'m'+currentEdit.value.meta.id:'m'+meta_id;
-		}
-	})();
+	const itens = ref([{mes:null,valor_empenho:null,valor_liquidado:null}]);
 
 	var regprocesso = /^\d{4}\.?\d{4}\/?\d{7}\-?\d$/;
 	const schema = Yup.object().shape({
-		valor_empenho: Yup.string().required('Preencha o valor empenho.'),
-		valor_liquidado: Yup.string().required('Preencha o valor liquidado.'),
 		processo: Yup.string().required('Preencha o processo.').matches(regprocesso,'Formato inválido'),
 		dotacao: Yup.string()
 	});
@@ -59,10 +48,7 @@
 	        var msg;
 	        var r;
 
-	        values.meta_id = meta_id;
 	        values.ano_referencia = Number(ano);
-	        if(isNaN(values.valor_empenho)) values.valor_empenho = toFloat(values.valor_empenho);
-	        if(isNaN(values.valor_liquidado)) values.valor_liquidado = toFloat(values.valor_liquidado);
 
 	        values.atividade_id = null;
 	        values.iniciativa_id = null;
@@ -76,17 +62,19 @@
 	        	values.meta_id = Number(values.location.slice(1));
 	        }
 
-            if(id){
-	            r = await OrcamentosStore.updateOrcamentoRealizado(id,values);
-	            msg = 'Dados salvos com sucesso!';
-            }else{
-            	r = await OrcamentosStore.insertOrcamentoRealizado(values);
-            	msg = 'Dados salvos com sucesso!';
-            }
+	        values.itens = itens.value.map(x=>{
+	        	x.valor_empenho = toFloat(x.valor_empenho);
+	        	x.valor_liquidado = toFloat(x.valor_liquidado);
+	        	return {mes:x.mes,valor_empenho:x.valor_empenho,valor_liquidado:x.valor_liquidado};
+	        });
+
+            
+        	r = await OrcamentosStore.insertOrcamentoRealizado(values);
+        	msg = 'Dados salvos com sucesso!';
 	        
 	        if(r == true){
 	            alertStore.success(msg);
-	            await router.push(`${parentlink}/orcamento`);
+	            await router.push(`${parentlink}/orcamento/realizado`);
 	        }
 	    } catch (error) {
 	        alertStore.error(error);
@@ -156,65 +144,58 @@
 	                </div>
 	            </div>
 	            <div v-if="respostasof.length" class="mb2">
-                    <label class="label">Dotação vinculada* <span class="tvermelho">*</span></label>
-	            	<label class="block mb1" v-for="(d,i) in respostasof" :key="d.id">
-	            		<Field name="dotacao" type="radio" :value="d.dotacao" class="inputcheckbox"/> 
-	            		<span>{{d.dotacao}}</span>
+                    <label class="label mb2">Dotação vinculada* <span class="tvermelho">*</span></label>
+                    
+                    <div class="flex g2">
+                    	<div class="f0" style="flex-basis:30px"></div>
+                    	<div class="f1"><label class="label tc300">Dotação</label></div>
+                    	<div class="f1"><label class="label tc300">Nome do Projeto/Atividade</label></div>
+                    	<div class="f0" style="flex-basis:90px"><label class="label tc300">Valor Empenho</label></div>
+                    	<div class="f0" style="flex-basis:90px"><label class="label tc300">Valor Liquidado</label></div>
+                    </div>
+                    <hr class="mb05">
+	            	<label class="flex g2 center mb1" v-for="(d,i) in respostasof" :key="d.id">
+	            		<div class="f0" style="flex-basis:30px"><Field name="dotacao" type="radio" :value="d.dotacao" class="inputcheckbox"/><span></span></div>
+	            		<div class="f1">{{d.dotacao}}</div>
+	            		<div class="f1">{{d.projeto_atividade}}</div>
+	            		<div class="f0" style="flex-basis:90px">{{dinheiro(d.empenho_liquido)}}</div>
+	            		<div class="f0" style="flex-basis:90px">{{dinheiro(d.valor_liquidado)}}</div>
 	            	</label>
 	            </div>
 
 	            <template v-if="respostasof.length&&values.dotacao">
 		            <div>
-	                    <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
-	                    
-	                    <div v-for="m in singleMeta.children" :key="m.id">
-	                    	<div class="label tc300">Meta</div>
-	                    	<label class="block mb1">
-	                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
-	                    		<span>{{m.codigo}} - {{m.titulo}}</span>
-	                    	</label>
-	                    	<div v-if="m?.iniciativas?.length" class="label tc300">Iniciativas e atividades</div>
-	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
-	                    		<label class="block mb1">
-	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
-	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
-	                    		</label>
-	                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
-	                    			<label class="block mb1">
-	                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
-	                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-	                    			</label>	
-	                    		</div>
-	                    	</div>	
-	                    </div>
-	                    
-	                    <div class="error-msg">{{ errors.location }}</div>
-		            </div>
-		            <div class="flex g2 mb2">
-		            	{{ (selecionado = respostasof.find(x=>x.dotacao==values.dotacao)) ? '':'' }}
-		                <div class="f1">
-		                    <label class="label">Valor empenho<span class="tvermelho">*</span></label>
-		                    <Field name="valor_empenho" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
-		                    <div class="error-msg">{{ errors.valor_empenho }}</div>
-		                    <div class="flex center" v-if="selecionado.smae_soma_valor_empenho!=undefined">
-		                    	{{(saldo = toFloat(toFloat(selecionado.valor_empenho)-toFloat(selecionado.smae_soma_valor_empenho)))?'':''}}
-		                    	<span class="label mb0 tc300 mr1">Saldo empenho</span>
-		                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_empenho))}}</span>
-		                    	<span v-if="saldo-toFloat(values.valor_empenho) < 0" class="tvermelho w700">(Valor superior ao saldo para empenho)</span>
-		                    </div>
-		                </div>
-		                <div class="f1">
-		                    <label class="label">Valor liquidado<span class="tvermelho">*</span></label>
-		                    <Field name="valor_liquidado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
-		                    <div class="error-msg">{{ errors.valor_liquidado }}</div>
-		                    <div class="flex center" v-if="selecionado.smae_soma_valor_liquidado!=undefined">
-		                    	{{(saldo = toFloat(toFloat(selecionado.valor_liquidado)-toFloat(selecionado.smae_soma_valor_liquidado)))?'':''}}
-		                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
-		                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_liquidado))}}</span>
-		                    	<span v-if="saldo-toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>
-		                    </div>
-		                </div>
-		            </div>
+                        <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
+                        
+                        <div v-for="m in singleMeta.children" :key="m.id">
+                        	<div class="label tc300">Meta</div>
+                        	<label class="block mb1">
+                        		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
+                        		<span>{{m.codigo}} - {{m.titulo}}</span>
+                        	</label>
+                        	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
+    	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
+    	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
+    	                    		<label class="block mb1">
+    	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+    	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
+    	                    		</label>
+    	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
+    		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
+    		                    			<label class="block mb1">
+    		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+    		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
+    		                    			</label>	
+    		                    		</div>
+    	                    		</template>
+    	                    	</div>	
+                        	</template>
+                        </div>
+                        <div class="error-msg">{{ errors.location }}</div>
+    	            </div>
+
+	            	<ItensRealizado :controlador="itens" :respostasof="respostasof.find(x=>x.dotacao==values.dotacao)" />
+
 		            <div class="flex spacebetween center mb2">
 		                <hr class="mr2 f1"/>
 		                <button class="btn big" :disabled="isSubmitting">Salvar</button>

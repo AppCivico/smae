@@ -61,6 +61,7 @@
                         <th style="width: 50%">Dotação / Processo / Nota</th>
                         <th>Empenho meta</th>
                         <th>Liquidado meta</th>
+                        <th>Registros</th>
                         <th style="width: 50px"></th>
                     </tr>
                 </thead>
@@ -74,7 +75,8 @@
                             <tr>
                                 <td class="tc600 w700 pl1"><span class="flex center"><svg class="arrow f0 mr1" width="8" height="13"><use xlink:href="#i_right"></use></svg><span>{{g.label}}</span></span></td>
                                 <td class="w700">{{g.items.length?formataValor(g.items.reduce((red,x)=>red+Number(x.soma_valor_empenho),0)):'-'}}</td>
-                                <td class="w700 tvermelho">{{g.items.length?formataValor(g.items.reduce((red,x)=>red+Number(x.soma_valor_liquidado),0)):'-'}}</td>
+                                <td class="w700">{{g.items.length?formataValor(g.items.reduce((red,x)=>red+Number(x.soma_valor_liquidado),0)):'-'}}</td>
+                                <td></td>
                                 <td></td>
                             </tr>
                             <LinhaRealizado :group="g" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>
@@ -84,7 +86,8 @@
                                 <tr>
                                     <td class="tc600 w700 pl2"><span class="flex center"><svg class="arrow f0 mr1" width="8" height="13"><use xlink:href="#i_right"></use></svg><span>{{gg.label}}</span></span></td>
                                     <td class="w700">{{gg.items.length?formataValor(gg.items.reduce((red,x)=>red+Number(x.soma_valor_empenho),0)):'-'}}</td>
-                                    <td class="w700 tvermelho">{{gg.items.length?formataValor(gg.items.reduce((red,x)=>red+Number(x.soma_valor_liquidado),0)):'-'}}</td>
+                                    <td class="w700">{{gg.items.length?formataValor(gg.items.reduce((red,x)=>red+Number(x.soma_valor_liquidado),0)):'-'}}</td>
+                                    <td></td>
                                     <td></td>
                                 </tr>
                                 <LinhaRealizado :group="gg" :permissao="config.previsao_custo_disponivel" :parentlink="parentlink"/>

@@ -9,9 +9,10 @@
 </script>
 <template>
     <tr v-for="item in group.items" :key="item.id">
-        <td style="word-break: break-all;">{{item?.dotacao}}</td>
+        <td style="word-break: break-all;">{{item?.dotacao}} {{item?.processo? ' / '+item?.processo : ''}} {{item?.nota_empenho? ' / '+item?.nota_empenho : ''}}</td>
         <td>{{formataValor(item?.soma_valor_empenho)}}</td>
         <td>{{formataValor(item?.soma_valor_liquidado)}}</td>
+        <td>{{ item?.itens.length }}</td>
         <td style="white-space: nowrap; text-align: right">
             <router-link 
                 v-if="permissao"

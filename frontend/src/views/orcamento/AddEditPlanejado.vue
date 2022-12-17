@@ -15,7 +15,8 @@
 	const id = route.params.id;
 
 	const MetasStore = useMetasStore();
-    const { singleMeta } = storeToRefs(MetasStore);
+    const { singleMeta, activePdm } = storeToRefs(MetasStore);
+    MetasStore.getPdM();
     MetasStore.getChildren(meta_id);
 
 	const parentlink = `${meta_id?'/metas/'+meta_id:''}`;
@@ -60,6 +61,12 @@
 				currentEdit.value.atividade?.id?'a'+currentEdit.value.atividade.id:
 				currentEdit.value.iniciativa?.id?'i'+currentEdit.value.iniciativa.id:
 				currentEdit.value.meta?.id?'m'+currentEdit.value.meta.id:'m'+meta_id;
+
+			respostasof.value.projeto_atividade = currentEdit.value.projeto_atividade;
+			respostasof.value.saldo_disponivel = currentEdit.value.saldo_disponivel;
+			respostasof.value.smae_soma_valor_planejado = toFloat(currentEdit.value.smae_soma_valor_planejado) - toFloat(currentEdit.value.valor_planejado);
+			respostasof.value.val_orcado_atualizado = currentEdit.value.val_orcado_atualizado;
+			respostasof.value.val_orcado_inicial = currentEdit.value.val_orcado_inicial;
 		}
 	})();
 
@@ -102,7 +109,7 @@
 	        
 	        if(r == true){
 	            alertStore.success(msg);
-	            await router.push(`${parentlink}/orcamento`);
+	            await router.push(`${parentlink}/orcamento/planejado`);
 	        }
 	    } catch (error) {
 	        alertStore.error(error);
@@ -288,12 +295,12 @@
 		            </div>
 	            </template>
 
-	            <div class="tc">
+	            <div class="tc mb2">
 	            	<a @click="validarDota()" class="btn outline bgnone tcprimary">Validar via SOF</a>
 	            </div>
 
 
-            	<table class="tablemain" v-if="respostasof.smae_soma_valor_planejado!=undefined">
+            	<table class="tablemain mb2" v-if="respostasof.smae_soma_valor_planejado!=undefined">
             	    <thead>
             	        <tr>
             	            <th style="width: 25%">Nome do projeto/atividade</th>
@@ -304,15 +311,14 @@
             	    </thead>
             	    <tbody>
             	        <tr>
-            				{{(saldo = toFloat(toFloat(respostasof.empenho_liquido)-toFloat(respostasof.smae_soma_valor_planejado)))?'':''}}
-            	            <td class="w700">{{respostasof.projeto_atividade}}</td>
-            	            <td>R$ {{dinheiro(toFloat(respostasof.empenho_liquido))}}</td>
-            	            <td>R$ {{dinheiro(toFloat(respostasof.smae_soma_valor_planejado))}}</td>
-            	            <td>R$ {{dinheiro(saldo-toFloat(values.valor_planejado))}}</td>
+            	        	<td class="w700">{{respostasof.projeto_atividade}}</td>
+            	            <td>R$ {{dinheiro(toFloat(respostasof.val_orcado_inicial))}}</td>
+            	            <td>R$ {{dinheiro(toFloat(respostasof.val_orcado_atualizado))}}</td>
+            	            <td>R$ {{dinheiro(toFloat(respostasof.saldo_disponivel))}}</td>
             	        </tr>
             	    </tbody>
             	</table>
-	            <hr class="mt2 mb2">
+	            
 
 	            <div>
                     <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
@@ -323,21 +329,24 @@
                     		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
                     		<span>{{m.codigo}} - {{m.titulo}}</span>
                     	</label>
-                    	<div v-if="m?.iniciativas?.length" class="label tc300">Iniciativas e atividades</div>
-                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
-                    		<label class="block mb1">
-                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
-                    			<span>{{i.codigo}} - {{i.titulo}}</span>
-                    		</label>
-                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
-                    			<label class="block mb1">
-                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
-                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-                    			</label>	
-                    		</div>
-                    	</div>	
+                    	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
+	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
+	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
+	                    		<label class="block mb1">
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
+	                    		</label>
+	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
+		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
+		                    			<label class="block mb1">
+		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
+		                    			</label>	
+		                    		</div>
+	                    		</template>
+	                    	</div>	
+                    	</template>
                     </div>
-                    
                     <div class="error-msg">{{ errors.location }}</div>
 	            </div>
 	            <div class="flex g2 mb2">
@@ -346,10 +355,10 @@
 	                    <Field name="valor_planejado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_planejado }" />
 	                    <div class="error-msg">{{ errors.valor_planejado }}</div>
 	                    <div class="flex center" v-if="respostasof.smae_soma_valor_planejado!=undefined">
-	                    	{{(saldo = toFloat(toFloat(respostasof.empenho_liquido)-toFloat(respostasof.smae_soma_valor_planejado)))?'':''}}
-	                    	<span class="label mb0 tc300 mr1">Saldo disponível</span>
-	                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_planejado))}}</span>
-	                    	<span v-if="saldo-toFloat(values.valor_planejado) < 0" class="tvermelho w700">(Valor superior ao saldo)</span>
+	                    	<span class="label mb0 tc300 mr1">Soma planejada no SMAE</span>
+	                    	{{ (somatotal = toFloat(respostasof.smae_soma_valor_planejado)+toFloat(values.valor_planejado)) ? '':'' }}
+	                    	<span class="t14">R$ {{dinheiro(somatotal)}}</span>
+	                    	<span v-if="somatotal > toFloat(respostasof.val_orcado_atualizado)" class="tvermelho w700">(Pressão orçamentária)</span>
 	                    </div>
 	                </div>
 	            </div>
