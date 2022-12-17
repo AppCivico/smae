@@ -115,12 +115,22 @@ export const useCiclosStore = defineStore({
                 this.MetasCiclos = { error };
             }
         },
-        async getMetaById(meta_id) {
+        async getMetaByIdCron(meta_id) {
             this.SingleMeta = { loading: true };
             try {
                 this.SingleMeta = { loading: true };
                 let r = await requestS.get(`${baseUrl}/mf/metas/${meta_id}/iniciativas-e-atividades`);    
                 this.SingleMeta = r.meta?r:{};
+            } catch (error) {
+                this.SingleMeta = { error };
+            }
+        },
+        async getMetaById(meta_id) {
+            this.SingleMeta = { loading: true };
+            try {
+                this.SingleMeta = { loading: true };
+                let r = await requestS.get(`${baseUrl}/meta/iniciativas-atividades?meta_ids=${meta_id}`);    
+                this.SingleMeta = r.linhas.length?r.linhas[0]:{};
             } catch (error) {
                 this.SingleMeta = { error };
             }
