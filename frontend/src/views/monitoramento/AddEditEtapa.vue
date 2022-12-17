@@ -37,7 +37,7 @@
             
             if(r == true){
                 CiclosStore.clear();
-                CiclosStore.getMetaById(meta_id);
+                CiclosStore.getMetaByIdCron(meta_id);
                 CiclosStore.getCronogramasActiveByParent(meta_id,'meta_id');
                 await router.push(`/monitoramento/cronograma/${meta_id}`);
                 alertStore.success(msg);

@@ -100,7 +100,7 @@
         <div class="label tamarelo">Evolução da Meta</div>
         <div class="mb2">
             <div class="flex spacebetween center">
-                <h1>Meta {{SingleMeta.codigo}} - {{SingleMeta.titulo}}</h1>
+                <h2>Meta {{SingleMeta.codigo}} - {{SingleMeta.titulo}}</h2>
                 <hr class="ml2 f1" />
                 <div class="ml2 dropbtn" v-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)&&!['Fechamento'].includes(SingleMeta.fase)">
                     <span class="btn">Avançar etapa</span>

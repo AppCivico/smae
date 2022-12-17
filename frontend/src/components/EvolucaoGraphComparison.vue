@@ -60,7 +60,7 @@
 			X.sort(function(a,b){ return a - b; });
 		
 			const xDomain = d3.extent(X);
-			const xScale = d3.scaleUtc(xDomain, [this.sizes.margin.left, this.sizes.width - this.sizes.margin.left - this.sizes.margin.right]);
+			const xScale = d3.scaleTime(xDomain, [this.sizes.margin.left, this.sizes.width - this.sizes.margin.left - this.sizes.margin.right]);
 
 			//Eval yDomain and yScale for linear
 			let Y = [];
@@ -90,14 +90,14 @@
 		    //Years
 		    const xAxis2 = d3.axisBottom(xScale)
 				.ticks(d3.timeYear)
-		    	.tickFormat( this.locale.utcFormat("%Y") )
+		    	.tickFormat( this.locale.format("%Y") )
 				.tickSize(0)
 				.tickPadding(9);
 
 		    //Months
 			const xAxis = d3.axisBottom(xScale)
 				.ticks(d3.timeMonth,10)
-				.tickFormat( this.locale.utcFormat("%b") )
+				.tickFormat( this.locale.format("%b") )
 				.tickSize(0)
 				.tickPadding(15);
 
@@ -402,7 +402,7 @@
 			const gCircles = g.selectAll("circle").data(data.filter(x=>{return x.value!==undefined}));
 			gCircles
 				.enter()
-					//.filter(function (d) { return d.value !== ""; })
+					.filter(function (d) { return d.value !== ""; })
 					.append('circle')
 					.attr('class', 'circle-'+name )
 					.attr('r', r )
@@ -426,7 +426,9 @@
 				.defined(function (d) { return d.value !== ""; });
 
 			let flatline = d3.line()
-				.x( d => xScale( new Date(d.date) ) ).y( sizes.height - sizes.margin.bottom );
+				.x( d => xScale( new Date(d.date) ) )
+				.y( sizes.height - sizes.margin.bottom )
+				.defined(function (d) { return d.value !== ""; });
 
 			const path = g.selectAll('path').data(data.filter(x=>x.value!==undefined));
 			path
@@ -535,9 +537,9 @@
 		.color-classes(@i: length(@cores)) when (@i > 0) {
 		    .color-classes(@i - 1);
 		    @cor: extract(@cores, @i);
-		    .line-r@{i}{ stroke: @cor; stroke-dasharray: 3 3; fill: none; }
+		    .line-r@{i}{ stroke: @cor; fill: none; }
 			.circle-r@{i}{ fill: @cor;	}
-			.line-p@{i}{ stroke: @cor; fill: none; }
+			.line-p@{i}{ stroke: @cor; stroke-dasharray: 3 3; fill: none; }
 			.circle-p@{i}{ fill: @cor; }
 		}
 		.color-classes();

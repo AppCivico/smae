@@ -89,12 +89,12 @@ onUpdated(()=>{start()});
                                     <h2 class="mt1 mb1 ml1">{{ind.titulo}}</h2>
                                 </div>
                                 <div class="f0 ml2">
-                                    <select class="inputtext">
+                                    <!-- <select class="inputtext">
                                         <option>Até mês corrente</option>
                                         <option>Mês corrente</option>
                                         <option>Todo período</option>
                                         <option>Meses futuros</option>
-                                    </select>
+                                    </select> -->
                                 </div>
                                 <router-link v-if="perm.CadastroIndicador?.editar" :to="`${parentlink}/indicadores/${ind.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </div>

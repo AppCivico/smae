@@ -75,14 +75,14 @@
 		    //Years
 		    const xAxis2 = d3.axisBottom(xScale)
 				.ticks(d3.timeYear)
-		    	.tickFormat( this.locale.utcFormat("%Y") )
+		    	.tickFormat( this.locale.format("%Y") )
 				.tickSize(0)
 				.tickPadding(9);
 
 		    //Months
 			const xAxis = d3.axisBottom(xScale)
 				.ticks(d3.timeMonth,10)
-				.tickFormat( this.locale.utcFormat("%b") )
+				.tickFormat( this.locale.format("%b") )
 				.tickSize(0)
 				.tickPadding(15);
 
@@ -401,10 +401,14 @@
 
 			//Creating Path between Data Points
 			let line = d3.line()
-				.x( d => xScale( new Date(d.date) ) ).y( d => yScale( d.value ) );
+				.x( d => xScale( new Date(d.date) ) )
+				.y( d => yScale( d.value ) )
+				.defined(function (d) { return d.value !== ""; });;
 
 			let flatline = d3.line()
-				.x( d => xScale( new Date(d.date) ) ).y( sizes.height - sizes.margin.bottom );
+				.x( d => xScale( new Date(d.date) ) )
+				.y( sizes.height - sizes.margin.bottom )
+				.defined(function (d) { return d.value !== ""; });;
 
 			const path = gName.selectAll('path').data(data);
 			path
