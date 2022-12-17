@@ -19,7 +19,7 @@ import { AddEditPdM, ListPdM } from '@/views/pdm';
 import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao, SinglePainelMeta } from '@/views/metas';
 import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade, SingleAtividade } from '@/views/metas';
 import { SingleCronograma, AddEditCronograma } from '@/views/metas';
-import { MetaOrcamento, AddEditCusteio, AddEditPlanejado, AddEditRealizado, AddEditRealizadoProcesso, AddEditRealizadoNota } from '@/views/orcamento';
+import { MetaOrcamento, AddEditCusteio, AddEditPlanejado, AddRealizado, AddRealizadoProcesso, AddRealizadoNota, EditRealizado } from '@/views/orcamento';
 import { ListRegions } from '@/views/regions';
 import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
 import { ListCiclos, ListCiclosPassados, ListMonitoramentoMetas, ListMonitoramentoMetasEvolucao, ListMonitoramentoMetasCronograma, MonitoramentoMetas, MonitoramentoMetasCronograma } from '@/views/monitoramento';
@@ -169,22 +169,19 @@ export const router = createRouter({
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/iniciativa', component: SingleCronograma, props:{group:"monitorar",recorte:"iniciativa",submenu:SubmenuMetas} },
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/atividade', component: SingleCronograma, props:{group:"monitorar",recorte:"atividade",submenu:SubmenuMetas} },
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/:etapa_id', component: SingleCronograma, props:{group:"monitorar",submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Custeio'} },
-                { path: ':meta_id/orcamento/custeio', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Custeio'} },
+                { path: ':meta_id/orcamento', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Custeio',title:'Previsão de Custeio'} },
+                { path: ':meta_id/orcamento/custeio', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Custeio',title:'Previsão de Custo'} },
                 { path: ':meta_id/orcamento/custeio/:ano', component: AddEditCusteio, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/custeio/:ano/:id', component: AddEditCusteio, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/planejado', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Planejado'} },
+                { path: ':meta_id/orcamento/planejado', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Planejado',title:'Orçamento Planejado'} },
                 { path: ':meta_id/orcamento/planejado/:ano', component: AddEditPlanejado, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/planejado/:ano/:id', component: AddEditPlanejado, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/realizado', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Realizado'} },
-                { path: ':meta_id/orcamento/realizado/:ano/dotacao', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/realizado/:ano/dotacao/:id', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/realizado/:ano/processo', component: AddEditRealizadoProcesso, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/realizado/:ano/nota', component: AddEditRealizadoNota, props:{submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento/realizado/:ano/:id', component: AddEditRealizado, props:{submenu:SubmenuMetas} },
-                
-                
-                
+                { path: ':meta_id/orcamento/realizado', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Realizado',title:'Orçamento Realizado'} },
+                { path: ':meta_id/orcamento/realizado/:ano/dotacao', component: AddRealizado, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/processo', component: AddRealizadoProcesso, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/nota', component: AddRealizadoNota, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/:id', component: EditRealizado, props:{submenu:SubmenuMetas} },
+                { path: ':meta_id/orcamento/realizado/:ano/dotacao/:id', component: EditRealizado, props:{submenu:SubmenuMetas} },
                 
                 { path: ':meta_id/iniciativas',
                     children: [
