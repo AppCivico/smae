@@ -209,6 +209,15 @@ export class OrcamentoRealizadoService {
                 });
             }
 
+            await prismaTxn.orcamentoRealizadoItem.updateMany({
+                where: {
+                    orcamento_realizado_id: orcRealizado.id,
+                },
+                data: {
+                    sobrescrito_em: now,
+                    sobrescrito_por: user.id,
+                }
+            });
             const updated = await prismaTxn.orcamentoRealizado.update({
                 where: {
                     id: orcRealizado.id,
@@ -465,7 +474,11 @@ export class OrcamentoRealizadoService {
                 processo: true,
                 criado_em: true,
                 id: true,
-                itens: true,
+                itens: {
+                    where: {
+                        sobrescrito_por: null
+                    },
+                },
             },
             orderBy: [
                 { meta_id: 'asc' },

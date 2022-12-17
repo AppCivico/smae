@@ -156,6 +156,7 @@ model Pessoa {
     OrcamentoPlanejadoRemovidos              OrcamentoPlanejado[]              @relation("removedor")
     OrcamentoRealizadoCriados                OrcamentoRealizado[]              @relation("criador")
     OrcamentoRealizadoRemovidos              OrcamentoRealizado[]              @relation("removedor")
+    OrcamentoRealizadoItem                   OrcamentoRealizadoItem[]          @relation("sobrescritor")
 
     @@index([email])
     @@map("pessoa")
@@ -1894,6 +1895,11 @@ model OrcamentoRealizadoItem {
     valor_liquidado Float @db.DoublePrecision
     mes             Int
 
+    sobrescrito_em  DateTime?
+    sobrescrito_por Int?
+
+    sobrescritor Pessoa? @relation("sobrescritor", fields: [sobrescrito_por], references: [id])
+
     OrcamentoRealizado     OrcamentoRealizado @relation(fields: [orcamento_realizado_id], references: [id])
     orcamento_realizado_id Int
 
@@ -1951,7 +1957,7 @@ model TextoConfig {
     id Int @id @default(1)
 
     bemvindo_email String
-    tos String
+    tos            String
 
     @@map("texto_config")
 }
