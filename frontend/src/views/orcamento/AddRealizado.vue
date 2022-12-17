@@ -7,6 +7,7 @@
 	import { router } from '@/router';
 	import { useRoute } from 'vue-router';
 	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
+	import { default as ItensRealizado} from '@/components/orcamento/ItensRealizado.vue';
 	
 	const alertStore = useAlertStore();
 	const route = useRoute();
@@ -15,7 +16,8 @@
 	const id = route.params.id;
 
 	const MetasStore = useMetasStore();
-    const { singleMeta } = storeToRefs(MetasStore);
+    const { singleMeta, activePdm } = storeToRefs(MetasStore);
+    MetasStore.getPdM();
     MetasStore.getChildren(meta_id);
 	
 	const IniciativasStore = useIniciativasStore();
@@ -28,6 +30,7 @@
 
 	const OrcamentosStore = useOrcamentosStore();
 	const { OrcamentoRealizado, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
+	OrcamentosStore.getDotacaoSegmentos(ano);
 	const currentEdit = ref({});
 	const dota = ref('');
 	const respostasof = ref({});
@@ -41,37 +44,10 @@
 	const d_contadespesa = ref('');
 	const d_fonte = ref('');
 
-	(async()=>{
-		await OrcamentosStore.getDotacaoSegmentos(ano);
-		if(id){
-			await OrcamentosStore.getOrcamentoRealizadoById(meta_id,ano);
-			currentEdit.value = OrcamentoRealizado.value[ano].find(x=>x.id==id);
-			currentEdit.value.valor_empenho = dinheiro(currentEdit.value.valor_empenho);
-
-			currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x,i)=>{
-				if(x.indexOf('*')!=-1){
-					if(i==4){
-						return "****";
-					}else if(i==7){
-						return "********";
-					}
-				}
-				return x;
-			}).join('.');
-			dota.value = currentEdit.value.dotacao;
-			validaPartes(currentEdit.value.dotacao);
-
-			currentEdit.value.location =  
-				currentEdit.value.atividade?.id?'a'+currentEdit.value.atividade.id:
-				currentEdit.value.iniciativa?.id?'i'+currentEdit.value.iniciativa.id:
-				currentEdit.value.meta?.id?'m'+currentEdit.value.meta.id:'m'+meta_id;
-		}
-	})();
+	const itens = ref([{mes:null,valor_empenho:null,valor_liquidado:null}]);
 
 	var regdota = /^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/;
 	const schema = Yup.object().shape({
-		valor_empenho: Yup.string().required('Preencha o valor empenho.'),
-		valor_liquidado: Yup.string().required('Preencha o valor liquidado.'),
 		dotacao: Yup.string().required('Preencha a dotação.').matches(regdota,'Formato inválido')
 	});
 
@@ -80,11 +56,7 @@
 	        var msg;
 	        var r;
 
-	        values.meta_id = meta_id;
 	        values.ano_referencia = Number(ano);
-	        if(isNaN(values.valor_empenho)) values.valor_empenho = toFloat(values.valor_empenho);
-	        if(isNaN(values.valor_liquidado)) values.valor_liquidado = toFloat(values.valor_liquidado);
-
 	        values.dotacao = values.dotacao.split('.').map(x=>x.indexOf('*')!=-1?'*':x).join('.');
 
 	        values.atividade_id = null;
@@ -99,17 +71,18 @@
 	        	values.meta_id = Number(values.location.slice(1));
 	        }
 
-            if(id){
-	            r = await OrcamentosStore.updateOrcamentoRealizado(id,values);
-	            msg = 'Dados salvos com sucesso!';
-            }else{
-            	r = await OrcamentosStore.insertOrcamentoRealizado(values);
-            	msg = 'Dados salvos com sucesso!';
-            }
+	        values.itens = itens.value.map(x=>{
+	        	x.valor_empenho = toFloat(x.valor_empenho);
+	        	x.valor_liquidado = toFloat(x.valor_liquidado);
+	        	return {mes:x.mes,valor_empenho:x.valor_empenho,valor_liquidado:x.valor_liquidado};
+	        });
+
+        	r = await OrcamentosStore.insertOrcamentoRealizado(values);
+        	msg = 'Dados salvos com sucesso!';
 	        
 	        if(r == true){
 	            alertStore.success(msg);
-	            await router.push(`${parentlink}/orcamento`);
+	            await router.push(`${parentlink}/orcamento/realizado`);
 	        }
 	    } catch (error) {
 	        alertStore.error(error);
@@ -186,10 +159,6 @@
 			if(val){
 				let r = await OrcamentosStore.getDotacaoRealizado(dota.value,ano);
 				respostasof.value = r;
-				if(id){
-					respostasof.value.smae_soma_valor_empenho -= toFloat(currentEdit.value.valor_empenho);
-					respostasof.value.smae_soma_valor_liquidado -= toFloat(currentEdit.value.valor_liquidado);
-				}
 			}
 		}catch(error){
 	        respostasof.value = error;
@@ -298,31 +267,28 @@
 		            </div>
 	            </template>
 
-	            <div class="tc">
+	            <div class="tc mb2">
 	            	<a @click="validarDota()" class="btn outline bgnone tcprimary">Validar via SOF</a>
 	            </div>
 
-	            <table class="tablemain" v-if="respostasof.smae_soma_valor_planejado!=undefined">
+	            <table class="tablemain mb4" v-if="respostasof.projeto_atividade!=undefined">
             	    <thead>
             	        <tr>
             	            <th style="width: 25%">Nome do projeto/atividade</th>
-            	            <th style="width: 25%">Orçado inicial</th>
-            	            <th style="width: 25%">Orçado Atualizado</th>
-            	            <th style="width: 25%">Saldo disponível</th>
+            	            <th style="width: 25%">Valor Empenho</th>
+            	            <th style="width: 25%">Valor Liquidado</th>
             	        </tr>
             	    </thead>
             	    <tbody>
             	        <tr>
-            				{{(saldo = toFloat(toFloat(respostasof.empenho_liquido)-toFloat(respostasof.smae_soma_valor_planejado)))?'':''}}
             	            <td class="w700">{{respostasof.projeto_atividade}}</td>
             	            <td>R$ {{dinheiro(toFloat(respostasof.empenho_liquido))}}</td>
-            	            <td>R$ {{dinheiro(toFloat(respostasof.smae_soma_valor_planejado))}}</td>
-            	            <td>R$ {{dinheiro(saldo-toFloat(values.valor_planejado))}}</td>
+            	            <td>R$ {{dinheiro(toFloat(respostasof.valor_liquidado))}}</td>
             	        </tr>
             	    </tbody>
             	</table>
 	            <hr class="mt2 mb2">
-	            
+
 	            <div>
                     <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
                     
@@ -332,47 +298,29 @@
                     		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
                     		<span>{{m.codigo}} - {{m.titulo}}</span>
                     	</label>
-                    	<div v-if="m?.iniciativas?.length" class="label tc300">Iniciativas e atividades</div>
-                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
-                    		<label class="block mb1">
-                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
-                    			<span>{{i.codigo}} - {{i.titulo}}</span>
-                    		</label>
-                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
-                    			<label class="block mb1">
-                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
-                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-                    			</label>	
-                    		</div>
-                    	</div>	
+                    	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
+	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
+	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
+	                    		<label class="block mb1">
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
+	                    		</label>
+	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
+		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
+		                    			<label class="block mb1">
+		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
+		                    			</label>	
+		                    		</div>
+	                    		</template>
+	                    	</div>	
+                    	</template>
                     </div>
-                    
                     <div class="error-msg">{{ errors.location }}</div>
 	            </div>
-	            <div class="flex g2 mb2">
-	                <div class="f1">
-	                    <label class="label">Valor empenho<span class="tvermelho">*</span></label>
-	                    <Field name="valor_empenho" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_empenho }" />
-	                    <div class="error-msg">{{ errors.valor_empenho }}</div>
-	                    <div class="flex center" v-if="respostasof.smae_soma_valor_empenho!=undefined">
-	                    	{{(saldo = toFloat(toFloat(respostasof.smae_soma_valor_empenho)-toFloat(respostasof.valor_empenho)))?'':''}}
-	                    	<span class="label mb0 tc300 mr1">Saldo empenho</span>
-	                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_empenho))}}</span>
-	                    	<span v-if="saldo-toFloat(values.valor_empenho) < 0" class="tvermelho w700">(Valor superior ao saldo para empenho)</span>
-	                    </div>
-	                </div>
-	                <div class="f1">
-	                    <label class="label">Valor liquidado<span class="tvermelho">*</span></label>
-	                    <Field name="valor_liquidado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_liquidado }" />
-	                    <div class="error-msg">{{ errors.valor_liquidado }}</div>
-	                    <div class="flex center" v-if="respostasof.smae_soma_valor_liquidado!=undefined">
-	                    	{{(saldo = toFloat(toFloat(respostasof.valor_liquidado)-toFloat(respostasof.smae_soma_valor_liquidado)))?'':''}}
-	                    	<span class="label mb0 tc300 mr1">Saldo disponível na dotação</span>
-	                    	<span class="t14">R$ {{dinheiro(saldo-toFloat(values.valor_liquidado))}}</span>
-	                    	<span v-if="saldo-toFloat(values.valor_liquidado) < 0" class="tvermelho w700">(Valor superior ao saldo para liquidação)</span>
-	                    </div>
-	                </div>
-	            </div>
+	            
+	            <ItensRealizado :controlador="itens" :respostasof="respostasof" />
+
 	            <div class="flex spacebetween center mb2">
 	                <hr class="mr2 f1"/>
 	                <button class="btn big" :disabled="isSubmitting">Salvar</button>

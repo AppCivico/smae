@@ -195,7 +195,7 @@ export const usePdMStore = defineStore({
 
                 upload_logo: params.upload_logo,
 
-                controle_orcamento: params.controle_orcamento
+                nivel_orcamento: params.nivel_orcamento
             };
             if(await requestS.post(`${baseUrl}/pdm`, m)){
                 this.activePdm = {};
@@ -234,7 +234,7 @@ export const usePdMStore = defineStore({
               
                 upload_logo: params.upload_logo,
 
-                controle_orcamento: params.controle_orcamento
+                nivel_orcamento: params.nivel_orcamento
             };
             if(await requestS.patch(`${baseUrl}/pdm/${id}`, m)){
                 this.activePdm = {};
