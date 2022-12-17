@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { IsPublic } from './auth/decorators/is-public.decorator';
+import { PrismaService } from './prisma/prisma.service';
 
 @Controller()
 export class AppController {
@@ -10,4 +11,5 @@ export class AppController {
     async ping() {
         return 'pong';
     }
+
 }

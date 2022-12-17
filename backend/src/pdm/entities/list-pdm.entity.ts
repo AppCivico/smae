@@ -63,6 +63,8 @@ export class ListPdm {
     possui_atividade: boolean
     logo: string | null
 
+    nivel_orcamento: string
+
     id: number
 
 
