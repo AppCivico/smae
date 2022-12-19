@@ -852,7 +852,7 @@ export class PainelService {
 
         while (window_start < end) {
             let plus_obj: any = {};
-            plus_obj[config.time_unit] = periodo_valor * config.multiplier;
+            plus_obj[config.time_unit] = config.multiplier;
             window_end = window_start.plus(plus_obj);
 
             series_template.push({
