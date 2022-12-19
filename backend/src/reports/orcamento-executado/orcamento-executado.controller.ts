@@ -15,7 +15,7 @@ export class OrcamentoExecutadoController {
     @ApiUnauthorizedResponse()
     @Roles('Reports.executar')
     async create(@Body() createOrcamentoExecutadoDto: CreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
-        return { linhas: await this.orcamentoExecutadoService.create(createOrcamentoExecutadoDto) };
+        return await this.orcamentoExecutadoService.create(createOrcamentoExecutadoDto);
     }
 
 }
