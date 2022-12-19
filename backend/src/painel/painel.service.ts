@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PainelConteudoTipoDetalhe, PainelGrupoPainel, Periodicidade, Periodo, Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime';
+import { Decimal, transformDocument } from '@prisma/client/runtime';
 import { time } from 'console';
 import { DateTime } from 'luxon';
 import * as moment from 'moment';
@@ -108,6 +108,7 @@ export class PainelService {
                                 {ordem: 'asc'}
                             ],
                             select: {
+                                id: true,
                                 tipo: true,
                                 mostrar_indicador: true,
                                 variavel: {
@@ -124,6 +125,7 @@ export class PainelService {
                                 },
                                 filhos: {
                                     select: {
+                                        id: true,
                                         tipo: true,
                                         mostrar_indicador: true,
 
