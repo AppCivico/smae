@@ -788,6 +788,13 @@ export class PainelService {
         return ret;
     }
 
+    // async getSeriesTemplate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null) {
+    //     switch (periodicidade) {
+            
+    //     }
+    //     if (periodicidade === Periodicidade.Secular ||
+    //         periodicidade === Periodicidade.Quinquenal ||)
+    // }
 
     async getPainelConteudoSerie (painel_conteudo_id: number): Promise<PainelConteudoSerie> {
         let ret = <PainelConteudoSerie>{};
@@ -1366,20 +1373,10 @@ export class PainelService {
                             periodo_inicio: t.periodo_inicio,
                             periodo_fim: t.periodo_fim,
 
-                            valores_nominais: t.valores_nominais.map((vn, ix) => {
 
-                                const serie_match_arr = series_for_period.filter(sm => {
-                                    if (config.mostrar_planejado && ix == 0) {
-                                        return sm.serie === 'Previsto'
-                                    } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
-                                        return sm.serie === 'PrevistoAcumulado'
-                                    } else if (ix == 2) {
-                                        return sm.serie === 'Realizado'
-                                    } else if (config.mostrar_acumulado && ix == 3) {
-                                        return sm.serie === 'RealizadoAcumulado'
-                                    }
-                                });
-                                const serie_match = serie_match_arr[0];
+                            valores_nominais: t.valores_nominais.map((vn, ix) => {
+                                const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
+                                const serie_match     = serie_match_arr[0];
 
                                 if (serie_match) {
                                     return serie_match.valor_nominal
@@ -1406,19 +1403,8 @@ export class PainelService {
                                 periodo_inicio: t.periodo_inicio,
                                 periodo_fim: t.periodo_fim,
                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
-
-                                    const serie_match_arr = series_for_period.filter(sm => {
-                                        if (config.mostrar_planejado && ix == 0) {
-                                            return sm.serie === 'Previsto'
-                                        } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
-                                            return sm.serie === 'PrevistoAcumulado'
-                                        } else if (ix == 2) {
-                                            return sm.serie === 'Realizado'
-                                        } else if (config.mostrar_acumulado && ix == 3) {
-                                            return sm.serie === 'RealizadoAcumulado'
-                                        }
-                                    });
-                                    const serie_match = serie_match_arr[0];
+                                    const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
+                                    const serie_match     = serie_match_arr[0];
     
                                     if (serie_match) {
                                         return serie_match.valor_nominal
@@ -1449,19 +1435,8 @@ export class PainelService {
                                         periodo_inicio: t.periodo_inicio,
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
-
-                                            const serie_match_arr = series_for_period.filter(sm => {
-                                                if (config.mostrar_planejado && ix == 0) {
-                                                    return sm.serie === 'Previsto'
-                                                } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
-                                                    return sm.serie === 'PrevistoAcumulado'
-                                                } else if (ix == 2) {
-                                                    return sm.serie === 'Realizado'
-                                                } else if (config.mostrar_acumulado && ix == 3) {
-                                                    return sm.serie === 'RealizadoAcumulado'
-                                                }
-                                            });
-                                            const serie_match = serie_match_arr[0];
+                                            const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
+                                            const serie_match     = serie_match_arr[0];
             
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
@@ -1489,19 +1464,8 @@ export class PainelService {
                                         periodo_inicio: t.periodo_inicio,
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
-
-                                            const serie_match_arr = series_for_period.filter(sm => {
-                                                if (config.mostrar_planejado && ix == 0) {
-                                                    return sm.serie === 'Previsto'
-                                                } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
-                                                    return sm.serie === 'PrevistoAcumulado'
-                                                } else if (ix == 2) {
-                                                    return sm.serie === 'Realizado'
-                                                } else if (config.mostrar_acumulado && ix == 3) {
-                                                    return sm.serie === 'RealizadoAcumulado'
-                                                }
-                                            });
-                                            const serie_match = serie_match_arr[0];
+                                            const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
+                                            const serie_match     = serie_match_arr[0];
             
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
