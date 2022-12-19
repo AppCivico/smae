@@ -67,21 +67,21 @@ import { onMounted, onUpdated, ref } from 'vue';
     	<div class="f1">
     	</div>
     	<div class="f1">
-    		<div class="flex center" v-if="respostasof.smae_soma_valor_empenho!=undefined">
+    		<div class="flex center flexwrap" v-if="respostasof.smae_soma_valor_empenho!=undefined">
     			<span class="label mb0 tc300 mr1">Total Empenho SMAE</span>
     			{{ (somaitens = itens.reduce((r,x)=>r+toFloat(x.valor_empenho),0)) ? '':'' }}
     			{{ (somatotal = toFloat(respostasof.smae_soma_valor_empenho)+somaitens) ? '':'' }}
     			<span class="t14">R$ {{dinheiro(somatotal)}}</span>
-    			<span v-if="somatotal > toFloat(respostasof.empenho_liquido)" class="tvermelho w700">(Pressão orçamentária)</span>
+    			<span v-if="somatotal > toFloat(respostasof.empenho_liquido)" class="tvermelho w700 block">(valor supera empenho SOF)</span>
     		</div>
     	</div>
     	<div class="f1">
-    		<div class="flex center" v-if="respostasof.smae_soma_valor_liquidado!=undefined">
+    		<div class="flex center flexwrap" v-if="respostasof.smae_soma_valor_liquidado!=undefined">
     			<span class="label mb0 tc300 mr1">Total liquidação SMAE</span>
     			{{ (somaitens = itens.reduce((r,x)=>r+toFloat(x.valor_liquidado),0)) ? '':'' }}
     			{{ (somatotal = toFloat(respostasof.smae_soma_valor_liquidado)+somaitens) ? '':'' }}
     			<span class="t14">R$ {{dinheiro(somatotal)}}</span>
-    			<span v-if="somatotal > toFloat(respostasof.valor_liquidado)" class="tvermelho w700">(Pressão orçamentária)</span>
+    			<span v-if="somatotal > toFloat(respostasof.valor_liquidado)" class="tvermelho w700 block">(valor supera liquidação SOF)</span>
     		</div>
     	</div>
     </div>
