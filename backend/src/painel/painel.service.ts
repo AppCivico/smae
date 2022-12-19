@@ -165,6 +165,8 @@ export class PainelService {
     }
 
     async getDetail(id: number) {
+
+        
         return await this.prisma.painel.findFirstOrThrow({
             where: {
                 id: id
@@ -932,7 +934,10 @@ export class PainelService {
         }
 
         const series = await this.prisma.painelConteudo.findFirstOrThrow({
-            where: { id: painel_conteudo_id },
+            where: {
+                id: painel_conteudo_id,
+                mostrar_indicador: true,
+            },
             select: {
                 mostrar_acumulado: true,
                 mostrar_acumulado_periodo: true,
