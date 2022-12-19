@@ -787,6 +787,26 @@ export class PainelService {
         return ret;
     }
 
+    async getTitle (periodicidade: Periodicidade, start: DateTime, end: DateTime): Promise<string> {
+        let ret: string;
+
+        if (periodicidade === Periodicidade.Semestral ||
+            periodicidade === Periodicidade.Trimestral ||
+            periodicidade === Periodicidade.Quadrimestral ||
+            periodicidade === Periodicidade.Bimestral) {
+                ret = end.toLocaleString({month: 'short', year: 'numeric'});
+        } else if (
+            periodicidade === Periodicidade.Secular ||
+            periodicidade === Periodicidade.Quinquenal ||
+            periodicidade === Periodicidade.Anual) {
+                ret = start.toLocaleString({year: 'numeric'});
+        } else {
+            ret = start.toLocaleString({month: 'short', year: 'numeric'});
+        }
+
+        return ret;
+    }
+
     async getSeriesTemplate (periodicidade: Periodicidade, periodo_valor: number | null, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
         const series_template: SeriesTemplate[] = [];
 
@@ -854,7 +874,7 @@ export class PainelService {
             window_end = window_start.plus(plus_obj);
 
             series_template.push({
-                titulo: window_start.toLocaleString({month: 'short', year: 'numeric'}),
+                titulo: await this.getTitle(periodicidade, window_start, window_end),
                 periodo_inicio: window_start.toJSDate(),
                 periodo_fim: window_end.toJSDate(),
                 valores_nominais: empty_values
