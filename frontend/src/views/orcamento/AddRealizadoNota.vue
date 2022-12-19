@@ -111,6 +111,8 @@ function formatNota(d) {
   return s;
 }
 async function validarDota(e) {
+  dota.value = String(dota.value).padStart(5, '0');
+
   try {
     respostasof.value = { loading: true }
     let val = await schema.validate({ nota_empenho: dota.value, valor_empenho: 1, valor_liquidado: 1 });
