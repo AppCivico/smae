@@ -789,7 +789,7 @@ export class PainelService {
         return ret;
     }
 
-    async getSeriesTemplate (periodicidade: Periodicidade, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
+    async getSeriesTemplate (periodicidade: Periodicidade, periodo_valor: number | null, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
         const series_template: SeriesTemplate[] = [];
 
         let config: {
@@ -837,6 +837,8 @@ export class PainelService {
         if (!config.multiplier || !config.time_unit)
           throw new Error('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
 
+        if (!periodo_valor) periodo_valor = 1;
+
         const empty_values: (number | "" | Decimal)[] = [];
         while (empty_values.length < series_order_size) {
             empty_values.push('');
@@ -850,7 +852,7 @@ export class PainelService {
 
         while (window_start < end) {
             let plus_obj: any = {};
-            plus_obj[config.time_unit] = config.multiplier;
+            plus_obj[config.time_unit] = periodo_valor * config.multiplier;
             window_end = window_start.plus(plus_obj);
 
             series_template.push({
@@ -860,7 +862,7 @@ export class PainelService {
                 valores_nominais: empty_values
             });
 
-            window_start = window_end.plus({second: 1});
+            window_start = window_end.plus({millisecond: 1});
             window_end   = null;
         }
 
@@ -947,7 +949,9 @@ export class PainelService {
             gte = date_range.start;
             lte = date_range.end;
 
-            const series_template_t = await this.getSeriesTemplate(config.periodicidade, gte, lte, series_order.length);
+            const series_template_t = await this.getSeriesTemplate(config.periodicidade, config.periodo_valor, gte, lte, series_order.length);
+            console.debug(gte);
+            console.debug(lte);
             console.debug(series_template_t);
 
             if (config.periodicidade === Periodicidade.Anual) {
