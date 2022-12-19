@@ -888,6 +888,7 @@ export class PainelService {
             });
 
             window_start = window_end;
+            i++;
         }
 
         return series_template;
