@@ -90,7 +90,8 @@ export class CreateOrcamentoRealizadoDto {
     @IsOptional()
     @IsString()
     @MaxLength(20)
-    @Matches(/^\d{4}\.?\d{4}\/?\d{7}\-?\d$/, { message: 'Processo não está no formato esperado: 0000.0000/0000000-0' })
+    //@Matches(/^\d{4}\.?\d{4}\/?\d{7}\-?\d$/, { message: 'Processo não está no formato esperado: 0000.0000/0000000-0' })
+    @Matches(/^\d[\d\-\.]+$/, { message: 'Processo não está no formato esperado (apenas números e tracos)' })
     @ValidateIf((object, value) => value !== null && value !== '')
     processo?: string | null;
 
