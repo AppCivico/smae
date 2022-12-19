@@ -856,7 +856,7 @@ export class PainelService {
             window_end = window_start.plus(plus_obj);
 
             series_template.push({
-                titulo: window_start.toLocaleString(),
+                titulo: window_start.toLocaleString({month: 'short', year: 'numeric'}),
                 periodo_inicio: window_start.toJSDate(),
                 periodo_fim: window_end.toJSDate(),
                 valores_nominais: empty_values
@@ -949,91 +949,7 @@ export class PainelService {
             gte = date_range.start;
             lte = date_range.end;
 
-            const series_template_t = await this.getSeriesTemplate(config.periodicidade, config.periodo_valor, gte, lte, series_order.length);
-            console.debug(gte);
-            console.debug(lte);
-            console.debug(series_template_t);
-
-            if (config.periodicidade === Periodicidade.Anual) {
-
-
-                for (let i = 0; i < config.periodo_valor; i++) {
-                    const periodo_inicio = new Date( new Date().getFullYear() - config.periodo_valor + i, 0, 1);
-                    const periodo_fim    = new Date( new Date().getFullYear() - config.periodo_valor + i + 1, 0, 1 );
-
-                    series_template.push({
-                        titulo: periodo_inicio.getUTCFullYear().toString(),
-                        periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim,
-                        valores_nominais: [0, 0, 0, 0]
-                    })
-                }
-            } else if (config.periodicidade === Periodicidade.Semestral) {
-
-                for (let i = 0; i < config.periodo_valor; i++) {
-                    const periodo_inicio = new Date(gte.getTime() + 183 * 86400000 * (config.periodo_valor + i));
-                    const periodo_fim    = new Date(gte.getTime() + 183 * 86400000 * (config.periodo_valor + i + 1));
-
-                    series_template.push({
-                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                        periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim,
-                        valores_nominais: [0, 0, 0, 0]
-                    })
-                }
-            } else if (config.periodicidade === Periodicidade.Trimestral) {
-
-                for (let i = 0; i < config.periodo_valor; i++) {
-                    const periodo_inicio = moment(gte).add(i, 'quarter').toDate();
-                    const periodo_fim    = moment(gte).add(i + 1, 'quarter').toDate();
-
-                    series_template.push({
-                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                        periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim,
-                        valores_nominais: [0, 0, 0, 0]
-                    })
-                }
-            } else if (config.periodicidade === Periodicidade.Quadrimestral) {
-
-                for (let i = 0; i < config.periodo_valor; i++) {
-                    const periodo_inicio = moment(gte).add(i * 4, 'months').toDate();
-                    const periodo_fim    = moment(gte).add(i * 4 + 4, 'months').toDate();
-
-                    series_template.push({
-                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                        periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim,
-                        valores_nominais: [0, 0, 0, 0]
-                    })
-                }
-            } else if (config.periodicidade === Periodicidade.Bimestral) {
-
-                for (let i = 0; i < config.periodo_valor; i++) {
-                    const periodo_inicio = moment(gte).add(i * 2, 'months').toDate();
-                    const periodo_fim    = moment(gte).add(i * 2 + 2, 'months').toDate();
-
-                    series_template.push({
-                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                        periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim,
-                        valores_nominais: [0, 0, 0, 0]
-                    })
-                }
-            } else if (config.periodicidade === Periodicidade.Mensal) {
-
-                for (let i = 0; i < config.periodo_valor; i++) {
-                    const periodo_inicio = moment(gte).add(i * 1, 'months').toDate();
-                    const periodo_fim    = moment(gte).add(i * 1 + 1, 'months').toDate();
-
-                    series_template.push({
-                        titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                        periodo_inicio: periodo_inicio,
-                        periodo_fim: periodo_fim,
-                        valores_nominais: [0, 0, 0, 0]
-                    })
-                }
-            }
+            series_template = await this.getSeriesTemplate(config.periodicidade, config.periodo_valor, gte, lte, series_order.length);
         }
         else if (config.periodo === Periodo.EntreDatas) {
             if (!config.periodo_inicio || !config.periodo_fim)
