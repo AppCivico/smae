@@ -767,11 +767,9 @@ export class PainelService {
                     ret.end = new Date( current_year, current_month - 1, 31);
                 }
             } else if (periodicidade === Periodicidade.Mensal) {
-                const current_month = new Date().getUTCMonth();
-                const current_year = new Date().getUTCFullYear();
 
-                ret.start = moment(new Date( current_year, current_month - 1, 1)).subtract(periodo_valor, 'months').toDate();
-                ret.end = new Date( current_year, current_month - 1, 31);
+                ret.start = DateTime.now().startOf('month').minus({months: periodo_valor}).toJSDate();
+                ret.end = DateTime.now().startOf('month').minus({day: 1}).toJSDate();
             } else {
                 throw new Error('faltando tratamento para periodicidade: ' + periodicidade)
             }
@@ -1121,84 +1119,6 @@ export class PainelService {
                 const latest   = new Date(all_series.at(-1)!.data_valor);
     
                 series_template = await this.getSeriesTemplate(config.periodicidade, null, earliest, latest, series_order.length);
-                // if (config.periodicidade === Periodicidade.Anual) {
-                //     const year_diff = await this.yearsDiff(latest.getTime(), earliest.getTime());
-    
-                //     if (year_diff > 0) {
-                //         for (let i = 0; i < year_diff; i++) {
-                //             const periodo_inicio = moment(earliest).add(i, 'years').toDate();
-                //             const periodo_fim    = moment(periodo_inicio).add(1, 'year').toDate();
-    
-                //             series_template.push({
-                //                 titulo: periodo_inicio.toLocaleDateString('pt-br'),
-                //                 periodo_inicio: periodo_inicio,
-                //                 periodo_fim: periodo_fim,
-                //                 valores_nominais: ["", "", "", ""]
-                //             })
-                //         }
-                //     } else {
-                //         series_template.push({
-                //             titulo: earliest.toLocaleDateString('pt-BR', {year: 'numeric'}),
-                //             periodo_inicio: earliest,
-                //             periodo_fim: latest,
-                //             valores_nominais: ["", "", "", ""]
-                //         })
-                //     }
-                // } else if (
-                //     config.periodicidade === Periodicidade.Semestral ||
-                //     config.periodicidade === Periodicidade.Quadrimestral ||
-                //     config.periodicidade === Periodicidade.Bimestral ||
-                //     config.periodicidade === Periodicidade.Trimestral ||
-                //     config.periodicidade === Periodicidade.Mensal) {
-                    
-                //         let multiplier;
-    
-                //         switch (config.periodicidade) {
-                //             case Periodicidade.Semestral:
-                //                 multiplier = 6;
-                //                 break;
-                //             case Periodicidade.Quadrimestral:
-                //                 multiplier = 4
-                //                 break;
-                //             case Periodicidade.Trimestral:
-                //                 multiplier = 3;
-                //                 break;
-                //             case Periodicidade.Bimestral:
-                //                 multiplier = 2;
-                //                 break;
-                //             case Periodicidade.Mensal:
-                //                 multiplier = 1;
-                //         }
-    
-                //         const months_diff = await this.monthsDiff(earliest.getTime(), latest.getTime())
-                //         if (months_diff >= multiplier) {
-                //             let i = 0;
-                //             while (1) {
-    
-                //                 const periodo_inicio = moment(earliest).add(multiplier * i, 'months').toDate();
-                //                 const periodo_fim    = moment(earliest).add(multiplier * (i + 1), 'months').toDate();
-                //                 i++;
-    
-                //                 series_template.push({
-                //                     titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                //                     periodo_inicio: periodo_inicio,
-                //                     periodo_fim: periodo_fim,
-                //                     valores_nominais: ["", "", "", ""]
-                //                 });
-    
-                //                 if (multiplier * i >= months_diff) {
-                //                     break;
-                //                 }
-                //             }
-                //         } else {
-                //             series_template.push({
-                //                 titulo: earliest.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                //                 periodo_inicio: earliest,
-                //                 periodo_fim: latest,
-                //                 valores_nominais: ["", "", "", ""]
-                //             })
-                //         }
-                // }
             }
         }
 
@@ -1349,19 +1269,8 @@ export class PainelService {
                                                 periodo_inicio: t.periodo_inicio,
                                                 periodo_fim: t.periodo_fim,
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
-
-                                                    const serie_match_arr = series_for_period.filter(sm => {
-                                                        if (config.mostrar_planejado && ix == 0) {
-                                                            return sm.serie === 'Previsto'
-                                                        } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
-                                                            return sm.serie === 'PrevistoAcumulado'
-                                                        } else if (ix == 2) {
-                                                            return sm.serie === 'Realizado'
-                                                        } else if (config.mostrar_acumulado && ix == 3) {
-                                                            return sm.serie === 'RealizadoAcumulado'
-                                                        }
-                                                    });
-                                                    const serie_match = serie_match_arr[0];
+                                                    const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
+                                                    const serie_match     = serie_match_arr[0];
                     
                                                     if (serie_match) {
                                                         return serie_match.valor_nominal
@@ -1388,19 +1297,8 @@ export class PainelService {
                                             periodo_inicio: t.periodo_inicio,
                                             periodo_fim: t.periodo_fim,
                                             valores_nominais: t.valores_nominais.map((vn, ix) => {
-
-                                                const serie_match_arr = series_for_period.filter(sm => {
-                                                    if (config.mostrar_planejado && ix == 0) {
-                                                        return sm.serie === 'Previsto'
-                                                    } else if (config.mostrar_planejado && config.mostrar_acumulado && ix == 1) {
-                                                        return sm.serie === 'PrevistoAcumulado'
-                                                    } else if (ix == 2) {
-                                                        return sm.serie === 'Realizado'
-                                                    } else if (config.mostrar_acumulado && ix == 3) {
-                                                        return sm.serie === 'RealizadoAcumulado'
-                                                    }
-                                                });
-                                                const serie_match = serie_match_arr[0];
+                                                const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
+                                                const serie_match     = serie_match_arr[0];
                 
                                                 if (serie_match) {
                                                     return serie_match.valor_nominal
