@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 // @ts-ignore
 import * as FP from "../../public/js/formula_parser.js";
 import { VariavelService } from 'src/variavel/variavel.service';
+import { Indicador } from './entities/indicador.entity';
 
 @Injectable()
 export class IndicadorService {
@@ -97,7 +98,7 @@ export class IndicadorService {
                                     Indicador: {
                                         select: {
                                             id: true,
-                                            atividade_id: true,                                                
+                                            atividade_id: true,
                                             IndicadorVariavel: {
                                                 select: {
                                                     variavel_id: true
@@ -137,7 +138,7 @@ export class IndicadorService {
                                     meta_id: null,
                                     iniciativa_id: null
                                 };
-    
+
                                 await this.variavelService.resyncIndicadorVariavel(indicador_for_sync, variavel.variavel_id, prisma);
                             }
                         }
@@ -233,7 +234,7 @@ export class IndicadorService {
         return formula_compilada;
     }
 
-    async findAll(filters: FilterIndicadorDto | undefined = undefined) {
+    async findAll(filters: FilterIndicadorDto | undefined = undefined) : Promise<Indicador[]> {
         let listActive = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
@@ -266,7 +267,8 @@ export class IndicadorService {
                     }
                 },
                 formula: true,
-                acumulado_usa_formula: true
+                acumulado_usa_formula: true,
+                casas_decimais: true
             }
         });
 
