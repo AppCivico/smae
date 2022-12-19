@@ -1139,6 +1139,7 @@ export class PainelService {
                 const latest   = new Date(all_series.at(-1)!.data_valor);
     
                 series_template = await this.getSeriesTemplate(config.periodicidade, null, earliest, latest, series_order.length);
+                console.debug(series_template);
             }
         }
 
