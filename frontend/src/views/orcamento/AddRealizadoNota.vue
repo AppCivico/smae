@@ -37,7 +37,7 @@
 
 	const itens = ref([{mes:null,valor_empenho:null,valor_liquidado:null}]);
 
-	var regdota = /^\d{5}$/;
+var regdota = /^\d{1,5}$/;
 	const schema = Yup.object().shape({
 		nota_empenho: Yup.string().required('Preencha o nota_empenho.').matches(regdota,'Formato inválido'),
 		dotacao: Yup.string(),
