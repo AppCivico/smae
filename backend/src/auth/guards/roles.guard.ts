@@ -25,7 +25,7 @@ export class RolesGuard implements CanActivate {
             return true
         }
 
-        throw new UnauthorizedException(`Pelo menos dos privilégios são necessários para o acesso: ${requiredRoles.join(', ')}`);
+      throw new UnauthorizedException(`Pelo menos os seguintes privilégios são necessários para o acesso: ${requiredRoles.join(', ')}`);
     }
 
 
