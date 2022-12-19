@@ -41,7 +41,7 @@ import { onMounted, onUpdated, ref } from 'vue';
             <label class="label">Valor empenho <span class="tvermelho">*</span></label>
         </div>
         <div class="f1">
-            <label class="label">Valor liquidado <span class="tvermelho">*</span></label>
+            <label class="label">Valor liquidação <span class="tvermelho">*</span></label>
         </div>
         <div style="flex-basis: 30px;">
         </div>
