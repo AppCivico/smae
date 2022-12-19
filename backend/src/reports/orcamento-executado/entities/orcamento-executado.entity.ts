@@ -23,15 +23,6 @@ export class OrcamentoExecutadoSaidaDto {
     plan_sof_val_orcado_atualizado: string | null
 
     /**
-     * fonte: SOF/ orçamento planejado, só vem quando não há processo
-     **/
-    plan_sof_val_orcado_inicial: string | null
-
-    /**
-     * fonte: SOF/ orçamento planejado cruzando pela dotação, só vem quando não há processo
-     **/
-    plan_sof_saldo_disponivel: string | null
-    /**
      * fonte: SMAE/ orçamento planejado cruzando pela dotação, só vem quando não há processo
      **/
     plan_valor_planejado: string | null
@@ -39,11 +30,11 @@ export class OrcamentoExecutadoSaidaDto {
     /**
      * fonte: SMAE, para qual ano foi realizada a consulta no SOF
      **/
-    dotacao_ano_utilizado: number
+    plan_dotacao_ano_utilizado: number | null
     /**
      * fonte: SMAE, para qual mês foi realizada a consulta no SOF
      **/
-    dotacao_mes_utilizado: number
+    plan_dotacao_mes_utilizado: number | null
 
     /**
      * fonte: SOF/ valor de empenho até o ano/mes utilizado
@@ -54,6 +45,15 @@ export class OrcamentoExecutadoSaidaDto {
      * fonte: SOF/ valor liquidado até o ano/mes utilizado
      **/
     dotacao_valor_liquidado: string
+
+    /**
+     * fonte: SMAE, para qual ano foi realizada a consulta no SOF do realizado
+     **/
+    dotacao_ano_utilizado: number
+    /**
+     * fonte: SMAE, para qual mês foi realizada a consulta no SOF do realizado
+     **/
+    dotacao_mes_utilizado: number
 
     /**
      * fonte: SMAE, soma ou valor do valor empenhado
