@@ -85,6 +85,52 @@ export class OrcamentoExecutadoSaidaDto {
     logs: string[]
 }
 
+
+export class OrcamentoPlanejadoSaidaDto {
+    meta: IdCodTituloDto
+    iniciativa: IdCodTituloDto | null
+    atividade: IdCodTituloDto | null
+
+    dotacao: string
+
+    orgao: CodigoNome
+    unidade: CodigoNome
+    fonte: CodigoNome
+
+    /**
+     * fonte: SMAE/ horário que o SMAE foi buscar a dotação
+     **/
+    plan_dotacao_sincronizado_em: string
+
+    /**
+     * fonte: SOF/ orçamento planejado, só vem quando não há processo
+     **/
+    plan_sof_val_orcado_atualizado: string
+
+    /**
+     * fonte: SMAE/ orçamento planejado cruzando pela dotação, só vem quando não há processo
+     **/
+    plan_valor_planejado: string
+
+    /**
+     * fonte: SMAE, para qual ano foi realizada a consulta no SOF
+     **/
+    plan_dotacao_ano_utilizado: string
+    /**
+     * fonte: SMAE, para qual mês foi realizada a consulta no SOF
+     **/
+    plan_dotacao_mes_utilizado: string
+
+
+    /**
+     * fonte: SMAE, ano do registro, em caso de Consolidado é sempre em branco
+     **/
+    ano: string
+
+    logs: string[]
+}
+
 export class ListOrcamentoExecutadoDto {
     linhas: OrcamentoExecutadoSaidaDto[]
+    linhas_planejado: OrcamentoPlanejadoSaidaDto[]
 }
