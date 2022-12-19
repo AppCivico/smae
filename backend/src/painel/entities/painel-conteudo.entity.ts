@@ -23,6 +23,7 @@ export class PainelConteudoDetalhes {
     @ApiProperty({enum: PainelConteudoTipoDetalhe})
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
+    id: number
 
     variavel: RowWithIdTitle | null
     iniciativa: RowWithIdTitle | null
@@ -38,6 +39,7 @@ export class FirstLevelChildren {
     @ApiProperty({enum: PainelConteudoTipoDetalhe})
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
+    id: number
 
     variavel: RowWithIdTitle | null
     atividade: RowWithIdTitle | null
@@ -48,6 +50,7 @@ export class SecondLevelChildren {
     @ApiProperty({enum: PainelConteudoTipoDetalhe})
     tipo: PainelConteudoTipoDetalhe
     mostrar_indicador: boolean
+    id: number
 
     variavel: RowWithIdTitle | null
 }
