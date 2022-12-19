@@ -934,10 +934,7 @@ export class PainelService {
         }
 
         const series = await this.prisma.painelConteudo.findFirstOrThrow({
-            where: {
-                id: painel_conteudo_id,
-                mostrar_indicador: true,
-            },
+            where: { id: painel_conteudo_id },
             select: {
                 mostrar_acumulado: true,
                 mostrar_acumulado_periodo: true,
