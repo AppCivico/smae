@@ -4,7 +4,7 @@ import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
-import { IdCodTituloDto } from "../../../common/dto/IdCodTituloDto";
+import { IdCodTituloDto } from "../../../common/dto/IdCodTitulo.dto";
 
 export class FilterMfMetasDto {
     /**

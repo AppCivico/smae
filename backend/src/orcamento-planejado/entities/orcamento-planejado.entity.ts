@@ -1,4 +1,4 @@
-import { IdCodTituloDto } from "../../common/dto/IdCodTituloDto"
+import { IdCodTituloDto } from "../../common/dto/IdCodTitulo.dto"
 
 export class OrcamentoPlanejado {
     meta: IdCodTituloDto

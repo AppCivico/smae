@@ -50,6 +50,7 @@ import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { TextoConfigModule } from './texto-config/texto-config.module';
 import { ReportsModule } from './reports/reports/reports.module';
+import { OrcamentoExecutadoModule } from './reports/orcamento-executado/orcamento-executado.module';
 
 
 @Module({
@@ -106,6 +107,7 @@ import { ReportsModule } from './reports/reports/reports.module';
         SofEntidadeModule,
         TextoConfigModule,
         ReportsModule,
+        OrcamentoExecutadoModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [
