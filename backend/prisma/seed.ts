@@ -192,6 +192,7 @@ const ModuloDescricao: any = {
     CadastroPainel: 'Cadastro de Painéis',
     CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
     Config: 'Configurações do Sistema',
+    Reports: 'Relatórios',
     PDM: 'Regras de Negocio do PDM',
 };
 
