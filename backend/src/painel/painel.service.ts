@@ -869,14 +869,14 @@ export class PainelService {
         let window_start: DateTime = start;
         let window_end:   DateTime | null = null;
 
+        let i = 0;
         while (window_start < end) {
             if (periodicidade === Periodicidade.Semestral) {
-
                 window_start = window_start.startOf('quarter');
                 window_end = window_start.plus({quarters: window_end ? 2 : 1}).endOf('quarter');
             } else {
                 let plus_obj: any = {};
-                plus_obj[config.time_unit] = config.multiplier;
+                plus_obj[config.time_unit] = i == 0 ? config.multiplier - 1 : config.multiplier;
                 window_end = window_start.plus(plus_obj);
             }
 
