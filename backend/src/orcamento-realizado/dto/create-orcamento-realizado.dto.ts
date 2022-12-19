@@ -1,6 +1,7 @@
-import { OmitType } from "@nestjs/swagger";
+import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { ArrayMaxSize, ArrayMinSize, IsIn, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, Max, MaxLength, Min, ValidateIf, ValidateNested } from "class-validator";
+import { PROCESSO_DESCRIPTION, PROCESSO_MESSAGE, PROCESSO_REGEXP } from "../../dotacao/dto/dotacao.dto";
 import { OrcamentoRealizado } from "../entities/orcamento-realizado.entity";
 
 export class CreateOrcamentoRealizadoItemDto {
@@ -82,16 +83,11 @@ export class CreateOrcamentoRealizadoDto {
     @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, { message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00' })
     dotacao: string;
 
-    /**
-    * processo: esperado algo como "6016.2021/00532295", "6016.2021/0053229-5" ou "6016202100532295"
-    * no banco será normalizado para o valor o número sozinho
-    * @example "6016202100711203"
-    */
     @IsOptional()
     @IsString()
     @MaxLength(20)
-    //@Matches(/^\d{4}\.?\d{4}\/?\d{7}\-?\d$/, { message: 'Processo não está no formato esperado: 0000.0000/0000000-0' })
-    @Matches(/^\d[\d\-\.]+$/, { message: 'Processo não está no formato esperado (apenas números e tracos)' })
+    @ApiProperty({ description: PROCESSO_DESCRIPTION, example: "6016201700379910" })
+    @Matches(PROCESSO_REGEXP, { message: PROCESSO_MESSAGE })
     @ValidateIf((object, value) => value !== null && value !== '')
     processo?: string | null;
 
