@@ -5,10 +5,9 @@ export class CreateOrgaoDto {
     /**
     * Sigla do Órgão
     */
-    @IsOptional()
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
     @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
-    sigla?: string | null
+    sigla: string
 
     /**
     * Órgão
