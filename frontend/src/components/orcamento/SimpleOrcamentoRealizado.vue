@@ -3,13 +3,13 @@
     import { storeToRefs } from 'pinia';
     import { useOrcamentosStore } from '@/stores';
     import { default as LinhaRealizado} from '@/components/orcamento/LinhaRealizado.vue';
-    
+
     const props = defineProps(['parentlink','config','meta_id']);
     const ano = props.config.ano_referencia;
     const OrcamentosStore = useOrcamentosStore();
     const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
     OrcamentosStore.getOrcamentoRealizadoById(props.meta_id,props.config.ano_referencia);
-    
+
     function dateToField(d){
         var dd=d?new Date(d):false;
         return (dd)?dd.toLocaleString('pt-BR',{dateStyle:'short',timeZone: 'UTC'}):'';
@@ -53,14 +53,14 @@
         <div>
             <div class="tablepreinfo">
                 <div class="t12 lh1 w700 mb05">Execução orçamentária</div>
-                <div class="t12 lh1 w700" v-if="OrcamentoRealizado[ano].length"><span class="tc300">Empenho meta:</span> <span>{{ formataValor(somaItems(OrcamentoRealizado[ano],'soma_valor_empenho')) }}</span> <span class="ml1 tc300">Liquidado meta:</span> <span>{{ formataValor(somaItems(OrcamentoRealizado[ano],'soma_valor_liquidado')) }}</span></div>
+                <div class="t12 lh1 w700" v-if="OrcamentoRealizado[ano].length"><span class="tc300">Empenho meta:</span> <span>{{ formataValor(somaItems(OrcamentoRealizado[ano],'soma_valor_empenho')) }}</span> <span class="ml1 tc300">Liquidação meta:</span> <span>{{ formataValor(somaItems(OrcamentoRealizado[ano],'soma_valor_liquidado')) }}</span></div>
             </div>
             <table class="tablemain fix" v-if="config.execucao_disponivel">
                 <thead>
                     <tr>
                         <th style="width: 50%">Dotação / Processo / Nota</th>
                         <th>Empenho meta</th>
-                        <th>Liquidado meta</th>
+                        <th>Liquidação meta</th>
                         <th>Registros</th>
                         <th style="width: 50px"></th>
                     </tr>
@@ -69,7 +69,7 @@
                     <tbody>
                         <LinhaRealizado :group="groups" :permissao="config.execucao_disponivel" :parentlink="parentlink"/>
                     </tbody>
-                    
+
                     <template v-for="(g,k) in groups.filhos">
                         <tbody>
                             <tr>

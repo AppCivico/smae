@@ -8,7 +8,7 @@
 	import { useRoute } from 'vue-router';
 	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 	import { default as ItensRealizado} from '@/components/orcamento/ItensRealizado.vue';
-	
+
 	const alertStore = useAlertStore();
 	const route = useRoute();
 	const meta_id = route.params.meta_id;
@@ -19,7 +19,7 @@
     const { singleMeta, activePdm } = storeToRefs(MetasStore);
     MetasStore.getPdM();
     MetasStore.getChildren(meta_id);
-	
+
 	const IniciativasStore = useIniciativasStore();
     const { singleIniciativa } = storeToRefs(IniciativasStore);
 	const AtividadesStore = useAtividadesStore();
@@ -79,7 +79,7 @@
 
         	r = await OrcamentosStore.insertOrcamentoRealizado(values);
         	msg = 'Dados salvos com sucesso!';
-	        
+
 	        if(r == true){
 	            alertStore.success(msg);
 	            await router.push(`${parentlink}/orcamento/realizado`);
@@ -176,7 +176,7 @@
         <h3 class="mb2"><strong>{{ano}}</strong> - {{parent_item.codigo}} - {{parent_item.titulo}}</h3>
 	    <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
 	        <Form @submit="onSubmit" :validation-schema="schema" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
-	            
+
 	            <div class="flex center g2">
 	                <div class="f1">
 	                    <label class="label">Dotação <span class="tvermelho">*</span></label>
@@ -275,8 +275,8 @@
             	    <thead>
             	        <tr>
             	            <th style="width: 25%">Nome do projeto/atividade</th>
-            	            <th style="width: 25%">Valor Empenho</th>
-            	            <th style="width: 25%">Valor Liquidado</th>
+            	            <th style="width: 25%">Empenho SOF</th>
+            	            <th style="width: 25%">Liquidação SOF</th>
             	        </tr>
             	    </thead>
             	    <tbody>
@@ -291,34 +291,34 @@
 
 	            <div>
                     <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
-                    
+
                     <div v-for="m in singleMeta.children" :key="m.id">
                     	<div class="label tc300">Meta</div>
                     	<label class="block mb1">
-                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
+                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/>
                     		<span>{{m.codigo}} - {{m.titulo}}</span>
                     	</label>
                     	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
 	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
 	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
 	                    		<label class="block mb1">
-	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/>
 	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
 	                    		</label>
 	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
 		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
 		                    			<label class="block mb1">
-		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/>
 		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-		                    			</label>	
+		                    			</label>
 		                    		</div>
 	                    		</template>
-	                    	</div>	
+	                    	</div>
                     	</template>
                     </div>
                     <div class="error-msg">{{ errors.location }}</div>
 	            </div>
-	            
+
 	            <ItensRealizado :controlador="itens" :respostasof="respostasof" />
 
 	            <div class="flex spacebetween center mb2">
