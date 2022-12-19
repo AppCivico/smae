@@ -1,5 +1,15 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, ValidateIf } from "class-validator";
+
+export const PROCESSO_REGEXP = /^(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)$/;
+export const PROCESSO_MESSAGE = 'Processo não está no formato esperado: DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)';
+export const PROCESSO_DESCRIPTION = `há dois tipos de processo:
+- processo SEI (16 dígitos) esperado "6016.2021/00532295", "6016.2021/0053229-5" ou "6016202100532295"
+
+- processo SINPROC (12 dígitos) esperado: "AAAA-D.DDD.DDD-D" ou "201601234567"
+
+no banco será normalizado para o valor o número sozinho`;
 
 export class AnoDto {
     /**
@@ -26,16 +36,11 @@ export class AnoDotacaoDto extends AnoDto {
 }
 
 export class AnoDotacaoProcessoDto extends AnoDto {
-    /**
-    * processo: esperado algo como "6016.2021/00532295", "6016.2021/0053229-5" ou "6016202100532295"
-    * no banco será normalizado para o valor o número sozinho
-    * @example "6016201700379910"
-    */
+    @ApiProperty({description: PROCESSO_DESCRIPTION, example: "6016201700379910"})
     @IsString()
     @MaxLength(20)
-    @Matches(/^\d{4}\.?\d{4}\/?\d{7}\-?\d$/, { message: 'Processo não está no formato esperado: 0000.0000/0000000-0' })
+    @Matches(PROCESSO_REGEXP, { message: PROCESSO_MESSAGE })
     processo: string;
-
 }
 
 

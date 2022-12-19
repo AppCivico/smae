@@ -119,7 +119,7 @@ export class SofApiService {
             return nowSp.month;
 
         if (+ano > anoCorrente)
-            throw new HttpException('Não é possível buscar por realizado no futuro', 400);
+            throw new HttpException('Não é possível buscar por realizado ou planejado no futuro', 400);
 
         return 12; // mes mais recente do ano pesquisado
     }
