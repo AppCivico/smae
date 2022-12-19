@@ -56,6 +56,19 @@ export class DotacaoService {
         }
     }
 
+    orgaoFromDotacao(dotacao: string) {
+        return { codigo: dotacao.substring(0, 2), nome: '' }
+    }
+
+    unidadeFromDotacao(dotacao: string) {
+        return { codigo: dotacao.substring(3, 5), nome: '' }
+    }
+
+    fonteFromDotacao(dotacao: string) {
+        return { codigo: dotacao.substring(33, 35), nome: '' }
+    }
+
+
     async getOneProjetoAtividade(ano: number, dotacao: string): Promise<string> {
         // código é feito juntando o 6º com o 7º campo da dotação
         // const x = '16.10.12.122.3024.2.100.33903500.00';

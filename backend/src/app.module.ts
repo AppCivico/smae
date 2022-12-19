@@ -51,6 +51,7 @@ import { VariavelModule } from './variavel/variavel.module';
 import { TextoConfigModule } from './texto-config/texto-config.module';
 import { ReportsModule } from './reports/reports/reports.module';
 import { OrcamentoExecutadoModule } from './reports/orcamento-executado/orcamento-executado.module';
+import { UtilsService } from './reports/utils/utils.service';
 
 
 @Module({
@@ -60,14 +61,17 @@ import { OrcamentoExecutadoModule } from './reports/orcamento-executado/orcament
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
+        ReportsModule,
+        OrcamentoExecutadoModule,
+        PrismaModule,
+        AuthModule,
+
         SofApiModule,
         OrcamentoPlanejadoModule,
         DotacaoModule,
         OrcamentoRealizadoModule,
         MetaOrcamentoModule,
-        PrismaModule,
         PessoaModule,
-        AuthModule,
         MinhaContaModule,
         OrgaoModule,
         TipoOrgaoModule,
@@ -106,10 +110,8 @@ import { OrcamentoExecutadoModule } from './reports/orcamento-executado/orcament
         PdmCicloModule,
         SofEntidadeModule,
         TextoConfigModule,
-        ReportsModule,
-        OrcamentoExecutadoModule,
     ],
-    controllers: [AppController, MinhaContaController],
+    controllers: [AppController],
     providers: [
         AppService,
         {
@@ -127,7 +129,8 @@ import { OrcamentoExecutadoModule } from './reports/orcamento-executado/orcament
         {
             provide: APP_INTERCEPTOR,
             useClass: ContentInterceptor
-        }
+        },
+        UtilsService
     ],
 
 })
