@@ -882,67 +882,8 @@ export class PainelService {
 
         const series_order = await this.buildSeriesOrder(config.mostrar_planejado, config.mostrar_acumulado);
 
-        if (config.periodo === Periodo.Corrente) {
-            if (config.periodicidade === Periodicidade.Anual) {
-                gte = new Date( new Date().getFullYear(), 0, 1);
-                lte = new Date( new Date().getFullYear(), 11, 31);
 
-
-            } else if (config.periodicidade === Periodicidade.Semestral) {
-                const year_start_epoch = new Date(new Date().getFullYear(), 0, 1).getTime();
-                const half_year_epoch  = new Date(new Date().getFullYear(), 5, 1).getTime();
-                const current_epoch    = Date.now();
-
-                if (current_epoch >= half_year_epoch) {
-                    gte = new Date(half_year_epoch);
-                    lte = new Date( current_year, 11, 31);
-                } else {
-                    gte = new Date(year_start_epoch);
-                    lte = new Date(half_year_epoch);
-                }
-            } else if (config.periodicidade === Periodicidade.Trimestral) {
-                gte = moment().startOf('quarter').toDate();
-                lte = moment().endOf('quarter').toDate();
-            } else if (config.periodicidade === Periodicidade.Quadrimestral) {
-
-                if (current_month <= 4) {
-                    gte = new Date( current_year, 0, 1);
-                    lte = new Date( current_year, 3, 30);
-                } else if (current_month > 4 && current_month <= 8) {
-                    gte = new Date( current_year, 4, 1);
-                    lte = new Date( current_year, 7, 31);
-                } else {
-                    gte = new Date( current_year, 8, 1);
-                    lte = new Date( current_year, 11, 31);
-                }
-            } else if (config.periodicidade === Periodicidade.Bimestral) {
-
-                if (current_month % 2) {
-                    gte = new Date( current_year, current_month - 1, 1);
-                    lte = new Date( current_year, current_month, 31);
-                } else {
-                    gte = new Date( current_year, current_month - 2, 1);
-                    lte = new Date( current_year, current_month - 1, 31);
-                }
-            } else if (config.periodicidade === Periodicidade.Mensal) {
-                gte = new Date( current_year, current_month - 1, 1);
-                lte = new Date( current_year, current_month - 1, 31);
-            } else if (config.periodicidade === Periodicidade.Quinquenal) {
-                gte = new Date( current_year - 5, 0, 1);
-                lte = new Date( current_year, 11, 31);
-            } else {
-                gte = new Date( current_year - 100, 0, 1);
-                lte = new Date( current_year, 11, 31);
-            }
-
-            series_template.push({
-                titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                periodo_inicio: gte,
-                periodo_fim: lte,
-                valores_nominais: [0, 0, 0, 0]
-            });
-        }
-        else if (config.periodo === Periodo.Anteriores) {
+        if (config.periodo === Periodo.Anteriores) {
             if (!config.periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
 
             const date_range = await this.getStartEndDate(config.periodo, config.periodicidade, config.periodo_valor, config.periodo_fim, config.periodo_fim);
@@ -958,84 +899,7 @@ export class PainelService {
             gte = config.periodo_inicio;
             lte = config.periodo_fim;
 
-            if (config.periodicidade === Periodicidade.Anual) {
-                const year_diff = await this.yearsDiff(lte.getTime(), gte.getTime());
-
-                if (year_diff > 0) {
-                    for (let i = 0; i < year_diff; i++) {
-                        const periodo_inicio = moment(gte).add(i, 'years').toDate();
-                        const periodo_fim    = moment(periodo_inicio).add(1, 'year').toDate();
-
-                        series_template.push({
-                            titulo: periodo_inicio.toLocaleDateString('pt-br'),
-                            periodo_inicio: periodo_inicio,
-                            periodo_fim: periodo_fim,
-                            valores_nominais: [0, 0, 0, 0]
-                        })
-                    }
-                } else {
-                    series_template.push({
-                        titulo: gte.toLocaleDateString('pt-BR', {year: 'numeric'}),
-                        periodo_inicio: gte,
-                        periodo_fim: lte,
-                        valores_nominais: [0, 0, 0, 0]
-                    })
-                }
-            } else if (
-                config.periodicidade === Periodicidade.Semestral ||
-                config.periodicidade === Periodicidade.Quadrimestral ||
-                config.periodicidade === Periodicidade.Bimestral ||
-                config.periodicidade === Periodicidade.Trimestral ||
-                config.periodicidade === Periodicidade.Mensal) {
-                
-                    let multiplier;
-
-                    switch (config.periodicidade) {
-                        case Periodicidade.Semestral:
-                            multiplier = 6;
-                            break;
-                        case Periodicidade.Quadrimestral:
-                            multiplier = 4
-                            break;
-                        case Periodicidade.Trimestral:
-                            multiplier = 3;
-                            break;
-                        case Periodicidade.Bimestral:
-                            multiplier = 2;
-                            break;
-                        case Periodicidade.Mensal:
-                            multiplier = 1;
-                    }
-
-                    const months_diff = await this.monthsDiff(lte.getTime(), gte.getTime())
-
-                    if (months_diff >= multiplier) {
-                        let i = 0;
-                        while (1) {
-                            const periodo_inicio = moment(gte).add(multiplier * i, 'months').toDate();
-                            const periodo_fim    = moment(gte).add(multiplier * (i + 1), 'months').toDate();
-                            i++;
-
-                            series_template.push({
-                                titulo: periodo_inicio.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                                periodo_inicio: periodo_inicio,
-                                periodo_fim: periodo_fim,
-                                valores_nominais: [0, 0, 0, 0]
-                            })
-
-                            if (i >= months_diff) {
-                                break;
-                            }
-                        }
-                    } else {
-                        series_template.push({
-                            titulo: gte.toLocaleString('pt-BR', {month: 'short', year: 'numeric'}),
-                            periodo_inicio: gte,
-                            periodo_fim: lte,
-                            valores_nominais: [0, 0, 0, 0]
-                        })
-                    }
-            }
+            series_template = await this.getSeriesTemplate(config.periodicidade, config.periodo_valor, gte, lte, series_order.length);
         }
         else {
             gte = new Date(0);
