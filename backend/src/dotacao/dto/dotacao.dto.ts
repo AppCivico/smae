@@ -46,7 +46,7 @@ export class AnoDotacaoNotaEmpenhoDto extends AnoDto {
     */
     @IsString()
     @MaxLength(6)
-    @Matches(/^\d{5}$/, { message: 'Nota não está no formato esperado: 00000' })
+    @Matches(/^\d{4,5}$/, { message: 'Nota não está no formato esperado: 00000' })
     nota_empenho: string;
 
 
