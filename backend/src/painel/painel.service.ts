@@ -871,8 +871,9 @@ export class PainelService {
 
         while (window_start < end) {
             if (periodicidade === Periodicidade.Semestral) {
+
                 window_start = window_start.startOf('quarter');
-                window_end = window_start.plus({quarters: 1}).endOf('quarter');
+                window_end = window_start.plus({quarters: window_end ? 2 : 1}).endOf('quarter');
             } else {
                 let plus_obj: any = {};
                 plus_obj[config.time_unit] = config.multiplier;
@@ -887,7 +888,6 @@ export class PainelService {
             });
 
             window_start = window_end;
-            window_end   = null;
         }
 
         return series_template;
