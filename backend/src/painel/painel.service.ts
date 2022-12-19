@@ -456,19 +456,13 @@ export class PainelService {
             }
 
             for (const detalhe of updatePainelConteudoDetalheDto.detalhes!) {
-                console.debug(detalhe);
-                if (detalhe.mostrar_indicador!) {
-                    operations.push(prisma.painelConteudoDetalhe.update({
-                        where: {
-                            id: detalhe.id
-                        },
-                        data: { mostrar_indicador: detalhe.mostrar_indicador },
-                        select: {id: true}
-                    }))
-                }
-                else {
-                    continue;
-                }
+                operations.push(prisma.painelConteudoDetalhe.update({
+                    where: {
+                        id: detalhe.id
+                    },
+                    data: { mostrar_indicador: detalhe.mostrar_indicador },
+                    select: {id: true}
+                }))
             }
 
             const updated = await Promise.all(operations);

@@ -25,8 +25,7 @@ export class UpdatePainelConteudoDetalheDto {
 
 export class UpdatePainelConteudoDetalheRowsDto {
     @IsBoolean()
-    @IsOptional()
-    mostrar_indicador?: boolean | null
+    mostrar_indicador: boolean
 
     @IsNumber()
     id: number
