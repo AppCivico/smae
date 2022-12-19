@@ -523,6 +523,8 @@ export class OrcamentoRealizadoService {
                 smae_soma_valor_empenho: true,
                 smae_soma_valor_liquidado: true,
                 dotacao_processo_nota: true,
+                empenho_liquido: true,
+                valor_liquidado: true,
             }
         });
         const notasInfoRef: Record<string, typeof notasInfo[0]> = {};
@@ -541,6 +543,8 @@ export class OrcamentoRealizadoService {
                 smae_soma_valor_liquidado: true,
                 dotacao_processo: true,
                 dotacao: true,
+                empenho_liquido: true,
+                valor_liquidado: true,
             }
         });
         const processoInfoRef: Record<string, typeof processoInfo[0]> = {};
@@ -557,6 +561,8 @@ export class OrcamentoRealizadoService {
             select: {
                 smae_soma_valor_empenho: true,
                 smae_soma_valor_liquidado: true,
+                empenho_liquido: true,
+                valor_liquidado: true,
                 dotacao: true,
             }
         });
@@ -572,19 +578,29 @@ export class OrcamentoRealizadoService {
 
             let smae_soma_valor_empenho: string | null = null;
             let smae_soma_valor_liquidado: string | null = null;
+            let empenho_liquido: string | null = null;
+            let valor_liquidado: string | null = null;
 
             if (orcaRealizado.nota_empenho) {
                 const notaInfo = notasInfoRef[orcaRealizado.nota_empenho];
                 smae_soma_valor_empenho = notaInfo.smae_soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = notaInfo.smae_soma_valor_liquidado.toFixed(2);
+
+                empenho_liquido = notaInfo.empenho_liquido.toFixed(2);
+                valor_liquidado = notaInfo.valor_liquidado.toFixed(2);
             } else if (orcaRealizado.processo) {
                 const processoInfo = processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
                 smae_soma_valor_empenho = processoInfo.smae_soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = processoInfo.smae_soma_valor_liquidado.toFixed(2);
+
+                empenho_liquido = processoInfo.empenho_liquido.toFixed(2);
+                valor_liquidado = processoInfo.valor_liquidado.toFixed(2);
             } else {
                 const dotacaoInfo = dotacoesInfoRef[orcaRealizado.dotacao];
                 smae_soma_valor_empenho = dotacaoInfo.smae_soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = dotacaoInfo.smae_soma_valor_liquidado.toFixed(2);
+                empenho_liquido = dotacaoInfo.empenho_liquido.toFixed(2);
+                valor_liquidado = dotacaoInfo.valor_liquidado.toFixed(2);
             }
 
             rows.push({
@@ -602,6 +618,8 @@ export class OrcamentoRealizadoService {
                 soma_valor_liquidado: orcaRealizado.soma_valor_liquidado.toFixed(2),
                 smae_soma_valor_empenho,
                 smae_soma_valor_liquidado,
+                empenho_liquido,
+                valor_liquidado,
                 projeto_atividade: '',
                 itens: orcaRealizado.itens.map((item) => {
                     return {
