@@ -124,7 +124,7 @@ export const router = createRouter({
                 { path: 'metas/:meta_id', component: MonitoramentoMetas,  props:{submenu:SubmenuMonitoramento, parentPage: 'metas'} },
             ]
         },
-        
+
         { path: '/metas',
             children: [
                 { path: '', component: ListMetas },
@@ -169,7 +169,12 @@ export const router = createRouter({
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/iniciativa', component: SingleCronograma, props:{group:"monitorar",recorte:"iniciativa",submenu:SubmenuMetas} },
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/atividade', component: SingleCronograma, props:{group:"monitorar",recorte:"atividade",submenu:SubmenuMetas} },
                 { path: ':meta_id/cronograma/:cronograma_id/monitorar/:etapa_id', component: SingleCronograma, props:{group:"monitorar",submenu:SubmenuMetas} },
-                { path: ':meta_id/orcamento', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Custeio',title:'Previsão de Custeio'} },
+
+                {
+                  path: ':meta_id/orcamento',
+                  redirect: to => `${to.path}custeio`,
+                },
+
                 { path: ':meta_id/orcamento/custeio', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Custeio',title:'Previsão de Custo'} },
                 { path: ':meta_id/orcamento/custeio/:ano', component: AddEditCusteio, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/custeio/:ano/:id', component: AddEditCusteio, props:{submenu:SubmenuMetas} },
@@ -182,7 +187,7 @@ export const router = createRouter({
                 { path: ':meta_id/orcamento/realizado/:ano/nota', component: AddRealizadoNota, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/realizado/:ano/:id', component: EditRealizado, props:{submenu:SubmenuMetas} },
                 { path: ':meta_id/orcamento/realizado/:ano/dotacao/:id', component: EditRealizado, props:{submenu:SubmenuMetas} },
-                
+
                 { path: ':meta_id/iniciativas',
                     children: [
                         { path: '', component: SingleMeta, props:{submenu:SubmenuMetas} },
@@ -247,7 +252,7 @@ export const router = createRouter({
                         },
                     ]
                 },
-                
+
             ]
         },
         { path: '/regioes',
