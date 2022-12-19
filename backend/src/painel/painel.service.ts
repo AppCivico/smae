@@ -974,7 +974,10 @@ export class PainelService {
                 },
 
                 detalhes: {
-                    where: { mostrar_indicador: true },
+                    where: {
+                        mostrar_indicador: true,
+                        pai_id: null
+                    },
                     orderBy: [ {ordem: 'asc'} ],
                     select: {
                         variavel: {
