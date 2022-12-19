@@ -156,6 +156,9 @@ const PrivConfig: any = {
     Config: [
         ['Config.editar', 'Editar configuração de textos do sistema'],
     ],
+    Reports: [
+        ['Reports.executar', 'Executar relatórios'],
+    ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
         ['PDM.tecnico_cp', '(PDM) Técnico CP'],
