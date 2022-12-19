@@ -82,7 +82,8 @@ export class OrcamentoRealizadoService {
                                 return {
                                     valor_empenho: item.valor_empenho,
                                     valor_liquidado: item.valor_liquidado,
-                                    mes: item.mes
+                                    mes: item.mes,
+                                    data_referencia: new Date([dto.ano_referencia, item.mes, '01'].join('-')),
                                 }
                             })
                         }
@@ -238,7 +239,8 @@ export class OrcamentoRealizadoService {
                                 return {
                                     valor_empenho: item.valor_empenho,
                                     valor_liquidado: item.valor_liquidado,
-                                    mes: item.mes
+                                    mes: item.mes,
+                                    data_referencia: new Date([orcRealizado.ano_referencia, item.mes, '01'].join('-')),
                                 }
                             })
                         }
