@@ -8,7 +8,7 @@
 	import { useRoute } from 'vue-router';
 	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 	import { default as ItensRealizado} from '@/components/orcamento/ItensRealizado.vue';
-	
+
 	const alertStore = useAlertStore();
 	const route = useRoute();
 	const meta_id = route.params.meta_id;
@@ -19,7 +19,7 @@
     const { singleMeta, activePdm } = storeToRefs(MetasStore);
     MetasStore.getPdM();
     MetasStore.getChildren(meta_id);
-	
+
 	const IniciativasStore = useIniciativasStore();
     const { singleIniciativa } = storeToRefs(IniciativasStore);
 	const AtividadesStore = useAtividadesStore();
@@ -68,10 +68,10 @@
 	        	return {mes:x.mes,valor_empenho:x.valor_empenho,valor_liquidado:x.valor_liquidado};
 	        });
 
-            
+
         	r = await OrcamentosStore.insertOrcamentoRealizado(values);
         	msg = 'Dados salvos com sucesso!';
-	        
+
 	        if(r == true){
 	            alertStore.success(msg);
 	            await router.push(`${parentlink}/orcamento/realizado`);
@@ -145,13 +145,13 @@
 	            </div>
 	            <div v-if="respostasof.length" class="mb2">
                     <label class="label mb2">Dotação vinculada* <span class="tvermelho">*</span></label>
-                    
+
                     <div class="flex g2">
                     	<div class="f0" style="flex-basis:30px"></div>
                     	<div class="f1"><label class="label tc300">Dotação</label></div>
                     	<div class="f1"><label class="label tc300">Nome do Projeto/Atividade</label></div>
                     	<div class="f0" style="flex-basis:90px"><label class="label tc300">Valor Empenho</label></div>
-                    	<div class="f0" style="flex-basis:90px"><label class="label tc300">Valor Liquidado</label></div>
+                    	<div class="f0" style="flex-basis:90px"><label class="label tc300">Valor Liquidação</label></div>
                     </div>
                     <hr class="mb05">
 	            	<label class="flex g2 center mb1" v-for="(d,i) in respostasof" :key="d.id">
@@ -166,29 +166,29 @@
 	            <template v-if="respostasof.length&&values.dotacao">
 		            <div>
                         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
-                        
+
                         <div v-for="m in singleMeta.children" :key="m.id">
                         	<div class="label tc300">Meta</div>
                         	<label class="block mb1">
-                        		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
+                        		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/>
                         		<span>{{m.codigo}} - {{m.titulo}}</span>
                         	</label>
                         	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
     	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
     	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
     	                    		<label class="block mb1">
-    	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+    	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/>
     	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
     	                    		</label>
     	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
     		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
     		                    			<label class="block mb1">
-    		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+    		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/>
     		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-    		                    			</label>	
+    		                    			</label>
     		                    		</div>
     	                    		</template>
-    	                    	</div>	
+    	                    	</div>
                         	</template>
                         </div>
                         <div class="error-msg">{{ errors.location }}</div>
