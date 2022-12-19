@@ -22,6 +22,9 @@ export class OrcamentoRealizado {
     smae_soma_valor_empenho: string | null
     smae_soma_valor_liquidado: string | null
 
+    empenho_liquido: string | null
+    valor_liquidado: string | null
+
     criado_em: Date
     criador: {
         nome_exibicao: string
