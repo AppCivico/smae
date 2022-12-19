@@ -878,7 +878,7 @@ export class PainelService {
         let i = 0;
         while (window_start < end) {
             if (periodicidade === Periodicidade.Semestral) {
-                window_start = window_start.startOf('quarter');
+                window_start = window_end ? window_start.plus({quarter: 1}).startOf('quarter') : window_start.startOf('quarter');
                 window_end = window_start.plus({quarters: window_end ? 2 : 1}).endOf('quarter');
             } else {
                 let plus_obj: any = {};
@@ -1166,7 +1166,7 @@ export class PainelService {
                 titulo: series.meta.titulo,
                 codigo: series.meta.codigo,
 
-                indicador: {
+                indicador: series.mostrar_indicador ? {
                     id: series.meta.indicador[0].id,
                     codigo: series.meta.indicador[0].codigo,
                     titulo: series.meta.indicador[0].titulo,
@@ -1192,7 +1192,7 @@ export class PainelService {
                             })
                         }
                     })
-                }
+                } : {}
             },
             
             detalhes: series.detalhes.map(d => {
