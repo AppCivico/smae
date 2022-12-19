@@ -23,8 +23,8 @@ export class OrcamentoRealizadoService {
         private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
         private readonly dotacaoService: DotacaoService,
     ) {
-        // deixar desligado
-        this.liberarValoresMaioresQueSof = false;
+        // deixar desligado a verificação
+        this.liberarValoresMaioresQueSof = true;
     }
 
     async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
