@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PainelConteudoTipoDetalhe, PainelGrupoPainel, Periodicidade, Periodo, Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime';
 import { time } from 'console';
 import { DateTime } from 'luxon';
 import * as moment from 'moment';
@@ -788,13 +789,83 @@ export class PainelService {
         return ret;
     }
 
-    // async getSeriesTemplate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null) {
-    //     switch (periodicidade) {
-            
-    //     }
-    //     if (periodicidade === Periodicidade.Secular ||
-    //         periodicidade === Periodicidade.Quinquenal ||)
-    // }
+    async getSeriesTemplate (periodicidade: Periodicidade, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
+        const series_template: SeriesTemplate[] = [];
+
+        let config: {
+            time_unit: string  | null,
+            multiplier: number | null
+        } = {
+            time_unit: null,
+            multiplier: null
+        };
+
+        switch (periodicidade) {
+            case Periodicidade.Secular:
+                config.time_unit  = 'years';
+                config.multiplier = 100;
+                break;
+            case Periodicidade.Quinquenal:
+                config.time_unit  = 'years';
+                config.multiplier = 5;
+                break;
+            case Periodicidade.Anual:
+                config.time_unit  = 'years';
+                config.multiplier = 1;
+                break;
+            case Periodicidade.Semestral:
+                config.time_unit  = 'months';
+                config.multiplier = 6;
+                break;
+            case Periodicidade.Quadrimestral:
+                config.time_unit  = 'months';
+                config.multiplier = 4;
+                break;
+            case Periodicidade.Trimestral:
+                config.time_unit  = 'months';
+                config.multiplier = 3;
+                break;
+            case Periodicidade.Bimestral:
+                config.time_unit  = 'months';
+                config.multiplier = 2;
+                break;
+            case Periodicidade.Mensal:
+                config.time_unit  = 'months';
+                config.multiplier = 1;
+        }
+
+        if (!config.multiplier || !config.time_unit)
+          throw new Error('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
+
+        const empty_values: (number | "" | Decimal)[] = [];
+        while (empty_values.length < series_order_size) {
+            empty_values.push('');
+        }
+
+        const start  = DateTime.fromJSDate(start_date).setLocale('pt-BR');
+        const end    = DateTime.fromJSDate(end_date).setLocale('pt-BR');
+
+        let window_start: DateTime = start;
+        let window_end:   DateTime | null = null;
+
+        while (window_start < end) {
+            let plus_obj: any = {};
+            plus_obj[config.time_unit] = config.multiplier;
+            window_end = window_start.plus(plus_obj);
+
+            series_template.push({
+                titulo: window_start.toLocaleString(),
+                periodo_inicio: window_start.toJSDate(),
+                periodo_fim: window_end.toJSDate(),
+                valores_nominais: empty_values
+            });
+
+            window_start = window_end.plus({second: 1});
+            window_end   = null;
+        }
+
+        return series_template;
+    }
 
     async getPainelConteudoSerie (painel_conteudo_id: number): Promise<PainelConteudoSerie> {
         let ret = <PainelConteudoSerie>{};
@@ -876,7 +947,11 @@ export class PainelService {
             gte = date_range.start;
             lte = date_range.end;
 
+            const series_template_t = await this.getSeriesTemplate(config.periodicidade, gte, lte, series_order.length);
+            console.debug(series_template_t);
+
             if (config.periodicidade === Periodicidade.Anual) {
+
 
                 for (let i = 0; i < config.periodo_valor; i++) {
                     const periodo_inicio = new Date( new Date().getFullYear() - config.periodo_valor + i, 0, 1);
