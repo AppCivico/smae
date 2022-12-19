@@ -441,18 +441,26 @@ export class PainelService {
 
             const operations = [];
             if (updatePainelConteudoDetalheDto.mostrar_indicador_meta || updatePainelConteudoDetalheDto.mostrar_indicador_meta === false) {
-                operations.push(prisma.painelConteudo.update({
+                const painel_conteudo = await prisma.painelConteudo.findFirst({
                     where: { id: painel_conteudo_id },
-                    data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador_meta },
-                    select: {id: true}
-                }));
+                    select: { mostrar_indicador: true }
+                });
+
+                if (painel_conteudo?.mostrar_indicador != updatePainelConteudoDetalheDto.mostrar_indicador_meta) {
+                    operations.push(prisma.painelConteudo.update({
+                        where: { id: painel_conteudo_id },
+                        data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador_meta },
+                        select: {id: true}
+                    }));
+                }
             }
 
             for (const detalhe of updatePainelConteudoDetalheDto.detalhes!) {
+                console.debug(detalhe);
                 if (detalhe.mostrar_indicador!) {
                     operations.push(prisma.painelConteudoDetalhe.update({
                         where: {
-                            id: detalhe.id,
+                            id: detalhe.id
                         },
                         data: { mostrar_indicador: detalhe.mostrar_indicador },
                         select: {id: true}
