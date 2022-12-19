@@ -1,13 +1,12 @@
 <script setup>
-	import { ref  } from 'vue';
-	import { Dashboard} from '@/components';
-	import { Form, Field } from 'vee-validate';
-	import * as Yup from 'yup';
-	import { storeToRefs } from 'pinia';
-	import { router } from '@/router';
-	import { useRoute } from 'vue-router';
-	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
-	import { default as ItensRealizado} from '@/components/orcamento/ItensRealizado.vue';
+import { Dashboard } from '@/components';
+import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
+import { router } from '@/router';
+import { useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 	const alertStore = useAlertStore();
 	const route = useRoute();
@@ -232,8 +231,8 @@
             	    <thead>
             	        <tr>
             	            <th style="width: 25%">Nome do projeto/atividade</th>
-            	            <th style="width: 25%">Valor Empenho</th>
-            	            <th style="width: 25%">Valor Liquidado</th>
+            	            <th style="width: 25%">Empenho SOF</th>
+            	            <th style="width: 25%">Liquidação SOF</th>
             	        </tr>
             	    </thead>
             	    <tbody>
@@ -246,7 +245,7 @@
             	</table>
 
 	            <div>
-                    <label class="label">Vincular dotação</label>
+                    <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
                     <div v-for="m in singleMeta.children" :key="m.id">
                     	<div class="label tc300">Meta</div>
