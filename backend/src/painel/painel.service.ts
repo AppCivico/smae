@@ -812,7 +812,8 @@ export class PainelService {
 
         let config: {
             time_unit: string  | null,
-            multiplier: number | null
+            multiplier: number | null,
+
         } = {
             time_unit: null,
             multiplier: null
@@ -832,8 +833,8 @@ export class PainelService {
                 config.multiplier = 1;
                 break;
             case Periodicidade.Semestral:
-                config.time_unit  = 'months';
-                config.multiplier = 5;
+                config.time_unit  = 'quarter';
+                config.multiplier = 2;
                 break;
             case Periodicidade.Quadrimestral:
                 config.time_unit  = 'months';
@@ -869,9 +870,14 @@ export class PainelService {
         let window_end:   DateTime | null = null;
 
         while (window_start < end) {
-            let plus_obj: any = {};
-            plus_obj[config.time_unit] = config.multiplier;
-            window_end = window_start.plus(plus_obj);
+            if (periodicidade === Periodicidade.Semestral) {
+                window_start = window_start.startOf('quarter');
+                window_end = window_start.plus({quarters: 2}).endOf('quarter');
+            } else {
+                let plus_obj: any = {};
+                plus_obj[config.time_unit] = config.multiplier;
+                window_end = window_start.plus(plus_obj);
+            }
 
             series_template.push({
                 titulo: await this.getTitle(periodicidade, window_start, window_end),
