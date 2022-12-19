@@ -862,7 +862,7 @@ export class PainelService {
                 valores_nominais: empty_values
             });
 
-            window_start = window_end.plus({millisecond: 1});
+            window_start = window_end;
             window_end   = null;
         }
 
