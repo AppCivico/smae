@@ -8,7 +8,7 @@
 	import { useRoute } from 'vue-router';
 	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
 	import { default as ItensRealizado} from '@/components/orcamento/ItensRealizado.vue';
-	
+
 	const alertStore = useAlertStore();
 	const route = useRoute();
 	const meta_id = route.params.meta_id;
@@ -19,7 +19,7 @@
     const { singleMeta, activePdm } = storeToRefs(MetasStore);
     MetasStore.getPdM();
     MetasStore.getChildren(meta_id);
-	
+
 	const IniciativasStore = useIniciativasStore();
     const { singleIniciativa } = storeToRefs(IniciativasStore);
 	const AtividadesStore = useAtividadesStore();
@@ -64,7 +64,7 @@
 			dota.value = currentEdit.value.dotacao;
 			validaPartes(currentEdit.value.dotacao);
 
-			currentEdit.value.location =  
+      currentEdit.value.location =
 				currentEdit.value.atividade?.id?'a'+currentEdit.value.atividade.id:
 				currentEdit.value.iniciativa?.id?'i'+currentEdit.value.iniciativa.id:
 				currentEdit.value.meta?.id?'m'+currentEdit.value.meta.id:'m'+meta_id;
@@ -100,7 +100,7 @@
 
             r = await OrcamentosStore.updateOrcamentoRealizado(id,values);
             msg = 'Dados salvos com sucesso!';
-	        
+
 	        if(r == true){
 	            alertStore.success(msg);
 	            await router.push(`${parentlink}/orcamento/realizado`);
@@ -136,7 +136,7 @@
 			d_fonte.value = (v[8]) ? v[8] : '';
 		}
 	}
-	
+
 
 </script>
 <template>
@@ -149,7 +149,7 @@
         <h3 class="mb2"><strong>{{ano}}</strong> - {{parent_item.codigo}} - {{parent_item.titulo}}</h3>
 	    <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
 	        <Form @submit="onSubmit" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
-	            
+
                 <div v-if="currentEdit.processo">
                     <label class="label">Processo</label>
                     <input :value="currentEdit.processo" type="text" disabled class="inputtext light mb1 disabled" />
@@ -246,30 +246,30 @@
             	</table>
 
 	            <div>
-                    <label class="label">Vincular dotaçã</label>
-                    
+                    <label class="label">Vincular dotação</label>
+
                     <div v-for="m in singleMeta.children" :key="m.id">
                     	<div class="label tc300">Meta</div>
                     	<label class="block mb1">
-                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
+                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/>
                     		<span>{{m.codigo}} - {{m.titulo}}</span>
                     	</label>
                     	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
 	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
 	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
 	                    		<label class="block mb1">
-	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/>
 	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
 	                    		</label>
 	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
 		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
 		                    			<label class="block mb1">
-		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/>
 		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-		                    			</label>	
+		                    			</label>
 		                    		</div>
 	                    		</template>
-	                    	</div>	
+	                    	</div>
                     	</template>
                     </div>
                     <div class="error-msg">{{ errors.location }}</div>

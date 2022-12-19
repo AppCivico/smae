@@ -52,7 +52,7 @@ if (iniciativa_id) {
 (async()=>{
     await MetasStore.getById(meta_id);
     if (iniciativa_id) await IniciativasStore.getById(meta_id,iniciativa_id);
-    
+
     singleMeta.value.orgaos_participantes?.forEach(x=>{
         x.orgao_id = x.orgao.id;
         organsAvailable.value.push(x);
@@ -105,7 +105,7 @@ async function onSubmit(values) {
 
         values.coordenadores_cp = coordenadores_cp.value.participantes;
         if(!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
-        
+
         if(m_tags.value.participantes.length)values.tags = m_tags.value.participantes;
 
         if(!values.meta_id)values.meta_id = meta_id;
@@ -229,7 +229,7 @@ function filterResponsible(orgao_id) {
                     <div class="flex mb1 g2">
                         <div class="f1">
                             <select v-model="item.orgao_id" class="inputtext" @change="item.participantes=[]" v-if="organsAvailable.length">
-                                <option v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))" 
+                                <option v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
                                     :key="o.orgao_id"
                                     :value="o.orgao_id">{{o.orgao.descricao}}</option>
                             </select>
@@ -238,15 +238,15 @@ function filterResponsible(orgao_id) {
                             <AutocompleteField :controlador="item" :grupo="filterResponsible(item.orgao_id)" label="nome_exibicao" />
                         </div>
                         <div style="flex-basis: 30px;">
-                            <a v-if="index" @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
+                            <a v-if="index" @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
                         </div>
                     </div>
                 </template>
                 <a @click="addOrgao(orgaos_participantes,true)" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar orgão participante</span></a>
-                
+
                 <hr class="mt2 mb2"/>
 
-                <label class="label">Responsável(eis) na coordenadoria de planejamento da Meta* <span class="tvermelho">*</span></label>
+                <label class="label">Responsável(eis) na coordenadoria de planejamento da Meta <span class="tvermelho">*</span></label>
                 <div class="flex">
                     <div class="f1" v-if="coordsAvailable.length">
                         <AutocompleteField :controlador="coordenadores_cp" :grupo="coordsAvailable" label="nome_exibicao" />
@@ -260,7 +260,7 @@ function filterResponsible(orgao_id) {
                 </div>
             </Form>
         </template>
-        
+
         <template v-if="singleIniciativa?.loading||!oktogo">
             <span class="spinner">Carregando</span>
         </template>
