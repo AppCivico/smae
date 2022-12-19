@@ -1903,6 +1903,9 @@ model OrcamentoRealizadoItem {
     valor_liquidado Float @db.DoublePrecision
     mes             Int
 
+    /// data compilada a partir do ano/mes
+    data_referencia DateTime @db.Date()
+
     sobrescrito_em  DateTime?
     sobrescrito_por Int?
 
