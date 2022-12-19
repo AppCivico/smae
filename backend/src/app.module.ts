@@ -49,6 +49,7 @@ import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { TextoConfigModule } from './texto-config/texto-config.module';
+import { ReportsModule } from './reports/reports/reports.module';
 
 
 @Module({
@@ -104,6 +105,7 @@ import { TextoConfigModule } from './texto-config/texto-config.module';
         PdmCicloModule,
         SofEntidadeModule,
         TextoConfigModule,
+        ReportsModule,
     ],
     controllers: [AppController, MinhaContaController],
     providers: [

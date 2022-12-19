@@ -157,6 +157,7 @@ model Pessoa {
     OrcamentoRealizadoCriados                OrcamentoRealizado[]              @relation("criador")
     OrcamentoRealizadoRemovidos              OrcamentoRealizado[]              @relation("removedor")
     OrcamentoRealizadoItem                   OrcamentoRealizadoItem[]          @relation("sobrescritor")
+    Relatorio                                Relatorio[]
 
     @@index([email])
     @@map("pessoa")
@@ -395,6 +396,7 @@ model Pdm {
     CicloFasesPdmConfig CicloFasesPdmConfig[]
     CicloFisico         CicloFisico[]
     PdmOrcamentoConfig  PdmOrcamentoConfig[]
+    Relatorio           Relatorio[]
 
     @@index([ativo])
     @@map("pdm")
@@ -597,6 +599,7 @@ model Arquivo {
     Pdm                             Pdm[]
     VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
+    Relatorio                       Relatorio[]
 
     @@map("arquivo")
 }
@@ -1960,4 +1963,38 @@ model TextoConfig {
     tos            String
 
     @@map("texto_config")
+}
+
+enum TipoRelatorio {
+    Consolidado
+    Analtico
+}
+
+enum FonteRelatorio {
+    OrcamentoExecutado
+    IndicadoresSemestral
+    IndicadoresAnual
+    MonitoramentoMensal
+}
+
+model Relatorio {
+    id Int @id @default(1)
+
+    pdm_id Int
+
+    parametros Json @default("{}") @db.Json
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int?
+    arquivo_id Int
+
+    temporario Boolean
+    tipo       TipoRelatorio
+    fonte      FonteRelatorio
+
+    criador Pessoa? @relation(fields: [criado_por], references: [id])
+    arquivo Arquivo @relation(fields: [arquivo_id], references: [id])
+    pdm     Pdm     @relation(fields: [pdm_id], references: [id])
+
+    @@map("relatorio")
 }
