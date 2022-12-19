@@ -1,5 +1,5 @@
 <script setup>
-	import { ref, onUpdated, onMounted } from 'vue'
+import { onMounted, onUpdated, ref } from 'vue';
 	const props = defineProps(['controlador', 'respostasof']);
 	let itens = ref(props.controlador)
 
@@ -57,7 +57,7 @@
             <input v-model="item.valor_liquidado" @keyup="maskFloat" @change="attVar(itens,i,'valor_liquidado')" type="text" class="inputtext light"/>
         </div>
         <div style="flex-basis: 30px;">
-            <a @click="removeItem(itens,i)" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
+            <a @click="removeItem(itens,i)" class="addlink"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
         </div>
     </div>
     <div class="tc mb2">
@@ -68,7 +68,7 @@
     	</div>
     	<div class="f1">
     		<div class="flex center" v-if="respostasof.smae_soma_valor_empenho!=undefined">
-    			<span class="label mb0 tc300 mr1">Soma empenho</span>
+    			<span class="label mb0 tc300 mr1">Total Empenho SMAE</span>
     			{{ (somaitens = itens.reduce((r,x)=>r+toFloat(x.valor_empenho),0)) ? '':'' }}
     			{{ (somatotal = toFloat(respostasof.smae_soma_valor_empenho)+somaitens) ? '':'' }}
     			<span class="t14">R$ {{dinheiro(somatotal)}}</span>
@@ -77,7 +77,7 @@
     	</div>
     	<div class="f1">
     		<div class="flex center" v-if="respostasof.smae_soma_valor_liquidado!=undefined">
-    			<span class="label mb0 tc300 mr1">Soma liquidado na dotação</span>
+    			<span class="label mb0 tc300 mr1">Total liquidação SMAE</span>
     			{{ (somaitens = itens.reduce((r,x)=>r+toFloat(x.valor_liquidado),0)) ? '':'' }}
     			{{ (somatotal = toFloat(respostasof.smae_soma_valor_liquidado)+somaitens) ? '':'' }}
     			<span class="t14">R$ {{dinheiro(somatotal)}}</span>
