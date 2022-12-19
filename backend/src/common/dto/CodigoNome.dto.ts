@@ -1,5 +1,5 @@
 
 export class CodigoNome {
     codigo: string
-    sigla: string;
+    nome: string;
 }

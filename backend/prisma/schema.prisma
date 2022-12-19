@@ -1975,7 +1975,7 @@ model TextoConfig {
 
 enum TipoRelatorio {
     Consolidado
-    Analtico
+    Analitico
 }
 
 enum FonteRelatorio {

@@ -1,7 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
 import { CodigoNome } from "../../../common/dto/CodigoNome.dto";
 import { IdCodTituloDto } from "../../../common/dto/IdCodTitulo.dto";
-import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto";
 
 export class OrcamentoExecutadoSaidaDto {
     meta: IdCodTituloDto
@@ -12,10 +10,14 @@ export class OrcamentoExecutadoSaidaDto {
     processo: string | null
     nota_empenho: string | null
 
-    orgao: IdSiglaDescricao
-
+    orgao: CodigoNome
     unidade: CodigoNome
     fonte: CodigoNome
+
+    /**
+     * fonte: SMAE/ horário que o SMAE foi buscar a dotação
+     **/
+    plan_dotacao_sincronizado_em: string | null
 
     /**
      * fonte: SOF/ orçamento planejado, só vem quando não há processo
@@ -30,12 +32,16 @@ export class OrcamentoExecutadoSaidaDto {
     /**
      * fonte: SMAE, para qual ano foi realizada a consulta no SOF
      **/
-    plan_dotacao_ano_utilizado: number | null
+    plan_dotacao_ano_utilizado: string | null
     /**
      * fonte: SMAE, para qual mês foi realizada a consulta no SOF
      **/
-    plan_dotacao_mes_utilizado: number | null
+    plan_dotacao_mes_utilizado: string | null
 
+    /**
+     * fonte: SMAE/ horário que o SMAE foi buscar a dotação
+     **/
+    dotacao_sincronizado_em: string
     /**
      * fonte: SOF/ valor de empenho até o ano/mes utilizado
      **/
@@ -49,11 +55,11 @@ export class OrcamentoExecutadoSaidaDto {
     /**
      * fonte: SMAE, para qual ano foi realizada a consulta no SOF do realizado
      **/
-    dotacao_ano_utilizado: number
+    dotacao_ano_utilizado: string
     /**
      * fonte: SMAE, para qual mês foi realizada a consulta no SOF do realizado
      **/
-    dotacao_mes_utilizado: number
+    dotacao_mes_utilizado: string
 
     /**
      * fonte: SMAE, soma ou valor do valor empenhado
@@ -64,6 +70,19 @@ export class OrcamentoExecutadoSaidaDto {
      * fonte: SMAE, soma ou valor do valor liquidado
      **/
     smae_valor_liquidado: string
+
+    /**
+     * fonte: SMAE, mês do registro, em caso de Consolidado é sempre em branco
+     **/
+    mes: string
+
+
+    /**
+     * fonte: SMAE, ano do registro, em caso de Consolidado é sempre em branco
+     **/
+    ano: string
+
+    logs: string[]
 }
 
 export class ListOrcamentoExecutadoDto {
