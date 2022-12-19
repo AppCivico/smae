@@ -833,7 +833,7 @@ export class PainelService {
                 break;
             case Periodicidade.Semestral:
                 config.time_unit  = 'months';
-                config.multiplier = 6;
+                config.multiplier = 5;
                 break;
             case Periodicidade.Quadrimestral:
                 config.time_unit  = 'months';
