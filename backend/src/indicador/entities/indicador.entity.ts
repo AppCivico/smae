@@ -19,4 +19,5 @@ export class Indicador {
     formula: string | null
     acumulado_usa_formula: boolean | null
     formula_variaveis: FormulaVariaveis[]
+    casas_decimais: number | null
 }
