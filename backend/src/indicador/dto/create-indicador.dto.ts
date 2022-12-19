@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Polaridade } from "@prisma/client";
-import { Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 
@@ -105,4 +105,11 @@ export class CreateIndicadorDto {
     @IsOptional()
     @IsString({ message: '$property| Precisa ser uma string' })
     complemento?: string | null
+
+    @IsInt({ message: "$property| $property inválido" })
+    @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
+    @Max(30, { message: '$property| casas_decimais tem valor máximo de 30' })
+    @Transform((a: any) => a.value === '' ? undefined : +a.value)
+    @ValidateIf((object, value) => value !== null)
+    casas_decimais: number | null
 }
