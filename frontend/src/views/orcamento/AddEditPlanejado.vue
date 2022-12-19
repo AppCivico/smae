@@ -7,7 +7,7 @@
 	import { router } from '@/router';
 	import { useRoute } from 'vue-router';
 	import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
-	
+
 	const alertStore = useAlertStore();
 	const route = useRoute();
 	const meta_id = route.params.meta_id;
@@ -57,7 +57,7 @@
 			dota.value = currentEdit.value.dotacao;
 			validaPartes(currentEdit.value.dotacao);
 
-			currentEdit.value.location =  
+      currentEdit.value.location =
 				currentEdit.value.atividade?.id?'a'+currentEdit.value.atividade.id:
 				currentEdit.value.iniciativa?.id?'i'+currentEdit.value.iniciativa.id:
 				currentEdit.value.meta?.id?'m'+currentEdit.value.meta.id:'m'+meta_id;
@@ -106,7 +106,7 @@
             	r = await OrcamentosStore.insertOrcamentoPlanejado(values);
             	msg = 'Dados salvos com sucesso!';
             }
-	        
+
 	        if(r == true){
 	            alertStore.success(msg);
 	            await router.push(`${parentlink}/orcamento/planejado`);
@@ -318,33 +318,33 @@
             	        </tr>
             	    </tbody>
             	</table>
-	            
+
 
 	            <div>
                     <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
-                    
+
                     <div v-for="m in singleMeta.children" :key="m.id">
                     	<div class="label tc300">Meta</div>
                     	<label class="block mb1">
-                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/> 
+                    		<Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/>
                     		<span>{{m.codigo}} - {{m.titulo}}</span>
                     	</label>
                     	<template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
 	                    	<div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
 	                    	<div v-for="i in m.iniciativas" :key="i.id" class="">
 	                    		<label class="block mb1">
-	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/> 
+	                    			<Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/>
 	                    			<span>{{i.codigo}} - {{i.titulo}}</span>
 	                    		</label>
 	                    		<template v-if="activePdm.nivel_orcamento=='Atividade'">
 		                    		<div v-for="a in i.atividades" :key="a.id" class="pl2">
 		                    			<label class="block mb1">
-		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/> 
+		                    				<Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/>
 		                    				<span>{{a.codigo}} - {{a.titulo}}</span>
-		                    			</label>	
+		                    			</label>
 		                    		</div>
 	                    		</template>
-	                    	</div>	
+	                    	</div>
                     	</template>
                     </div>
                     <div class="error-msg">{{ errors.location }}</div>
@@ -355,7 +355,7 @@
 	                    <Field name="valor_planejado" @keyup="maskFloat" type="text" class="inputtext light mb1" :class="{ 'error': errors.valor_planejado }" />
 	                    <div class="error-msg">{{ errors.valor_planejado }}</div>
 	                    <div class="flex center" v-if="respostasof.smae_soma_valor_planejado!=undefined">
-	                    	<span class="label mb0 tc300 mr1">Soma planejada no SMAE</span>
+	                    	<span class="label mb0 tc300 mr1">Total planejado no SMAE</span>
 	                    	{{ (somatotal = toFloat(respostasof.smae_soma_valor_planejado)+toFloat(values.valor_planejado)) ? '':'' }}
 	                    	<span class="t14">R$ {{dinheiro(somatotal)}}</span>
 	                    	<span v-if="somatotal > toFloat(respostasof.val_orcado_atualizado)" class="tvermelho w700">(Pressão orçamentária)</span>
