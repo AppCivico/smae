@@ -152,6 +152,7 @@ model Pessoa {
     EtapaResponsavel                         EtapaResponsavel[]
     MetaOrcamentoCriados                     MetaOrcamento[]                   @relation("criador")
     MetaOrcamentoRemovidos                   MetaOrcamento[]                   @relation("removedor")
+    MetaOrcamentoAtualizados                 MetaOrcamento[]                   @relation("atualizador")
     OrcamentoPlanejadoCriados                OrcamentoPlanejado[]              @relation("criador")
     OrcamentoPlanejadoRemovidos              OrcamentoPlanejado[]              @relation("removedor")
     OrcamentoRealizadoCriados                OrcamentoRealizado[]              @relation("criador")
@@ -1761,6 +1762,9 @@ model MetaOrcamento {
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
 
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+
     removido_em  DateTime?
     removido_por Int?
 
@@ -1768,13 +1772,14 @@ model MetaOrcamento {
     investimento_previsto Float  @db.DoublePrecision
     parte_dotacao         String @default("")
 
-    meta       Meta        @relation(fields: [meta_id], references: [id])
-    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
-    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
-    criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
-    removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    meta        Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa  Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade   Atividade?  @relation(fields: [atividade_id], references: [id])
+    criador     Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    removedor   Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa?     @relation("atualizador", fields: [atualizado_por], references: [id])
 
-    @@index([meta_id, criado_em])
+    @@index([meta_id, ano_referencia])
     @@map("meta_orcamento")
 }
 

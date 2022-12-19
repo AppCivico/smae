@@ -4,6 +4,9 @@ export class MetaOrcamento {
     ano_referencia: number
     criado_em: Date
     criador: { nome_exibicao: string }
+
+    atualizado_em: Date
+
     meta: IdCodTituloDto
     atividade: IdCodTituloDto | null
     iniciativa: IdCodTituloDto | null

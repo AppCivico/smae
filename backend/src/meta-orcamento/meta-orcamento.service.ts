@@ -81,6 +81,7 @@ export class MetaOrcamentoService {
                 custeio_previsto: true,
                 investimento_previsto: true,
                 parte_dotacao: true,
+                atualizado_em: true
             },
             orderBy: [
                 { meta_id: 'asc' },
@@ -88,7 +89,7 @@ export class MetaOrcamentoService {
             ]
         });
 
-        let list =  metaOrcamentos.map((r) => {
+        let list = metaOrcamentos.map((r) => {
             return {
                 ...r,
                 custeio_previsto: r.custeio_previsto.toFixed(2),
@@ -133,6 +134,9 @@ export class MetaOrcamentoService {
                     meta_id: meta_id!,
                     iniciativa_id,
                     atividade_id,
+
+                    atualizado_em: now,
+                    atualizado_por: user.id,
 
                     custeio_previsto: dto.custeio_previsto,
                     investimento_previsto: dto.investimento_previsto,
