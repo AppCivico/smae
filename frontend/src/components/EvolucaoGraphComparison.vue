@@ -259,8 +259,16 @@ class smaeChart {
     d.indicadores.forEach(function (el, i) {
       tipHtml += `<p class="t14 indicador tprimary">${el.label}</p>
           <div class="t11 index${i + 1}">
-            <p class="r-caption"><i></i> Realizado acumulado: <span>${el.realizadoAcu || '-'}</span> (<span>${el.realizado || '-'}</span>)</p>
-            <p class="p-caption"><i></i> Previsto acumulado: <span>${el.projetadoAcu || '-'}</span> (<span>${el.projetado || '-'}</span>)</p>
+            <p class="r-caption"><i></i>
+              Realizado acumulado:
+              <span>${el.realizadoAcu ?? '-'}</span>
+              (<span>${el.realizado ?? '-'}</span>)
+            </p>
+            <p class="p-caption"><i></i>
+              Previsto acumulado:
+              <span>${el.projetadoAcu ?? '-'}</span>
+              (<span>${el.projetado ?? '-'}</span>)
+            </p>
           </div>`;
     });
 
@@ -544,59 +552,59 @@ window.addEventListener('resize', start);
   text {
     text-transform: uppercase;
   }
-  
+
   .color-classes(@i: length(@cores)) when (@i > 0) {
     .color-classes(@i - 1);
-  
+
     @cor: extract(@cores, @i);
-  
+
     .line-r@{i} {
       stroke: @cor;
       fill: none;
     }
-  
+
     .circle-r@{i} {
       fill: @cor;
     }
-  
+
     .line-p@{i} {
       stroke: @cor;
       stroke-dasharray: 3 3;
       fill: none;
     }
-  
+
     .circle-p@{i} {
       fill: @cor;
     }
   }
-  
+
   .color-classes();
-  
+
   .meta-circle {
     fill: #152741;
   }
-  
+
   .meta-line {
     stroke: #152741;
     fill: none;
   }
-  
+
   .guideline {
     visibility: hidden;
     opacity: 0;
     transition: all 200ms ease-in-out;
-  
+
     &.on {
       visibility: visible;
       opacity: 1;
     }
   }
-  
+
   .xaxis {
     .domain {
       stroke: #B8C0CC;
     }
-  
+
     .tick {
       text {
         color: #B8C0CC;
@@ -605,18 +613,18 @@ window.addEventListener('resize', start);
       }
     }
   }
-  
+
   .xaxis2 {
     .domain {
       stroke: transparent;
     }
-  
+
     .tick {
       rect {
         fill: #152741;
         border-radius: 100%;
       }
-  
+
       text {
         color: #FFF;
         font-size: 11px;
@@ -624,12 +632,12 @@ window.addEventListener('resize', start);
       }
     }
   }
-  
+
   .yaxis {
     .domain {
       stroke: #B8C0CC;
     }
-  
+
     .tick {
       text {
         color: #B8C0CC;
@@ -638,7 +646,7 @@ window.addEventListener('resize', start);
       }
     }
   }
-  
+
   .year-line {
     stroke: #E3E5E8;
   }
