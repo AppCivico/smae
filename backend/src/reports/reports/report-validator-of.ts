@@ -1,7 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { registerDecorator, validate, ValidationArguments, ValidationOptions, ValidatorConstraint } from 'class-validator';
 import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+import { FonteRelatorio } from '@prisma/client';
 
 export function ReportValidatorOf(property: string, validationOptions?: ValidationOptions) {
     return function (value: Object, propertyName: string) {
@@ -19,12 +20,18 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                 async validate(value: any, args: ValidationArguments) {
 
                     const [fonteNome] = args.constraints;
-                    const fonte = (args.object as any)[fonteNome];
+                    const fonte = (args.object as any)[fonteNome] as FonteRelatorio;
 
-                    const validatorObject = plainToClass(CreateOrcamentoExecutadoDto, value);
+                    let theClass: any = undefined;
 
+                    switch (fonte) {
+                        case 'Orcamento': theClass = CreateOrcamentoExecutadoDto; break;
+                        default:
+                            return false;
+                    }
+
+                    const validatorObject = plainToInstance(theClass, value);
                     const validations = await validate(validatorObject);
-
                     if (validations.length) {
                         throw new BadRequestException(
                             validations.reduce((acc, curr) => {
@@ -33,7 +40,6 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                         );
                     }
 
-                    // é uma data, e não tem o horário setado
                     return true;
                 },
             },
