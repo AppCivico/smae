@@ -1,10 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { Dashboard} from '@/components';
-import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
+import { Dashboard } from '@/components';
 import { default as EvolucaoGraphComparison } from '@/components/EvolucaoGraphComparison.vue';
 import { useAuthStore, useMetasStore, usePaineisStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -103,7 +102,7 @@ function dateToTitle(d) {
             <hr class="ml2 f1"/>
             <router-link v-if="perm?.CadastroMeta?.editar" :to="`/metas/editar/${singleMeta.id}`" class="btn big ml2">Editar</router-link>
         </div>
-        
+
         <div class="boards">
             <template v-if="singleMeta.id">
 
@@ -117,7 +116,7 @@ function dateToTitle(d) {
                         <EvolucaoGraphComparison :single="SingleSerie" :dataserie="[SingleSerie.meta?.indicador].concat(SingleSerie?.detalhes?.filter(x=>x?.iniciativa?.id)?.map(x=>x.iniciativa.indicador[0]))"/>
                     </div>
 
-                    <div class="evolucaoTable" ref="tableScroll" 
+                    <div class="evolucaoTable" ref="tableScroll"
                         @mousedown="mouseDownHandler"
                         @mousemove="mouseMoveHandler"
                         @mouseup="mouseUpHandler"
@@ -127,7 +126,8 @@ function dateToTitle(d) {
                                 <svg class="f0" style="flex-basis: 2rem;" width="28" height="28" viewBox="0 0 28 28" color="#F2890D" xmlns="http://www.w3.org/2000/svg"><use xlink:href="#i_indicador" /></svg>
                                 <h2 class="mt1 mb1">Evolução</h2>
                             </div>
-                            <div class="f0 end br" style="flex-basis:400px;" v-for="v in ModeloSerie">
+                            <div class="f0 end br" style="flex-basis:400px;"
+                            v-for="v, k in ModeloSerie" :key="k">
                                 <div class="t14 w700 p05">{{dateToTitle(v.periodo_inicio)}}</div>
                                 <div class="flex">
                                     <div class="f1 label p05 tc200 br">Projetado mensal</div>
@@ -142,13 +142,14 @@ function dateToTitle(d) {
                             <div class="flex center"
                                 v-for="ind in [SingleSerie.meta.indicador]"
                                 :style="{width: ((ModeloSerie.length+1)*400)+'px'}"
+                                :key="ind.id"
                             >
                                 <div class="flex center br p05 f0 g1 t14 w700 stickyleft">{{ind.codigo}} {{ind.titulo}}</div>
-                                <div class="f0 flex" style="flex-basis:400px;" v-for="v in ind.series">
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ? v.valores_nominais[iP] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ? v.valores_nominais[iR] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ? v.valores_nominais[iPA] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ? v.valores_nominais[iRA] : '-' }}</div>
+                                <div class="f0 flex" style="flex-basis:400px;" v-for="v, k in ind.series" :key="k">
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ?? '-' }}</div>
                                 </div>
                             </div>
                         </template>
@@ -156,13 +157,14 @@ function dateToTitle(d) {
                         <div class="flex center"
                             v-for="ind in SingleSerie?.detalhes?.filter(x=>x?.variavel?.id)"
                             :style="{width: ((ModeloSerie.length+1)*400)+'px'}"
+                            :key="ind.id"
                         >
                             <div class="br p05 f0 g1 t14 pl2 stickyleft">{{ind.variavel?.codigo}} {{ind.variavel?.titulo}}</div>
-                            <div class="f0 flex" style="flex-basis:400px;" v-for="v in ind.variavel?.series">
-                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ? v.valores_nominais[iP] : '-' }}</div>
-                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ? v.valores_nominais[iR] : '-' }}</div>
-                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ? v.valores_nominais[iPA] : '-' }}</div>
-                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ? v.valores_nominais[iRA] : '-' }}</div>
+                            <div class="f0 flex" style="flex-basis:400px;" v-for="v, k in ind.variavel?.series" :key="k">
+                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ?? '-' }}</div>
+                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ?? '-' }}</div>
+                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ?? '-' }}</div>
+                                <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ?? '-' }}</div>
                             </div>
                         </div>
 
@@ -176,26 +178,28 @@ function dateToTitle(d) {
                             <div class="flex center"
                                 v-for="ind in ini.iniciativa.indicador"
                                 :style="{width: ((ModeloSerie.length+1)*400)+'px'}"
+                                :key="ind.id"
                             >
                                 <div class="flex center br p05 pl2 f0 g1 t14 w700 stickyleft">{{ind.codigo}} {{ind.titulo}}</div>
-                                <div class="f0 flex" style="flex-basis:400px;" v-for="v in ind.series">
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ? v.valores_nominais[iP] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ? v.valores_nominais[iR] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ? v.valores_nominais[iPA] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ? v.valores_nominais[iRA] : '-' }}</div>
+                                <div class="f0 flex" style="flex-basis:400px;" v-for="v, k in ind.series" :key="k">
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ?? '-' }}</div>
                                 </div>
                             </div>
 
                             <div class="flex center"
                                 v-for="ind in ini.filhos?.filter(x=>x?.variavel?.id)"
                                 :style="{width: ((ModeloSerie.length+1)*400)+'px'}"
+                                :key="ind.id"
                             >
                                 <div class="br p05 f0 g1 t14 pl2 stickyleft">{{ind.variavel?.codigo}} {{ind.variavel?.titulo}}</div>
-                                <div class="f0 flex" style="flex-basis:400px;" v-for="v in ind.variavel?.series">
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ? v.valores_nominais[iP] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ? v.valores_nominais[iR] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ? v.valores_nominais[iPA] : '-' }}</div>
-                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ? v.valores_nominais[iRA] : '-' }}</div>
+                                <div class="f0 flex" style="flex-basis:400px;" v-for="v, k in ind.variavel?.series" :key="k">
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ?? '-' }}</div>
+                                    <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ?? '-' }}</div>
                                 </div>
                             </div>
 
@@ -209,26 +213,28 @@ function dateToTitle(d) {
                                 <div class="flex center"
                                     v-for="ind in ati.atividade.indicador"
                                     :style="{width: ((ModeloSerie.length+1)*400)+'px'}"
+                                    :key="ind.id"
                                 >
                                     <div class="flex center br p05 pl4 f0 g1 t14 w700 stickyleft">{{ind.codigo}} {{ind.titulo}}</div>
-                                    <div class="f0 flex" style="flex-basis:400px;" v-for="v in ind.series">
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ? v.valores_nominais[iP] : '-' }}</div>
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ? v.valores_nominais[iR] : '-' }}</div>
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ? v.valores_nominais[iPA] : '-' }}</div>
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ? v.valores_nominais[iRA] : '-' }}</div>
+                                    <div class="f0 flex" style="flex-basis:400px;" v-for="v, k in ind.series" :key="k">
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ?? '-' }}</div>
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ?? '-' }}</div>
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ?? '-' }}</div>
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ?? '-' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="flex center"
                                     v-for="ind in ati.filhos?.filter(x=>x?.variavel?.id)"
                                     :style="{width: ((ModeloSerie.length+1)*400)+'px'}"
+                                    :key="ind.id"
                                 >
                                     <div class="br p05 f0 g1 t14 pl5 stickyleft">{{ind.variavel?.codigo}} {{ind.variavel?.titulo}}</div>
-                                    <div class="f0 flex" style="flex-basis:400px;" v-for="v in ind.variavel?.series">
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ? v.valores_nominais[iP] : '-' }}</div>
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ? v.valores_nominais[iR] : '-' }}</div>
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ? v.valores_nominais[iPA] : '-' }}</div>
-                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ? v.valores_nominais[iRA] : '-' }}</div>
+                                    <div class="f0 flex" style="flex-basis:400px;" v-for="v, k in ind.variavel?.series" :key="k">
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iP] ?? '-' }}</div>
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iR] ?? '-' }}</div>
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iPA] ?? '-' }}</div>
+                                        <div class="f1 p05 t14 br">{{ v.valores_nominais[iRA] ?? '-' }}</div>
                                     </div>
                                 </div>
 
