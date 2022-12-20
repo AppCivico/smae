@@ -7,6 +7,7 @@ const { Parser, transforms: { flatten, unwind } } = require('json2csv');
 const linhasTransforms = [unwind({
     paths: [
         'linhas',
+        'linhas_planejado',
         'meta.indicador.series'
     ]
 }), flatten({ paths: [] })];

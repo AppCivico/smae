@@ -75,12 +75,17 @@ export class ParteDotacaoDto {
     *
     * Aceita dotações parcialmente, onde os órgão, unidade, função, subfunção, projeto/atividade e fonte são obrigatórios
     *
+    * unidade deve ser obrigatório apenas quando existe alguma unidade já registrada no órgão, mas pode ser enviado com valores
+    * com * caso não tenha nenhum, ou deixar o usuário digitar qualquer digito
+    *
+    * eg: `03.30.00.000.0000.2.100.00000000.00`, `03.*.00.000.0000.2.100.00000000.00`
+    *
     * @example "11.10.00.000.0000.2.100.00000000.00"
     */
     @IsString()
     @MaxLength(40)
     // faz o match parcial, mas alguns campos precisam ser completos
-    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.(\d{4}|\*)\.\d\.\d{3}\.(\d{8}|\*)\.\d{2}$/, {
+    @Matches(/^\d{2}\.(\d{2}|\*)\.\d{2}\.\d{3}\.(\d{4}|\*)\.\d\.\d{3}\.(\d{8}|\*)\.\d{2}$/, {
         message: 'Dotação parcial não está no formato esperado: 00.00.00.000.*.0.000.*.00, podendo estar parcialmente preenchida com * nos campos faltantes'
     })
     @ValidateIf((object, value) => value !== '')
