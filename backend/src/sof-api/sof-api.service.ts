@@ -208,7 +208,8 @@ export class SofApiService {
         endpoint += '?ano=' + encodeURIComponent(input.ano);
         endpoint += '&mes=' + encodeURIComponent(input.mes);
         endpoint += '&orgao=' + encodeURIComponent(input.orgao);
-        endpoint += '&unidade=' + encodeURIComponent(input.unidade);
+        if (input.unidade != '*')
+            endpoint += '&unidade=' + encodeURIComponent(input.unidade);
         endpoint += '&proj_atividade=' + encodeURIComponent(input.proj_atividade);
         endpoint += '&fonte=' + encodeURIComponent(input.fonte);
 
