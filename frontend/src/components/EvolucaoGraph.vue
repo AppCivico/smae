@@ -137,7 +137,7 @@
 			      		.attr('rx', 11);
 
 		    /*DRAW PROJETADO*/
-			this.drawDataPoints(svg, data.projetado, xScale, yScale, this.sizes, { name: 'projetado', transitionDuration: this.transitionDuration });
+    this.drawDataPoints(svg, data.projetado, xScale, yScale, this.sizes, { name: 'previsto', transitionDuration: this.transitionDuration });
 
 			/*DRAW REALIZADO*/
 			this.drawDataPoints(svg, data.realizado, xScale, yScale, this.sizes, { name: 'realizado', transitionDuration: this.transitionDuration });
@@ -239,7 +239,7 @@
 				</p>
 				<p class="tc300 t11 mb0">
 					Previsto ${mes}: <span>${d.projetado || '-'}</span><br />
-					Relizado ${mes}: <span class="tamarelo">${d.realizado || '-'}</span>
+          Realizado ${mes}: <span class="tamarelo">${d.realizado || '-'}</span>
 				</p>`;
 
 			el.html(tipHtml);

@@ -57,9 +57,9 @@ const { Variaveis, Valores } = storeToRefs(VariaveisStore);
 function start(){
     if(props.group=='variaveis')editModalStore.modal(AddEditVariavel,props);
     if(props.group=='valores')editModalStore.modal(AddEditValores,{...props,checkClose:()=>{
-        alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-            editModalStore.clear(); 
-            alertStore.clear(); 
+      alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+        editModalStore.clear();
+        alertStore.clear();
         })
     }});
     if(props.group=='retroativos')editModalStore.modal(AddEditRealizado,props);
@@ -77,7 +77,7 @@ onUpdated(()=>{start()});
             </div>
             <hr class="ml2 f1"/>
         </div>
-        
+
         <div class="boards">
             <template v-if="tempIndicadores.length">
                 <template v-for="ind in tempIndicadores" :key="ind.id">
@@ -104,7 +104,7 @@ onUpdated(()=>{start()});
                             <div class="tablepreinfo">
                                 <div class="flex spacebetween">
                                     <div class="flex center">
-                                        <div class="t12 lh1 w700 uc tc400">Projetado X Realizado</div>
+                                        <div class="t12 lh1 w700 uc tc400">Previsto X Realizado</div>
                                         <div class="tipinfo ml1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Indicador calculado pelo média móvel das variáveis</div></div>
                                     </div>
                                 </div>
@@ -113,9 +113,9 @@ onUpdated(()=>{start()});
                                 <thead>
                                     <tr>
                                         <th style="width: 25%">Mês/Ano</th>
-                                        <th style="width: 17.5%">Projetado Mensal</th>
+                                        <th style="width: 17.5%">Previsto Mensal</th>
                                         <th style="width: 17.5%">Realizado Mensal</th>
-                                        <th style="width: 17.5%">Projetado Acumulado</th>
+                                        <th style="width: 17.5%">Previsto Acumulado</th>
                                         <th style="width: 17.5%">Realizado Acumulado</th>
                                         <th style="width: 5%"></th>
                                     </tr>
@@ -152,7 +152,7 @@ onUpdated(()=>{start()});
                                 <div class="tablepreinfo">
                                     <div class="flex spacebetween">
                                         <div class="flex center">
-                                            <div class="t12 lh1 w700 uc tc400">Projetado X Realizado</div>
+                                            <div class="t12 lh1 w700 uc tc400">Previsto X Realizado</div>
                                             <div class="tipinfo ml1"><svg width="20" height="20"><use xlink:href="#i_i"></use></svg><div>Indicador calculado pelo média móvel das variáveis</div></div>
                                         </div>
                                         <!-- <div>
@@ -164,9 +164,9 @@ onUpdated(()=>{start()});
                                     <thead>
                                         <tr>
                                             <th style="width: 25%">Mês/Ano</th>
-                                            <th style="width: 17.5%">Projetado Mensal</th>
+                                            <th style="width: 17.5%">Previsto Mensal</th>
                                             <th style="width: 17.5%">Realizado Mensal</th>
-                                            <th style="width: 17.5%">Projetado Acumulado</th>
+                                            <th style="width: 17.5%">Previsto Acumulado</th>
                                             <th style="width: 17.5%">Realizado Acumulado</th>
                                             <th style="width: 5%"></th>
                                         </tr>
