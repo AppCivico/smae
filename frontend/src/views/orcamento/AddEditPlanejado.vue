@@ -70,7 +70,8 @@ const d_fonte = ref('');
   }
 })();
 
-var regdota = /^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/;
+var regdota = /^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2})?)?)?)?)?)?)?)?$/;
+
 const schema = Yup.object().shape({
   valor_planejado: Yup.string().required('Preencha o valor planejado.'),
   dotacao: Yup.string().required('Preencha a dotação.').matches(regdota, 'Formato inválido')
