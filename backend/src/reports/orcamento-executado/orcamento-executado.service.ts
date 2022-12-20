@@ -105,19 +105,14 @@ export class OrcamentoExecutadoService {
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
         const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
-        const dotacoesPlanejadasVistas: Record<string, boolean> = {};
+
         if ((dto.tipo == 'Analitico') && search.length > 0) {
             const resultadosRealizado: RetornoRealizadoDb[] = await this.queryAnaliticoExecutado(search);
             for (const r of resultadosRealizado) {
                 retExecutado.push(this.convertRealizadoRow(r))
-
-                if (r.plan_valor_planejado !== null) {
-                    dotacoesPlanejadasVistas[r.dotacao] = true;
-                }
-
             }
 
-            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, Object.keys(dotacoesPlanejadasVistas));
+            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim);
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r))
             }
@@ -127,12 +122,9 @@ export class OrcamentoExecutadoService {
 
             for (const r of resultados) {
                 retExecutado.push(this.convertRealizadoRow(r))
-                if (r.plan_valor_planejado !== null) {
-                    dotacoesPlanejadasVistas[r.dotacao] = true;
-                }
             }
 
-            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, Object.keys(dotacoesPlanejadasVistas));
+            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim);
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r))
             }
@@ -146,7 +138,7 @@ export class OrcamentoExecutadoService {
     }
 
 
-    private async queryConsolidadoPlanejado(ano_ini: string, ano_fim: string, pularDotacoes: string[]): Promise<RetornoPlanejadoDb[]> {
+    private async queryConsolidadoPlanejado(ano_ini: string, ano_fim: string): Promise<RetornoPlanejadoDb[]> {
         return await this.prisma.$queryRaw`
             with previsoes as (
                 select
@@ -171,8 +163,7 @@ export class OrcamentoExecutadoService {
                 left join iniciativa mi on mi.id = iniciativa_id
                 left join atividade ma on ma.id = atividade_id
 
-                where NOT (op.dotacao = ANY(${pularDotacoes}::varchar[]))
-                and op.ano_referencia >= ${ano_ini}::int
+                where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.removido_em is null
             )
@@ -203,7 +194,7 @@ export class OrcamentoExecutadoService {
             `;
     }
 
-    private async queryAnaliticoPlanejado(ano_ini: string, ano_fim: string, pularDotacoes: string[]): Promise<RetornoPlanejadoDb[]> {
+    private async queryAnaliticoPlanejado(ano_ini: string, ano_fim: string): Promise<RetornoPlanejadoDb[]> {
         return await this.prisma.$queryRaw`
             with previsoes as (
                 select
@@ -229,8 +220,7 @@ export class OrcamentoExecutadoService {
                 left join iniciativa mi on mi.id = iniciativa_id
                 left join atividade ma on ma.id = atividade_id
 
-                where NOT (op.dotacao = ANY(${pularDotacoes}::varchar[]))
-                and op.ano_referencia >= ${ano_ini}::int
+                where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.removido_em is null
             )

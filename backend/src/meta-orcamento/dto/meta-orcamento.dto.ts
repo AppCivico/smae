@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength, Min, ValidateIf } from "class-validator";
+import { IsInt, IsNumber, IsOptional, Min } from "class-validator";
 import { ParteDotacaoDto } from "../../dotacao/dto/dotacao.dto";
 import { MetaOrcamento } from "../entities/meta-orcamento.entity";
 
