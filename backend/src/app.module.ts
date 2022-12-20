@@ -26,7 +26,6 @@ import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
 import { MetaModule } from './meta/meta.module';
 import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
 import { MfModule } from './mf/mf.module';
-import { MinhaContaController } from './minha-conta/minha-conta.controller';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 import { ObjetivoEstrategicoModule } from './objetivo-estrategico/objetivo-estrategico.module';
 import { OdsModule } from './ods/ods.module';
@@ -39,19 +38,19 @@ import { PdmModule } from './pdm/pdm.module';
 import { PessoaModule } from './pessoa/pessoa.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RegiaoModule } from './regiao/regiao.module';
+import { OrcamentoModule } from './reports/orcamento/orcamento.module';
+import { ReportsModule } from './reports/reports/reports.module';
+import { UtilsService } from './reports/utils/utils.service';
 import { SofApiModule } from './sof-api/sof-api.module';
 import { SofEntidadeModule } from './sof-entidade/sof-entidade.module';
 import { SubTemaModule } from './subtema/subtema.module';
 import { TagModule } from './tag/tag.module';
+import { TextoConfigModule } from './texto-config/texto-config.module';
 import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
-import { TextoConfigModule } from './texto-config/texto-config.module';
-import { ReportsModule } from './reports/reports/reports.module';
-import { OrcamentoExecutadoModule } from './reports/orcamento-executado/orcamento-executado.module';
-import { UtilsService } from './reports/utils/utils.service';
 
 
 @Module({
@@ -62,7 +61,7 @@ import { UtilsService } from './reports/utils/utils.service';
             serveRoot: '/public',
         }),
         ReportsModule,
-        OrcamentoExecutadoModule,
+        OrcamentoModule,
         PrismaModule,
         AuthModule,
 
