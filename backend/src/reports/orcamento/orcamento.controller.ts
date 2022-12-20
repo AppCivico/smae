@@ -3,12 +3,12 @@ import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto } from './entities/orcamento-executado.entity';
-import { OrcamentoExecutadoService } from './orcamento-executado.service';
+import { OrcamentoService } from './orcamento.service';
 
 @ApiTags('Reports')
-@Controller('reports/orcamento-executado')
-export class OrcamentoExecutadoController {
-    constructor(private readonly orcamentoExecutadoService: OrcamentoExecutadoService) { }
+@Controller('reports/orcamento')
+export class OrcamentoController {
+    constructor(private readonly orcamentoExecutadoService: OrcamentoService) { }
 
     @Post()
     @ApiBearerAuth('access-token')
