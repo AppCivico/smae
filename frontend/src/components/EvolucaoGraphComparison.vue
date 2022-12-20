@@ -259,8 +259,8 @@ class smaeChart {
     d.indicadores.forEach(function (el, i) {
       tipHtml += `<p class="t14 indicador tprimary">${el.label}</p>
           <div class="t11 index${i + 1}">
-            <p><i></i> Previsto acumulado: <span>${el.projetadoAcu || '-'}</span> (<span>${el.projetado || '-'}</span>)</p>
-            <p><i></i> Realizado acumulado: <span>${el.realizadoAcu || '-'}</span> (<span>${el.realizado || '-'}</span>)</p>
+            <p class="r-caption"><i></i> Realizado acumulado: <span>${el.realizadoAcu || '-'}</span> (<span>${el.realizado || '-'}</span>)</p>
+            <p class="p-caption"><i></i> Previsto acumulado: <span>${el.projetadoAcu || '-'}</span> (<span>${el.projetado || '-'}</span>)</p>
           </div>`;
     });
 
@@ -508,6 +508,11 @@ window.addEventListener('resize', start);
   <div style="position: relative;">
     <svg class="lineGraph" ref="evolucao" xmlns:xhtml="http://www.w3.org/1999/xhtml"></svg>
     <div class="tooltipEvolucao" ref="tooltipEl"></div>
+
+    <ul class="captions">
+      <li class="captions__item"><i></i> Realizado acumulado</li>
+      <li class="captions__item captions__item--p"><i></i> Previsto acumulado</li>
+    </ul>
   </div>
 </template>
 <style lang="less">
@@ -539,185 +544,216 @@ window.addEventListener('resize', start);
   text {
     text-transform: uppercase;
   }
-
-    .color-classes(@i: length(@cores)) when (@i > 0) {
-      .color-classes(@i - 1);
-      @cor: extract(@cores, @i);
-
-      .line-r@{i} {
-        stroke: @cor;
-        fill: none;
-      }
-
-      .circle-r@{i} {
-        fill: @cor;
-      }
-
-      .line-p@{i} {
-        stroke: @cor;
-        stroke-dasharray: 3 3;
-        fill: none;
-      }
-
-      .circle-p@{i} {
-        fill: @cor;
-      }
-    }
-
-    .color-classes();
-
-    .meta-circle {
-      fill: #152741;
-    }
-
-    .meta-line {
-      stroke: #152741;
+  
+  .color-classes(@i: length(@cores)) when (@i > 0) {
+    .color-classes(@i - 1);
+  
+    @cor: extract(@cores, @i);
+  
+    .line-r@{i} {
+      stroke: @cor;
       fill: none;
     }
-
-    .guideline {
-      visibility: hidden;
-      opacity: 0;
-      transition: all 200ms ease-in-out;
-
-      &.on {
-        visibility: visible;
-        opacity: 1;
+  
+    .circle-r@{i} {
+      fill: @cor;
+    }
+  
+    .line-p@{i} {
+      stroke: @cor;
+      stroke-dasharray: 3 3;
+      fill: none;
+    }
+  
+    .circle-p@{i} {
+      fill: @cor;
+    }
+  }
+  
+  .color-classes();
+  
+  .meta-circle {
+    fill: #152741;
+  }
+  
+  .meta-line {
+    stroke: #152741;
+    fill: none;
+  }
+  
+  .guideline {
+    visibility: hidden;
+    opacity: 0;
+    transition: all 200ms ease-in-out;
+  
+    &.on {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+  
+  .xaxis {
+    .domain {
+      stroke: #B8C0CC;
+    }
+  
+    .tick {
+      text {
+        color: #B8C0CC;
+        font-size: 11px;
+        font-weight: 400;
       }
     }
-
-    .xaxis {
-      .domain {
-        stroke: #B8C0CC;
+  }
+  
+  .xaxis2 {
+    .domain {
+      stroke: transparent;
+    }
+  
+    .tick {
+      rect {
+        fill: #152741;
+        border-radius: 100%;
       }
-
-      .tick {
-        text {
-          color: #B8C0CC;
-          font-size: 11px;
-          font-weight: 400;
-        }
+  
+      text {
+        color: #FFF;
+        font-size: 11px;
+        font-weight: 400;
       }
     }
-
-    .xaxis2 {
-      .domain {
-        stroke: transparent;
-      }
-
-      .tick {
-        rect {
-          fill: #152741;
-          border-radius: 100%;
-        }
-
-        text {
-          color: #FFF;
-          font-size: 11px;
-          font-weight: 400;
-        }
+  }
+  
+  .yaxis {
+    .domain {
+      stroke: #B8C0CC;
+    }
+  
+    .tick {
+      text {
+        color: #B8C0CC;
+        font-size: 11px;
+        font-weight: 400;
       }
     }
+  }
+  
+  .year-line {
+    stroke: #E3E5E8;
+  }
+}
 
-    .yaxis {
-      .domain {
-        stroke: #B8C0CC;
-      }
+.tooltipEvolucao {
+  transition: all 200ms ease-in-out;
+  visibility: hidden;
+  opacity: 0;
+  width: max-content;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  pointer-events: none;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 5px 5px 15px 10px fade(black, 8);
+  transform: translateX(-50%) translateY(calc(-100% - 12px));
+  max-width: 230px;
+  z-index: 999;
 
-      .tick {
-        text {
-          color: #B8C0CC;
-          font-size: 11px;
-          font-weight: 400;
-        }
-      }
+  p {
+    font-family: sans-serif;
+
+    span {
+      font-weight: 700;
     }
 
-    .year-line {
-      stroke: #E3E5E8;
-    }
-    }
+    &.indicador {
+      font-weight: 700;
+      margin-bottom: 3px;
 
-    .tooltipEvolucao {
-      transition: all 200ms ease-in-out;
-      visibility: hidden;
-      opacity: 0;
-      width: max-content;
-      position: absolute;
-      left: 0px;
-      top: 0px;
-      pointer-events: none;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 5px 5px 15px 10px fade(black, 8);
-      transform: translateX(-50%) translateY(calc(-100% - 12px));
-      max-width: 230px;
-      z-index: 999;
+      &+div {
+        margin-bottom: 10px;
 
-      p {
-        font-family: sans-serif;
-
-        span {
-          font-weight: 700;
-        }
-
-        &.indicador {
-          font-weight: 700;
+        p {
           margin-bottom: 3px;
 
-          &+div {
-            margin-bottom: 10px;
+          i {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 3px;
+            height: 0px;
+            width: 20px;
+            border-bottom: solid 2px black;
+          }
 
-            p {
-              margin-bottom: 3px;
-
-              i {
-                display: inline-block;
-                vertical-align: middle;
-                margin-right: 3px;
-                height: 0px;
-                width: 20px;
-                border-bottom: solid 2px black;
-              }
-
-              &:last-child i {
-                border-bottom-style: dashed;
-              }
-            }
-
-            .color-classes(@i: length(@cores)) when (@i > 0) {
-              .color-classes(@i - 1);
-              @cor: extract(@cores, @i);
-
-              &.index@{i} p i {
-                border-bottom-color: @cor;
-              }
-            }
-
-            .color-classes();
+          &.p-caption i {
+            border-bottom-style: dashed;
           }
         }
-      }
 
-      &::after {
-        content: '';
-        display: block;
-        position: absolute;
-        left: 50%;
-        top: 100%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
+        .color-classes(@i: length(@cores)) when (@i > 0) {
+          .color-classes(@i - 1);
+          @cor: extract(@cores, @i);
 
-        border-style: solid;
-        border-width: 10px 10px 0 10px;
-        border-color: white transparent transparent transparent;
-      }
+          &.index@{i} p i {
+            border-bottom-color: @cor;
+          }
+        }
 
-      &.on {
-        visibility: visible;
-        opacity: 1;
+        .color-classes();
       }
     }
+  }
+
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+
+    border-style: solid;
+    border-width: 10px 10px 0 10px;
+    border-color: white transparent transparent transparent;
+  }
+
+  &.on {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.captions {
+  display: table;
+  border-spacing: 3px;
+  margin-bottom: 20px;
+  margin-right: auto;
+  margin-left: auto;
+  color: #152741;
+}
+
+.captions__item {
+  display: table-cell;
+  list-style: none;
+
+  i {
+    color: #C25E0A;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 3px;
+    height: 0px;
+    width: 20px;
+    border-bottom: solid 2px currentColor;
+  }
+}
+
+.captions__item--p {
+  i {
+    border-bottom-style: dashed;
+  }
+}
 </style>
