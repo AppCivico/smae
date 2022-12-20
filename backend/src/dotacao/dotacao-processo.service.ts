@@ -1,6 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from "@prisma/client";
-import { async } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
 import { DotacaoService } from './dotacao.service';
