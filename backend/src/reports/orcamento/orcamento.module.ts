@@ -9,5 +9,6 @@ import { DotacaoModule } from '../../dotacao/dotacao.module';
     imports: [PrismaModule, DotacaoModule],
     controllers: [OrcamentoController],
     providers: [OrcamentoService, UtilsService],
+    exports: [OrcamentoService]
 })
 export class OrcamentoModule { }
