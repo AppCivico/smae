@@ -46,7 +46,8 @@ const d_fonte = ref('');
 
 const itens = ref([{ mes: null, valor_empenho: null, valor_liquidado: null }]);
 
-var regdota = /^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/;
+var regdota = /^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2})?)?)?)?)?)?)?)?$/;
+
 const schema = Yup.object().shape({
   dotacao: Yup.string().required('Preencha a dotação.').matches(regdota, 'Formato inválido')
 });
