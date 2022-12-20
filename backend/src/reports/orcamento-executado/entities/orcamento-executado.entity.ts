@@ -131,6 +131,13 @@ export class OrcamentoPlanejadoSaidaDto {
 }
 
 export class ListOrcamentoExecutadoDto {
+    /**
+     * merge do planejado e executado, somando os custos do periodo informado
+    */
     linhas: OrcamentoExecutadoSaidaDto[]
+    /**
+     * para cada linha não encontrada de dotação, que estiver com os anos entre o inicio e o fim
+     * será adicionado aqui os dados do planejado
+    */
     linhas_planejado: OrcamentoPlanejadoSaidaDto[]
 }
