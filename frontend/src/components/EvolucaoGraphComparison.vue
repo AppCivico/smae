@@ -729,7 +729,7 @@ window.addEventListener('resize', start);
 
 .captions {
   display: table;
-  border-spacing: 3px;
+  border-spacing: 10px;
   margin-bottom: 20px;
   margin-right: auto;
   margin-left: auto;
