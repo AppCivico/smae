@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from requests.exceptions import HTTPError
 from core.exceptions import EmptyData, UnexpectedResponse
 
+from typing import Union
+
 from core.dao import DaoOrcadoProjeto
 from core.schemas.orcado_projeto import OrcadoProjeto as schm_orcado
 from core.schemas.orcado_projeto import RetornoOrcado as schm_retorno
@@ -42,8 +44,8 @@ def build_response(dao, endpoint_name, **params):
     raise HTTPException(404, detail=f"Nenhum item encontrado")
 
 @app.get("/orcado_projeto", response_model=schm_orcado, tags=['Orcado'])
-def orcado_projeto(ano:int, mes:int, orgao:int, unidade: int, proj_atividade: int,
-                fonte: str, dao: DaoOrcadoProjeto = Depends(get_dao)):
+def orcado_projeto(ano:int, mes:int, orgao:int, proj_atividade: int,
+                fonte: str, unidade: int=None, dao: DaoOrcadoProjeto = Depends(get_dao)):
 
    return build_response(dao, 'orcado_projeto', ano=ano, mes=mes, orgao=orgao,
                     unidade=unidade, proj_atividade=proj_atividade, fonte=fonte)
