@@ -231,15 +231,15 @@ class smaeChart {
     //Creating tooltip element
     let mes = this.locale.utcFormat("%B/%Y")(d.date);
     let tipHtml = `<p class="t14 data tprimary">${mes}</p>
-        <p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal || '-'}</span></p>
+        <p class="meta t14 tc300">Meta: <span class="tprimary">${metaVal ?? '-'}</span></p>
         <p class="tc300 t14">
-          Previsto acumulado até ${mes}: <span>${d.projetadoAcum || '-'}</span><br />
-          <span class="tamarelo">Realizado acumulado até ${mes}: ${d.realizadoAcum || '-'}</span>
-
+          Previsto acumulado até ${mes}: <span>${d.projetadoAcum ?? '-'}</span><br />
+          <span class="tamarelo">Realizado acumulado até ${mes}: ${d.realizadoAcum ?? '-'}</span>
         </p>
+
         <p class="tc300 t11 mb0">
-          Previsto ${mes}: <span>${d.projetado || '-'}</span><br />
-          Realizado ${mes}: <span class="tamarelo">${d.realizado || '-'}</span>
+          Previsto ${mes}: <span>${d.projetado ?? '-'}</span><br />
+          Realizado ${mes}: <span class="tamarelo">${d.realizado ?? '-'}</span>
         </p>`;
 
     el.html(tipHtml);
