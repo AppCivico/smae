@@ -130,10 +130,10 @@ function dateToTitle(d) {
                             v-for="v, k in ModeloSerie" :key="k">
                                 <div class="t14 w700 p05">{{dateToTitle(v.periodo_inicio)}}</div>
                                 <div class="flex">
-                                    <div class="f1 label p05 tc200 br">Projetado mensal</div>
-                                    <div class="f1 label p05 tc200 br">realizado mensal</div>
-                                    <div class="f1 label p05 tc200 br">Projetado acumulado</div>
-                                    <div class="f1 label p05 tc200">realizado acumulado</div>
+                                    <div class="f1 label p05 tc200 br">Previsto mensal</div>
+                                    <div class="f1 label p05 tc200 br">Realizado mensal</div>
+                                    <div class="f1 label p05 tc200 br">Previsto acumulado</div>
+                                    <div class="f1 label p05 tc200">Realizado acumulado</div>
                                 </div>
                             </div>
                         </div>
