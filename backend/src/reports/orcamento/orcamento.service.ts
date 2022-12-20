@@ -63,7 +63,7 @@ class RetornoPlanejadoDb {
 }
 
 @Injectable()
-export class OrcamentoExecutadoService {
+export class OrcamentoService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
