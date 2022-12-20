@@ -901,7 +901,15 @@ export class PainelService {
                 window_start = window_end ? window_start.plus({quarter: 1}).startOf('quarter') : window_start.startOf('quarter');
                 window_end = window_start.plus({quarters: 1}).endOf('quarter');
             } else {
+                // Objeto que é utilizado para soma no Luxon (ex: {days: 10}).
                 let plus_obj: any = {};
+                
+                if (i == 0) {
+                    plus_obj[config.time_unit] = config.multiplier - 1;
+                } else {
+                    plus_obj[config.time_unit] = config.multiplier
+                }
+
                 plus_obj[config.time_unit] = (i == 0) ? config.multiplier - 1 : config.multiplier;
                 window_end = window_start.plus(plus_obj);
             }
