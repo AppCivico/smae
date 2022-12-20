@@ -59,7 +59,7 @@ class Processo(BuscaEmpenho):
         formatado = v.replace('.', '').replace('/', '')
         formatado = formatado.strip()
 
-        if len(formatado)!=16: 
+        if len(formatado) not in (16, 12): 
             raise HTTPException(400, detail=f'Processo {valor_original} fora do padrão.')
         
         try:
