@@ -741,7 +741,6 @@ window.addEventListener('resize', start);
   list-style: none;
 
   i {
-    color: #C25E0A;
     display: inline-block;
     vertical-align: middle;
     margin-right: 3px;
