@@ -494,16 +494,48 @@ async function atualizar_perfil_acesso() {
 
 
 async function atualizar_superadmin() {
+    await prisma.tipoOrgao.upsert({
+        where: { id: 1 },
+        update: {},
+        create:
+        {
+            id: 1,
+            descricao: 'registro 1 do tipo orgao'
+        },
+    });
+
+    await prisma.orgao.upsert({
+        where: { id: 1 },
+        update: {},
+        create:
+        {
+            id: 1,
+            descricao: 'registro 1 do orgao',
+            sigla: 'ID1',
+            tipo_orgao_id: 1,
+        },
+    });
+
+
     const pessoa = await prisma.pessoa.upsert({
         where: { email: 'superadmin@admin.com' },
         update: {},
         create:
         {
-            senha_bloqueada: true,
+            pessoa_fisica: {
+                create: {
+                    cargo: '',
+                    cpf: '',
+                    lotacao: '',
+                    orgao_id: 1
+                }
+            },
+            senha_bloqueada: false,
+            qtde_senha_invalida: 0,
             nome_completo: 'super admin',
             nome_exibicao: 'super admin',
             email: 'superadmin@admin.com',
-            senha: '$2y$10$Pto8vYw6kXL3YuMV4baaiOg3I3WqlU9S2Q2VrT7PX6YwQw47L6Jv6' // "viviansatiro",
+            senha: '$2b$10$2DUUZc55NxezhEydgfUSTexk4.1qjbvb.873cZhCpIvjw4izkFqcW' // "!286!QDM7H",
         },
     });
 
