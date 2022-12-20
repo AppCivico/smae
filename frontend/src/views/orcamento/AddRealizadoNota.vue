@@ -33,6 +33,7 @@ const { OrcamentoRealizado, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
 OrcamentosStore.getDotacaoSegmentos(ano);
 const currentEdit = ref({});
 const dota = ref('');
+const dotaAno = ref(ano);
 const respostasof = ref({});
 
 const itens = ref([{ mes: null, valor_empenho: null, valor_liquidado: null }]);
@@ -73,7 +74,8 @@ async function onSubmit(values = {}) {
       return { mes: x.mes, valor_empenho: x.valor_empenho, valor_liquidado: x.valor_liquidado };
     });
 
-    r = await OrcamentosStore.insertOrcamentoRealizado(values);
+    // sobrescrever propriedade `nota_empenho`
+    r = await OrcamentosStore.insertOrcamentoRealizado({ ...values, nota_empenho: `${values.nota_empenho}/${dotaAno.value}` });
     msg = 'Dados salvos com sucesso!';
 
     if (r == true) {
@@ -117,7 +119,7 @@ async function validarDota(e) {
     respostasof.value = { loading: true }
     let val = await schema.validate({ nota_empenho: dota.value, valor_empenho: 1, valor_liquidado: 1 });
     if (val) {
-      let r = await OrcamentosStore.getDotacaoRealizadoNota(dota.value, ano);
+      let r = await OrcamentosStore.getDotacaoRealizadoNota(`${dota.value}/${dotaAno.value}`, dotaAno.value);
       respostasof.value = r;
     }
   } catch (error) {
@@ -142,6 +144,19 @@ async function validarDota(e) {
                       <label class="label">Nota de empenho <span class="tvermelho">*</span></label>
                       <Field name="nota_empenho" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskNota" @keyup.enter="validarDota()" :class="{ 'error': errors.nota_empenho||respostasof.informacao_valida===false, 'loading': respostasof.loading}" />
                       <div class="error-msg">{{ errors.nota_empenho }}</div>
+                      <div class="t13 mb1 tc300" v-if="respostasof.loading">Aguardando resposta do SOF</div>
+                      <div class="t13 mb1 tvermelho" v-if="respostasof.informacao_valida===false">Dotação não encontrada</div>
+                  </div>
+
+                  <div class="f1">
+                      <label class="label">Ano da nota de empenho <span
+                      class="tvermelho">*</span></label>
+
+                      <Field name="nota_ano" v-model="dotaAno" type="number" list="foobar"
+                      min="2003" :max="ano" class="inputtext light mb1" @keyup.enter="validarDota()" :class="{ 'error':
+                      errors.nota_ano||respostasof.informacao_valida===false,
+                      'loading': respostasof.loading}" />
+                      <div class="error-msg">{{ errors.nota_ano }}</div>
                       <div class="t13 mb1 tc300" v-if="respostasof.loading">Aguardando resposta do SOF</div>
                       <div class="t13 mb1 tvermelho" v-if="respostasof.informacao_valida===false">Dotação não encontrada</div>
                   </div>
