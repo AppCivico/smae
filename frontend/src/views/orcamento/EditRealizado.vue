@@ -150,7 +150,7 @@ function validaPartes(a) {
           <hr class="ml2 f1"/>
           <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
       </div>
-        <h3 class="mb2"><strong>{{ano}}</strong> - {{parent_item.codigo}} - {{parent_item.titulo}}</h3>
+        <h3 class="mb2"><strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}</h3>
       <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
           <Form @submit="onSubmit" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
 
@@ -171,37 +171,37 @@ function validaPartes(a) {
                 <div class="flex g2 mb2">
                     <div class="f1">
                       <label class="label tc300">Órgão</label>
-                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].orgaos.find(x=>x.codigo==d_orgao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
                         <div class="t12 tc500" v-if="d_orgao">
-                          {{ (it = DotacaoSegmentos[ano].orgaos.find(x=>x.codigo==d_orgao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                          {{ (it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao)) ? `${it.codigo} - ${it.descricao}` : '' }}
                         </div>
                     </div>
                     <div class="f1">
                         <label class="label tc300">Unidade</label>
-                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].unidades.find(x=>x.codigo==d_unidade)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
                         <div class="t12 tc500" v-if="d_unidade">
-                          {{ (it = DotacaoSegmentos[ano].unidades.find(x=>x.codigo==d_unidade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                          {{ (it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade)) ? `${it.codigo} - ${it.descricao}` : '' }}
                         </div>
                     </div>
                     <div class="f1">
                         <label class="label tc300">Função</label>
-                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].funcoes.find(x=>x.codigo==d_funcao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
                         <div class="t12 tc500" v-if="d_funcao">
-                          {{ (it = DotacaoSegmentos[ano].funcoes.find(x=>x.codigo==d_funcao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                          {{ (it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao)) ? `${it.codigo} - ${it.descricao}` : '' }}
                         </div>
                     </div>
                     <div class="f1">
                         <label class="label tc300">Subfunção</label>
-                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].subfuncoes.find(x=>x.codigo==d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
                         <div class="t12 tc500" v-if="d_subfuncao">
-                          {{ (it = DotacaoSegmentos[ano].subfuncoes.find(x=>x.codigo==d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                          {{ (it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : '' }}
                         </div>
                     </div>
                     <div class="f1">
                         <label class="label tc300">Programa</label>
-                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].programas.find(x=>x.codigo==d_programa)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
                         <div class="t12 tc500" v-if="d_programa">
-                          {{ (it = DotacaoSegmentos[ano].programas.find(x=>x.codigo==d_programa)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                          {{ (it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa)) ? `${it.codigo} - ${it.descricao}` : '' }}
                         </div>
                     </div>
                 </div>
@@ -213,9 +213,9 @@ function validaPartes(a) {
                 <div class="flex g2 mb2">
                     <div class="f1">
                         <label class="label tc300">Projeto/atividade</label>
-                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].projetos_atividades.find(x=>x.codigo==d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
                         <div class="t12 tc500" v-if="d_projetoatividade">
-                          {{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x=>x.codigo==d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                          {{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : '' }}
                         </div>
                     </div>
                     <div class="f1">
@@ -224,15 +224,15 @@ function validaPartes(a) {
                     </div>
                     <div class="f1">
                         <label class="label tc300">Fonte</label>
-                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].fonte_recursos.find(x=>x.codigo==d_fonte)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
+                        <input class="inputtext light mb1 disabled" type="text" :value="(it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte)) ? `${it.codigo} - ${it.descricao}` : ''" disabled />
                         <div class="t12 tc500" v-if="d_fonte">
-                          {{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x=>x.codigo==d_fonte)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                          {{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte)) ? `${it.codigo} - ${it.descricao}` : '' }}
                         </div>
                     </div>
                 </div>
               </template>
 
-              <table class="tablemain mb4" v-if="respostasof.projeto_atividade!=undefined">
+              <table class="tablemain mb4" v-if="respostasof.projeto_atividade != undefined">
                   <thead>
                       <tr>
                           <th style="width: 25%">Nome do projeto/atividade</th>
@@ -242,7 +242,7 @@ function validaPartes(a) {
                   </thead>
                   <tbody>
                       <tr>
-                          <td class="w700">{{respostasof.projeto_atividade}}</td>
+                          <td class="w700">{{ respostasof.projeto_atividade }}</td>
                           <td>
                            R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}
                           </td>
@@ -259,21 +259,21 @@ function validaPartes(a) {
                     <div v-for="m in singleMeta.children" :key="m.id">
                       <div class="label tc300">Meta</div>
                       <label class="block mb1">
-                        <Field name="location" type="radio" :value="'m'+m.id" class="inputcheckbox"/>
-                        <span>{{m.codigo}} - {{m.titulo}}</span>
+                        <Field name="location" type="radio" :value="'m' + m.id" class="inputcheckbox"/>
+                        <span>{{ m.codigo }} - {{ m.titulo }}</span>
                       </label>
-                      <template v-if="['Iniciativa','Atividade'].indexOf(activePdm.nivel_orcamento)!=-1">
-                        <div v-if="m?.iniciativas?.length" class="label tc300">{{activePdm.rotulo_iniciativa}}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento)!=-1 ? ' e '+activePdm.rotulo_atividade:'' }}</div>
+                      <template v-if="['Iniciativa', 'Atividade'].indexOf(activePdm.nivel_orcamento) != -1">
+                        <div v-if="m?.iniciativas?.length" class="label tc300">{{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1 ? ' e ' + activePdm.rotulo_atividade : '' }}</div>
                         <div v-for="i in m.iniciativas" :key="i.id" class="">
                           <label class="block mb1">
-                            <Field name="location" type="radio" :value="'i'+i.id" class="inputcheckbox"/>
-                            <span>{{i.codigo}} - {{i.titulo}}</span>
+                            <Field name="location" type="radio" :value="'i' + i.id" class="inputcheckbox"/>
+                            <span>{{ i.codigo }} - {{ i.titulo }}</span>
                           </label>
-                          <template v-if="activePdm.nivel_orcamento=='Atividade'">
+                          <template v-if="activePdm.nivel_orcamento == 'Atividade'">
                             <div v-for="a in i.atividades" :key="a.id" class="pl2">
                               <label class="block mb1">
-                                <Field name="location" type="radio" :value="'a'+a.id" class="inputcheckbox"/>
-                                <span>{{a.codigo}} - {{a.titulo}}</span>
+                                <Field name="location" type="radio" :value="'a' + a.id" class="inputcheckbox"/>
+                                <span>{{ a.codigo }} - {{ a.titulo }}</span>
                               </label>
                             </div>
                           </template>
@@ -292,15 +292,15 @@ function validaPartes(a) {
               </div>
           </Form>
       </template>
-      <template v-if="currentEdit&&currentEdit?.id">
+      <template v-if="currentEdit && currentEdit?.id">
           <button @click="checkDelete(currentEdit.id)" class="btn amarelo big">Remover item</button>
       </template>
       <template v-if="OrcamentoRealizado[ano]?.loading">
           <span class="spinner">Carregando</span>
       </template>
-      <template v-if="OrcamentoRealizado[ano]?.error||error">
+      <template v-if="OrcamentoRealizado[ano]?.error || error">
           <div class="error p1">
-              <div class="error-msg">{{OrcamentoRealizado[ano].error??error}}</div>
+              <div class="error-msg">{{ OrcamentoRealizado[ano].error ?? error }}</div>
           </div>
       </template>
   </Dashboard>
