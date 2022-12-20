@@ -1,12 +1,12 @@
 <script setup>
-import { ref } from 'vue';
 import { Dashboard } from '@/components';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
-import { storeToRefs } from 'pinia';
 import { router } from '@/router';
+import { useAlertStore, useMetasStore, useOrcamentosStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { useAlertStore, useOrcamentosStore, useMetasStore, useIniciativasStore, useAtividadesStore } from '@/stores';
+import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -230,7 +230,9 @@ async function validarDota() {
                     <div class="f1">
                         <label class="label tc300">Unidade <span class="tvermelho">*</span></label>
                         <Field name="d_unidade" v-model="d_unidade" @change="montaDotacao" as="select" class="inputtext light mb1">
-                          <option v-for="i in DotacaoSegmentos[ano].unidades" :key="i.codigo" :value="i.codigo">{{ i.codigo + ' - ' + i.descricao }}</option>
+                          {{ (orgs = DotacaoSegmentos[ano].unidades.filter(x => x.cod_orgao == d_orgao)) ? '' : '' }}
+                          <option v-if="!orgs.length" value="00">00 - Nenhum encontrado</option>
+                          <option v-for="i in orgs" :key="i.codigo" :value="i.codigo">{{ i.codigo + ' - ' + i.descricao }}</option>
                         </Field>
                         <div class="t12 tc500" v-if="d_unidade">
                           {{ (it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade)) ? `${it.codigo} - ${it.descricao}` : '' }}
