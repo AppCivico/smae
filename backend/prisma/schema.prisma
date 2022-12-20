@@ -1979,7 +1979,7 @@ enum TipoRelatorio {
 }
 
 enum FonteRelatorio {
-    OrcamentoExecutado
+    Orcamento
     IndicadoresSemestral
     IndicadoresAnual
     MonitoramentoMensal
