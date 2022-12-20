@@ -92,13 +92,13 @@ export class CreateOrcamentoRealizadoDto {
     processo?: string | null;
 
     /**
-    * dotacao: esperado exatamente 5 dígitos
-    * @example "00000"
+    * dotacao: esperado exatamente 5 dígitos seguido de barra e o ano da nota
+    * @example "00000/2022"
     */
     @IsOptional()
     @IsString()
-    @MaxLength(6)
-    @Matches(/^\d{5}$/, { message: 'Nota não está no formato esperado: 00000' })
+    @MaxLength(11)
+    @Matches(/^\d{5}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 00000/2AAA' })
     @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
 

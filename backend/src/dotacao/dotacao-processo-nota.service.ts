@@ -19,6 +19,10 @@ export class DotacaoProcessoNotaService {
 
         const mes = dto.mes ? dto.mes : this.sof.mesMaisRecenteDoAno(dto.ano);
 
+        if (dto.nota_empenho.includes('/' + dto.ano) == false) {
+            throw new HttpException('Utilize sempre o parâmetro "ano" igual ao ano embutido no digito da nota de empenho', 400);
+        }
+
         // sempre sincroniza, pois pode haver mais de uma dotação no processo e não sabemos
         // quando elas aparecem
         const list = await this.sincronizarNotaEmpenhoRealizado(dto, mes);
@@ -28,7 +32,7 @@ export class DotacaoProcessoNotaService {
 
     private async sincronizarNotaEmpenhoRealizado(dto: AnoDotacaoNotaEmpenhoDto, mes: number): Promise<ValorRealizadoNotaEmpenhoDto[]> {
         const now = new Date(Date.now());
-        dto.nota_empenho = dto.nota_empenho.replace(/[^0-9]/g, '');
+        dto.nota_empenho = dto.nota_empenho.replace(/[^0-9\/]/g, '');
 
         try {
             const r = await this.sof.empenhoNotaEmpenho({
