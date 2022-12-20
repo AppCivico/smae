@@ -37,7 +37,7 @@ const respostasof = ref({});
 
 const itens = ref([{ mes: null, valor_empenho: null, valor_liquidado: null }]);
 
-var regprocesso = /^\d{4}\.?\d{4}\/?\d{7}\-?\d$/;
+var regprocesso = /^(?:\d{4}\.?\d{4}\/?\d{7}-?\d|\d{4}-?\d\.?\d{3}\.?\d{3}-?\d)$/;
 const schema = Yup.object().shape({
   processo: Yup.string().required('Preencha o processo.').matches(regprocesso, 'Formato inválido'),
   dotacao: Yup.string()
@@ -98,15 +98,29 @@ function toFloat(v) {
   return isNaN(v) || String(v).indexOf(',') !== -1 ? Number(String(v).replace(/[^0-9\,]/g, '').replace(',', '.')) : Math.round(Number(v) * 100) / 100;
 }
 function maskProcesso(el) {
-  var kC = event.keyCode;
   el.target.value = formatProcesso(el.target.value);
 }
 function formatProcesso(d) {
-  var data = String(d).replace(/[\D]/g, '').slice(0, 16);
+  var data = String(d).replace(/\D/g, '').slice(0, 16);
   var s = data.slice(0, 4);
-  if (data.length > 4) s += '.' + data.slice(4, 8);
-  if (data.length > 8) s += '/' + data.slice(8, 15);
-  if (data.length > 15) s += '-' + data.slice(15, 16);
+
+  if (data.length > 12) {
+    // SEI
+    if (data.length > 4) s += '.' + data.slice(4, 8);
+    if (data.length > 8) s += '/' + data.slice(8, 15);
+    if (data.length > 15) s += '-' + data.slice(15, 16);
+  } else if (data.length == 12) {
+    // SINPROC
+    if (data.length > 4) s += '-' + data.slice(4, 5);
+    if (data.length > 5) s += '.' + data.slice(5, 8);
+    if (data.length > 8) s += '.' + data.slice(8, 11);
+    if (data.length > 11) s += '-' + data.slice(11, 12);
+  } else {
+    // separação por espaços só para facilitar leitura
+    if (data.length > 4) s += ' ' + data.slice(4, 8);
+    if (data.length > 8) s += ' ' + data.slice(8, 12);
+  }
+
   return s;
 }
 async function validarDota() {
@@ -134,8 +148,11 @@ async function validarDota() {
           <Form @submit="onSubmit" :validation-schema="schema" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
               <div class="flex center g2 mb2">
                   <div class="f1">
-                      <label class="label">Processo SEI <span class="tvermelho">*</span></label>
-                      <Field name="processo" v-model="dota" type="text" class="inputtext light mb1" @keyup="maskProcesso" :class="{ 'error': errors.processo, 'loading': respostasof.loading}" />
+                      <label class="label">Processo SEI ou SINPROC <span class="tvermelho">*</span></label>
+                      <Field name="processo" v-model="dota" type="text"
+                      class="inputtext light mb1" @keyup="maskProcesso"
+                      :class="{ 'error': errors.processo, 'loading':
+                      respostasof.loading}" placeholder="DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)" />
                       <div class="error-msg">{{ errors.processo }}</div>
                       <div class="t13 mb1 tc300" v-if="respostasof.loading">Aguardando resposta do SOF</div>
                   </div>
