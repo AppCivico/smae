@@ -46,12 +46,12 @@ export class AnoDotacaoProcessoDto extends AnoDto {
 
 export class AnoDotacaoNotaEmpenhoDto extends AnoDto {
     /**
-    * dotacao: esperado exatamente 5 dígitos
-    * @example "00000"
+    * dotacao: esperado exatamente 5 dígitos seguido de barra e o ano da nota
+    * @example "00000/2022"
     */
     @IsString()
-    @MaxLength(6)
-    @Matches(/^\d{5}$/, { message: 'Nota não está no formato esperado: 00000' })
+    @MaxLength(11)
+    @Matches(/^\d{5}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 00000/AAAA' })
     nota_empenho: string;
 
 
