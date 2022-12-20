@@ -603,6 +603,11 @@ export class OrcamentoRealizadoService {
                 valor_liquidado = dotacaoInfo.valor_liquidado.toFixed(2);
             }
 
+            // só retorna o ano quando for diferente do ano de referencia
+            if (orcaRealizado.nota_empenho && orcaRealizado.nota_empenho.includes('/' + orcaRealizado.ano_referencia)) {
+                orcaRealizado.nota_empenho = orcaRealizado.nota_empenho.substring(0, 5);
+            }
+
             rows.push({
                 id: orcaRealizado.id,
                 ano_referencia: orcaRealizado.ano_referencia,
