@@ -164,7 +164,27 @@ export class PainelService {
         });
     }
 
+    async syncDetalhes(painel_id: number) {
+        const painel = await this.prisma.painel.findFirstOrThrow({
+            where: {id: painel_id},
+            select: {
+                painel_conteudo: {
+                    select: {
+                        meta: {
+                            select: {
+                                id: true,
+
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+
     async getDetail(id: number) {
+
+
 
         
         return await this.prisma.painel.findFirstOrThrow({
@@ -882,7 +902,7 @@ export class PainelService {
                 window_end = window_start.plus({quarters: 1}).endOf('quarter');
             } else {
                 let plus_obj: any = {};
-                plus_obj[config.time_unit] = i == 0 ? config.multiplier - 1 : config.multiplier;
+                plus_obj[config.time_unit] = (i == 0) ? config.multiplier - 1 : config.multiplier;
                 window_end = window_start.plus(plus_obj);
             }
 
