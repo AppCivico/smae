@@ -3,7 +3,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto, OrcamentoExecutadoSaidaDto, OrcamentoPlanejadoSaidaDto } from './entities/orcamento-executado.entity';
 
@@ -496,6 +496,7 @@ export class OrcamentoService implements ReportableService {
 
         if (dados.linhas.length) {
             const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
                 transforms: defaultTransform,
                 fields: [
                     'mes',
@@ -503,7 +504,7 @@ export class OrcamentoService implements ReportableService {
                     'meta.codigo',
                     'meta.titulo',
                     'meta.id',
-                    'iniciativa.codigo',
+                    'iniciativa.codigo',// TODO buscar do PDM qual o label certo
                     'iniciativa.titulo',
                     'iniciativa.id',
                     'atividade.codigo',
@@ -541,6 +542,7 @@ export class OrcamentoService implements ReportableService {
 
         if (dados.linhas_planejado.length) {
             const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
                 transforms: defaultTransform,
                 fields: [
                     'ano',
