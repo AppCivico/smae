@@ -5,7 +5,7 @@ const AdmZip = require("adm-zip");
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { CreateReportDto } from './dto/CreateReport.dto';
+import { CreateReportDto } from './dto/create-report.dto';
 import { ReportsService } from './reports.service';
 import { Response } from 'express';
 import { UploadService } from 'src/upload/upload.service';
@@ -16,8 +16,8 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
 
-@ApiTags('Reports')
-@Controller('reports')
+@ApiTags('Relatórios')
+@Controller('relatorios')
 export class ReportsController {
     constructor(
         private readonly reportsService: ReportsService,
