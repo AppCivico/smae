@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 const AdmZip = require("adm-zip");
 
@@ -10,6 +10,8 @@ import { ReportsService } from './reports.service';
 import { Response } from 'express';
 import { UploadService } from 'src/upload/upload.service';
 import { Date2YMD } from 'src/common/date2ymd';
+import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
+import { ListRelatorioDto, RelatorioDto } from './entities/report.entity';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -60,6 +62,17 @@ export class ReportsController {
         });
         res.write(zipBuffer);
         res.send()
+    }
+
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles('Reports.executar')
+    async findAll(@Query() filters: FilterRelatorioDto): Promise<ListRelatorioDto> {
+        const linhas = await this.reportsService.findAll(filters);
+        return {
+            'linhas': linhas,
+        };
     }
 
 }
