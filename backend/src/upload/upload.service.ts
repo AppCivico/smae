@@ -71,16 +71,14 @@ export class UploadService {
             }
         }
 
-        const nextVal: any[] = await this.prisma.$queryRaw`select nextval('arquivo_id_seq'::regclass) as id`;
-
-        const arquivoId = Number(nextVal[0].id);
-
         let originalname = file.originalname;
         // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
         // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
         if (!/[^\u0000-\u00ff]/.test(originalname)) {
             originalname = Buffer.from(originalname, 'latin1').toString('utf8')
         }
+
+        const arquivoId = await this.nextSequence();
 
         let key = [
             'uploads',
@@ -120,6 +118,54 @@ export class UploadService {
             select: { id: true }
         });
 
+        return arquivoId;
+    }
+
+    async uploadReport(category: string, filename: string, buffer: Buffer, mimetype: string | undefined, user: PessoaFromJwt) {
+        let originalname = filename;
+
+        const arquivoId = await this.nextSequence();
+
+        let key = [
+            'reports',
+            category,
+            'by-user',
+            String(user.id),
+            new Date(Date.now()).toISOString(),
+            'arquivo-id-' + String(arquivoId),
+            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
+        ].join('/');
+
+        await this.storage.putBlob(key, buffer, {
+            'Content-Type': mimetype || 'application/octet-stream',
+            'x-user-id': user.id,
+            'x-orgao-id': user.orgao_id || 'sem-orgao',
+            'x-category': category,
+            'x-tipo': 'reports',
+        });
+
+        await this.prisma.arquivo.create({
+            data: {
+                id: arquivoId,
+                criado_por: user.id,
+                criado_em: new Date(Date.now()),
+                caminho: key,
+                nome_original: originalname,
+                mime_type: mimetype || 'application/octet-stream',
+                tamanho_bytes: buffer.length,
+                descricao: '',
+                tipo: 'reports'
+            },
+            select: { id: true }
+        });
+
+        return arquivoId;
+    }
+
+    private async nextSequence() {
+        const nextVal: any[] = await this.prisma.$queryRaw`select nextval('arquivo_id_seq'::regclass) as id`;
+
+        const arquivoId = Number(nextVal[0].id);
         return arquivoId;
     }
 

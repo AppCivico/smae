@@ -1,5 +1,6 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
@@ -8,6 +9,7 @@ import { CreateReportDto } from './dto/CreateReport.dto';
 
 @Injectable()
 export class ReportsService {
+    private readonly logger = new Logger(ReportsService.name);
     constructor(
         private readonly prisma: PrismaService,
         private readonly orcamentoService: OrcamentoService,
@@ -25,6 +27,30 @@ export class ReportsService {
         return await service.getFiles(result);
     }
 
+    async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt): Promise<RecordWithId> {
+        const parametros = dto.parametros;
+        const pdmId = parametros.pdm_id;
+        if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
+
+        const tipo = parametros.tipo;
+        if (!tipo) throw new HttpException('parametros.tipo é necessário para salvar um relatório', 400);
+
+        const result = await this.prisma.relatorio.create({
+            data: {
+                pdm_id: +pdmId,
+                arquivo_id: arquivoId,
+                fonte: dto.fonte,
+                tipo: tipo,
+                parametros: parametros,
+                criado_por: user.id,
+                criado_em: new Date(),
+                temporario: false
+            },
+            select: { id: true }
+        });
+        this.logger.log(`persistido arquivo ${arquivoId} no relatorio ${result.id}`);
+        return { id: result.id }
+    }
 
     private servicoDaFonte(dto: CreateReportDto) {
         let service: ReportableService | null = null;
