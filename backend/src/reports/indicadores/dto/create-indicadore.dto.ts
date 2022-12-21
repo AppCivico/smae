@@ -3,7 +3,6 @@ import { TipoRelatorio } from "@prisma/client"
 import { IsEnum, IsInt, IsOptional } from "class-validator"
 import { FiltroMetasIniAtividadeDto } from "../../relatorios/dto/filtros.dto"
 
-
 export const SemestreDto = {
     Primeiro: 'Primeiro',
     Segundo: 'Segundo'
