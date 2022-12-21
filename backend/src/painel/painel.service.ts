@@ -597,7 +597,6 @@ export class PainelService {
                         unchanged.push(already_exists);
                         continue;
                     } else {
-                        throw new Error('already exists');
                         const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
                             data: {
                                 painel_conteudo_id: painel_conteudo.id,
