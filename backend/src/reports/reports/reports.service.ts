@@ -74,12 +74,12 @@ export class ReportsService {
 
 
     async findAll(filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
-        let has_more: boolean = false;
-        let next_page_token: string | null = null;
+        let tem_mais: boolean = false;
+        let token_proxima_pagina: string | null = null;
 
         let ipp = filters.ipp ? filters.ipp : 25;
         let offset = 0;
-        let decodedPageToken = this.decodeNextPageToken(filters.next_page_token);
+        let decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
 
         if (decodedPageToken) {
             offset = decodedPageToken.offset;
@@ -109,21 +109,21 @@ export class ReportsService {
         });
 
         if (rows.length > ipp) {
-            has_more = true;
+            tem_mais = true;
             rows.pop()
-            next_page_token = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp })
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp })
         }
 
         return {
-            rows: rows.map((r) => {
+            linhas: rows.map((r) => {
                 return {
                     ...r,
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
                 }
             }),
-            has_more: has_more,
-            next_page_token: next_page_token
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina
         };
     }
 

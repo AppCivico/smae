@@ -29,12 +29,12 @@ export class FilterRelatorioDto {
     @IsString()
     @MaxLength(1000)
     /**
-     * token for next page results
+     * token pra buscar proxima pagina
     */
-    next_page_token?: string;
+    token_proxima_pagina?: string;
 
     /**
-    * items per page, default 25
+    * itens por pagina, padrão 25
     * @example "25"
     */
     @IsOptional()
