@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Date2YMD } from 'src/common/date2ymd';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FileOutput, ReportableService } from '../utils/utils.service';
-import { CreateIndicadorDto } from './dto/create-indicadore.dto';
+import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
 import { ListIndicadoresDto } from './entities/indicadores.entity';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class IndicadoresService implements ReportableService {
         private readonly prisma: PrismaService,
     ) { }
 
-    async create(dto: CreateIndicadorDto): Promise<ListIndicadoresDto> {
+    async create(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
         throw 'not implemented';
     }
 
