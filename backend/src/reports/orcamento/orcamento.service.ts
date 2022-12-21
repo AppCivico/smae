@@ -7,6 +7,9 @@ import { FileOutput, ReportableService, UtilsService } from '../utils/utils.serv
 import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto, OrcamentoExecutadoSaidaDto, OrcamentoPlanejadoSaidaDto } from './entities/orcamento-executado.entity';
 
+const { Parser, transforms: { flatten } } = require('json2csv');
+const defaultTransform = [flatten({ paths: [] })];
+
 class RetornoRealizadoDb {
     plan_dotacao_ano_utilizado: string | null
     plan_dotacao_mes_utilizado: string | null
@@ -487,11 +490,97 @@ export class OrcamentoService implements ReportableService {
 
     async getFiles(myInput: any): Promise<FileOutput[]> {
         const dados = myInput as ListOrcamentoExecutadoDto;
+
+
+        const out: FileOutput[] = [];
+
+        if (dados.linhas.length) {
+            const json2csvParser = new Parser({
+                transforms: defaultTransform,
+                fields: [
+                    'mes',
+                    'ano',
+                    'meta.codigo',
+                    'meta.titulo',
+                    'meta.id',
+                    'iniciativa.codigo',
+                    'iniciativa.titulo',
+                    'iniciativa.id',
+                    'atividade.codigo',
+                    'atividade.titulo',
+                    'atividade.id',
+                    'dotacao',
+                    'processo',
+                    'nota_empenho',
+                    'orgao.codigo',
+                    'orgao.nome',
+                    'unidade.codigo',
+                    'unidade.nome',
+                    'fonte.codigo',
+                    'fonte.nome',
+                    'plan_dotacao_sincronizado_em',
+                    'plan_sof_val_orcado_atualizado',
+                    'plan_valor_planejado',
+                    'plan_dotacao_ano_utilizado',
+                    'plan_dotacao_mes_utilizado',
+                    'dotacao_sincronizado_em',
+                    'dotacao_valor_empenhado',
+                    'dotacao_valor_liquidado',
+                    'dotacao_ano_utilizado',
+                    'dotacao_mes_utilizado',
+                    'smae_valor_empenhado',
+                    'smae_valor_liquidado',
+                    'logs']
+            });
+            const linhas = json2csvParser.parse(dados.linhas.map((r) => { return { ...r, logs: r.logs.join("\r\n") } }));
+            out.push({
+                name: 'executado.csv',
+                buffer: Buffer.from(linhas, "utf8")
+            });
+        }
+
+        if (dados.linhas_planejado.length) {
+            const json2csvParser = new Parser({
+                transforms: defaultTransform,
+                fields: [
+                    'ano',
+                    'meta.codigo',
+                    'meta.titulo',
+                    'meta.id',
+                    'iniciativa.codigo',
+                    'iniciativa.titulo',
+                    'iniciativa.id',
+                    'atividade.codigo',
+                    'atividade.titulo',
+                    'atividade.id',
+                    'dotacao',
+                    'orgao.codigo',
+                    'orgao.nome',
+                    'unidade.codigo',
+                    'unidade.nome',
+                    'fonte.codigo',
+                    'fonte.nome',
+                    'plan_dotacao_sincronizado_em',
+                    'plan_sof_val_orcado_atualizado',
+                    'plan_valor_planejado',
+                    'plan_dotacao_ano_utilizado',
+                    'plan_dotacao_mes_utilizado',
+                    'logs',
+                ]
+            });
+            const linhas = json2csvParser.parse(dados.linhas_planejado.map((r) => { return { ...r, logs: r.logs.join("\r\n") } }));
+            out.push({
+                name: 'planejado.csv',
+                buffer: Buffer.from(linhas, "utf8")
+            });
+        }
+
         return [
             {
-                name: 'result.json',
-                buffer: Buffer.from(JSON.stringify(dados), "utf8")
-            }
+                name: 'info.json',
+                buffer: Buffer.from(JSON.stringify({ "horario": Date2YMD.tzSp2UTC(new Date()) }), "utf8")
+            },
+            ...out
         ]
     }
 
