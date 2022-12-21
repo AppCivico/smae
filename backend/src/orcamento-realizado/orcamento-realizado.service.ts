@@ -30,11 +30,11 @@ export class OrcamentoRealizadoService {
     async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
-        const meta = await this.prisma.meta.findFirst({
-            where: { id: meta_id!, removido_em: null },
+        const meta = await this.prisma.meta.findFirstOrThrow({
+            where: { id: meta_id, removido_em: null },
             select: { pdm_id: true, id: true }
         });
-        if (!meta) throw new HttpException('meta não encontrada', 400);
+
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
             where: { pdm_id: meta.pdm_id, ano_referencia: dto.ano_referencia, execucao_disponivel: true }
         });
@@ -112,11 +112,11 @@ export class OrcamentoRealizadoService {
 
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
-        const meta = await this.prisma.meta.findFirst({
-            where: { id: meta_id!, removido_em: null },
+        const meta = await this.prisma.meta.findFirstOrThrow({
+            where: { id: meta_id, removido_em: null },
             select: { pdm_id: true, id: true }
         });
-        if (!meta) throw new HttpException('meta não encontrada', 400);
+
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
             where: { pdm_id: meta.pdm_id, ano_referencia: orcamentoRealizado.ano_referencia, execucao_disponivel: true }
         });
