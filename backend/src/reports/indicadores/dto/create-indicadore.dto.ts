@@ -56,7 +56,7 @@ export class IndicadorParams {
     ano: number
 }
 
-export class CreateIndicadorDto extends IntersectionType(
+export class CreateRelIndicadorDto extends IntersectionType(
     FiltroMetasIniAtividadeDto,
     IndicadorParams
 ) { }
