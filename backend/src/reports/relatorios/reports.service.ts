@@ -34,9 +34,12 @@ export class ReportsService {
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
+        const pdmId = parametros.pdm_id;
+        if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para executar um relatório', 400);
+
         const result = await service.create(parametros);
 
-        return await service.getFiles(result);
+        return await service.getFiles(result, pdmId, dto.parametros);
     }
 
     async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt): Promise<RecordWithId> {

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FonteRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
@@ -61,7 +62,7 @@ export class FileOutput {
 }
 
 export interface ReportableService {
-    getFiles(output: any): Promise<FileOutput[]>
+    getFiles(output: any, pdm_id: number, params: any): Promise<FileOutput[]>
     create(params: any): Promise<any>
 }
 
