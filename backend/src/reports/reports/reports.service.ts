@@ -37,14 +37,13 @@ export class ReportsService {
         if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
 
         const tipo = parametros.tipo;
-        if (!tipo) throw new HttpException('parametros.tipo é necessário para salvar um relatório', 400);
 
         const result = await this.prisma.relatorio.create({
             data: {
                 pdm_id: +pdmId,
                 arquivo_id: arquivoId,
                 fonte: dto.fonte,
-                tipo: tipo,
+                tipo: tipo && tipo.length ? tipo : null,
                 parametros: parametros,
                 criado_por: user.id,
                 criado_em: new Date(),
