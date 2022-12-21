@@ -235,7 +235,7 @@ export class OrcamentoService implements ReportableService {
 
             from previsoes
             left join dotacao_planejado dp ON previsoes.dotacao = dp.dotacao AND previsoes.ano = dp.ano_referencia
-            order by op.dotacao, 1, 2
+            order by previsoes.dotacao, 1, 2
             `;
     }
 
