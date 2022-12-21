@@ -124,10 +124,10 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/orcamento`);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/orcamento/custeio`);
 }
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoCusteio(id)) router.push(`${parentlink}/orcamento`) }, 'Remover');
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoCusteio(id)) router.push(`${parentlink}/orcamento/custeio`) }, 'Remover');
 }
 function maskFloat(el) {
   el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
