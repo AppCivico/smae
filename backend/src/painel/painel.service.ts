@@ -27,7 +27,7 @@ export class PainelService {
     async create(createPainelDto: CreatePainelDto, user: PessoaFromJwt) {
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            
+
             let grupos_to_assign = [];
             if (createPainelDto.grupos) {
                 const grupos = createPainelDto.grupos;
@@ -186,7 +186,7 @@ export class PainelService {
 
 
 
-        
+
         return await this.prisma.painel.findFirstOrThrow({
             where: {
                 id: id
@@ -740,7 +740,7 @@ export class PainelService {
             start: new Date(0),
             end: new Date()
         };
-    
+
         if (periodo === Periodo.Anteriores) {
             if (!periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
 
@@ -1054,7 +1054,7 @@ export class PainelService {
                         },
                         filhos: {
                             where: { mostrar_indicador: true },
-                            select: {    
+                            select: {
                                 variavel: {
                                     select: {
                                         id: true,
@@ -1087,7 +1087,7 @@ export class PainelService {
                                                 id: true,
                                                 codigo: true,
                                                 titulo: true,
-        
+
                                                 SerieIndicador: {
                                                     where: {
                                                         data_valor: {
@@ -1108,7 +1108,7 @@ export class PainelService {
                                 },
                                 filhos: {
                                     where: { mostrar_indicador: true },
-                                    select: {    
+                                    select: {
                                         variavel: {
                                             select: {
                                                 id: true,
@@ -1148,18 +1148,18 @@ export class PainelService {
 
             series.detalhes.forEach(d => {
                 d.variavel?.serie_variavel.forEach(s => { all_series.push(s) });
-                
+
                 d.iniciativa?.Indicador.forEach(i => {
                     i.SerieIndicador.forEach(s => { all_series.push(s) })
                 });
-                
+
                 d.filhos.forEach(f => {
                     f.atividade?.Indicador.forEach(i => {
                         i.SerieIndicador.forEach(s => { all_series.push(s) });
                     });
 
                     f.variavel?.serie_variavel.forEach(s => { all_series.push(s) });
-                    
+
                     f.filhos.forEach(ff => {
                         ff.variavel?.serie_variavel.forEach(s => { all_series.push(s) })
                     })
@@ -1172,10 +1172,10 @@ export class PainelService {
                     const date_b = new Date(b.data_valor).getTime();
                     return date_a - date_b;
                 });
-    
+
                 const earliest = new Date(all_series[0].data_valor);
                 const latest   = new Date(all_series.at(-1)!.data_valor);
-    
+
                 series_template = await this.getSeriesTemplate(config.periodicidade, null, earliest, latest, series_order.length);
                 console.debug(series_template);
             }
@@ -1219,7 +1219,7 @@ export class PainelService {
                     })
                 } : {}
             },
-            
+
             detalhes: series.detalhes.map(d => {
                 return {
                     variavel: {
@@ -1238,7 +1238,7 @@ export class PainelService {
                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
                                     const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
                                     const serie_match     = serie_match_arr[0];
-    
+
                                     if (serie_match) {
                                         return serie_match.valor_nominal
                                     } else { return "" }
@@ -1270,7 +1270,7 @@ export class PainelService {
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
                                             const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
                                             const serie_match     = serie_match_arr[0];
-            
+
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
                                             } else { return "" }
@@ -1291,7 +1291,7 @@ export class PainelService {
                                     const series_for_period = f.variavel?.serie_variavel.filter(r => {
                                         return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
                                     }) || [];
-        
+
                                     return {
                                         titulo: t.titulo,
                                         periodo_inicio: t.periodo_inicio,
@@ -1299,7 +1299,7 @@ export class PainelService {
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
                                             const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
                                             const serie_match     = serie_match_arr[0];
-            
+
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
                                             } else { return "" }
@@ -1317,12 +1317,12 @@ export class PainelService {
                                         id: i.id,
                                         codigo: i.codigo,
                                         titulo: i.titulo,
-        
+
                                         series: series_template.map(t => {
                                             const series_for_period = i.SerieIndicador.filter(r => {
                                                 return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
-                                            }) || []; 
-        
+                                            }) || [];
+
                                             return {
                                                 titulo: t.titulo,
                                                 periodo_inicio: t.periodo_inicio,
@@ -1330,7 +1330,7 @@ export class PainelService {
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
                                                     const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
                                                     const serie_match     = serie_match_arr[0];
-                    
+
                                                     if (serie_match) {
                                                         return serie_match.valor_nominal
                                                     } else { return "" }
@@ -1350,7 +1350,7 @@ export class PainelService {
                                         const series_for_period = af.variavel?.serie_variavel.filter(r => {
                                             return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
                                         }) || [];
-            
+
                                         return {
                                             titulo: t.titulo,
                                             periodo_inicio: t.periodo_inicio,
@@ -1358,7 +1358,7 @@ export class PainelService {
                                             valores_nominais: t.valores_nominais.map((vn, ix) => {
                                                 const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
                                                 const serie_match     = serie_match_arr[0];
-                
+
                                                 if (serie_match) {
                                                     return serie_match.valor_nominal
                                                 } else { return "" }
