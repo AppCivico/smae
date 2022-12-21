@@ -47,7 +47,6 @@ export class ReportsService {
                 parametros: parametros,
                 criado_por: user.id,
                 criado_em: new Date(),
-                temporario: false
             },
             select: { id: true }
         });
