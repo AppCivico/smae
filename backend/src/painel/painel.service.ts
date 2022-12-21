@@ -595,11 +595,13 @@ export class PainelService {
                         i.variavel_id === row.variavel_id
                     });
                     console.log(already_exists);
-
                     if (already_exists.length > 0) {
                         unchanged.push(already_exists[0]);
                         continue;
                     } else {
+                        console.debug(existent_painel_conteudo_detalhes);
+                        const singular = existent_painel_conteudo_detalhes.find((e) => e.variavel_id === row.variavel_id);
+                        console.debug(singular);
                         throw new Error('already exists');
                         const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
                             data: {
