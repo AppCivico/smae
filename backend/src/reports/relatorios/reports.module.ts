@@ -5,12 +5,14 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { OrcamentoModule } from '../orcamento/orcamento.module';
 import { UploadModule } from 'src/upload/upload.module';
 import { JwtModule } from '@nestjs/jwt';
+import { IndicadoresModule } from '../indicadores/indicadores.module';
 
 @Module({
     imports: [
         PrismaModule,
         OrcamentoModule,
         UploadModule,
+        IndicadoresModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
