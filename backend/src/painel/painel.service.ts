@@ -564,7 +564,9 @@ export class PainelService {
                         });
                     })
                 })
-            })
+            });
+
+            console.log(existent_painel_conteudo_detalhes);
 
             const meta_indicador = await prisma.indicador.findMany({
                 where: {
@@ -585,28 +587,28 @@ export class PainelService {
 
                 for (const row of indicador_variaveis) {
                     const already_exists = existent_painel_conteudo_detalhes.find(i => {
-                        i.variavel_id! == row.variavel_id
+                        i.variavel_id == row.variavel_id
                     });
 
                     if (already_exists) {
                         unchanged.push(already_exists);
                         continue;
+                    } else {
+                        const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
+                            data: {
+                                painel_conteudo_id: painel_conteudo.id,
+                                variavel_id: row.variavel_id,
+                                mostrar_indicador: false,
+                                tipo: PainelConteudoTipoDetalhe.Variavel
+                            },
+                            select: {
+                                id: true,
+                                variavel_id: true,
+                                tipo: true
+                            }
+                        });
+                        created.push(created_painel_conteudo_detalhe);
                     }
-
-                    const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
-                        data: {
-                            painel_conteudo_id: painel_conteudo.id,
-                            variavel_id: row.variavel_id,
-                            mostrar_indicador: false,
-                            tipo: PainelConteudoTipoDetalhe.Variavel
-                        },
-                        select: {
-                            id: true,
-                            variavel_id: true,
-                            tipo: true
-                        }
-                    });
-                    created.push(created_painel_conteudo_detalhe);
                 }
             }
 
