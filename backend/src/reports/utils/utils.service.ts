@@ -82,7 +82,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
 }
 
 export const DefaultCsvOptions = {
-    excelStrings: true,
+    excelStrings: false,
     eol: "\r\n",
     withBOM: false,// dont be evil!
 }
