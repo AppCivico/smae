@@ -2,11 +2,11 @@ import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
 
 export class PaginatedDto<TData> {
     @ApiProperty()
-    has_more: boolean;
+    tem_mais: boolean;
 
     @ApiProperty()
-    next_page_token: string | null;
+    token_proxima_pagina: string | null;
 
     @ApiHideProperty()
-    rows: TData[];
+    linhas: TData[];
 }
