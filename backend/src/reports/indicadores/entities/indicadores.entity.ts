@@ -3,7 +3,7 @@ import { Serie } from "@prisma/client"
 import { IdCodTituloDto } from "src/common/dto/IdCodTitulo.dto"
 import { Regiao } from "src/regiao/entities/regiao.entity"
 
-export class IndicadoresDto {
+export class RelIndicadoresDto {
     meta: IdCodTituloDto
     iniciativa: IdCodTituloDto | null
     atividade: IdCodTituloDto | null
@@ -21,11 +21,11 @@ export class IndicadoresDto {
 }
 
 export class IndRelRegioes {
-    linhas: IndicadoresDto[]
+    linhas: RelIndicadoresDto[]
     regiao: Regiao
 }
 
 export class ListIndicadoresDto {
-    linhas: IndicadoresDto[]
+    linhas: RelIndicadoresDto[]
     regioes: IndRelRegioes[]
 }
