@@ -1327,7 +1327,6 @@ export class PainelService {
                 const latest   = new Date(all_series.at(-1)!.data_valor);
 
                 series_template = await this.getSeriesTemplate(config.periodicidade, null, earliest, latest, series_order.length);
-                console.debug(series_template);
             }
         }
 
@@ -1387,7 +1386,7 @@ export class PainelService {
                                 periodo_fim: t.periodo_fim,
                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
                                     const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                    const serie_match     = serie_match_arr[0];
+                                    const serie_match     = serie_match_arr.at(-1) || serie_match_arr[0];
 
                                     if (serie_match) {
                                         return serie_match.valor_nominal
@@ -1419,7 +1418,7 @@ export class PainelService {
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
                                             const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                            const serie_match     = serie_match_arr[0];
+                                            const serie_match     = serie_match_arr.at(-1) || serie_match_arr[0];
 
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
@@ -1448,7 +1447,7 @@ export class PainelService {
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
                                             const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                            const serie_match     = serie_match_arr[0];
+                                            const serie_match     = serie_match_arr.at(-1) || serie_match_arr[0];
 
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
@@ -1479,7 +1478,7 @@ export class PainelService {
                                                 periodo_fim: t.periodo_fim,
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
                                                     const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                                    const serie_match     = serie_match_arr[0];
+                                                    const serie_match     = serie_match_arr.at(-1) || serie_match_arr[0];
 
                                                     if (serie_match) {
                                                         return serie_match.valor_nominal
@@ -1507,7 +1506,7 @@ export class PainelService {
                                             periodo_fim: t.periodo_fim,
                                             valores_nominais: t.valores_nominais.map((vn, ix) => {
                                                 const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                                const serie_match     = serie_match_arr[0];
+                                                const serie_match     = serie_match_arr.at(-1) || serie_match_arr[0];
 
                                                 if (serie_match) {
                                                     return serie_match.valor_nominal
