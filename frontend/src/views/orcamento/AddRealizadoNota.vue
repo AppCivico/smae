@@ -46,10 +46,13 @@ const schema = Yup.object().shape({
 });
 
 async function onSubmit(values = {}) {
-  if (respostasof.value.nota_empenho !== values.nota_empenho) {
+  const nota_empenho_e_ano = `${values.nota_empenho}/${dotaAno.value}`;
+
+  if (respostasof.value.nota_empenho !== nota_empenho_e_ano) {
     validarDota();
     return;
   }
+
   try {
     var msg;
     var r;
@@ -75,7 +78,7 @@ async function onSubmit(values = {}) {
     });
 
     // sobrescrever propriedade `nota_empenho`
-    r = await OrcamentosStore.insertOrcamentoRealizado({ ...values, nota_empenho: `${values.nota_empenho}/${dotaAno.value}` });
+    r = await OrcamentosStore.insertOrcamentoRealizado({ ...values, nota_empenho: nota_empenho_e_ano });
     msg = 'Dados salvos com sucesso!';
 
     if (r == true) {
@@ -112,7 +115,8 @@ function formatNota(d) {
         var s = data.slice(0,5);
   return s;
 }
-async function validarDota(e) {
+
+async function validarDota(evt) {
   dota.value = String(dota.value).padStart(5, '0');
 
   try {
@@ -126,7 +130,9 @@ async function validarDota(e) {
     respostasof.value = error;
   }
 
-  e.stopPropagation();
+  if (evt?.stopPropagation) {
+    evt.stopPropagation();
+  }
 }
 </script>
 <template>
