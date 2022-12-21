@@ -291,6 +291,8 @@ export class OrcamentoRealizadoService {
 
         const novaSomaEmpenho = dotacaoTx.smae_soma_valor_empenho + soma_valor_empenho - soma_valor_empenho_desconto;
         const novaSomaLiquido = dotacaoTx.smae_soma_valor_liquidado + soma_valor_liquidado - soma_valor_liquidado_desconto;
+        console.log({novaSomaEmpenho, novaSomaLiquido});
+
 
         if (this.liberarValoresMaioresQueSof == false &&
             Math.round(novaSomaEmpenho * 100) > Math.round(dotacaoTx.empenho_liquido * 100)) {
