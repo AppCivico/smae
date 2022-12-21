@@ -6,22 +6,32 @@ import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 import { FiltroMetasIniAtividadeDto } from "../../reports/dto/filtros.dto"
 
 export class OrcamentoExecutadoParams {
+    /**
+     * @example "Analitico"
+    */
     @ApiProperty({ enum: TipoRelatorio, enumName: 'TipoRelatorio' })
     @IsEnum(TipoRelatorio, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', ')
     })
     tipo: TipoRelatorio
 
+    /**
+     * @example "2020-01-01"
+    */
     @IsOnlyDate()
     @Type(() => Date)
     inicio: Date
 
+    /**
+     * @example "2022-01-01"
+    */
     @IsOnlyDate()
     @Type(() => Date)
     fim: Date
 
     /**
      * filtrar apenas os órgão (SOF) que estão nessa lista
+     * @example "[]"
     */
     @IsOptional()
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })

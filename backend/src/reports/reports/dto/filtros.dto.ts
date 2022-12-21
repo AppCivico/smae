@@ -16,13 +16,18 @@ export class FiltroMetasIniAtividadeDto {
     @Type(() => Number)
     iniciativa_id?: number
 
+    /**
+     * @example ""
+    */
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     atividade_id?: number
 
+
     /**
      * filtrar apenas indicadores/iniciativas/atividades com as tags, se vazio=não filtra por nada
+     * @example "[]"
     */
     @IsOptional()
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })

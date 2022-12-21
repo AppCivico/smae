@@ -487,7 +487,6 @@ export class OrcamentoService implements ReportableService {
 
     async getFiles(myInput: any): Promise<FileOutput[]> {
         const dados = myInput as ListOrcamentoExecutadoDto;
-
         return [
             {
                 name: 'result.json',
