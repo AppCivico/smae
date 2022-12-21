@@ -204,7 +204,7 @@ export class PainelService {
                     mostrar_planejado_por_padrao: true,
                     mostrar_acumulado_por_padrao: true,
                     mostrar_indicador_por_padrao: true,
-    
+
                     grupos: {
                         select: {
                             grupo_painel: {
@@ -215,7 +215,7 @@ export class PainelService {
                             }
                         }
                     },
-    
+
                     painel_conteudo: {
                         select: {
                             id: true,
@@ -230,14 +230,14 @@ export class PainelService {
                             periodo_fim: true,
                             periodo_inicio: true,
                             periodo_valor: true,
-    
+
                             meta: {
                                 select: {
                                     codigo: true,
                                     titulo: true,
                                 }
                             },
-    
+
                             detalhes: {
                                 where: {
                                     pai_id: null
@@ -249,7 +249,7 @@ export class PainelService {
                                     id: true,
                                     tipo: true,
                                     mostrar_indicador: true,
-    
+
                                     variavel: {
                                         select: {
                                             id: true,
@@ -269,7 +269,7 @@ export class PainelService {
                                             id: true,
                                             tipo: true,
                                             mostrar_indicador: true,
-    
+
                                             variavel: {
                                                 select: {
                                                     id: true,
@@ -289,7 +289,7 @@ export class PainelService {
                                                     id: true,
                                                     tipo: true,
                                                     mostrar_indicador: true,
-    
+
                                                     variavel: {
                                                         select: {
                                                             id: true,
@@ -503,7 +503,7 @@ export class PainelService {
         return ret
     }
 
-    async populatePainelConteudoDetalhe(conteudos: PainelConteudoForSync[], prisma: Prisma.TransactionClient) {
+    private async populatePainelConteudoDetalhe(conteudos: PainelConteudoForSync[], prisma: Prisma.TransactionClient) {
         const created: PainelConteudoDetalheForSync[] = [];
         const deleted: PainelConteudoDetalheForSync[] = [];
         const unchanged: PainelConteudoDetalheForSync[] = [];
@@ -628,7 +628,7 @@ export class PainelService {
 
                 const already_exists = existent_painel_conteudo_detalhes.find(i => i.iniciativa_id === iniciativa.id);
                 console.log(already_exists);
-                
+
                 if (already_exists) {
                     parent_iniciativa = already_exists;
                     unchanged.push(already_exists);
@@ -648,7 +648,7 @@ export class PainelService {
                     });
                     created.push(parent_iniciativa);
                 }
-    
+
                 const iniciativa_variaveis = await prisma.indicadorVariavel.findMany({
                     where: {
                         indicador: {
@@ -750,7 +750,7 @@ export class PainelService {
                             });
                             created.push(created_painel_conteudo_detalhe)
                         }
-                        
+
                     }
                 }
             }
@@ -764,7 +764,7 @@ export class PainelService {
         }
     }
 
-    async checkDeletedPainelConteudo (metas: number[], conteudos: PainelConteudoIdAndMeta[], prisma: Prisma.TransactionClient): Promise<PainelConteudoIdAndMeta[]> {
+    private async checkDeletedPainelConteudo (metas: number[], conteudos: PainelConteudoIdAndMeta[], prisma: Prisma.TransactionClient): Promise<PainelConteudoIdAndMeta[]> {
         const deleted: PainelConteudoIdAndMeta[] = [];
         for (const existent_conteudo of conteudos) {
 
@@ -791,52 +791,7 @@ export class PainelService {
         return deleted;
     }
 
-    async secondsDiff(d1: number, d2: number) {
-        let millisecondDiff = d2 - d1;
-        let secDiff = Math.floor( ( d2 - d1) / 1000 );
-        return secDiff;
-    }
-
-    async minutesDiff(d1: number, d2: number) {
-        let seconds = await this.secondsDiff(d1, d2);
-        let minutesDiff = Math.floor( seconds / 60 );
-        return minutesDiff;
-    }
-
-    async hoursDiff(d1: number, d2: number) {
-        let minutes = await this.minutesDiff(d1, d2);
-        let hoursDiff = Math.floor( minutes / 60 );
-        return hoursDiff;
-    }
-
-    async daysDiff(d1: number, d2: number) {
-        let hours = await this.hoursDiff(d1, d2);
-        let daysDiff = Math.floor( hours / 24 );
-        return daysDiff;
-    }
-
-    async weeksDiff(d1: number, d2: number) {
-        let days = await this.daysDiff(d1, d2);
-        let weeksDiff = Math.floor( days/ 7 );
-        return weeksDiff;
-    }
-
-    async yearsDiff(d1: number, d2: number) {
-        let date1 = new Date(d1);
-        let date2 = new Date(d2);
-        let yearsDiff =  date2.getFullYear() - date1.getFullYear();
-        return yearsDiff;
-    }
-
-    async monthsDiff(d1: number, d2: number) {
-        let date1 = new Date(d1);
-        let date2 = new Date(d2);
-        let years = await this.yearsDiff(d1, d2);
-        let months =(years * 12) + (date2.getMonth() - date1.getMonth()) ;
-        return months;
-    }
-
-    async buildSeriesOrder(mostrar_planejado: boolean, mostrar_acumulado: boolean): Promise<string[]> {
+    private async buildSeriesOrder(mostrar_planejado: boolean, mostrar_acumulado: boolean): Promise<string[]> {
         const ret: string[] = ['Realizado'];
 
         if (mostrar_planejado) {
@@ -852,7 +807,7 @@ export class PainelService {
         return ret;
     }
 
-    async getMultiplierForPeriodicidade (periodicidade: Periodicidade): Promise<number> {
+    private async getMultiplierForPeriodicidade (periodicidade: Periodicidade): Promise<number> {
         let multiplier: number;
 
         switch (periodicidade) {
@@ -882,7 +837,7 @@ export class PainelService {
         return multiplier;
     }
 
-    async getStartEndDate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null, periodo_inicio: Date | null, periodo_fim: Date | null): Promise<PainelDateRange> {
+    private async getStartEndDate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null, periodo_inicio: Date | null, periodo_fim: Date | null): Promise<PainelDateRange> {
         let ret: {
             start: Date,
             end: Date
@@ -963,7 +918,7 @@ export class PainelService {
         return ret;
     }
 
-    async getTitle (periodicidade: Periodicidade, start: DateTime, end: DateTime): Promise<string> {
+    private async getTitle (periodicidade: Periodicidade, start: DateTime, end: DateTime): Promise<string> {
         let ret: string;
 
         if (periodicidade === Periodicidade.Semestral ||
@@ -983,7 +938,7 @@ export class PainelService {
         return ret;
     }
 
-    async getSeriesTemplate (periodicidade: Periodicidade, periodo_valor: number | null, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
+    private async getSeriesTemplate (periodicidade: Periodicidade, periodo_valor: number | null, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
         const series_template: SeriesTemplate[] = [];
 
         let config: {
