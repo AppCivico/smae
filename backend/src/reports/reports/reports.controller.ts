@@ -17,6 +17,7 @@ export class ReportsController {
     @Roles('Reports.executar')
     async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt) {
 
+        const result = this.reportsService.runReport(dto, user);
 
         return ''
     }
