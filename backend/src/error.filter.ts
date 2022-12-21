@@ -12,7 +12,11 @@ export class ErrorFilter implements ExceptionFilter {
 
         console.log(exception);
 
-        response.status(404).json({ message: 'Recurso acesso não foi encontrado ' + request.url });
+        if (exception.code == 'P2025') {
+            response.status(404).json({ message: 'Recurso acessado não foi encontrado ' + request.url });
+        } else {
+            response.status(500).json({ message: 'Erro interno durante execução, banco de dados: Prisma Code: ' + exception.code });
+        }
     }
 
 }
