@@ -1,4 +1,5 @@
 import { requestS } from '@/helpers';
+import toFloat from '@/helpers/toFloat';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -139,4 +140,43 @@ export const useOrcamentosStore = defineStore({
       }
     },
   },
+
+  getters: {
+    orcamentoEmFoco({ OrcamentoRealizado }) {
+      const { ano, id } = this.route.params;
+      const anoEmFoco = OrcamentoRealizado[ano] || [];
+
+      return anoEmFoco.find(x => x.id == id);
+    },
+
+    totaisDosItens() {
+      const { itens = [], smae_soma_valor_empenho = '0', smae_soma_valor_liquidado = '0' } = this.orcamentoEmFoco || {};
+
+      const empenho = toFloat(smae_soma_valor_empenho) + itens.reduce((r, x) => r + toFloat(x.valor_empenho), 0) ?? 0;
+      const liquidacao = toFloat(smae_soma_valor_liquidado) + itens.reduce((r, x) => r + toFloat(x.valor_liquidado), 0) ?? 0;
+
+      return {
+        empenho,
+        liquidacao
+      };
+    },
+
+    totaisQueSuperamSOF() {
+      const { orcamentoEmFoco = {}, totaisDosItens = {} } = this;
+      const { empenho_liquido = '0', valor_liquidado = '0' } = orcamentoEmFoco;
+      const { empenho = 0, liquidacao = 0 } = totaisDosItens;
+
+      const resp = [];
+
+      if (empenho > toFloat(empenho_liquido)) {
+        resp.push('empenho');
+      }
+
+      if (liquidacao > toFloat(valor_liquidado)) {
+        resp.push('liquidacao');
+      }
+
+      return resp;
+    },
+  }
 });
