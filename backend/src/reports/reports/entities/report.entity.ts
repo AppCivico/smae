@@ -7,7 +7,3 @@ export class RelatorioDto {
     parametros: any
     pdm_id: number
 }
-
-export class ListRelatorioDto {
-    linhas: RelatorioDto[]
-}
