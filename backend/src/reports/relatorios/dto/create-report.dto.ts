@@ -1,6 +1,7 @@
 import { ApiProperty, refs } from "@nestjs/swagger"
 import { FonteRelatorio } from "@prisma/client"
 import { IsBoolean, IsEnum, IsOptional } from "class-validator"
+import { CreateIndicadorDto } from "src/reports/indicadores/dto/create-indicadore.dto"
 import { CreateOrcamentoExecutadoDto } from "../../orcamento/dto/create-orcamento-executado.dto"
 import { ReportValidatorOf } from "../report-validator-of"
 
@@ -17,7 +18,7 @@ export class CreateReportDto {
      * @example "{}"
     */
     @ReportValidatorOf('fonte')
-    @ApiProperty({anyOf: refs(CreateOrcamentoExecutadoDto)})
+    @ApiProperty({oneOf: refs(CreateOrcamentoExecutadoDto, CreateIndicadorDto)})
     parametros: any
 
     @IsOptional()

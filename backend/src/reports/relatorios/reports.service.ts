@@ -5,6 +5,7 @@ import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UploadService } from 'src/upload/upload.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { IndicadoresService } from '../indicadores/indicadores.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -24,8 +25,8 @@ export class ReportsService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly orcamentoService: OrcamentoService,
-        private readonly uploadService: UploadService
-
+        private readonly uploadService: UploadService,
+        private readonly indicadoresService: IndicadoresService,
     ) { }
 
     async runReport(dto: CreateReportDto, user: PessoaFromJwt): Promise<FileOutput[]> {
@@ -69,6 +70,9 @@ export class ReportsService {
         let service: ReportableService | null = null;
         switch (dto.fonte) {
             case 'Orcamento': service = this.orcamentoService; break;
+            case 'IndicadoresSemestral': service = this.indicadoresService; break;
+            case 'IndicadoresAnual': service = this.indicadoresService; break;
+
         }
         if (service === null)
             throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);

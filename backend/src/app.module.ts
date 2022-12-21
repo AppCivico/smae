@@ -51,6 +51,7 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
+import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 
 
 @Module({
@@ -109,6 +110,7 @@ import { VariavelModule } from './variavel/variavel.module';
         PdmCicloModule,
         SofEntidadeModule,
         TextoConfigModule,
+        IndicadoresModule,
     ],
     controllers: [AppController],
     providers: [
