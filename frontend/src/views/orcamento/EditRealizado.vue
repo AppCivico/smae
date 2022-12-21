@@ -118,7 +118,7 @@ async function checkClose() {
 }
 
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento`) }, 'Remover');
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento/realizado`) }, 'Remover');
 }
 
 function dinheiro(v) {
