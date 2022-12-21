@@ -268,6 +268,15 @@ export class OrcamentoRealizadoService {
         soma_valor_empenho_desconto: number = 0,
         soma_valor_liquidado_desconto: number = 0,
     ) {
+        console.log({
+            func: 'atualizaDotacao',
+            dotacao,
+            soma_valor_empenho,
+            soma_valor_liquidado,
+            soma_valor_empenho_desconto,
+            soma_valor_liquidado_desconto,
+        });
+
         const dotacaoTx = await prismaTxn.dotacaoRealizado.findUnique({
             where: {
                 ano_referencia_dotacao: {
