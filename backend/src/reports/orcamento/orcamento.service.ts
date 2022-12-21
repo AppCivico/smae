@@ -488,11 +488,24 @@ export class OrcamentoService implements ReportableService {
 
     }
 
-    async getFiles(myInput: any): Promise<FileOutput[]> {
+    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
         const dados = myInput as ListOrcamentoExecutadoDto;
 
+        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
 
         const out: FileOutput[] = [];
+
+        const camposMetaIniAtv = [
+            { value: 'meta.codigo', label: 'Código da Meta' },
+            { value: 'meta.titulo', label: 'Título da Meta' },
+            { value: 'meta.id', label: 'ID da Meta' },
+            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
+            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
+            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
+            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
+        ];
 
         if (dados.linhas.length) {
             const json2csvParser = new Parser({
@@ -501,15 +514,7 @@ export class OrcamentoService implements ReportableService {
                 fields: [
                     'mes',
                     'ano',
-                    'meta.codigo',
-                    'meta.titulo',
-                    'meta.id',
-                    'iniciativa.codigo',// TODO buscar do PDM qual o label certo
-                    'iniciativa.titulo',
-                    'iniciativa.id',
-                    'atividade.codigo',
-                    'atividade.titulo',
-                    'atividade.id',
+                    ...camposMetaIniAtv,
                     'dotacao',
                     'processo',
                     'nota_empenho',
@@ -531,7 +536,8 @@ export class OrcamentoService implements ReportableService {
                     'dotacao_mes_utilizado',
                     'smae_valor_empenhado',
                     'smae_valor_liquidado',
-                    'logs']
+                    'logs',
+                ]
             });
             const linhas = json2csvParser.parse(dados.linhas.map((r) => { return { ...r, logs: r.logs.join("\r\n") } }));
             out.push({
@@ -546,15 +552,7 @@ export class OrcamentoService implements ReportableService {
                 transforms: defaultTransform,
                 fields: [
                     'ano',
-                    'meta.codigo',
-                    'meta.titulo',
-                    'meta.id',
-                    'iniciativa.codigo',
-                    'iniciativa.titulo',
-                    'iniciativa.id',
-                    'atividade.codigo',
-                    'atividade.titulo',
-                    'atividade.id',
+                    ...camposMetaIniAtv,
                     'dotacao',
                     'orgao.codigo',
                     'orgao.nome',
@@ -580,7 +578,10 @@ export class OrcamentoService implements ReportableService {
         return [
             {
                 name: 'info.json',
-                buffer: Buffer.from(JSON.stringify({ "horario": Date2YMD.tzSp2UTC(new Date()) }), "utf8")
+                buffer: Buffer.from(JSON.stringify({
+                    params: params,
+                    "horario": Date2YMD.tzSp2UTC(new Date())
+                }), "utf8")
             },
             ...out
         ]
