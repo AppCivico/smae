@@ -1,4 +1,5 @@
 <script setup>
+import toFloat from '@/helpers/toFloat';
 import { onMounted, onUpdated, ref } from 'vue';
 	const props = defineProps(['controlador', 'respostasof']);
 	let itens = ref(props.controlador)
