@@ -591,13 +591,13 @@ export class PainelService {
                 });
 
                 for (const row of indicador_variaveis) {
-                    const already_exists = existent_painel_conteudo_detalhes.find(i => {
+                    const already_exists = existent_painel_conteudo_detalhes.filter(i => {
                         i.variavel_id == row.variavel_id
                     });
                     console.log(already_exists);
 
-                    if (already_exists) {
-                        unchanged.push(already_exists);
+                    if (already_exists.length > 0) {
+                        unchanged.push(already_exists[0]);
                         continue;
                     } else {
                         const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
@@ -629,12 +629,12 @@ export class PainelService {
             for (const iniciativa of meta_iniciativas) {
                 let parent_iniciativa;
 
-                const already_exists = existent_painel_conteudo_detalhes.find(i => {i.iniciativa_id == iniciativa.id});
+                const already_exists = existent_painel_conteudo_detalhes.filter(i => {i.iniciativa_id == iniciativa.id});
                 console.log(already_exists);
                 
-                if (already_exists) {
-                    parent_iniciativa = already_exists;
-                    unchanged.push(already_exists);
+                if (already_exists.length > 0) {
+                    parent_iniciativa = already_exists[0];
+                    unchanged.push(already_exists[0]);
                 } else {
                     parent_iniciativa = await prisma.painelConteudoDetalhe.create({
                         data: {
@@ -663,10 +663,10 @@ export class PainelService {
                 })
 
                 for (const variavel of iniciativa_variaveis) {
-                    const already_exists = existent_painel_conteudo_detalhes.find(i => {i.variavel_id == variavel.variavel_id});
+                    const already_exists = existent_painel_conteudo_detalhes.filter(i => {i.variavel_id == variavel.variavel_id});
 
-                    if (already_exists) {
-                        unchanged.push(already_exists);
+                    if (already_exists.length > 0) {
+                        unchanged.push(already_exists[0]);
                         continue;
                     } else {
                         const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
@@ -698,10 +698,10 @@ export class PainelService {
                 for (const atividade of atividades) {
                     let parent_atividade;
 
-                    const already_exists = existent_painel_conteudo_detalhes.find(i => {i.atividade_id == atividade.id });
-                    if (already_exists) {
-                        parent_atividade = already_exists;
-                        unchanged.push(already_exists);
+                    const already_exists = existent_painel_conteudo_detalhes.filter(i => {i.atividade_id == atividade.id });
+                    if (already_exists.length > 0) {
+                        parent_atividade = already_exists[0];
+                        unchanged.push(already_exists[0]);
                     } else {
                         const created_painel_conteudo_detalhe = parent_atividade = await prisma.painelConteudoDetalhe.create({
                             data: {
@@ -731,10 +731,10 @@ export class PainelService {
                     });
 
                     for (const variavel of atividade_variaveis) {
-                        const already_exists = existent_painel_conteudo_detalhes.find(i => {i.variavel_id == variavel.variavel_id });
+                        const already_exists = existent_painel_conteudo_detalhes.filter(i => {i.variavel_id == variavel.variavel_id });
 
-                        if (already_exists) {
-                            unchanged.push(already_exists);
+                        if (already_exists.length > 0) {
+                            unchanged.push(already_exists[0]);
                             continue;
                         } else {
                             const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
@@ -758,7 +758,8 @@ export class PainelService {
                 }
             }
         }
-
+        console.log(created);
+        console.log(unchanged);
         return {
             created: created,
             deleted: deleted,
