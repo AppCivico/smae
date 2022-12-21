@@ -93,12 +93,23 @@ export class MetaOrcamentoService {
                 ...r,
                 custeio_previsto: r.custeio_previsto.toFixed(2),
                 investimento_previsto: r.investimento_previsto.toFixed(2),
-                projeto_atividade: ''
+                projeto_atividade: '',
+                parte_dotacao: this.expandirParteDotacao(r.parte_dotacao)
             }
         });
         await this.dotacaoService.setManyProjetoAtividade(list);
 
         return list;
+    }
+
+    // 11.13.08.091.*.1.278.*.00 => 11.13.08.091.****.1.278.********.00
+    // 11.*.08.091.*.1.278.*.00 => 11.**.08.091.****.1.278.********.00
+    private expandirParteDotacao(parte_dotacao: string): string {
+        const partes = parte_dotacao.split('.');
+        if (partes[1] = '*') partes[1] = '**';
+        if (partes[4] = '*') partes[4] = '****';
+        if (partes[7] = '*') partes[7] = '********';
+        return partes.join('.')
     }
 
     async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
