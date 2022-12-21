@@ -1996,7 +1996,9 @@ model Relatorio {
     criado_por Int?
     arquivo_id Int
 
-    temporario Boolean
+    remove_em  DateTime? @db.Timestamptz(6)
+    remove_por Int?
+
     tipo       TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
     fonte      FonteRelatorio
 
