@@ -5,8 +5,8 @@ import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dt
 import { ListOrcamentoExecutadoDto } from './entities/orcamento-executado.entity';
 import { OrcamentoService } from './orcamento.service';
 
-@ApiTags('Reports')
-@Controller('reports/orcamento')
+@ApiTags('Relatórios - API')
+@Controller('relatorio/orcamento')
 export class OrcamentoController {
     constructor(private readonly orcamentoExecutadoService: OrcamentoService) { }
 
