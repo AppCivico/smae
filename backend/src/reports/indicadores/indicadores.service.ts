@@ -16,12 +16,9 @@ export class IndicadoresService implements ReportableService {
         throw 'not implemented';
     }
 
-
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
         const dados = myInput as ListIndicadoresDto;
-
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
-
         const out: FileOutput[] = [];
 
 
