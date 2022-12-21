@@ -55,12 +55,17 @@ export class UtilsService {
     }
 }
 
+export class FileOutput {
+    name: string
+    buffer: Buffer
+}
+
 export interface ReportableService {
-    getFiles(output: any): Promise<any>
+    getFiles(output: any): Promise<FileOutput[]>
     create(params: any): Promise<any>
 }
 
-export function coarsedValuesFromFonte(fonte: FonteRelatorio, value: any): any {
+export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
     let theClass: any = undefined;
 
     switch (fonte) {

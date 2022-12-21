@@ -3,7 +3,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ReportableService, UtilsService } from '../utils/utils.service';
+import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto, OrcamentoExecutadoSaidaDto, OrcamentoPlanejadoSaidaDto } from './entities/orcamento-executado.entity';
 
@@ -485,7 +485,15 @@ export class OrcamentoService implements ReportableService {
 
     }
 
-    async getFiles(output: any) {
-        return {}
+    async getFiles(myInput: any): Promise<FileOutput[]> {
+        const dados = myInput as ListOrcamentoExecutadoDto;
+
+        return [
+            {
+                name: 'result.json',
+                buffer: Buffer.from(JSON.stringify(dados), "utf8")
+            }
+        ]
     }
+
 }
