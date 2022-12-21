@@ -11,12 +11,12 @@ function toggleMenu() {
 const props = defineProps(["activate"]);
 
 const authStore = useAuthStore();
-const { user, permissions } = storeToRefs(authStore);
+const { user, permissions, temPermissãoPara } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const menuFiltrado = router.options.routes
   .filter(x => x.meta?.presenteNoMenu)
-  .filter(x => !x.restringirÀsPermissões || x.restringirÀsPermissões.some(y => user.value.privilegios?.indexOf(y) !== -1));
+  .filter(x => !x.restringirÀsPermissões || temPermissãoPara(x.restringirÀsPermissões));
 
 authStore.getDados();
 </script>

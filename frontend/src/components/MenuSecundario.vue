@@ -4,12 +4,12 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const route = useRoute();
 
 const subMenu = route.matched?.[0]?.children
-  .filter((x) => x.meta?.restringirÀsPermissões === undefined || (Array.isArray(x.meta?.restringirÀsPermissões) && x.meta?.restringirÀsPermissões.some(y => user.value.privilegios?.indexOf(y) !== -1))) || [];
+  .filter((x) => x.meta?.restringirÀsPermissões === undefined || temPermissãoPara(x.meta?.restringirÀsPermissões)) || [];
 const raizDoSubmenu = route.matched?.[0]?.path;
 </script>
 <template>

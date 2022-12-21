@@ -137,4 +137,10 @@ export const useAuthStore = defineStore({
       return this.permissions = per;
     }
   },
+  getters: {
+    temPermissãoPara: ({ user }) => (permissões) =>
+      Array.isArray(permissões)
+        ? permissões.some(y => user.privilegios?.indexOf(y) !== -1)
+        : user.privilegios.indexOf(permissões) !== -1,
+  },
 });
