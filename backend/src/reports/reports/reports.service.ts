@@ -70,7 +70,8 @@ export class ReportsService {
         const rows = await this.prisma.relatorio.findMany({
             where: {
                 fonte: filters.fonte,
-                pdm_id: filters.pdm_id
+                pdm_id: filters.pdm_id,
+                removido_em: null
             },
             select: {
                 id: true,
@@ -88,6 +89,17 @@ export class ReportsService {
                 ...r,
                 criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                 arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
+            }
+        });
+    }
+
+    async delete(id: number, user: PessoaFromJwt) {
+        await this.prisma.relatorio.updateMany({
+            where: {
+                id: id
+            }, data: {
+                removido_em: new Date(),
+                removido_por: user.id
             }
         });
     }

@@ -158,7 +158,8 @@ model Pessoa {
     OrcamentoRealizadoCriados                OrcamentoRealizado[]              @relation("criador")
     OrcamentoRealizadoRemovidos              OrcamentoRealizado[]              @relation("removedor")
     OrcamentoRealizadoItem                   OrcamentoRealizadoItem[]          @relation("sobrescritor")
-    Relatorio                                Relatorio[]
+    RelatorioQueFiz                          Relatorio[]                       @relation("criador")
+    RelatorioQueRemovi                       Relatorio[]                       @relation("removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -1996,15 +1997,18 @@ model Relatorio {
     criado_por Int?
     arquivo_id Int
 
-    remove_em  DateTime? @db.Timestamptz(6)
-    remove_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+    removido_por Int?
 
-    tipo       TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
-    fonte      FonteRelatorio
+    tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
+    fonte FonteRelatorio
 
-    criador Pessoa? @relation(fields: [criado_por], references: [id])
-    arquivo Arquivo @relation(fields: [arquivo_id], references: [id])
-    pdm     Pdm     @relation(fields: [pdm_id], references: [id])
+    criador   Pessoa? @relation("criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("removedor", fields: [removido_por], references: [id])
+    arquivo   Arquivo @relation(fields: [arquivo_id], references: [id])
+    pdm       Pdm     @relation(fields: [pdm_id], references: [id])
 
+    @@index([pdm_id, criado_em, removido_em])
+    @@index([fonte, criado_em])
     @@map("relatorio")
 }
