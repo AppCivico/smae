@@ -1,10 +1,13 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { UploadService } from 'src/upload/upload.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/CreateReport.dto';
+import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
+import { RelatorioDto } from './entities/report.entity';
 
 
 @Injectable()
@@ -13,6 +16,7 @@ export class ReportsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly orcamentoService: OrcamentoService,
+        private readonly uploadService: UploadService
 
     ) { }
 
@@ -61,4 +65,33 @@ export class ReportsService {
             throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
         return service;
     }
+
+
+    async findAll(filters: FilterRelatorioDto): Promise<RelatorioDto[]> {
+
+        const rows = await this.prisma.relatorio.findMany({
+            where: {
+                fonte: filters.fonte,
+                pdm_id: filters.pdm_id
+            },
+            select: {
+                id: true,
+                criado_em: true,
+                criador: { select: { nome_exibicao: true } },
+                fonte: true,
+                arquivo_id: true,
+                parametros: true,
+                pdm_id: true,
+            }
+        });
+
+        return rows.map((r) => {
+            return {
+                ...r,
+                criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
+                arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
+            }
+        });
+    }
+
 }
