@@ -530,6 +530,7 @@ export class PainelService {
                                 select: {
                                     id: true,
                                     variavel_id: true,
+                                    iniciativa_id: true,
                                     atividade_id: true,
                                     tipo: true,
                                 }
@@ -544,6 +545,8 @@ export class PainelService {
                 existent_painel_conteudo_detalhes.push({
                     id: i.id,
                     variavel_id: i.variavel_id,
+                    iniciativa_id: i.iniciativa_id,
+                    atividade_id: i.atividade_id,
                     tipo: i.tipo
                 });
 
@@ -552,6 +555,7 @@ export class PainelService {
                         id: f.id,
                         variavel_id: f.variavel_id,
                         iniciativa_id: f.iniciativa_id,
+                        atividade_id: f.atividade_id,
                         tipo: f.tipo
                     });
 
@@ -559,6 +563,7 @@ export class PainelService {
                         existent_painel_conteudo_detalhes.push({
                             id: ff.id,
                             variavel_id: ff.variavel_id,
+                            iniciativa_id: ff.iniciativa_id,
                             atividade_id: ff.atividade_id,
                             tipo: ff.tipo
                         });
@@ -589,6 +594,7 @@ export class PainelService {
                     const already_exists = existent_painel_conteudo_detalhes.find(i => {
                         i.variavel_id == row.variavel_id
                     });
+                    console.log(already_exists);
 
                     if (already_exists) {
                         unchanged.push(already_exists);
@@ -624,6 +630,7 @@ export class PainelService {
                 let parent_iniciativa;
 
                 const already_exists = existent_painel_conteudo_detalhes.find(i => {i.iniciativa_id == iniciativa.id});
+                console.log(already_exists);
                 
                 if (already_exists) {
                     parent_iniciativa = already_exists;
