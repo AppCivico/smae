@@ -28,7 +28,7 @@ const parentlink = `${meta_id ? '/metas/' + meta_id : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoRealizado, DotacaoSegmentos, totaisQueSuperamSOF } = storeToRefs(OrcamentosStore);
+const { OrcamentoRealizado, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
 const currentEdit = ref({});
 const dota = ref('');
 const respostasof = ref({});
@@ -79,20 +79,6 @@ const itens = ref([]);
     itens.value = currentEdit.value.itens;
   }
 })();
-
-function beforeSubmit(values) {
-  if (totaisQueSuperamSOF.value.some(x => ['empenho', 'liquidacao'].includes(x))) {
-    useAlertStore().confirmAction('Valores superioes ao SOF', async () => {
-      try {
-        onSubmit(values);
-      } catch (error) {
-        return false;
-      }
-    }, 'Deseja mesmo salvar?');
-  } else {
-    onSubmit(values);
-  }
-}
 
 async function onSubmit(values) {
   try {
@@ -155,8 +141,8 @@ function validaPartes(a) {
   }
 }
 
-</script>
 
+</script>
 <template>
   <Dashboard>
       <div class="flex spacebetween center">
@@ -166,7 +152,7 @@ function validaPartes(a) {
       </div>
         <h3 class="mb2"><strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}</h3>
       <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
-          <Form @submit="beforeSubmit" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
+          <Form @submit="onSubmit" :initial-values="currentEdit" v-slot="{ errors, isSubmitting, values }">
 
                 <div v-if="currentEdit.processo">
                     <label class="label">Processo</label>
