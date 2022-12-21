@@ -1,5 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UploadService } from 'src/upload/upload.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -10,10 +12,16 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 
 
+class NextPageTokenJwtBody {
+    offset: number
+    ipp: number
+};
+
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
     constructor(
+        private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly orcamentoService: OrcamentoService,
         private readonly uploadService: UploadService
@@ -65,7 +73,18 @@ export class ReportsService {
     }
 
 
-    async findAll(filters: FilterRelatorioDto): Promise<RelatorioDto[]> {
+    async findAll(filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
+        let has_more: boolean = false;
+        let next_page_token: string | null = null;
+
+        let ipp = filters.ipp ? filters.ipp : 25;
+        let offset = 0;
+        let decodedPageToken = this.decodeNextPageToken(filters.next_page_token);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
+        }
 
         const rows = await this.prisma.relatorio.findMany({
             where: {
@@ -81,16 +100,31 @@ export class ReportsService {
                 arquivo_id: true,
                 parametros: true,
                 pdm_id: true,
-            }
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+            skip: offset,
+            take: ipp + 1
         });
 
-        return rows.map((r) => {
-            return {
-                ...r,
-                criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
-                arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
-            }
-        });
+        if (rows.length > ipp) {
+            has_more = true;
+            rows.pop()
+            next_page_token = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp })
+        }
+
+        return {
+            rows: rows.map((r) => {
+                return {
+                    ...r,
+                    criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
+                    arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
+                }
+            }),
+            has_more: has_more,
+            next_page_token: next_page_token
+        };
     }
 
     async delete(id: number, user: PessoaFromJwt) {
@@ -102,6 +136,21 @@ export class ReportsService {
                 removido_por: user.id
             }
         });
+    }
+
+    decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt)
+                tmp = this.jwtService.decode(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400)
+        }
+        return tmp;
+    }
+
+    encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
     }
 
 }

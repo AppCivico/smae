@@ -11,8 +11,10 @@ import { Response } from 'express';
 import { UploadService } from 'src/upload/upload.service';
 import { Date2YMD } from 'src/common/date2ymd';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
-import { ListRelatorioDto, RelatorioDto } from './entities/report.entity';
+import { RelatorioDto } from './entities/report.entity';
 import { FindOneParams } from 'src/common/decorators/find-params';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -69,11 +71,9 @@ export class ReportsController {
     @ApiBearerAuth('access-token')
     @Get()
     @Roles('Reports.executar')
-    async findAll(@Query() filters: FilterRelatorioDto): Promise<ListRelatorioDto> {
-        const linhas = await this.reportsService.findAll(filters);
-        return {
-            'linhas': linhas,
-        };
+    @ApiPaginatedResponse(RelatorioDto)
+    async findAll(@Query() filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
+        return await this.reportsService.findAll(filters);
     }
 
     @Delete(':id')
