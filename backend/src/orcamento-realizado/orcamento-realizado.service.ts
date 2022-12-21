@@ -354,7 +354,7 @@ export class OrcamentoRealizadoService {
         let processo: string | null = null;
         let nota_empenho: string | null = null;
 
-        nota_empenho = dto.nota_empenho ? dto.nota_empenho.replace(/[^0-9]/g, '') : null;
+        nota_empenho = dto.nota_empenho ? dto.nota_empenho.replace(/[^0-9\/]/g, '') : null;
         processo = dto.processo ? dto.processo.replace(/[^0-9]/g, '') : null;
 
         // se é por nota_empenho, os testes sobre o uso de limite serão apenas sobre a nota-empenho
