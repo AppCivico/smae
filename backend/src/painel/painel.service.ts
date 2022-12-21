@@ -592,7 +592,7 @@ export class PainelService {
 
                 for (const row of indicador_variaveis) {
                     const already_exists = existent_painel_conteudo_detalhes.filter(i => {
-                        i.variavel_id == row.variavel_id
+                        i.variavel_id === row.variavel_id
                     });
                     console.log(already_exists);
 
@@ -600,6 +600,7 @@ export class PainelService {
                         unchanged.push(already_exists[0]);
                         continue;
                     } else {
+                        throw new Error('already exists');
                         const created_painel_conteudo_detalhe = await prisma.painelConteudoDetalhe.create({
                             data: {
                                 painel_conteudo_id: painel_conteudo.id,
@@ -629,7 +630,7 @@ export class PainelService {
             for (const iniciativa of meta_iniciativas) {
                 let parent_iniciativa;
 
-                const already_exists = existent_painel_conteudo_detalhes.filter(i => {i.iniciativa_id == iniciativa.id});
+                const already_exists = existent_painel_conteudo_detalhes.filter(i => {i.iniciativa_id === iniciativa.id});
                 console.log(already_exists);
                 
                 if (already_exists.length > 0) {
