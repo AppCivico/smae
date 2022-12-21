@@ -1,18 +1,23 @@
 <script setup>
-import { ref } from "vue";
-import { storeToRefs } from "pinia";
+import { router } from '@/router';
 import { useAuthStore } from "@/stores";
+import { storeToRefs } from "pinia";
+import { ref } from "vue";
 
 let menuMobile = ref(0);
 function toggleMenu() {
   menuMobile = !menuMobile.value;
 }
-
 const props = defineProps(["activate"]);
 
 const authStore = useAuthStore();
 const { user, permissions } = storeToRefs(authStore);
 const perm = permissions.value;
+
+const menuFiltrado = router.options.routes
+  .filter(x => x.meta?.presenteNoMenu)
+  .filter(x => !x.restringirÀsPermissões || x.restringirÀsPermissões.some(y => user.value.privilegios?.indexOf(y) !== -1));
+
 authStore.getDados();
 </script>
 
@@ -98,6 +103,17 @@ authStore.getDados();
         </svg>
       </router-link>
 
+      <router-link
+        v-for="item, k in menuFiltrado"
+        :key="k"
+        :to="item.path"
+        @click="toggleMenu"
+        :class="{ active: props.activate == item.meta?.menuSecundário }"
+      >
+        <span>{{ item.meta?.títuloParaMenu || item.meta?.título || item.name }}</span>
+        <span class="menu__envelope-svg" v-if="item.meta?.íconeParaMenu" v-html="item.meta.íconeParaMenu" />
+      </router-link>
+
     </div>
 
     <div class="bottom">
@@ -116,7 +132,7 @@ authStore.getDados();
           <path d="M9 9a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" />
         </svg>
       </a>
-      <router-link 
+      <router-link
         to="/usuarios" @click="toggleMenu"
         v-if="!perm.PDM?.ponto_focal"
       >
@@ -168,9 +184,16 @@ authStore.getDados();
         text-transform: capitalize;
       }
     }
+
+    .menu__envelope-svg {
+      display: inline;
+      opacity: 1;
+    }
+
     svg {
       display: inline-block;
       vertical-align: middle;
+      fill: currentColor;
       * {
         .transition();
       }
