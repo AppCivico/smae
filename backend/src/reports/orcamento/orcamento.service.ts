@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UtilsService } from '../utils/utils.service';
+
+import { ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto, OrcamentoExecutadoSaidaDto, OrcamentoPlanejadoSaidaDto } from './entities/orcamento-executado.entity';
 
@@ -63,7 +64,7 @@ class RetornoPlanejadoDb {
 }
 
 @Injectable()
-export class OrcamentoService {
+export class OrcamentoService implements ReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
@@ -484,4 +485,7 @@ export class OrcamentoService {
 
     }
 
+    async getFiles(output: any) {
+        return {}
+    }
 }

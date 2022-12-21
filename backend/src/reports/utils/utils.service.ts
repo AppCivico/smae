@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { FonteRelatorio } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { FiltroMetasIniAtividadeDto } from '../reports/dto/filtros.dto';
 
 @Injectable()
@@ -50,4 +53,22 @@ export class UtilsService {
             metas
         }
     }
+}
+
+export interface ReportableService {
+    getFiles(output: any): Promise<any>
+    create(params: any): Promise<any>
+}
+
+export function coarsedValuesFromFonte(fonte: FonteRelatorio, value: any): any {
+    let theClass: any = undefined;
+
+    switch (fonte) {
+        case 'Orcamento': theClass = CreateOrcamentoExecutadoDto; break;
+        default:
+            return false;
+    }
+    const validatorObject = plainToInstance(theClass, value);
+
+    return validatorObject;
 }
