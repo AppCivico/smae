@@ -17,9 +17,6 @@ import { onMounted, onUpdated, ref } from 'vue';
 	function dinheiro(v){
 		return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v))
 	}
-	function toFloat(v){
-		return isNaN(v) || String(v).indexOf(',') !== -1 ? Number( String(v).replace(/[^0-9\,]/g, '').replace(',','.') ) : Math.round(Number(v)*100)/100;
-	}
 	function removeItem(g,i) {
 		g = g.splice(i,1);
 	}
