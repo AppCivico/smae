@@ -1,17 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, StreamableFile, Res, Query } from '@nestjs/common';
-import { UploadService } from './upload.service';
-import { CreateUploadDto } from './dto/create-upload.dto';
+import { Body, Controller, Get, Param, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { IpAddress } from '../common/decorators/current-ip';
-import { Upload } from './entities/upload.entity';
-import { IsPublic } from '../auth/decorators/is-public.decorator';
-import { Stream } from 'stream';
-import { createReadStream } from 'fs';
+import { ApiBearerAuth, ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { IsPublic } from '../auth/decorators/is-public.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { IpAddress } from '../common/decorators/current-ip';
+import { CreateUploadDto } from './dto/create-upload.dto';
 import { DownloadOptions } from './dto/download-options';
+import { Upload } from './entities/upload.entity';
+import { UploadService } from './upload.service';
 
 @Controller('')
 @ApiTags('Upload')
