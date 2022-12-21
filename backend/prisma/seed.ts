@@ -158,6 +158,7 @@ const PrivConfig: any = {
     ],
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
+        ['Reports.remover', 'Remover relatórios'],
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
