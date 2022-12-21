@@ -1986,7 +1986,7 @@ enum FonteRelatorio {
 }
 
 model Relatorio {
-    id Int @id @default(1)
+    id Int @id @default(autoincrement())
 
     pdm_id Int
 
