@@ -1,7 +1,7 @@
-export default function dateToTitle(d) {
+export default function dateToTitle(d, short = false) {
   var dd = d ? new Date(d) : false;
   if (!dd) return d;
-  var month = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"][dd.getUTCMonth()];
+  var month = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"][dd.getUTCMonth()];
   var year = dd.getUTCFullYear();
-  return `${month}/${year}`;
+  return `${short ? month.substring(0, 3) : month}/${year}`;
 }
