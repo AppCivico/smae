@@ -498,11 +498,14 @@ function start() {
         label: ind.codigo + ' - ' + ind.titulo,
         series: {}
       }
-      a.series.projetadoAcu = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iPA.value] }; });
-      a.series.realizadoAcu = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iRA.value] }; });
-      a.series.projetado = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iP.value] }; });
-      a.series.realizado = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iR.value] }; });
-      data.push(a);
+
+      if (Array.isArray(ind.series)) {
+        a.series.projetadoAcu = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iPA.value] }; });
+        a.series.realizadoAcu = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iRA.value] }; });
+        a.series.projetado = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iP.value] }; });
+        a.series.realizado = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iR.value] }; });
+        data.push(a);
+      }
     });
 
     chart.drawChart(data, evolucao.value);
