@@ -3,8 +3,7 @@
 Parâmetros:
 
 - periodo: anual, Semestral, required
-- ano: padrão = ano corrente
-- mes: padrão = 1 no anual
+- ano: padrão = ano corrente, required
 - semestre: 'primeiro' ou 'segundo', no semestral, padrão 'primeiro'
 - tipo: consolidado/analítico, padrão=consolidado
 - series: padrão são todas - {Realizado + Acumulado, Planejado + Acumulado}
