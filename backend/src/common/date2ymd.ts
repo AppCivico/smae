@@ -3,6 +3,8 @@ export type DateYMD = string;
 
 export class Date2YMD {
     static toString(d: Date): DateYMD {
+        if (!(d instanceof Date)) throw 'called toString on non-date object'
+
         const str = d.toISOString();
         return str.substring(0, 10)
     }
