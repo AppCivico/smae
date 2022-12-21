@@ -3,7 +3,7 @@ import { TipoRelatorio } from "@prisma/client"
 import { Type } from "class-transformer"
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
-import { FiltroMetasIniAtividadeDto } from "../../reports/dto/filtros.dto"
+import { FiltroMetasIniAtividadeDto } from "../../relatorios/dto/filtros.dto"
 
 export class OrcamentoExecutadoParams {
     /**

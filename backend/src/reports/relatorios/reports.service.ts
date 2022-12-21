@@ -7,7 +7,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
-import { CreateReportDto } from './dto/CreateReport.dto';
+import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 

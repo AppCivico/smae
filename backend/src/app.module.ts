@@ -39,7 +39,7 @@ import { PessoaModule } from './pessoa/pessoa.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RegiaoModule } from './regiao/regiao.module';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
-import { ReportsModule } from './reports/reports/reports.module';
+import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { SofApiModule } from './sof-api/sof-api.module';
 import { SofEntidadeModule } from './sof-entidade/sof-entidade.module';
