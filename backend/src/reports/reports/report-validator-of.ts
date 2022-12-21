@@ -1,8 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
-import { registerDecorator, validate, ValidationArguments, ValidationOptions, ValidatorConstraint } from 'class-validator';
-import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
-import { plainToInstance } from 'class-transformer';
 import { FonteRelatorio } from '@prisma/client';
+import { registerDecorator, validate, ValidationArguments, ValidationOptions } from 'class-validator';
+import { coarsedValuesFromFonte } from '../utils/utils.service';
 
 export function ReportValidatorOf(property: string, validationOptions?: ValidationOptions) {
     return function (value: Object, propertyName: string) {
@@ -22,15 +21,7 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                     const [fonteNome] = args.constraints;
                     const fonte = (args.object as any)[fonteNome] as FonteRelatorio;
 
-                    let theClass: any = undefined;
-
-                    switch (fonte) {
-                        case 'Orcamento': theClass = CreateOrcamentoExecutadoDto; break;
-                        default:
-                            return false;
-                    }
-
-                    const validatorObject = plainToInstance(theClass, value);
+                    const validatorObject = coarsedValuesFromFonte(fonte, value);
                     const validations = await validate(validatorObject);
                     if (validations.length) {
                         throw new BadRequestException(
