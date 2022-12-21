@@ -29,7 +29,13 @@ export class StorageService {
     }
 
     async putBlob(key: string, blob: Buffer, metadata: MinioJS.ItemBucketMetadata): Promise<MinioJS.UploadedObjectInfo> {
-        return this.S3.putObject(this.BUCKET, key, blob, metadata);
+        console.log(`putBlob ${key} with ${blob.length} bytes`);
+        try {
+            return await this.S3.putObject(this.BUCKET, key, blob, metadata);
+        } catch (error) {
+            console.log(error);
+            throw error
+        }
     }
 
 }
