@@ -4,25 +4,23 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores';
 
 // Views
-import { Home, Administracao } from '@/views';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
 import { default as SubmenuMonitoramento } from '@/components/SubmenuMonitoramento.vue';
+import { Administracao, Home } from '@/views';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
-import { AddEditUsers, ListUsers } from '@/views/users';
-import { AddEditOrgans, ListOrgans, AddEditOrganTypes, ListOrganTypes } from '@/views/organs';
-import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
+import { AddEditAtividade, AddEditCronograma, AddEditIndicador, AddEditIniciativa, AddEditMetas, ListMetas, ListMetasGroup, SingleAtividade, SingleCronograma, SingleEvolucao, SingleIniciativa, SingleMeta, SinglePainelMeta } from '@/views/metas';
+import { ListCiclos, ListCiclosPassados, ListMonitoramentoMetas, ListMonitoramentoMetasCronograma, ListMonitoramentoMetasEvolucao, MonitoramentoMetas, MonitoramentoMetasCronograma } from '@/views/monitoramento';
 import { AddEditODS, ListODS } from '@/views/ods';
+import { AddEditCusteio, AddEditPlanejado, AddRealizado, AddRealizadoNota, AddRealizadoProcesso, EditRealizado, MetaOrcamento } from '@/views/orcamento';
+import { AddEditOrgans, AddEditOrganTypes, ListOrgans, ListOrganTypes } from '@/views/organs';
+import { AddEditGrupo, AddEditPainel, ListGrupos, ListPainel } from '@/views/paineis';
 import { AddEditPdM, ListPdM } from '@/views/pdm';
-import { AddEditMetas, ListMetas, ListMetasGroup, SingleMeta, SingleEvolucao, SinglePainelMeta } from '@/views/metas';
-import { AddEditIndicador, AddEditIniciativa, SingleIniciativa, AddEditAtividade, SingleAtividade } from '@/views/metas';
-import { SingleCronograma, AddEditCronograma } from '@/views/metas';
-import { MetaOrcamento, AddEditCusteio, AddEditPlanejado, AddRealizado, AddRealizadoProcesso, AddRealizadoNota, EditRealizado } from '@/views/orcamento';
 import { ListRegions } from '@/views/regions';
-import { ListPainel, AddEditPainel, ListGrupos, AddEditGrupo } from '@/views/paineis';
-import { ListCiclos, ListCiclosPassados, ListMonitoramentoMetas, ListMonitoramentoMetasEvolucao, ListMonitoramentoMetasCronograma, MonitoramentoMetas, MonitoramentoMetasCronograma } from '@/views/monitoramento';
+import { AddEditResources, ListResources } from '@/views/resources';
+import { AddEditUsers, ListUsers } from '@/views/users';
 
 
 export const router = createRouter({
@@ -172,7 +170,7 @@ export const router = createRouter({
 
                 {
                   path: ':meta_id/orcamento',
-                  redirect: to => `${to.path}custeio`,
+                  redirect: (to) => `${to.path}/custeio`,
                 },
 
                 { path: ':meta_id/orcamento/custeio', component: MetaOrcamento, props:{submenu:SubmenuMetas, area:'Custeio',title:'Previsão de Custo'} },
