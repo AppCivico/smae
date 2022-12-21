@@ -1,10 +1,13 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Post, Res } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+const AdmZip = require("adm-zip");
+
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CreateReportDto } from './dto/CreateReport.dto';
 import { ReportsService } from './reports.service';
+import { Response } from 'express';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -15,11 +18,32 @@ export class ReportsController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Reports.executar')
-    async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt) {
+    @ApiOkResponse({
+        description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
+        type: ''
+    })
+    async create(
+        @Body() dto: CreateReportDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @Res() res: Response) {
 
-        const result = this.reportsService.runReport(dto, user);
+        const files = await this.reportsService.runReport(dto, user);
 
-        return ''
+        const zip = new AdmZip();
+
+        files.forEach(file => {
+            zip.addFile(file.name, file.buffer);
+        });
+        const zipBuffer = zip.toBuffer();
+
+        //if (dto.)
+
+        res.set({
+            'Content-Type': 'application/zip',
+            'Content-Disposition': 'attachment; filename=files.zip'
+        });
+        res.write(zipBuffer);
+        res.send()
     }
 
 }

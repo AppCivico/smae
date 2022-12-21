@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { FonteRelatorio } from '@prisma/client';
 import { registerDecorator, validate, ValidationArguments, ValidationOptions } from 'class-validator';
-import { coarsedValuesFromFonte } from '../utils/utils.service';
+import { ParseParametrosDaFonte } from '../utils/utils.service';
 
 export function ReportValidatorOf(property: string, validationOptions?: ValidationOptions) {
     return function (value: Object, propertyName: string) {
@@ -21,7 +21,7 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                     const [fonteNome] = args.constraints;
                     const fonte = (args.object as any)[fonteNome] as FonteRelatorio;
 
-                    const validatorObject = coarsedValuesFromFonte(fonte, value);
+                    const validatorObject = ParseParametrosDaFonte(fonte, value);
                     const validations = await validate(validatorObject);
                     if (validations.length) {
                         throw new BadRequestException(
