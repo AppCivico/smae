@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 const AdmZip = require("adm-zip");
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -12,6 +12,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { Date2YMD } from 'src/common/date2ymd';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { ListRelatorioDto, RelatorioDto } from './entities/report.entity';
+import { FindOneParams } from 'src/common/decorators/find-params';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -73,6 +74,20 @@ export class ReportsController {
         return {
             'linhas': linhas,
         };
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles('Reports.remover')
+    @ApiUnauthorizedResponse()
+    @ApiResponse({ description: 'sucesso ao remover', status: 204 })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async remover(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        await this.reportsService.delete(params.id, user)
+        return null;
     }
 
 }
