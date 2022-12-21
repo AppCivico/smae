@@ -3,7 +3,7 @@ import { FonteRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
-import { FiltroMetasIniAtividadeDto } from '../reports/dto/filtros.dto';
+import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 
 @Injectable()
 export class UtilsService {
