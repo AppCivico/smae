@@ -55,13 +55,6 @@ async function selectPainel() {
         else if(SingleSerie.value?.detalhes[0]?.series?.length) ModeloSerie.value = SingleSerie.value.detalhes[0].series;
     }
 }
-function dateToTitle(d) {
-    var dd=d?new Date(d):false;
-    if(!dd) return d;
-    var month = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"][dd.getUTCMonth()];
-    var year = dd.getUTCFullYear();
-    return `${month}/${year}`;
-}
 
 // Tables
     let tableScroll = ref(null);
@@ -128,7 +121,7 @@ function dateToTitle(d) {
                             </div>
                             <div class="f0 end br" style="flex-basis:400px;"
                             v-for="v, k in ModeloSerie" :key="k">
-                                <div class="t14 w700 p05">{{dateToTitle(v.periodo_inicio)}}</div>
+                                <div class="t14 w700 p05">{{ v.titulo }}</div>
                                 <div class="flex">
                                     <div class="f1 label p05 tc200 br">Previsto mensal</div>
                                     <div class="f1 label p05 tc200 br">Realizado mensal</div>
