@@ -15,6 +15,12 @@ import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 
+export class PainelConteudoForSync {
+    id: number
+    meta_id: number
+    mostrar_indicador: boolean
+}
+
 export class PainelDateRange {
     start: Date
     end: Date
@@ -164,8 +170,8 @@ export class PainelService {
         });
     }
 
-    async syncDetalhes(painel_id: number) {
-        const painel = await this.prisma.painel.findFirstOrThrow({
+    async syncDetalhes(painel_id: number, prisma: Prisma.TransactionClient) {
+        const existent_conteudo = await prisma.painel.findFirstOrThrow({
             where: {id: painel_id},
             select: {
                 painel_conteudo: {
@@ -184,112 +190,113 @@ export class PainelService {
 
     async getDetail(id: number) {
 
+        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            await this.syncDetalhes(id, prisma);
 
-
-
-        return await this.prisma.painel.findFirstOrThrow({
-            where: {
-                id: id
-            },
-            select: {
-                id: true,
-                nome: true,
-                ativo: true,
-                periodicidade: true,
-                mostrar_planejado_por_padrao: true,
-                mostrar_acumulado_por_padrao: true,
-                mostrar_indicador_por_padrao: true,
-
-                grupos: {
-                    select: {
-                        grupo_painel: {
-                            select: {
-                                id: true,
-                                nome: true,
+            return await prisma.painel.findFirstOrThrow({
+                where: {
+                    id: id
+                },
+                select: {
+                    id: true,
+                    nome: true,
+                    ativo: true,
+                    periodicidade: true,
+                    mostrar_planejado_por_padrao: true,
+                    mostrar_acumulado_por_padrao: true,
+                    mostrar_indicador_por_padrao: true,
+    
+                    grupos: {
+                        select: {
+                            grupo_painel: {
+                                select: {
+                                    id: true,
+                                    nome: true,
+                                }
                             }
                         }
-                    }
-                },
-
-                painel_conteudo: {
-                    select: {
-                        id: true,
-                        meta_id: true,
-                        indicador_id: true,
-                        mostrar_planejado: true,
-                        mostrar_acumulado: true,
-                        mostrar_indicador: true,
-                        mostrar_acumulado_periodo: true,
-                        periodicidade: true,
-                        periodo: true,
-                        periodo_fim: true,
-                        periodo_inicio: true,
-                        periodo_valor: true,
-
-                        meta: {
-                            select: {
-                                codigo: true,
-                                titulo: true,
-                            }
-                        },
-
-                        detalhes: {
-                            where: {
-                                pai_id: null
+                    },
+    
+                    painel_conteudo: {
+                        select: {
+                            id: true,
+                            meta_id: true,
+                            indicador_id: true,
+                            mostrar_planejado: true,
+                            mostrar_acumulado: true,
+                            mostrar_indicador: true,
+                            mostrar_acumulado_periodo: true,
+                            periodicidade: true,
+                            periodo: true,
+                            periodo_fim: true,
+                            periodo_inicio: true,
+                            periodo_valor: true,
+    
+                            meta: {
+                                select: {
+                                    codigo: true,
+                                    titulo: true,
+                                }
                             },
-                            orderBy: [
-                                {ordem: 'asc'}
-                            ],
-                            select: {
-                                id: true,
-                                tipo: true,
-                                mostrar_indicador: true,
-
-                                variavel: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                        codigo: true
-                                    }
+    
+                            detalhes: {
+                                where: {
+                                    pai_id: null
                                 },
-                                iniciativa: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                        codigo: true
-                                    }
-                                },
-                                filhos: {
-                                    select: {
-                                        id: true,
-                                        tipo: true,
-                                        mostrar_indicador: true,
-
-                                        variavel: {
-                                            select: {
-                                                id: true,
-                                                titulo: true,
-                                                codigo: true
-                                            }
-                                        },
-                                        atividade: {
-                                            select: {
-                                                id: true,
-                                                titulo: true,
-                                                codigo: true
-                                            }
-                                        },
-                                        filhos: {
-                                            select: {
-                                                id: true,
-                                                tipo: true,
-                                                mostrar_indicador: true,
-
-                                                variavel: {
-                                                    select: {
-                                                        id: true,
-                                                        titulo: true,
-                                                        codigo: true
+                                orderBy: [
+                                    {ordem: 'asc'}
+                                ],
+                                select: {
+                                    id: true,
+                                    tipo: true,
+                                    mostrar_indicador: true,
+    
+                                    variavel: {
+                                        select: {
+                                            id: true,
+                                            titulo: true,
+                                            codigo: true
+                                        }
+                                    },
+                                    iniciativa: {
+                                        select: {
+                                            id: true,
+                                            titulo: true,
+                                            codigo: true
+                                        }
+                                    },
+                                    filhos: {
+                                        select: {
+                                            id: true,
+                                            tipo: true,
+                                            mostrar_indicador: true,
+    
+                                            variavel: {
+                                                select: {
+                                                    id: true,
+                                                    titulo: true,
+                                                    codigo: true
+                                                }
+                                            },
+                                            atividade: {
+                                                select: {
+                                                    id: true,
+                                                    titulo: true,
+                                                    codigo: true
+                                                }
+                                            },
+                                            filhos: {
+                                                select: {
+                                                    id: true,
+                                                    tipo: true,
+                                                    mostrar_indicador: true,
+    
+                                                    variavel: {
+                                                        select: {
+                                                            id: true,
+                                                            titulo: true,
+                                                            codigo: true
+                                                        }
                                                     }
                                                 }
                                             }
@@ -300,8 +307,10 @@ export class PainelService {
                         }
                     }
                 }
-            }
-        })
+            })
+        });
+
+        return ret;
     }
 
     async update(id: number, updatePainelDto: UpdatePainelDto, user: PessoaFromJwt) {
@@ -495,7 +504,7 @@ export class PainelService {
         return ret
     }
 
-    async populatePainelConteudoDetalhe(conteudos: any[], prisma: Prisma.TransactionClient) {
+    async populatePainelConteudoDetalhe(conteudos: PainelConteudoForSync[], prisma: Prisma.TransactionClient) {
         for (const painel_conteudo of conteudos) {
 
             const meta_indicador = await prisma.indicador.findMany({
