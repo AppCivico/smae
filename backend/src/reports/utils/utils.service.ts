@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { FonteRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateIndicadorDto } from '../indicadores/dto/create-indicadore.dto';
 import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 
@@ -71,6 +71,8 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
 
     switch (fonte) {
         case 'Orcamento': theClass = CreateOrcamentoExecutadoDto; break;
+        case 'IndicadoresAnual': theClass = CreateIndicadorDto; break;
+        case 'IndicadoresSemestral': theClass = CreateIndicadorDto; break;
         default:
             return false;
     }
