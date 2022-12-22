@@ -1,5 +1,6 @@
 import { Periodicidade, Periodo, Prisma, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IS_ARRAY } from 'class-validator';
 
 export class DetailPainelVisualizacaoDto {
     id: number
@@ -17,6 +18,20 @@ export class PainelConteudoSerieDto {
     id: number
     meta_id: number
 
+}
+
+export class SimplifiedPainelConteudoSeries {
+    indicador_id?: number | null
+    variavel_id?: number | null
+    series: SimplifiedSeries[] | undefined
+}
+
+export class SimplifiedSeries {
+    data: string
+    previsto?: number | null
+    previsto_acumulado?: number | null
+    realizado?: number | null
+    realizado_acumulado?: number | null
 }
 
 export class PainelConteudoSerie {
@@ -49,8 +64,13 @@ export class PainelConteudoDetalhesSeries {
 export class RowWithIdTitleSeries {
     id?: number | null
     titulo?: string | null
+    indicador?: RowWithIdTitleSeries[] | null
     codigo?: string | null
     series?: SeriesTemplate[] | null
+}
+
+export class IniciativaIndicadorRow {
+    
 }
 
 export class FirstLevelChildren {
