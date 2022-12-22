@@ -1,10 +1,13 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { useRelatoriosStore } from '@/stores';
+import { onMounted } from 'vue';
 
-const relaóriosStore = useRelatoriosStore();
-relaóriosStore.clear();
-relaóriosStore.filterRelatorios();
+const relatóriosStore = useRelatoriosStore();
+onMounted(() => {
+  relatóriosStore.clear();
+  relatóriosStore.getAll();
+});
 </script>
 <template>
   <Dashboard>
