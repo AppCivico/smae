@@ -925,7 +925,7 @@ export class PainelService {
             periodicidade === Periodicidade.Trimestral ||
             periodicidade === Periodicidade.Quadrimestral ||
             periodicidade === Periodicidade.Bimestral) {
-                ret = end.toLocaleString({month: 'short', year: 'numeric'});
+                ret = end.minus({second: 1}).toLocaleString({month: 'short', year: 'numeric'});
         } else if (
             periodicidade === Periodicidade.Secular ||
             periodicidade === Periodicidade.Quinquenal ||
