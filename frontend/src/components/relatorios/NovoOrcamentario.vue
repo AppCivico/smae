@@ -8,6 +8,8 @@ import { markRaw, onMounted } from 'vue';
 import { boolean, object, string } from 'yup';
 import regEx from '../../consts/patterns';
 
+import monthAndYearToDate from '../../helpers/monthAndYearToDate';
+
 const relatoriosStore = useRelatoriosStore();
 
 const PdMStore = usePdMStore();
@@ -29,16 +31,6 @@ const schema = markRaw(object({
   })
 }));
 
-function fieldToDate(d) {
-  if (d) {
-    if (d.length == 6) { d = '01/0' + d; }
-    else if (d.length == 7) { d = '01/' + d; }
-    var x = d.split('/');
-    return (x.length == 3) ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10) : null;
-  }
-  return null;
-}
-
 async function onSubmit(values) {
   console.debug('values', values);
 
@@ -46,8 +38,8 @@ async function onSubmit(values) {
     var msg;
     var r;
 
-    values.parametros.inicio = fieldToDate(values.parametros.inicio);
-    values.parametros.fim = fieldToDate(values.parametros.fim);
+    values.parametros.inicio = monthAndYearToDate(values.parametros.inicio);
+    values.parametros.fim = monthAndYearToDate(values.parametros.fim);
     r = await relatoriosStore.insert(values);
     msg = 'Dados salvos com sucesso!';
 
