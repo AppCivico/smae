@@ -3,22 +3,15 @@ import dateToDate from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
 import { useAlertStore, useAuthStore, useRelatoriosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const route = useRoute();
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
-const { clear, filterRelatorios, getAll } = relatoriosStore;
-const { tempRelatorios } = storeToRefs(relatoriosStore);
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-const filters = reactive({
-  textualSearch: ""
-});
-let itemsFiltered = ref(tempRelatorios);
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
 
@@ -28,9 +21,6 @@ function excluirRelatório(id) {
   }, 'Remover');
 }
 
-function filterItems() {
-  filterRelatorios(filters);
-}
 
 function nomeDeArquivo(item) {
   const { fonte, criado_em, parametros: { tipo, inicio, fim } } = item;
@@ -66,8 +56,8 @@ onMounted(() => {
         <!--col /-->
         <col class="col--dataHora" />
 
-        <col class="col--botão-de-ação" />
-        <col class="col--botão-de-ação" />
+        <col v-if="temPermissãoPara(['Reports.remover'])" class="col--botão-de-ação" />
+        <!--col v-if="temPermissãoPara('Reports.executar')" class="col--botão-de-ação" /-->
         <col class="col--botão-de-ação" />
       </colgroup>
       <thead>
@@ -83,8 +73,8 @@ onMounted(() => {
           </tr>
       </thead>
       <tbody>
-          <template v-if="itemsFiltered.length">
-              <tr v-for="item in itemsFiltered" :key="item.id">
+          <template v-if="relatoriosStore.relatorios.length">
+              <tr v-for="item in relatoriosStore.relatorios" :key="item.id">
                   <td>{{ dateToTitle(item.parametros.inicio) }}</td>
                   <td>{{ dateToTitle(item.parametros.fim) }}</td>
                   <td>{{ item.parametros.tipo }}</td>
@@ -105,14 +95,14 @@ onMounted(() => {
                   </td>
               </tr>
           </template>
-          <tr v-else-if="itemsFiltered.loading">
+          <tr v-else-if="relatoriosStore.loading">
               <td colspan="8" aria-busy="true">
                   Carregando
               </td>
           </tr>
-          <tr v-else-if="itemsFiltered.error">
+          <tr v-else-if="relatoriosStore.error">
               <td colspan="8">
-                  Error: {{ itemsFiltered.error }}
+                  erro: {{ relatoriosStore.error }}
               </td>
           </tr>
           <tr v-else>
