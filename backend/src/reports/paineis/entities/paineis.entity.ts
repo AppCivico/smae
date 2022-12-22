@@ -6,8 +6,6 @@ import { Regiao } from "src/regiao/entities/regiao.entity"
 export class RelPaineisDto {
     meta: IdCodTituloDto
 
-    @ApiProperty({ enum: Serie, enumName: 'Serie' })
-    serie: Serie
     /**
      * data em YYYY-MM (mês e ano)
      **/
