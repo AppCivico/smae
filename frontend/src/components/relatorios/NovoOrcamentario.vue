@@ -72,7 +72,7 @@ onMounted(() => {
 
 <template>
   <Form @submit="onSubmit" :validation-schema="schema" :initial-values="current" v-slot="{ errors, isSubmitting }">
-      <!--Field type="hidden" value="Orcamento" name="fonte" /-->
+      <Field type="hidden" value="Orcamento" name="fonte" />
       <div class="flex g2 mb2">
         <div class="f1">
             <label class="label"><abbr title="Programa de metas">PdM</abbr> <span class="tvermelho">*</span></label>
