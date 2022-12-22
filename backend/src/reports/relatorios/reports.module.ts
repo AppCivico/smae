@@ -6,6 +6,7 @@ import { OrcamentoModule } from '../orcamento/orcamento.module';
 import { UploadModule } from 'src/upload/upload.module';
 import { JwtModule } from '@nestjs/jwt';
 import { IndicadoresModule } from '../indicadores/indicadores.module';
+import { PaineisModule } from '../paineis/paineis.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { IndicadoresModule } from '../indicadores/indicadores.module';
         OrcamentoModule,
         UploadModule,
         IndicadoresModule,
+        PaineisModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
