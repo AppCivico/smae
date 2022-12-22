@@ -1,0 +1,141 @@
+<script setup>
+import maskMonth from '@/helpers/maskMonth';
+import { router } from '@/router';
+import { useAlertStore, usePdMStore, useRelatoriosStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { markRaw, onMounted } from 'vue';
+import { boolean, object, string } from 'yup';
+import regEx from '../../consts/patterns';
+
+const relatoriosStore = useRelatoriosStore();
+
+const PdMStore = usePdMStore();
+const { current } = storeToRefs(relatoriosStore);
+const alertStore = useAlertStore();
+
+console.debug('relatoriosStore.insert', relatoriosStore.insert);
+
+let { loading } = storeToRefs(relatoriosStore);
+
+const schema = markRaw(object({
+  // fonte: string().required(),
+  salvar_arquivo: boolean(),
+  parametros: object({
+    pdm_id: string().required('Escolha um PdM'),
+    inicio: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
+    fim: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
+    tipo: string().required('Escolha o tipo'),
+  })
+}));
+
+function fieldToDate(d) {
+  if (d) {
+    if (d.length == 6) { d = '01/0' + d; }
+    else if (d.length == 7) { d = '01/' + d; }
+    var x = d.split('/');
+    return (x.length == 3) ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10) : null;
+  }
+  return null;
+}
+
+async function onSubmit(values) {
+  console.debug('values', values);
+
+  try {
+    var msg;
+    var r;
+
+    values.parametros.inicio = fieldToDate(values.parametros.inicio);
+    values.parametros.fim = fieldToDate(values.parametros.fim);
+    r = await relatoriosStore.insert(values);
+    msg = 'Dados salvos com sucesso!';
+
+    if (r == true) {
+      await router.push('/relatorios/orcamentarios');
+      alertStore.success(msg);
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+// function setFieldSave() {
+//   console.debug('current.value.salvar_arquivo', current.value.salvar_arquivo);
+//   current.value.salvar_arquivo = true;
+// }
+
+onMounted(() => {
+  current.value.fonte = 'Orcamento';
+
+  PdMStore.getAll().then(() => {
+    const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
+    if (currentPdM?.id) {
+      loading.value = false;
+      current.value.parametros.pdm_id = currentPdM.id;
+    }
+  });
+});
+</script>
+
+<template>
+  <Form @submit="onSubmit" :validation-schema="schema" :initial-values="current" v-slot="{ errors, isSubmitting }">
+      <!--Field type="hidden" value="Orcamento" name="fonte" /-->
+      <div class="flex g2 mb2">
+        <div class="f1">
+            <label class="label"><abbr title="Programa de metas">PdM</abbr> <span class="tvermelho">*</span></label>
+            <Field name="parametros.pdm_id" as="select" class="inputtext light
+            mb1" :class="{ 'error': errors['parametros.pdm_id'] }" :disabled="loading" v-model="current.parametros.pdm_id">
+                <option value="">Selecionar</option>
+                <option v-for="item in PdMStore.PdM" :value="item.id"
+                :key="item.id">{{ item.nome }}</option>
+            </Field>
+            <div class="error-msg">{{ errors['parametros.pdm_id'] }}</div>
+        </div>
+        <div class="f1">
+            <label for="inicio" class="label">mês/ano início <span class="tvermelho">*</span></label>
+            <Field placeholder="01/2003" name="parametros.inicio" id="inicio" type="text" class="inputtext light mb1"
+            :class="{ 'error': errors['parametro.inicio'] }" maxlength="7" @keyup="maskMonth" v-model="current.parametros.inicio" />
+            <div class="error-msg">{{ errors['parametros.inicio'] }}</div>
+        </div>
+        <div class="f1">
+            <label for="fim" class="label">mês/ano final <span class="tvermelho">*</span></label>
+            <Field placeholder="01/2003" name="parametros.fim" id="fim" type="text" class="inputtext light mb1"
+            :class="{ 'error': errors['parametros.fim'] }" maxlength="7" @keyup="maskMonth" v-model="current.parametros.fim" />
+            <div class="error-msg">{{ errors['parametros.fim'] }}</div>
+        </div>
+      </div>
+
+      <div class="mb2">
+          <div class="pl2">
+            <label class="block mb1">
+              <Field name="parametros.tipo" type="radio" value="Consolidado"
+              class="inputcheckbox" v-model="current.parametros.tipo" :class="{ 'error': errors['parametro.tipo'] }" />
+              <span>Consolidado</span>
+            </label>
+            <label class="block mb1">
+              <Field name="parametros.tipo" type="radio" value="Analitico"
+              class="inputcheckbox" v-model="current.parametros.tipo" :class="{ 'error': errors['parametro.tipo'] }" />
+              <span>Analítico</span>
+            </label>
+          </div>
+          <div class="error-msg">{{ errors['parametros.tipo'] }}</div>
+      </div>
+
+      <!--div class="mb1 mt1">
+        <label class="block">
+            <Field as="checkbox" name="salvar_arquivo" type="checkbox"
+            :value="true" class="inputcheckbox" />
+            <span :class="{ 'error': errors.salvar_arquivo }">Persistir o relatório</span>
+        </label>
+        <div class="error-msg">{{ errors.salvar_arquivo }}</div>
+      </div-->
+
+      <div class="flex spacebetween center mb2">
+          <hr class="mr2 f1"/>
+          <!--Field as="button" type="button" @click="setFieldSave, onSubmit" name="salvar_arquivo" class="btn big bgnone outline tcprimary mr2" :disabled="loading || isSubmitting" :value="false">exportar</Field-->
+          <button type="submit"  class="btn big" :disabled="loading || isSubmitting">salvar</button>
+          <hr class="ml2 f1"/>
+      </div>
+  </Form>
+</template>
