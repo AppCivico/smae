@@ -18,8 +18,18 @@
 	a{text-decoration: none; color: inherit; cursor: pointer;}
 	ul, li{list-style: none; margin: 0; padding: 0;}
 	hr{display: block; float: none; clear: both; border: 0; height: 1px; background: @c100; margin: 0;}
-	a svg{ display: inline-block; vertical-align: middle; .transition; }
-	svg{ 
+	button img,
+	a img,
+	button svg,
+	a svg {
+		display: inline-block;
+		vertical-align: middle;
+		.transition;
+		width: auto;
+		max-width: none;
+	}
+
+	svg {
 		&.blue{fill:#3A3A47;}
 		}
 	b, strong{font-weight: 900;}
@@ -348,7 +358,7 @@
 			padding: 0;
 			margin-top:3rem;
 			.title{
-			
+
 			}
 			.status{  left: .5rem;bottom: inherit;
 				span{position: absolute; left: -1.75rem; width: 2.5rem; top: -1.8rem; width: 2.5rem; .br(200px); text-align: center; line-height: 2.5rem; .t14; .w700; color: white; .bgc300;}
@@ -593,7 +603,7 @@
 		&.center{vertical-align: middle;}
 		.tablemain{
 			border-left: 1px solid @c100;
-			
+
 		}
 		.tlink{
 			.block; .tprimary; .t12; letter-spacing: .05em; background: @c100; .uc; .w900; .tc; .p1;
@@ -707,3 +717,9 @@
 	    }
 	    + #dashboard{margin-left: 350px;}
 	}
+.like-a__text {
+	border: 0;
+	background: none;
+	padding: 0;
+	min-height: 0;
+}
