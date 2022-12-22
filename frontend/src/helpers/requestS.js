@@ -1,4 +1,4 @@
-import { useAuthStore, useAlertStore } from '@/stores';
+import { useAlertStore, useAuthStore } from '@/stores';
 
 export const requestS = {
     get: request('GET'),
@@ -10,18 +10,30 @@ export const requestS = {
 };
 
 function request(method,upload) {
-    return (url, body) => {
+    return (url, params) => {
         const requestOptions = {
             method,
             headers: userToken(url)
         };
-        if(body&&!upload) {
-            requestOptions.headers['Content-Type'] = 'application/json';
-            requestOptions.body = JSON.stringify(body);
-        }else{
-            //requestOptions.headers['Content-Type'] = 'multipart/form-data';
-            requestOptions.body = body;
+
+        switch (method) {
+          case 'GET':
+            if (params && Object.keys(params).length) {
+              url += `?${new URLSearchParams(params).toString()}`;
+            }
+            break;
+
+          default:
+            if(params && !upload) {
+                requestOptions.headers['Content-Type'] = 'application/json';
+                requestOptions.params = JSON.stringify(params);
+            } else {
+                //requestOptions.headers['Content-Type'] = 'multipart/form-data';
+                requestOptions.body = params;
+            }
+            break;
         }
+
         return fetch(url, requestOptions).then(handleResponse);
     }
 }
