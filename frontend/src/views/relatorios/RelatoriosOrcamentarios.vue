@@ -28,11 +28,6 @@ function nomeDeArquivo(item) {
   return `relatório__${fonte}--${tipo}--${inicio}-${fim}@${criado_em}`;
 }
 
-onMounted(() => {
-  clear();
-  getAll({ ipp: 50 });
-});
-
 </script>
 <template>
   <div class="flex spacebetween center mb2">
