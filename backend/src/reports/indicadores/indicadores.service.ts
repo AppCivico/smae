@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Date2YMD } from 'src/common/date2ymd';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FileOutput, ReportableService } from '../utils/utils.service';
@@ -13,6 +13,11 @@ export class IndicadoresService implements ReportableService {
     ) { }
 
     async create(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
+        if (dto.periodo == 'Semestral' && !dto.semestre) {
+            throw new HttpException('Necessário enviar semestre para o periodo Semestral', 400);
+        }
+
+
         throw 'not implemented';
     }
 
