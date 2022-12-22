@@ -924,14 +924,17 @@ export class PainelService {
             periodicidade === Periodicidade.Trimestral ||
             periodicidade === Periodicidade.Quadrimestral ||
             periodicidade === Periodicidade.Bimestral) {
-                ret = end.minus({second: 1}).toLocaleString({month: 'short', year: 'numeric'});
+                const date = end.minus({second: 1});
+
+                ret = date.toLocaleString({month: '2-digit', year: 'numeric'});
         } else if (
             periodicidade === Periodicidade.Secular ||
             periodicidade === Periodicidade.Quinquenal ||
             periodicidade === Periodicidade.Anual) {
+
                 ret = start.toLocaleString({year: 'numeric'});
         } else {
-            ret = start.toLocaleString({month: 'short', year: 'numeric'});
+            ret = start.toLocaleString({month: '2-digit', year: 'numeric'});
         }
 
         return ret;
