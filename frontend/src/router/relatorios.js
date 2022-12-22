@@ -56,7 +56,7 @@ export default {
       path: 'orcamentarios/novo',
       name: 'novoRelatórioOrçamentário',
       meta: {
-        título: 'Novo relatórios de orçamentos',
+        título: 'Novo relatório de orçamentos',
       },
     }
   ]
