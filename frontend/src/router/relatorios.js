@@ -28,6 +28,7 @@ export default {
       path: 'mensal',
       component: RelatoriosMensais,
       meta: {
+        presenteNoMenu: true,
         título: 'Relatórios Mensais',
         títuloParaMenu: 'Relatório RelatoriosMensais',
       },
@@ -36,6 +37,7 @@ export default {
       path: 'semestral-ou-anual',
       component: RelatoriosSemestraisOuAnuais,
       meta: {
+        presenteNoMenu: true,
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
       },
@@ -44,6 +46,7 @@ export default {
       path: 'orcamentarios',
       component: RelatoriosOrcamentarios,
       meta: {
+        presenteNoMenu: true,
         título: 'Relatórios orçamentários',
         títuloParaMenu: 'Relatório Orçamento',
       },
