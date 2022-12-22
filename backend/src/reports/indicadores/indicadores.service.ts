@@ -67,7 +67,7 @@ export class IndicadoresService implements ReportableService {
             ),
             i.casas_decimais
         )::text as valor
-        from generate_series($1::date, $2::date, $3::interval) dt
+        from generate_series($1::date, $2::date :OFFSET:, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie ) series
         join indicador i ON i.id IN (${indicadores.map(r => r.id).join(',')})
         `;
@@ -75,7 +75,8 @@ export class IndicadoresService implements ReportableService {
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
-                    .replace(':DATA:', "dt.dt::date::text"),
+                    .replace(':DATA:', "dt.dt::date::text")
+                    .replace(':OFFSET:', ''),
                 dto.ano + '-01-01',
                 (dto.ano + 1) + '-01-01',
                 '1 month'
@@ -86,7 +87,8 @@ export class IndicadoresService implements ReportableService {
 
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', "12")
-                    .replace(':DATA:', "dt.dt::date::text"),
+                    .replace(':DATA:', "dt.dt::date::text")
+                    .replace(':OFFSET:', ''),
                 (dto.ano) + '-12-01',
                 (dto.ano + 1) + '-12-01',
                 '1 year'
@@ -100,7 +102,8 @@ export class IndicadoresService implements ReportableService {
 
             const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', "6")
-                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)"),
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
+                    .replace(':OFFSET:', ''),
                 base_mes,
                 base_mes,
                 '1 decade'
@@ -118,7 +121,19 @@ export class IndicadoresService implements ReportableService {
             );
 
             console.log([...base_data, ...complemento_data]);
-        }else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+        } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+
+            // indo buscar 6 meses, por isso sempre tem valor
+            const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+                sql.replace(':JANELA:', "6")
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
+                    .replace(':OFFSET:', "- '1 month'::interval"),
+                dto.semestre == 'Primeiro' ? dto.ano + '-06-01' : dto.ano + '-12-01',
+                dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : (dto.ano + 1) + '-06-01',
+                '1 month'
+            );
+
+            console.log(base_data);
 
 
         }
