@@ -1010,13 +1010,13 @@ export class PainelService {
                 let plus_obj: any = {};
                 plus_obj[config.time_unit] = config.multiplier
 
-                window_end = window_start.plus(plus_obj).minus({second: 1});
+                window_end = window_start.plus(plus_obj);
             }
 
             series_template.push({
                 titulo: await this.getTitle(periodicidade, window_start, window_end),
                 periodo_inicio: window_start.toJSDate(),
-                periodo_fim: window_end.toJSDate(),
+                periodo_fim: window_end.minus({second: 1}).toJSDate(),
                 valores_nominais: empty_values
             });
 
