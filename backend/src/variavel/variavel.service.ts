@@ -465,7 +465,7 @@ export class VariavelService {
         }
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            let responsaveis = updateVariavelDto.responsaveis!;
+            let responsaveis = updateVariavelDto.responsaveis;
             delete updateVariavelDto.responsaveis;
 
             const updated = await prismaTxn.variavel.update({
@@ -478,14 +478,16 @@ export class VariavelService {
                 }
             });
 
-            await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
-            await prismaTxn.variavelResponsavel.deleteMany({
-                where: { variavel_id: variavelId }
-            })
+            if (responsaveis) {
+                await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
+                await prismaTxn.variavelResponsavel.deleteMany({
+                    where: { variavel_id: variavelId }
+                })
 
-            await prismaTxn.variavelResponsavel.createMany({
-                data: await this.buildVarResponsaveis(variavelId, responsaveis),
-            });
+                await prismaTxn.variavelResponsavel.createMany({
+                    data: await this.buildVarResponsaveis(variavelId, responsaveis),
+                });
+            }
 
             if (Number(oldValorBase).toString() !== Number(updated.valor_base).toString()) {
                 await this.recalc_variaveis_acumulada([variavelId], prismaTxn);
