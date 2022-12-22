@@ -1303,7 +1303,7 @@ export class PainelService {
                 titulo: series.meta.titulo,
                 codigo: series.meta.codigo,
 
-                indicador: series.mostrar_indicador ? {
+                indicador: series.mostrar_indicador && series.meta.indicador ? {
                     id: series.meta.indicador[0].id,
                     codigo: series.meta.indicador[0].codigo,
                     titulo: series.meta.indicador[0].titulo,
