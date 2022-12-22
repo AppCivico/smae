@@ -1010,7 +1010,7 @@ export class PainelService {
                 let plus_obj: any = {};
                 plus_obj[config.time_unit] = config.multiplier
 
-                window_end = window_start.plus(plus_obj);
+                window_end = window_start.plus(plus_obj).minus({second: 1});
             }
 
             series_template.push({
