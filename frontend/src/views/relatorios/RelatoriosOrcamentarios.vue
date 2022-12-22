@@ -1,13 +1,18 @@
 <script setup>
 import TabelaDeOrçamentários from '@/components/relatorios/TabelaDeOrcamentarios.vue';
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useRelatoriosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const route = useRoute();
 
 
+onMounted(() => {
+  relatóriosStore.clear();
+  relatóriosStore.getAll();
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
