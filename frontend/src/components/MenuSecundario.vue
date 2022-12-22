@@ -9,6 +9,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const route = useRoute();
 
 const subMenu = route.matched?.[0]?.children
+  .filter((x) => x.meta?.presenteNoMenu)
   .filter((x) => x.meta?.restringirÀsPermissões === undefined || temPermissãoPara(x.meta?.restringirÀsPermissões)) || [];
 const raizDoSubmenu = route.matched?.[0]?.path;
 </script>
