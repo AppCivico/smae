@@ -22,6 +22,7 @@ import { ListRegions } from '@/views/regions';
 import { AddEditResources, ListResources } from '@/views/resources';
 import { AddEditUsers, ListUsers } from '@/views/users';
 
+import relatorios from './relatorios';
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -266,6 +267,8 @@ export const router = createRouter({
                 { path: 'editar/:id/:id2/:id3/:id4', component: ListRegions, props:{type:"editar", submenu:SubmenuConfig}  },
             ]
         },
+
+        relatorios,
 
         { path: '/:pathMatch(.*)*', redirect: '/' }
     ]
