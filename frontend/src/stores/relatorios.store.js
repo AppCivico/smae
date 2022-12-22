@@ -4,8 +4,21 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useRelatoriosStore = defineStore('relatorios', {
     state: () => ({
-        relatorios: {},
-        loading: false,
+        relatorios: [],
+        current: {
+          fonte: '',
+          parametros: {
+            tipo: 'Analitico',
+            pdm_id: 0,
+            meta_id: 0,
+            tags: [],
+            inicio: '',
+            fim: '',
+            orgaos: [],
+          },
+          salvar_arquivo: true,
+        },
+        loading: true,
         error: false,
     }),
     actions: {
