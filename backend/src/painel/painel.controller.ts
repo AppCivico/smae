@@ -88,6 +88,8 @@ export class PainelController {
     @ApiBearerAuth('access-token')
     @Get(':id/conteudo/:id2/serie')
     async getPainelConteudoSerie(@Param() params: FindTwoParams): Promise<PainelConteudoSerie> {
+        const series_title_as_date = false;
+
         return await this.painelService.getPainelConteudoSerie(+params.id2);
     }
 
