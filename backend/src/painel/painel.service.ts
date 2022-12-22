@@ -10,7 +10,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
-import { PainelConteudoSerie, SerieRow, SeriesTemplate } from './dto/detalhe-painel.dto';
+import { PainelConteudoSerie, SerieRow, SeriesTemplate, SimplifiedPainelConteudoSeries } from './dto/detalhe-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import { PainelConteudoDetalheUpdateRet, PainelConteudoIdAndMeta, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
@@ -755,8 +755,7 @@ export class PainelService {
                 }
             }
         }
-        console.log(created);
-        console.log(unchanged);
+
         return {
             created: created,
             deleted: deleted,
@@ -1488,5 +1487,157 @@ export class PainelService {
         return ret;
     }
 
+    async getSimplifiedPainelSeries (painel_id: number): Promise<SimplifiedPainelConteudoSeries[]> {
+        interface values {
+            [key: string]: number | Decimal | ""
+        }
+        
+        const painel_conteudo_db = await this.prisma.painelConteudo.findMany({
+            where: { painel_id: painel_id },
+            select: {
+                id: true
+            }
+        });
+
+        const ret: SimplifiedPainelConteudoSeries[] = [];
+
+        for (const painel_conteudo of painel_conteudo_db) {
+            const painel_conteudo_series = await this.getPainelConteudoSerie(painel_conteudo.id);
+            
+            const series_order = painel_conteudo_series.ordem_series;
+
+            const all_series: SerieRow[] = [];
+            
+            if (painel_conteudo_series.meta.indicador) {
+                ret.push({
+                    indicador_id: painel_conteudo_series.meta.indicador.id,
+                    series: painel_conteudo_series.meta.indicador.series?.map((s) => {
+                        const values: values = {};
+                        s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+
+                        return {
+                            data: s.titulo,
+                            ...values
+                        }
+                    })
+                });
+            }
+
+            painel_conteudo_series.detalhes?.forEach(d => {
+                if (d.variavel?.series && d.variavel?.series?.length > 0) {
+                    ret.push({
+                        variavel_id: d.variavel.id,
+                        series: d.variavel.series.map(s => {
+                            const values: values = {};
+                            s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+
+                            return {
+                                data: s.titulo,
+                                ...values
+                            }
+                        })
+                    });
+                }
+
+                if (d.iniciativa?.indicador) {
+                    d.iniciativa.indicador.forEach(ii => {
+
+                        if (ii.series && ii.series.length > 0) {
+                            ret.push({
+                                indicador_id: ii.id,
+                                series: ii.series.map(s => {
+                                    const values: values = {};
+                                    s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+        
+                                    return {
+                                        data: s.titulo,
+                                        ...values
+                                    }
+                                })
+                            })
+                        }
+
+                    })
+                }
+
+                d.filhos?.forEach(f => {
+                    if (f.variavel?.series && f.variavel?.series?.length > 0) {
+                        ret.push({
+                            variavel_id: f.variavel.id,
+                            series: f.variavel.series.map(s => {
+                                const values: values = {};
+                                s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+    
+                                return {
+                                    data: s.titulo,
+                                    ...values
+                                }
+                            })
+                        });
+                    }
+
+                    if (f.atividade?.indicador) {
+                        f.atividade.indicador.forEach(ai => {
+
+                            if (ai.series && ai.series.length > 0) {
+                                ret.push({
+                                    indicador_id: ai.id,
+                                    series: ai.series.map(s => {
+                                        const values: values = {};
+                                        s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+            
+                                        return {
+                                            data: s.titulo,
+                                            ...values
+                                        }
+                                    })
+                                })
+                            }
+                        })
+                    }
+
+                    d.filhos?.forEach(ff => {
+                        if (ff.variavel?.series && ff.variavel?.series?.length > 0) {
+                            ret.push({
+                                variavel_id: ff.variavel.id,
+                                series: ff.variavel.series.map(s => {
+                                    const values: values = {};
+                                    s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+        
+                                    return {
+                                        data: s.titulo,
+                                        ...values
+                                    }
+                                })
+                            });
+                        }
+    
+                        if (ff.atividade?.indicador) {
+                            ff.atividade.indicador.forEach(ai => {
+
+                                if (ai.series && ai.series.length > 0) {
+                                    ret.push({
+                                        indicador_id: ai.id,
+                                        series: ai.series.map(s => {
+                                            const values: values = {};
+                                            s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+                
+                                            return {
+                                                data: s.titulo,
+                                                ...values
+                                            }
+                                        })
+                                    })
+                                }
+                            })
+                        }
+                    })
+                })
+            });
+
+        }
+
+        return ret;
+    }
 }
 
