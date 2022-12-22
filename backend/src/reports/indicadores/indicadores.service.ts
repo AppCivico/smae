@@ -93,6 +93,34 @@ export class IndicadoresService implements ReportableService {
             );
 
             console.log(data);
+        } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
+
+            const base_ano = dto.semestre == 'Primeiro' ? dto.ano : dto.ano - 1;
+            const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
+
+            const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+                sql.replace(':JANELA:', "6")
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)"),
+                base_mes,
+                base_mes,
+                '1 decade'
+            );
+
+            const complemento_ano = dto.semestre == 'Primeiro' ? dto.ano : dto.ano + 1;
+            const complemento_mes = dto.semestre == 'Primeiro' ? complemento_ano + '-12-01' : complemento_ano + '-06-01';
+
+            const complemento_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+                sql.replace(':JANELA:', "6")
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)"),
+                complemento_mes,
+                complemento_mes,
+                '1 decade'
+            );
+
+            console.log([...base_data, ...complemento_data]);
+        }else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+
+
         }
 
         throw 'not implemented';
