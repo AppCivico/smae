@@ -8,6 +8,7 @@ import { useRoute } from 'vue-router';
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const route = useRoute();
 
+const relatóriosStore = useRelatoriosStore();
 
 onMounted(() => {
   relatóriosStore.clear();
