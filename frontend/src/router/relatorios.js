@@ -1,6 +1,6 @@
 import { default as MenuSecundario } from '@/components/MenuSecundario.vue';
 
-import { RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosRaiz, RelatoriosSemestraisOuAnuais } from '@/views/relatorios';
+import { RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosOrcamentariosItem, RelatoriosRaiz, RelatoriosSemestraisOuAnuais } from '@/views/relatorios';
 
 export default {
   path: '/relatorios',
@@ -50,12 +50,14 @@ export default {
         título: 'Relatórios orçamentários',
         títuloParaMenu: 'Relatório Orçamento',
       },
-      children: [
-        {
-          path: 'novo',
-          name: 'novoRelatórioOrçamentário',
-        }
-      ],
     },
+    {
+      component: RelatoriosOrcamentariosItem,
+      path: 'orcamentarios/novo',
+      name: 'novoRelatórioOrçamentário',
+      meta: {
+        título: 'Novo relatórios de orçamentos',
+      },
+    }
   ]
 }
