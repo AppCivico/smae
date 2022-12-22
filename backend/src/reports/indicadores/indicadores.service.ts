@@ -1,15 +1,31 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Date2YMD } from 'src/common/date2ymd';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FileOutput, ReportableService } from '../utils/utils.service';
+import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
 import { ListIndicadoresDto } from './entities/indicadores.entity';
+
+
+class RetornoDb {
+    data: string
+    valor: string | null
+    serie: string
+
+    indicador_id: number
+    indicador_codigo: string
+    indicador_titulo: string
+    meta_id: number | null
+    iniciativa_id: number | null
+    atividade_id: number | null
+
+}
 
 @Injectable()
 export class IndicadoresService implements ReportableService {
     private readonly logger = new Logger(IndicadoresService.name);
     constructor(
         private readonly prisma: PrismaService,
+        private readonly utils: UtilsService,
     ) { }
 
     async create(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
@@ -17,6 +33,67 @@ export class IndicadoresService implements ReportableService {
             throw new HttpException('Necessário enviar semestre para o periodo Semestral', 400);
         }
 
+        const { metas, iniciativas, atividades } = await this.utils.applyFilter(dto, { iniciativas: true, atividades: true });
+
+        const indicadores = await this.prisma.indicador.findMany({
+            where: {
+                removido_em: null,
+                'OR': [
+                    { meta_id: { 'in': metas.map(r => r.id) } },
+                    { iniciativa_id: { 'in': iniciativas.map(r => r.id) } },
+                    { atividade_id: { 'in': atividades.map(r => r.id) } },
+                ]
+            },
+            select: { id: true }
+        });
+
+        console.log(indicadores);
+
+        let sql = `SELECT
+        i.id as indicador_id,
+        i.codigo as indicador_codigo,
+        i.titulo as indicador_titulo,
+        i.meta_id,
+        i.iniciativa_id,
+        i.atividade_id,
+        :DATA: as "data",
+        series.serie,
+        round(
+            valor_indicador_em(
+                i.id,
+                series.serie,
+                dt.dt::date,
+                :JANELA:
+            ),
+            i.casas_decimais
+        )::text as valor
+        from generate_series($1::date, $2::date, $3::interval) dt
+        cross join (select 'Realizado'::"Serie" as serie ) series
+        join indicador i ON i.id IN (${indicadores.map(r => r.id).join(',')})
+        `;
+
+        if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+            const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+                sql.replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+                    .replace(':DATA:', "dt.dt::date::text"),
+                dto.ano + '-01-01',
+                (dto.ano + 1) + '-01-01',
+                '1 month'
+            );
+
+            console.log(data);
+        } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
+
+            const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+                sql.replace(':JANELA:', "12")
+                    .replace(':DATA:', "dt.dt::date::text"),
+                (dto.ano) + '-12-01',
+                (dto.ano + 1) + '-12-01',
+                '1 year'
+            );
+
+            console.log(data);
+        }
 
         throw 'not implemented';
     }

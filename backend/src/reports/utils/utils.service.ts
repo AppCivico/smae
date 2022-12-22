@@ -28,22 +28,22 @@ export class UtilsService {
         });
 
         // aqui há uma duvida, se devemos buscar as iniciativas q deram match nas metas, ou se pelo filtro
-        const iniciativas = getResult.iniciativas ? await this.prisma.meta.findMany({
+        const iniciativas = getResult.iniciativas ? await this.prisma.iniciativa.findMany({
             where: {
-                pdm_id: filters.pdm_id,
+                meta_id: { in: metas.map(r => r.id) },
                 removido_em: null,
                 id: filters.meta_id ? filters.meta_id : undefined,
-                meta_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } }
+                iniciativa_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } }
             },
             select: { id: true }
         }) : [];
 
-        const atividades = getResult.atividades ? await this.prisma.meta.findMany({
+        const atividades = getResult.atividades ? await this.prisma.atividade.findMany({
             where: {
-                pdm_id: filters.pdm_id,
+                iniciativa_id: { in: iniciativas.map(r => r.id) },
                 removido_em: null,
                 id: filters.meta_id ? filters.meta_id : undefined,
-                meta_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } }
+                atividade_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } }
             },
             select: { id: true }
         }) : [];
