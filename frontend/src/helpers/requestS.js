@@ -9,7 +9,7 @@ export const requestS = {
     delete: request('DELETE')
 };
 
-function request(method,upload) {
+function request(method, upload) {
     return (url, params) => {
         const requestOptions = {
             method,
@@ -26,7 +26,7 @@ function request(method,upload) {
           default:
             if(params && !upload) {
                 requestOptions.headers['Content-Type'] = 'application/json';
-                requestOptions.params = JSON.stringify(params);
+                requestOptions.body = JSON.stringify(params);
             } else {
                 //requestOptions.headers['Content-Type'] = 'multipart/form-data';
                 requestOptions.body = params;
