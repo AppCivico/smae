@@ -53,10 +53,10 @@ export class MonitoramentoMensalService implements ReportableService {
                                 variavel_codigo: r.variavel_codigo,
                                 variavel_titulo: r.variavel_titulo,
                                 data: s.data,
-                                previsto: s.previsto,
-                                previsto_acumulado: s.previsto_acumulado,
-                                realizado: s.realizado,
-                                realizado_acumulado: s.realizado_acumulado,
+                                Previsto: s.Previsto,
+                                PrevistoAcumulado: s.PrevistoAcumulado,
+                                Realizado: s.Realizado,
+                                RealizadoAcumulado: s.RealizadoAcumulado,
                             }
                         )    
                     }

@@ -34,10 +34,10 @@ export class SimplifiedPainelConteudoSeries {
 
 export class SimplifiedSeries {
     data: string
-    previsto?: number | null
-    previsto_acumulado?: number | null
-    realizado?: number | null
-    realizado_acumulado?: number | null
+    Previsto?: number | null
+    PrevistoAcumulado?: number | null
+    Realizado?: number | null
+    RealizadoAcumulado?: number | null
 }
 
 export class PainelConteudoSerie {
