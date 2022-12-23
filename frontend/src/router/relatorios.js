@@ -30,7 +30,7 @@ export default {
       meta: {
         presenteNoMenu: true,
         título: 'Relatórios Mensais',
-        títuloParaMenu: 'Relatório RelatoriosMensais',
+        títuloParaMenu: 'Relatório Mensal',
       },
     },
     {
