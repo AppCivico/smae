@@ -1,3 +1,4 @@
+import responseDownload from '@/helpers/responseDownload';
 import { useAlertStore, useAuthStore } from '@/stores';
 
 export const requestS = {
@@ -62,6 +63,8 @@ function listErrors(r){
 
 async function handleResponse(response) {
     const isJson = response.headers?.get('content-type')?.includes('application/json');
+    const isZip = response.headers?.get('content-type')?.includes('application/zip');
+
     const data = isJson ? await response.json() : true;
     if (!response.ok) {
         if([204].includes(response.status)) return;
@@ -77,6 +80,8 @@ async function handleResponse(response) {
         const error = (data && data.message)?listErrors(data.message): msgDefault ?? response.status;
         alertStore.error(error);
         return Promise.reject(error);
+    } else if (isZip) {
+      responseDownload(response);
     }
 
     return data;
