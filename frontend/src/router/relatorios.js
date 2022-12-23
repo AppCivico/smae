@@ -1,6 +1,6 @@
 import { default as MenuSecundario } from '@/components/MenuSecundario.vue';
 
-import { RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosOrcamentariosItem, RelatoriosRaiz, RelatoriosSemestraisOuAnuais } from '@/views/relatorios';
+import { RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosOrcamentariosItem, RelatoriosRaiz, RelatoriosSemestraisOuAnuais, RelatórioCriarOuEditar } from '@/views/relatorios';
 
 export default {
   path: '/relatorios',
@@ -35,12 +35,26 @@ export default {
     },
     {
       path: 'semestral-ou-anual',
-      component: RelatoriosSemestraisOuAnuais,
       meta: {
         presenteNoMenu: true,
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
       },
+      children: [
+        {
+          path: '',
+          component: RelatoriosSemestraisOuAnuais,
+        },
+        {
+          component: RelatórioCriarOuEditar,
+          path: 'novo',
+          name: 'novoRelatórioSemestralOuAnual',
+          meta: {
+            título: 'Novo relatório de semestral ou anual',
+            rotaDeEscape: '/relatorios/semestral-ou-anual'
+          },
+        },
+      ]
     },
     {
       path: 'orcamentarios',
