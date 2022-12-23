@@ -30,6 +30,7 @@ const schema = markRaw(object({
     tipo: string().required('Escolha o tipo'),
   })
 }));
+current.value.fonte = 'Orcamento';
 
 async function onSubmit(values) {
   console.debug('values', values);
@@ -62,8 +63,6 @@ async function onSubmit(values) {
 // }
 
 onMounted(() => {
-  current.value.fonte = 'Orcamento';
-
   PdMStore.getAll().then(() => {
     const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
     if (currentPdM?.id) {
@@ -75,8 +74,8 @@ onMounted(() => {
 </script>
 
 <template>
-      <Field type="hidden" value="Orcamento" name="fonte" />
   <Form @submit="onSubmit" :validation-schema="schema" :initial-values="current" v-slot="{ errors, isSubmitting, values }">
+      <!--Field type="hidden" value="Orcamento" name="fonte" /-->
       <div class="flex g2 mb2">
         <div class="f1">
             <label class="label"><abbr title="Programa de metas">PdM</abbr> <span class="tvermelho">*</span></label>
