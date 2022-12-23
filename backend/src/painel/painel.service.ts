@@ -312,6 +312,17 @@ export class PainelService {
         return ret;
     }
 
+    async getPainelShortData(opts: { painel_id: number }) {
+        return await this.prisma.painel.findFirst({
+            where: {id: opts.painel_id},
+            select: {
+                id: true,
+                nome: true,
+                periodicidade: true
+            }
+        });
+    }
+
     async update(id: number, updatePainelDto: UpdatePainelDto, user: PessoaFromJwt) {
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -1513,7 +1524,6 @@ export class PainelService {
             const painel_conteudo_series = await this.getPainelConteudoSerie(painel_conteudo.id);
 
             const series_order = painel_conteudo_series.ordem_series;
-
 
             if (painel_conteudo_series.meta.indicador) {
                 ret.push({
