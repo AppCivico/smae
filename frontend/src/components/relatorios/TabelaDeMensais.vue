@@ -24,7 +24,6 @@ function excluirRelatório(id) {
       <colgroup>
         <col />
         <col />
-        <col />
         <!--col /-->
         <col class="col--dataHora" />
 
@@ -34,12 +33,10 @@ function excluirRelatório(id) {
       </colgroup>
       <thead>
           <tr>
-              <th>ano</th>
-              <th>semestre</th>
-              <th>tipo</th>
+              <th>mês/ano</th>
+              <th>painéis</th>
               <!--th>tags</th-->
               <th>gerado em</th>
-
               <th v-if="temPermissãoPara(['Reports.remover'])"></th>
               <!--th v-if="temPermissãoPara('Reports.executar')"></th-->
               <th></th>
@@ -48,9 +45,8 @@ function excluirRelatório(id) {
       <tbody>
           <template v-if="relatoriosStore.relatorios.length">
               <tr v-for="item in relatoriosStore.relatorios" :key="item.id">
-                  <td>{{ item.parametros.ano }}</td>
-                  <td>{{ item.parametros.semestre }}</td>
-                  <td>{{ item.parametros.tipo }}</td>
+                  <td>{{ item.parametros.mes }}/{{ item.parametros.ano }}</td>
+                  <td>{{ item.parametros.paineis?.join(', ') }}</td>
                   <!--td>{{ item.parametros.tags }}</td-->
                   <td>{{ localizeDate(item.criado_em) }}</td>
                   <td v-if="temPermissãoPara(['Reports.remover'])">
@@ -69,17 +65,17 @@ function excluirRelatório(id) {
               </tr>
           </template>
           <tr v-else-if="relatoriosStore.loading">
-              <td colspan="7" aria-busy="true">
+              <td colspan="6" aria-busy="true">
                   Carregando
               </td>
           </tr>
           <tr v-else-if="relatoriosStore.error">
-              <td colspan="7">
+              <td colspan="6">
                   erro: {{ relatoriosStore.error }}
               </td>
           </tr>
           <tr v-else>
-              <td colspan="7">
+              <td colspan="6">
                   Nenhum resultado encontrado.
               </td>
           </tr>
