@@ -70,9 +70,7 @@ export class ReportsService {
         let service: ReportableService | null = null;
         switch (dto.fonte) {
             case 'Orcamento': service = this.orcamentoService; break;
-            case 'IndicadoresSemestral': service = this.indicadoresService; break;
-            case 'IndicadoresAnual': service = this.indicadoresService; break;
-
+            case 'Indicadores': service = this.indicadoresService; break;
         }
         if (service === null)
             throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
