@@ -1,9 +1,9 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Date2YMD } from 'src/common/date2ymd';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
-import { ListIndicadoresDto } from './entities/indicadores.entity';
+import { ListIndicadoresDto, RelIndicadoresDto } from './entities/indicadores.entity';
 
 
 class RetornoDb {
@@ -14,11 +14,22 @@ class RetornoDb {
     indicador_id: number
     indicador_codigo: string
     indicador_titulo: string
-    meta_id: number | null
-    iniciativa_id: number | null
-    atividade_id: number | null
 
+    meta_id: number
+    meta_codigo: string
+    meta_titulo: string
+
+    iniciativa_id: number
+    iniciativa_codigo: string
+    iniciativa_titulo: string
+
+    atividade_id: number
+    atividade_codigo: string
+    atividade_titulo: string
 }
+
+const { Parser, transforms: { flatten } } = require('json2csv');
+const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class IndicadoresService implements ReportableService {
@@ -47,15 +58,30 @@ export class IndicadoresService implements ReportableService {
             select: { id: true }
         });
 
-        console.log(indicadores);
+        const out: RelIndicadoresDto[] = [];
 
-        let sql = `SELECT
+        await this.queryData(indicadores.map(r => r.id), dto, out);
+
+        return {
+            linhas: out,
+            regioes: []
+        }
+    }
+
+    private async queryData(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresDto[]) {
+        const sql = `SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
         i.meta_id,
+        meta.titulo as meta_titulo,
+        meta.codigo as meta_codigo,
         i.iniciativa_id,
+        iniciativa.titulo as iniciativa_titulo,
+        iniciativa.codigo as iniciativa_codigo,
         i.atividade_id,
+        atividade.titulo as atividade_titulo,
+        atividade.codigo as atividade_codigo,
         :DATA: as "data",
         series.serie,
         round(
@@ -69,7 +95,10 @@ export class IndicadoresService implements ReportableService {
         )::text as valor
         from generate_series($1::date, $2::date :OFFSET:, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie ) series
-        join indicador i ON i.id IN (${indicadores.map(r => r.id).join(',')})
+        join indicador i ON i.id IN (${indicadoresOrVar.join(',')})
+        left join meta on meta.id = i.meta_id
+        left join iniciativa on iniciativa.id = i.iniciativa_id
+        left join atividade on atividade.id = i.atividade_id
         `;
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
@@ -82,7 +111,7 @@ export class IndicadoresService implements ReportableService {
                 '1 month'
             );
 
-            console.log(data);
+            out.push(...this.convertRows(data));
         } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
 
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
@@ -94,7 +123,7 @@ export class IndicadoresService implements ReportableService {
                 '1 year'
             );
 
-            console.log(data);
+            out.push(...this.convertRows(data));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
 
             const base_ano = dto.semestre == 'Primeiro' ? dto.ano : dto.ano - 1;
@@ -114,13 +143,15 @@ export class IndicadoresService implements ReportableService {
 
             const complemento_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', "6")
-                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)"),
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
+                    .replace(':OFFSET:', ''),
                 complemento_mes,
                 complemento_mes,
                 '1 decade'
             );
 
-            console.log([...base_data, ...complemento_data]);
+            out.push(...this.convertRows(base_data));
+            out.push(...this.convertRows(complemento_data));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
 
             // indo buscar 6 meses, por isso sempre tem valor
@@ -132,19 +163,49 @@ export class IndicadoresService implements ReportableService {
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : (dto.ano + 1) + '-06-01',
                 '1 month'
             );
-
-            console.log(base_data);
-
-
+            out.push(...this.convertRows(base_data));
         }
-
-        throw 'not implemented';
     }
 
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
         const dados = myInput as ListIndicadoresDto;
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
         const out: FileOutput[] = [];
+
+
+        const camposMetaIniAtv = [
+            { value: 'meta.codigo', label: 'Código da Meta' },
+            { value: 'meta.titulo', label: 'Título da Meta' },
+            { value: 'meta.id', label: 'ID da Meta' },
+            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
+            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
+            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
+            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
+
+            { value: 'indicador.codigo', label: 'Código do Indicador' },
+            { value: 'indicador.titulo', label: 'Título da Indicador' },
+            { value: 'indicador.id', label: 'ID da Indicador' },
+        ];
+
+        if (dados.linhas.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: [
+                    ...camposMetaIniAtv,
+                    'serie',
+                    'data',
+                    'valor',
+                ]
+            });
+            const linhas = json2csvParser.parse(dados.linhas);
+            out.push({
+                name: 'indicadores.csv',
+                buffer: Buffer.from(linhas, "utf8")
+            });
+        }
 
 
         return [
@@ -155,7 +216,28 @@ export class IndicadoresService implements ReportableService {
                     "horario": Date2YMD.tzSp2UTC(new Date())
                 }), "utf8")
             },
-
+            ...out
         ]
     }
+
+
+
+    private convertRows(input: RetornoDb[]): RelIndicadoresDto[] {
+
+        return input.map((db) => {
+            return {
+                indicador: { codigo: db.indicador_codigo, titulo: db.indicador_titulo, id: +db.indicador_id },
+                meta: db.meta_id ? { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id } : null,
+                iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
+                atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
+
+                data: db.data,
+                serie: db.serie,
+                valor: db.valor,
+            }
+        })
+
+    }
+
+
 }
