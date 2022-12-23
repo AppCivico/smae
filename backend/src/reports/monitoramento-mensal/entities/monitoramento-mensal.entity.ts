@@ -17,10 +17,15 @@ export class RelPainelDetalhe {
     linhas: RelVarlSimplifiedSeries[]
 }
 
+export class RelMfMetas {
+
+}
+
 export class RetMonitoramentoFisico {
     ano: number
     mes: number
     ciclo_fisico_id: number
+    metas: RelMfMetas[]
 }
 
 export class RetMonitoramentoMensal {
