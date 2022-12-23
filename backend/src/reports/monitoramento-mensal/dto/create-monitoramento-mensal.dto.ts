@@ -22,8 +22,9 @@ export class RelMonitoramentoMensalParams {
      * quais paineis puxar os relatorios
      * @example "[]"
     */
+    @IsOptional()
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
-    @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
+    @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     paineis: number[]
