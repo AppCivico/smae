@@ -1,26 +1,28 @@
 <script setup>
-    import { ref, reactive } from 'vue';
-    import { storeToRefs } from 'pinia';
-    import { Dashboard} from '@/components';
-    import { useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
+import { Dashboard } from '@/components';
+import { useAuthStore, useCiclosStore, usePdMStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 
-    const authStore = useAuthStore();
-    const { permissions } = storeToRefs(authStore);
-    const perm = permissions.value;
+const authStore = useAuthStore();
+const { permissions } = storeToRefs(authStore);
+const perm = permissions.value;
 
-    const PdMStore = usePdMStore();
-    const { activePdm } = storeToRefs(PdMStore);
-    if(!activePdm.value.id)PdMStore.getActive();
+const PdMStore = usePdMStore();
+const { activePdm } = storeToRefs(PdMStore);
+if (!activePdm.value.id) PdMStore.getActive();
 
-    const CiclosStore = useCiclosStore();
-    const { MetasCiclos } = storeToRefs(CiclosStore);
-    
-    let grupos = ref({});
-    let chaves = [];
-    (async()=>{
-        grupos.value = {loading: true};
-        await CiclosStore.getMetas();
-        grupos.value = MetasCiclos.value.length ? MetasCiclos.value.reduce(function(r,a) {
+const CiclosStore = useCiclosStore();
+const { MetasCiclos } = storeToRefs(CiclosStore);
+
+let grupos = ref({});
+let chaves = [];
+(async () => {
+  grupos.value = { loading: true };
+  await CiclosStore.getMetas();
+  grupos.value = MetasCiclos.value.length ? MetasCiclos.value
+    .filter(x => x.cronograma?.participante)
+    .reduce(function (r, a) {
             if(!a.cronograma.status) return r;
             if(chaves.indexOf(a.cronograma.status)==-1)chaves.push(a.cronograma.status);
             r[a.cronograma.status] = r[a.cronograma.status] || [];
