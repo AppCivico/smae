@@ -6,12 +6,14 @@ import { useAlertStore, usePdMStore, useRelatoriosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
 import monthAndYearToDate from '../../helpers/monthAndYearToDate';
 
 const relatoriosStore = useRelatoriosStore();
 
 const PdMStore = usePdMStore();
+const route = useRoute();
 const { current } = storeToRefs(relatoriosStore);
 const alertStore = useAlertStore();
 
@@ -38,8 +40,11 @@ async function onSubmit(values) {
     msg = 'Dados salvos com sucesso!';
 
     if (r == true) {
-      await router.push('/relatorios/orcamentarios');
       alertStore.success(msg);
+
+      if (values.salvar_arquivo && route.meta?.rotaDeEscape) {
+        await router.push(route.meta.rotaDeEscape);
+      }
     }
   } catch (error) {
     alertStore.error(error);
