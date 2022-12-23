@@ -3,7 +3,7 @@ import { Date2YMD } from 'src/common/date2ymd';
 import { PainelService } from 'src/painel/painel.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
-import { CreateRelMonitoramentsoMensalDto } from './dto/create-monitoramento-mensal.dto';
+import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import { RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
 
 
@@ -20,12 +20,26 @@ export class MonitoramentoMensalService implements ReportableService {
         private readonly painel: PainelService, // getSimplifiedPainelSeries
     ) { }
 
-    async create(dto: CreateRelMonitoramentsoMensalDto): Promise<RetMonitoramentoMensal> {
+    async create(dto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
 
         const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
 
+        console.log(metas);
+
+        for (const painel of dto.paineis) {
+
+            const ret = await this.painel.getSimplifiedPainelSeries({ painel_id: painel, metas_ids: metas.map(r => r.id) });
+            console.dir(ret, { depth: 6 });
+
+        }
+
+
+
+        // XXX
+        // XXX
 
         return {
+            paineis: []
 
         };
 

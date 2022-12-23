@@ -31,7 +31,7 @@ export class RelMonitoramentoMensalParams {
 
 // excluindo o atividade/iniciativa pq sempre busca pela meta aqui
 // logo n faz sentido ir buscar
-export class CreateRelMonitoramentsoMensalDto extends IntersectionType(
+export class CreateRelMonitoramentoMensalDto extends IntersectionType(
     OmitType(FiltroMetasIniAtividadeDto, ['atividade_id', 'iniciativa_id'] as const),
     RelMonitoramentoMensalParams
 ) { }

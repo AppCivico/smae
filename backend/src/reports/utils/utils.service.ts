@@ -3,7 +3,7 @@ import { FonteRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadore.dto';
-import { CreateRelMonitoramentsoMensalDto } from '../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
+import { CreateRelMonitoramentoMensalDto } from '../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 
@@ -73,7 +73,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
     switch (fonte) {
         case 'Orcamento': theClass = CreateOrcamentoExecutadoDto; break;
         case 'Indicadores': theClass = CreateRelIndicadorDto; break;
-        case 'MonitoramentoMensal': theClass = CreateRelMonitoramentsoMensalDto; break;
+        case 'MonitoramentoMensal': theClass = CreateRelMonitoramentoMensalDto; break;
         default:
             return false;
     }
