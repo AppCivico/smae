@@ -1,6 +1,6 @@
 import { default as MenuSecundario } from '@/components/MenuSecundario.vue';
 
-import { RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosOrcamentariosItem, RelatoriosRaiz, RelatoriosSemestraisOuAnuais, RelatórioCriarOuEditar } from '@/views/relatorios';
+import { RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosRaiz, RelatoriosSemestraisOuAnuais, RelatórioCriarOuEditar } from '@/views/relatorios';
 
 export default {
   path: '/relatorios',
@@ -69,7 +69,7 @@ export default {
           component: RelatoriosOrcamentarios,
         },
         {
-          component: RelatoriosOrcamentariosItem,
+          component: RelatórioCriarOuEditar,
           path: 'novo',
           name: 'novoRelatórioOrçamentário',
           meta: {
