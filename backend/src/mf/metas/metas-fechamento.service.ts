@@ -29,7 +29,7 @@ export class MetasFechamentoService {
         return ret;
     }
 
-    async getMetaFechamento(dto: FilterFechamentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListFechamentoDto> {
+    async getMetaFechamento(dto: FilterFechamentoDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListFechamentoDto> {
 
         const analisesResult = await this.prisma.metaCicloFisicoFechamento.findMany({
             where: {
@@ -45,7 +45,7 @@ export class MetasFechamentoService {
                 comentario: true,
                 criado_em: true,
                 meta_id: true,
-                referencia_data:true,
+                referencia_data: true,
                 pessoaCriador: {
                     select: { nome_exibicao: true }
                 },
