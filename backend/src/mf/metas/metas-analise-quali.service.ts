@@ -31,7 +31,7 @@ export class MetasAnaliseQualiService {
         return ret;
     }
 
-    async getMetaAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListAnaliseQualitativaDto> {
+    async getMetaAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm|null, user: PessoaFromJwt|null): Promise<MfListAnaliseQualitativaDto> {
         const analisesResult = await this.prisma.metaCicloFisicoAnalise.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
