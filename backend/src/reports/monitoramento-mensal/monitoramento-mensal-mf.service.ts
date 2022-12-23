@@ -17,7 +17,7 @@ export class MonitoramentoMensalMfService {
         const cf = await this.prisma.cicloFisico.findFirst({
             where: {
                 pdm_id: dto.pdm_id,
-                data_ciclo: [dto.ano, dto.mes, '01'].join('-'),
+                data_ciclo: new Date([dto.ano, dto.mes, '01'].join('-')),
             }
         });
         if (!cf) return null;
