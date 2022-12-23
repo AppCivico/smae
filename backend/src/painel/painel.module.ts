@@ -6,6 +6,7 @@ import { PainelService } from './painel.service';
 @Module({
     imports: [PrismaModule],
     controllers: [PainelController],
-    providers: [PainelService]
+    providers: [PainelService],
+    exports: [PainelService],
 })
 export class PainelModule { }
