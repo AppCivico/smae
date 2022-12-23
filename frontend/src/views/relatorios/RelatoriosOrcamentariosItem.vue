@@ -21,36 +21,6 @@ const alertStore = useAlertStore();
 
 const route = useRoute();
 
-
-async function onSubmit(el) {
-  event.preventDefault();
-  event.stopPropagation();
-  try {
-    var msg;
-    var r;
-    var values = { valores: [] };
-    el.target.querySelectorAll('[name]').forEach(x => {
-      values.valores.push({
-        referencia: x.name,
-        valor: !isNaN(parseFloat(x.value)) ? String(parseFloat(x.value.replace(',', '.'))) : ''
-      });
-    });
-
-    if (var_id) {
-      r = await VariaveisStore.updateValores(values);
-      if (r) {
-        msg = 'Valores salvos com sucesso!';
-        VariaveisStore.getValores(var_id);
-        alertStore.success(msg);
-        editModalStore.clear();
-        router.push(`${currentEdit}`);
-      }
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', '/relatorios/orcamentarios');
 }
