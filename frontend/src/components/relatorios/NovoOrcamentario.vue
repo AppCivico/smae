@@ -1,6 +1,7 @@
 <script setup>
 import { relatórioOrçamentário as schema } from "@/consts/formSchemas";
 import maskMonth from '@/helpers/maskMonth';
+import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { router } from '@/router';
 import { useAlertStore, usePdMStore, useRelatoriosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
@@ -8,24 +9,17 @@ import { Field, Form } from 'vee-validate';
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
-import monthAndYearToDate from '../../helpers/monthAndYearToDate';
-
-const relatoriosStore = useRelatoriosStore();
-
+const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
+const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const { current } = storeToRefs(relatoriosStore);
-const alertStore = useAlertStore();
-
-console.debug('relatoriosStore.insert', relatoriosStore.insert);
 
 let { loading } = storeToRefs(relatoriosStore);
 
 current.value.fonte = 'Orcamento';
 
 async function onSubmit(values) {
-  console.debug('values', values);
-
   try {
     var msg;
     var r;
@@ -50,11 +44,6 @@ async function onSubmit(values) {
     alertStore.error(error);
   }
 }
-
-// function setFieldSave() {
-//   console.debug('current.value.salvar_arquivo', current.value.salvar_arquivo);
-//   current.value.salvar_arquivo = true;
-// }
 
 onMounted(() => {
   PdMStore.getAll().then(() => {
