@@ -26,12 +26,26 @@ export default {
   children: [
     {
       path: 'mensal',
-      component: RelatoriosMensais,
       meta: {
         presenteNoMenu: true,
         título: 'Relatórios Mensais',
         títuloParaMenu: 'Relatório Mensal',
       },
+      children: [
+        {
+          path: '',
+          component: RelatoriosMensais,
+        },
+        {
+          component: RelatórioCriarOuEditar,
+          path: 'novo',
+          name: 'novoRelatórioMensal',
+          meta: {
+            título: 'Novo relatório mensal',
+            // rotaDeEscape: '/relatorios/mensal'
+          },
+        },
+      ],
     },
     {
       path: 'semestral-ou-anual',
