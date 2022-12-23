@@ -99,12 +99,12 @@ onMounted(() => {
           <div class="pl2">
             <label class="block mb1">
               <Field name="parametros.tipo" type="radio" value="Consolidado"
-              class="inputcheckbox" v-model="current.parametros.tipo" :class="{ 'error': errors['parametro.tipo'] }" />
+              class="inputcheckbox" :class="{ 'error': errors['parametros.tipo'] }" />
               <span>Consolidado</span>
             </label>
             <label class="block mb1">
               <Field name="parametros.tipo" type="radio" value="Analitico"
-              class="inputcheckbox" v-model="current.parametros.tipo" :class="{ 'error': errors['parametro.tipo'] }" />
+              class="inputcheckbox" :class="{ 'error': errors['parametros.tipo'] }" />
               <span>Analítico</span>
             </label>
           </div>
