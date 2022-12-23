@@ -1492,13 +1492,16 @@ export class PainelService {
         return ret;
     }
 
-    async getSimplifiedPainelSeries(painel_id: number): Promise<SimplifiedPainelConteudoSeries[]> {
+    async getSimplifiedPainelSeries(opts: { painel_id: number, metas_ids: number[] }): Promise<SimplifiedPainelConteudoSeries[]> {
         interface values {
             [key: string]: number | Decimal | ""
         }
 
         const painel_conteudo_db = await this.prisma.painelConteudo.findMany({
-            where: { painel_id: painel_id },
+            where: {
+                painel_id: opts.painel_id,
+                meta_id: { in: opts.metas_ids }
+            },
             select: {
                 id: true
             }
@@ -1515,6 +1518,8 @@ export class PainelService {
             if (painel_conteudo_series.meta.indicador) {
                 ret.push({
                     indicador_id: painel_conteudo_series.meta.indicador.id,
+                    indicador_codigo: painel_conteudo_series.meta.indicador.codigo,
+                    indicador_titulo: painel_conteudo_series.meta.indicador.titulo,
                     series: painel_conteudo_series.meta.indicador.series?.map((s) => {
                         const values: values = {};
                         s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
@@ -1531,6 +1536,8 @@ export class PainelService {
                 if (d.variavel?.series && d.variavel?.series?.length > 0) {
                     ret.push({
                         variavel_id: d.variavel.id,
+                        variavel_codigo: d.variavel.codigo,
+                        variavel_titulo: d.variavel.titulo,
                         series: d.variavel.series.map(s => {
                             const values: values = {};
                             s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
@@ -1549,6 +1556,8 @@ export class PainelService {
                         if (ii.series && ii.series.length > 0) {
                             ret.push({
                                 indicador_id: ii.id,
+                                indicador_codigo: ii.codigo,
+                                indicador_titulo: ii.titulo,
                                 series: ii.series.map(s => {
                                     const values: values = {};
                                     s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
@@ -1568,6 +1577,8 @@ export class PainelService {
                     if (f.variavel?.series && f.variavel?.series?.length > 0) {
                         ret.push({
                             variavel_id: f.variavel.id,
+                            variavel_codigo: f.variavel.codigo,
+                            variavel_titulo: f.variavel.titulo,
                             series: f.variavel.series.map(s => {
                                 const values: values = {};
                                 s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
@@ -1586,6 +1597,8 @@ export class PainelService {
                             if (ai.series && ai.series.length > 0) {
                                 ret.push({
                                     indicador_id: ai.id,
+                                    indicador_codigo: ai.codigo,
+                                    indicador_titulo: ai.titulo,
                                     series: ai.series.map(s => {
                                         const values: values = {};
                                         s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
@@ -1604,6 +1617,8 @@ export class PainelService {
                         if (ff.variavel?.series && ff.variavel?.series?.length > 0) {
                             ret.push({
                                 variavel_id: ff.variavel.id,
+                                variavel_codigo: ff.variavel.codigo,
+                                variavel_titulo: ff.variavel.titulo,
                                 series: ff.variavel.series.map(s => {
                                     const values: values = {};
                                     s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
@@ -1622,6 +1637,8 @@ export class PainelService {
                                 if (ai.series && ai.series.length > 0) {
                                     ret.push({
                                         indicador_id: ai.id,
+                                        indicador_codigo: ai.codigo,
+                                        indicador_titulo: ai.titulo,
                                         series: ai.series.map(s => {
                                             const values: values = {};
                                             s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });

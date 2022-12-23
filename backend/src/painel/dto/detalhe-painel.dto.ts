@@ -22,7 +22,13 @@ export class PainelConteudoSerieDto {
 
 export class SimplifiedPainelConteudoSeries {
     indicador_id?: number | null
+    indicador_titulo?: string | null
+    indicador_codigo?: string | null
+
     variavel_id?: number | null
+    variavel_codigo?: string | null
+    variavel_titulo?: string | null
+
     series: SimplifiedSeries[] | undefined
 }
 
@@ -70,7 +76,7 @@ export class RowWithIdTitleSeries {
 }
 
 export class IniciativaIndicadorRow {
-    
+
 }
 
 export class FirstLevelChildren {
@@ -88,7 +94,7 @@ export class SeriesTemplate {
     periodo_fim: Date
 
     /**
-     * 
+     *
      * @example "["", 123.456, 0, 1]"
     */
     valores_nominais: (number | Decimal | "")[]
