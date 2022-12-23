@@ -22,6 +22,29 @@ class QualiCsv {
     id: string
 }
 
+class RiscoCsv {
+    detalhamento: string
+    ponto_de_atencao: string
+    referencia_data: string
+    criado_em: string
+    criador_nome_exibicao: string
+    meta_id: string
+    meta_titulo: string
+    meta_codigo: string
+    id: string
+}
+
+class FechamentoCsv {
+    comentario: string
+    referencia_data: string
+    criado_em: string
+    criador_nome_exibicao: string
+    meta_id: string
+    meta_titulo: string
+    meta_codigo: string
+    id: string
+}
+
 @Injectable()
 export class MonitoramentoMensalMfService {
 
@@ -95,6 +118,8 @@ export class MonitoramentoMensalMfService {
         if (!myInput.monitoramento_fisico || myInput.monitoramento_fisico.metas.length == 0) return [];
 
         const qualiRows: QualiCsv[] = [];
+        const riscoRows: RiscoCsv[] = [];
+        const fechamentoRows: FechamentoCsv[] = [];
         for (const meta of myInput.monitoramento_fisico.metas) {
 
             if (meta.analiseQuali) {
@@ -110,8 +135,33 @@ export class MonitoramentoMensalMfService {
                 })
             }
 
+            if (meta.analiseRisco) {
+                riscoRows.push({
+                    id: meta.analiseRisco.id.toString(),
+                    criador_nome_exibicao: meta.analiseRisco.criador.nome_exibicao,
+                    criado_em: meta.analiseRisco.criado_em.toString(),
+                    ponto_de_atencao: meta.analiseRisco.ponto_de_atencao,
+                    detalhamento: meta.analiseRisco.detalhamento,
+                    meta_codigo: meta.meta.codigo,
+                    meta_titulo: meta.meta.titulo,
+                    meta_id: meta.meta.id.toString(),
+                    referencia_data: meta.analiseRisco.referencia_data.toString()
+                })
+            }
+
+            if (meta.fechamento) {
+                fechamentoRows.push({
+                    id: meta.fechamento.id.toString(),
+                    criador_nome_exibicao: meta.fechamento.criador.nome_exibicao,
+                    criado_em: meta.fechamento.criado_em.toString(),
+                    comentario: meta.fechamento.comentario,
+                    meta_codigo: meta.meta.codigo,
+                    meta_titulo: meta.meta.titulo,
+                    meta_id: meta.meta.id.toString(),
+                    referencia_data: meta.fechamento.referencia_data.toString()
+                })
+            }
         }
-        console.log(qualiRows);
 
         if (qualiRows.length) {
             const json2csvParser = new Parser({
@@ -123,6 +173,34 @@ export class MonitoramentoMensalMfService {
             const linhas = json2csvParser.parse(qualiRows);
             out.push({
                 name: 'analises-qualitativas.csv',
+                buffer: Buffer.from(linhas, "utf8")
+            });
+        }
+
+        if (fechamentoRows.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: undefined
+            });
+
+            const linhas = json2csvParser.parse(fechamentoRows);
+            out.push({
+                name: 'fechamentos.csv',
+                buffer: Buffer.from(linhas, "utf8")
+            });
+        }
+
+        if (riscoRows.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: undefined
+            });
+
+            const linhas = json2csvParser.parse(riscoRows);
+            out.push({
+                name: 'analises-de-risco.csv',
                 buffer: Buffer.from(linhas, "utf8")
             });
         }
