@@ -50,11 +50,11 @@ export default {
           path: 'novo',
           name: 'novoRelatórioSemestralOuAnual',
           meta: {
-            título: 'Novo relatório de semestral ou anual',
+            título: 'Novo relatório semestral ou anual',
             rotaDeEscape: '/relatorios/semestral-ou-anual'
           },
         },
-      ]
+      ],
     },
     {
       path: 'orcamentarios',
