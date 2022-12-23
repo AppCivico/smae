@@ -3,6 +3,7 @@ import { IdCodTituloDto } from "src/common/dto/IdCodTitulo.dto"
 import { MfAnaliseQualitativaDto } from "src/mf/metas/dto/mf-meta-analise-quali.dto"
 import { MfFechamentoDto } from "src/mf/metas/dto/mf-meta-fechamento.dto"
 import { MfRiscoDto } from "src/mf/metas/dto/mf-meta-risco.dto"
+import { Periodicidade } from "@prisma/client"
 import { SimplifiedPainelConteudoSeries, SimplifiedSeries } from "src/painel/dto/detalhe-painel.dto"
 
 export class RelVarlSimplifiedSeries extends IntersectionType(
@@ -12,8 +13,8 @@ export class RelVarlSimplifiedSeries extends IntersectionType(
 
 export class IdTituloPeriodicidade {
     id: number
-    titulo: string
-    periodicidade: string
+    nome: string
+    periodicidade: Periodicidade
 }
 
 export class RelPainelDetalhe {

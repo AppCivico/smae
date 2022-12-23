@@ -4,7 +4,7 @@ import { PainelService } from 'src/painel/painel.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
-import { RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
+import { RelPainelDetalhe, RelVarlSimplifiedSeries, RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
 import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
 
 
@@ -30,11 +30,42 @@ export class MonitoramentoMensalService implements ReportableService {
 
         const metasArr = metas.map(r => r.id);
 
+        const paineis_ret: RelPainelDetalhe[] = [];
         for (const painel of dto.paineis) {
+            const painel_data = await this.painel.getPainelShortData({ painel_id: painel });
+            if (!painel_data) continue;
 
             const ret = await this.painel.getSimplifiedPainelSeries({ painel_id: painel, metas_ids: metasArr });
             console.dir(ret, { depth: 6 });
 
+            const linhas: RelVarlSimplifiedSeries[] = [];
+            ret.forEach(r => {
+                if (r.series) {
+
+                    r.series.forEach(rs => {
+                        linhas.push(
+                            {
+                                indicador_id: r.indicador_id,
+                                indicador_titulo: r.indicador_titulo,
+                                indicador_codigo: r.indicador_codigo,
+                                variavel_id: r.variavel_id,
+                                variavel_codigo: r.variavel_codigo,
+                                variavel_titulo: r.variavel_titulo,
+                                data: rs.data,
+                                previsto: rs.previsto,
+                                previsto_acumulado: rs.previsto_acumulado,
+                                realizado: rs.realizado,
+                                realizado_acumulado: rs.realizado_acumulado,
+                            }
+                        )                            
+                    });
+                }
+            })
+
+            paineis_ret.push({
+                painel: {...painel_data},
+                linhas: linhas
+            })
         }
 
 
