@@ -17,9 +17,14 @@ export class RelPainelDetalhe {
     linhas: RelVarlSimplifiedSeries[]
 }
 
+export class RetMonitoramentoFisico {
+    ano: number
+    mes: number
+    ciclo_fisico_id: number
+}
+
 export class RetMonitoramentoMensal {
     paineis: RelPainelDetalhe[]
 
-    //analise_risco:
-
+    monitoramento_fisico: RetMonitoramentoFisico | null
 }
