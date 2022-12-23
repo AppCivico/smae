@@ -43,7 +43,6 @@ export class IndicadoresService implements ReportableService {
         if (dto.periodo == 'Semestral' && !dto.semestre) {
             throw new HttpException('Necessário enviar semestre para o periodo Semestral', 400);
         }
-
         const { metas, iniciativas, atividades } = await this.utils.applyFilter(dto, { iniciativas: true, atividades: true });
 
         const indicadores = await this.prisma.indicador.findMany({
