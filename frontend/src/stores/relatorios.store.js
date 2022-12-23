@@ -7,17 +7,6 @@ export const useRelatoriosStore = defineStore('relatorios', {
     state: () => ({
         relatorios: [],
         current: {
-          fonte: '',
-          parametros: {
-            tipo: 'Analitico',
-            pdm_id: 0,
-            meta_id: 0,
-            tags: [],
-            inicio: '',
-            fim: '',
-            orgaos: [],
-          },
-          salvar_arquivo: false,
         },
         loading: true,
         error: false,
