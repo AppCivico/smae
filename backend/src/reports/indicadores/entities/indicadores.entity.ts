@@ -4,12 +4,13 @@ import { IdCodTituloDto } from "src/common/dto/IdCodTitulo.dto"
 import { Regiao } from "src/regiao/entities/regiao.entity"
 
 export class RelIndicadoresDto {
-    meta: IdCodTituloDto
+    indicador: IdCodTituloDto
+    meta: IdCodTituloDto | null
     iniciativa: IdCodTituloDto | null
     atividade: IdCodTituloDto | null
 
     @ApiProperty({ enum: Serie, enumName: 'Serie' })
-    serie: Serie
+    serie: string
     /**
      * data em YYYY-MM (anual, analítico), YYYY (anual, consolidado) ou "YYYY-MM/YYYY-MM" (semestral, consolidado e analítico)
      **/
@@ -17,7 +18,7 @@ export class RelIndicadoresDto {
     /**
      * Valor inteiro ou null
      **/
-    valor: number | null
+    valor: string | null
 }
 
 export class IndRelRegioes {

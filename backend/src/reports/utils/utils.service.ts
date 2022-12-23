@@ -71,8 +71,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
 
     switch (fonte) {
         case 'Orcamento': theClass = CreateOrcamentoExecutadoDto; break;
-        case 'IndicadoresAnual': theClass = CreateRelIndicadorDto; break;
-        case 'IndicadoresSemestral': theClass = CreateRelIndicadorDto; break;
+        case 'Indicadores': theClass = CreateRelIndicadorDto; break;
         default:
             return false;
     }
