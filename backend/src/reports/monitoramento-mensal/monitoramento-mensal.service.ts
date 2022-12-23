@@ -39,10 +39,11 @@ export class MonitoramentoMensalService implements ReportableService {
             console.dir(ret, { depth: 6 });
 
             const linhas: RelVarlSimplifiedSeries[] = [];
-            ret.forEach(r => {
+
+            for (const r of ret) {
                 if (r.series) {
 
-                    r.series.forEach(rs => {
+                    for (const s of r.series) {
                         linhas.push(
                             {
                                 indicador_id: r.indicador_id,
@@ -51,16 +52,16 @@ export class MonitoramentoMensalService implements ReportableService {
                                 variavel_id: r.variavel_id,
                                 variavel_codigo: r.variavel_codigo,
                                 variavel_titulo: r.variavel_titulo,
-                                data: rs.data,
-                                previsto: rs.previsto,
-                                previsto_acumulado: rs.previsto_acumulado,
-                                realizado: rs.realizado,
-                                realizado_acumulado: rs.realizado_acumulado,
+                                data: s.data,
+                                previsto: s.previsto,
+                                previsto_acumulado: s.previsto_acumulado,
+                                realizado: s.realizado,
+                                realizado_acumulado: s.realizado_acumulado,
                             }
-                        )                            
-                    });
+                        )    
+                    }
                 }
-            })
+            }
 
             paineis_ret.push({
                 painel: {...painel_data},
@@ -77,8 +78,7 @@ export class MonitoramentoMensalService implements ReportableService {
         return {
             monitoramento_fisico,
 
-            paineis: []
-
+            paineis: paineis_ret
         };
 
     }
