@@ -15,6 +15,7 @@ import { RelatorioDto } from './entities/report.entity';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
+import { DateTime } from 'luxon';
 
 @ApiTags('Relatórios')
 @Controller('relatorios')
@@ -37,7 +38,15 @@ export class ReportsController {
         @CurrentUser() user: PessoaFromJwt,
         @Res() res: Response) {
         const contentType = 'application/zip';
-        const filename = [dto.fonte, Date2YMD.tzSp2UTC(new Date()), '.zip'].join('');
+        const filename = [
+            dto.fonte,
+            (dto.parametros as any)['tipo'],
+            (dto.parametros as any)['ano'], ,
+            (dto.parametros as any)['mes'],
+            (dto.parametros as any)['periodo'],
+            (dto.parametros as any)['semestre'],
+            DateTime.local({ zone: "America/Sao_Paulo" }).toISO(),
+            '.zip'].filter((r) => r !== undefined).join('-');
         const files = await this.reportsService.runReport(dto, user);
 
         const zip = new AdmZip();
