@@ -40,6 +40,10 @@ async function onSubmit(values) {
 
     values.parametros.inicio = monthAndYearToDate(values.parametros.inicio);
     values.parametros.fim = monthAndYearToDate(values.parametros.fim);
+    if (!values.salvar_arquivo) {
+      values.salvar_arquivo = false;
+    }
+
     r = await relatoriosStore.insert(values);
     msg = 'Dados salvos com sucesso!';
 
@@ -71,8 +75,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <Form @submit="onSubmit" :validation-schema="schema" :initial-values="current" v-slot="{ errors, isSubmitting }">
       <Field type="hidden" value="Orcamento" name="fonte" />
+  <Form @submit="onSubmit" :validation-schema="schema" :initial-values="current" v-slot="{ errors, isSubmitting, values }">
       <div class="flex g2 mb2">
         <div class="f1">
             <label class="label"><abbr title="Programa de metas">PdM</abbr> <span class="tvermelho">*</span></label>
@@ -114,19 +118,23 @@ onMounted(() => {
           <div class="error-msg">{{ errors['parametros.tipo'] }}</div>
       </div>
 
-      <!--div class="mb1 mt1">
-        <label class="block">
-            <Field as="checkbox" name="salvar_arquivo" type="checkbox"
-            :value="true" class="inputcheckbox" />
-            <span :class="{ 'error': errors.salvar_arquivo }">Persistir o relatório</span>
-        </label>
+      <div class="mb2">
+          <div class="pl2">
+            <label class="block">
+                <Field name="salvar_arquivo" type="checkbox"
+                :value="true" class="inputcheckbox" />
+                <span :class="{ 'error': errors.salvar_arquivo }">Persistir o relatório</span>
+            </label>
+          </div>
         <div class="error-msg">{{ errors.salvar_arquivo }}</div>
-      </div-->
+      </div>
 
       <div class="flex spacebetween center mb2">
           <hr class="mr2 f1"/>
-          <!--Field as="button" type="button" @click="setFieldSave, onSubmit" name="salvar_arquivo" class="btn big bgnone outline tcprimary mr2" :disabled="loading || isSubmitting" :value="false">exportar</Field-->
-          <button type="submit"  class="btn big" :disabled="loading || isSubmitting">salvar</button>
+          <button type="submit" class="btn big" :disabled="loading ||
+          isSubmitting">
+            {{ values.salvar_arquivo ? "exportar e salvar" : "exportar" }}
+          </button>
           <hr class="ml2 f1"/>
       </div>
   </Form>

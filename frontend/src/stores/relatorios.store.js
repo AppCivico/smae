@@ -1,5 +1,6 @@
 import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useRelatoriosStore = defineStore('relatorios', {
@@ -16,7 +17,7 @@ export const useRelatoriosStore = defineStore('relatorios', {
             fim: '',
             orgaos: [],
           },
-          salvar_arquivo: true,
+          salvar_arquivo: false,
         },
         loading: true,
         error: false,
