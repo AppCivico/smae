@@ -19,4 +19,7 @@ export class RelPainelDetalhe {
 
 export class RetMonitoramentoMensal {
     paineis: RelPainelDetalhe[]
+
+    //analise_risco:
+
 }
