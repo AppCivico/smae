@@ -94,7 +94,7 @@ export class IndicadoresService implements ReportableService {
             i.casas_decimais
         )::text as valor
         from generate_series($1::date, $2::date :OFFSET:, $3::interval) dt
-        cross join (select 'Realizado'::"Serie" as serie ) series
+        cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id

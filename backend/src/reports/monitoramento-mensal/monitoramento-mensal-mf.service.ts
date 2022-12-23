@@ -25,7 +25,8 @@ export class MonitoramentoMensalMfService {
         return {
             ano: cf.data_ciclo.getFullYear(),
             mes: cf.data_ciclo.getMonth(),
-            ciclo_fisico_id: cf.id
+            ciclo_fisico_id: cf.id,
+            metas: []
         }
 
     }
