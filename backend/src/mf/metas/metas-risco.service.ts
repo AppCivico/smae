@@ -29,7 +29,7 @@ export class MetasRiscoService {
         return ret;
     }
 
-    async getMetaRisco(dto: FilterRiscoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListRiscoDto> {
+    async getMetaRisco(dto: FilterRiscoDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListRiscoDto> {
 
         const analisesResult = await this.prisma.metaCicloFisicoRisco.findMany({
             where: {
