@@ -1,4 +1,8 @@
 import { IntersectionType, OmitType } from "@nestjs/swagger"
+import { IdCodTituloDto } from "src/common/dto/IdCodTitulo.dto"
+import { MfAnaliseQualitativaDto } from "src/mf/metas/dto/mf-meta-analise-quali.dto"
+import { MfFechamentoDto } from "src/mf/metas/dto/mf-meta-fechamento.dto"
+import { MfRiscoDto } from "src/mf/metas/dto/mf-meta-risco.dto"
 import { SimplifiedPainelConteudoSeries, SimplifiedSeries } from "src/painel/dto/detalhe-painel.dto"
 
 export class RelVarlSimplifiedSeries extends IntersectionType(
@@ -18,7 +22,10 @@ export class RelPainelDetalhe {
 }
 
 export class RelMfMetas {
-
+    meta: IdCodTituloDto
+    analiseRisco: MfRiscoDto | null
+    analiseQuali: MfAnaliseQualitativaDto | null
+    fechamento: MfFechamentoDto | null
 }
 
 export class RetMonitoramentoFisico {

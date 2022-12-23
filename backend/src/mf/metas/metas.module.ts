@@ -36,6 +36,11 @@ import { VariavelModule } from '../../variavel/variavel.module';
         CronogramaService,
         CronogramaEtapaService,
         MetasCronogramaService,
+    ],
+    exports: [
+        MetasAnaliseQualiService,
+        MetasRiscoService,
+        MetasFechamentoService,
     ]
 })
 export class MetasModule { }
