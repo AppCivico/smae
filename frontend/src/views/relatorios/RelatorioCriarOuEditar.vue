@@ -3,14 +3,16 @@ import { useAlertStore, useRelatoriosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import NovoMensal from '../../components/relatorios/NovoMensal.vue';
 import NovoOrcamentario from '../../components/relatorios/NovoOrcamentario.vue';
 import NovoSemestralOuAnual from '../../components/relatorios/NovoSemestralOuAnual.vue';
 
 let { current } = storeToRefs(useRelatoriosStore());
 
 const formulários = {
-  novoRelatórioSemestralOuAnual: NovoSemestralOuAnual,
+  novoRelatórioMensal: NovoMensal,
   novoRelatórioOrçamentário: NovoOrcamentario,
+  novoRelatórioSemestralOuAnual: NovoSemestralOuAnual,
 };
 
 onMounted(() => {

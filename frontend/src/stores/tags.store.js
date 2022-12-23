@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
-import { usePdMStore,useODSStore } from '@/stores';
+import { useODSStore, usePdMStore } from '@/stores';
+import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useTagsStore = defineStore({
@@ -18,7 +18,7 @@ export const useTagsStore = defineStore({
             try {
                 if(this.Tags.loading) return;
                 this.Tags = { loading: true };
-                let r = await requestS.get(`${baseUrl}/tag`);    
+                let r = await requestS.get(`${baseUrl}/tag`);
                 if(r.linhas.length){
                     const PdMStore = usePdMStore();
                     const ODSStore = useODSStore();
@@ -39,7 +39,7 @@ export const useTagsStore = defineStore({
         async getAllSimple() {
             this.Tags = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/tag`);    
+                let r = await requestS.get(`${baseUrl}/tag`);
                 if(r.linhas.length){
                     const ODSStore = useODSStore();
                     await ODSStore.getAll();
@@ -104,5 +104,9 @@ export const useTagsStore = defineStore({
                 this.tempTags = { error };
             }
         }
+    },
+
+    getters: {
+      filtradasPorPdM: ({ Tags }) => (pdmId) => Tags.length ? Tags.filter((x) => x.pdm_id == pdmId) : [],
     }
 });

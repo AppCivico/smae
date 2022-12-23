@@ -1,5 +1,18 @@
 import regEx from '@/consts/patterns';
-import { boolean, number, object, string } from 'yup';
+import { array, boolean, number, object, string } from 'yup';
+
+const relatórioMensal = object({
+  fonte: string().required(),
+  salvar_arquivo: boolean(),
+  parametros: object({
+    pdm_id: string().required('Escolha um PdM'),
+    mes: number().min(1).max(12).required('Escolha um mês'),
+    ano: number().min(2003, 'A partir de 2003').required('Escolha um ano válido'),
+    tags: array().nullable(),
+    paineis: array().nullable(),
+    tipo: string().required('Escolha o tipo'),
+  })
+});
 
 const relatórioOrçamentário = object({
   fonte: string().required(),
@@ -29,4 +42,4 @@ const relatórioSemestralOuAnual = object({
   })
 });
 
-export { relatórioOrçamentário, relatórioSemestralOuAnual };
+export { relatórioMensal, relatórioOrçamentário, relatórioSemestralOuAnual };
