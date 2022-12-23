@@ -56,6 +56,7 @@ export default {
       path: 'orcamentarios/novo',
       name: 'novoRelatórioOrçamentário',
       meta: {
+        rotaDeEscape: '/relatorios/orcamentarios',
         título: 'Novo relatório de orçamentos',
       },
     }
