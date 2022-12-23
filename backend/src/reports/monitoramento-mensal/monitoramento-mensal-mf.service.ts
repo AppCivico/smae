@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { Pdm } from '@prisma/client';
 import { MetasAnaliseQualiService } from 'src/mf/metas/metas-analise-quali.service';
 import { MetasFechamentoService } from 'src/mf/metas/metas-fechamento.service';
 import { MetasRiscoService } from 'src/mf/metas/metas-risco.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { FileOutput } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
-import { RelMfMetas, RetMonitoramentoFisico } from './entities/monitoramento-mensal.entity';
+import { RelMfMetas, RetMonitoramentoFisico, RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
 
 
 
@@ -72,5 +74,10 @@ export class MonitoramentoMensalMfService {
 
     }
 
+
+    async getFiles(myInput: RetMonitoramentoMensal, pdm: Pdm): Promise<FileOutput[]> {
+
+        return []
+    }
 
 }
