@@ -61,7 +61,7 @@ export class ReportsController {
 
         res.set({
             'Content-Type': contentType,
-            'Content-Disposition': 'attachment; filename=' + filename
+            'Content-Disposition': 'attachment; filename="' + filename.replace(/"/g, '-') + '"'
         });
         res.write(zipBuffer);
         res.send()
