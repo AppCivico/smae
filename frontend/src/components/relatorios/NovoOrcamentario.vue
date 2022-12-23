@@ -17,7 +17,19 @@ const { current } = storeToRefs(relatoriosStore);
 
 let { loading } = storeToRefs(relatoriosStore);
 
-current.value.fonte = 'Orcamento';
+current.value = {
+  fonte: 'Orcamento',
+  parametros: {
+    tipo: 'Analitico',
+    pdm_id: 0,
+    meta_id: 0,
+    tags: [],
+    inicio: '',
+    fim: '',
+    orgaos: [],
+  },
+  salvar_arquivo: false,
+}
 
 async function onSubmit(values) {
   try {
