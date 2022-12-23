@@ -19,11 +19,6 @@ function excluirRelatório(id) {
   }, 'Remover');
 }
 
-function nomeDeArquivo(item) {
-  const { fonte, criado_em, parametros: { tipo, inicio, fim } } = item;
-
-  return `relatório__${fonte}--${tipo}--${inicio}-${fim}@${criado_em}`;
-}
 </script>
 <template>
   <table class="tablemain">
@@ -68,7 +63,7 @@ function nomeDeArquivo(item) {
                   </td-->
                   <td>
                     <a :href="`${baseUrl}/download/${item.arquivo}`"
-                    :download="nomeDeArquivo(item)" title="baixar"><img
+                    download title="baixar"><img
                     src="../../assets/icons/baixar.svg" /></a>
                   </td>
               </tr>
