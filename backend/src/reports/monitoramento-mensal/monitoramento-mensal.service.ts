@@ -58,22 +58,18 @@ export class MonitoramentoMensalService implements ReportableService {
                                 Realizado: s.Realizado,
                                 RealizadoAcumulado: s.RealizadoAcumulado,
                             }
-                        )    
+                        )
                     }
                 }
             }
 
             paineis_ret.push({
-                painel: {...painel_data},
+                painel: { ...painel_data },
                 linhas: linhas
             })
         }
 
-
-
-        // XXX
         const monitoramento_fisico = await this.mmMf.create_mf(dto, metasArr);
-        // XXX
 
         return {
             monitoramento_fisico,
@@ -91,6 +87,9 @@ export class MonitoramentoMensalService implements ReportableService {
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
 
         const out: FileOutput[] = [];
+
+
+        out.push(...await this.mmMf.getFiles(dados, pdm));
 
         return [
             {
