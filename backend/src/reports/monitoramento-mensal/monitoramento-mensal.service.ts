@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import { RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
+import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
 
 
 const { Parser, transforms: { flatten } } = require('json2csv');
@@ -17,7 +18,8 @@ export class MonitoramentoMensalService implements ReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
-        private readonly painel: PainelService, // getSimplifiedPainelSeries
+        private readonly painel: PainelService,
+        private readonly mmMf: MonitoramentoMensalMfService,
     ) { }
 
     async create(dto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
@@ -26,9 +28,11 @@ export class MonitoramentoMensalService implements ReportableService {
 
         console.log(metas);
 
+        const metasArr = metas.map(r => r.id);
+
         for (const painel of dto.paineis) {
 
-            const ret = await this.painel.getSimplifiedPainelSeries({ painel_id: painel, metas_ids: metas.map(r => r.id) });
+            const ret = await this.painel.getSimplifiedPainelSeries({ painel_id: painel, metas_ids: metasArr });
             console.dir(ret, { depth: 6 });
 
         }
@@ -36,9 +40,12 @@ export class MonitoramentoMensalService implements ReportableService {
 
 
         // XXX
+        const monitoramento_fisico = await this.mmMf.create_mf(dto, metasArr);
         // XXX
 
         return {
+            monitoramento_fisico,
+
             paineis: []
 
         };
