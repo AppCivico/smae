@@ -148,7 +148,7 @@ onMounted(() => {
             <label class="block">
                 <Field name="salvar_arquivo" type="checkbox"
                 :value="true" class="inputcheckbox" />
-                <span :class="{ 'error': errors.salvar_arquivo }">Persistir o relatório</span>
+                <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
             </label>
           </div>
         <div class="error-msg">{{ errors.salvar_arquivo }}</div>
