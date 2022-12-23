@@ -24,6 +24,8 @@ export class MonitoramentoMensalService implements ReportableService {
 
     async create(dto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
 
+        dto.paineis = Array.isArray(dto.paineis) ? dto.paineis : [];
+
         const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
 
         console.log(metas);
