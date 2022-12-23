@@ -56,19 +56,6 @@ export class DotacaoService {
         }
     }
 
-    orgaoFromDotacao(dotacao: string) {
-        return { codigo: dotacao.substring(0, 2), nome: '' }
-    }
-
-    unidadeFromDotacao(dotacao: string) {
-        return { codigo: dotacao.substring(3, 5), nome: '' }
-    }
-
-    fonteFromDotacao(dotacao: string) {
-        return { codigo: dotacao.substring(33, 35), nome: '' }
-    }
-
-
     async getOneProjetoAtividade(ano: number, dotacao: string): Promise<string> {
         // código é feito juntando o 6º com o 7º campo da dotação
         // const x = '16.10.12.122.3024.2.100.33903500.00';
@@ -136,6 +123,144 @@ export class DotacaoService {
                 r.projeto_atividade = results[r.ano_referencia] && results[r.ano_referencia][codigo] ? results[r.ano_referencia][codigo] : '';
             } else {
                 r.projeto_atividade = ''
+            }
+        }
+    }
+
+    async setManyOrgaoUnidadeFonte(srcDestList:
+        { dotacao: string, dotacao_ano_utilizado: string }[]
+        |
+        { dotacao: string, plan_dotacao_ano_utilizado: string }[]
+    ) {
+        const byYearOrgao: Record<string, Record<string, boolean>> = {};
+        const byYearUnidade: Record<string, Record<string, boolean>> = {};
+        const byYearFonte: Record<string, Record<string, boolean>> = {};
+        for (const r of srcDestList) {
+
+            const ano = "plan_dotacao_ano_utilizado" in r ? r.plan_dotacao_ano_utilizado : r.dotacao_ano_utilizado;
+            if (!ano) continue;
+
+            const orgao = r.dotacao.substring(0, 2);
+            const unidade = r.dotacao.substring(3, 5);
+            const fonte = r.dotacao.substring(33, 35);
+
+            (r as any).__orgao = orgao;
+            (r as any).__unidade = unidade;
+            (r as any).__fonte = fonte;
+
+            if (!byYearOrgao[ano]) byYearOrgao[ano] = {};
+            if (!byYearOrgao[ano][orgao]) byYearOrgao[ano][orgao] = true;
+
+            if (!byYearUnidade[ano]) byYearUnidade[ano] = {};
+            if (!byYearUnidade[ano][unidade]) byYearUnidade[ano][unidade] = true;
+
+            if (!byYearFonte[ano]) byYearFonte[ano] = {};
+            if (!byYearFonte[ano][fonte]) byYearFonte[ano][fonte] = true;
+        }
+
+        const resultsFonte: Record<string, Record<string, string>> = {};
+        const resultsOrgao: Record<string, Record<string, string>> = {};
+        const resultsUnidade: Record<string, Record<string, string>> = {};
+
+        for (const ano in byYearFonte) {
+            const codigos = Object.keys(byYearFonte[ano]);
+            const rows: {
+                codigo: string
+                descricao: string
+            }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
+            and ano = ${ano}::int
+            and codigo = ANY(${codigos}::varchar[])`;
+
+            if (!resultsFonte[ano]) resultsFonte[ano] = {};
+            for (const r of rows) {
+                resultsFonte[ano][r.codigo] = r.descricao;
+            }
+        }
+
+        for (const ano in byYearOrgao) {
+            const codigos = Object.keys(byYearOrgao[ano]);
+            const rows: {
+                codigo: string
+                descricao: string
+            }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'orgaos'
+            and ano = ${ano}::int
+            and codigo = ANY(${codigos}::varchar[])`;
+
+            if (!resultsOrgao[ano]) resultsOrgao[ano] = {};
+            for (const r of rows) {
+                resultsOrgao[ano][r.codigo] = r.descricao;
+            }
+        }
+
+
+        for (const ano in byYearUnidade) {
+            const codigos = Object.keys(byYearUnidade[ano]);
+            const rows: {
+                codigo: string
+                descricao: string
+                cod_orgao: string
+            }[] = await this.prisma.$queryRaw`select codigo, cod_orgao, descricao from sof_entidades_linhas where col = 'unidades'
+            and ano = ${ano}::int
+            and codigo = ANY(${codigos}::varchar[])`;
+
+            if (!resultsOrgao[ano]) resultsOrgao[ano] = {};
+            for (const r of rows) {
+                resultsOrgao[ano][r.cod_orgao + '-' + r.codigo] = r.descricao;
+            }
+        }
+
+console.log(resultsOrgao, resultsFonte, resultsUnidade);
+
+        for (const r of srcDestList) {
+            const ano = "plan_dotacao_ano_utilizado" in r ? r.plan_dotacao_ano_utilizado : r.dotacao_ano_utilizado;
+            console.log({ano, r});
+
+            if (!ano) continue;
+
+            const orgao = (r as any).__orgao as string | undefined;
+            const unidade = (r as any).__unidade as string | undefined;
+            const fonte = (r as any).__fonte as string | undefined;
+            delete (r as any).__orgao;
+            delete (r as any).__unidade;
+            delete (r as any).__fonte;
+
+            console.log({ano, r});
+
+            if (orgao !== undefined && resultsOrgao[ano] && resultsOrgao[ano][orgao]) {
+                (r as any).orgao = {
+                    codigo: orgao,
+                    nome: resultsOrgao[ano] && resultsOrgao[ano][orgao]
+                }
+            } else {
+                (r as any).orgao = {
+                    codigo: orgao || '',
+                    nome: ''
+                }
+            }
+
+            if (unidade !== undefined && orgao !== undefined &&
+                resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade]) {
+                (r as any).unidade = {
+                    codigo: unidade,
+                    nome: resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade]
+                }
+            } else {
+                (r as any).unidade = {
+                    codigo: unidade || '',
+                    nome: ''
+                }
+            }
+
+            if (fonte !== undefined && resultsFonte[ano] && resultsFonte[ano][fonte]) {
+                (r as any).fonte = {
+                    codigo: fonte,
+                    nome: resultsFonte[ano] && resultsFonte[ano][fonte]
+                }
+            } else {
+                (r as any).fonte = {
+                    codigo: fonte || '',
+                    nome: ''
+                }
             }
         }
     }

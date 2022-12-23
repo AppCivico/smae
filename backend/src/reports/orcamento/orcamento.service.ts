@@ -134,6 +134,9 @@ export class OrcamentoService implements ReportableService {
             }
         }
 
+        this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
+        this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
+
         return {
             linhas: retExecutado,
             linhas_planejado: retPlanejado
@@ -424,9 +427,9 @@ export class OrcamentoService implements ReportableService {
 
             dotacao: db.dotacao,
 
-            orgao: this.dotacaoService.orgaoFromDotacao(db.dotacao),
-            unidade: this.dotacaoService.unidadeFromDotacao(db.dotacao),
-            fonte: this.dotacaoService.fonteFromDotacao(db.dotacao),
+            orgao: { codigo: '', nome: '' },
+            unidade: { codigo: '', nome: '' },
+            fonte: { codigo: '', nome: '' },
 
             plan_dotacao_sincronizado_em: db.plan_dotacao_sincronizado_em.toISOString(),
             plan_sof_val_orcado_atualizado: db.plan_sof_val_orcado_atualizado,
@@ -462,9 +465,9 @@ export class OrcamentoService implements ReportableService {
             processo: db.processo,
             nota_empenho: db.nota_empenho,
 
-            orgao: this.dotacaoService.orgaoFromDotacao(db.dotacao),
-            unidade: this.dotacaoService.unidadeFromDotacao(db.dotacao),
-            fonte: this.dotacaoService.fonteFromDotacao(db.dotacao),
+            orgao: { codigo: '', nome: '' },
+            unidade: { codigo: '', nome: '' },
+            fonte: { codigo: '', nome: '' },
 
             plan_dotacao_sincronizado_em: db.plan_dotacao_sincronizado_em ? db.plan_dotacao_sincronizado_em.toISOString() : null,
             plan_sof_val_orcado_atualizado: db.plan_sof_val_orcado_atualizado,
