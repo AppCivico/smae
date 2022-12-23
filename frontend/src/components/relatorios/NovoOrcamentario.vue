@@ -126,7 +126,7 @@ onMounted(() => {
           <hr class="mr2 f1"/>
           <button type="submit" class="btn big" :disabled="loading ||
           isSubmitting">
-            {{ values.salvar_arquivo ? "exportar e salvar" : "exportar" }}
+            {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
           </button>
           <hr class="ml2 f1"/>
       </div>
