@@ -58,21 +58,26 @@ export default {
     },
     {
       path: 'orcamentarios',
-      component: RelatoriosOrcamentarios,
       meta: {
         presenteNoMenu: true,
         título: 'Relatórios orçamentários',
         títuloParaMenu: 'Relatório Orçamento',
       },
+      children: [
+        {
+          path: '',
+          component: RelatoriosOrcamentarios,
+        },
+        {
+          component: RelatoriosOrcamentariosItem,
+          path: 'novo',
+          name: 'novoRelatórioOrçamentário',
+          meta: {
+            rotaDeEscape: '/relatorios/orcamentarios',
+            título: 'Novo relatório de orçamentos',
+          },
+        },
+      ]
     },
-    {
-      component: RelatoriosOrcamentariosItem,
-      path: 'orcamentarios/novo',
-      name: 'novoRelatórioOrçamentário',
-      meta: {
-        rotaDeEscape: '/relatorios/orcamentarios',
-        título: 'Novo relatório de orçamentos',
-      },
-    }
   ]
 }
