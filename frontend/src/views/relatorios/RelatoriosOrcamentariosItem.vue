@@ -52,7 +52,7 @@ async function onSubmit(el) {
 }
 
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/usuarios');
+  alertStore.confirm('Deseja sair sem salvar as alterações?', '/relatorios/orcamentarios');
 }
 
 </script>
