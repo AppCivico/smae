@@ -1,22 +1,21 @@
 <script setup>
-    import { ref, reactive } from 'vue';
-    import { storeToRefs } from 'pinia';
-    import { Dashboard} from '@/components';
-    import { default as listVars } from '@/components/monitoramento/listVars.vue';
-    import { default as countVars } from '@/components/monitoramento/countVars.vue';
-    import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
-    import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
+import { Dashboard } from '@/components';
+import { default as countVars } from '@/components/monitoramento/countVars.vue';
+import { default as listVars } from '@/components/monitoramento/listVars.vue';
+import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
+import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
+import { storeToRefs } from 'pinia';
 
-    import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
-    import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
-    import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
+import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
+import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
+import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
 
-    import { useEditModalStore, useSideBarStore, useAlertStore, useAuthStore, usePdMStore, useCiclosStore } from '@/stores';
-    import { useRoute } from 'vue-router';
-    import { router } from '@/router';
-    
+import { router } from '@/router';
+import { useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, usePdMStore, useSideBarStore } from '@/stores';
+import { useRoute } from 'vue-router';
+
     const baseUrl = `${import.meta.env.VITE_API_URL}`;
-    
+
     const route = useRoute();
     const meta_id = route.params.meta_id;
 
@@ -55,9 +54,9 @@
         return `${month} ${year}`;
     }
     function checkClose(){
-        alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-            editModalStore.clear(); 
-            alertStore.clear(); 
+      alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+        editModalStore.clear();
+        alertStore.clear();
         });
     }
     function editPeriodo(parent,var_id,periodo){
@@ -70,7 +69,7 @@
     }
     function confirmFase(id,f){
         let z = activePdm.value.ciclo_fisico_ativo.fases.find(x=>x.ciclo_fase==f);
-        
+
         if(z) alertStore.confirmAction(
             'Deseja mesmo avançar a etapa?',
             async()=>{alertStore.clear(); await CiclosStore.updateFase(id,{ciclo_fase_id: z.id}); router.go(); },
@@ -124,7 +123,7 @@
         <div v-else-if="SingleFechamento.loading">
             <span class="spinner">Carregando</span>
         </div>
-        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)&&['Fechamento'].includes(SingleMeta.fase)">
+        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)">
             <a class="btn" @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Fechar ciclo</a>
         </div>
 
@@ -142,7 +141,7 @@
         <div v-else-if="SingleRisco.loading">
             <span class="spinner">Carregando</span>
         </div>
-        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)&&['Risco','Fechamento'].includes(SingleMeta.fase)">
+        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)">
             <a class="btn" @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Adicionar Análise de Risco</a>
         </div>
 
@@ -173,10 +172,12 @@
                 </tbody>
             </table>
         </div>
+
         <div v-else-if="SingleMetaAnalise.loading">
             <span class="spinner">Carregando</span>
         </div>
-        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)&&['Coleta','Analise','Risco','Fechamento'].includes(SingleMeta.fase)">
+
+        <div class="p1 bgc50 tc mb2" v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)">
             <a class="btn" @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)">Qualificar</a>
         </div>
 
