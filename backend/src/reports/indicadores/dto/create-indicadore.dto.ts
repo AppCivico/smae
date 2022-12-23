@@ -1,6 +1,6 @@
 import { ApiProperty, IntersectionType } from "@nestjs/swagger"
 import { TipoRelatorio } from "@prisma/client"
-import { IsEnum, IsInt, IsOptional } from "class-validator"
+import { IsEnum, IsInt, IsOptional, ValidateIf } from "class-validator"
 import { FiltroMetasIniAtividadeDto } from "../../relatorios/dto/filtros.dto"
 
 export const SemestreDto = {
@@ -32,11 +32,12 @@ export class IndicadorParams {
      * @example ""
     */
     @IsOptional()
+    @ValidateIf((object, value) => value !== null)
     @ApiProperty({ enum: SemestreDto, enumName: 'SemestreDto' })
     @IsEnum(SemestreDto, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(SemestreDto).join(', ')
     })
-    semestre?: SemestreDto
+    semestre?: SemestreDto | null
 
     /**
      * @example "Primeiro"
