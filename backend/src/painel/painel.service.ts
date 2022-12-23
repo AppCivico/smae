@@ -48,7 +48,7 @@ export class PainelService {
                 delete createPainelDto.grupos;
 
                 for (const grupo of grupos) {
-                    grupos_to_assign.push({grupo_painel_id: grupo})
+                    grupos_to_assign.push({ grupo_painel_id: grupo })
                 }
             }
 
@@ -119,7 +119,7 @@ export class PainelService {
                                 pai_id: null
                             },
                             orderBy: [
-                                {ordem: 'asc'}
+                                { ordem: 'asc' }
                             ],
                             select: {
                                 id: true,
@@ -182,7 +182,7 @@ export class PainelService {
 
         const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const painel_conteudo: PainelConteudoForSync[] = await prisma.painelConteudo.findMany({
-                where: {painel_id: id},
+                where: { painel_id: id },
                 select: {
                     id: true,
                     meta_id: true,
@@ -243,7 +243,7 @@ export class PainelService {
                                     pai_id: null
                                 },
                                 orderBy: [
-                                    {ordem: 'asc'}
+                                    { ordem: 'asc' }
                                 ],
                                 select: {
                                     id: true,
@@ -321,7 +321,7 @@ export class PainelService {
                 delete updatePainelDto.grupos;
 
                 for (const grupo of grupos) {
-                    grupos_to_assign.push({grupo_painel_id: grupo})
+                    grupos_to_assign.push({ grupo_painel_id: grupo })
                 }
 
                 await prisma.painelGrupoPainel.deleteMany({
@@ -370,9 +370,9 @@ export class PainelService {
 
 
     async createConteudo(painel_id: number, createConteudoDto: CreateParamsPainelConteudoDto, user: PessoaFromJwt) {
-        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoUpsertRet>=> {
+        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoUpsertRet> => {
             const painel = await this.prisma.painel.findFirstOrThrow({
-                where: {id: painel_id},
+                where: { id: painel_id },
                 select: {
                     mostrar_acumulado_por_padrao: true,
                     mostrar_indicador_por_padrao: true,
@@ -406,7 +406,7 @@ export class PainelService {
                             mostrar_planejado: painel.mostrar_planejado_por_padrao,
                             periodicidade: painel.periodicidade
                         },
-                        select: {id: true, meta_id: true, mostrar_indicador: true}
+                        select: { id: true, meta_id: true, mostrar_indicador: true }
                     })
                 )
             }
@@ -427,7 +427,7 @@ export class PainelService {
 
     async getPainelConteudoVisualizacao(id: number) {
         return await this.prisma.painelConteudo.findFirstOrThrow({
-            where: {id: id},
+            where: { id: id },
             select: {
                 id: true,
                 periodicidade: true,
@@ -445,7 +445,7 @@ export class PainelService {
 
     async updatePainelConteudoVisualizacao(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto) {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
+            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({ where: { id: painel_conteudo_id } });
             if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
 
             const updated_painel_conteudo = await prisma.painelConteudo.update({
@@ -455,7 +455,7 @@ export class PainelService {
                 data: {
                     ...updatePainelConteudoDto
                 },
-                select: {id: true}
+                select: { id: true }
             });
 
             return updated_painel_conteudo;
@@ -466,7 +466,7 @@ export class PainelService {
 
     async updatePainelConteudoDetalhes(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDetalheDto: UpdatePainelConteudoDetalheDto) {
         const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoDetalheUpdateRet> => {
-            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({where: {id: painel_conteudo_id}});
+            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({ where: { id: painel_conteudo_id } });
             if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
 
             const operations = [];
@@ -480,7 +480,7 @@ export class PainelService {
                     operations.push(prisma.painelConteudo.update({
                         where: { id: painel_conteudo_id },
                         data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador_meta },
-                        select: {id: true}
+                        select: { id: true }
                     }));
                 }
             }
@@ -491,13 +491,13 @@ export class PainelService {
                         id: detalhe.id
                     },
                     data: { mostrar_indicador: detalhe.mostrar_indicador },
-                    select: {id: true}
+                    select: { id: true }
                 }))
             }
 
             const updated = await Promise.all(operations);
 
-            return {updated};
+            return { updated };
         });
 
         return ret
@@ -510,7 +510,7 @@ export class PainelService {
 
         for (const painel_conteudo of conteudos) {
             const detalhes_db = await prisma.painelConteudoDetalhe.findMany({
-                where: {painel_conteudo_id: painel_conteudo.id},
+                where: { painel_conteudo_id: painel_conteudo.id },
                 select: {
                     id: true,
                     variavel_id: true,
@@ -577,7 +577,7 @@ export class PainelService {
                 where: {
                     meta_id: painel_conteudo.meta_id
                 },
-                select: {id: true}
+                select: { id: true }
             })
 
             // Primeiro nivel
@@ -695,7 +695,7 @@ export class PainelService {
                 for (const atividade of atividades) {
                     let parent_atividade;
 
-                    const already_exists = existent_painel_conteudo_detalhes.find(i => i.atividade_id == atividade.id );
+                    const already_exists = existent_painel_conteudo_detalhes.find(i => i.atividade_id == atividade.id);
                     if (already_exists) {
                         parent_atividade = already_exists;
                         unchanged.push(already_exists);
@@ -728,7 +728,7 @@ export class PainelService {
                     });
 
                     for (const variavel of atividade_variaveis) {
-                        const already_exists = existent_painel_conteudo_detalhes.find(i => i.variavel_id == variavel.variavel_id );
+                        const already_exists = existent_painel_conteudo_detalhes.find(i => i.variavel_id == variavel.variavel_id);
 
                         if (already_exists) {
                             unchanged.push(already_exists);
@@ -763,7 +763,7 @@ export class PainelService {
         }
     }
 
-    private async checkDeletedPainelConteudo (metas: number[], conteudos: PainelConteudoIdAndMeta[], prisma: Prisma.TransactionClient): Promise<PainelConteudoIdAndMeta[]> {
+    private async checkDeletedPainelConteudo(metas: number[], conteudos: PainelConteudoIdAndMeta[], prisma: Prisma.TransactionClient): Promise<PainelConteudoIdAndMeta[]> {
         const deleted: PainelConteudoIdAndMeta[] = [];
         for (const existent_conteudo of conteudos) {
 
@@ -806,7 +806,7 @@ export class PainelService {
         return ret;
     }
 
-    private async getMultiplierForPeriodicidade (periodicidade: Periodicidade): Promise<number> {
+    private async getMultiplierForPeriodicidade(periodicidade: Periodicidade): Promise<number> {
         let multiplier: number;
 
         switch (periodicidade) {
@@ -836,7 +836,7 @@ export class PainelService {
         return multiplier;
     }
 
-    private async getStartEndDate (periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null, periodo_inicio: Date | null, periodo_fim: Date | null): Promise<PainelDateRange> {
+    private async getStartEndDate(periodo: Periodo, periodicidade: Periodicidade, periodo_valor: number | null, periodo_inicio: Date | null, periodo_fim: Date | null): Promise<PainelDateRange> {
         let ret: {
             start: Date,
             end: Date
@@ -850,16 +850,16 @@ export class PainelService {
 
             const multiplier = await this.getMultiplierForPeriodicidade(periodicidade);
 
-            if ( periodicidade === Periodicidade.Anual ||
-                 periodicidade === Periodicidade.Quinquenal ||
-                 periodicidade === Periodicidade.Secular) {
+            if (periodicidade === Periodicidade.Anual ||
+                periodicidade === Periodicidade.Quinquenal ||
+                periodicidade === Periodicidade.Secular) {
 
-                ret.start = new Date( new Date().getFullYear() - periodo_valor * multiplier, 0, 1);
-                ret.end   = new Date( new Date().getFullYear(), 0, 1 );
+                ret.start = new Date(new Date().getFullYear() - periodo_valor * multiplier, 0, 1);
+                ret.end = new Date(new Date().getFullYear(), 0, 1);
             } else if (periodicidade === Periodicidade.Semestral) {
                 const year_start_epoch = new Date(new Date().getFullYear(), 0, 1).getTime();
-                const half_year_epoch  = new Date(new Date().getFullYear(), 5, 1).getTime();
-                const current_epoch    = Date.now();
+                const half_year_epoch = new Date(new Date().getFullYear(), 5, 1).getTime();
+                const current_epoch = Date.now();
 
                 if (current_epoch >= half_year_epoch) {
                     ret.start = new Date(half_year_epoch - 183 * 86400000 * periodo_valor);
@@ -873,78 +873,78 @@ export class PainelService {
                 const current_year = new Date().getUTCFullYear();
 
                 if (current_month <= 4) {
-                    ret.start = moment(new Date( current_year, 0, 1)).subtract(periodo_valor * 4, 'months').toDate();
-                    ret.end = new Date( current_year, 0, 1);
+                    ret.start = moment(new Date(current_year, 0, 1)).subtract(periodo_valor * 4, 'months').toDate();
+                    ret.end = new Date(current_year, 0, 1);
                 } else if (current_month > 4 && current_month <= 8) {
-                    ret.start = moment(new Date( current_year, 4, 1)).subtract(periodo_valor * 4, 'months').toDate();
-                    ret.end = new Date( current_year, 4, 1);
+                    ret.start = moment(new Date(current_year, 4, 1)).subtract(periodo_valor * 4, 'months').toDate();
+                    ret.end = new Date(current_year, 4, 1);
                 } else {
-                    ret.start = moment(new Date( current_year, 8, 1)).subtract(periodo_valor * 4, 'months').toDate();
-                    ret.end = new Date( current_year, 11, 31);
+                    ret.start = moment(new Date(current_year, 8, 1)).subtract(periodo_valor * 4, 'months').toDate();
+                    ret.end = new Date(current_year, 11, 31);
                 }
             } else if (periodicidade === Periodicidade.Trimestral) {
-                ret.start = DateTime.now().minus({quarter: periodo_valor}).startOf('quarter').toJSDate();
-                ret.end   = DateTime.now().startOf('quarter').toJSDate();
+                ret.start = DateTime.now().minus({ quarter: periodo_valor }).startOf('quarter').toJSDate();
+                ret.end = DateTime.now().startOf('quarter').toJSDate();
             } else if (periodicidade === Periodicidade.Bimestral) {
                 const current_month = new Date().getUTCMonth();
                 const current_year = new Date().getUTCFullYear();
 
                 if (current_month % 2) {
-                    ret.start = moment(new Date( current_year, current_month - 1, 1)).subtract(periodo_valor * 2, 'months').toDate();
-                    ret.end = new Date( current_year, current_month, 31);
+                    ret.start = moment(new Date(current_year, current_month - 1, 1)).subtract(periodo_valor * 2, 'months').toDate();
+                    ret.end = new Date(current_year, current_month, 31);
                 } else {
-                    ret.start = moment(new Date( current_year, current_month - 2, 1)).subtract(periodo_valor * 2, 'months').toDate();
-                    ret.end = new Date( current_year, current_month - 1, 31);
+                    ret.start = moment(new Date(current_year, current_month - 2, 1)).subtract(periodo_valor * 2, 'months').toDate();
+                    ret.end = new Date(current_year, current_month - 1, 31);
                 }
             } else if (periodicidade === Periodicidade.Mensal) {
 
-                ret.start = DateTime.now().startOf('month').minus({months: periodo_valor}).toJSDate();
-                ret.end = DateTime.now().startOf('month').minus({day: 1}).toJSDate();
+                ret.start = DateTime.now().startOf('month').minus({ months: periodo_valor }).toJSDate();
+                ret.end = DateTime.now().startOf('month').minus({ day: 1 }).toJSDate();
             } else {
                 throw new Error('faltando tratamento para periodicidade: ' + periodicidade)
             }
         } else if (periodo === Periodo.EntreDatas) {
             if (!periodo_inicio || !periodo_fim)
-              throw new Error('Faltando configuração de periodos');
+                throw new Error('Faltando configuração de periodos');
 
             ret.start = periodo_inicio;
-            ret.end   = periodo_fim;
+            ret.end = periodo_fim;
         } else {
             ret.start = new Date(0);
-            ret.end   = new Date();
+            ret.end = new Date();
         }
 
         return ret;
     }
 
-    private async getTitle (periodicidade: Periodicidade, start: DateTime, end: DateTime): Promise<string> {
+    private async getTitle(periodicidade: Periodicidade, start: DateTime, end: DateTime): Promise<string> {
         let ret: string;
 
         if (periodicidade === Periodicidade.Semestral ||
             periodicidade === Periodicidade.Trimestral ||
             periodicidade === Periodicidade.Quadrimestral ||
             periodicidade === Periodicidade.Bimestral) {
-                const date = end.minus({second: 1});
+            const date = end.minus({ second: 1 });
 
-                ret = date.toLocaleString({month: '2-digit', year: 'numeric'});
+            ret = date.toLocaleString({ month: '2-digit', year: 'numeric' });
         } else if (
             periodicidade === Periodicidade.Secular ||
             periodicidade === Periodicidade.Quinquenal ||
             periodicidade === Periodicidade.Anual) {
 
-                ret = start.toLocaleString({year: 'numeric'});
+            ret = start.toLocaleString({ year: 'numeric' });
         } else {
-            ret = start.toLocaleString({month: '2-digit', year: 'numeric'});
+            ret = start.toLocaleString({ month: '2-digit', year: 'numeric' });
         }
 
         return ret;
     }
 
-    private async getSeriesTemplate (periodicidade: Periodicidade, periodo_valor: number | null, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
+    private async getSeriesTemplate(periodicidade: Periodicidade, periodo_valor: number | null, start_date: Date, end_date: Date, series_order_size: number): Promise<SeriesTemplate[]> {
         const series_template: SeriesTemplate[] = [];
 
         let config: {
-            time_unit: string  | null,
+            time_unit: string | null,
             multiplier: number | null,
 
         } = {
@@ -954,40 +954,40 @@ export class PainelService {
 
         switch (periodicidade) {
             case Periodicidade.Secular:
-                config.time_unit  = 'years';
+                config.time_unit = 'years';
                 config.multiplier = 100;
                 break;
             case Periodicidade.Quinquenal:
-                config.time_unit  = 'years';
+                config.time_unit = 'years';
                 config.multiplier = 5;
                 break;
             case Periodicidade.Anual:
-                config.time_unit  = 'years';
+                config.time_unit = 'years';
                 config.multiplier = 1;
                 break;
             case Periodicidade.Semestral:
-                config.time_unit  = 'quarter';
+                config.time_unit = 'quarter';
                 config.multiplier = 2;
                 break;
             case Periodicidade.Quadrimestral:
-                config.time_unit  = 'months';
+                config.time_unit = 'months';
                 config.multiplier = 4;
                 break;
             case Periodicidade.Trimestral:
-                config.time_unit  = 'months';
+                config.time_unit = 'months';
                 config.multiplier = 3;
                 break;
             case Periodicidade.Bimestral:
-                config.time_unit  = 'months';
+                config.time_unit = 'months';
                 config.multiplier = 2;
                 break;
             case Periodicidade.Mensal:
-                config.time_unit  = 'months';
+                config.time_unit = 'months';
                 config.multiplier = 1;
         }
 
         if (!config.multiplier || !config.time_unit)
-          throw new Error('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
+            throw new Error('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
 
         if (!periodo_valor) periodo_valor = 1;
 
@@ -996,17 +996,17 @@ export class PainelService {
             empty_values.push('');
         }
 
-        const start  = DateTime.fromJSDate(start_date).setLocale('pt-BR');
-        const end    = DateTime.fromJSDate(end_date).setLocale('pt-BR');
+        const start = DateTime.fromJSDate(start_date).setLocale('pt-BR');
+        const end = DateTime.fromJSDate(end_date).setLocale('pt-BR');
 
         let window_start: DateTime = start;
-        let window_end:   DateTime | null = null;
+        let window_end: DateTime | null = null;
 
         let i = 0;
         while (window_start < end) {
             if (periodicidade === Periodicidade.Semestral) {
-                window_start = window_end ? window_start.plus({quarter: 1}).startOf('quarter') : window_start.startOf('quarter');
-                window_end = window_start.plus({quarters: 1}).endOf('quarter');
+                window_start = window_end ? window_start.plus({ quarter: 1 }).startOf('quarter') : window_start.startOf('quarter');
+                window_end = window_start.plus({ quarters: 1 }).endOf('quarter');
             } else {
                 // Objeto que é utilizado para soma no Luxon (ex: {days: 10}).
                 let plus_obj: any = {};
@@ -1018,7 +1018,7 @@ export class PainelService {
             series_template.push({
                 titulo: await this.getTitle(periodicidade, window_start, window_end),
                 periodo_inicio: window_start.toJSDate(),
-                periodo_fim: window_end.minus({second: 1}).toJSDate(),
+                periodo_fim: window_end.minus({ second: 1 }).toJSDate(),
                 valores_nominais: empty_values
             });
 
@@ -1029,7 +1029,7 @@ export class PainelService {
         return series_template;
     }
 
-    async getPainelConteudoSerie (painel_conteudo_id: number): Promise<PainelConteudoSerie> {
+    async getPainelConteudoSerie(painel_conteudo_id: number): Promise<PainelConteudoSerie> {
         let ret = <PainelConteudoSerie>{};
         const config = await this.getPainelConteudoVisualizacao(painel_conteudo_id);
 
@@ -1050,7 +1050,7 @@ export class PainelService {
         }
         else if (config.periodo === Periodo.EntreDatas) {
             if (!config.periodo_inicio || !config.periodo_fim)
-              throw new Error('Faltando configuração de periodos');
+                throw new Error('Faltando configuração de periodos');
 
             gte = config.periodo_inicio;
             lte = config.periodo_fim;
@@ -1108,7 +1108,7 @@ export class PainelService {
                         mostrar_indicador: true,
                         pai_id: null
                     },
-                    orderBy: [ {ordem: 'asc'} ],
+                    orderBy: [{ ordem: 'asc' }],
                     select: {
                         variavel: {
                             select: {
@@ -1137,7 +1137,7 @@ export class PainelService {
                                 titulo: true,
 
                                 Indicador: {
-                                    where: {removido_em: null},
+                                    where: { removido_em: null },
                                     select: {
                                         id: true,
                                         codigo: true,
@@ -1193,7 +1193,7 @@ export class PainelService {
                                         titulo: true,
 
                                         Indicador: {
-                                            where: {removido_em: null},
+                                            where: { removido_em: null },
                                             select: {
                                                 id: true,
                                                 codigo: true,
@@ -1280,14 +1280,14 @@ export class PainelService {
             });
 
             if (all_series.length > 0) {
-                all_series.sort( function compare (a, b) {
+                all_series.sort(function compare(a, b) {
                     const date_a = new Date(a.data_valor).getTime();
                     const date_b = new Date(b.data_valor).getTime();
                     return date_a - date_b;
                 });
 
                 const earliest = new Date(all_series[0].data_valor);
-                const latest   = new Date(all_series.at(-1)!.data_valor);
+                const latest = new Date(all_series.at(-1)!.data_valor);
 
                 series_template = await this.getSeriesTemplate(config.periodicidade, null, earliest, latest, series_order.length);
             }
@@ -1321,7 +1321,7 @@ export class PainelService {
 
                             valores_nominais: t.valores_nominais.map((vn, ix) => {
                                 const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                const serie_match     = serie_match_arr[0];
+                                const serie_match = serie_match_arr[0];
 
                                 if (serie_match) {
                                     return serie_match.valor_nominal
@@ -1349,7 +1349,7 @@ export class PainelService {
                                 periodo_fim: t.periodo_fim,
                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
                                     const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                    const serie_match     = serie_match_arr[0];
+                                    const serie_match = serie_match_arr[0];
 
                                     if (serie_match) {
                                         return serie_match.valor_nominal
@@ -1381,7 +1381,7 @@ export class PainelService {
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
                                             const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                            const serie_match     = serie_match_arr[0];
+                                            const serie_match = serie_match_arr[0];
 
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
@@ -1410,7 +1410,7 @@ export class PainelService {
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
                                             const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                            const serie_match     = serie_match_arr[0];
+                                            const serie_match = serie_match_arr[0];
 
                                             if (serie_match) {
                                                 return serie_match.valor_nominal
@@ -1441,7 +1441,7 @@ export class PainelService {
                                                 periodo_fim: t.periodo_fim,
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
                                                     const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                                    const serie_match     = serie_match_arr[0];
+                                                    const serie_match = serie_match_arr[0];
 
                                                     if (serie_match) {
                                                         return serie_match.valor_nominal
@@ -1454,30 +1454,32 @@ export class PainelService {
                             },
 
                             filhos: f.filhos.map(af => {
-                                return {variavel: {
-                                    id: af.variavel?.id,
-                                    titulo: af.variavel?.titulo,
+                                return {
+                                    variavel: {
+                                        id: af.variavel?.id,
+                                        titulo: af.variavel?.titulo,
 
-                                    series: series_template.map(t => {
-                                        const series_for_period = af.variavel?.serie_variavel.filter(r => {
-                                            return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
-                                        }) || [];
+                                        series: series_template.map(t => {
+                                            const series_for_period = af.variavel?.serie_variavel.filter(r => {
+                                                return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                            }) || [];
 
-                                        return {
-                                            titulo: t.titulo,
-                                            periodo_inicio: t.periodo_inicio,
-                                            periodo_fim: t.periodo_fim,
-                                            valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                                const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
-                                                const serie_match     = serie_match_arr[0];
+                                            return {
+                                                titulo: t.titulo,
+                                                periodo_inicio: t.periodo_inicio,
+                                                periodo_fim: t.periodo_fim,
+                                                valores_nominais: t.valores_nominais.map((vn, ix) => {
+                                                    const serie_match_arr = series_for_period.filter(sm => { return sm.serie == series_order[ix] });
+                                                    const serie_match = serie_match_arr[0];
 
-                                                if (serie_match) {
-                                                    return serie_match.valor_nominal
-                                                } else { return "" }
-                                            })
-                                        }
-                                    })
-                                }}
+                                                    if (serie_match) {
+                                                        return serie_match.valor_nominal
+                                                    } else { return "" }
+                                                })
+                                            }
+                                        })
+                                    }
+                                }
                             })
                         }
                     })
@@ -1490,11 +1492,11 @@ export class PainelService {
         return ret;
     }
 
-    async getSimplifiedPainelSeries (painel_id: number): Promise<SimplifiedPainelConteudoSeries[]> {
+    async getSimplifiedPainelSeries(painel_id: number): Promise<SimplifiedPainelConteudoSeries[]> {
         interface values {
             [key: string]: number | Decimal | ""
         }
-        
+
         const painel_conteudo_db = await this.prisma.painelConteudo.findMany({
             where: { painel_id: painel_id },
             select: {
@@ -1506,17 +1508,16 @@ export class PainelService {
 
         for (const painel_conteudo of painel_conteudo_db) {
             const painel_conteudo_series = await this.getPainelConteudoSerie(painel_conteudo.id);
-            
+
             const series_order = painel_conteudo_series.ordem_series;
 
-            const all_series: SerieRow[] = [];
-            
+
             if (painel_conteudo_series.meta.indicador) {
                 ret.push({
                     indicador_id: painel_conteudo_series.meta.indicador.id,
                     series: painel_conteudo_series.meta.indicador.series?.map((s) => {
                         const values: values = {};
-                        s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+                        s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
 
                         return {
                             data: s.titulo,
@@ -1532,7 +1533,7 @@ export class PainelService {
                         variavel_id: d.variavel.id,
                         series: d.variavel.series.map(s => {
                             const values: values = {};
-                            s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
+                            s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
 
                             return {
                                 data: s.titulo,
@@ -1550,8 +1551,8 @@ export class PainelService {
                                 indicador_id: ii.id,
                                 series: ii.series.map(s => {
                                     const values: values = {};
-                                    s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
-        
+                                    s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
+
                                     return {
                                         data: s.titulo,
                                         ...values
@@ -1569,8 +1570,8 @@ export class PainelService {
                             variavel_id: f.variavel.id,
                             series: f.variavel.series.map(s => {
                                 const values: values = {};
-                                s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
-    
+                                s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
+
                                 return {
                                     data: s.titulo,
                                     ...values
@@ -1587,8 +1588,8 @@ export class PainelService {
                                     indicador_id: ai.id,
                                     series: ai.series.map(s => {
                                         const values: values = {};
-                                        s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
-            
+                                        s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
+
                                         return {
                                             data: s.titulo,
                                             ...values
@@ -1605,8 +1606,8 @@ export class PainelService {
                                 variavel_id: ff.variavel.id,
                                 series: ff.variavel.series.map(s => {
                                     const values: values = {};
-                                    s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
-        
+                                    s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
+
                                     return {
                                         data: s.titulo,
                                         ...values
@@ -1614,7 +1615,7 @@ export class PainelService {
                                 })
                             });
                         }
-    
+
                         if (ff.atividade?.indicador) {
                             ff.atividade.indicador.forEach(ai => {
 
@@ -1623,8 +1624,8 @@ export class PainelService {
                                         indicador_id: ai.id,
                                         series: ai.series.map(s => {
                                             const values: values = {};
-                                            s.valores_nominais.forEach((vn, i) => {values[series_order[i]] = vn});
-                
+                                            s.valores_nominais.forEach((vn, i) => { values[series_order[i]] = vn });
+
                                             return {
                                                 data: s.titulo,
                                                 ...values

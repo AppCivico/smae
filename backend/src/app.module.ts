@@ -52,6 +52,7 @@ import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { IndicadoresModule } from './reports/indicadores/indicadores.module';
+import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
 
 
 @Module({
@@ -111,6 +112,7 @@ import { IndicadoresModule } from './reports/indicadores/indicadores.module';
         SofEntidadeModule,
         TextoConfigModule,
         IndicadoresModule,
+        MonitoramentoMensalModule,
     ],
     controllers: [AppController],
     providers: [

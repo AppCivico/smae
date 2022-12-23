@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ReportsService } from './reports.service';
-import { ReportsController } from './reports.controller';
-import { PrismaModule } from '../../prisma/prisma.module';
-import { OrcamentoModule } from '../orcamento/orcamento.module';
-import { UploadModule } from 'src/upload/upload.module';
 import { JwtModule } from '@nestjs/jwt';
+import { UploadModule } from 'src/upload/upload.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 import { IndicadoresModule } from '../indicadores/indicadores.module';
-import { PaineisModule } from '../paineis/paineis.module';
+import { MonitoramentoMensalModule } from '../monitoramento-mensal/monitoramento-mensal.module';
+import { OrcamentoModule } from '../orcamento/orcamento.module';
+import { ReportsController } from './reports.controller';
+import { ReportsService } from './reports.service';
 
 @Module({
     imports: [
@@ -14,7 +14,7 @@ import { PaineisModule } from '../paineis/paineis.module';
         OrcamentoModule,
         UploadModule,
         IndicadoresModule,
-        PaineisModule,
+        MonitoramentoMensalModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
