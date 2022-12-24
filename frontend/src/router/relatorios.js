@@ -42,7 +42,6 @@ export default {
           name: 'novoRelatórioMensal',
           meta: {
             título: 'Novo relatório mensal',
-            // rotaDeEscape: '/relatorios/mensal'
           },
         },
       ],
@@ -65,7 +64,6 @@ export default {
           name: 'novoRelatórioSemestralOuAnual',
           meta: {
             título: 'Novo relatório semestral ou anual',
-            rotaDeEscape: '/relatorios/semestral-ou-anual'
           },
         },
       ],
@@ -87,7 +85,6 @@ export default {
           path: 'novo',
           name: 'novoRelatórioOrçamentário',
           meta: {
-            rotaDeEscape: '/relatorios/orcamentarios',
             título: 'Novo relatório de orçamentos',
           },
         },
