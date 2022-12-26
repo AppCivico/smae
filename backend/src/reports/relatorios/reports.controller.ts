@@ -17,6 +17,8 @@ import { RelatorioDto } from './entities/report.entity';
 import { ReportsService } from './reports.service';
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
+var XLSX_ZAHL_PAYLOAD = require("xlsx/dist/xlsx.zahl");
+
 
 @ApiTags('Relatórios')
 @Controller('relatorios')
@@ -56,12 +58,22 @@ export class ReportsController {
             zip.addFile(file.name, file.buffer);
 
             if (file.name.endsWith('.csv')) {
-                const readCsv = await new Promise((resolve, reject) => {
+                const readCsv: any[] = await new Promise((resolve, reject) => {
                     parse(file.buffer, { columns: true }, (err: any, data: any) => {
                         if (err) throw reject(err);
                         resolve(data)
                     })
                 });
+
+                // converte o que se parece com numeros automaticamente
+                for (let i = 0; i < readCsv.length; i++) {
+                    const element = readCsv[i];
+                    for (const k in element) {
+                        if (/^\d+\.?\d+$/.test(element[k])) {
+                            element[k] *= 1;
+                        }
+                    }
+                }
 
                 const csvDataArray = XLSX.utils.json_to_sheet(readCsv);
                 const workbook = XLSX.utils.book_new();
@@ -69,7 +81,7 @@ export class ReportsController {
 
                 zip.addFile(
                     file.name.replace(/\.csv$/, '.xlsx'),
-                    XLSX.write(workbook, { type: "buffer", bookType: "xlsb" })
+                    XLSX.write(workbook, { type: "buffer", bookType: "xlsb", numbers: XLSX_ZAHL_PAYLOAD, compression: true })
                 );
             }
         };
