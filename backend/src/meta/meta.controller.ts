@@ -27,7 +27,7 @@ export class MetaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @ApiProduces("application/json", "text/csv", "text/csv; unwind-all")
+    @ApiProduces("application/json", "text/csv", "text/csv; unwind-all", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     //@Roles('CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover')
     async findAll(@Query() filters: FilterMetaDto): Promise<ListMetaDto> {
         // TODO filtrar por apenas painel , se a pessoa nao tiver essas permissoes acima
