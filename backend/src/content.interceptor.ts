@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Request, Response } from 'express';
 const { Parser, transforms: { flatten, unwind } } = require('json2csv');
+const XLSX = require('xlsx');
+const { parse } = require('csv-parse');
 
 const linhasTransforms = [unwind({
     paths: [
@@ -15,7 +17,8 @@ const allTransforms = [unwind(), flatten({ paths: [] })];
 
 const contType = 'Content-Type';
 const json = 'application/json';
-const csv = 'text/csv';
+const csvType = 'text/csv';
+const xslx = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const csvUnwindAll = 'text/csv; unwind-all';
 
 @Injectable()
@@ -25,17 +28,36 @@ export class ContentInterceptor implements NestInterceptor {
         const res = context.switchToHttp().getResponse<Response>();
         const content = req.header('Accept');
         return next.handle().pipe(
-            map((data) => {
+            map(async (data) => {
                 if (typeof data !== 'object') return data;
 
                 switch (content) {
-                    case csv:
-                        res.header(contType, csv);
+                    case csvType:
+                    case xslx:
+                        res.header(contType, csvType);
                         const json2csvParser = new Parser({ undefined, transforms: linhasTransforms });
                         data = json2csvParser.parse(data);
+
+                        if (content === xslx) {
+                            // interface do parseCSV é apenas via callback, entao cria aqui uma forma de
+                            // aguardar o parser via async/await
+                            const readCsv = await new Promise((resolve, reject) => {
+                                parse(data, { columns: true }, (err: any, data: any) => {
+                                    if (err) throw reject(err);
+                                    resolve(data)
+                                })
+                            });
+
+                            const csvDataArray = XLSX.utils.json_to_sheet(readCsv);
+                            const workbook = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Sheet1');
+
+                            res.write(XLSX.write(workbook, { type: "buffer", bookType: "xlsb" }))
+                            data = null;
+                        }
                         break;
                     case csvUnwindAll:
-                        res.header(contType, csv);
+                        res.header(contType, csvType);
                         const json2csvParserAll = new Parser({ undefined, transforms: allTransforms });
                         data = json2csvParserAll.parse(data);
                         break;
