@@ -15,6 +15,8 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { ReportsService } from './reports.service';
+const XLSX = require('xlsx');
+const { parse } = require('csv-parse');
 
 @ApiTags('Relatórios')
 @Controller('relatorios')
@@ -50,9 +52,27 @@ export class ReportsController {
 
         const zip = new AdmZip();
 
-        files.forEach(file => {
+        for (const file of files) {
             zip.addFile(file.name, file.buffer);
-        });
+
+            if (file.name.endsWith('.csv')) {
+                const readCsv = await new Promise((resolve, reject) => {
+                    parse(file.buffer, { columns: true }, (err: any, data: any) => {
+                        if (err) throw reject(err);
+                        resolve(data)
+                    })
+                });
+
+                const csvDataArray = XLSX.utils.json_to_sheet(readCsv);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Sheet1');
+
+                zip.addFile(
+                    file.name.replace(/\.csv$/, '.xlsx'),
+                    XLSX.write(workbook, { type: "buffer", bookType: "xlsb" })
+                );
+            }
+        };
         const zipBuffer = zip.toBuffer();
 
         if (dto.salvar_arquivo) {
