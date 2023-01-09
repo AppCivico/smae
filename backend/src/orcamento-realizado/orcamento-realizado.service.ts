@@ -49,8 +49,8 @@ export class OrcamentoRealizadoService {
             const now = new Date(Date.now());
             let mes_utilizado: number;
 
-            const soma_valor_empenho = dto.itens.reduce((acc, item) => acc + item.valor_empenho, 0);
-            const soma_valor_liquidado = dto.itens.reduce((acc, item) => acc + item.valor_liquidado, 0);
+            const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+            const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
 
             if (nota_empenho) {
                 mes_utilizado = await this.atualizaNotaEmpenho(prismaTxn, dto, dotacao, processo, nota_empenho, soma_valor_empenho, soma_valor_liquidado);
@@ -126,8 +126,8 @@ export class OrcamentoRealizadoService {
 
             const now = new Date(Date.now());
 
-            const nova_soma_valor_empenho = dto.itens.reduce((acc, item) => acc + item.valor_empenho, 0);
-            const nova_soma_valor_liquidado = dto.itens.reduce((acc, item) => acc + item.valor_liquidado, 0);
+            const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+            const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
 
             const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
             if (orcRealizado.nota_empenho) {
@@ -226,7 +226,7 @@ export class OrcamentoRealizadoService {
 
         const novaSomaEmpenho = dotacaoTx.smae_soma_valor_empenho + soma_valor_empenho - soma_valor_empenho_desconto;
         const novaSomaLiquido = dotacaoTx.smae_soma_valor_liquidado + soma_valor_liquidado - soma_valor_liquidado_desconto;
-        console.log({novaSomaEmpenho, novaSomaLiquido});
+        console.log({ novaSomaEmpenho, novaSomaLiquido });
 
 
         if (this.liberarValoresMaioresQueSof == false &&
