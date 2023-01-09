@@ -1,21 +1,21 @@
 import { IntersectionType, OmitType } from "@nestjs/swagger"
-import { Type } from "class-transformer"
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional } from "class-validator"
+import { Transform, Type } from "class-transformer"
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional } from "class-validator"
 import { FiltroMetasIniAtividadeDto } from "../../relatorios/dto/filtros.dto"
 
 export class RelMonitoramentoMensalParams {
     /** ano do ciclo
      * @example ""
     */
-    @IsOptional()
-    @Type(() => Number)
+    @IsInt()
+    @Transform(({ value }: any) => +value)
     ano: number
 
     /** mes do ciclo
     * @example ""
    */
-    @IsNumber()
-    @Type(() => Number)
+    @IsInt()
+    @Transform(({ value }: any) => +value)
     mes: number
 
     /**
