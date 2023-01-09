@@ -44,22 +44,13 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
     ano_referencia: number;
 
     /**
-    * Custeio previsto
+    * Custo previsto
     * @example "2341242423.34"
     */
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custeio até duas casas decimais' })
-    @Min(0, { message: '$property| Custeio precisa ser positivo' })
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+    @Min(0, { message: '$property| Custo precisa ser positivo' })
     @Type(() => Number)
-    custeio_previsto: number;
-
-    /**
-    * Investimento previsto
-    * @example "42343.34"
-    */
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Investimento até duas casas decimais' })
-    @Min(0, { message: '$property| Investimento precisa ser positivo' })
-    @Type(() => Number)
-    investimento_previsto: number;
+    custo_previsto: number;
 
 }
 

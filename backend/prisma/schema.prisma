@@ -1770,8 +1770,8 @@ model MetaOrcamento {
     removido_em  DateTime?
     removido_por Int?
 
-    custeio_previsto      Float  @db.DoublePrecision
-    investimento_previsto Float  @db.DoublePrecision
+    custo_previsto      Float  @db.DoublePrecision
+
     parte_dotacao         String @default("")
 
     meta        Meta        @relation(fields: [meta_id], references: [id])

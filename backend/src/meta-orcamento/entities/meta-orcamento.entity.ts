@@ -11,8 +11,7 @@ export class MetaOrcamento {
     atividade: IdCodTituloDto | null
     iniciativa: IdCodTituloDto | null
 
-    custeio_previsto: string;
-    investimento_previsto: string;
+    custo_previsto: string;
     parte_dotacao: string;
 
     // best effort pra buscar o projeto/atividade a partir da parte da dotacao

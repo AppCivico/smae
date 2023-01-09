@@ -44,8 +44,7 @@ export class MetaOrcamentoService {
                     atividade_id,
                     ano_referencia: dto.ano_referencia,
 
-                    custeio_previsto: dto.custeio_previsto,
-                    investimento_previsto: dto.investimento_previsto,
+                    custo_previsto: dto.custo_previsto,
                     parte_dotacao: dto.parte_dotacao,
 
                 },
@@ -77,8 +76,7 @@ export class MetaOrcamentoService {
                 iniciativa: { select: { id: true, codigo: true, titulo: true } },
                 criado_em: true,
                 ano_referencia: true,
-                custeio_previsto: true,
-                investimento_previsto: true,
+                custo_previsto: true,
                 parte_dotacao: true,
                 atualizado_em: true
             },
@@ -91,8 +89,7 @@ export class MetaOrcamentoService {
         let list = metaOrcamentos.map((r) => {
             return {
                 ...r,
-                custeio_previsto: r.custeio_previsto.toFixed(2),
-                investimento_previsto: r.investimento_previsto.toFixed(2),
+                custo_previsto: r.custo_previsto.toFixed(2),
                 projeto_atividade: '',
                 parte_dotacao: this.expandirParteDotacao(r.parte_dotacao)
             }
@@ -148,8 +145,7 @@ export class MetaOrcamentoService {
                     atualizado_em: now,
                     atualizado_por: user.id,
 
-                    custeio_previsto: dto.custeio_previsto,
-                    investimento_previsto: dto.investimento_previsto,
+                    custo_previsto: dto.custo_previsto,
                     parte_dotacao: dto.parte_dotacao,
 
                 }
