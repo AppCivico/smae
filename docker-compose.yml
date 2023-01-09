@@ -104,6 +104,7 @@ services:
     image: minio/minio:RELEASE.2022-08-26T19-53-15Z
     hostname: minio
     command: server --console-address ":9001" /data1
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
       MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
