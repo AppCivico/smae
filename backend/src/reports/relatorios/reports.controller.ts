@@ -102,7 +102,7 @@ export class ReportsController {
         res.set({
             'Content-Type': contentType,
             'Content-Disposition': 'attachment; filename="' + filename.replace(/"/g, '-') + '"',
-            'X-File-Name': filename.replace(/"/g, '-')
+            'Access-Control-Expose-Headers': 'content-disposition',
         });
         res.write(zipBuffer);
         res.send()
