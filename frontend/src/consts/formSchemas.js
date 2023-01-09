@@ -1,5 +1,7 @@
+import {
+  array, boolean, number, object, string,
+} from 'yup';
 import regEx from '@/consts/patterns';
-import { array, boolean, number, object, string } from 'yup';
 
 const relatórioMensal = object({
   fonte: string().required(),
@@ -11,7 +13,7 @@ const relatórioMensal = object({
     tags: array().nullable(),
     paineis: array().nullable(),
     tipo: string().required('Escolha o tipo'),
-  })
+  }),
 });
 
 const relatórioOrçamentário = object({
@@ -22,7 +24,7 @@ const relatórioOrçamentário = object({
     inicio: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
     fim: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
     tipo: string().required('Escolha o tipo'),
-  })
+  }),
 });
 
 const relatórioSemestralOuAnual = object({
@@ -34,12 +36,12 @@ const relatórioSemestralOuAnual = object({
     semestre: string()
       .when('periodo', {
         is: 'Semestral',
-        then: (schema) => schema.required('Escolha o semestre')
+        then: (schema) => schema.required('Escolha o semestre'),
       })
       .matches(regEx['^(:?Primeiro|Segundo)$'], 'Valor inválido'),
     periodo: string().required('Escolha o período').matches(regEx['^(:?Anual|Semestral)$'], 'Valor inválido'),
     tipo: string().required('Escolha o tipo'),
-  })
+  }),
 });
 
 export { relatórioMensal, relatórioOrçamentário, relatórioSemestralOuAnual };
