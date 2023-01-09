@@ -113,13 +113,13 @@ async function onSubmit(values) {
             if(x.orgao_id && !x.participantes.length) er.push('Selecione pelo menos um responsável para o órgão.');
             return x.orgao_id;
         });
-        
+
 
         values.coordenadores_cp = coordenadores_cp.value.participantes;
         if(!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
 
         if(m_tags.value.participantes.length)values.tags = m_tags.value.participantes;
-        
+
         if(!values.pdm_id)values.pdm_id = activePdm.value.id;
 
         if(activePdm.value.possui_macro_tema&&!values.macro_tema_id) er.push(`Selecione um(a) ${activePdm.value.rotulo_macro_tema}.`);
@@ -270,12 +270,12 @@ function filterResponsible(orgao_id) {
                             <AutocompleteField :controlador="item" :grupo="filterResponsible(item.orgao_id)" label="nome_exibicao" />
                         </div>
                         <div style="flex-basis: 30px;">
-                            <a v-if="index" @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
+                            <a v-if="index" @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
                         </div>
                     </div>
                 </template>
                 <a @click="addOrgao(orgaos_participantes,true)" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar orgão responsável</span></a>
-                
+
                 <hr class="mt2 mb2"/>
 
                 <label class="label">Órgãos participantes</label>
@@ -295,15 +295,15 @@ function filterResponsible(orgao_id) {
                             <AutocompleteField :controlador="item" :grupo="filterResponsible(item.orgao_id)" label="nome_exibicao" />
                         </div>
                         <div style="flex-basis: 30px;">
-                            <a @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>        
+                            <a @click="removeOrgao(orgaos_participantes,index)" class="addlink mt1"><svg width="20" height="20"><use xlink:href="#i_remove"></use></svg></a>
                         </div>
                     </div>
                 </template>
                 <a @click="addOrgao(orgaos_participantes,false)" class="addlink"><svg width="20" height="20"><use xlink:href="#i_+"></use></svg> <span>Adicionar orgão participante</span></a>
-                
+
                 <hr class="mt2 mb2"/>
 
-                <label class="label">Responsável(eis) na coordenadoria de planejamento* <span class="tvermelho">*</span></label>
+                <label class="label">Responsável(eis) na coordenadoria de planejamento <span class="tvermelho">*</span></label>
                 <div class="flex">
                     <div class="f1" v-if="usersCoord.length">
                         <AutocompleteField :controlador="coordenadores_cp" :grupo="usersCoord" label="nome_completo" />
@@ -317,7 +317,7 @@ function filterResponsible(orgao_id) {
                 </div>
             </Form>
         </template>
-        
+
         <template v-if="singleMeta?.loading||!oktogo">
             <span class="spinner">Carregando</span>
         </template>
