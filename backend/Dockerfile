@@ -13,7 +13,7 @@ COPY --chown=1000:1000 prisma ./prisma/
 
 RUN npx prisma generate
 
-COPY --chown=1000:1000 ./* .
+COPY --chown=1000:1000 ./* ./
 
 RUN npm run build
 
