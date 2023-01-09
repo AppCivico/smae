@@ -572,7 +572,7 @@ export class PdmService {
                 coalesce(planejado_disponivel, false) as planejado_disponivel,
                 coalesce(execucao_disponivel, false) as execucao_disponivel,
                 oc.id as id
-            FROM generate_series(${pdm.data_inicio}, ${pdm.data_fim} - '1 year'::interval, '1 year'::interval) x
+            FROM generate_series(${pdm.data_inicio}, ${pdm.data_fim}, '1 year'::interval) x
             LEFT JOIN meta_orcamento_config oc ON oc.pdm_id = ${pdm_id}::int AND oc.ano_referencia = extract('year' from x.x)
         `;
 
