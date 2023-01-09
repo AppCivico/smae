@@ -9,11 +9,11 @@ COPY --chown=1000:1000 package-lock.json ./
 
 RUN npm install
 
-COPY prisma ./prisma/
+COPY prisma/schema.prisma ./prisma/
 
 RUN npx prisma generate
 
-COPY ./* ./
+COPY . .
 
 RUN npm run build
 
