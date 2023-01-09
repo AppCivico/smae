@@ -290,24 +290,26 @@ export class MetaService {
                 // Caso os orgaos_participantes estejam atrelados a Iniciativa ou Atividade
                 // Não podem ser excluidos
                 const orgaos_to_be_kept = await this.checkHasOrgaosParticipantesChildren(meta.id, op);
-                for (const orgao of orgaos_to_be_kept) {
-                    const orgao_idx = op.findIndex(i => i.orgao_id === orgao);
-                    op.splice(orgao_idx);
-                }
 
-                await prisma.metaOrgao.deleteMany({ where: { meta_id: id } });
+                await prisma.metaOrgao.deleteMany({
+                    where: {
+                        meta_id: id,
+                        orgao_id: { notIn: orgaos_to_be_kept }
+                    }
+                });
                 await prisma.metaOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(meta.id, op),
                 });
 
                 if (cp) {
                     const responsaveis_to_be_kept = await this.checkHasResponsaveisChildren(meta.id, cp);
-                    for (const resp of responsaveis_to_be_kept) {
-                        const resp_idx = cp.indexOf(resp);
-                        cp.splice(resp_idx);
-                    }
 
-                    await prisma.metaResponsavel.deleteMany({ where: { meta_id: id } });
+                    await prisma.metaResponsavel.deleteMany({
+                        where: {
+                            meta_id: id,
+                            pessoa_id: { notIn: responsaveis_to_be_kept }
+                        }
+                    });
                     await prisma.metaResponsavel.createMany({
                         data: await this.buildMetaResponsaveis(meta.id, op, cp),
                     });
