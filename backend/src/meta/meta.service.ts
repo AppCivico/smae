@@ -301,6 +301,12 @@ export class MetaService {
                 });
 
                 if (cp) {
+                    const responsaveis_to_be_kept = await this.checkHasResponsaveisChildren(meta.id, cp);
+                    for (const resp of responsaveis_to_be_kept) {
+                        const resp_idx = cp.indexOf(resp);
+                        cp.splice(resp_idx);
+                    }
+
                     await prisma.metaResponsavel.deleteMany({ where: { meta_id: id } });
                     await prisma.metaResponsavel.createMany({
                         data: await this.buildMetaResponsaveis(meta.id, op, cp),
@@ -351,6 +357,37 @@ export class MetaService {
         }
 
         return orgaos_in_use;
+    }
+
+    private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]): Promise<number[]> {
+        const responsaveis_in_use: number[] = [];
+
+        for (const resp of coordenadores_cp) {
+            const children_with_cr = await this.prisma.iniciativa.count({
+                where: {
+                    meta_id: meta_id,
+                    iniciativa_responsavel: {
+                        some: {
+                            pessoa_id: resp
+                        }
+                    },
+                    atividade: {
+                        some: {
+                            atividade_responsavel: {
+                                some: {
+                                    pessoa_id: resp
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (children_with_cr > 0)
+                responsaveis_in_use.push(resp);
+        }
+
+        return responsaveis_in_use;
     }
 
     async remove(id: number, user: PessoaFromJwt) {
