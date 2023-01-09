@@ -13,15 +13,18 @@ const props = defineProps(["activate"]);
 const authStore = useAuthStore();
 const { user, permissions, temPermissãoPara } = storeToRefs(authStore);
 const perm = permissions.value;
+const route = useRoute();
+const primeiroSegmento = route.matched?.[0]?.path;
 
 const menuFiltrado = router.options.routes
-  .filter(x => x.meta?.presenteNoMenu)
-  .filter(x => !x.restringirÀsPermissões || temPermissãoPara(x.restringirÀsPermissões));
+  .filter((x) => x.meta?.presenteNoMenu
+    && (!x.restringirÀsPermissões || temPermissãoPara(x.restringirÀsPermissões)));
 
 authStore.getDados();
 </script>
 
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <nav
     v-if="user"
     id="menu"
@@ -107,8 +110,8 @@ authStore.getDados();
         v-for="item, k in menuFiltrado"
         :key="k"
         :to="item.path"
+        :class="{ active: item.path === primeiroSegmento }"
         @click="toggleMenu"
-        :class="{ active: props.activate == item.meta?.menuSecundário }"
       >
         <span>{{ item.meta?.títuloParaMenu || item.meta?.título || item.name }}</span>
         <span class="menu__envelope-svg" v-if="item.meta?.íconeParaMenu" v-html="item.meta.íconeParaMenu" />
