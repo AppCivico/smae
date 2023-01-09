@@ -49,8 +49,7 @@ async function bootstrap() {
         transports: [
             new winston.transports.Console({
                 json: true,
-            }),
-            new winston.transports
+            })
         ],
         meta: true,
         msg: "HTTP_DEBUG {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}",
