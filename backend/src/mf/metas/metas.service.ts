@@ -8,7 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelService } from '../../variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfFasesPermissoesDto, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfFasesPermissoesDto, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfAvancarFasesDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
@@ -300,7 +300,8 @@ export class MetasService {
                 codigo: indicadorMeta.meta.codigo,
                 ciclo_fase: cicloFase
             },
-            permissoes: this.calculaPermissoesFase(cicloFase as CicloFase, config.perfil)
+            permissoes: this.calculaPermissoesFase(cicloFase as CicloFase, config.perfil),
+            avancarFases: this.avancarFases(cicloFase as CicloFase, config.perfil),
         };
         delete (indicadorMeta as any).meta;
 
@@ -384,7 +385,23 @@ export class MetasService {
             fechamento: false,
             risco: false
         }
+    }
 
+    private avancarFases(
+        cicloFase: CicloFase, perfil: string
+    ): MfAvancarFasesDto {
+
+        if (perfil == 'tecnico_cp' || perfil == 'admin_cp') {
+            const map: Record<CicloFase, MfAvancarFasesDto> = {
+                'Coleta': ['Analise', 'Risco', 'Fechamento'],
+                'Analise': ['Risco', 'Fechamento'],
+                'Risco': ['Fechamento'],
+                'Fechamento': []
+            };
+            if (map[cicloFase]) return map[cicloFase];
+        }
+
+        return []
     }
 
     private async buscaMetaIndicadores(meta_id: number): Promise<DadosMetaIndicadores[]> {

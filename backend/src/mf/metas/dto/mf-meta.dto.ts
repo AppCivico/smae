@@ -148,6 +148,8 @@ export class MfFasesPermissoesDto {
     analiseQualitativa: boolean
 }
 
+export type MfAvancarFasesDto = CicloFase[];
+
 export class RetornoMetaVariaveisDto {
     perfil: string
 
@@ -166,6 +168,7 @@ export class RetornoMetaVariaveisDto {
     }
 
     permissoes: MfFasesPermissoesDto
+    avancarFases: MfAvancarFasesDto
 
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro das series
