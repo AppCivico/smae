@@ -16,9 +16,7 @@ function maskFloat(el) {
   el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
   if (el.target?._vei?.onChange) el.target?._vei?.onChange(el);
 }
-function dinheiro(v) {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
-}
+
 function removeItem(g, i) {
   g = g.splice(i, 1);
 }
