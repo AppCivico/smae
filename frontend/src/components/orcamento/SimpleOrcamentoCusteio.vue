@@ -76,16 +76,10 @@ function agrupaFilhos(array) {
       >
         <thead>
           <tr>
-            <th style="width: 50%">
-              Previsão de Custo total
+            <th>
+              Custo total
             </th>
-            <th style="width: 25%">
-              Investimento total
-            </th>
-            <th style="width: 25%">
-              Custeio total
-            </th>
-            <th style="width: 25%">
+            <th>
               Atualização mais recente
             </th>
             <th style="width: 50px" />
@@ -93,11 +87,7 @@ function agrupaFilhos(array) {
         </thead>
         <tbody>
           <tr>
-            <td class="w700">
-              {{ formataValor(somaItems(OrcamentoCusteio[ano], 'custeio_previsto') + somaItems(OrcamentoCusteio[ano], 'investimento_previsto')) }}
-            </td>
-            <td>{{ formataValor(somaItems(OrcamentoCusteio[ano], 'investimento_previsto')) }}</td>
-            <td>{{ formataValor(somaItems(OrcamentoCusteio[ano], 'custeio_previsto')) }}</td>
+            <td>{{ formataValor(somaItems(OrcamentoCusteio[ano], 'custo_previsto')) }}</td>
             <td>{{ dateToField(maiorData(OrcamentoCusteio[ano], 'atualizado_em')) }}</td>
           </tr>
         </tbody>
@@ -112,10 +102,7 @@ function agrupaFilhos(array) {
               Parte da dotação
             </th>
             <th style="width: 25%">
-              Previsão investimento
-            </th>
-            <th style="width: 25%">
-              Previsão de custeio
+              Previsão de custo
             </th>
             <th style="width: 25%">
               Atualizado em
@@ -132,17 +119,17 @@ function agrupaFilhos(array) {
             />
           </tbody>
 
-          <template v-for="(g, k) in groups.filhos">
+          <template
+            v-for="(g, k) in groups.filhos"
+            :key="k"
+          >
             <tbody>
               <tr>
                 <td class="tc600 w700 pl1">
                   {{ g.label }}
                 </td>
                 <td class="w700">
-                  {{ g.items.length ? formataValor(g.items.reduce((red, x) => red + Number(x.investimento_previsto), 0)) : '-' }}
-                </td>
-                <td class="w700">
-                  {{ g.items.length ? formataValor(g.items.reduce((red, x) => red + Number(x.custeio_previsto), 0)) : '-' }}
+                  {{ g.items.length ? formataValor(g.items.reduce((red, x) => red + Number(x.custo_previsto), 0)) : '-' }}
                 </td>
                 <td />
               </tr>
@@ -152,18 +139,19 @@ function agrupaFilhos(array) {
                 :parentlink="parentlink"
               />
             </tbody>
-            <template v-for="(gg, kk) in g.filhos">
+            <template
+              v-for="(gg, kk) in g.filhos"
+              :key="kk"
+            >
               <tbody>
                 <tr>
                   <td class="tc600 w700 pl2">
                     {{ gg.label }}
                   </td>
                   <td class="w700">
-                    {{ gg.items.length ? formataValor(gg.items.reduce((red, x) => red + Number(x.investimento_previsto), 0)) : '-' }}
+                    {{ gg.items.length ? formataValor(gg.items.reduce((red, x) => red + Number(x.custo_previsto), 0)) : '-' }}
                   </td>
-                  <td class="w700">
-                    {{ gg.items.length ? formataValor(gg.items.reduce((red, x) => red + Number(x.custeio_previsto), 0)) : '-' }}
-                  </td>
+
                   <td />
                 </tr>
                 <LinhaCusteio
