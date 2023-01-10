@@ -246,12 +246,12 @@ export const router = createRouter({
 
         {
           path: ':meta_id/orcamento',
-          redirect: (to) => `${to.path}/custeio`,
+          redirect: (to) => `${to.path}/custo`,
         },
 
-        { path: ':meta_id/orcamento/custeio', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Custeio', title: 'Previsão de Custo' } },
-        { path: ':meta_id/orcamento/custeio/:ano', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
-        { path: ':meta_id/orcamento/custeio/:ano/:id', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
+        { path: ':meta_id/orcamento/custo', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Custo', title: 'Previsão de Custo' } },
+        { path: ':meta_id/orcamento/custo/:ano', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
+        { path: ':meta_id/orcamento/custo/:ano/:id', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
         { path: ':meta_id/orcamento/planejado', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Planejado', title: 'Orçamento Planejado' } },
         { path: ':meta_id/orcamento/planejado/:ano', component: AddEditPlanejado, props: { submenu: SubmenuMetas } },
         { path: ':meta_id/orcamento/planejado/:ano/:id', component: AddEditPlanejado, props: { submenu: SubmenuMetas } },
