@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { requestS } from '@/helpers';
 import toFloat from '@/helpers/toFloat';
 import { defineStore } from 'pinia';
@@ -160,10 +161,27 @@ export const useOrcamentosStore = defineStore({
       };
     },
 
+    maioresDosItens() {
+      const { itens = [] } = this.orcamentoEmFoco || {};
+
+      const itensComNúmeros = itens.map((x) => ({
+        ...x,
+        valor_empenho: toFloat(x.valor_empenho),
+        valor_liquidado: toFloat(x.valor_liquidado),
+      }));
+
+      return {
+        empenho: itensComNúmeros
+          .sort((a, b) => b.valor_empenho - a.valor_empenho)?.[0]?.valor_empenho || 0,
+        liquidacao: itensComNúmeros
+          .sort((a, b) => b.valor_liquidado - a.valor_liquidado)?.[0]?.valor_liquidado || 0,
+      };
+    },
+
     totaisQueSuperamSOF() {
-      const { orcamentoEmFoco = {}, totaisDosItens = {} } = this;
+      const { orcamentoEmFoco = {}, maioresDosItens = {} } = this;
       const { empenho_liquido = '0', valor_liquidado = '0' } = orcamentoEmFoco;
-      const { empenho = 0, liquidacao = 0 } = totaisDosItens;
+      const { empenho = 0, liquidacao = 0 } = maioresDosItens;
 
       const resp = [];
 
