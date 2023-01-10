@@ -18,7 +18,7 @@ const props = defineProps(['group', 'permissao', 'parentlink']);
     <td style="white-space: nowrap; text-align: right">
       <router-link
         v-if="permissao"
-        :to="`${parentlink}/orcamento/custeio/${item.ano_referencia}/${item.id}`"
+        :to="`${parentlink}/orcamento/custo/${item.ano_referencia}/${item.id}`"
         class="tprimary"
       >
         <svg

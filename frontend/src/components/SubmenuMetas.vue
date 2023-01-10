@@ -92,7 +92,7 @@ switch (groupBy) {
       <div class="links-container mb2">
         <router-link
           v-if="!iniciativa_id"
-          :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/orcamento/custeio`"
+          :to="`/metas/${meta_id}${ iniciativa_id?'/iniciativas/'+iniciativa_id:'' }${ atividade_id?'/atividades/'+atividade_id:'' }/orcamento/custo`"
         >
           Previsão de custo
         </router-link>

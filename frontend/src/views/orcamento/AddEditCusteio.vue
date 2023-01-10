@@ -121,10 +121,10 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/orcamento/custeio`);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/orcamento/custo`);
 }
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoCusteio(id)) router.push(`${parentlink}/orcamento/custeio`); }, 'Remover');
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoCusteio(id)) router.push(`${parentlink}/orcamento/custo`); }, 'Remover');
 }
 function maskFloat(el) {
   el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
@@ -491,7 +491,7 @@ function montaDotacao(a) {
         <hr class="mt2 mb2">
         <div class="flex g2 mb2">
           <div class="f1">
-            <label class="label">Previsão de custeio <span class="tvermelho">*</span></label>
+            <label class="label">Previsão de custo <span class="tvermelho">*</span></label>
             <Field
               name="custo_previsto"
               type="text"

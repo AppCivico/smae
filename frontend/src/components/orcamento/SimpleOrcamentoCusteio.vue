@@ -167,7 +167,7 @@ function agrupaFilhos(array) {
       <div class="tc">
         <router-link
           v-if="config.previsao_custo_disponivel"
-          :to="`${parentlink}/orcamento/custeio/${ano}`"
+          :to="`${parentlink}/orcamento/custo/${ano}`"
           class="addlink mt1 mb1"
         >
           <svg
