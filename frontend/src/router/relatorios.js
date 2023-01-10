@@ -27,6 +27,10 @@ export default {
 
   children: [
     {
+      path: '',
+      redirect: '/relatorios/mensal',
+    },
+    {
       path: 'mensal',
       meta: {
         presenteNoMenu: true,
