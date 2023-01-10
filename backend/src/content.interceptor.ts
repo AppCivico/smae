@@ -52,7 +52,7 @@ export class ContentInterceptor implements NestInterceptor {
                             const workbook = XLSX.utils.book_new();
                             XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Sheet1');
 
-                            res.write(XLSX.write(workbook, { type: "buffer", bookType: "xlsb" }))
+                            res.write(XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }))
                             data = null;
                         }
                         break;

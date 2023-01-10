@@ -81,7 +81,7 @@ export class ReportsController {
 
                 zip.addFile(
                     file.name.replace(/\.csv$/, '.xlsx'),
-                    XLSX.write(workbook, { type: "buffer", bookType: "xlsb", numbers: XLSX_ZAHL_PAYLOAD, compression: true })
+                    XLSX.write(workbook, { type: "buffer", bookType: "xlsx", numbers: XLSX_ZAHL_PAYLOAD, compression: true })
                 );
             }
         };
