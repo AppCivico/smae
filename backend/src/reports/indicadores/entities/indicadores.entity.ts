@@ -21,12 +21,12 @@ export class RelIndicadoresDto {
     valor: string | null
 }
 
-export class IndRelRegioes {
-    linhas: RelIndicadoresDto[]
-    regiao: Regiao
+export class RelIndicadoresVariaveisDto extends RelIndicadoresDto {
+    variavel?: IdCodTituloDto | null
+    regiao?: Regiao
 }
 
 export class ListIndicadoresDto {
     linhas: RelIndicadoresDto[]
-    regioes: IndRelRegioes[]
+    regioes: RelIndicadoresVariaveisDto[]
 }
