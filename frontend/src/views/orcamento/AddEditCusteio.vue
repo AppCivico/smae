@@ -1,5 +1,8 @@
 <script setup>
 import { Dashboard } from '@/components';
+import { custeio as schema } from '@/consts/formSchemas';
+import dinheiro from '@/helpers/dinheiro';
+import toFloat from '@/helpers/toFloat';
 import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore
@@ -8,7 +11,6 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -50,8 +52,7 @@ const caret = ref(0);
   await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
 
   OrcamentoCusteio.value[ano].map((x) => {
-    x.custeio_previsto = dinheiro(x.custeio_previsto);
-    x.investimento_previsto = dinheiro(x.investimento_previsto);
+    x.custo_previsto = dinheiro(x.custo_previsto);
   });
 
   if (id) {
@@ -76,13 +77,6 @@ const caret = ref(0);
   }
 })();
 
-const regdota = /^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.[0-9*]{4}((?:\.\d\.\d{3})(\.[0-9*]{8}(\.\d{2})?)?)?)?)?)?)?)?$/;
-const schema = Yup.object().shape({
-  custeio_previsto: Yup.string().required('Preencha o custeio.'),
-  investimento_previsto: Yup.string().required('Preencha o investimento.'),
-  parte_dotacao: Yup.string().required('Preencha a dotação.').matches(regdota, 'Formato inválido'),
-});
-
 async function onSubmit(values) {
   try {
     let msg;
@@ -90,8 +84,10 @@ async function onSubmit(values) {
 
     values.meta_id = meta_id;
     values.ano_referencia = ano;
-    if (isNaN(values.custeio_previsto)) values.custeio_previsto = values.custeio_previsto.replace(/\./g, '').replace(',', '.');
-    if (isNaN(values.investimento_previsto)) values.investimento_previsto = values.investimento_previsto.replace(/\./g, '').replace(',', '.');
+
+    if (typeof values.custo_previsto !== 'number') {
+      values.custo_previsto = toFloat(values.custo_previsto);
+    }
 
     values.parte_dotacao = values.parte_dotacao.split('.').map((x) => (x.indexOf('*') != -1 ? '*' : x)).join('.');
 
@@ -133,12 +129,6 @@ async function checkDelete(id) {
 function maskFloat(el) {
   el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
   el.target?._vei?.onChange(el);
-}
-function dinheiro(v) {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
-}
-function toFloat(v) {
-  return isNaN(v) || String(v).indexOf(',') !== -1 ? Number(String(v).replace(/[^0-9\,]/g, '').replace(',', '.')) : Math.round(Number(v) * 100) / 100;
 }
 function maskDotacao(el) {
   // caret.value = el.target.selectionStart;
@@ -434,7 +424,7 @@ function montaDotacao(a) {
 
         <hr class="mt2 mb2">
         <div>
-          <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
+          <label class="label">Vincular dotação <span class="tvermelho">*</span></label>
 
           <div
             v-for="m in singleMeta.children"
@@ -501,29 +491,19 @@ function montaDotacao(a) {
         <hr class="mt2 mb2">
         <div class="flex g2 mb2">
           <div class="f1">
-            <label class="label">Previsão de investimento<span class="tvermelho">*</span></label>
-            <Field
-              name="investimento_previsto"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.investimento_previsto }"
-              @keyup="maskFloat"
-            />
-            <div class="error-msg">
-              {{ errors.investimento_previsto }}
-            </div>
-          </div>
-          <div class="f1">
             <label class="label">Previsão de custeio <span class="tvermelho">*</span></label>
             <Field
-              name="custeio_previsto"
+              name="custo_previsto"
               type="text"
               class="inputtext light mb1"
-              :class="{ 'error': errors.custeio_previsto }"
+              :class="{ 'error': errors.custo_previsto }"
               @keyup="maskFloat"
             />
-            <div class="error-msg">
-              {{ errors.custeio_previsto }}
+            <div
+              v-show="errors.custo_previsto"
+              class="error-msg"
+            >
+              {{ errors.custo_previsto }}
             </div>
           </div>
         </div>
