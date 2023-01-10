@@ -118,30 +118,38 @@ function vazio(s) {
         <h2>Meta {{ SingleMeta.codigo }} - {{ SingleMeta.titulo }}</h2>
         <hr class="ml2 f1">
         <div
-          v-if="(perm.PDM?.admin_cp ||
-            perm.PDM?.tecnico_cp) && !['Fechamento'].includes(SingleMeta.fase) &&
-            ['Coleta','Analise','Risco'].includes(SingleMeta.fase)"
+          v-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp)
+            && Array.isArray(MetaVars.avancarFases) && MetaVars.avancarFases?.length"
           class="ml2 dropbtn"
         >
           <span class="btn">Avançar etapa</span>
           <ul>
-            <li v-if="['Coleta'].includes(SingleMeta.fase)">
-              <a
-                to="/metas/tags/novo"
+            <li v-if="MetaVars.avancarFases.includes('Analise')">
+              <button
+                type="button"
+                class="like-a__link"
                 @click="confirmFase(SingleMeta.id,'Analise')"
-              >Qualificação</a>
+              >
+                Qualificação
+              </button>
             </li>
-            <li v-if="['Coleta','Analise'].includes(SingleMeta.fase)">
-              <a
-                to="/metas/tags/novo"
+            <li v-if="MetaVars.avancarFases.includes('Risco')">
+              <button
+                type="button"
+                class="like-a__link"
                 @click="confirmFase(SingleMeta.id,'Risco')"
-              >Análise de Risco</a>
+              >
+                Análise de Risco
+              </button>
             </li>
-            <li v-if="['Coleta','Analise','Risco'].includes(SingleMeta.fase)">
-              <a
-                to="/metas/tags/novo"
+            <li v-if="MetaVars.avancarFases.includes('Fechamento')">
+              <button
+                type="button"
+                class="like-a__link"
                 @click="confirmFase(SingleMeta.id,'Fechamento')"
-              >Fechamento</a>
+              >
+                Fechamento
+              </button>
             </li>
           </ul>
         </div>
