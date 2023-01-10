@@ -1,7 +1,12 @@
-import {
-  array, boolean, number, object, string,
-} from 'yup';
 import regEx from '@/consts/patterns';
+import {
+  array, boolean, number, object, string
+} from 'yup';
+
+const custeio = object().shape({
+  custo_previsto: string().required('Preencha o investimento.'),
+  parte_dotacao: string().required('Preencha a dotação.').matches(regEx.dotação, 'Formato inválido'),
+});
 
 const relatórioMensal = object({
   fonte: string().required(),
@@ -44,4 +49,6 @@ const relatórioSemestralOuAnual = object({
   }),
 });
 
-export { relatórioMensal, relatórioOrçamentário, relatórioSemestralOuAnual };
+export {
+  custeio, relatórioMensal, relatórioOrçamentário, relatórioSemestralOuAnual,
+};
