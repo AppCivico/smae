@@ -1,7 +1,10 @@
 <script setup>
-import toFloat from '@/helpers/toFloat';
+import dinheiro from '@/helpers/dinheiro';
+import { useOrcamentosStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 import { onMounted, onUpdated, ref } from 'vue';
 
+const { totaisQueSuperamSOF, maioresDosItens } = storeToRefs(useOrcamentosStore());
 const props = defineProps(['controlador', 'respostasof']);
 const itens = ref(props.controlador);
 
@@ -26,7 +29,6 @@ function addItem(g) {
 function attVar(g, i, n) {
   g[i][n] = event.target.value;
 }
-
 </script>
 <template>
   <hr class="mt2 mb2">
@@ -42,6 +44,7 @@ function attVar(g, i, n) {
     </div>
     <div style="flex-basis: 30px;" />
   </div>
+
   <div
     v-for="(item, i) in itens"
     :key="i"
@@ -91,34 +94,33 @@ function attVar(g, i, n) {
       @click="addItem(itens)"
     >Adicionar novo empenho/liquidação</a>
   </div>
+
   <div class="flex g2 mb2">
     <div class="f1" />
+
     <div class="f1">
       <div
         v-if="respostasof.smae_soma_valor_empenho != undefined"
         class="flex center flexwrap"
       >
         <span class="label mb0 tc300 mr1">Total Empenho SMAE</span>
-        {{ (somaitens = itens.reduce((r, x) => r + toFloat(x.valor_empenho), 0)) ? '' : '' }}
-        {{ (somatotal = toFloat(respostasof.smae_soma_valor_empenho) + somaitens) ? '' : '' }}
-        <span class="t14">R$ {{ dinheiro(somatotal) }}</span>
+        <span class="t14">R$ {{ dinheiro(maioresDosItens.empenho) }}</span>
         <span
-          v-if="somatotal > toFloat(respostasof.empenho_liquido)"
+          v-if="totaisQueSuperamSOF.includes('empenho')"
           class="tvermelho w700 block"
         >(valor supera empenho SOF)</span>
       </div>
     </div>
+
     <div class="f1">
       <div
         v-if="respostasof.smae_soma_valor_liquidado != undefined"
         class="flex center flexwrap"
       >
         <span class="label mb0 tc300 mr1">Total liquidação SMAE</span>
-        {{ (somaitens = itens.reduce((r, x) => r + toFloat(x.valor_liquidado), 0)) ? '' : '' }}
-        {{ (somatotal = toFloat(respostasof.smae_soma_valor_liquidado) + somaitens) ? '' : '' }}
-        <span class="t14">R$ {{ dinheiro(somatotal) }}</span>
+        <span class="t14">R$ {{ dinheiro(maioresDosItens.liquidacao) }}</span>
         <span
-          v-if="somatotal > toFloat(respostasof.valor_liquidado)"
+          v-if="totaisQueSuperamSOF.includes('liquidacao')"
           class="tvermelho w700 block"
         >(valor supera liquidação SOF)</span>
       </div>
