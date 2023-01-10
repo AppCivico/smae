@@ -65,11 +65,11 @@ export class ReportsController {
                     })
                 });
 
-                // converte o que se parece com numeros automaticamente
+                // converte o que se parece com números automaticamente
                 for (let i = 0; i < readCsv.length; i++) {
                     const element = readCsv[i];
                     for (const k in element) {
-                        if (/^\d+\.?\d+$/.test(element[k])) {
+                        if (/^\d+(:?\.\d+)?$/.test(element[k])) {
                             element[k] *= 1;
                         }
                     }
