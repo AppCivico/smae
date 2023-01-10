@@ -1,12 +1,14 @@
 import { default as MenuSecundario } from '@/components/MenuSecundario.vue';
 
-import { RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosRaiz, RelatoriosSemestraisOuAnuais, RelatórioCriarOuEditar } from '@/views/relatorios';
+import {
+  RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosRaiz, RelatoriosSemestraisOuAnuais, RelatórioCriarOuEditar
+} from '@/views/relatorios';
 
 export default {
   path: '/relatorios',
   component: RelatoriosRaiz,
   props: {
-    submenu: MenuSecundario
+    submenu: MenuSecundario,
   },
 
   meta: {
@@ -19,7 +21,7 @@ export default {
 `,
     restringirÀsPermissões: [
       'Reports.executar',
-      'Reports.remover'
+      'Reports.remover',
     ],
   },
 
@@ -88,7 +90,7 @@ export default {
             título: 'Novo relatório de orçamentos',
           },
         },
-      ]
+      ],
     },
-  ]
-}
+  ],
+};
