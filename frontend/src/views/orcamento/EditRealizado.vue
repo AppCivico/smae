@@ -30,7 +30,10 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoRealizado, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
+const {
+  OrcamentoRealizado, DotacaoSegmentos, totaisQueSuperamSOF, maioresDosItens,
+} = storeToRefs(OrcamentosStore);
+
 const currentEdit = ref({});
 const dota = ref('');
 const respostasof = ref({});
@@ -80,6 +83,20 @@ const itens = ref([]);
     itens.value = currentEdit.value.itens;
   }
 })();
+
+function beforeSubmit(values) {
+  if (totaisQueSuperamSOF.value.some((x) => ['empenho', 'liquidacao'].includes(x))) {
+    useAlertStore().confirmAction('Valores superioes ao SOF', async () => {
+      try {
+        onSubmit(values);
+      } catch (error) {
+        return false;
+      }
+    }, 'Deseja mesmo salvar?');
+  } else {
+    onSubmit(values);
+  }
+}
 
 async function onSubmit(values) {
   try {
