@@ -164,17 +164,21 @@ export const useOrcamentosStore = defineStore({
     maioresDosItens() {
       const { itens = [] } = this.orcamentoEmFoco || {};
 
-      const itensComNúmeros = itens.map((x) => ({
+      const itensComValoresConvertidosEmNúmeros = itens.map((x) => ({
         ...x,
-        valor_empenho: toFloat(x.valor_empenho),
-        valor_liquidado: toFloat(x.valor_liquidado),
+        valor_empenho: x.valor_empenho !== null && typeof x.valor_empenho !== 'undefined'
+          ? toFloat(x.valor_empenho) : null,
+        valor_liquidado: x.valor_liquidado !== null && typeof x.valor_liquidado !== 'undefined'
+          ? toFloat(x.valor_liquidado) : null,
       }));
 
       return {
-        empenho: itensComNúmeros
-          .sort((a, b) => b.valor_empenho - a.valor_empenho)?.[0]?.valor_empenho || 0,
-        liquidacao: itensComNúmeros
-          .sort((a, b) => b.valor_liquidado - a.valor_liquidado)?.[0]?.valor_liquidado || 0,
+        empenho: itensComValoresConvertidosEmNúmeros
+          .filter((x) => x.valor_empenho !== null)
+          .sort((a, b) => b.mes - a.mes)?.[0]?.valor_empenho || 0,
+        liquidacao: itensComValoresConvertidosEmNúmeros
+          .filter((x) => x.valor_liquidado !== null)
+          .sort((a, b) => b.mes - a.mes)?.[0]?.valor_liquidado || 0,
       };
     },
 
