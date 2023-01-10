@@ -142,6 +142,11 @@ export class IniciativasRetorno {
     variaveis: VariavelComSeries[]
     totais: VariavelQtdeDto
 }
+export class MfFasesPermissoesDto {
+    fechamento: boolean
+    risco: boolean
+    analiseQualitativa: boolean
+}
 
 export class RetornoMetaVariaveisDto {
     perfil: string
@@ -159,6 +164,8 @@ export class RetornoMetaVariaveisDto {
         orgaos_participantes: string[]
         responsaveis_na_cp: string[]
     }
+
+    permissoes: MfFasesPermissoesDto
 
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro das series
