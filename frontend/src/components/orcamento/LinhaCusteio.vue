@@ -13,8 +13,7 @@ const props = defineProps(['group', 'permissao', 'parentlink']);
     <td style="word-break: break-all;">
       {{ item?.parte_dotacao }}
     </td>
-    <td>{{ formataValor(item?.investimento_previsto) }}</td>
-    <td>{{ formataValor(item?.custeio_previsto) }}</td>
+    <td>{{ formataValor(item?.custo_previsto) }}</td>
     <td>{{ dateToField(item?.atualizado_em) }}</td>
     <td style="white-space: nowrap; text-align: right">
       <router-link
