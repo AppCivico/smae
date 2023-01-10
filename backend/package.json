@@ -41,7 +41,7 @@
     "express-winston": "^4.2.0",
     "got": "^11.8.5",
     "json2csv": "^5.0.7",
-    "luxon": "^3.0.4",
+    "luxon": "^3.2.1",
     "minio": "^7.0.32",
     "moment": "^2.29.4",
     "passport": "^0.6.0",
