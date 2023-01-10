@@ -2,15 +2,21 @@
 import dinheiro from '@/helpers/dinheiro';
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { onMounted, onUpdated, ref } from 'vue';
+import {
+  computed, onMounted, onUpdated, ref
+} from 'vue';
+
+import months from '@/consts/months';
 
 const { totaisQueSuperamSOF, maioresDosItens } = storeToRefs(useOrcamentosStore());
 const props = defineProps(['controlador', 'respostasof']);
 const itens = ref(props.controlador);
+const mesesSelecionados = computed(() => itens.value?.map((x) => x.mes) || []);
 
 function start() {
   itens.value = props.controlador;
 }
+
 start();
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
@@ -51,14 +57,25 @@ function attVar(g, i, n) {
     class="flex center g2 mb1"
   >
     <div class="f1">
-      <input
-        v-model="item.mes"
-        type="number"
-        min="1"
-        max="12"
-        step="1"
+      <select
+        v-model.number="item.mes"
         class="inputtext light"
       >
+        <option
+          :value="null"
+          disabled
+        >
+          Selecionar
+        </option>
+        <option
+          v-for="month, k in months"
+          :key="k"
+          :value="k + 1"
+          :disabled="k + 1 != item.mes && mesesSelecionados.includes(k + 1)"
+        >
+          {{ month }}
+        </option>
+      </select>
     </div>
     <div class="f1">
       <input
