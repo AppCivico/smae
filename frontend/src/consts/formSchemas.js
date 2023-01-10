@@ -1,6 +1,6 @@
 import regEx from '@/consts/patterns';
 import {
-  array, boolean, number, object, string
+  array, boolean, number, object, string,
 } from 'yup';
 
 const custeio = object().shape({
