@@ -17,7 +17,7 @@ export * from './paineis.store';
 export * from './paineisGrupos.store';
 export * from './pdm.store';
 export * from './regions.store';
-export * as useRelatoriosStore from './relatorios.store';
+export * from './relatorios.store';
 export * from './resources.store';
 export * from './sideBar.store';
 export * from './subtemas.store';
