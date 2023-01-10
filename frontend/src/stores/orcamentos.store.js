@@ -17,7 +17,6 @@ export const useOrcamentosStore = defineStore({
       this.OrcamentoCusteio = {};
       this.OrcamentoPlanejado = {};
       this.OrcamentoRealizado = {};
-
     },
     async getById(id, ano) {
       this.getOrcamentoCusteioById(id, ano);
@@ -27,7 +26,7 @@ export const useOrcamentosStore = defineStore({
     async getOrcamentoCusteioById(id, ano) {
       try {
         this.OrcamentoCusteio[ano] = { loading: true };
-        let r = await requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoCusteio[ano] = { error };
@@ -36,7 +35,7 @@ export const useOrcamentosStore = defineStore({
     async getOrcamentoPlanejadoById(id, ano) {
       try {
         this.OrcamentoPlanejado[ano] = { loading: true };
-        let r = await requestS.get(`${baseUrl}/orcamento-planejado/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await requestS.get(`${baseUrl}/orcamento-planejado/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoPlanejado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoPlanejado[ano] = { error };
@@ -45,7 +44,7 @@ export const useOrcamentosStore = defineStore({
     async getOrcamentoRealizadoById(id, ano) {
       try {
         this.OrcamentoRealizado[ano] = { loading: true };
-        let r = await requestS.get(`${baseUrl}/orcamento-realizado/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await requestS.get(`${baseUrl}/orcamento-realizado/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoRealizado[ano] = { error };
@@ -65,7 +64,7 @@ export const useOrcamentosStore = defineStore({
       return false;
     },
 
-    //Planejado
+    // Planejado
     async updateOrcamentoPlanejado(id, params) {
       if (await requestS.patch(`${baseUrl}/orcamento-planejado/${id}`, params)) return true;
       return false;
@@ -79,7 +78,7 @@ export const useOrcamentosStore = defineStore({
       return false;
     },
 
-    //Realizado
+    // Realizado
     async updateOrcamentoRealizado(id, params) {
       if (await requestS.patch(`${baseUrl}/orcamento-realizado/${id}`, params)) return true;
       return false;
@@ -98,7 +97,7 @@ export const useOrcamentosStore = defineStore({
       try {
         if (!this.DotacaoSegmentos[ano] || this.DotacaoSegmentos[ano]?.atualizado_em != new Date().toISOString().substring(0, 10)) this.DotacaoSegmentos[ano] = { loading: true };
 
-        let r = await requestS.get(`${baseUrl}/sof-entidade/${ano}`);
+        const r = await requestS.get(`${baseUrl}/sof-entidade/${ano}`);
         if (r.dados) {
           this.DotacaoSegmentos[ano] = r.dados;
           this.DotacaoSegmentos[ano].atualizado_em = r.atualizado_em;
@@ -109,34 +108,34 @@ export const useOrcamentosStore = defineStore({
     },
     async getDotacaoPlanejado(dotacao, ano) {
       try {
-        let r = await requestS.patch(`${baseUrl}/dotacao/valor-planejado`, { dotacao: dotacao, ano: Number(ano) });
+        const r = await requestS.patch(`${baseUrl}/dotacao/valor-planejado`, { dotacao, ano: Number(ano) });
         return r;
       } catch (error) {
-        return { error }
+        return { error };
       }
     },
     async getDotacaoRealizado(dotacao, ano) {
       try {
-        let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado`, { dotacao: dotacao, ano: Number(ano) });
+        const r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado`, { dotacao, ano: Number(ano) });
         return r.linhas.length ? r.linhas[0] : {};
       } catch (error) {
-        return { error }
+        return { error };
       }
     },
     async getDotacaoRealizadoNota(nota_empenho, ano) {
       try {
-        let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`, { nota_empenho: nota_empenho, ano: Number(ano) });
+        const r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`, { nota_empenho, ano: Number(ano) });
         return r.linhas.length ? r.linhas[0] : {};
       } catch (error) {
-        return { error }
+        return { error };
       }
     },
     async getDotacaoRealizadoProcesso(processo, ano) {
       try {
-        let r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`, { processo: processo, ano: Number(ano) });
+        const r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`, { processo, ano: Number(ano) });
         return r.linhas;
       } catch (error) {
-        return { error }
+        return { error };
       }
     },
   },
@@ -146,7 +145,7 @@ export const useOrcamentosStore = defineStore({
       const { ano, id } = this.route.params;
       const anoEmFoco = OrcamentoRealizado[ano] || [];
 
-      return anoEmFoco.find(x => x.id == id);
+      return anoEmFoco.find((x) => x.id == id);
     },
 
     totaisDosItens() {
@@ -157,7 +156,7 @@ export const useOrcamentosStore = defineStore({
 
       return {
         empenho,
-        liquidacao
+        liquidacao,
       };
     },
 
@@ -178,5 +177,5 @@ export const useOrcamentosStore = defineStore({
 
       return resp;
     },
-  }
+  },
 });
