@@ -8,7 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelService } from '../../variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfFasesPermissoesDto, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
 
@@ -44,7 +44,7 @@ function shuffleArray(array: any[]) {
     }
 }
 
-type VariavelDetailhePorID = Record<number, VariavelDetalhe>;
+type VariavelDetalhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
 export class MetasService {
@@ -188,7 +188,7 @@ export class MetasService {
 
 
     extraiVariaveis(
-        map: VariavelDetailhePorID,
+        map: VariavelDetalhePorID,
         seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>,
         fieldName: 'meta_id' | 'iniciativa_id' | 'atividade_id', fieldMatch: number,
         cicloFisicoAtivo: CicloAtivoDto,
@@ -285,6 +285,7 @@ export class MetasService {
 
         const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, metaEstaFaseColeta);
 
+        const cicloFase = indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : '';
 
         const retorno: RetornoMetaVariaveisDto = {
             perfil: config.perfil,
@@ -297,8 +298,9 @@ export class MetasService {
                 id: meta_id,
                 titulo: indicadorMeta.meta.titulo,
                 codigo: indicadorMeta.meta.codigo,
-                ciclo_fase: indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : ''
+                ciclo_fase: cicloFase
             },
+            permissoes: this.calculaPermissoesFase(cicloFase as CicloFase, config.perfil)
         };
         delete (indicadorMeta as any).meta;
 
@@ -345,6 +347,46 @@ export class MetasService {
 
     }
 
+    private calculaPermissoesFase(
+        cicloFase: CicloFase, perfil: string
+    ): MfFasesPermissoesDto {
+
+        if (perfil == 'tecnico_cp' || perfil == 'admin_cp') {
+
+            const map = {
+                'Coleta': {
+                    analiseQualitativa: false,
+                    fechamento: false,
+                    risco: false
+                },
+                'Analise': {
+                    analiseQualitativa: true,
+                    fechamento: false,
+                    risco: false
+                },
+                'Risco': {
+                    analiseQualitativa: true,
+                    fechamento: false,
+                    risco: true
+                },
+                'Fechamento': {
+                    analiseQualitativa: true,
+                    fechamento: true,
+                    risco: true
+                }
+            } as const;
+
+            if (map[cicloFase]) return map[cicloFase];
+        }
+
+        return {
+            analiseQualitativa: false,
+            fechamento: false,
+            risco: false
+        }
+
+    }
+
     private async buscaMetaIndicadores(meta_id: number): Promise<DadosMetaIndicadores[]> {
         return await this.prisma.$queryRaw`
         select
@@ -388,7 +430,7 @@ export class MetasService {
     }
 
     private async calcSerieVariaveis(
-        map: VariavelDetailhePorID,
+        map: VariavelDetalhePorID,
         config: PessoaAcessoPdm,
         ciclo: CicloAtivoDto,
         metaEstaFaseColeta: boolean): Promise<{
@@ -570,7 +612,7 @@ export class MetasService {
         }
     }
 
-    private async buscaSeriesValores(map: VariavelDetailhePorID, ciclo: CicloAtivoDto) {
+    private async buscaSeriesValores(map: VariavelDetalhePorID, ciclo: CicloAtivoDto) {
         const seriesVariavel: { data_corrente: string, data_anterior: string, variavel_id: number }[]
             = await this.prisma.$queryRaw`select
             (cte.data - (atraso_meses || 'month')::interval)::date::text as data_corrente,
@@ -609,7 +651,7 @@ export class MetasService {
         };
     }
 
-    private async statusVariaveisDb(map: VariavelDetailhePorID, ciclo: CicloAtivoDto) {
+    private async statusVariaveisDb(map: VariavelDetalhePorID, ciclo: CicloAtivoDto) {
         return await this.prisma.statusVariavelCicloFisico.findMany({
             where: {
                 variavel_id: { in: Object.keys(map).map(n => +n) },
@@ -709,7 +751,7 @@ export class MetasService {
     }
 
     private async getVariaveisMeta(meta_id: number, inIds: number[]) {
-        const map: VariavelDetailhePorID = {};
+        const map: VariavelDetalhePorID = {};
         const variaveis_da_meta = await this.prisma.variavel.findMany({
             where: {
                 id: { in: inIds },
