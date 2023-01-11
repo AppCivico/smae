@@ -79,7 +79,10 @@ function confirmFase(id, f) {
   if (z) {
     alertStore.confirmAction(
       'Deseja mesmo avançar a etapa?',
-      async () => { alertStore.clear(); await CiclosStore.updateFase(id, { ciclo_fase_id: z.id }); router.go(); },
+      async () => {
+        alertStore.clear();
+        await CiclosStore.updateFase(id, { ciclo_fase_id: z.id }); router.go();
+      },
       'Avançar',
       () => { alertStore.clear(); },
     );
@@ -113,6 +116,7 @@ function vazio(s) {
     <div class="label tamarelo">
       Evolução da Meta
     </div>
+
     <div class="mb2">
       <div class="flex spacebetween center">
         <h2>Meta {{ SingleMeta.codigo }} - {{ SingleMeta.titulo }}</h2>
@@ -327,7 +331,10 @@ function vazio(s) {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 ><use xlink:href="#i_indicador" /></svg>
-                <h2 class="mt1 mb1">{{ MetaVars.meta.indicador.codigo }} {{ MetaVars.meta.indicador.titulo }}</h2>
+                <h2 class="mt1 mb1">
+                  {{ MetaVars.meta.indicador.codigo }}
+                  {{ MetaVars.meta.indicador.titulo }}
+                </h2>
               </a>
             </div>
           </div>
@@ -383,7 +390,9 @@ function vazio(s) {
               v-if="ini.atividades.length"
               class="label mb2"
             >
-              {{ activePdm.rotulo_atividade }}(s) em {{ activePdm.rotulo_iniciativa }} {{ ini.iniciativa.codigo }} {{ ini.iniciativa.titulo }}
+              {{ activePdm.rotulo_atividade }}(s)
+              em {{ activePdm.rotulo_iniciativa }} {{ ini.iniciativa.codigo }}
+              {{ ini.iniciativa.titulo }}
             </p>
             <template
               v-for="ati in ini.atividades"
