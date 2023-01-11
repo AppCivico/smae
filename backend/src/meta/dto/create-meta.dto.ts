@@ -127,7 +127,8 @@ export class CreateMetaDto {
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    tags?: number[]
+    @ValidateIf((object, value) => value !== null)
+    tags?: number[] | null
 }
 
 
