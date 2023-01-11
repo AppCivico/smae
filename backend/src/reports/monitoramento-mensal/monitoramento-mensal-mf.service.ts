@@ -112,9 +112,6 @@ export class MonitoramentoMensalMfService {
 
     async getFiles(myInput: RetMonitoramentoMensal, pdm: Pdm): Promise<FileOutput[]> {
         const out: FileOutput[] = [];
-
-        console.log(myInput);
-
         if (!myInput.monitoramento_fisico || myInput.monitoramento_fisico.metas.length == 0) return [];
 
         const qualiRows: QualiCsv[] = [];
