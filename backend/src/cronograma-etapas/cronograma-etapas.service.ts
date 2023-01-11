@@ -333,6 +333,15 @@ export class CronogramaEtapaService {
         return { id };
     }
 
+    async delete(id: number, user: PessoaFromJwt) {
+
+        const deleted = await this.prisma.cronogramaEtapa.delete({
+            where: { id: id },
+        });
+
+        return deleted;
+    }
+
     async getDuracao(inicio_real: Date | null, termino_real: Date | null): Promise<string> {
         if (!inicio_real) return '';
 
