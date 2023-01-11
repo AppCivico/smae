@@ -17,25 +17,24 @@ class RetornoDb {
     indicador_contexto: string
     indicador_complemento: string
 
-    variavel_id: number
-    variavel_codigo: string
-    variavel_titulo: string
+    variavel_id?: number
+    variavel_codigo?: string
+    variavel_titulo?: string
 
-    regiao_id: number
-    regiao_descricao: string
-    regiao_nivel: number
-    regiao_codigo: number
-    regiao_pai_id: number
-    regiao_pai_descricao: string
-    regiao_pai_codigo: number
-    regiao_pai_nivel: number
+    regiao_id?: number
+    regiao_descricao?: string
+    regiao_nivel?: number
+    regiao_codigo?: number
+    regiao_pai_id?: number
+    regiao_pai_descricao?: string
+    regiao_pai_codigo?: number
+    regiao_pai_nivel?: number
 
     meta_id: number
     meta_codigo: string
     meta_titulo: string
 
-    tag_id: number
-    tag_descricao: string
+    meta_tags: { id: number, descricao: string, ods_id: number | null }[] | null
 
     iniciativa_id: number
     iniciativa_codigo: string
@@ -88,6 +87,8 @@ export class IndicadoresService implements ReportableService {
     }
 
     private async queryData(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresDto[]) {
+        if (indicadoresOrVar.length == 0) return;
+
         const sql = `SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
@@ -95,6 +96,7 @@ export class IndicadoresService implements ReportableService {
         i.meta_id,
         meta.titulo as meta_titulo,
         meta.codigo as meta_codigo,
+        meta_tags_as_array(meta.id) as meta_tags,
         i.iniciativa_id,
         iniciativa.titulo as iniciativa_titulo,
         iniciativa.codigo as iniciativa_codigo,
@@ -103,8 +105,6 @@ export class IndicadoresService implements ReportableService {
         atividade.codigo as atividade_codigo,
         i.complemento as indicador_complemento,
         i.contexto as indicador_contexto,
-        t.id as tag_id,
-        t.descricao as tag_descricao,
         :DATA: as "data",
         series.serie,
         round(
@@ -122,8 +122,6 @@ export class IndicadoresService implements ReportableService {
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
-        left join meta_tag mt on mt.meta_id = meta.id
-        left join tag t on t.id = mt.tag_id
         `;
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
@@ -193,6 +191,8 @@ export class IndicadoresService implements ReportableService {
     }
 
     private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresVariaveisDto[]) {
+        if (indicadoresOrVar.length == 0) return;
+
         const sql = `SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
@@ -200,6 +200,7 @@ export class IndicadoresService implements ReportableService {
         i.meta_id,
         meta.titulo as meta_titulo,
         meta.codigo as meta_codigo,
+        meta_tags_as_array(meta.id) as meta_tags,
         i.iniciativa_id,
         iniciativa.titulo as iniciativa_titulo,
         iniciativa.codigo as iniciativa_codigo,
@@ -317,6 +318,18 @@ export class IndicadoresService implements ReportableService {
             { value: 'meta.codigo', label: 'Código da Meta' },
             { value: 'meta.titulo', label: 'Título da Meta' },
             { value: 'meta.id', label: 'ID da Meta' },
+            {
+                value: (row: RetornoDb) => {
+                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
+                    return row.meta_tags.map(t => t.descricao).join("\n");
+                }, label: 'Meta Tags'
+            },
+            {
+                value: (row: RetornoDb) => {
+                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
+                    return row.meta_tags.map(t => t.id).join(", ");
+                }, label: 'Tags IDs'
+            },
             { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
             { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
             { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
@@ -402,10 +415,10 @@ export class IndicadoresService implements ReportableService {
             return {
                 indicador: { codigo: db.indicador_codigo, titulo: db.indicador_titulo, contexto: db.indicador_contexto, complemento: db.indicador_complemento, id: +db.indicador_id },
                 meta: db.meta_id ? { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id } : null,
+                meta_tags: db.meta_tags ? db.meta_tags : null,
                 iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
                 atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
-                variavel: db.variavel_id ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id } : null,
-                tag: db.tag_id ? { descricao: db.tag_descricao, id: +db.tag_id } : null,
+                variavel: db.variavel_id ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id } : undefined,
 
                 regiao: db.regiao_id ? {
                     id: +db.regiao_id,
@@ -418,8 +431,8 @@ export class IndicadoresService implements ReportableService {
                         codigo: db.regiao_pai_codigo,
                         descricao: db.regiao_pai_descricao,
                         nivel: db.regiao_pai_nivel,
-                    } : null
-                } : null,
+                    } : undefined
+                } : undefined,
 
                 data: db.data,
                 serie: db.serie,
