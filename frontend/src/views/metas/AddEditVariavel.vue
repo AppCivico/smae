@@ -1,4 +1,5 @@
 <script setup>
+import patterns from '@/consts/patterns';
 import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useRegionsStore, useVariaveisStore
@@ -45,7 +46,7 @@ const RegionsStore = useRegionsStore();
 const { regions, tempRegions } = storeToRefs(RegionsStore);
 if (!regions.length) RegionsStore.getAll();
 
-let title = 'Adicionar variável';
+let title = var_id ? 'Editar variável' : 'Adicionar variável';
 const responsaveisArr = ref({ participantes: [], busca: '' });
 const orgao_id = ref(0);
 const level1 = ref(null);
@@ -106,7 +107,7 @@ const virtualParent = ref({});
       }
       virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
       virtualParent.value.casas_decimais = singleVariaveis.value.casas_decimais;
-      virtualParent.value.atraso_meses = singleVariaveis.value.atraso_meses;
+      virtualParent.value.atraso_meses = singleVariaveis.value.atraso_meses ?? 1;
       virtualParent.value.orgao_id = singleVariaveis.value.orgao_id;
       virtualParent.value.periodicidade = singleVariaveis.value.periodicidade;
       periodicidade.value = singleVariaveis.value.periodicidade;
@@ -114,10 +115,14 @@ const virtualParent = ref({});
       virtualParent.value.unidade_medida_id = singleVariaveis.value.unidade_medida_id;
       virtualParent.value.valor_base = singleVariaveis.value.valor_base;
     }
+  } else {
+    virtualParent.value.atraso_meses = 1;
+    virtualParent.value.ano_base = new Date().getFullYear();
   }
 })();
 
-const regx = /^$|^(?:0[1-9]|1[0-2]|[1-9])\/(?:(?:1[9]|[2-9]\d)?\d{2})$/;
+const regx = patterns['month/year'];
+
 const schema = Yup.object().shape({
   orgao_id: Yup.string().required('Selecione um orgão'),
   regiao_id: Yup.string().nullable().test('regiao_id', 'Selecione uma região', (value) => !singleIndicadores?.value?.regionalizavel || value),
@@ -130,7 +135,7 @@ const schema = Yup.object().shape({
   valor_base: Yup.string().required('Preencha o valor base'),
   ano_base: Yup.string().nullable(),
   casas_decimais: Yup.string().nullable(),
-  atraso_meses: Yup.string().nullable(),
+  atraso_meses: Yup.number().min(0).integer(),
 
   inicio_medicao: Yup.string().nullable()
     .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade != periodicidade ? schema.required('Selecione a data') : schema))
@@ -159,7 +164,7 @@ async function onSubmit(values) {
     values.unidade_medida_id = Number(values.unidade_medida_id);
     values.ano_base = Number(values.ano_base) ?? null;
     values.casas_decimais = Number(values.casas_decimais);
-    values.atraso_meses = values.atraso_meses ? Number(values.atraso_meses) : 0;
+    values.atraso_meses = values.atraso_meses ? Number(values.atraso_meses) : 1;
     values.responsaveis = responsaveisArr.value.participantes;
 
     values.inicio_medicao = fieldToDate(values.inicio_medicao);
@@ -256,7 +261,7 @@ function fieldToDate(d) {
     <Form
       v-slot="{ errors, isSubmitting }"
       :validation-schema="schema"
-      :initial-values="var_id?singleVariaveis:virtualParent"
+      :initial-values="var_id ? singleVariaveis : virtualParent"
       @submit="onSubmit"
     >
       <div class="flex g2">
@@ -442,10 +447,14 @@ function fieldToDate(d) {
           </div>
         </div>
         <div class="f2">
-          <label class="label">Defasagem da medição (Meses)</label>
+          <label class="label">
+            Defasagem da medição (Meses) <span class="tvermelho">*</span>
+          </label>
           <Field
             name="atraso_meses"
             type="number"
+            min="0"
+            step="1"
             class="inputtext light mb1"
             :class="{ 'error': errors.atraso_meses }"
           />
