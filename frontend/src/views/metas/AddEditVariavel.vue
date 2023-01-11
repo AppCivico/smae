@@ -100,9 +100,12 @@ const virtualParent = ref({});
       if (singleVariaveis.value?.regiao_id) {
         if (singleVariaveis.value.regiao_id) {
           await RegionsStore.filterRegions({ id: singleVariaveis.value.regiao_id });
+
           level1.value = tempRegions.value[0]?.children[0].index ?? null;
           level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
           level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
+
+          virtualParent.value.regiao_id = singleVariaveis.value.regiao_id;
         }
       }
       virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
@@ -550,10 +553,10 @@ function fieldToDate(d) {
         >
       </div>
 
-      <div v-if="singleIndicadores.regionalizavel&&regions">
+      <div v-if="singleIndicadores.regionalizavel && regions">
         <label class="label">Região <span class="tvermelho">*</span></label>
 
-        <template v-if="singleIndicadores.nivel_regionalizacao>=2">
+        <template v-if="singleIndicadores.nivel_regionalizacao >= 2">
           <select
             v-model="level1"
             class="inputtext light mb1"
@@ -570,7 +573,10 @@ function fieldToDate(d) {
               {{ r.descricao }}
             </option>
           </select>
-          <template v-if="singleIndicadores.nivel_regionalizacao>=3&&level1!==null">
+          <template
+            v-if="singleIndicadores.nivel_regionalizacao >= 3 && level1
+              !== null"
+          >
             <select
               v-model="level2"
               class="inputtext light mb1"
@@ -587,7 +593,10 @@ function fieldToDate(d) {
                 {{ rr.descricao }}
               </option>
             </select>
-            <template v-if="singleIndicadores.nivel_regionalizacao==4&&level2!==null">
+            <template
+              v-if="singleIndicadores.nivel_regionalizacao == 4 &&
+                level2 !== null"
+            >
               <select
                 v-model="level3"
                 class="inputtext light mb1"
@@ -605,7 +614,7 @@ function fieldToDate(d) {
                 </option>
               </select>
             </template>
-            <template v-else-if="singleIndicadores.nivel_regionalizacao==4&&level2===null">
+            <template v-else-if="singleIndicadores.nivel_regionalizacao == 4 && level2 === null">
               <input
                 class="inputtext light mb1"
                 type="text"
@@ -614,7 +623,7 @@ function fieldToDate(d) {
               >
             </template>
           </template>
-          <template v-else-if="singleIndicadores.nivel_regionalizacao>=3&&level1===null">
+          <template v-else-if="singleIndicadores.nivel_regionalizacao >= 3 && level1 === null">
             <input
               class="inputtext light mb1"
               type="text"
@@ -646,7 +655,7 @@ function fieldToDate(d) {
       </div>
     </Form>
   </template>
-  <template v-if="singleVariaveis?.loading||lastParent?.loading">
+  <template v-if="singleVariaveis?.loading || lastParent?.loading">
     <span class="spinner">Carregando</span>
   </template>
   <template v-if="singleVariaveis?.error||lastParent?.error||error">
