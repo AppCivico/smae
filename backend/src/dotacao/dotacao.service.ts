@@ -136,8 +136,9 @@ export class DotacaoService {
         const byYearUnidade: Record<string, Record<string, boolean>> = {};
         const byYearFonte: Record<string, Record<string, boolean>> = {};
         for (const r of srcDestList) {
-
-            const ano = "plan_dotacao_ano_utilizado" in r ? r.plan_dotacao_ano_utilizado : r.dotacao_ano_utilizado;
+            const ano: string = "plan_dotacao_ano_utilizado" in r
+                && r.plan_dotacao_ano_utilizado
+                ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
             if (!ano) continue;
 
             const orgao = r.dotacao.substring(0, 2);
@@ -203,17 +204,19 @@ export class DotacaoService {
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
 
-            if (!resultsOrgao[ano]) resultsOrgao[ano] = {};
+            if (!resultsUnidade[ano]) resultsUnidade[ano] = {};
             for (const r of rows) {
-                resultsOrgao[ano][r.cod_orgao + '-' + r.codigo] = r.descricao;
+                resultsUnidade[ano][r.cod_orgao + '-' + r.codigo] = r.descricao;
             }
         }
 
-console.log(resultsOrgao, resultsFonte, resultsUnidade);
+        //console.dir({ resultsOrgao, resultsFonte, resultsUnidade }, { depth: 4 });
+        for (let i = 0; i < srcDestList.length; i++) {
+            const r = srcDestList[i];
 
-        for (const r of srcDestList) {
-            const ano = "plan_dotacao_ano_utilizado" in r ? r.plan_dotacao_ano_utilizado : r.dotacao_ano_utilizado;
-            console.log({ano, r});
+            const ano: string = "plan_dotacao_ano_utilizado" in r
+                && r.plan_dotacao_ano_utilizado
+                ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
 
             if (!ano) continue;
 
@@ -223,8 +226,6 @@ console.log(resultsOrgao, resultsFonte, resultsUnidade);
             delete (r as any).__orgao;
             delete (r as any).__unidade;
             delete (r as any).__fonte;
-
-            console.log({ano, r});
 
             if (orgao !== undefined && resultsOrgao[ano] && resultsOrgao[ano][orgao]) {
                 (r as any).orgao = {

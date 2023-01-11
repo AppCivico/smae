@@ -134,8 +134,8 @@ export class OrcamentoService implements ReportableService {
             }
         }
 
-        this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
-        this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
+        await this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
+        await this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
 
         return {
             linhas: retExecutado,
