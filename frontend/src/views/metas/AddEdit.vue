@@ -123,7 +123,9 @@ async function onSubmit(values) {
     values.coordenadores_cp = coordenadores_cp.value.participantes;
     if (!values.coordenadores_cp.length) er.push('Selecione pelo menos um responsável para a coordenadoria.');
 
-    if (m_tags.value.participantes.length) values.tags = m_tags.value.participantes;
+    values.tags = m_tags.value.participantes.length
+      ? m_tags.value.participantes
+      : null;
 
     if (!values.pdm_id) values.pdm_id = activePdm.value.id;
 
