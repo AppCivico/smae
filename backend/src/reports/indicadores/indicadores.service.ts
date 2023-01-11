@@ -355,7 +355,7 @@ export class IndicadoresService implements ReportableService {
                     'valor',
                 ]
             });
-            const linhas = json2csvParser.parse(dados);
+            const linhas = json2csvParser.parse(dados.linhas);
             out.push({
                 name: 'indicadores.csv',
                 buffer: Buffer.from(linhas, "utf8")
