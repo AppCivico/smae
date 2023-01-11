@@ -8,6 +8,7 @@ export class RelIndicadoresDto {
     meta: IdCodTituloDto | null
     iniciativa: IdCodTituloDto | null
     atividade: IdCodTituloDto | null
+    tag: RelTag | null
 
     @ApiProperty({ enum: Serie, enumName: 'Serie' })
     serie: string
@@ -22,11 +23,16 @@ export class RelIndicadoresDto {
 }
 
 export class RelIndicadoresVariaveisDto extends RelIndicadoresDto {
-    variavel?: IdCodTituloDto | null
+    variavel?: IdCodTituloDto
     regiao?: Regiao
 }
 
 export class ListIndicadoresDto {
     linhas: RelIndicadoresDto[]
     regioes: RelIndicadoresVariaveisDto[]
+}
+
+export class RelTag {
+    id: number
+    descricao: string
 }
