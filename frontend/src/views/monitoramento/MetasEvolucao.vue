@@ -184,13 +184,16 @@ function vazio(s) {
       <span class="spinner">Carregando</span>
     </div>
     <div
-      v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)"
+      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) && MetaVars.permissoes?.fechamento"
       class="p1 bgc50 tc mb2"
     >
-      <a
+      <button
+        type="button"
         class="btn"
         @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-      >Fechar ciclo</a>
+      >
+        Fechar ciclo
+      </button>
     </div>
 
     <div
@@ -228,13 +231,16 @@ function vazio(s) {
       <span class="spinner">Carregando</span>
     </div>
     <div
-      v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)"
+      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) && MetaVars.permissoes?.risco"
       class="p1 bgc50 tc mb2"
     >
-      <a
+      <button
+        type="button"
         class="btn"
         @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-      >Adicionar Análise de Risco</a>
+      >
+        Adicionar Análise de Risco
+      </button>
     </div>
 
     <div
@@ -303,13 +309,17 @@ function vazio(s) {
     </div>
 
     <div
-      v-else-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)"
+      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp)
+        && MetaVars.permissoes?.analiseQualitativa"
       class="p1 bgc50 tc mb2"
     >
-      <a
+      <button
+        type="button"
         class="btn"
         @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-      >Qualificar</a>
+      >
+        Qualificar
+      </button>
     </div>
 
     <div class="boards">
