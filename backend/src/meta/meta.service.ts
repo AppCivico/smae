@@ -56,7 +56,7 @@ export class MetaService {
                 data: await this.buildMetaResponsaveis(meta.id, op, cp),
             });
 
-            if (typeof(tags) != 'undefined' && tags.length > 0)
+            if (typeof (tags) != 'undefined' && tags.length > 0)
                 await prisma.metaTag.createMany({
                     data: await this.buildTags(meta.id, tags)
                 });
@@ -316,9 +316,10 @@ export class MetaService {
                 }
             }
 
-            if (typeof(tags) != 'undefined' && tags.length > 0) {
+            if (tags == null || tags) {
                 await prisma.metaTag.deleteMany({ where: { meta_id: id } });
-                await prisma.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
+                if (Array.isArray(tags))
+                    await prisma.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
             }
 
             return meta;
