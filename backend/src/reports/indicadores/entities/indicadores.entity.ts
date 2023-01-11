@@ -8,7 +8,7 @@ export class RelIndicadoresDto {
     meta: IdCodTituloDto | null
     iniciativa: IdCodTituloDto | null
     atividade: IdCodTituloDto | null
-    tag: RelTag | null
+    meta_tags: RelTag[] | null
 
     @ApiProperty({ enum: Serie, enumName: 'Serie' })
     serie: string
@@ -35,4 +35,5 @@ export class ListIndicadoresDto {
 export class RelTag {
     id: number
     descricao: string
+    ods_id: number | null
 }
