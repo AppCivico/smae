@@ -14,6 +14,8 @@ class RetornoDb {
     indicador_id: number
     indicador_codigo: string
     indicador_titulo: string
+    indicador_contexto: string
+    indicador_complemento: string
 
     variavel_id: number
     variavel_codigo: string
@@ -96,6 +98,8 @@ export class IndicadoresService implements ReportableService {
         i.atividade_id,
         atividade.titulo as atividade_titulo,
         atividade.codigo as atividade_codigo,
+        i.complemento as indicador_complemento,
+        i.contexto as indicador_contexto,
         :DATA: as "data",
         series.serie,
         round(
@@ -314,8 +318,23 @@ export class IndicadoresService implements ReportableService {
             { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
 
             { value: 'indicador.codigo', label: 'Código do Indicador' },
-            { value: 'indicador.titulo', label: 'Título da Indicador' },
-            { value: 'indicador.id', label: 'ID da Indicador' },
+            { value: 'indicador.titulo', label: 'Título do Indicador' },
+            { value: 'indicador.contexto', label: 'Contexto do Indicador' },
+            { value: 'indicador.complemento', label: 'Complemento do Indicador' },
+            { value: 'indicador.id', label: 'ID do Indicador' },
+
+            { value: 'variavel.codigo', label: 'Código da Variável' },
+            { value: 'variavel.titulo', label: 'Título da Variável' },
+            { value: 'variavel.id', label: 'ID da Variável' },
+
+            { value: 'regiao.codigo', label: 'Código da Região' },
+            { value: 'regiao.descricao', label: 'Descrição da Região' },
+            { value: 'regiao.nivel', label: 'Nível da Região' },
+            { value: 'regiao.id', label: 'ID da Região' },
+            { value: 'regiao.parent.codigo', label: 'Código da Região Pai' },
+            { value: 'regiao.parent.descricao', label: 'Descrição da Região Pai' },
+            { value: 'regiao.parent.nivel', label: 'Nível da Região Pai' },
+            { value: 'regiao.parent.id', label: 'ID da Região Pai' },
         ];
 
         if (dados.linhas.length) {
@@ -355,7 +374,7 @@ export class IndicadoresService implements ReportableService {
 
         return input.map((db) => {
             return {
-                indicador: { codigo: db.indicador_codigo, titulo: db.indicador_titulo, id: +db.indicador_id },
+                indicador: { codigo: db.indicador_codigo, titulo: db.indicador_titulo, contexto: db.indicador_contexto, complemento: db.indicador_complemento, id: +db.indicador_id },
                 meta: db.meta_id ? { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id } : null,
                 iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
                 atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
