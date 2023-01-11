@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard, SmallModal } from '@/components';
+import { indicador as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useAuthStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useVariaveisStore
@@ -11,7 +12,6 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -48,25 +48,6 @@ const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
 const { Variaveis } = storeToRefs(VariaveisStore);
-
-const regx = /^$|^(?:0[1-9]|1[0-2]|[1-9])\/(?:(?:1[9]|[2-9]\d)?\d{2})$/;
-
-const schema = Yup.object().shape({
-  codigo: Yup.string().required('Preencha o código'), //  : "string",
-  titulo: Yup.string().required('Preencha o título'), //  : "string",
-  polaridade: Yup.string().required('Selecione a polaridade'), //  : "Neutra",
-  periodicidade: Yup.string().required('Selecione a periodicidade'), //  : "Diario",
-  casas_decimais: Yup.string().nullable(),
-
-  inicio_medicao: Yup.string().required('Preencha a data').matches(regx, 'Formato inválido'), //  : "YYYY-MM-DD",
-  fim_medicao: Yup.string().required('Preencha a data').matches(regx, 'Formato inválido'), //  : "YYYY-MM-DD",
-
-  regionalizavel: Yup.string().nullable(),
-  nivel_regionalizacao: Yup.string().nullable().when('regionalizavel', (regionalizavel, field) => (regionalizavel == '1' ? field.required('Selecione o nível') : field)),
-
-  contexto: Yup.string().nullable(),
-  complemento: Yup.string().nullable(),
-});
 
 let title = 'Adicionar Indicador';
 const regionalizavel = ref(singleIndicadores.value.regionalizavel);
@@ -125,6 +106,17 @@ function start() {
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
 
+// Formula
+async function validadeFormula(f) {
+  try {
+    if (typeof window.formula_parser !== 'undefined') {
+      window.formula_parser.parse(f.toLocaleUpperCase());
+      return false;
+    }
+  } catch (e) {
+    return e.hash;
+  }
+}
 async function onSubmit(values) {
   try {
     let msg;
@@ -147,12 +139,16 @@ async function onSubmit(values) {
     }
 
     if (indicador_id) {
-      values.formula = formula.value;
-      const er = await validadeFormula(values.formula);
-      if (er) {
-        errFormula.value = er;
-        throw 'Erro na fórmula';
+      values.formula = formula.value.trim();
+
+      if (values.formula) {
+        const er = await validadeFormula(values.formula);
+        if (er) {
+          errFormula.value = er;
+          throw new Error('Erro na fórmula');
+        }
       }
+
       values.formula_variaveis = Object.values(variaveisFormula).map((x) => ({
         referencia: x.id.substring(1),
         janela: x.periodo == 0 ? x.meses : x.periodo == -1 ? x.meses * -1 : 1,
@@ -217,18 +213,6 @@ function fieldToDate(d) {
       : null;
   }
   return null;
-}
-
-// Formula
-async function validadeFormula(f) {
-  try {
-    if (typeof window.formula_parser !== 'undefined') {
-      window.formula_parser.parse(f.toLocaleUpperCase());
-      return false;
-    }
-  } catch (e) {
-    return e.hash;
-  }
 }
 function getCaretPosition(editableDiv) {
   let caretPos = [0, 0];
@@ -698,7 +682,7 @@ async function addFunction(f) {
         <hr class="mt2 mb2">
 
         <div v-if="indicador_id&&!Variaveis[indicador_id]?.loading">
-          <label class="label">Fórmula do Agregador <span class="tvermelho">*</span></label>
+          <label class="label">Fórmula do Agregador</label>
           <div class="inputtext light mb1">
             <div
               ref="formulaInput"
@@ -715,7 +699,7 @@ async function addFunction(f) {
             {{ errFormula }}
           </p>
           <p class="tc300 mb1">
-            Passe o mouse sobre as variáves para detalhes sobre o período e operação
+            Passe o mouse sobre as variáveis para detalhes sobre o período e operação
           </p>
 
           <label class="label">Adicionar operadores </label>

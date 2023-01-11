@@ -8,6 +8,23 @@ const custeio = object().shape({
   parte_dotacao: string().required('Preencha a dotação.').matches(regEx.dotação, 'Formato inválido'),
 });
 
+const indicador = object().shape({
+  codigo: string().required('Preencha o código'),
+  titulo: string().required('Preencha o título'),
+  polaridade: string().required('Selecione a polaridade'),
+  periodicidade: string().required('Selecione a periodicidade'),
+  casas_decimais: string().nullable(),
+
+  inicio_medicao: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
+  fim_medicao: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
+
+  regionalizavel: string().nullable(),
+  nivel_regionalizacao: string().nullable().when('regionalizavel', (regionalizavel, field) => (regionalizavel == '1' ? field.required('Selecione o nível') : field)),
+
+  contexto: string().nullable(),
+  complemento: string().nullable(),
+});
+
 const relatórioMensal = object({
   fonte: string().required(),
   salvar_arquivo: boolean(),
@@ -50,5 +67,9 @@ const relatórioSemestralOuAnual = object({
 });
 
 export {
-  custeio, relatórioMensal, relatórioOrçamentário, relatórioSemestralOuAnual,
+  custeio,
+  indicador,
+  relatórioMensal,
+  relatórioOrçamentário,
+  relatórioSemestralOuAnual,
 };
