@@ -362,6 +362,23 @@ export class IndicadoresService implements ReportableService {
             });
         }
 
+        if (dados.regioes.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: [
+                    ...camposMetaIniAtv,
+                    'serie',
+                    'data',
+                    'valor',
+                ]
+            });
+            const linhas = json2csvParser.parse(dados.regioes);
+            out.push({
+                name: 'regioes.csv',
+                buffer: Buffer.from(linhas, "utf8")
+            });
+        }
 
         return [
             {
