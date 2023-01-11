@@ -104,7 +104,7 @@ export class IndicadoresService implements ReportableService {
         i.complemento as indicador_complemento,
         i.contexto as indicador_contexto,
         t.id as tag_id,
-        t.descricao as tag_descricao, 
+        t.descricao as tag_descricao,
         :DATA: as "data",
         series.serie,
         round(
@@ -192,7 +192,7 @@ export class IndicadoresService implements ReportableService {
         }
     }
 
-    private async queryDataRegiao (indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresVariaveisDto[]) {
+    private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresVariaveisDto[]) {
         const sql = `SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
@@ -326,22 +326,10 @@ export class IndicadoresService implements ReportableService {
 
             { value: 'indicador.codigo', label: 'Código do Indicador' },
             { value: 'indicador.titulo', label: 'Título do Indicador' },
-            { value: 'indicador.contexto', label: 'Contexto do Indicador' },
-            { value: 'indicador.complemento', label: 'Complemento do Indicador' },
+            { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
+            { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
             { value: 'indicador.id', label: 'ID do Indicador' },
 
-            { value: 'variavel.codigo', label: 'Código da Variável' },
-            { value: 'variavel.titulo', label: 'Título da Variável' },
-            { value: 'variavel.id', label: 'ID da Variável' },
-
-            { value: 'regiao.codigo', label: 'Código da Região' },
-            { value: 'regiao.descricao', label: 'Descrição da Região' },
-            { value: 'regiao.nivel', label: 'Nível da Região' },
-            { value: 'regiao.id', label: 'ID da Região' },
-            { value: 'regiao.parent.codigo', label: 'Código da Região Pai' },
-            { value: 'regiao.parent.descricao', label: 'Descrição da Região Pai' },
-            { value: 'regiao.parent.nivel', label: 'Nível da Região Pai' },
-            { value: 'regiao.parent.id', label: 'ID da Região Pai' },
         ];
 
         if (dados.linhas.length) {
@@ -368,6 +356,20 @@ export class IndicadoresService implements ReportableService {
                 transforms: defaultTransform,
                 fields: [
                     ...camposMetaIniAtv,
+
+                    { value: 'variavel.codigo', label: 'Código da Variável' },
+                    { value: 'variavel.titulo', label: 'Título da Variável' },
+                    { value: 'variavel.id', label: 'ID da Variável' },
+
+                    { value: 'regiao.codigo', label: 'Código da Região' },
+                    { value: 'regiao.descricao', label: 'Descrição da Região' },
+                    { value: 'regiao.nivel', label: 'Nível da Região' },
+
+                    { value: 'regiao.id', label: 'ID da Região' },
+                    { value: 'regiao.parent.codigo', label: 'Código da Região Pai' },
+                    { value: 'regiao.parent.descricao', label: 'Descrição da Região Pai' },
+                    { value: 'regiao.parent.nivel', label: 'Nível da Região Pai' },
+                    { value: 'regiao.parent.id', label: 'ID da Região Pai' },
                     'serie',
                     'data',
                     'valor',
@@ -394,7 +396,7 @@ export class IndicadoresService implements ReportableService {
 
 
 
-    private convertRows(input: RetornoDb[]): RelIndicadoresDto[] | RelIndicadoresVariaveisDto[]  {
+    private convertRows(input: RetornoDb[]): RelIndicadoresDto[] | RelIndicadoresVariaveisDto[] {
 
         return input.map((db) => {
             return {
