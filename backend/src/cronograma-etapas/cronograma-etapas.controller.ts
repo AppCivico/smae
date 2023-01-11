@@ -29,4 +29,15 @@ export class CronogramaEtapaController {
         return await this.cronogramaEtapaService.update(updateCronogramaEtapaDto, user);
     }
 
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroEtapa.remover')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.cronogramaEtapaService.delete(+params.id, user);
+        return '';
+    }
+
 }
