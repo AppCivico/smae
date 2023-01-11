@@ -34,6 +34,9 @@ class RetornoDb {
     meta_codigo: string
     meta_titulo: string
 
+    tag_id: number
+    tag_descricao: string
+
     iniciativa_id: number
     iniciativa_codigo: string
     iniciativa_titulo: string
@@ -100,6 +103,8 @@ export class IndicadoresService implements ReportableService {
         atividade.codigo as atividade_codigo,
         i.complemento as indicador_complemento,
         i.contexto as indicador_contexto,
+        t.id as tag_id,
+        t.descricao as tag_descricao, 
         :DATA: as "data",
         series.serie,
         round(
@@ -117,6 +122,8 @@ export class IndicadoresService implements ReportableService {
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
+        left join meta_tag mt on mt.meta_id = meta.id
+        left join tag t on t.id = mt.tag_id
         `;
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
@@ -379,7 +386,8 @@ export class IndicadoresService implements ReportableService {
                 iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
                 atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
                 variavel: db.variavel_id ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id } : null,
-                
+                tag: db.tag_id ? { descricao: db.tag_descricao, id: +db.tag_id } : null,
+
                 regiao: db.regiao_id ? {
                     id: +db.regiao_id,
                     codigo: db.regiao_codigo,
