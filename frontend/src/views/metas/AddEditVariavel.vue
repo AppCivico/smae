@@ -117,7 +117,6 @@ const virtualParent = ref({});
     }
   } else {
     virtualParent.value.atraso_meses = 1;
-    virtualParent.value.ano_base = new Date().getFullYear();
   }
 })();
 
