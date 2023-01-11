@@ -199,7 +199,7 @@ function filterResponsible(orgao_id) {
     </div>
     <template v-if="oktogo&&!(singleMeta?.loading || singleMeta?.error)">
       <Form
-        v-slot="{ errors, isSubmitting }"
+        v-slot="{ errors, isSubmitting, values }"
         :validation-schema="schema"
         :initial-values="meta_id?singleMeta:virtualParent"
         @submit="onSubmit"
@@ -234,7 +234,7 @@ function filterResponsible(orgao_id) {
                 v-for="type in tempMacrotemas"
                 :key="type.id"
                 :value="type.id"
-                :selected="macro_tema_id&&type.id==macro_tema_id"
+                :selected="values.macro_tema_id && type.id == values.macro_tema_id"
               >
                 {{ type['descricao'] }}
               </option>
@@ -265,7 +265,7 @@ function filterResponsible(orgao_id) {
                 v-for="type in tempTemas"
                 :key="type.id"
                 :value="type.id"
-                :selected="tema_id&&type.id==tema_id"
+                :selected="values.tema_id && type.id == values.tema_id"
               >
                 {{ type.descricao }}
               </option>
@@ -294,7 +294,7 @@ function filterResponsible(orgao_id) {
                 v-for="type in tempSubtemas"
                 :key="type.id"
                 :value="type.id"
-                :selected="sub_tema_id&&type.id==sub_tema_id"
+                :selected="values.sub_tema_id && type.id == values.sub_tema_id"
               >
                 {{ type.descricao }}
               </option>
