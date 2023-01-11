@@ -99,6 +99,20 @@ services:
         max-file: "2"
         max-size: 100MB
 
+  smtp_web:
+    container_name: "${EMAILDB_CONTAINER_NAME}_smtp_web"
+    restart: unless-stopped
+    image: rnwood/smtp4dev:latest
+    ports:
+      - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
+    networks:
+      - api
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
   minio:
     container_name: "${MINIO_CONTAINER_NAME}"
     image: minio/minio:RELEASE.2022-08-26T19-53-15Z
