@@ -6,6 +6,7 @@ import { useAlertStore } from '@/stores';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+// eslint-disable-next-line import/prefer-default-export
 export const useAuthStore = defineStore({
   id: 'auth',
   state: () => ({
@@ -106,7 +107,8 @@ export const useAuthStore = defineStore({
         });
       }
 
-      const a = ['CadastroAtividade',
+      const a = [
+        'CadastroAtividade',
         'CadastroCicloFisico',
         'CadastroCronograma',
         'CadastroEtapa',
@@ -127,7 +129,9 @@ export const useAuthStore = defineStore({
         'CadastroTema',
         'CadastroTipoDocumento',
         'CadastroTipoOrgao',
-        'CadastroUnidadeMedida'];
+        'CadastroUnidadeMedida',
+      ];
+
       for (const c in a) {
         if (per[a[c]]) {
           per.algumAdmin = 1;
