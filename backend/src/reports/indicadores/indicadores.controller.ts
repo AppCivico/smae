@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
 import { ListIndicadoresDto } from './entities/indicadores.entity';
 import { IndicadoresService } from './indicadores.service';

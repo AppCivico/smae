@@ -1,32 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Date2YMD } from 'src/common/date2ymd';
-import { PainelService } from 'src/painel/painel.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Date2YMD } from '../../common/date2ymd';
+import { PainelService } from '../../painel/painel.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import { RelPainelDetalhe, RelVarlSimplifiedSeries, RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
 import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
 
-
 const { Parser, transforms: { flatten } } = require('json2csv');
 const defaultTransform = [flatten({ paths: [] })];
-
-class PainelCsv {
-    indicador_id?: string | null
-    indicador_titulo?: string | null
-    indicador_codigo?: string | null
-
-    variavel_id?: string | null
-    variavel_codigo?: string | null
-    variavel_titulo?: string | null
-
-    data: string
-    Previsto?: string | null
-    PrevistoAcumulado?: string | null
-    Realizado?: string | null
-    RealizadoAcumulado?: string | null
-
-}
 
 @Injectable()
 export class MonitoramentoMensalService implements ReportableService {
