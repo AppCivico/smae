@@ -49,7 +49,6 @@ const relatórioMensal = object({
     ano: number().min(2003, 'A partir de 2003').required('Escolha um ano válido'),
     tags: array().nullable(),
     paineis: array().nullable(),
-    tipo: string().required('Escolha o tipo'),
   }),
 });
 
