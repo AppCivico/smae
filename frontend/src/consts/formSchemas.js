@@ -1,7 +1,12 @@
 import regEx from '@/consts/patterns';
 import {
-  array, boolean, number, object, string,
+  array, boolean, number, object, ref, string
 } from 'yup';
+
+const autenticação = object().shape({
+  username: string().required('Preencha seu usuário'),
+  password: string().required('Preencha sua senha'),
+});
 
 const custeio = object().shape({
   custo_previsto: string().required('Preencha o investimento.'),
@@ -23,6 +28,16 @@ const indicador = object().shape({
 
   contexto: string().nullable(),
   complemento: string().nullable(),
+});
+
+const novaSenha = object().shape({
+  password: string().required('Preencha sua nova senha')
+    .matches(/[0-9]/, 'Deve conter pelo menos um número')
+    .matches(/[A-Z]/, 'Deve conter pelo menos um caractere maiúsculo')
+    .matches(/[!@#$%^&*]/, 'Deve conter pelo menos um dos caracteres: !@#$%^&*')
+    .min(8, 'Deve conter pelo menos 8 caracteres'),
+  passwordConfirmation: string().required('Repita sua senha')
+    .oneOf([ref('password'), null], 'Senhas não coincidem'),
 });
 
 const relatórioMensal = object({
@@ -93,8 +108,10 @@ const variável = (singleIndicadores) => object().shape({
 });
 
 export {
+  autenticação,
   custeio,
   indicador,
+  novaSenha,
   relatórioMensal,
   relatórioOrçamentário,
   relatórioSemestralOuAnual,
