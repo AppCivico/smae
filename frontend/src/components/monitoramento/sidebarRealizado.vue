@@ -212,7 +212,7 @@ function complementar() {
 
     <div class="flex center">
       <a
-        v-if="!perm.PDM?.tecnico_cp"
+        v-if="perm.PDM?.admin_cp || perm.PDM?.tecnico_cp"
         class="btn mr1"
         @click="conferir"
       >Conferir</a>

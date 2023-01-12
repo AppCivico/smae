@@ -291,7 +291,7 @@ function addFile(e) {
           Salvar
         </button>
         <button
-          v-if="!perm.PDM?.admin_cp&&!perm.PDM?.tecnico_cp"
+          v-if="perm.PDM?.ponto_focal"
           class="btn big"
           type="button"
           :disabled="isSubmitting"
