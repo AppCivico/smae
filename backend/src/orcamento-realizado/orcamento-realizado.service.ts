@@ -79,7 +79,7 @@ export class OrcamentoRealizadoService {
                     soma_valor_liquidado,
                     itens: {
                         createMany: {
-                            data: dto.itens.map((item) => {
+                            data: dto.itens.map((item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
                                 return {
                                     valor_empenho: item.valor_empenho,
                                     valor_liquidado: item.valor_liquidado,
@@ -130,7 +130,7 @@ export class OrcamentoRealizadoService {
 
             const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
             const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
-            const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
+            const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
             const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
             if (orcRealizado.nota_empenho) {
@@ -173,13 +173,13 @@ export class OrcamentoRealizadoService {
                     soma_valor_liquidado: nova_soma_valor_liquidado,
                     itens: {
                         createMany: {
-                            data: dto.itens.map((item) => {
+                            data: dto.itens.map((item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
                                 return {
                                     valor_empenho: item.valor_empenho,
                                     valor_liquidado: item.valor_liquidado,
                                     mes: item.mes,
                                     data_referencia: new Date([orcRealizado.ano_referencia, item.mes, '01'].join('-')),
-                                    mes_correte: item.mes == mes_correte
+                                    mes_corrente: item.mes == mes_corrente
                                 }
                             })
                         }
