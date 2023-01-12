@@ -199,7 +199,7 @@ function filterResponsible(orgao_id) {
         ><use xlink:href="#i_x" /></svg>
       </button>
     </div>
-    <template v-if="oktogo&&!(singleMeta?.loading || singleMeta?.error)">
+    <template v-if="oktogo && !(singleMeta?.loading || singleMeta?.error)">
       <Form
         v-slot="{ errors, isSubmitting, values }"
         :validation-schema="schema"
@@ -538,10 +538,10 @@ function filterResponsible(orgao_id) {
     <template v-if="singleMeta?.loading||!oktogo">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="singleMeta?.error||error">
+    <template v-if="singleMeta?.error || error">
       <div class="error p1">
         <div class="error-msg">
-          {{ singleMeta.error??error }}
+          {{ singleMeta.error ?? error }}
         </div>
       </div>
     </template>

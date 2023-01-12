@@ -635,10 +635,10 @@ function fieldToDate(d) {
   <template v-if="singleVariaveis?.loading || lastParent?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="singleVariaveis?.error||lastParent?.error||error">
+  <template v-if="singleVariaveis?.error || lastParent?.error || error">
     <div class="error p1">
       <div class="error-msg">
-        {{ singleVariaveis.error??lastParent?.error??error }}
+        {{ singleVariaveis.error ?? lastParent?.error ?? error }}
       </div>
     </div>
   </template>

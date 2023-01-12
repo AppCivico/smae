@@ -220,7 +220,7 @@ function maskDate(el) {
         ><use xlink:href="#i_x" /></svg>
       </button>
     </div>
-    <template v-if="!(currentFase?.loading || currentFase?.error)&&oktogo">
+    <template v-if="!(currentFase?.loading || currentFase?.error) && oktogo">
       <Form
         v-slot="{ errors, isSubmitting }"
         :validation-schema="schema"
@@ -281,7 +281,9 @@ function maskDate(el) {
 
         <hr class="mt2 mb2">
 
-        <label class="label">Responsável(eis)<span class="tvermelho">*</span></label>
+        <label class="label">
+          Responsável(eis) <span class="tvermelho">*</span>
+        </label>
         <div class="flex">
           <div class="f1">
             <AutocompleteField
@@ -294,7 +296,7 @@ function maskDate(el) {
 
         <hr class="mt2 mb2">
 
-        <div v-if="singleCronograma.regionalizavel&&tempRegions.length">
+        <div v-if="singleCronograma.regionalizavel && tempRegions.length">
           <label class="label">Região</label>
           <select
             v-model="level1"
@@ -454,13 +456,13 @@ function maskDate(el) {
         </div>
       </Form>
     </template>
-    <template v-if="currentFase?.loading||!oktogo">
+    <template v-if="currentFase?.loading || !oktogo">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="currentFase?.error||error">
+    <template v-if="currentFase?.error || error">
       <div class="error p1">
         <div class="error-msg">
-          {{ currentFase.error??error }}
+          {{ currentFase.error ?? error }}
         </div>
       </div>
     </template>
