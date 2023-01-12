@@ -94,13 +94,13 @@ export class IndicadoresService implements ReportableService {
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
-        i.meta_id,
-        meta.titulo as meta_titulo,
-        meta.codigo as meta_codigo,
-        meta_tags_as_array(meta.id) as meta_tags,
-        i.iniciativa_id,
-        iniciativa.titulo as iniciativa_titulo,
-        iniciativa.codigo as iniciativa_codigo,
+        COALESCE(i.meta_id, m2.id) as meta_id,
+        COALESCE(meta.titulo, m2.titulo) as meta_titulo,
+        COALESCE(meta.codigo, m2.codigo) as meta_codigo,
+        meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
+        COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
+        COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
+        COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
         i.atividade_id,
         atividade.titulo as atividade_titulo,
         atividade.codigo as atividade_codigo,
@@ -123,6 +123,8 @@ export class IndicadoresService implements ReportableService {
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
+        left join meta m2 on m2.id = iniciativa.id
+        left join iniciativa i2 on i2.id = atividade.iniciativa_id
         `;
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
