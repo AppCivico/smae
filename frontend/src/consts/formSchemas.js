@@ -13,6 +13,34 @@ const custeio = object().shape({
   parte_dotacao: string().required('Preencha a dotação.').matches(regEx.dotação, 'Formato inválido'),
 });
 
+const etapa = object().shape({
+  regiao_id: string().nullable(),
+
+  titulo: string().required('Preencha o título'),
+  descricao: string().nullable(),
+  ordem: string().nullable(),
+  peso: string().nullable(),
+
+  inicio_previsto: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+  termino_previsto: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+  inicio_real: string().nullable().matches(regEx['day/month/year'], 'Formato inválido'),
+  termino_real: string().nullable().matches(regEx['day/month/year'], 'Formato inválido'),
+});
+
+const fase = object().shape({
+  regiao_id: string().nullable(),
+
+  titulo: string().required('Preencha o título'),
+  descricao: string().nullable(),
+  ordem: string().nullable(),
+  peso: string().nullable(),
+
+  inicio_previsto: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+  termino_previsto: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+  inicio_real: string().nullable().matches(regEx['day/month/year'], 'Formato inválido'),
+  termino_real: string().nullable().matches(regEx['day/month/year'], 'Formato inválido'),
+});
+
 const indicador = object().shape({
   codigo: string().required('Preencha o código'),
   titulo: string().required('Preencha o título'),
@@ -109,6 +137,8 @@ const variável = (singleIndicadores) => object().shape({
 export {
   autenticação,
   custeio,
+  etapa,
+  fase,
   indicador,
   novaSenha,
   relatórioMensal,
