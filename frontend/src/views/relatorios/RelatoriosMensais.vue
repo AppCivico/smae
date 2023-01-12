@@ -17,16 +17,26 @@ onMounted(() => {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-      <h1>{{ route.meta.título }}</h1>
-      <hr class="ml2 f1"/>
-      <router-link :to="{ name: 'novoRelatórioMensal' }" class="btn big ml2" v-if="temPermissãoPara('Reports.executar')">
-        Novo relatório
-      </router-link>
+    <h1>{{ route.meta.título }}</h1>
+    <hr class="ml2 f1">
+    <router-link
+      v-if="temPermissãoPara('Reports.executar')"
+      :to="{ name: 'novoRelatórioMensal' }"
+      class="btn big ml2"
+    >
+      Novo relatório
+    </router-link>
   </div>
   <!--div class="flex center mb2">
-      <div class="f2 search">
-          <input v-model="filters.textualSearch" @input="filterItems" placeholder="Buscar" type="text" class="inputtext" />
-      </div>
+    <div class="f2 search">
+      <input
+        v-model="filters.textualSearch"
+        placeholder="Buscar"
+        type="text"
+        class="inputtext"
+        @input="filterItems"
+      >
+    </div>
   </div-->
 
   <TabelaDeMensais />
