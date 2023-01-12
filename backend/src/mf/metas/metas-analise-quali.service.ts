@@ -31,7 +31,7 @@ export class MetasAnaliseQualiService {
         return ret;
     }
 
-    async getMetaAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm|null, user: PessoaFromJwt|null): Promise<MfListAnaliseQualitativaDto> {
+    async getMetaAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListAnaliseQualitativaDto> {
         const analisesResult = await this.prisma.metaCicloFisicoAnalise.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -88,7 +88,7 @@ export class MetasAnaliseQualiService {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
-                    arquivo: {...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes')},
+                    arquivo: { ...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes') },
                 }
             }),
             analises: analisesResult.map((r) => {
@@ -149,10 +149,12 @@ export class MetasAnaliseQualiService {
             throw new HttpException('Você não pode remover analise qualitativa.', 400);
         }
 
-        await this.prisma.metaCicloFisicoAnaliseDocumento.update({
+        const count = await this.prisma.metaCicloFisicoAnaliseDocumento.update({
             where: { id: id },
             data: { removido_em: now, removido_por: user.id }
         });
+        console.log({ count });
+
     }
 
 
