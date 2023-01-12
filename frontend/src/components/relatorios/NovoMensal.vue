@@ -165,34 +165,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Consolidado"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Consolidado</span>
-        </label>
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Analitico"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Analítico</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors['parametros.tipo'] }}
-      </div>
-    </div>
-
     <!--div class="mb2" v-if="filtradasPorPdM(values.parametros.pdm_id).length">
           <div class="pl2">
             <label class="label">Tags</label>
