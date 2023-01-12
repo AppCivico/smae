@@ -76,6 +76,10 @@ export class OrcamentoExecutadoSaidaDto {
      **/
     mes: string
 
+    /**
+     * fonte: SMAE, mês mais alto dentro do orçamento é marcado como TRUE
+     **/
+    mes_corrente: boolean
 
     /**
      * fonte: SMAE, ano do registro, em caso de Consolidado é sempre em branco

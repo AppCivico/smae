@@ -35,6 +35,7 @@ class RetornoRealizadoDb {
     atividade_titulo: string
     ano: string
     mes: string
+    mes_corrente: boolean
     smae_valor_empenhado: string
     smae_valor_liquidado: string
     total_registros?: number
@@ -366,7 +367,8 @@ export class OrcamentoService implements ReportableService {
                     ma.codigo as atividade_codigo,
                     ma.titulo as atividade_titulo,
 
-                    i.id as orcamento_realizado_item_id
+                    i.id as orcamento_realizado_item_id,
+                    i.mes_corrente,
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
                 left join meta m on m.id = meta_id
@@ -485,6 +487,7 @@ export class OrcamentoService implements ReportableService {
 
             mes: db.mes,
             ano: db.ano,
+            mes_corrente: db.mes_corrente,
 
             logs: logs
         }
@@ -517,6 +520,7 @@ export class OrcamentoService implements ReportableService {
                 fields: [
                     'mes',
                     'ano',
+                    'mes_corrente',
                     ...camposMetaIniAtv,
                     'dotacao',
                     'processo',
