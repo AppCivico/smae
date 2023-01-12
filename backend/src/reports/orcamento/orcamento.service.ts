@@ -177,7 +177,7 @@ export class OrcamentoService implements ReportableService {
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
                 dp.mes_utilizado as plan_dotacao_mes_utilizado,
-                to_char(dp.val_orcado_atualizado, 'FM999999999.00') as plan_sof_val_orcado_atualizado,
+                to_char_numeric(dp.val_orcado_atualizado::numeric) as plan_sof_val_orcado_atualizado,
                 dp.sincronizado_em as plan_dotacao_sincronizado_em,
 
                 previsoes.dotacao,
@@ -192,7 +192,7 @@ export class OrcamentoService implements ReportableService {
                 previsoes.atividade_codigo,
                 previsoes.atividade_titulo,
 
-                to_char(sum(previsoes.plan_valor_planejado), 'FM999999999.00') as plan_valor_planejado,
+                to_char_numeric(sum(previsoes.plan_valor_planejado)::numeric) as plan_valor_planejado,
                 count(1) as total_registros
             from previsoes
             left join dotacao_planejado dp ON previsoes.dotacao = dp.dotacao AND previsoes.ano = dp.ano_referencia
@@ -206,7 +206,7 @@ export class OrcamentoService implements ReportableService {
             with previsoes as (
                 select
                     op.dotacao,
-                    to_char(op.valor_planejado, 'FM999999999.00') as plan_valor_planejado,
+                    to_char_numeric(op.valor_planejado::numeric) as plan_valor_planejado,
                     op.ano_referencia as ano,
 
                     op.meta_id,
@@ -234,7 +234,7 @@ export class OrcamentoService implements ReportableService {
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
                 dp.mes_utilizado as plan_dotacao_mes_utilizado,
-                to_char(dp.val_orcado_atualizado, 'FM999999999.00') as plan_sof_val_orcado_atualizado,
+                to_char_numeric(dp.val_orcado_atualizado::numeric) as plan_sof_val_orcado_atualizado,
                 dp.sincronizado_em as plan_dotacao_sincronizado_em,
 
                 previsoes.*
@@ -281,8 +281,8 @@ export class OrcamentoService implements ReportableService {
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
                 dp.mes_utilizado as plan_dotacao_mes_utilizado,
-                to_char(dp.val_orcado_atualizado, 'FM999999999.00') as plan_sof_val_orcado_atualizado,
-                to_char(op.valor_planejado, 'FM999999999.00') as plan_valor_planejado,
+                to_char_numeric(dp.val_orcado_atualizado::numeric) as plan_sof_val_orcado_atualizado,
+                to_char_numeric(op.valor_planejado::numeric) as plan_valor_planejado,
                 dp.sincronizado_em as plan_dotacao_sincronizado_em,
 
                 custos.*,
@@ -333,8 +333,8 @@ export class OrcamentoService implements ReportableService {
                 atividade_titulo,
                 '' as ano,
                 '' as mes,
-                to_char(sum (smae_valor_empenhado), 'FM999999999.00') as smae_valor_empenhado,
-                to_char(sum (smae_valor_liquidado), 'FM999999999.00') as smae_valor_liquidado,
+                to_char_numeric(sum (smae_valor_empenhado)::numeric) as smae_valor_empenhado,
+                to_char_numeric(sum (smae_valor_liquidado)::numeric) as smae_valor_liquidado,
                 count(1) as total_registros
             FROM analitico
             GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
@@ -349,8 +349,8 @@ export class OrcamentoService implements ReportableService {
                     o.dotacao,
                     o.processo,
                     o.nota_empenho,
-                    to_char(i.valor_empenho, 'FM999999999.00') as smae_valor_empenhado,
-                    to_char(i.valor_liquidado, 'FM999999999.00') as smae_valor_liquidado,
+                    to_char_numeric(i.valor_empenho::numeric) as smae_valor_empenhado,
+                    to_char_numeric(i.valor_liquidado::numeric) as smae_valor_liquidado,
                     i.mes,
                     o.ano_referencia as ano,
 
@@ -378,8 +378,8 @@ export class OrcamentoService implements ReportableService {
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
                 dp.mes_utilizado as plan_dotacao_mes_utilizado,
-                to_char(dp.val_orcado_atualizado, 'FM999999999.00') as plan_sof_val_orcado_atualizado,
-                to_char(op.valor_planejado, 'FM999999999.00') as plan_valor_planejado,
+                to_char_numeric(dp.val_orcado_atualizado::numeric) as plan_sof_val_orcado_atualizado,
+                to_char_numeric(op.valor_planejado::numeric) as plan_valor_planejado,
                 dp.sincronizado_em as plan_dotacao_sincronizado_em,
 
                 custos.*,

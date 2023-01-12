@@ -66,3 +66,18 @@ set
     "from" = '"Sistema" <sistema@exemplo.com>',
     template_resolver_config = '{"base_url": "http://smae_api:3001/public/email-templates/"}',
     email_transporter_config = '{"sasl_password":"...","sasl_username":"apikey","port":"25","host":"localhost"}';
+CREATE OR REPLACE FUNCTION to_char_numeric (p numeric)
+    RETURNS varchar
+    LANGUAGE SQL
+    IMMUTABLE
+    AS $$
+    SELECT
+        CASE WHEN p IS NULL THEN
+            ''
+        WHEN p = 0 THEN
+            '0.00'
+        ELSE
+            to_char(p, 'FM999999999.00')
+        END;
+$$;
+
