@@ -13,12 +13,12 @@ export const useAuthStore = defineStore({
     token: JSON.parse(localStorage.getItem('token')),
     reducedtoken: null,
     returnUrl: null,
-    permissions: JSON.parse(localStorage.getItem('permissions'))
+    permissions: JSON.parse(localStorage.getItem('permissions')),
   }),
   actions: {
     async login(username, password) {
       try {
-        const token = await requestS.post(`${baseUrl}/login`, { 'email': username, 'senha': password });
+        const token = await requestS.post(`${baseUrl}/login`, { email: username, senha: password });
 
         if (token.reduced_access_token) {
           this.reducedtoken = token.reduced_access_token;
@@ -50,7 +50,7 @@ export const useAuthStore = defineStore({
     },
     async passwordRecover(username) {
       try {
-        await requestS.post(`${baseUrl}/solicitar-nova-senha`, { 'email': username });
+        await requestS.post(`${baseUrl}/solicitar-nova-senha`, { email: username });
         const alertStore = useAlertStore();
         alertStore.success('Uma senha temporária foi enviada para o seu e-mail.');
         router.push('/login');
@@ -65,7 +65,7 @@ export const useAuthStore = defineStore({
           router.push('/login');
           return;
         }
-        const token = await requestS.post(`${baseUrl}/escrever-nova-senha`, { 'reduced_access_token': this.reducedtoken, 'senha': password });
+        const token = await requestS.post(`${baseUrl}/escrever-nova-senha`, { reduced_access_token: this.reducedtoken, senha: password });
         this.reducedtoken = null;
         this.token = token.access_token;
         localStorage.setItem('token', JSON.stringify(token.access_token));
@@ -77,7 +77,7 @@ export const useAuthStore = defineStore({
         this.setPermissions();
 
         const alertStore = useAlertStore();
-        alertStore.success("Senha salva com sucesso. Bem-vindo!");
+        alertStore.success('Senha salva com sucesso. Bem-vindo!');
         router.push(this.returnUrl || '/');
       } catch (error) {
         const alertStore = useAlertStore();
@@ -95,37 +95,39 @@ export const useAuthStore = defineStore({
       router.push('/login');
     },
     setPermissions() {
-      var per = {};
-      if (this.user.privilegios) this.user.privilegios.forEach(p => {
-        var c = p.split('.');
-        if (c[1]) {
-          if (!per[c[0]]) per[c[0]] = {};
-          per[c[0]][c[1]] = 1;
-        }
-      });
+      const per = {};
+      if (this.user.privilegios) {
+        this.user.privilegios.forEach((p) => {
+          const c = p.split('.');
+          if (c[1]) {
+            if (!per[c[0]]) per[c[0]] = {};
+            per[c[0]][c[1]] = 1;
+          }
+        });
+      }
 
-      let a = ["CadastroAtividade",
-        "CadastroCicloFisico",
-        "CadastroCronograma",
-        "CadastroEtapa",
-        "CadastroFonteRecurso",
-        "CadastroGrupoPaineis",
-        "CadastroIndicador",
-        "CadastroIniciativa",
-        "CadastroMacroTema",
-        "CadastroMeta",
-        "CadastroOds",
-        "CadastroOrgao",
-        "CadastroPainel",
-        "CadastroPdm",
-        "CadastroPessoa",
-        "CadastroRegiao",
-        "CadastroSubTema",
-        "CadastroTag",
-        "CadastroTema",
-        "CadastroTipoDocumento",
-        "CadastroTipoOrgao",
-        "CadastroUnidadeMedida"];
+      const a = ['CadastroAtividade',
+        'CadastroCicloFisico',
+        'CadastroCronograma',
+        'CadastroEtapa',
+        'CadastroFonteRecurso',
+        'CadastroGrupoPaineis',
+        'CadastroIndicador',
+        'CadastroIniciativa',
+        'CadastroMacroTema',
+        'CadastroMeta',
+        'CadastroOds',
+        'CadastroOrgao',
+        'CadastroPainel',
+        'CadastroPdm',
+        'CadastroPessoa',
+        'CadastroRegiao',
+        'CadastroSubTema',
+        'CadastroTag',
+        'CadastroTema',
+        'CadastroTipoDocumento',
+        'CadastroTipoOrgao',
+        'CadastroUnidadeMedida'];
       for (const c in a) {
         if (per[a[c]]) {
           per.algumAdmin = 1;
@@ -135,12 +137,11 @@ export const useAuthStore = defineStore({
 
       localStorage.setItem('permissions', JSON.stringify(per));
       return this.permissions = per;
-    }
+    },
   },
   getters: {
-    temPermissãoPara: ({ user }) => (permissões) =>
-      Array.isArray(permissões)
-        ? permissões.some(y => user.privilegios?.indexOf(y) !== -1)
-        : user.privilegios.indexOf(permissões) !== -1,
+    temPermissãoPara: ({ user }) => (permissões) => (Array.isArray(permissões)
+      ? permissões.some((y) => user.privilegios?.indexOf(y) !== -1)
+      : user.privilegios.indexOf(permissões) !== -1),
   },
 });
