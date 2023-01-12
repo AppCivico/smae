@@ -109,4 +109,9 @@ export const usePaineisStore = defineStore({
       }
     },
   },
+  getters: {
+    painéisPorId: ({ Paineis }) => (!Array.isArray(Paineis)
+      ? {}
+      : Paineis.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})),
+  },
 });

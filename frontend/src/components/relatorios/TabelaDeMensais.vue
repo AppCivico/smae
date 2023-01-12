@@ -1,9 +1,12 @@
 <script setup>
 import dateToDate from '@/helpers/dateToDate';
-import { useAlertStore, useAuthStore, useRelatoriosStore } from '@/stores';
+import {
+  useAlertStore, useAuthStore, usePaineisStore, useRelatoriosStore
+} from '@/stores';
 import { storeToRefs } from 'pinia';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
+const { painéisPorId } = storeToRefs(usePaineisStore());
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -52,7 +55,10 @@ function excluirRelatório(id) {
           :key="item.id"
         >
           <td>{{ item.parametros.mes }}/{{ item.parametros.ano }}</td>
-          <td>{{ item.parametros.paineis?.join(', ') }}</td>
+          <td>
+            {{ item.parametros.paineis?.map(x => painéisPorId[x]?.nome ||
+              'painel removido' ).join(', ') }}
+          </td>
           <!--td>{{ item.parametros.tags }}</td-->
           <td>{{ localizeDate(item.criado_em) }}</td>
           <td v-if="temPermissãoPara(['Reports.remover'])">
