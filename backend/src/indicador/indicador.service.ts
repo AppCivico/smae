@@ -5,16 +5,15 @@ import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
-import { SerieIndicadorValorPorPeriodo, SerieIndicadorValorNominal, ValorSerieExistente } from '../variavel/entities/variavel.entity';
+import { SerieIndicadorValorNominal, SerieIndicadorValorPorPeriodo, ValorSerieExistente } from '../variavel/entities/variavel.entity';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
-import { JwtService } from '@nestjs/jwt';
 
-// @ts-ignore
-import * as FP from "../../public/js/formula_parser.js";
-import { VariavelService } from 'src/variavel/variavel.service';
+const FP = require("../../public/js/formula_parser.js");
+
 import { Indicador } from './entities/indicador.entity';
+import { VariavelService } from '../variavel/variavel.service';
 
 @Injectable()
 export class IndicadorService {

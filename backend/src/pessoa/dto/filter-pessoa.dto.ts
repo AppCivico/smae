@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsInt, IsOptional } from "class-validator";
+import { IsBoolean, IsEmail, IsInt, IsOptional } from "class-validator";
 
 export class FilterPessoaDto {
     /**
@@ -27,6 +27,10 @@ export class FilterPessoaDto {
     @IsInt({ message: '$property| orgao_id' })
     @Type(() => Number)
     orgao_id?: number;
+
+    @IsOptional()
+    @IsEmail()
+    email?: string;
 
     /*
     versão alternativa para aceitar números negativos, e vazio como undefined caso seja adicionado @IsOptional()

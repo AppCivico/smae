@@ -6,6 +6,13 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "db:migrate:gen": "./bin/db-migrate-gen",
+    "db:migrate:up": "prisma migrate dev",
+    "db:migrate:down": "./bin/db-migrate-down",
+    "db:reset": "prisma migrate reset",
+    "db:seed": "prisma db seed",
+    "db:generate": "prisma generate",
+    "db:prod:deploy": "prisma migrate deploy",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -15,10 +22,14 @@
     "start:prod": "run-api.sh",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
+    "test:ci": "jest --ci --reporters=default --reporters=jest-junit --coverage",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json --forceExit",
+    "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
+    "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage --forceExit",
+    "test:e2e:ci": "jest --config ./test/jest-e2e.json --coverage --forceExit --ci --reporters=default --reporters=jest-junit"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",

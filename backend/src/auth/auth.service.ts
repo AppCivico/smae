@@ -38,10 +38,10 @@ export class AuthService {
             throw new BadRequestException('email| Conta não está mais ativa.');
         }
 
-        return this.#criarSession(pessoa.id as number);
+        return this.criarSession(pessoa.id as number);
     }
 
-    async #criarSession(pessoaId: number) {
+    async criarSession(pessoaId: number) {
         const sessaoId = await this.pessoaService.newSessionForPessoa(pessoaId);
         const payload: JwtPessoaPayload = {
             sid: sessaoId,
@@ -105,7 +105,7 @@ export class AuthService {
 
         let updated = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
         if (updated) {
-            return this.#criarSession(result.pessoaId);
+            return this.criarSession(result.pessoaId);
         } else {
             throw new BadRequestException('reduced_access_token| a senha já foi atualizada!');
         }

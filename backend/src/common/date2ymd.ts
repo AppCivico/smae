@@ -15,6 +15,12 @@ export class Date2YMD {
     }
 
     static fromString(data: string) {
+        const year = Number(data.substring(0, 4));
+        const month = Number(data.substring(5, 7));
+        const day = Number(data.substring(8, 10));
+        if (isNaN(year) || isNaN(month) || isNaN(day))
+            throw `Invalid Date: ${data}`;
+
         try {
             const year = +data.substring(0, 4);
             const month = +data.substring(5, 7);
