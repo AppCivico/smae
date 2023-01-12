@@ -1,5 +1,6 @@
-import { DateYMD } from "src/common/date2ymd";
-import { CicloFisicoDto } from "src/pdm/dto/list-pdm.dto";
+
+import { DateYMD } from "../../common/date2ymd";
+import { CicloFisicoDto } from "../../pdm/dto/list-pdm.dto";
 
 export class ListPdmCicloDto {
     linhas: CicloFisicoDto[]

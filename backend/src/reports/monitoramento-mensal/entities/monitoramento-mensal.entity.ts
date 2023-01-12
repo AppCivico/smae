@@ -1,10 +1,11 @@
 import { IntersectionType, OmitType } from "@nestjs/swagger"
-import { IdCodTituloDto } from "src/common/dto/IdCodTitulo.dto"
-import { MfAnaliseQualitativaDto } from "src/mf/metas/dto/mf-meta-analise-quali.dto"
-import { MfFechamentoDto } from "src/mf/metas/dto/mf-meta-fechamento.dto"
-import { MfRiscoDto } from "src/mf/metas/dto/mf-meta-risco.dto"
 import { Periodicidade } from "@prisma/client"
-import { SimplifiedPainelConteudoSeries, SimplifiedSeries } from "src/painel/dto/detalhe-painel.dto"
+import { IdCodTituloDto } from "../../../common/dto/IdCodTitulo.dto"
+import { MfAnaliseQualitativaDto } from "../../../mf/metas/dto/mf-meta-analise-quali.dto"
+import { MfFechamentoDto } from "../../../mf/metas/dto/mf-meta-fechamento.dto"
+import { MfRiscoDto } from "../../../mf/metas/dto/mf-meta-risco.dto"
+import { SimplifiedPainelConteudoSeries, SimplifiedSeries } from "../../../painel/dto/detalhe-painel.dto"
+
 
 export class RelVarlSimplifiedSeries extends IntersectionType(
     OmitType(SimplifiedPainelConteudoSeries, ['series'] as const),

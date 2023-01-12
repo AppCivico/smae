@@ -2,7 +2,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Periodo } from "@prisma/client";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { IsOnlyDate } from "../../common/decorators/IsDateOnly";
+
 
 export class CreateParamsPainelConteudoDto {
 

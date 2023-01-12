@@ -1,7 +1,7 @@
 import { Type } from "class-transformer";
 import { IsOptional } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
-import { IdCodTituloRespDto } from "src/mf/metas/dto/mf-meta.dto";
+import { IsOnlyDate } from "../../../common/decorators/IsDateOnly";
+import { IdCodTituloRespDto } from "./mf-meta.dto";
 
 export class MfEtapaDto {
 

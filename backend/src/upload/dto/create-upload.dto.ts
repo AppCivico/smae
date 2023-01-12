@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
-import { TipoUpload } from "src/upload/entities/tipo-upload";
+import { TipoUpload } from "../entities/tipo-upload";
 
 
 export class CreateUploadDto {

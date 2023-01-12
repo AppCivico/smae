@@ -1,7 +1,8 @@
 import { ApiHideProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { ArrayMaxSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { IsOnlyDate } from "../../common/decorators/IsDateOnly";
+
 
 export class CreateEtapaDto {
     /**

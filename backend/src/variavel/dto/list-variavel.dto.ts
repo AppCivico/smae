@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Periodicidade, Serie } from "@prisma/client";
-import { SeriesAgrupadas, Variavel } from "src/variavel/entities/variavel.entity";
+import { SeriesAgrupadas, Variavel } from "../../variavel/entities/variavel.entity";
 
 export class ListVariavelDto {
     linhas: Variavel[]
