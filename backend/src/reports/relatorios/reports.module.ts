@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { UploadModule } from 'src/upload/upload.module';
+
 import { PrismaModule } from '../../prisma/prisma.module';
+import { UploadModule } from '../../upload/upload.module';
 import { IndicadoresModule } from '../indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from '../monitoramento-mensal/monitoramento-mensal.module';
 import { OrcamentoModule } from '../orcamento/orcamento.module';

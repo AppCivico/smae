@@ -43,22 +43,22 @@ describe('AppController (e2e)', () => {
         await app.close();
     });
 
-    it('/my-account (GET) should be 401 without session', async () => {
+    it('/minha-conta (GET) should be 401 without session', async () => {
         return await request(app.getHttpServer())
-            .get('/my-account')
+            .get('/minha-conta')
             .expect(401);
     });
 
-    it('/my-account (GET) should be 401 with invalid session', async () => {
+    it('/minha-conta (GET) should be 401 with invalid session', async () => {
         return await request(app.getHttpServer())
-            .get('/my-account')
+            .get('/minha-conta')
             .auth('het', { type: "bearer" })
             .expect(401);
     });
 
-    it('/my-account (GET) should be 200', async () => {
+    it('/minha-conta (GET) should be 200', async () => {
         return await request(app.getHttpServer())
-            .get('/my-account')
+            .get('/minha-conta')
             .auth(session.access_token, { type: "bearer" })
             .expect(200);
     });

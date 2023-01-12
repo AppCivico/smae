@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { IndicadoresService } from './indicadores.service';
 import { IndicadoresController } from './indicadores.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
 import { UtilsService } from '../utils/utils.service';
+import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
     imports: [PrismaModule],

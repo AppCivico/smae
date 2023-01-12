@@ -1,10 +1,10 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { UploadService } from 'src/upload/upload.service';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { PaginatedDto } from '../../common/dto/paginated.dto';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UploadService } from '../../upload/upload.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';

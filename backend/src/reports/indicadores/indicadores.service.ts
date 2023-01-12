@@ -1,6 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Date2YMD } from 'src/common/date2ymd';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Date2YMD } from '../../common/date2ymd';
+import { PrismaService } from '../../prisma/prisma.service';
+
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';

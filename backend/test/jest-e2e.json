@@ -6,7 +6,8 @@
     ],
     "moduleNameMapper": {
         "^@/(.*)$": "<rootDir>/src/$1",
-        "^@test/(.*)$": "<rootDir>/test/$1"
+        "^@test/(.*)$": "<rootDir>/test/$1",
+        "^\\.\\.\\/\\.\\.\/public\/js\/(.*)$": "<rootDir>/src/public/js/$1"
     },
     "rootDir": "..",
     "testEnvironment": "node",

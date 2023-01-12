@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Pdm } from '@prisma/client';
-import { MetasAnaliseQualiService } from 'src/mf/metas/metas-analise-quali.service';
-import { MetasFechamentoService } from 'src/mf/metas/metas-fechamento.service';
-import { MetasRiscoService } from 'src/mf/metas/metas-risco.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
+import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service';
+import { MetasRiscoService } from '../../mf/metas/metas-risco.service';
+import { PrismaService } from '../../prisma/prisma.service';
+
 import { DefaultCsvOptions, FileOutput } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import { RelMfMetas, RetMonitoramentoFisico, RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
