@@ -368,7 +368,7 @@ export class OrcamentoService implements ReportableService {
                     ma.titulo as atividade_titulo,
 
                     i.id as orcamento_realizado_item_id,
-                    i.mes_corrente,
+                    i.mes_corrente
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
                 left join meta m on m.id = meta_id
