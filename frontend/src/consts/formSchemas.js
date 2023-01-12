@@ -66,10 +66,37 @@ const relatórioSemestralOuAnual = object({
   }),
 });
 
+const variável = (singleIndicadores) => object().shape({
+  orgao_id: string().required('Selecione um orgão'),
+  regiao_id: string().nullable().test('regiao_id', 'Selecione uma região', (value) => !singleIndicadores?.value?.regionalizavel || value),
+  unidade_medida_id: string().required('Selecione uma unidade'),
+
+  codigo: string().required('Preencha o código'),
+  titulo: string().required('Preencha o título'),
+  periodicidade: string().required('Preencha a periodicidade'),
+
+  valor_base: string().required('Preencha o valor base'),
+  ano_base: string().nullable(),
+  casas_decimais: string().nullable(),
+  atraso_meses: number().min(0).integer(),
+
+  inicio_medicao: string().nullable()
+    .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade !== periodicidade ? schema.required('Selecione a data') : schema))
+    .matches(regEx['month/year'], 'Formato inválido'),
+  fim_medicao: string().nullable()
+    .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade !== periodicidade ? schema.required('Selecione a data') : schema))
+    .matches(regEx['month/year'], 'Formato inválido'),
+
+  acumulativa: string().nullable(),
+
+  responsaveis: array().nullable(),
+});
+
 export {
   custeio,
   indicador,
   relatórioMensal,
   relatórioOrçamentário,
   relatórioSemestralOuAnual,
+  variável,
 };

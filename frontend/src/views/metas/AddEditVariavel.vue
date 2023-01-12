@@ -1,14 +1,13 @@
 <script setup>
-import patterns from '@/consts/patterns';
+import { variável } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useRegionsStore, useVariaveisStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -123,33 +122,7 @@ const virtualParent = ref({});
   }
 })();
 
-const regx = patterns['month/year'];
-
-const schema = Yup.object().shape({
-  orgao_id: Yup.string().required('Selecione um orgão'),
-  regiao_id: Yup.string().nullable().test('regiao_id', 'Selecione uma região', (value) => !singleIndicadores?.value?.regionalizavel || value),
-  unidade_medida_id: Yup.string().required('Selecione uma unidade'),
-
-  codigo: Yup.string().required('Preencha o código'),
-  titulo: Yup.string().required('Preencha o título'),
-  periodicidade: Yup.string().required('Preencha a periodicidade'),
-
-  valor_base: Yup.string().required('Preencha o valor base'),
-  ano_base: Yup.string().nullable(),
-  casas_decimais: Yup.string().nullable(),
-  atraso_meses: Yup.number().min(0).integer(),
-
-  inicio_medicao: Yup.string().nullable()
-    .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade != periodicidade ? schema.required('Selecione a data') : schema))
-    .matches(regx, 'Formato inválido'),
-  fim_medicao: Yup.string().nullable()
-    .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade != periodicidade ? schema.required('Selecione a data') : schema))
-    .matches(regx, 'Formato inválido'),
-
-  acumulativa: Yup.string().nullable(),
-
-  responsaveis: Yup.array().nullable(),
-});
+const schema = computed(() => variável(singleIndicadores));
 
 async function onSubmit(values) {
   try {
@@ -259,9 +232,13 @@ function fieldToDate(d) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <template v-if="!(singleVariaveis?.loading || singleVariaveis?.error)&&singleIndicadores?.id&&lastParent?.id">
+
+  <template
+    v-if="!(singleVariaveis?.loading || singleVariaveis?.error)
+      && singleIndicadores?.id && lastParent?.id"
+  >
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
       :initial-values="var_id ? singleVariaveis : virtualParent"
       @submit="onSubmit"
@@ -356,7 +333,7 @@ function fieldToDate(d) {
           </div>
         </div>
         <div
-          v-if="singleIndicadores?.periodicidade != periodicidade"
+          v-if="singleIndicadores?.periodicidade != values.periodicidade"
           class="f1"
         >
           <label class="label">Início da Medição <span class="tvermelho">*</span></label>
