@@ -4,7 +4,7 @@ import {
 } from 'yup';
 
 const autenticação = object().shape({
-  username: string().required('Preencha seu usuário'),
+  username: string().email('E-mail inválido').required('Preencha seu e-mail'),
   password: string().required('Preencha sua senha'),
 });
 
