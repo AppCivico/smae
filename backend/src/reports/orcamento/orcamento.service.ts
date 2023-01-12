@@ -518,9 +518,13 @@ export class OrcamentoService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
                 fields: [
-                    'mes',
+                    { value: 'mes', label: 'mês' },
                     'ano',
-                    'mes_corrente',
+                    {
+                        value: (r: RetornoRealizadoDb) => {
+                            return r.mes_corrente ? 'Sim' : 'Não'
+                        }, label: 'mês corrente'
+                    },
                     ...camposMetaIniAtv,
                     'dotacao',
                     'processo',
