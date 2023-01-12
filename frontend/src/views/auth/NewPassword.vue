@@ -42,6 +42,7 @@ async function onSubmit(values) {
                 placeholder="*******"
                 type="password"
                 class="inputtext tc500 mb1"
+                :validate-on-input="true"
                 :class="{ 'error': errors.password }"
               />
               <div class="error-msg">
