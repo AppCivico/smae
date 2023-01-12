@@ -452,9 +452,11 @@ export class PessoaService {
         return { id: pessoaId };
     }
 
-    async criarPessoa(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
+    async criarPessoa(createPessoaDto: CreatePessoaDto, user?: PessoaFromJwt) {
 
-        await this.verificarPrivilegiosCriacao(createPessoaDto, user);
+        if (user){
+            await this.verificarPrivilegiosCriacao(createPessoaDto, user);
+        }
         this.verificarCPFObrigatorio(createPessoaDto);
         this.verificarRFObrigatorio(createPessoaDto);
 

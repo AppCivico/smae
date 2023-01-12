@@ -8,7 +8,7 @@ import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
 export class TipoOrgaoService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createTipoOrgaoDto: CreateTipoOrgaoDto, user: PessoaFromJwt) {
+    async create(createTipoOrgaoDto: CreateTipoOrgaoDto, user?: PessoaFromJwt) {
         const similarExists = await this.prisma.tipoOrgao.count({
             where: {
                 descricao: { endsWith: createTipoOrgaoDto.descricao, mode: 'insensitive' },
@@ -20,7 +20,7 @@ export class TipoOrgaoService {
 
         const created = await this.prisma.tipoOrgao.create({
             data: {
-                criado_por: user.id,
+                criado_por: user ? user.id : undefined,
                 criado_em: new Date(Date.now()),
                 ...createTipoOrgaoDto,
             },

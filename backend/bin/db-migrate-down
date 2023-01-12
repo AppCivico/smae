@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+echo "Caso o seu migration up falhou, e você precisa reverter (em prod/staging) usando:"
+echo "npx prisma db execute --file ./prisma/migrations/DIRETORIO_DO_MIGRATION/down.sql --schema prisma/schema.prisma"
+echo "Então em caso de sucesso, marque o migration como resolvido usando:"
+echo "npx prisma migrate resolve --rolled-back add_profile"
+echo "Em dev, o mais simples é ajustar o migration com erro e resetar o banco"
+echo "npm run db:reset"
