@@ -92,6 +92,7 @@ services:
     depends_on:
       - db
     networks:
+      - smtp
       - postgres
     logging:
       driver: "json-file"
@@ -107,6 +108,7 @@ services:
       - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
     networks:
       - api
+      - smtp
     logging:
       driver: "json-file"
       options:
@@ -160,6 +162,7 @@ networks:
   minio:
   api:
   api_orcamento:
+  smtp:
 
 
 volumes:
