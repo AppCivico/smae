@@ -166,12 +166,33 @@ export const useCiclosStore = defineStore({
       return false;
     },
     async deleteArquivo(id) {
-      if (await requestS.delete(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/${id}`)) return true;
+      if (await requestS.delete(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/${id}`)) {
+        this.SingleAnalise.arquivos = this.SingleAnalise.arquivos.filter((x) => x.id !== id);
+        return true;
+      }
       return false;
     },
-    async addArquivo(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/`, params)) return true;
-      return false;
+    async addArquivo(params, dadosParaEnvio) {
+      try {
+        const { id = 0, download_token: downloadToken } = await requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/`, params);
+
+        if (id) {
+          const dadosDoArquivo = {
+            id,
+            arquivo: {
+              nome_original: dadosParaEnvio.arquivo.name,
+              descricao: dadosParaEnvio.descricao,
+              download_token: downloadToken || dadosParaEnvio.upload_token,
+            },
+          };
+
+          this.SingleAnalise.arquivos.push(dadosDoArquivo);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        return false;
+      }
     },
     async conferir(params) {
       if (await requestS.patch(`${baseUrl}/mf/metas/variaveis/conferida`, params)) return true;
@@ -201,12 +222,33 @@ export const useCiclosStore = defineStore({
       return false;
     },
     async deleteMetaArquivo(id) {
-      if (await requestS.delete(`${baseUrl}/mf/metas/analise-qualitativa/documento/${id}`)) return true;
+      if (await requestS.delete(`${baseUrl}/mf/metas/analise-qualitativa/documento/${id}`)) {
+        this.SingleMetaAnaliseDocs = this.SingleMetaAnaliseDocs.filter((x) => x.id !== id);
+        return true;
+      }
       return false;
     },
-    async addMetaArquivo(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa/documento/`, params)) return true;
-      return false;
+    async addMetaArquivo(params, dadosParaEnvio) {
+      try {
+        const { id = 0, download_token: downloadToken } = await requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa/documento/`, params);
+
+        if (id) {
+          const dadosDoArquivo = {
+            id,
+            arquivo: {
+              nome_original: dadosParaEnvio.arquivo.name,
+              descricao: dadosParaEnvio.descricao,
+              download_token: downloadToken || dadosParaEnvio.upload_token,
+            },
+          };
+
+          this.SingleMetaAnaliseDocs.push(dadosDoArquivo);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        return false;
+      }
     },
 
     // Risco

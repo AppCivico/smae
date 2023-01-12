@@ -119,12 +119,15 @@ async function addArquivo(values) {
 
     const u = await requestS.upload(`${baseUrl}/upload`, formData);
     if (u.upload_token) {
-      r = await CiclosStore.addArquivo({ data_valor: props.periodo, variavel_id: props.var_id, upload_token: u.upload_token });
-      if (r == true) {
+      r = await CiclosStore.addArquivo({
+        data_valor: props.periodo,
+        variavel_id: props.var_id,
+        upload_token: u.upload_token,
+      }, values);
+      if (r === true) {
         msg = 'Item adicionado com sucesso!';
         alertStore.success(msg);
         virtualUpload.value = {};
-        getAnaliseData();
       }
     } else {
       virtualUpload.value.loading = false;
@@ -137,7 +140,6 @@ async function addArquivo(values) {
 function deleteArquivo(id) {
   alertStore.confirmAction('Deseja remover o arquivo?', () => {
     CiclosStore.deleteArquivo(id);
-    getAnaliseData();
   }, 'Remover');
 }
 function addFile(e) {
@@ -321,24 +323,36 @@ function addFile(e) {
           <tr>
             <td>
               <a
-                :href="baseUrl+'/download/'+subitem?.arquivo?.download_token"
+                v-if="subitem?.arquivo?.download_token"
+                :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
                 download
-              >{{ subitem?.arquivo?.nome_original??'-' }}</a>
+              >{{ subitem?.arquivo?.nome_original ?? '-' }}</a>
+              <template v-else>
+                {{ subitem?.arquivo?.nome_original ?? '-' }}
+              </template>
             </td>
             <td>
               <a
-                :href="baseUrl+'/download/'+subitem?.arquivo?.download_token"
+                v-if="subitem?.arquivo?.download_token"
+                :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
                 download
-              >{{ subitem?.arquivo?.descricao??'-' }}</a>
+              >{{ subitem?.arquivo?.descricao ?? '-' }}</a>
+              <template v-else>
+                {{ subitem?.arquivo?.descricao ?? '-' }}
+              </template>
             </td>
             <td style="white-space: nowrap; text-align: right;">
-              <a
-                class="tprimary"
+              <button
+                v-if="subitem.id"
+                type="button"
+                class="like-a__text tprimary"
                 @click="deleteArquivo(subitem.id)"
-              ><svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg></a>
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
             </td>
           </tr>
         </template>
