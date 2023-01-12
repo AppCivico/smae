@@ -886,10 +886,10 @@ async function addFunction(f) {
     <template v-if="singleIndicadores?.loading">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="singleIndicadores?.error||error">
+    <template v-if="singleIndicadores?.error || error">
       <div class="error p1">
         <div class="error-msg">
-          {{ singleIndicadores.error??error }}
+          {{ singleIndicadores.error ?? error }}
         </div>
       </div>
     </template>

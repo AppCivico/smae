@@ -251,7 +251,7 @@ function maskDate(el) {
     <Form
       v-slot="{ errors, isSubmitting }"
       :validation-schema="schema"
-      :initial-values="etapa_id?singleEtapa.etapa:virtualParent"
+      :initial-values="etapa_id ? singleEtapa.etapa : virtualParent"
       @submit="onSubmit"
     >
       <div>
@@ -285,7 +285,7 @@ function maskDate(el) {
             name="ordem"
             type="number"
             class="inputtext light mb1"
-            :value="etapa_id?singleEtapa?.ordem:ordem"
+            :value="etapa_id ? singleEtapa?.ordem : ordem"
             :class="{ 'error': errors.ordem }"
           />
           <div class="error-msg">
@@ -325,7 +325,7 @@ function maskDate(el) {
       <div v-if="singleCronograma.regionalizavel&&regions">
         <label class="label">Região</label>
 
-        <template v-if="singleCronograma.nivel_regionalizacao>=2">
+        <template v-if="singleCronograma.nivel_regionalizacao >= 2">
           <select
             v-model="level1"
             class="inputtext light mb1"
@@ -342,7 +342,10 @@ function maskDate(el) {
               {{ r.descricao }}
             </option>
           </select>
-          <template v-if="singleCronograma.nivel_regionalizacao>=3&&level1!==null">
+          <template
+            v-if="singleCronograma.nivel_regionalizacao >= 3
+              && level1 !== null"
+          >
             <select
               v-model="level2"
               class="inputtext light mb1"
@@ -359,7 +362,10 @@ function maskDate(el) {
                 {{ rr.descricao }}
               </option>
             </select>
-            <template v-if="singleCronograma.nivel_regionalizacao==4&&level2!==null">
+            <template
+              v-if="singleCronograma.nivel_regionalizacao == 4
+                && level2 !== null"
+            >
               <select
                 v-model="level3"
                 class="inputtext light mb1"
@@ -377,7 +383,10 @@ function maskDate(el) {
                 </option>
               </select>
             </template>
-            <template v-else-if="singleCronograma.nivel_regionalizacao==4&&level2===null">
+            <template
+              v-else-if="singleCronograma.nivel_regionalizacao == 4
+                && level2 === null"
+            >
               <input
                 class="inputtext light mb1"
                 type="text"
@@ -386,7 +395,10 @@ function maskDate(el) {
               >
             </template>
           </template>
-          <template v-else-if="singleCronograma.nivel_regionalizacao>=3&&level1===null">
+          <template
+            v-else-if="singleCronograma.nivel_regionalizacao >= 3
+              && level1 === null"
+          >
             <input
               class="inputtext light mb1"
               type="text"
@@ -483,7 +495,9 @@ function maskDate(el) {
                 value="1"
                 class="inputcheckbox"
               />
-              <span :class="{ 'error': errors.acumulativa_iniciativa }">Etapa monitorada no cronograma de {{ activePdm.rotulo_iniciativa }}</span>
+              <span :class="{ 'error': errors.acumulativa_iniciativa }">
+                Etapa monitorada no cronograma de {{ activePdm.rotulo_iniciativa }}
+              </span>
             </label>
             <div class="error-msg">
               {{ errors.acumulativa_iniciativa }}
@@ -520,7 +534,9 @@ function maskDate(el) {
                 value="1"
                 class="inputcheckbox"
               />
-              <span :class="{ 'error': errors.acumulativa_meta }">Etapa monitorada no cronograma da meta</span>
+              <span :class="{ 'error': errors.acumulativa_meta }">
+                Etapa monitorada no cronograma da meta
+              </span>
             </label>
             <div class="error-msg">
               {{ errors.acumulativa_meta }}
@@ -558,10 +574,10 @@ function maskDate(el) {
   <template v-if="singleEtapa?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="singleEtapa?.error||error">
+  <template v-if="singleEtapa?.error || error">
     <div class="error p1">
       <div class="error-msg">
-        {{ singleEtapa.error??error }}
+        {{ singleEtapa.error ?? error }}
       </div>
     </div>
   </template>
