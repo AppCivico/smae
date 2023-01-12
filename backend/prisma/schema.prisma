@@ -1770,9 +1770,9 @@ model MetaOrcamento {
     removido_em  DateTime?
     removido_por Int?
 
-    custo_previsto      Float  @db.DoublePrecision
+    custo_previsto Float @db.DoublePrecision
 
-    parte_dotacao         String @default("")
+    parte_dotacao String @default("")
 
     meta        Meta        @relation(fields: [meta_id], references: [id])
     iniciativa  Iniciativa? @relation(fields: [iniciativa_id], references: [id])
@@ -1901,9 +1901,10 @@ model OrcamentoPlanejado {
 model OrcamentoRealizadoItem {
     id Int @id @default(autoincrement())
 
-    valor_empenho   Float @db.DoublePrecision
-    valor_liquidado Float @db.DoublePrecision
+    valor_empenho   Float   @db.DoublePrecision
+    valor_liquidado Float   @db.DoublePrecision
     mes             Int
+    mes_corrente    Boolean @default(false)
 
     /// data compilada a partir do ano/mes
     data_referencia DateTime @db.Date()
