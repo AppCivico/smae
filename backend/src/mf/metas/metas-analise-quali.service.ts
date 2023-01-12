@@ -149,12 +149,10 @@ export class MetasAnaliseQualiService {
             throw new HttpException('Você não pode remover analise qualitativa.', 400);
         }
 
-        const count = await this.prisma.metaCicloFisicoAnaliseDocumento.update({
+        await this.prisma.metaCicloFisicoAnaliseDocumento.update({
             where: { id: id },
             data: { removido_em: now, removido_por: user.id }
         });
-        console.log({ count });
-
     }
 
 
