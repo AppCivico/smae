@@ -1,6 +1,6 @@
 import { CicloFase } from "@prisma/client";
-import { DateYMD } from "src/common/date2ymd";
-import { ListPdm } from "src/pdm/entities/list-pdm.entity";
+import { DateYMD } from "../../common/date2ymd";
+import { ListPdm } from "../entities/list-pdm.entity";
 
 export class CicloFisicoFase {
     id: number

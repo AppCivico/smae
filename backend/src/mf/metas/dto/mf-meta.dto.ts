@@ -2,9 +2,10 @@ import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { CicloFase, Periodicidade, Serie, TipoDocumento } from "@prisma/client";
 import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
-import { SerieValorNomimal } from "src/variavel/entities/variavel.entity";
+import { IsOnlyDate } from "../../../common/decorators/IsDateOnly";
+
 import { IdCodTituloDto } from "../../../common/dto/IdCodTitulo.dto";
+import { SerieValorNomimal } from "../../../variavel/entities/variavel.entity";
 
 export class FilterMfMetasDto {
     /**

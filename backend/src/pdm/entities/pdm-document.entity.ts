@@ -1,4 +1,4 @@
-import { TipoDocumento } from "src/tipo-documento/entities/tipo-documento.entity";
+import { TipoDocumento } from "../../tipo-documento/entities/tipo-documento.entity";
 
 export class PdmDocument {
     arquivo: {

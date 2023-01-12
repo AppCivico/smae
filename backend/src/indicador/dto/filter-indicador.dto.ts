@@ -1,7 +1,8 @@
 import { PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsInt, IsOptional } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { IsOnlyDate } from "../../common/decorators/IsDateOnly";
+
 
 export class FilterIndicadorDto {
     /**

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { TipoOrgao } from "src/tipo-orgao/entities/tipo-orgao.entity";
+import { TipoOrgao } from "../../tipo-orgao/entities/tipo-orgao.entity";
 
 export class Orgao {
     @ApiProperty({ description: 'ID do Órgão', })

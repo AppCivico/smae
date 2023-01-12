@@ -1,8 +1,9 @@
-import { Eixo } from "src/eixo/entities/eixo.entity";
-import { Meta } from "src/meta/entities/meta.entity";
-import { ObjetivoEstrategico } from "src/objetivo-estrategico/entities/objetivo-estrategico.entity";
-import { SubTema } from "src/subtema/entities/subtema.entity";
-import { Tag } from "src/tag/entities/tag.entity";
+
+import { Eixo } from "../../eixo/entities/eixo.entity";
+import { Meta } from "../../meta/entities/meta.entity";
+import { ObjetivoEstrategico } from "../../objetivo-estrategico/entities/objetivo-estrategico.entity";
+import { SubTema } from "../../subtema/entities/subtema.entity";
+import { Tag } from "../../tag/entities/tag.entity";
 import { ListPdm } from "../entities/list-pdm.entity";
 import { OrcamentoConfig } from "./list-pdm.dto";
 

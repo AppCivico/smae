@@ -2,10 +2,10 @@ import { ApiProperty, OmitType, refs } from "@nestjs/swagger"
 import { Periodicidade, Serie } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime"
 import { IsString } from "class-validator"
-import { DateYMD } from "src/common/date2ymd"
-import { OrgaoResumo } from "src/orgao/entities/orgao.entity"
-import { Regiao } from "src/regiao/entities/regiao.entity"
-import { UnidadeMedida } from "src/unidade-medida/entities/unidade-medida.entity"
+import { DateYMD } from "../../common/date2ymd"
+import { OrgaoResumo } from "../../orgao/entities/orgao.entity"
+import { Regiao } from "../../regiao/entities/regiao.entity"
+import { UnidadeMedida } from "../../unidade-medida/entities/unidade-medida.entity"
 
 export class IdTitulo {
     id: number

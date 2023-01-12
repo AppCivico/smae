@@ -2,8 +2,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import { NivelOrcamento } from "@prisma/client";
 import { Type } from "class-transformer";
 import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
-import { Pdm } from "src/pdm/dto/pdm.dto";
+import { IsOnlyDate } from "../../common/decorators/IsDateOnly";
+
 
 export class CreatePdmDto {
 

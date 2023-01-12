@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Serie } from "@prisma/client"
-import { IdCodTituloDto } from "src/common/dto/IdCodTitulo.dto"
-import { Regiao } from "src/regiao/entities/regiao.entity"
+import { IdCodTituloDto } from "../../../common/dto/IdCodTitulo.dto"
+import { Regiao } from "../../../regiao/entities/regiao.entity"
 
 export class RelIndicadoresDto {
     indicador: IdCodTituloDto
