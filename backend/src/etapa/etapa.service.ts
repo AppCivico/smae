@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -167,7 +167,7 @@ export class EtapaService {
     async remove(id: number, user: PessoaFromJwt) {
         const etapa_has_children = await this.prisma.etapa.count({where: { etapa_pai_id: id }});
         if (etapa_has_children)
-            throw new Error('Apague primeiro os filhos');
+            throw new HttpException('Apague primeiro os filhos', 400);
 
         const removed = await this.prisma.etapa.updateMany({
             where: { id: id },
