@@ -42,11 +42,13 @@ export class CECronogramaEtapaDto {
 }
 
 export class CECronogramaEtapaCronoId {
+    id: number
     cronograma_id: number
 }
 
 export class CEEtapaDto {
     id: number
+    etapa_id: number
     etapa_pai_id: number | null
     regiao_id: number | null
     nivel: string | null
