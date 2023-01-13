@@ -3,8 +3,8 @@ import formataValor from '@/helpers/formataValor';
 
 defineProps(['group', 'permissao', 'parentlink']);
 
-const alemDoEmpenhado = (x) => x.smae_soma_valor_empenho > x.empenho_liquido;
-const alemDoLiquidado = (x) => x.smae_soma_valor_liquidado > x.valor_liquidado;
+const alemDoEmpenhado = (x) => Number(x.smae_soma_valor_empenho) > Number(x.empenho_liquido);
+const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.valor_liquidado);
 </script>
 <template>
   <tr
