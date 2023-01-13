@@ -123,8 +123,8 @@ export class IndicadoresService implements ReportableService {
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
-        left join meta m2 on m2.id = iniciativa.id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
+        left join meta m2 on m2.id = iniciativa.id OR m2.id = i2.meta_id
         `;
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
