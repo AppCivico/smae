@@ -278,6 +278,7 @@ export class OrcamentoService implements ReportableService {
                 left join atividade ma on ma.id = atividade_id
 
                 where i.id = ANY(${search.map(r => r.id)}::int[])
+                and i.mes_corrente = TRUE
             ), analitico as (
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -496,10 +497,26 @@ export class OrcamentoService implements ReportableService {
 
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
         const dados = myInput as ListOrcamentoExecutadoDto;
+        const dto = params as CreateOrcamentoExecutadoDto;
 
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
 
         const out: FileOutput[] = [];
+
+        let camposAnoMes: any[] = [];
+        let camposAno: any[] = [];
+        if (dto.tipo == 'Analitico') {
+            camposAnoMes = [
+                { value: 'mes', label: 'mês' },
+                'ano',
+                {
+                    value: (r: RetornoRealizadoDb) => {
+                        return r.mes_corrente ? 'Sim' : 'Não'
+                    }, label: 'mês corrente'
+                }
+            ];
+            camposAno[0] = camposAnoMes[0];
+        }
 
         const camposMetaIniAtv = [
             { value: 'meta.codigo', label: 'Código da Meta' },
@@ -518,13 +535,7 @@ export class OrcamentoService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
                 fields: [
-                    { value: 'mes', label: 'mês' },
-                    'ano',
-                    {
-                        value: (r: RetornoRealizadoDb) => {
-                            return r.mes_corrente ? 'Sim' : 'Não'
-                        }, label: 'mês corrente'
-                    },
+                    ...camposAnoMes,
                     ...camposMetaIniAtv,
                     'dotacao',
                     'processo',
@@ -562,7 +573,7 @@ export class OrcamentoService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
                 fields: [
-                    'ano',
+                    ...camposAno,
                     ...camposMetaIniAtv,
                     'dotacao',
                     'orgao.codigo',
