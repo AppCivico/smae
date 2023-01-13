@@ -212,9 +212,13 @@ export class CronogramaEtapaService {
                 ordem: ordem,
 
                 etapa: {
-                    CronogramaEtapa: [{ cronograma_id: cronogramaEtapa.cronograma_id }],
+                    CronogramaEtapa: [{
+                        id: cronogramaEtapa.id,
+                        cronograma_id: cronogramaEtapa.cronograma_id
+                    }],
 
                     id: cronogramaEtapa.etapa.id,
+                    etapa_id: cronogramaEtapa.etapa.id,
                     etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,
                     regiao_id: cronogramaEtapa.etapa.regiao_id,
                     nivel: cronogramaEtapa.etapa.nivel,
@@ -239,9 +243,13 @@ export class CronogramaEtapaService {
 
                     etapa_filha: await Promise.all( cronogramaEtapa.etapa.etapa_filha.map( async f => {
                         return {
-                            CronogramaEtapa: f.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
+                            CronogramaEtapa: f.CronogramaEtapa.map((x) => { return {
+                                id: x.id,
+                                cronograma_id: x.cronograma_id
+                            }}),
 
                             id: f.id,
+                            etapa_id: f.id,
                             etapa_pai_id: f.etapa_pai_id,
                             regiao_id: f.regiao_id,
                             nivel: f.nivel,
@@ -265,9 +273,10 @@ export class CronogramaEtapaService {
                             etapa_filha: await Promise.all( f.etapa_filha.map( async ff => {
 
                                 return {
-                                    CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { cronograma_id: x.cronograma_id } }),
+                                    CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { id: x.id, cronograma_id: x.cronograma_id } }),
 
                                     id: ff.id,
+                                    etapa_id: ff.id,
                                     etapa_pai_id: ff.etapa_pai_id,
                                     regiao_id: ff.regiao_id,
                                     nivel: ff.nivel,
