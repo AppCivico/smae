@@ -289,14 +289,9 @@ export class MetaService {
             if (op) {
                 // Caso os orgaos_participantes estejam atrelados a Iniciativa ou Atividade
                 // Não podem ser excluidos
-                const orgaos_to_be_kept = await this.checkHasOrgaosParticipantesChildren(meta.id, op);
+                await this.checkHasOrgaosParticipantesChildren(meta.id, op);
 
-                await prisma.metaOrgao.deleteMany({
-                    where: {
-                        meta_id: id,
-                        orgao_id: { notIn: orgaos_to_be_kept }
-                    }
-                });
+                await prisma.metaOrgao.deleteMany({ where: { meta_id: id } });
                 await prisma.metaOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(meta.id, op),
                 });
@@ -331,7 +326,7 @@ export class MetaService {
         return { id };
     }
 
-    private async checkHasOrgaosParticipantesChildren(meta_id: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<number[]> {
+    private async checkHasOrgaosParticipantesChildren(meta_id: number, orgaos_participantes: MetaOrgaoParticipante[]) {
         const orgaos_in_use: number[] = [];
 
         for (const orgao of orgaos_participantes) {
@@ -359,7 +354,11 @@ export class MetaService {
                 orgaos_in_use.push(orgao.orgao_id)
         }
 
-        return orgaos_in_use;
+        const orgaos_to_be_created = orgaos_participantes.map(x => x.orgao_id);
+        const orgaos_match = orgaos_in_use.some(x => orgaos_to_be_created.includes(x));
+
+        if (!orgaos_match)
+            throw new Error('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.');
     }
 
     private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]): Promise<number[]> {
