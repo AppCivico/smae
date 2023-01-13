@@ -119,7 +119,11 @@ onUpdated(() => { start(); });
               Inicio previsto
             </div>
             <div class="t13">
-              {{ singleCronograma.inicio_previsto ? singleCronograma.inicio_previsto : '--/--/----' }}
+              {{
+                singleCronograma.inicio_previsto
+                  ? singleCronograma.inicio_previsto
+                  : '--/--/----'
+              }}
             </div>
           </div>
           <div class="mr2">
@@ -127,7 +131,11 @@ onUpdated(() => { start(); });
               Término previsto
             </div>
             <div class="t13">
-              {{ singleCronograma.termino_previsto ? singleCronograma.termino_previsto : '--/--/----' }}
+              {{
+                singleCronograma.termino_previsto
+                  ? singleCronograma.termino_previsto
+                  : '--/--/----'
+              }}
             </div>
           </div>
           <div class="mr2">
@@ -165,8 +173,8 @@ onUpdated(() => { start(); });
         class="etapas"
       >
         <div
-          v-for="(r, index) in singleCronogramaEtapas?.filter(x=>!x.inativo)
-            .sort((a,b) => a.ordem - b.ordem)"
+          v-for="(r, index) in singleCronogramaEtapas?.filter(x => !x.inativo)
+            .sort((a, b) => a.ordem - b.ordem)"
           :key="r.etapa.id"
           class="etapa"
         >
@@ -219,7 +227,7 @@ onUpdated(() => { start(); });
               {{ r.etapa.termino_real }}
             </div>
             <div class="ml1 f1">
-              {{ r.etapa.atraso??'-' }}
+              {{ r.etapa.atraso ?? '-' }}
             </div>
             <div
               class="ml1 f0"
@@ -357,6 +365,7 @@ onUpdated(() => { start(); });
                 </router-link>
               </div>
             </div>
+
             <hr class="mb3">
 
             <div
@@ -406,7 +415,7 @@ onUpdated(() => { start(); });
                     {{ rrr.termino_previsto }}
                   </div>
                   <div class="ml1 f1">
-                    {{ rrr.duracao??'-' }}
+                    {{ rrr.duracao ?? '-' }}
                   </div>
                   <div class="ml1 f1">
                     {{ rrr.inicio_real }}
@@ -415,7 +424,7 @@ onUpdated(() => { start(); });
                     {{ rrr.termino_real }}
                   </div>
                   <div class="ml1 f1">
-                    {{ rrr.atraso??'-' }}
+                    {{ rrr.atraso ?? '-' }}
                   </div>
                   <div
                     class="ml1 f0 flex center mr05"
