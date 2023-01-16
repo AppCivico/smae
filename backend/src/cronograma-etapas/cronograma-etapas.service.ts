@@ -33,6 +33,7 @@ export class CronogramaEtapaService {
                 cronograma_id: cronogramaId,
                 etapa_id: filters && filters.cronograma_etapa_ids ? { in: filters.cronograma_etapa_ids } : etapaId,
                 inativo: inativo,
+                etapa: { removido_em: null }
             },
             select: {
                 id: true,
