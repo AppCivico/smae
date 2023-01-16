@@ -1,6 +1,7 @@
-import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import dateToField from '@/helpers/dateToField.js';
 import { useEtapasStore } from '@/stores';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -21,19 +22,6 @@ export const useCronogramasStore = defineStore({
     clearEdit() {
       this.singleCronograma = {};
     },
-    dateToField(d) {
-      const dd = d ? new Date(d) : false;
-      const dx = (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone: 'UTC' }) : '';
-
-      return dx ?? '';
-    },
-    fieldToDate(d) {
-      if (d) {
-        const x = d.split('/');
-        return (x.length == 3) ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10) : null;
-      }
-      return null;
-    },
     async getAll(p_id, parent_field) {
       try {
         if (!this.Cronogramas[parent_field]) this.Cronogramas[parent_field] = [];
@@ -41,10 +29,10 @@ export const useCronogramasStore = defineStore({
           this.Cronogramas[parent_field][p_id] = { loading: true };
           const r = await requestS.get(`${baseUrl}/cronograma?${parent_field}=${p_id}`);
           this.Cronogramas[parent_field][p_id] = r.linhas.map((x) => {
-            x.inicio_previsto = this.dateToField(x.inicio_previsto);
-            x.termino_previsto = this.dateToField(x.termino_previsto);
-            x.inicio_real = this.dateToField(x.inicio_real);
-            x.termino_real = this.dateToField(x.termino_real);
+            x.inicio_previsto = dateToField(x.inicio_previsto);
+            x.termino_previsto = dateToField(x.termino_previsto);
+            x.inicio_real = dateToField(x.inicio_real);
+            x.termino_real = dateToField(x.termino_real);
             return x;
           });
         }
