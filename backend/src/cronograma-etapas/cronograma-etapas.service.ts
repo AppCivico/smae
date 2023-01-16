@@ -55,7 +55,6 @@ export class CronogramaEtapaService {
                         termino_real: true,
                         prazo: true,
                         titulo: true,
-                        // responsaveis: true,
                         responsaveis: {
                             select: {
                                 pessoa: {
@@ -124,6 +123,9 @@ export class CronogramaEtapaService {
                         },
 
                         etapa_filha: {
+                            where: {
+                                removido_em: null
+                            },
                             select: {
                                 id: true,
                                 etapa_pai_id: true,
@@ -151,6 +153,9 @@ export class CronogramaEtapaService {
                                 },
 
                                 etapa_filha: {
+                                    where: {
+                                        removido_em: null
+                                    },
                                     select: {
                                         id: true,
                                         etapa_pai_id: true,
@@ -181,7 +186,7 @@ export class CronogramaEtapaService {
                                 }
                             }
                         }
-                    }
+                    },
                 }
             },
             orderBy: [
