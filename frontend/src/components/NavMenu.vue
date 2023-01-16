@@ -12,6 +12,8 @@ function toggleMenu() {
 const props = defineProps(['activate']);
 
 const authStore = useAuthStore();
+// buscando temPermissãoPara() sem forçar reatividade porque é uma função que
+// recebe parâmetros, não um objeto
 const { temPermissãoPara } = authStore;
 const { user, permissions } = storeToRefs(authStore);
 const perm = permissions.value;
