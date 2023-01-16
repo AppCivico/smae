@@ -351,7 +351,7 @@ onUpdated(() => { start(); });
                 {{ rr.atraso ?? '-' }}
               </div>
               <div
-                class="ml1 f0"
+                class="ml1 f0 flex center mr05"
                 style="flex-basis:20px; height: calc(20px + 1rem);"
               >
                 <router-link
