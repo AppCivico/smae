@@ -67,15 +67,13 @@ if (etapa_id) {
   title = 'Editar etapa';
   if (!singleEtapa.value.id) {
     Promise.all([EtapasStore.getById(cronograma_id, etapa_id)]).then(() => {
-      if (singleEtapa.value?.etapa.regiao_id) {
-        if (singleEtapa.value.etapa.regiao_id) {
-          (async () => {
-            await RegionsStore.filterRegions({ id: singleEtapa.value.etapa.regiao_id });
-            level1.value = tempRegions.value[0]?.children[0].index ?? null;
-            level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
-            level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
-          })();
-        }
+      if (singleEtapa?.value?.etapa?.regiao_id) {
+        (async () => {
+          await RegionsStore.filterRegions({ id: singleEtapa.value.etapa.regiao_id });
+          level1.value = tempRegions.value[0]?.children[0].index ?? null;
+          level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
+          level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
+        })();
       }
       if (singleEtapa.value.etapa.responsaveis) {
         responsaveis.value.participantes = singleEtapa.value.etapa.responsaveis.map((x) => x.id);
@@ -104,8 +102,9 @@ if (etapa_id) {
     if (atividade_id) acumulativa_iniciativa.value = { loading: true };
     if (iniciativa_id) acumulativa_meta.value = { loading: true };
 
-    let p_cron; let
-      mon;
+    let p_cron;
+    let mon;
+
     if (atividade_id) {
       p_cron = await CronogramasStore.getItemByParent(iniciativa_id, 'iniciativa_id');
       mon = await EtapasStore.getMonitoramento(p_cron.id, etapa_id);
@@ -130,7 +129,9 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id) ? Number(values.regiao_id) : null;
+    values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id)
+      ? Number(values.regiao_id)
+      : null;
     values.peso = Number(values.peso) ?? null;
     values.ordem = Number(values.ordem) ?? null;
     values.etapa_pai_id = null;
@@ -214,9 +215,15 @@ async function checkClose() {
 }
 function lastlevel() {
   let r;
-  if (singleCronograma.value.nivel_regionalizacao == 2 && level1.value !== null) { r = regions.value[0].children[level1.value].id; }
-  if (singleCronograma.value.nivel_regionalizacao == 3 && level1.value !== null && level2.value !== null) { r = regions.value[0].children[level1.value].children[level2.value].id; }
-  if (singleCronograma.value.nivel_regionalizacao == 4 && level1.value !== null && level2.value !== null && level3.value !== null) { r = regions.value[0].children[level1.value].children[level2.value].children[level3.value].id; }
+  if (singleCronograma.value.nivel_regionalizacao == 2 && level1.value !== null) {
+    r = regions.value[0].children[level1.value].id;
+  }
+  if (singleCronograma.value.nivel_regionalizacao == 3 && level1.value !== null && level2.value !== null) {
+    r = regions.value[0].children[level1.value].children[level2.value].id;
+  }
+  if (singleCronograma.value.nivel_regionalizacao == 4 && level1.value !== null && level2.value !== null && level3.value !== null) {
+    r = regions.value[0].children[level1.value].children[level2.value].children[level3.value].id;
+  }
   regiao_id_mount.value = r;
 }
 function maskDate(el) {
