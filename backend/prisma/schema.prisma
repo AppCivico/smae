@@ -162,6 +162,8 @@ model Pessoa {
     RelatorioQueFiz                          Relatorio[]                       @relation("criador")
     RelatorioQueRemovi                       Relatorio[]                       @relation("removedor")
 
+    ProjetoLicoesAprendidas ProjetoLicoesAprendidas[]
+
     @@index([email])
     @@map("pessoa")
 }
@@ -201,6 +203,7 @@ model Orgao {
     atividade_orgao        AtividadeOrgao[]
     atividade_responsavel  AtividadeResponsavel[]
     CronogramaOrgao        CronogramaOrgao[]
+    projeto_prgao          ProjetoOrgao[]
 
     @@map("orgao")
 }
@@ -467,6 +470,8 @@ model FonteRecurso {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    projetos_fonte_recurso ProjetoRecurso[]
+
     @@map("fonte_recurso")
 }
 
@@ -688,6 +693,7 @@ model Meta {
     MetaOrcamento                   MetaOrcamento[]
     OrcamentoPlanejado              OrcamentoPlanejado[]
     OrcamentoRealizado              OrcamentoRealizado[]
+    projetos                        Projeto[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1008,6 +1014,7 @@ model Iniciativa {
     OrcamentoPlanejado     OrcamentoPlanejado[]
     OrcamentoRealizado     OrcamentoRealizado[]
     MetaOrcamento          MetaOrcamento[]
+    projetos               Projeto[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -1088,6 +1095,7 @@ model Atividade {
     OrcamentoPlanejado    OrcamentoPlanejado[]
     OrcamentoRealizado    OrcamentoRealizado[]
     MetaOrcamento         MetaOrcamento[]
+    projetos              Projeto[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -2012,4 +2020,127 @@ model Relatorio {
     @@index([pdm_id, criado_em, removido_em])
     @@index([fonte, criado_em])
     @@map("relatorio")
+}
+
+model Projeto {
+    id Int @id @default(autoincrement())
+
+    meta_id       Int?
+    iniciativa_id Int?
+    atividade_id  Int?
+
+    meta       Meta?       @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    codigo           String
+    nome             String
+    descricao        String
+    objeto           String
+    objetivo         String
+    origem           String
+    publico_alvo     String
+    previsao_inicio  DateTime?
+    previsao_termino DateTime?
+    previsao_duracao Int?
+    previsao_custo   Float? @db.DoublePrecision
+    inicio_real      DateTime?
+    termino_real     DateTime?
+    custo_real       Float? @db.DoublePrecision
+    // status
+    // escopo
+    // nao_escopo
+    // principais_etapas String?
+
+    premissas         ProjetoPremissa[]
+    restricoes        ProjetoRestricao[]
+    orgaos            ProjetoOrgao[]
+    licoes_aprendidas ProjetoLicoesAprendidas[]
+    recursos          ProjetoRecurso[]
+    documentos        ProjetoDocumento[]
+
+    @@map("projeto")
+}
+
+model ProjetoPremissa {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    premissa String
+
+    @@map("projeto_premissa")
+}
+
+model ProjetoRestricao {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    restricao String
+
+    @@map("projeto_restricao")
+}
+
+model ProjetoOrgao {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    orgao_id   Int
+
+    projeto Projeto @relation(fields: [projeto_id], references: [id])
+    orgao   Orgao   @relation(fields: [orgao_id], references: [id])
+
+    responsavel Boolean
+
+    @@map("projeto_orgao")
+}
+
+model ProjetoLicoesAprendidas {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    pessoa_id  Int
+
+    projeto Projeto @relation(fields: [projeto_id], references: [id])
+    pessoa  Pessoa  @relation(fields: [pessoa_id], references: [id])
+
+    data_registro DateTime
+    descricao     String
+    observacao    String?
+
+    @@map("projeto_licoes_aprendidas")
+}
+
+model ProjetoRecurso {
+    id Int @id @default(autoincrement())
+
+    projeto_id       Int
+    fonte_recurso_id Int
+
+    projeto       Projeto @relation(fields: [projeto_id], references: [id])
+    fonte_recurso FonteRecurso @relation(fields: [fonte_recurso_id], references: [id])
+
+    valor      Float? @db.DoublePrecision
+    tipo_valor ProjetoRecursoTipoValor
+
+    @@map("projeto_recurso")
+}
+
+model ProjetoDocumento {
+    id Int @id @default(autoincrement())
+
+    projeto_id   Int
+    documento_id Int
+
+    projeto       Projeto @relation(fields: [projeto_id], references: [id])
+
+    @@map("projeto_documento")
+}
+
+enum ProjetoRecursoTipoValor {
+    Percentual
+    Nominal
 }
