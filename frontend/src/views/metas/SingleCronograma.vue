@@ -1,7 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import {
-  useAuthStore, useCronogramasStore, useEditModalStore, useMetasStore
+  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useMetasStore
 } from '@/stores';
 import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
@@ -12,6 +12,7 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
+const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
@@ -39,6 +40,12 @@ const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Me
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
 const editModalStore = useEditModalStore();
+
+function excluirEtapa(id) {
+  alertStore.confirmAction('Deseja mesmo excluir?', () => {
+    CronogramasStore.excluirEtapa(id);
+  }, 'Excluir');
+}
 
 CronogramasStore.clearEdit();
 CronogramasStore.getActiveByParent(parentVar, parentField);
@@ -258,6 +265,19 @@ onUpdated(() => { start(); });
                       Editar Monitoramento
                     </router-link>
                   </li>
+
+                  <li
+                    v-if="(!r.cronograma_origem_etapa || r.cronograma_origem_etapa.id == singleCronograma?.id)"
+                  >
+                    <button
+                      class="like-a__link"
+                      type="button"
+                      :disabled="r.etapa_filha?.length"
+                      @click="excluirEtapa(r.etapa_id)"
+                    >
+                      Excluir Etapa
+                    </button>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -331,6 +351,10 @@ onUpdated(() => { start(); });
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
+              <div
+                class="ml1 f0"
+                style="flex-basis:20px;"
+              />
             </div>
             <hr>
             <div class="pl3 flex center t13">
@@ -352,6 +376,25 @@ onUpdated(() => { start(); });
               <div class="ml1 f1">
                 {{ rr.atraso ?? '-' }}
               </div>
+              <div
+                class="ml1 f0 flex center mr05"
+                style="flex-basis:20px; height: calc(20px + 1rem);"
+              >
+                <button
+                  v-if="(!rr.cronograma_origem_etapa || rr.cronograma_origem_etapa.id == singleCronograma?.id)"
+                  type="button"
+                  class="like-a__text"
+                  title="Excluir Fase"
+                  :disabled="rr.etapa_filha?.length"
+                  @click="excluirEtapa(rr.etapa_id)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_remove" /></svg>
+                </button>
+              </div>
+
               <div
                 class="ml1 f0 flex center mr05"
                 style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -400,6 +443,10 @@ onUpdated(() => { start(); });
                   class="ml1 f0"
                   style="flex-basis:20px;"
                 />
+                <div
+                  class="ml1 f0"
+                  style="flex-basis:20px;"
+                />
               </div>
               <hr>
               <template
@@ -431,6 +478,25 @@ onUpdated(() => { start(); });
                   <div class="ml1 f1">
                     {{ rrr.atraso ?? '-' }}
                   </div>
+
+                  <div
+                    class="ml1 f0 flex center mr05"
+                  >
+                    <button
+                      v-if="(!rrr.cronograma_origem_etapa || rrr.cronograma_origem_etapa.id == singleCronograma?.id)"
+                      type="button"
+                      class="like-a__text"
+                      title="Excluir Subfase"
+                      :disabled="rrr.etapa_filha?.length"
+                      @click="excluirEtapa(rrr.etapa_id)"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                      ><use xlink:href="#i_remove" /></svg>
+                    </button>
+                  </div>
+
                   <div
                     class="ml1 f0 flex center mr05"
                     style="flex-basis:20px; height: calc(20px + 1rem);"
