@@ -186,9 +186,20 @@ async function checkClose() {
 }
 function lastlevel() {
   let r;
-  if (level1.value) { r = tempRegions.value[0]?.children.find((x) => x.id == level1.value)?.id; }
-  if (level1.value && level2.value) { r = tempRegions.value[0]?.children.find((x) => x.id == level1.value)?.children.find((x) => x.id == level2.value)?.id; }
-  if (level1.value && level2.value && level3.value) { r = tempRegions.value[0]?.children.find((x) => x.id == level1.value)?.children.find((x) => x.id == level2.value)?.children.find((x) => x.id == level3.value)?.id; }
+  if (level1.value) {
+    r = tempRegions.value[0]?.children.find((x) => x.id == level1.value)?.id;
+  }
+  if (level1.value && level2.value) {
+    r = tempRegions.value[0]?.children
+      .find((x) => x.id == level1.value)?.children
+      .find((x) => x.id == level2.value)?.id;
+  }
+  if (level1.value && level2.value && level3.value) {
+    r = tempRegions.value[0]?.children
+      .find((x) => x.id == level1.value)?.children
+      .find((x) => x.id == level2.value)?.children
+      .find((x) => x.id == level3.value)?.id;
+  }
   regiao_id_mount.value = r;
 }
 function maskDate(el) {
@@ -301,7 +312,7 @@ function maskDate(el) {
           <select
             v-model="level1"
             class="inputtext light mb1"
-            :disabled="minLevel>=1"
+            :disabled="minLevel >= 1"
             @change="lastlevel"
           >
             <option value="">
@@ -315,18 +326,18 @@ function maskDate(el) {
               {{ r.descricao }}
             </option>
           </select>
-          <template v-if="level1!==null">
+          <template v-if="level1 !== null">
             <select
               v-model="level2"
               class="inputtext light mb1"
-              :disabled="minLevel>=2"
+              :disabled="minLevel >= 2"
               @change="lastlevel"
             >
               <option value="">
                 Selecione
               </option>
               <option
-                v-for="(rr) in tempRegions[0]?.children.find(x=>x.id==level1)?.children"
+                v-for="(rr) in tempRegions[0]?.children.find(x=> x.id == level1)?.children"
                 :key="rr.id"
                 :value="rr.id"
               >
@@ -337,14 +348,15 @@ function maskDate(el) {
               <select
                 v-model="level3"
                 class="inputtext light mb1"
-                :disabled="minLevel>=3"
+                :disabled="minLevel >= 3"
                 @change="lastlevel"
               >
                 <option value="">
                   Selecione
                 </option>
                 <option
-                  v-for="(rrr) in tempRegions[0]?.children.find(x=>x.id==level1)?.children.find(x=>x.id==level2)?.children"
+                  v-for="(rrr) in tempRegions[0]?.children.find(x=> x.id ==
+                    level1)?.children.find(x=>x.id == level2)?.children"
                   :key="rrr.id"
                   :value="rrr.id"
                 >
