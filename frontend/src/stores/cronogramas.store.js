@@ -2,6 +2,7 @@ import { requestS } from '@/helpers';
 import dateToField from '@/helpers/dateToField.js';
 import { useEtapasStore } from '@/stores';
 import { defineStore } from 'pinia';
+import { toRaw } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -105,6 +106,38 @@ export const useCronogramasStore = defineStore({
       } catch (error) {
         return { error };
       }
+    },
+
+    async excluirEtapa(idDaEtapa) {
+      const r = await requestS.delete(`${baseUrl}/etapa/${idDaEtapa}`);
+      if (r) {
+        // remover recursivamente da tela todas as etapas com o id informado
+        // para evitar recarregar tudo
+        this.singleCronogramaEtapas = toRaw(this.singleCronogramaEtapas).filter(function f(x) {
+          if (x.etapa_id === idDaEtapa) {
+            return false;
+          }
+
+          if (x.etapa_filha) {
+          // eslint-disable-next-line no-param-reassign
+            x.etapa_filha = x.etapa_filha.filter(f);
+
+            return !!x.etapa_filha.length;
+          }
+          if (x.etapa?.etapa_filha) {
+          // eslint-disable-next-line no-param-reassign
+            x.etapa.etapa_filha = x.etapa.etapa_filha.filter(f);
+
+            return !!x.etapa.etapa_filha.length;
+          }
+
+          return true;
+        });
+
+        return true;
+      }
+
+      return false;
     },
   },
 });
