@@ -54,6 +54,8 @@ const level2 = ref(null);
 const level3 = ref(null);
 const regiao_id_mount = ref(null);
 
+const minLevel = ref(0);
+
 const acumulativa_iniciativa = ref(0);
 const acumulativa_iniciativa_o = ref(0);
 const acumulativa_meta = ref(0);
@@ -73,6 +75,14 @@ if (etapa_id) {
           level1.value = tempRegions.value[0]?.children[0].index ?? null;
           level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
           level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
+
+          if (level3.value) {
+            minLevel.value = 3;
+          } else if (level2.value) {
+            minLevel.value = 2;
+          } else if (level1.value) {
+            minLevel.value = 1;
+          }
         })();
       }
       if (singleEtapa.value.etapa.responsaveis) {
@@ -336,6 +346,7 @@ function maskDate(el) {
           <select
             v-model="level1"
             class="inputtext light mb1"
+            :disabled="minLevel >= 1"
             @change="lastlevel"
           >
             <option value="">
@@ -356,6 +367,7 @@ function maskDate(el) {
             <select
               v-model="level2"
               class="inputtext light mb1"
+              :disabled="minLevel >= 2"
               @change="lastlevel"
             >
               <option value="">
@@ -376,6 +388,7 @@ function maskDate(el) {
               <select
                 v-model="level3"
                 class="inputtext light mb1"
+                :disabled="minLevel >= 3"
                 @change="lastlevel"
               >
                 <option value="">
