@@ -179,7 +179,7 @@ onUpdated(() => { start(); });
           class="etapa"
         >
           <div class="status">
-            <span>{{ index+1 }}</span>
+            <span>{{ index + 1 }}</span>
           </div>
           <div class="title mb1">
             <h3>{{ r.etapa.titulo }}</h3>
@@ -301,7 +301,9 @@ onUpdated(() => { start(); });
             class="etapa sub"
           >
             <div class="status">
-              <span>{{ rrindex + 1 }}</span>
+              <span>
+                <small class="niveis-pais">{{ index + 1 }}.</small>{{ rrindex + 1 }}
+              </span>
             </div>
             <div class="title">
               <h4>{{ rr.titulo }}</h4>
@@ -406,7 +408,10 @@ onUpdated(() => { start(); });
               >
                 <div class="pl3 flex center t13">
                   <div class="f2 flex center">
-                    <span class="farol f0">{{ rrrindex + 1 }}</span> <span>{{ rrr.titulo }}</span>
+                    <span class="farol f0">
+                      <small class="niveis-pais">{{ index + 1 }}.{{ rrindex + 1 }}.</small>{{ rrrindex + 1 }}
+                    </span>
+                    <span>{{ rrr.titulo }}</span>
                   </div>
                   <div class="ml1 f1">
                     {{ rrr.inicio_previsto }}
