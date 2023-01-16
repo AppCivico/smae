@@ -608,6 +608,7 @@ model Arquivo {
     VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
     Relatorio                       Relatorio[]
+    projeto_documentos              ProjetoDocumento[]
 
     @@map("arquivo")
 }
@@ -2047,10 +2048,10 @@ model Projeto {
     inicio_real      DateTime?
     termino_real     DateTime?
     custo_real       Float? @db.DoublePrecision
-    // status
+    status           String?
     // escopo
     // nao_escopo
-    // principais_etapas String?
+    // principais_etapas
 
     premissas         ProjetoPremissa[]
     restricoes        ProjetoRestricao[]
@@ -2135,7 +2136,8 @@ model ProjetoDocumento {
     projeto_id   Int
     documento_id Int
 
-    projeto       Projeto @relation(fields: [projeto_id], references: [id])
+    projeto   Projeto @relation(fields: [projeto_id], references: [id])
+    documento Arquivo @relation(fields: [documento_id], references: [id])
 
     @@map("projeto_documento")
 }
