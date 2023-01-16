@@ -203,7 +203,8 @@ model Orgao {
     atividade_orgao        AtividadeOrgao[]
     atividade_responsavel  AtividadeResponsavel[]
     CronogramaOrgao        CronogramaOrgao[]
-    projeto_prgao          ProjetoOrgao[]
+    projeto_orgao          ProjetoOrgao[]
+    tarefas                Tarefa[]
 
     @@map("orgao")
 }
@@ -2059,6 +2060,7 @@ model Projeto {
     licoes_aprendidas ProjetoLicoesAprendidas[]
     recursos          ProjetoRecurso[]
     documentos        ProjetoDocumento[]
+    tarefas           Tarefa[]
 
     @@map("projeto")
 }
@@ -2145,4 +2147,20 @@ model ProjetoDocumento {
 enum ProjetoRecursoTipoValor {
     Percentual
     Nominal
+}
+
+model Tarefa {
+    id Int @id @default(autoincrement())
+    
+    projeto_id    Int
+    orgao_id      Int
+    tarefa_pai_id Int?
+
+    projeto      Projeto  @relation(fields: [projeto_id], references: [id])
+    tarefa_pai   Tarefa?  @relation("tarefa_pai", fields: [tarefa_pai_id], references: [id])
+    tarefa_filha Tarefa[] @relation("tarefa_pai")
+    orgao        Orgao    @relation(fields: [orgao_id], references: [id])
+
+    numero Int
+    nivel  Int @db.SmallInt
 }
