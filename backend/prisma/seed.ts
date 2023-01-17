@@ -160,6 +160,14 @@ const PrivConfig: any = {
         ['Reports.executar', 'Executar relatórios'],
         ['Reports.remover', 'Remover relatórios'],
     ],
+    Projeto: [
+        ['Projeto.criar', 'Criar novos Projetos'],
+        ['Projeto.priorizar', 'Priorizar projetos'],
+        ['Projeto.aprovar', 'Aprovar projetos'],
+        ['Projeto.arquivar', 'Arquivar projetos'],
+        //['SMAE.secretario_executivo', '(Projeto) Secretário Executivo'],
+        //['SMAE.secretario_executivo_responsavel', '(Projeto) Secretário Executivo Responsável'],
+    ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
         ['PDM.tecnico_cp', '(PDM) Técnico CP'],
@@ -194,7 +202,9 @@ const ModuloDescricao: any = {
     CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
     Config: 'Configurações do Sistema',
     Reports: 'Relatórios',
+    Projeto: 'Cadastro de Projetos',
     PDM: 'Regras de Negocio do PDM',
+    //SMAE: 'Regras de Negocio do SMAE',
 };
 
 let todosPrivilegios: string[] = [];
@@ -213,7 +223,7 @@ const PerfilAcessoConfig: any = [
     {
         nome: 'Administrador Geral',
         descricao: 'Administrador Geral',
-        privilegios: todosPrivilegios.filter((e) => /^PDM\./.test(e) === false)
+        privilegios: todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false)
     },
     {
         nome: 'Coordenadoria de Planejamento',
@@ -223,7 +233,12 @@ const PerfilAcessoConfig: any = [
     {
         nome: 'Unidade de Entregas',
         descricao: 'Unidade de Entregas',
-        privilegios: []
+        privilegios: [
+            'Projeto.criar',
+            'Projeto.priorizar',
+            'Projeto.aprovar',
+            'Projeto.arquivar',
+        ]
     },
     {
         nome: 'Responsável por meta na CP',
@@ -253,6 +268,27 @@ const PerfilAcessoConfig: any = [
             'PDM.ponto_focal',
         ]
     },
+    //    {
+    //        nome: 'Secretário Executivo',
+    //        descricao: 'Pode ser escolhido como secretário executivo nos projetos',
+    //        privilegios: [
+    //            'SMAE.secretario_executivo',
+    //        ]
+    //    },
+    //    {
+    //        nome: 'Secretário Executivo Responsável',
+    //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
+    //        privilegios: [
+    //            'SMAE.secretario_executivo_responsavel',
+    //        ]
+    //    },
+    //    {
+    //        nome: 'Secretário Executivo Responsável',
+    //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
+    //        privilegios: [
+    //            'SMAE.secretario_executivo_responsavel',
+    //        ]
+    //    },
 
 ];
 
@@ -411,6 +447,19 @@ async function criar_texto_config() {
         {
             bemvindo_email: 'Ao acessar o SMAE, Você está ciente e autoriza...',
             tos: '...O acesso ao SMAE indica ciencia e concordancia com os termos acima',
+        },
+    });
+}
+
+async function criar_diretiorio() {
+    await prisma.diretorio.upsert({
+        where: { titulo: 'padrão' },
+        update: { padrao: true, ativo: true },
+        create:
+        {
+            padrao: true,
+            ativo: true,
+            titulo: 'padrão',
         },
     });
 }
