@@ -162,7 +162,8 @@ model Pessoa {
     RelatorioQueFiz                          Relatorio[]                       @relation("criador")
     RelatorioQueRemovi                       Relatorio[]                       @relation("removedor")
 
-    ProjetoLicoesAprendidas ProjetoLicoesAprendidas[]
+    ProjetoLicoesAprendidasQCriei  ProjetoLicaoAprendida[] @relation("criador")
+    ProjetoLicoesAprendidasQRemovi ProjetoLicaoAprendida[] @relation("removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -2024,6 +2025,24 @@ model Relatorio {
     @@map("relatorio")
 }
 
+enum ProjetoFase {
+    Registro
+    Detalhamento
+    Planejamento
+    Acompanhamento
+    Encerramento
+}
+
+enum ProjetoStatus {
+    EmRegistro // Arquivado ou EmDetalhamento caso seja priorizado
+    EmDetalhamento // Arquivado ou EmPlanejamento caso seja Aprovado
+    EmPlanejamento // Arquivado ou EmExecucao caso o iniciado
+    EmExecucao // Suspenso ou EmFechamento caso fechado
+    EmFechamento // Arquivado
+    Suspenso // Volta pra EmExecucao ou EmFechamento
+
+}
+
 model Projeto {
     id Int @id @default(autoincrement())
 
@@ -2045,10 +2064,10 @@ model Projeto {
     previsao_inicio  DateTime?
     previsao_termino DateTime?
     previsao_duracao Int?
-    previsao_custo   Float?    @db.DoublePrecision
+    previsao_custo   Float?
     inicio_real      DateTime?
     termino_real     DateTime?
-    custo_real       Float?    @db.DoublePrecision
+    custo_real       Float? @db.DoublePrecision
     status           String?
     // escopo
     // nao_escopo
@@ -2057,7 +2076,7 @@ model Projeto {
     premissas         ProjetoPremissa[]
     restricoes        ProjetoRestricao[]
     orgaos            ProjetoOrgao[]
-    licoes_aprendidas ProjetoLicoesAprendidas[]
+    licoes_aprendidas ProjetoLicaoAprendida[]
     recursos          ProjetoRecurso[]
     documentos        ProjetoDocumento[]
     tarefas           Tarefa[]
@@ -2101,20 +2120,28 @@ model ProjetoOrgao {
     @@map("projeto_orgao")
 }
 
-model ProjetoLicoesAprendidas {
+model ProjetoLicaoAprendida {
     id Int @id @default(autoincrement())
 
     projeto_id Int
-    pessoa_id  Int
+    criado_por Int
+    criado_em  DateTime
 
-    projeto Projeto @relation(fields: [projeto_id], references: [id])
-    pessoa  Pessoa  @relation(fields: [pessoa_id], references: [id])
+    removido_por Int?
+    removido_em  DateTime?
 
-    data_registro DateTime
-    descricao     String
-    observacao    String?
+    projeto   Projeto @relation(fields: [projeto_id], references: [id])
+    criador   Pessoa  @relation("criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("removedor", fields: [removido_por], references: [id])
 
-    @@map("projeto_licoes_aprendidas")
+    descricao  String
+    observacao String?
+
+    processo_sei        String?
+    registro_sei_info   Json?
+    registro_sei_errmsg String?
+
+    @@map("projeto_licao_aprendida")
 }
 
 model ProjetoRecurso {
@@ -2126,8 +2153,8 @@ model ProjetoRecurso {
     projeto       Projeto      @relation(fields: [projeto_id], references: [id])
     fonte_recurso FonteRecurso @relation(fields: [fonte_recurso_id], references: [id])
 
-    valor      Float?                  @db.DoublePrecision
-    tipo_valor ProjetoRecursoTipoValor
+    valor_percentual Float?
+    valor_nominal    Float?
 
     @@map("projeto_recurso")
 }
@@ -2142,11 +2169,6 @@ model ProjetoDocumento {
     documento Arquivo @relation(fields: [documento_id], references: [id])
 
     @@map("projeto_documento")
-}
-
-enum ProjetoRecursoTipoValor {
-    Percentual
-    Nominal
 }
 
 model Tarefa {
@@ -2173,12 +2195,12 @@ model Tarefa {
     custo_real           Float?    @db.DoublePrecision
     percentual_concluido Float?    @db.DoublePrecision
 
-    tarefa_precedida    Predecessor[] @relation("tarefa_precedida")
-    tarefa_predecessora Predecessor[] @relation("tarefa_predecessora")
-    riscos              Risco[]
+    tarefas_precedida    TarefaPredecessora[] @relation("tarefa_precedida")
+    tarefa_predecessora TarefaPredecessora[] @relation("tarefa_predecessora")
+    riscos              ProjetoRisco[]
 }
 
-model Predecessor {
+model TarefaPredecessora {
     id Int @id @default(autoincrement())
 
     tarefa_id              Int
@@ -2186,9 +2208,10 @@ model Predecessor {
 
     tarefa              Tarefa @relation("tarefa_precedida", fields: [tarefa_id], references: [id])
     tarefa_predecessora Tarefa @relation("tarefa_predecessora", fields: [tarefa_predecessora_id], references: [id])
+	@@map("tarefa_predecessora")
 }
 
-model Risco {
+model ProjetoRisco {
     id Int @id @default(autoincrement())
 
     tarefa_id Int
@@ -2204,4 +2227,6 @@ model Risco {
     nivel         Float?
     grau          Float?
     resposta      String?
+
+    @@map("projeto_risco")
 }
