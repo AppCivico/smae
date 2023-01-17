@@ -449,6 +449,9 @@ async function addFunction(f) {
               type="number"
               class="inputtext light mb1"
               :class="{ 'error': errors.casas_decimais }"
+              max="35"
+              min="0"
+              step="1"
             />
             <div class="error-msg">
               {{ errors.casas_decimais }}
