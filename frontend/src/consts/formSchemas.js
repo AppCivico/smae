@@ -46,7 +46,7 @@ const indicador = object().shape({
   titulo: string().required('Preencha o título'),
   polaridade: string().required('Selecione a polaridade'),
   periodicidade: string().required('Selecione a periodicidade'),
-  casas_decimais: string().nullable(),
+  casas_decimais: number().min(0).max(35).nullable(),
 
   inicio_medicao: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
   fim_medicao: string().required('Preencha a data').matches(regEx['month/year'], 'Formato inválido'),
