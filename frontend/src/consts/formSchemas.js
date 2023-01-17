@@ -27,6 +27,11 @@ const etapa = object().shape({
   termino_real: string().nullable().matches(regEx['day/month/year'], 'Formato inválido'),
 });
 
+const etapaDeMonitoramento = object().shape({
+  inicio_real: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+  termino_real: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+});
+
 const fase = object().shape({
   regiao_id: string().nullable(),
 
@@ -138,6 +143,7 @@ export {
   autenticação,
   custeio,
   etapa,
+  etapaDeMonitoramento,
   fase,
   indicador,
   novaSenha,

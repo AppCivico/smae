@@ -1,10 +1,11 @@
 <script setup>
+import { etapaDeMonitoramento as schema } from '@/consts/formSchemas';
+import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
 import { useAlertStore, useCiclosStore, useEditModalStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -16,12 +17,6 @@ const { etapa_id } = route.params;
 const CiclosStore = useCiclosStore();
 const { SingleEtapa } = storeToRefs(CiclosStore);
 CiclosStore.getEtapaById(cron_id, etapa_id);
-
-const regx = /^$|^(?:(?:31(\/)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
-const schema = Yup.object().shape({
-  inicio_real: Yup.string().required('Preencha a data').matches(regx, 'Formato inválido'),
-  termino_real: Yup.string().required('Preencha a data').matches(regx, 'Formato inválido'),
-});
 
 async function onSubmit(values) {
   try {
@@ -65,14 +60,6 @@ function maskDate(el) {
       el.target.value = data;
     }
   }
-}
-function fieldToDate(d) {
-  if (d) {
-    if (d.length == 6) { d = `01/0${d}`; } else if (d.length == 7) { d = `01/${d}`; }
-    const x = d.split('/');
-    return (x.length == 3) ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10) : null;
-  }
-  return null;
 }
 </script>
 <template>
