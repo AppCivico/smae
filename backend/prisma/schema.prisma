@@ -206,6 +206,7 @@ model Orgao {
     CronogramaOrgao        CronogramaOrgao[]
     projeto_orgao          ProjetoOrgao[]
     tarefas                Tarefa[]
+    PlanoAcao              PlanoAcao[]
 
     @@map("orgao")
 }
@@ -472,7 +473,7 @@ model FonteRecurso {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    projetos_fonte_recurso ProjetoRecurso[]
+    projetos_fonte_recurso ProjetoFonteRecurso[]
 
     @@map("fonte_recurso")
 }
@@ -2037,14 +2038,27 @@ enum ProjetoStatus {
     EmRegistro // Arquivado ou EmDetalhamento caso seja priorizado
     EmDetalhamento // Arquivado ou EmPlanejamento caso seja Aprovado
     EmPlanejamento // Arquivado ou EmExecucao caso o iniciado
-    EmExecucao // Suspenso ou EmFechamento caso fechado
+    EmExecucao // EmSuspensao ou EmFechamento caso fechado
     EmFechamento // Arquivado
-    Suspenso // Volta pra EmExecucao ou EmFechamento
+    EmSuspensao // Volta pra EmExecucao ou EmFechamento
+}
 
+// Apenas um agrupador pra fazer os testes rodarem de forma independente
+// está para o Projeto como o PDM está para as Metas
+// podemos esconder completamente do frontend e usar um padrão para todos os registros
+// no ambiente de produção
+model Diretorio {
+    id      Int       @id @default(autoincrement())
+    titulo  String    @unique
+    padrao  Boolean
+    ativo   Boolean
+    Projeto Projeto[]
 }
 
 model Projeto {
-    id Int @id @default(autoincrement())
+    id           Int       @id @default(autoincrement())
+    diretorio_id Int
+    diretorio    Diretorio @relation(fields: [diretorio_id], references: [id])
 
     meta_id       Int?
     iniciativa_id Int?
@@ -2059,27 +2073,99 @@ model Projeto {
     descricao        String
     objeto           String
     objetivo         String
-    origem           String
+    origem_eh_pdm    Boolean   @default(false)
+    origem_outro     String?
     publico_alvo     String
     previsao_inicio  DateTime?
     previsao_termino DateTime?
     previsao_duracao Int?
-    previsao_custo   Float?
-    inicio_real      DateTime?
-    termino_real     DateTime?
-    custo_real       Float? @db.DoublePrecision
-    status           String?
-    // escopo
-    // nao_escopo
+
+    // campos calc serão calculados sozinhos de acordo com o preenchimento dos campos acima
+    // assim ainda podemos usar pra fazer conta/apresentar na tela, mas ao abrir
+    // a tela de editar, continuar sabendo qual era o campo nulo (se era a duração, inicio ou o fim)
+    previsao_inicio_calc  DateTime?
+    previsao_termino_calc DateTime?
+    previsao_duracao_calc Int?
+
+    previsao_custo Float?
+    inicio_real    DateTime?
+    termino_real   DateTime?
+    custo_real     Float?        @db.DoublePrecision
+    status         ProjetoStatus
+    fase           ProjetoFase
+    arquivado      Boolean       @default(false)
+    eh_prioritario Boolean       @default(false)
+
+    // Fase=Registro
+    escopo String?
     // principais_etapas
+
+    // Fase=Planejamento
+    nao_escopo String?
+
+    // Fase=Detalhamento, required pra entrar na fase Planejamento
+    secretario_responsavel String?
+    secretario_executivo   String?
+    responsavel            String?
+    coordenador_ue         String?
+
+    // fornecido pelo user
+    data_aprovacao DateTime? @db.Date
+    versao         DateTime? @db.Date
+
+    // quem moveu de EmRegistro para EmDetalhamento
+    priorizado_em  DateTime?
+    priorizado_por Int?
+
+    // quem moveu de EmDetalhamento para EmPlanejamento
+    aprovado_em  DateTime?
+    aprovado_por Int?
+
+    // quem suspendeu (vindo do EmExecucao indo pro EmSuspensao)
+    suspenso_em  DateTime?
+    suspenso_por Int?
+
+    // quem arquivou, vindo de qualquer lugar
+    arquivado_em  DateTime?
+    arquivado_por Int?
+
+    // quem migrou de EmSuspensao indo EmFechamento
+    cancelado_em  DateTime?
+    cancelado_por Int?
+
+    // quem migrou de EmSuspensao indo EmExecucao
+    reiniciado_em  DateTime?
+    reiniciado_por Int?
+
+    // quem migrou de EmPlanejamento para EmExecucao
+    iniciado_em  DateTime?
+    iniciado_por Int?
+
+    // quem migrou de EmExecucao para EmFechamento
+    fechado_em  DateTime?
+    fechado_por Int?
+
+    encerramento_processo_sei        String?
+    encerramento_registro_sei_info   Json?
+    encerramento_registro_sei_errmsg String?
+
+    aprovacao_processo_sei        String?
+    aprovacao_registro_sei_info   Json?
+    aprovacao_registro_sei_errmsg String?
+
+    // calculado pelo cronograma
+    realizado_inicio  DateTime?
+    realizado_termino DateTime?
+    realizado_custo   Float?
 
     premissas         ProjetoPremissa[]
     restricoes        ProjetoRestricao[]
     orgaos            ProjetoOrgao[]
     licoes_aprendidas ProjetoLicaoAprendida[]
-    recursos          ProjetoRecurso[]
+    recursos          ProjetoFonteRecurso[]
     documentos        ProjetoDocumento[]
     tarefas           Tarefa[]
+    ProjetoRisco      ProjetoRisco[]
 
     @@map("projeto")
 }
@@ -2144,7 +2230,7 @@ model ProjetoLicaoAprendida {
     @@map("projeto_licao_aprendida")
 }
 
-model ProjetoRecurso {
+model ProjetoFonteRecurso {
     id Int @id @default(autoincrement())
 
     projeto_id       Int
@@ -2156,7 +2242,7 @@ model ProjetoRecurso {
     valor_percentual Float?
     valor_nominal    Float?
 
-    @@map("projeto_recurso")
+    @@map("projeto_fonte_recurso")
 }
 
 model ProjetoDocumento {
@@ -2183,21 +2269,45 @@ model Tarefa {
     tarefa_filha Tarefa[] @relation("tarefa_pai")
     orgao        Orgao    @relation(fields: [orgao_id], references: [id])
 
-    numero               Int
-    nivel                Int       @db.SmallInt
-    inicio_planejado     DateTime?
-    termino_planejado    DateTime?
-    duracao_planejado    Int?
-    inicio_real          DateTime?
-    termino_real         DateTime?
-    duracao_real         Int?
-    custo_estimado       Float?    @db.DoublePrecision
-    custo_real           Float?    @db.DoublePrecision
-    percentual_concluido Float?    @db.DoublePrecision
+    numero            Int
+    nivel             Int       @db.SmallInt
+    inicio_planejado  DateTime?
+    termino_planejado DateTime?
+    duracao_planejado Int?
 
-    tarefas_precedida    TarefaPredecessora[] @relation("tarefa_precedida")
+    inicio_planejado_calc  DateTime?
+    termino_planejado_calc DateTime?
+    duracao_planejado_calc Int?
+
+    inicio_real  DateTime?
+    termino_real DateTime?
+    duracao_real Int?
+
+    custo_estimado       Float?
+    custo_real           Float?
+    // calculado
+    percentual_concluido Float?
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    tarefas_precedida   TarefaPredecessora[] @relation("tarefa_precedida")
     tarefa_predecessora TarefaPredecessora[] @relation("tarefa_predecessora")
-    riscos              ProjetoRisco[]
+
+    TarefaRecurso TarefaRecurso[]
+    RiscoTarefa   RiscoTarefa[]
+}
+
+/// pessoas que executam a task, não necessariamente dentro do SMAE
+model TarefaRecurso {
+    id Int @id @default(autoincrement())
+
+    tarefa_id Int
+    recurso   String
+
+    tarefa Tarefa @relation(fields: [tarefa_id], references: [id])
+
+    @@map("tarefa_recurso")
 }
 
 model TarefaPredecessora {
@@ -2208,25 +2318,90 @@ model TarefaPredecessora {
 
     tarefa              Tarefa @relation("tarefa_precedida", fields: [tarefa_id], references: [id])
     tarefa_predecessora Tarefa @relation("tarefa_predecessora", fields: [tarefa_predecessora_id], references: [id])
-	@@map("tarefa_predecessora")
+
+    @@map("tarefa_predecessora")
 }
 
 model ProjetoRisco {
     id Int @id @default(autoincrement())
 
-    tarefa_id Int
-    tarefa    Tarefa @relation(fields: [tarefa_id], references: [id])
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    numero        Int
-    data_registro DateTime
-    descricao     String?
-    causa         String?
-    consequencia  String?
+    numero    Int
+    criado_em DateTime
+
+    descricao    String?
+    causa        String?
+    consequencia String?
+
     probabilidade Float?
     impacto       Float?
-    nivel         Float?
-    grau          Float?
-    resposta      String?
+
+    // calculados
+    nivel       Float? // probabilidade * impacto
+    grau        Float? // cada nivel vai dar um grau diferente
+    resposta    String?
+    RiscoTarefa RiscoTarefa[]
 
     @@map("projeto_risco")
 }
+
+model RiscoTarefa {
+    id Int @id @default(autoincrement())
+
+    tarefa_id Int
+    tarefa    Tarefa @relation(fields: [tarefa_id], references: [id])
+
+    projeto_risco_id Int
+    risco            ProjetoRisco @relation(fields: [projeto_risco_id], references: [id])
+    PlanoAcao        PlanoAcao[]
+
+    @@map("risco_tarefa")
+}
+
+model PlanoAcao {
+    id Int @id @default(autoincrement())
+
+    risco_tarefa_id Int
+    risco_tarefa    RiscoTarefa @relation(fields: [risco_tarefa_id], references: [id])
+
+    contramedida       String
+    prazo_contramedida DateTime @db.Date()
+    custo              Float
+    custo_percentual   Float // custo em relacao ao projeto todo, coalesce(custo_real, custo_estimado) -- eu acho
+
+    medidas_contrapartida String
+    orgao_id              Int
+    orgao                 Orgao  @relation(fields: [orgao_id], references: [id])
+
+    responsavel            String
+    PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
+
+    @@map("plano_acao")
+}
+
+enum StatusRisco {
+    Padrao
+}
+
+// desenhado no MER como Monitoramento_Risco
+model PlanoAcaoMonitoramento {
+    id Int @id @default(autoincrement())
+
+    plano_acao_id Int
+    plano_acao    PlanoAcao @relation(fields: [plano_acao_id], references: [id])
+
+    status_risco  StatusRisco
+    data_afericao DateTime    @db.Date()
+    descricao     String
+
+    criado_em  DateTime
+    criado_por Int
+
+    @@map("plano_acao_monitoramento")
+}
+
+// TODO: acompanhamento_projeto => acompanhamento-risco
+
+
