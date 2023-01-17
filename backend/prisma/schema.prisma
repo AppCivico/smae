@@ -2045,10 +2045,10 @@ model Projeto {
     previsao_inicio  DateTime?
     previsao_termino DateTime?
     previsao_duracao Int?
-    previsao_custo   Float? @db.DoublePrecision
+    previsao_custo   Float?    @db.DoublePrecision
     inicio_real      DateTime?
     termino_real     DateTime?
-    custo_real       Float? @db.DoublePrecision
+    custo_real       Float?    @db.DoublePrecision
     status           String?
     // escopo
     // nao_escopo
@@ -2123,10 +2123,10 @@ model ProjetoRecurso {
     projeto_id       Int
     fonte_recurso_id Int
 
-    projeto       Projeto @relation(fields: [projeto_id], references: [id])
+    projeto       Projeto      @relation(fields: [projeto_id], references: [id])
     fonte_recurso FonteRecurso @relation(fields: [fonte_recurso_id], references: [id])
 
-    valor      Float? @db.DoublePrecision
+    valor      Float?                  @db.DoublePrecision
     tipo_valor ProjetoRecursoTipoValor
 
     @@map("projeto_recurso")
@@ -2151,7 +2151,7 @@ enum ProjetoRecursoTipoValor {
 
 model Tarefa {
     id Int @id @default(autoincrement())
-    
+
     projeto_id    Int
     orgao_id      Int
     tarefa_pai_id Int?
@@ -2161,6 +2161,47 @@ model Tarefa {
     tarefa_filha Tarefa[] @relation("tarefa_pai")
     orgao        Orgao    @relation(fields: [orgao_id], references: [id])
 
-    numero Int
-    nivel  Int @db.SmallInt
+    numero               Int
+    nivel                Int       @db.SmallInt
+    inicio_planejado     DateTime?
+    termino_planejado    DateTime?
+    duracao_planejado    Int?
+    inicio_real          DateTime?
+    termino_real         DateTime?
+    duracao_real         Int?
+    custo_estimado       Float?    @db.DoublePrecision
+    custo_real           Float?    @db.DoublePrecision
+    percentual_concluido Float?    @db.DoublePrecision
+
+    tarefa_precedida    Predecessor[] @relation("tarefa_precedida")
+    tarefa_predecessora Predecessor[] @relation("tarefa_predecessora")
+    riscos              Risco[]
+}
+
+model Predecessor {
+    id Int @id @default(autoincrement())
+
+    tarefa_id              Int
+    tarefa_predecessora_id Int
+
+    tarefa              Tarefa @relation("tarefa_precedida", fields: [tarefa_id], references: [id])
+    tarefa_predecessora Tarefa @relation("tarefa_predecessora", fields: [tarefa_predecessora_id], references: [id])
+}
+
+model Risco {
+    id Int @id @default(autoincrement())
+
+    tarefa_id Int
+    tarefa    Tarefa @relation(fields: [tarefa_id], references: [id])
+
+    numero        Int
+    data_registro DateTime
+    descricao     String?
+    causa         String?
+    consequencia  String?
+    probabilidade Float?
+    impacto       Float?
+    nivel         Float?
+    grau          Float?
+    resposta      String?
 }
