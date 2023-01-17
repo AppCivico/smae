@@ -2158,14 +2158,15 @@ model Projeto {
     realizado_termino DateTime?
     realizado_custo   Float?
 
-    premissas         ProjetoPremissa[]
-    restricoes        ProjetoRestricao[]
-    orgaos            ProjetoOrgao[]
-    licoes_aprendidas ProjetoLicaoAprendida[]
-    recursos          ProjetoFonteRecurso[]
-    documentos        ProjetoDocumento[]
-    tarefas           Tarefa[]
-    ProjetoRisco      ProjetoRisco[]
+    premissas             ProjetoPremissa[]
+    restricoes            ProjetoRestricao[]
+    orgaos                ProjetoOrgao[]
+    licoes_aprendidas     ProjetoLicaoAprendida[]
+    recursos              ProjetoFonteRecurso[]
+    documentos            ProjetoDocumento[]
+    tarefas               Tarefa[]
+    ProjetoRisco          ProjetoRisco[]
+    ProjetoAcompanhamento ProjetoAcompanhamento[]
 
     @@map("projeto")
 }
@@ -2339,10 +2340,11 @@ model ProjetoRisco {
     impacto       Float?
 
     // calculados
-    nivel       Float? // probabilidade * impacto
-    grau        Float? // cada nivel vai dar um grau diferente
-    resposta    String?
-    RiscoTarefa RiscoTarefa[]
+    nivel                      Float? // probabilidade * impacto
+    grau                       Float? // cada nivel vai dar um grau diferente
+    resposta                   String?
+    RiscoTarefa                RiscoTarefa[]
+    ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
 
     @@map("projeto_risco")
 }
@@ -2402,6 +2404,42 @@ model PlanoAcaoMonitoramento {
     @@map("plano_acao_monitoramento")
 }
 
-// TODO: acompanhamento_projeto => acompanhamento-risco
+// durante a fase de EmExecução, a cada 15 dias eles criam esse acompanhamento
+model ProjetoAcompanhamento {
+    id Int @id @default(autoincrement())
 
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
+    data_registro        DateTime @db.Date()
+    participantes        String
+    detalhamento         String
+    encaminhamento       String
+    prazo_encaminhamento DateTime @db.Date()
+    responsavel          String
+    observacao           String
+    detalhamento_status  String
+    pontos_atencao       String
+
+    criado_em  DateTime
+    criado_por Int
+
+    removido_em                DateTime
+    removido_por               Int
+    ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
+
+    @@map("projeto_acompanhamento")
+}
+
+// de 0 até N riscos pro acompanhamento
+model ProjetoAcompanhamentoRisco {
+    id Int @id @default(autoincrement())
+
+    projeto_risco_id Int
+    projeto_risco    ProjetoRisco @relation(fields: [projeto_risco_id], references: [id])
+
+    projeto_acompanhamento_id Int
+    projeto_acompanhamento    ProjetoAcompanhamento @relation(fields: [projeto_acompanhamento_id], references: [id])
+
+    @@map("projeto_acompanhamento_risco")
+}
