@@ -374,9 +374,11 @@ class smaeChart {
   }
 
   /* DRAW DATA POINTS FUNCTION - CIRCLES AND LINES */
-  drawDataPoints(svg, data, xScale, yScale, sizes, {
+  drawDataPoints(svg, rawData, xScale, yScale, sizes, {
     name = 'none', r = 5, strokeW = 2, firstCircle = true, transitionDuration = 200,
   } = {}) {
+    const data = rawData.filter((x) => x.value !== '' && x.value !== null && typeof x.value !== 'undefined');
+
     // Remove first circle
     let first;
     if (!firstCircle) {
