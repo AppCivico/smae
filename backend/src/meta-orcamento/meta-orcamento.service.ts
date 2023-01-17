@@ -133,6 +133,11 @@ export class MetaOrcamentoService {
 
             const now = new Date(Date.now());
 
+            // TODO - Adicionar um histórico de versões (cada linha indicar o ID da linha anterior)
+            // ou então criar uma nova linha com a versão anterior, e manter o ID dos items estaveis
+            // pro frontend não se perder
+            // Criar relatório pra exporta todas as versoes do metaOrcamento
+
             const metaOrcamento = await prisma.metaOrcamento.updateMany({
                 where: {
                     id: +id
