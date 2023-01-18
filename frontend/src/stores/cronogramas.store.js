@@ -117,17 +117,13 @@ export const useCronogramasStore = defineStore({
             return false;
           }
 
-          if (x.etapa_filha) {
+          if (Array.isArray(x.etapa_filha)) {
           // eslint-disable-next-line no-param-reassign
             x.etapa_filha = x.etapa_filha.filter(f);
-
-            return !!x.etapa_filha.length;
           }
-          if (x.etapa?.etapa_filha) {
+          if (Array.isArray(x.etapa?.etapa_filha)) {
           // eslint-disable-next-line no-param-reassign
             x.etapa.etapa_filha = x.etapa.etapa_filha.filter(f);
-
-            return !!x.etapa.etapa_filha.length;
           }
 
           return true;
