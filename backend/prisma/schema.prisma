@@ -2068,7 +2068,9 @@ model Projeto {
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
-    codigo           String
+    codigo           String? // abre apenas depois de priorizado
+    resumo String // campo livre
+    previsao_custo Float?
     nome             String
     descricao        String
     objeto           String
@@ -2076,18 +2078,10 @@ model Projeto {
     origem_eh_pdm    Boolean   @default(false)
     origem_outro     String?
     publico_alvo     String
-    previsao_inicio  DateTime?
+    previsao_inicio  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
     previsao_termino DateTime?
     previsao_duracao Int?
 
-    // campos calc serão calculados sozinhos de acordo com o preenchimento dos campos acima
-    // assim ainda podemos usar pra fazer conta/apresentar na tela, mas ao abrir
-    // a tela de editar, continuar sabendo qual era o campo nulo (se era a duração, inicio ou o fim)
-    previsao_inicio_calc  DateTime?
-    previsao_termino_calc DateTime?
-    previsao_duracao_calc Int?
-
-    previsao_custo Float?
     inicio_real    DateTime?
     termino_real   DateTime?
     custo_real     Float?        @db.DoublePrecision
@@ -2098,7 +2092,7 @@ model Projeto {
 
     // Fase=Registro
     escopo String?
-    // principais_etapas
+    principais_etapas String
 
     // Fase=Planejamento
     nao_escopo String?
@@ -2224,10 +2218,6 @@ model ProjetoLicaoAprendida {
     descricao  String
     observacao String?
 
-    processo_sei        String?
-    registro_sei_info   Json?
-    registro_sei_errmsg String?
-
     @@map("projeto_licao_aprendida")
 }
 
@@ -2272,13 +2262,10 @@ model Tarefa {
 
     numero            Int
     nivel             Int       @db.SmallInt
-    inicio_planejado  DateTime?
+    inicio_planejado  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
     termino_planejado DateTime?
     duracao_planejado Int?
 
-    inicio_planejado_calc  DateTime?
-    termino_planejado_calc DateTime?
-    duracao_planejado_calc Int?
 
     inicio_real  DateTime?
     termino_real DateTime?
@@ -2369,7 +2356,7 @@ model PlanoAcao {
     risco_tarefa    RiscoTarefa @relation(fields: [risco_tarefa_id], references: [id])
 
     contramedida       String
-    prazo_contramedida DateTime @db.Date()
+    prazo_contramedida DateTime @db.Date() // data do termino previsto
     custo              Float
     custo_percentual   Float // custo em relacao ao projeto todo, coalesce(custo_real, custo_estimado) -- eu acho
 
