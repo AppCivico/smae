@@ -166,7 +166,7 @@ export class EtapaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const etapa_has_children = await this.prisma.etapa.count({where: { etapa_pai_id: id }});
+        const etapa_has_children = await this.prisma.etapa.count({where: { etapa_pai_id: id, removido_em: null }});
         if (etapa_has_children)
             throw new HttpException('Apague primeiro os filhos', 400);
 
