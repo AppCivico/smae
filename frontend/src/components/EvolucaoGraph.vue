@@ -162,7 +162,13 @@ class smaeChart {
   }
 
   /* DRAW INVISIBLE LINES FOR MOUSE EVENTS */
-  drawDataToolTipsBars(svg, data, xScale, yScale, X, metaVal, sizes, el = 'rect') {
+  drawDataToolTipsBars(svg, rawData, xScale, yScale, X, metaVal, sizes, el = 'rect') {
+    const data = {
+      ...rawData,
+      acumulado: Array.isArray(rawData.acumulado) ? rawData.acumulado.filter((x) => x.value !== '' && x.value !== null && typeof x.value !== 'undefined') : [],
+      projetado: Array.isArray(rawData.projetado) ? rawData.projetado.filter((x) => x.value !== '' && x.value !== null && typeof x.value !== 'undefined') : [],
+    };
+
     // Creating guide line for tooltip
     const guideLineTip = svg.selectAll('line.guideline').data([true]);
     guideLineTip
@@ -220,11 +226,14 @@ class smaeChart {
           .on('mousemove', (e) => this.moveTooltip(e));
         tipsLines.exit().remove();
         break;
+
+      default:
+        break;
     }
   }
 
   /* SHOW TOOLTIP */
-  showTooltip(event, d, metaVal, guideLine, pos) {
+  showTooltip(_event, d, metaVal, guideLine, pos) {
     const el = d3.select(tooltipEl.value);
     el.classed('on', true)
       .style('left', `${pos.x}px`)
@@ -271,16 +280,16 @@ class smaeChart {
   mergeDataForTooltips(data, X) {
     // Tip Array with X date domain
     const tipArray = [];
-    for (var i = 0; i < X.length; i++) {
+    for (let i = 0; i < X.length; i += 1) {
       tipArray[i] = { date: X[i] };
     }
     const aux = {};
 
     // Merging all data points for tips info into Tip Array
     const dataKeys = Object.keys(data);
-    for (var i = 0; i < dataKeys.length; i++) {
-      for (let j = 0; j < data[dataKeys[i]].length; j++) {
-        for (let k = 0; k < tipArray.length; k++) {
+    for (let i = 0; i < dataKeys.length; i += 1) {
+      for (let j = 0; j < data[dataKeys[i]].length; j += 1) {
+        for (let k = 0; k < tipArray.length; k += 1) {
           if (tipArray[k].date.getTime() == (new Date(data[dataKeys[i]][j].date)).getTime()) {
             aux[dataKeys[i]] = aux[dataKeys[i]] || 0;
             tipArray[k][`${dataKeys[i]}Acum`] = data[dataKeys[i]][j].value || 0;
@@ -449,7 +458,7 @@ class smaeChart {
       arr.push(new Date(`${startDate.getFullYear()}-06-30T00:00:00.000Z`));
     }
 
-    for (let i = startDate.getFullYear() + 1; i < finalDate.getFullYear(); i++) {
+    for (let i = startDate.getFullYear() + 1; i < finalDate.getFullYear(); i += 1) {
       arr.push(new Date(`${i}-06-30T00:00:00.000Z`));
     }
 
