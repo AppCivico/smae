@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia';
-
 import { requestS } from '@/helpers';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-// eslint-disable-next-line import/prefer-default-export
 export const useAuthStore = defineStore({
   id: 'auth',
   state: () => ({

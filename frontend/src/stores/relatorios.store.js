@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
 
