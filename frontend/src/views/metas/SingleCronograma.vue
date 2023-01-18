@@ -272,7 +272,7 @@ onUpdated(() => { start(); });
                     <button
                       class="like-a__link"
                       type="button"
-                      :disabled="r.etapa_filha?.length"
+                      :disabled="r.etapa?.etapa_filha?.length"
                       @click="excluirEtapa(r.etapa_id)"
                     >
                       Excluir Etapa
