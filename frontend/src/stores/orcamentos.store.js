@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { requestS } from '@/helpers';
 import toFloat from '@/helpers/toFloat';
 import { defineStore } from 'pinia';

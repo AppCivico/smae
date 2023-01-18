@@ -3,7 +3,6 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-// eslint-disable-next-line import/prefer-default-export
 export const useIndicadoresStore = defineStore({
   id: 'Indicadores',
   state: () => ({
