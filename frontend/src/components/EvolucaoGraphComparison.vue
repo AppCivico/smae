@@ -6,10 +6,10 @@ const props = defineProps(['single', 'dataserie']);
 const evolucao = ref(null);
 const tooltipEl = ref(null);
 
-let iP = ref(-1);
-let iR = ref(-1);
-let iPA = ref(-1);
-let iRA = ref(-1);
+const iP = ref(-1);
+const iR = ref(-1);
+const iPA = ref(-1);
+const iRA = ref(-1);
 
 class smaeChart {
   constructor(ratio, sizes, transitionDuration, locale) {
@@ -20,128 +20,141 @@ class smaeChart {
         top: 50,
         right: 0,
         left: 50,
-        bottom: 80
-      }
+        bottom: 80,
+      },
     };
     this.transitionDuration = 1000;
     this.locale = d3.timeFormatLocale({
-      "dateTime": "%A, %e %B %Y г. %X",
-      "date": "%d.%m.%Y",
-      "time": "%H:%M:%S",
-      "periods": ["AM", "PM"],
-      "days": ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"],
-      "shortDays": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"],
-      "months": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
-      "shortMonths": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+      dateTime: '%A, %e %B %Y г. %X',
+      date: '%d.%m.%Y',
+      time: '%H:%M:%S',
+      periods: ['AM', 'PM'],
+      days: ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'],
+      shortDays: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
+      months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+      shortMonths: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
     });
   }
 
-  /*DRAW CHART*/
+  /* DRAW CHART */
   drawChart(dataMult, el) {
-
-    /*UPDATING SIZE*/
+    /* UPDATING SIZE */
     this.sizes.width = el.getBoundingClientRect().width;
     this.sizes.height = 350;
 
-    /*SVG*/
+    /* SVG */
     const svg = d3.select(el);
     svg.attr('width', this.sizes.width)
       .attr('height', this.sizes.height);
 
-    /*MANIPULATING DATA*/
-    //Eval xDomain and xScale for dates
+    /* MANIPULATING DATA */
+    // Eval xDomain and xScale for dates
     let X = [];
     dataMult.forEach((data) => {
-      const Xp = d3.map(data.series.projetadoAcu, d => new Date(d.date));
-      const Xr = d3.map(data.series.realizadoAcu, d => new Date(d.date));
+      const Xp = d3.map(data.series.projetadoAcu, (d) => new Date(d.date));
+      const Xr = d3.map(data.series.realizadoAcu, (d) => new Date(d.date));
       X = X.concat(Xp);
       X = X.concat(Xr);
     });
-    X.sort(function (a, b) { return a - b; });
+    X.sort((a, b) => a - b);
 
     const xDomain = d3.extent(X);
-    const xScale = d3.scaleTime(xDomain, [this.sizes.margin.left, this.sizes.width - this.sizes.margin.left - this.sizes.margin.right]);
+    const xScale = d3
+      .scaleTime(
+        xDomain,
+        [
+          this.sizes.margin.left,
+          this.sizes.width - this.sizes.margin.left - this.sizes.margin.right,
+        ],
+      );
 
-    //Eval yDomain and yScale for linear
+    // Eval yDomain and yScale for linear
     let Y = [];
     dataMult.forEach((data) => {
-      const Yp = d3.map(data.series.projetadoAcu, d => d.value).filter(x => x);
-      const Yr = d3.map(data.series.realizadoAcu, d => d.value).filter(x => x);
+      const Yp = d3.map(data.series.projetadoAcu, (d) => d.value).filter((x) => x);
+      const Yr = d3.map(data.series.realizadoAcu, (d) => d.value).filter((x) => x);
       Y = Y.concat(Yp);
       Y = Y.concat(Yr);
     });
     const yDomain = d3.extent(Y);
-    const yScale = d3.scaleLinear(yDomain, [this.sizes.height - this.sizes.margin.bottom, this.sizes.margin.top]);
+    const yScale = d3
+      .scaleLinear(yDomain, [this.sizes.height - this.sizes.margin.bottom, this.sizes.margin.top]);
 
-    //All dates unique on X and sorted by ASC
-    X = X.map(function (date) { return date.getTime(); })
-      .filter(function (date, i, array) { return array.indexOf(date) === i; })
-      .map(function (time) { return new Date(time); });
+    // All dates unique on X and sorted by ASC
+    X = X.map((date) => date.getTime())
+      .filter((date, i, array) => array.indexOf(date) === i)
+      .map((time) => new Date(time));
 
-    //Domain for Years
+    // Domain for Years
     const ticksYears = this.formatTicksYears(xScale.domain());
 
-    /*YAXIS*/
+    /* YAXIS */
     const yAxis = d3.axisLeft(yScale)
       .tickSize(0)
       .tickPadding(10);
 
-    /*XAXIS*/
-    //Years
+    /* XAXIS */
+    // Years
     const xAxis2 = d3.axisBottom(xScale)
       .ticks(d3.timeYear)
-      .tickFormat(this.locale.format("%Y"))
+      .tickFormat(this.locale.format('%Y'))
       .tickSize(0)
       .tickPadding(9);
 
-    //Months
+    // Months
     const xAxis = d3.axisBottom(xScale)
       .ticks(d3.timeMonth, 10)
-      .tickFormat(this.locale.format("%b"))
+      .tickFormat(this.locale.format('%b'))
       .tickSize(0)
       .tickPadding(15);
 
-    /*DRAW Gs*/
-    //Draw Y-Axis
-    const gYaxis = svg.selectAll("g.yaxis").data([true]);
+    /* DRAW Gs */
+    // Draw Y-Axis
+    const gYaxis = svg.selectAll('g.yaxis').data([true]);
     gYaxis
       .enter()
       .append('g')
-      .attr("class", 'yaxis')
-      .attr("transform", 'translate(' + this.sizes.margin.left + ',0)')
-      .merge(gYaxis).transition().duration(this.transitionDuration)
+      .attr('class', 'yaxis')
+      .attr('transform', `translate(${this.sizes.margin.left},0)`)
+      .merge(gYaxis)
+      .transition()
+      .duration(this.transitionDuration)
       .call(yAxis);
 
-    //Draw X-Axis
-    const gXaxis = svg.selectAll("g.xaxis").data([true]);
+    // Draw X-Axis
+    const gXaxis = svg.selectAll('g.xaxis').data([true]);
     gXaxis
       .enter()
-      .append("g")
-      .attr("class", 'xaxis')
-      .attr("transform", 'translate(0,' + (this.sizes.height - this.sizes.margin.bottom) + ')')
-      .merge(gXaxis).transition().duration(this.transitionDuration)
-      .attr("transform", 'translate(0,' + (this.sizes.height - this.sizes.margin.bottom) + ')')
+      .append('g')
+      .attr('class', 'xaxis')
+      .attr('transform', `translate(0,${this.sizes.height - this.sizes.margin.bottom})`)
+      .merge(gXaxis)
+      .transition()
+      .duration(this.transitionDuration)
+      .attr('transform', `translate(0,${this.sizes.height - this.sizes.margin.bottom})`)
       .call(xAxis)
-      .selectAll("text")
-      .call(x => toomuch(this.sizes.width, x))
+      .selectAll('text')
+      .call((x) => toomuch(this.sizes.width, x));
 
     function toomuch(w, s, d) {
-      let ss = s.size();
-      let m = Math.round(w / 50);
-      let dif = ss > m ? Math.floor(ss / m) : 1;
-      s.style('opacity', (d, i) => { return i % dif == 0 ? 1 : 0 });
+      const ss = s.size();
+      const m = Math.round(w / 50);
+      const dif = ss > m ? Math.floor(ss / m) : 1;
+      s.style('opacity', (d, i) => (i % dif == 0 ? 1 : 0));
     }
 
-    //Draw X-Axis2
+    // Draw X-Axis2
     this.rangeYearsLines(svg, ticksYears, xDomain, xScale, this.sizes, this.transitionDuration);
-    const gXaxis2 = svg.selectAll("g.xaxis2").data([true]);
+    const gXaxis2 = svg.selectAll('g.xaxis2').data([true]);
     gXaxis2
       .enter()
-      .append("g")
-      .attr("class", 'xaxis2')
-      .attr("transform", 'translate(0,' + (this.sizes.height - this.sizes.margin.bottom / 2) + ')')
-      .merge(gXaxis2).transition().duration(this.transitionDuration)
-      .attr("transform", 'translate(0,' + (this.sizes.height - this.sizes.margin.bottom / 2) + ')')
+      .append('g')
+      .attr('class', 'xaxis2')
+      .attr('transform', `translate(0,${this.sizes.height - this.sizes.margin.bottom / 2})`)
+      .merge(gXaxis2)
+      .transition()
+      .duration(this.transitionDuration)
+      .attr('transform', `translate(0,${this.sizes.height - this.sizes.margin.bottom / 2})`)
       .call(xAxis2);
 
     svg.selectAll('g.xaxis2 g')
@@ -154,57 +167,71 @@ class smaeChart {
     svg.selectAll('g.grupos').remove();
     const grupos = svg.append('g').attr('class', 'grupos');
 
-    /*DRAW PROJETADO*/
+    /* DRAW PROJETADO */
     dataMult.forEach((data, i) => {
-      this.drawDataPoints(grupos, data.series.projetadoAcu, xScale, yScale, this.sizes, { name: "p" + (i + 1), transitionDuration: this.transitionDuration });
+      this.drawDataPoints(grupos, data.series.projetadoAcu, xScale, yScale, this.sizes, { name: `p${i + 1}`, transitionDuration: this.transitionDuration });
     });
 
-    /*DRAW REALIZADO*/
+    /* DRAW REALIZADO */
     dataMult.forEach((data, i) => {
-      this.drawDataPoints(grupos, data.series.realizadoAcu, xScale, yScale, this.sizes, { name: "r" + (i + 1), transitionDuration: this.transitionDuration });
+      this.drawDataPoints(grupos, data.series.realizadoAcu, xScale, yScale, this.sizes, { name: `r${i + 1}`, transitionDuration: this.transitionDuration });
     });
 
-    /*DRAW META*/
+    /* DRAW META */
     const metaVal = null;
-    let meta = null;
-    /*const metaVal = Yp[Yp.length-1];
+    const meta = null;
+    /*
+    const metaVal = Yp[Yp.length-1];
     let meta = [
-      {"date": d3.min(X),"value": metaVal},
-      {"date": Xp[Xp.length-1],"value": metaVal}
+      {'date': d3.min(X), 'value': metaVal},
+      {'date': Xp[Xp.length-1], 'value': metaVal}
     ];
-    this.drawDataPoints(svg, meta, xScale, yScale, this.sizes, { name: 'meta', r: 10, strokeW: 4, firstCircle: false, transitionDuration: this.transitionDuration } );*/
+    this.drawDataPoints(
+      svg,
+      meta,
+      xScale,
+      yScale,
+      this.sizes,
+      {
+        name: 'meta',
+        r: 10,
+        strokeW: 4,
+        firstCircle: false,
+        transitionDuration: this.transitionDuration
+      }
+    );
+    */
 
-    /*DRAW INVISIBLE LINES FOR MOUSE EVENTS*/
+    /* DRAW INVISIBLE LINES FOR MOUSE EVENTS */
     this.drawDataToolTipsBars(svg, dataMult, xScale, yScale, X, metaVal, this.sizes, 'rect');
   }
 
-  /*DRAW INVISIBLE LINES FOR MOUSE EVENTS*/
+  /* DRAW INVISIBLE LINES FOR MOUSE EVENTS */
   drawDataToolTipsBars(svg, data, xScale, yScale, X, metaVal, sizes, el = 'rect') {
-
-    //Creating guide line for tooltip
-    const guideLineTip = svg.selectAll("line.guideline").data([true]);
+    // Creating guide line for tooltip
+    const guideLineTip = svg.selectAll('line.guideline').data([true]);
     guideLineTip
       .enter()
-      .append("line")
-      .attr("class", 'guideline')
-      .attr("stroke", "#8B9BB1")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "5,5")
-      .attr("y1", sizes.margin.top)
-      .attr("y2", sizes.height - sizes.margin.bottom);
-    const guideLine = svg.select("line.guideline");
+      .append('line')
+      .attr('class', 'guideline')
+      .attr('stroke', '#8B9BB1')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '5,5')
+      .attr('y1', sizes.margin.top)
+      .attr('y2', sizes.height - sizes.margin.bottom);
+    const guideLine = svg.select('line.guideline');
 
-    //Prepare new data for tooltips
-    let tipArray = this.mergeDataForTooltips(data, X);
+    // Prepare new data for tooltips
+    const tipArray = this.mergeDataForTooltips(data, X);
 
-    const g = svg.selectAll("g.tooltipslines").data([true]);
-    g.enter().append("g").attr("class", 'tooltipslines');
-    const gLines = svg.select("g.tooltipslines");
+    const g = svg.selectAll('g.tooltipslines').data([true]);
+    g.enter().append('g').attr('class', 'tooltipslines');
+    const gLines = svg.select('g.tooltipslines');
 
-    //Creating tips bars {rect || line}
+    // Creating tips bars {rect || line}
     switch (el) {
       case 'rect':
-        const tipsRects = gLines.selectAll("rect").data(tipArray);
+        const tipsRects = gLines.selectAll('rect').data(tipArray);
         tipsRects
           .enter()
           .append('rect')
@@ -216,47 +243,50 @@ class smaeChart {
           .attr('fill', 'black')
           .attr('opacity', 0)
           .on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale(d.date), y: yScale(d3.max([d.realizadoAcu, d.projetadoAcu])) }))
-          .on("mouseleave", () => this.hideTooltip(guideLine))
-          .on("mousemove", (e) => this.moveTooltip(e));
+          .on('mouseleave', () => this.hideTooltip(guideLine))
+          .on('mousemove', (e) => this.moveTooltip(e));
         tipsRects.exit().remove();
         break;
 
       case 'line':
-        const tipsLines = gLines.selectAll("line").data(tipArray);
+        const tipsLines = gLines.selectAll('line').data(tipArray);
         tipsLines
           .enter()
           .append('line')
           .merge(tipsRects)
-          .attr('x1', d => xScale(new Date(d.date)))
+          .attr('x1', (d) => xScale(new Date(d.date)))
           .attr('y1', sizes.margin.top)
-          .attr('x2', d => xScale(new Date(d.date)))
+          .attr('x2', (d) => xScale(new Date(d.date)))
           .attr('y2', sizes.height - sizes.margin.bottom)
           .attr('stroke', 'transparent')
           .attr('stroke-width', 10)
           .on('mouseover', (event, d) => this.showTooltip(event, d, metaVal, guideLine, { x: xScale(d.date), y: yScale(d3.max([d.realizadoAcu, d.projetadoAcu])) }))
-          .on("mouseleave", () => this.hideTooltip(guideLine))
-          .on("mousemove", (e) => this.moveTooltip(e));
+          .on('mouseleave', () => this.hideTooltip(guideLine))
+          .on('mousemove', (e) => this.moveTooltip(e));
         tipsLines.exit().remove();
+        break;
+
+      default:
         break;
     }
   }
 
-  /*SHOW TOOLTIP*/
+  /* SHOW TOOLTIP */
   showTooltip(event, d, metaVal, guideLine, pos) {
-    let el = d3.select(tooltipEl.value);
-    el.classed("on", true)
-      .style("left", pos.x + "px")
-      .style("top", pos.y + "px");
+    const el = d3.select(tooltipEl.value);
+    el.classed('on', true)
+      .style('left', `${pos.x}px`)
+      .style('top', `${pos.y}px`);
 
-    guideLine.classed("on", true)
-      .attr("x1", pos.x)
-      .attr("x2", pos.x);
+    guideLine.classed('on', true)
+      .attr('x1', pos.x)
+      .attr('x2', pos.x);
 
-    //Creating tooltip element
-    let mes = this.locale.utcFormat("%B/%Y")(d.date);
+    // Creating tooltip element
+    const mes = this.locale.utcFormat('%B/%Y')(d.date);
     let tipHtml = `<p class="t14 tprimary">${mes}</p>`;
 
-    d.indicadores.forEach(function (el, i) {
+    d.indicadores.forEach((el, i) => {
       tipHtml += `<p class="t14 indicador tprimary">${el.label}</p>
           <div class="t11 index${i + 1}">
             <p class="r-caption"><i></i>
@@ -275,39 +305,41 @@ class smaeChart {
     el.html(tipHtml);
   }
 
-  /*HIDE TOOLTIP*/
+  /* HIDE TOOLTIP */
   hideTooltip(guideLine) {
-    let el = d3.select(tooltipEl.value);
-    el.classed("on", false);
-    guideLine.classed("on", false);
+    const el = d3.select(tooltipEl.value);
+    el.classed('on', false);
+    guideLine.classed('on', false);
   }
 
   moveTooltip(e) {
-    let el = d3.select(tooltipEl.value);
-    el.classed("on", true)
-      .classed("after", false)
-      //.style("transition", "opacity 200ms ease-in-out, visibility 200ms ease-in-out")
-      //.style("left", e.offsetX + "px")
-      .style("top", e.offsetY + "px");
+    const el = d3.select(tooltipEl.value);
+    el.classed('on', true)
+      .classed('after', false)
+      // .style("transition", "opacity 200ms ease-in-out, visibility 200ms ease-in-out")
+      // .style("left", e.offsetX + "px")
+      .style('top', `${e.offsetY}px`);
   }
 
-  /*MERGE DATA FOR TOOLTIPS PATTERN*/
+  /* MERGE DATA FOR TOOLTIPS PATTERN */
   mergeDataForTooltips(data, X) {
-    //Tip Array with X date domain
-    let tipArray = [];
-    for (var i = 0; i < X.length; i++) {
-      tipArray[i] = { 'date': X[i] }
+    // Tip Array with X date domain
+    const tipArray = [];
+    for (let i = 0; i < X.length; i += 1) {
+      tipArray[i] = { date: X[i] };
     }
-    //Merging all data points for tips info into Tip Array
+    // Merging all data points for tips info into Tip Array
     data.forEach((data, index) => {
       const dataKeys = Object.keys(data.series);
-      for (var i = 0; i < dataKeys.length; i++) {
-        for (var j = 0; j < data.series[dataKeys[i]].length; j++) {
-          for (var k = 0; k < tipArray.length; k++) {
+      for (let i = 0; i < dataKeys.length; i += 1) {
+        for (let j = 0; j < data.series[dataKeys[i]].length; j += 1) {
+          for (let k = 0; k < tipArray.length; k += 1) {
             if (tipArray[k].date.getTime() == (new Date(data.series[dataKeys[i]][j].date)).getTime()) {
-              tipArray[k]['indicadores'] = tipArray[k]['indicadores'] || [];
-              if (!tipArray[k]['indicadores'][index]) tipArray[k]['indicadores'][index] = { "id": data.id, "label": data.label };
-              tipArray[k]['indicadores'][index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value : '-';
+              tipArray[k].indicadores = tipArray[k].indicadores || [];
+              if (!tipArray[k].indicadores[index]) {
+                tipArray[k].indicadores[index] = { id: data.id, label: data.label };
+              }
+              tipArray[k].indicadores[index][dataKeys[i]] = data.series[dataKeys[i]][j].value ? data.series[dataKeys[i]][j].value : '-';
               break;
             }
           }
@@ -317,30 +349,29 @@ class smaeChart {
     return tipArray;
   }
 
-  /*FID MIDWAY X FOR A DATAPOINT AND ITS NEIGHBORS*/
+  /* FID MIDWAY X FOR A DATAPOINT AND ITS NEIGHBORS */
   midWayX(c, d, e, xScale, X) {
-    c = c == undefined ? { 'date': X[0] } : c;
-    e = e == undefined ? { 'date': X[X.length - 1] } : e;
+    c = c == undefined ? { date: X[0] } : c;
+    e = e == undefined ? { date: X[X.length - 1] } : e;
 
     return {
       left: xScale((c.date.getTime() + d.date.getTime()) / 2),
-      right: xScale((d.date.getTime() + e.date.getTime()) / 2)
+      right: xScale((d.date.getTime() + e.date.getTime()) / 2),
     };
   }
 
-  /*DRAW YEARS LINES XAXIS-2 FUNCTION*/
+  /* DRAW YEARS LINES XAXIS-2 FUNCTION */
   rangeYearsLines(svg, ticksYears, xDomain, xScale, sizes, transitionDuration = 200) {
-
-    //Adjusting data to xDomain limits
+    // Adjusting data to xDomain limits
     ticksYears[0] = xDomain[0];
     ticksYears[ticksYears.length - 1] = xDomain[1];
 
-    //Creating horizontal lines for years
-    const g = svg.selectAll("g.xaxis2lines").data([true]);
-    g.enter().append("g").attr("class", 'xaxis2lines');
+    // Creating horizontal lines for years
+    const g = svg.selectAll('g.xaxis2lines').data([true]);
+    g.enter().append('g').attr('class', 'xaxis2lines');
 
-    const gLines = svg.select("g.xaxis2lines");
-    const yearsLines = gLines.selectAll("line").data(ticksYears);
+    const gLines = svg.select('g.xaxis2lines');
+    const yearsLines = gLines.selectAll('line').data(ticksYears);
     yearsLines
       .enter()
       .append('line')
@@ -351,129 +382,133 @@ class smaeChart {
       .merge(yearsLines)
       .attr('class', 'year-line')
       .attr('stroke-width', 1)
-      .transition().duration(transitionDuration)
+      .transition()
+      .duration(transitionDuration)
       .attr('x1', (d, i) => this.yearsLinesLimits(d, i, ticksYears.length, xScale, 1))
       .attr('y1', sizes.height - sizes.margin.bottom + 53)
       .attr('x2', (d, i) => this.yearsLinesLimits(d, i, ticksYears.length, xScale, 2))
       .attr('y2', sizes.height - sizes.margin.bottom + 53);
     yearsLines.exit().remove();
 
-    //Creating vertical lines for years
+    // Creating vertical lines for years
     ticksYears.shift();
 
-    const g2 = svg.selectAll("g.yaxis2lines").data([true]);
-    g2.enter().append("g").attr("class", 'yaxis2lines');
+    const g2 = svg.selectAll('g.yaxis2lines').data([true]);
+    g2.enter().append('g').attr('class', 'yaxis2lines');
 
-    const gYlines = svg.select("g.yaxis2lines");
-    const yLines = gYlines.selectAll("line").data(ticksYears);
+    const gYlines = svg.select('g.yaxis2lines');
+    const yLines = gYlines.selectAll('line').data(ticksYears);
     yLines
       .enter()
       .append('line')
-      .attr('x1', d => xScale(new Date(d.getFullYear() + '-01-01T00:00:00.000Z')))
+      .attr('x1', (d) => xScale(new Date(`${d.getFullYear()}-01-01T00:00:00.000Z`)))
       .attr('y1', sizes.margin.top)
-      .attr('x2', d => xScale(new Date(d.getFullYear() + '-01-01T00:00:00.000Z')))
+      .attr('x2', (d) => xScale(new Date(`${d.getFullYear()}-01-01T00:00:00.000Z`)))
       .attr('y2', sizes.height - sizes.margin.bottom)
       .attr('stroke', '#E3E5E8')
       .attr('stroke-width', 1)
       .merge(yLines)
-      .transition().duration(transitionDuration)
-      .attr('x1', d => xScale(new Date(d.getFullYear() + '-01-01T00:00:00.000Z')))
+      .transition()
+      .duration(transitionDuration)
+      .attr('x1', (d) => xScale(new Date(`${d.getFullYear()}-01-01T00:00:00.000Z`)))
       .attr('y1', sizes.margin.top)
-      .attr('x2', d => xScale(new Date(d.getFullYear() + '-01-01T00:00:00.000Z')))
+      .attr('x2', (d) => xScale(new Date(`${d.getFullYear()}-01-01T00:00:00.000Z`)))
       .attr('y2', sizes.height - sizes.margin.bottom);
     yLines.exit().remove();
   }
 
-  /*RETURN X1 AND X2 FOR YEARS LINES*/
+  /* RETURN X1 AND X2 FOR YEARS LINES */
   yearsLinesLimits(d, i, iMax, xScale, x) {
     if (x == 1) {
-      return i == 0 ? xScale(d) : xScale(new Date(d.getFullYear() + '-01-05T00:00:00.000Z'));
+      return i == 0 ? xScale(d) : xScale(new Date(`${d.getFullYear()}-01-05T00:00:00.000Z`));
     }
     if (x == 2) {
-      return i == iMax - 1 ? xScale(d) : xScale(new Date(d.getFullYear() + '-12-26T00:00:00.000Z'));
+      return i == iMax - 1 ? xScale(d) : xScale(new Date(`${d.getFullYear()}-12-26T00:00:00.000Z`));
     }
   }
 
-  /*DRAW DATA POINTS FUNCTION - CIRCLES AND LINES*/
-  drawDataPoints(svg, data, xScale, yScale, sizes, { name = 'none', r = 5, strokeW = 2, firstCircle = true, transitionDuration = 200 } = {}) {
-
-    //Remove first circle
+  /* DRAW DATA POINTS FUNCTION - CIRCLES AND LINES */
+  drawDataPoints(svg, data, xScale, yScale, sizes, {
+    name = 'none', r = 5, strokeW = 2, firstCircle = true, transitionDuration = 200,
+  } = {}) {
+    // Remove first circle
     let first;
     if (!firstCircle) {
       first = data.shift();
     }
 
-    //Creating Data Points
-    const g = svg.selectAll("g#" + name).data([true])
-      .enter().append("g").attr("id", name);
+    // Creating Data Points
+    const g = svg.selectAll(`g#${name}`).data([true])
+      .enter().append('g')
+      .attr('id', name);
 
-    const gCircles = g.selectAll("circle").data(data.filter(x => { return x.value !== undefined }));
+    const gCircles = g.selectAll('circle').data(data.filter((x) => x.value !== undefined));
     gCircles
       .enter()
-      .filter(function (d) { return d.value !== ""; })
+      .filter((d) => d.value !== '')
       .append('circle')
-      .attr('class', 'circle-' + name)
+      .attr('class', `circle-${name}`)
       .attr('r', r)
       .attr('cy', sizes.height - sizes.margin.bottom)
-      .attr('cx', d => xScale(new Date(d.date)))
+      .attr('cx', (d) => xScale(new Date(d.date)))
       .merge(gCircles)
-      .transition().duration(transitionDuration)
-      .attr('cy', d => yScale(d.value))
-      .attr('cx', d => xScale(new Date(d.date)))
+      .transition()
+      .duration(transitionDuration)
+      .attr('cy', (d) => yScale(d.value))
+      .attr('cx', (d) => xScale(new Date(d.date)));
     gCircles.exit().remove();
 
-    //Reinsert first circle (before drawing lines)
+    // Reinsert first circle (before drawing lines)
     if (!firstCircle) {
       data.unshift(first);
     }
 
-    //Creating Path between Data Points
-    let line = d3.line()
-      .x(d => xScale(new Date(d.date)))
-      .y(d => yScale(d.value))
-      .defined(function (d) { return d.value !== ""; });
+    // Creating Path between Data Points
+    const line = d3.line()
+      .x((d) => xScale(new Date(d.date)))
+      .y((d) => yScale(d.value))
+      .defined((d) => d.value !== '');
 
-    let flatline = d3.line()
-      .x(d => xScale(new Date(d.date)))
+    const flatline = d3.line()
+      .x((d) => xScale(new Date(d.date)))
       .y(sizes.height - sizes.margin.bottom)
-      .defined(function (d) { return d.value !== ""; });
+      .defined((d) => d.value !== '');
 
-    const path = g.selectAll('path').data(data.filter(x => x.value !== undefined));
+    const path = g.selectAll('path').data(data.filter((x) => x.value !== undefined));
     path
       .enter()
       .append('path')
-      .attr('d', function (d, i) { return i != 0 ? flatline([d, data[i - 1]]) : 'M0 0'; })
-      .attr('class', 'line-' + name)
+      .attr('d', (d, i) => (i != 0 ? flatline([d, data[i - 1]]) : 'M0 0'))
+      .attr('class', `line-${name}`)
       .attr('stroke-width', strokeW)
       .merge(path)
-      .transition().duration(transitionDuration)
-      .attr('d', function (d, i) { return i != 0 ? line([d, data[i - 1]]) : 'M0 0'; })
+      .transition()
+      .duration(transitionDuration)
+      .attr('d', (d, i) => (i != 0 ? line([d, data[i - 1]]) : 'M0 0'));
     path.exit().remove();
   }
 
-  /*RETURN ARRAY OF YEARS POSITIONS FUNCTION*/
+  /* RETURN ARRAY OF YEARS POSITIONS FUNCTION */
   formatTicksYears(domain) {
-    let startDate = new Date(domain[0]),
-      finalDate = new Date(domain[1]);
+    const startDate = new Date(domain[0]);
+    const finalDate = new Date(domain[1]);
 
-    let arr = [];
+    const arr = [];
 
     if (startDate.getMonth() > 5) {
       arr.push(startDate);
-    }
-    else {
-      arr.push(new Date(startDate.getFullYear() + '-06-30T00:00:00.000Z'));
+    } else {
+      arr.push(new Date(`${startDate.getFullYear()}-06-30T00:00:00.000Z`));
     }
 
-    for (var i = startDate.getFullYear() + 1; i < finalDate.getFullYear(); i++) {
-      arr.push(new Date(i + '-06-30T00:00:00.000Z'));
+    for (let i = startDate.getFullYear() + 1; i < finalDate.getFullYear(); i += 1) {
+      arr.push(new Date(`${i}-06-30T00:00:00.000Z`));
     }
 
     if (finalDate.getMonth() < 6) {
       arr.push(finalDate);
-    }
-    else {
-      arr.push(new Date(finalDate.getFullYear() + '-06-30T00:00:00.000Z'));
+    } else {
+      arr.push(new Date(`${finalDate.getFullYear()}-06-30T00:00:00.000Z`));
     }
 
     return arr;
@@ -491,19 +526,23 @@ function start() {
   }
 
   if (props.dataserie?.length && props.dataserie[0] && evolucao.value) {
-    let data = [];
-    props.dataserie.forEach(ind => {
-      let a = {
+    const data = [];
+    props.dataserie.forEach((ind) => {
+      const a = {
         id: ind.id,
-        label: ind.codigo + ' - ' + ind.titulo,
-        series: {}
-      }
+        label: `${ind.codigo} - ${ind.titulo}`,
+        series: {},
+      };
 
       if (Array.isArray(ind.series)) {
-        a.series.projetadoAcu = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iPA.value] }; });
-        a.series.realizadoAcu = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iRA.value] }; });
-        a.series.projetado = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iP.value] }; });
-        a.series.realizado = ind.series.map(x => { return { date: x.periodo_inicio, value: x.valores_nominais[iR.value] }; });
+        a.series.projetadoAcu = ind.series
+          .map((x) => ({ date: x.periodo_inicio, value: x.valores_nominais[iPA.value] }));
+        a.series.realizadoAcu = ind.series
+          .map((x) => ({ date: x.periodo_inicio, value: x.valores_nominais[iRA.value] }));
+        a.series.projetado = ind.series
+          .map((x) => ({ date: x.periodo_inicio, value: x.valores_nominais[iP.value] }));
+        a.series.realizado = ind.series
+          .map((x) => ({ date: x.periodo_inicio, value: x.valores_nominais[iR.value] }));
         data.push(a);
       }
     });
@@ -517,12 +556,23 @@ window.addEventListener('resize', start);
 </script>
 <template>
   <div style="position: relative;">
-    <svg class="lineGraph" ref="evolucao" xmlns:xhtml="http://www.w3.org/1999/xhtml"></svg>
-    <div class="tooltipEvolucao" ref="tooltipEl"></div>
+    <svg
+      ref="evolucao"
+      class="lineGraph"
+      xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    />
+    <div
+      ref="tooltipEl"
+      class="tooltipEvolucao"
+    />
 
     <ul class="captions">
-      <li class="captions__item"><i></i> Realizado acumulado</li>
-      <li class="captions__item captions__item--p"><i></i> Previsto acumulado</li>
+      <li class="captions__item">
+        <i /> Realizado acumulado
+      </li>
+      <li class="captions__item captions__item--p">
+        <i /> Previsto acumulado
+      </li>
     </ul>
   </div>
 </template>
