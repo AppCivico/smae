@@ -6,7 +6,6 @@ import { toRaw } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-// eslint-disable-next-line import/prefer-default-export
 export const useCronogramasStore = defineStore({
   id: 'Cronogramas',
   state: () => ({
