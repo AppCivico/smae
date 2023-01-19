@@ -65,14 +65,17 @@ async function checkClose() {
     alertStore.clear();
   });
 }
-function acumular(a, j) {
-  if (!a.length) return;
+function acumular(períodoAComparar) {
   let s = 0;
-  for (let i = 0; i <= j; i += 1) {
-    const x = a[i].series[Previsto.value]?.valor_nominal ?? '0';
-    const n = !isNaN(parseFloat(x)) ? parseFloat(x.replace(',', '.')) : 0;
+
+  VariaveisStore.valoresEmFoco.every((x) => {
+    const v = x.series[Previsto.value]?.valor_nominal ?? '0';
+    const n = !isNaN(parseFloat(v)) ? parseFloat(v.replace(',', '.')) : 0;
     if (n) s += n;
-  }
+
+    return períodoAComparar !== x.periodo;
+  });
+
   return s.toFixed(decimais.value);
 }
 function soma(a, j) {
@@ -161,8 +164,9 @@ function openParent(e) {
                   :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')"
                   :name="v.series[PrevistoAcumulado]?.referencia"
                   :value="singleVariaveis.acumulativa
-                    ? acumular(k[1],i)
-                    : v.series[PrevistoAcumulado]?.valor_nominal"
+                    ? acumular(v.periodo)
+                    : v.series[PrevistoAcumulado]?.valor_nominal
+                  "
                   :disabled="singleVariaveis.acumulativa"
                   class="inputtext light mb1"
                 >
