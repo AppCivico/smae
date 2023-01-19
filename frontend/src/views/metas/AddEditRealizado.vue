@@ -69,7 +69,7 @@ async function checkClose() {
 function acumular(a, j) {
   if (!a.length) return;
   let s = 0;
-  for (let i = 0; i <= j; i++) {
+  for (let i = 0; i <= j; i += 1) {
     const x = a[i].series[Realizado.value]?.valor_nominal ?? '0';
     const n = !isNaN(parseFloat(x)) ? parseFloat(x.replace(',', '.')) : 0;
     if (n) s += n;
@@ -153,7 +153,7 @@ function openParent(e) {
                   :disabled="!v.series[Realizado]?.referencia"
                   :value="v.series[Realizado]?.valor_nominal"
                   class="inputtext light mb1"
-                  @input="singleVariaveis.acumulativa&&soma(k[1],i)"
+                  @input="singleVariaveis.acumulativa && soma(k[1],i)"
                 >
               </div>
               <div class="f1">
