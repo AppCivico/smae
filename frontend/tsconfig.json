@@ -4,12 +4,19 @@
     "allowJs": true,
     "baseUrl": ".",
     "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
     "paths": {
       "@/*": [
         "src/*"
       ]
     },
     "strict": true,
+    "strictNullChecks": true,
+    "rootDirs": [
+      "./src"
+    ]
   },
   "exclude": [
     "node_modules",
