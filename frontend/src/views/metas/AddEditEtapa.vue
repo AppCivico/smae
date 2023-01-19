@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegião';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -42,6 +43,7 @@ if (cronograma_id && (!singleCronograma?.value?.id || singleCronograma?.value.id
 
 const EtapasStore = useEtapasStore();
 const { singleEtapa } = storeToRefs(EtapasStore);
+
 EtapasStore.clearEdit();
 
 const RegionsStore = useRegionsStore();
@@ -49,6 +51,8 @@ const { regions, tempRegions } = storeToRefs(RegionsStore);
 if (!regions.length) RegionsStore.getAll();
 
 let title = 'Adicionar etapa';
+
+// levelN corresponde à propriedade `index` de cada região
 const level1 = ref(null);
 const level2 = ref(null);
 const level3 = ref(null);
@@ -65,6 +69,7 @@ const lastParent = ref({});
 const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
 const virtualParent = ref({});
+
 if (etapa_id) {
   title = 'Editar etapa';
   if (!singleEtapa.value.id) {
@@ -266,7 +271,7 @@ function maskDate(el) {
   </div>
   <template v-if="!(singleEtapa?.loading || singleEtapa?.error)&&singleCronograma?.id">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
       :initial-values="etapa_id ? singleEtapa.etapa : virtualParent"
       @submit="onSubmit"
@@ -346,7 +351,9 @@ function maskDate(el) {
           <select
             v-model="level1"
             class="inputtext light mb1"
-            :disabled="minLevel >= 1"
+            :disabled="
+              minLevel >= 1 ||
+                temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
             @change="lastlevel"
           >
             <option value="">
@@ -367,7 +374,9 @@ function maskDate(el) {
             <select
               v-model="level2"
               class="inputtext light mb1"
-              :disabled="minLevel >= 2"
+              :disabled="
+                minLevel >= 2
+                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
               @change="lastlevel"
             >
               <option value="">
@@ -388,7 +397,9 @@ function maskDate(el) {
               <select
                 v-model="level3"
                 class="inputtext light mb1"
-                :disabled="minLevel >= 3"
+                :disabled="
+                  minLevel >= 3
+                    || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
                 @change="lastlevel"
               >
                 <option value="">
