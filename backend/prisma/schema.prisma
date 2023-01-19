@@ -2028,19 +2028,19 @@ model Relatorio {
 
 enum ProjetoFase {
     Registro
-    Detalhamento
     Planejamento
     Acompanhamento
     Encerramento
 }
 
 enum ProjetoStatus {
-    EmRegistro // Arquivado ou EmDetalhamento caso seja priorizado
-    EmDetalhamento // Arquivado ou EmPlanejamento caso seja Aprovado
-    EmPlanejamento // Arquivado ou EmExecucao caso o iniciado
-    EmExecucao // EmSuspensao ou EmFechamento caso fechado
-    EmFechamento // Arquivado
-    EmSuspensao // Volta pra EmExecucao ou EmFechamento
+    Registrado // Arquivado ou Priorizado caso seja priorizado
+    Priorizado // Arquivado ou EmPlanejamento caso seja Aprovado
+    EmPlanejamento // Arquivado ou Validado caso o iniciado
+    Validado // EmSuspensao ou EmFechamento caso fechado
+    EmAcompanhamento // Suspenso, fechado
+    Fechado // Arquivado
+    Suspenso // Volta pra EmAcompanhamento ou Fechado
 }
 
 // Apenas um agrupador pra fazer os testes rodarem de forma independente
@@ -2371,7 +2371,11 @@ model PlanoAcao {
 }
 
 enum StatusRisco {
-    Padrao
+    SemInformacao
+    Aumentando
+    Estatico
+    Diminuindo
+    SobControle
 }
 
 // desenhado no MER como Monitoramento_Risco
