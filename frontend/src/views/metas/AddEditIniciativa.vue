@@ -244,7 +244,7 @@ function filterResponsible(orgao_id) {
         </div>
         <div class="flex g2">
           <div class="f1">
-            <label class="label">Complemento</label>
+            <label class="label">Informações complementares</label>
             <Field
               name="complemento"
               as="textarea"

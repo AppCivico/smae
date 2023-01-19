@@ -87,7 +87,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
         <template v-if="singleAtividade.complemento">
           <hr class="mt2 mb2">
           <div>
-            <h4>Complemento</h4>
+            <h4>Informações complementares</h4>
             <div>{{ singleAtividade.complemento }}</div>
           </div>
         </template>
