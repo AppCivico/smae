@@ -47,7 +47,7 @@ class RetornoPlanejadoDb {
     plan_dotacao_mes_utilizado: string
     plan_sof_val_orcado_atualizado: string
     plan_valor_planejado: string
-    plan_dotacao_sincronizado_em: Date
+    plan_dotacao_sincronizado_em: Date | null
     dotacao: string
 
     meta_id: string
@@ -434,7 +434,7 @@ export class OrcamentoService implements ReportableService {
             unidade: { codigo: '', nome: '' },
             fonte: { codigo: '', nome: '' },
 
-            plan_dotacao_sincronizado_em: db.plan_dotacao_sincronizado_em.toISOString(),
+            plan_dotacao_sincronizado_em: db.plan_dotacao_sincronizado_em?.toISOString() ?? '',
             plan_sof_val_orcado_atualizado: db.plan_sof_val_orcado_atualizado,
             plan_valor_planejado: db.plan_valor_planejado,
             plan_dotacao_ano_utilizado: db.plan_dotacao_ano_utilizado.toString(),
