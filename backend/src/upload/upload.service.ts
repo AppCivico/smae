@@ -54,20 +54,20 @@ export class UploadService {
         if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
             if (/\.zip$/i.test(file.originalname) == false || file.mimetype != 'application/zip') {
                 throw new HttpException('O arquivo de shapefile precisa ser um arquivo ZIP', 400);
-            } else if (file.size > 1000000) {
-                throw new HttpException('O arquivo de shapefile precisa ser menor que 1 megabyte', 400);
+            } else if (file.size > 2097152) {
+                throw new HttpException('O arquivo de shapefile precisa ser menor que 2 Megabytes', 400);
             }
         } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
-            if (file.size > 200000) {
+            if (file.size > 204800) {
                 throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
             } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
             }
         } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
             if (/(\.png|svg)$/i.test(file.originalname) == false) {
-                throw new HttpException('O arquivo de shapefile precisa ser um arquivo SVG ou PNG', 400);
-            } else if (file.size > 1000000) {
-                throw new HttpException('O arquivo de shapefile precisa ser menor que 1 megabyte', 400);
+                throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
+            } else if (file.size > 1048576) {
+                throw new HttpException('O arquivo de Logo do PDM precisa ser menor que 1 Megabyte', 400);
             }
         }
 
