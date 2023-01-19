@@ -69,7 +69,7 @@ WHERE
                         pVariavelId,
                         (serieRecord.serie::text || 'Acumulado')::"Serie",
                         gs.gs AS data_serie,
-                        coalesce(sum(sv.valor_nominal) OVER (ORDER BY gs.gs), case when serieRecord.serie = 'Realizado'::"Serie" then null else vVariavelBase end) AS valor_acc
+                        coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), case when serieRecord.serie = 'Realizado'::"Serie" then null else vVariavelBase end) AS valor_acc
                     FROM
                         generate_series(vInicio, vFim, vPeriodicidade) gs
                     LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
