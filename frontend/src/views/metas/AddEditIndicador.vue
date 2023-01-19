@@ -669,7 +669,9 @@ async function addFunction(f) {
           </div>
         </div>
         <div class="f2">
-          <label class="label">Informações Complementares</label>
+          <label class="label">
+            {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
+          </label>
           <Field
             name="complemento"
             as="textarea"

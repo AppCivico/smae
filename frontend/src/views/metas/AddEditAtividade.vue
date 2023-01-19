@@ -237,7 +237,9 @@ function filterResponsible(orgao_id) {
         </div>
         <div class="flex g2">
           <div class="f1">
-            <label class="label">Informações Complementares</label>
+            <label class="label">
+              {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
+            </label>
             <Field
               name="complemento"
               as="textarea"
