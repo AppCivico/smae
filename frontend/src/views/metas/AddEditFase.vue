@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegião';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -249,7 +250,7 @@ function maskDate(el) {
     </div>
     <template v-if="!(currentFase?.loading || currentFase?.error) && oktogo">
       <Form
-        v-slot="{ errors, isSubmitting }"
+        v-slot="{ errors, isSubmitting, values }"
         :validation-schema="schema"
         :initial-values="currentFase"
         @submit="onSubmit"
@@ -328,7 +329,9 @@ function maskDate(el) {
           <select
             v-model="level1"
             class="inputtext light mb1"
-            :disabled="minLevel >= 1"
+            :disabled="
+              minLevel >= 1
+                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 1)"
             @change="lastlevel"
           >
             <option value="">
@@ -346,7 +349,9 @@ function maskDate(el) {
             <select
               v-model="level2"
               class="inputtext light mb1"
-              :disabled="minLevel >= 2"
+              :disabled="
+                minLevel >= 2
+                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 2)"
               @change="lastlevel"
             >
               <option value="">
@@ -364,7 +369,9 @@ function maskDate(el) {
               <select
                 v-model="level3"
                 class="inputtext light mb1"
-                :disabled="minLevel >= 3"
+                :disabled="
+                  minLevel >= 3
+                    || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 3)"
                 @change="lastlevel"
               >
                 <option value="">
