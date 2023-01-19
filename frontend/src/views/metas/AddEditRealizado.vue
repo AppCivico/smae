@@ -133,10 +133,10 @@ function openParent(e) {
           <div class="content">
             <div class="flex g2">
               <div class="f1">
-                <label class="label tc300">Previsto</label>
+                <label class="label tc300">Realizado</label>
               </div>
               <div class="f1">
-                <label class="label tc300">Previsto Acumulado</label>
+                <label class="label tc300">Realizado Acumulado</label>
               </div>
             </div>
             <div
