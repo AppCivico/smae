@@ -92,7 +92,9 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
         <template v-if="singleIniciativa.complemento">
           <hr class="mt2 mb2">
           <div>
-            <h4>Informações complementares</h4>
+            <h4>
+              {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
+            </h4>
             <div>{{ singleIniciativa.complemento }}</div>
           </div>
         </template>
