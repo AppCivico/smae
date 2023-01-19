@@ -23,4 +23,23 @@ module.exports = {
       '@vitejs/plugin-vue',
     ],
   },
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx'],
+      extends: [
+        'eslint:recommended',
+        'airbnb-base',
+        'airbnb-typescript/base',
+        'plugin:vue/vue3-recommended',
+      ],
+      plugins: [
+        '@typescript-eslint',
+      ],
+      parserOptions: {
+        ecmaVersion: 'latest',
+        parser: '@typescript-eslint/parser',
+        project: './frontend/tsconfig.json',
+      },
+    },
+  ],
 };
