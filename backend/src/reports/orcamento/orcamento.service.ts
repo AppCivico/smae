@@ -21,8 +21,8 @@ class RetornoRealizadoDb {
     nota_empenho: string | null
     dotacao_valor_empenhado: string
     dotacao_valor_liquidado: string
-    dotacao_mes_utilizado: string
-    dotacao_ano_utilizado: string
+    dotacao_mes_utilizado: string | null
+    dotacao_ano_utilizado: string | null
     dotacao_sincronizado_em: string
     meta_id: string
     meta_codigo: string
@@ -43,8 +43,8 @@ class RetornoRealizadoDb {
 }
 
 class RetornoPlanejadoDb {
-    plan_dotacao_ano_utilizado: string
-    plan_dotacao_mes_utilizado: string
+    plan_dotacao_ano_utilizado: string | null
+    plan_dotacao_mes_utilizado: string | null
     plan_sof_val_orcado_atualizado: string
     plan_valor_planejado: string
     plan_dotacao_sincronizado_em: Date | null
@@ -437,8 +437,8 @@ export class OrcamentoService implements ReportableService {
             plan_dotacao_sincronizado_em: db.plan_dotacao_sincronizado_em?.toISOString() ?? '',
             plan_sof_val_orcado_atualizado: db.plan_sof_val_orcado_atualizado,
             plan_valor_planejado: db.plan_valor_planejado,
-            plan_dotacao_ano_utilizado: db.plan_dotacao_ano_utilizado.toString(),
-            plan_dotacao_mes_utilizado: db.plan_dotacao_mes_utilizado.toString(),
+            plan_dotacao_ano_utilizado: db.plan_dotacao_ano_utilizado?.toString() ?? '',
+            plan_dotacao_mes_utilizado: db.plan_dotacao_mes_utilizado?.toString() ?? '',
 
             ano: db.ano,
 
@@ -481,8 +481,8 @@ export class OrcamentoService implements ReportableService {
             dotacao_sincronizado_em: db.dotacao_sincronizado_em,
             dotacao_valor_empenhado: db.dotacao_valor_empenhado,
             dotacao_valor_liquidado: db.dotacao_valor_liquidado,
-            dotacao_ano_utilizado: db.dotacao_ano_utilizado.toString(),
-            dotacao_mes_utilizado: db.dotacao_mes_utilizado.toString(),
+            dotacao_ano_utilizado: db.dotacao_ano_utilizado?.toString() ?? '',
+            dotacao_mes_utilizado: db.dotacao_mes_utilizado?.toString() ?? '',
             smae_valor_empenhado: db.smae_valor_empenhado,
             smae_valor_liquidado: db.smae_valor_liquidado,
 
