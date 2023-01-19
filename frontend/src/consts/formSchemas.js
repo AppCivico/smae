@@ -73,6 +73,13 @@ const novaSenha = object().shape({
     .oneOf([ref('password'), null], 'Senhas não coincidem'),
 });
 
+const região = object().shape({
+  nivel: number(),
+  parente_id: number().nullable(),
+  descricao: string().required('Preencha a descrição'),
+  upload_shapefile: string().nullable(),
+});
+
 const relatórioMensal = object({
   fonte: string().required(),
   salvar_arquivo: boolean(),
@@ -147,6 +154,7 @@ export {
   fase,
   indicador,
   novaSenha,
+  região,
   relatórioMensal,
   relatórioOrçamentário,
   relatórioSemestralOuAnual,
