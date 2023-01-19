@@ -13,17 +13,20 @@ const props = defineProps(['props']);
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
 const route = useRoute();
-const { id } = route.params;
-const { id2 } = route.params;
-const { id3 } = route.params;
-const { id4 } = route.params;
+const {
+  id, id2, id3, id4,
+} = route.params;
 
 const regionsStore = useRegionsStore();
 regionsStore.clearEdit();
 const { singleTempRegions } = storeToRefs(regionsStore);
 
-let title1; let title2; let level; let parentID; let
-  lastid;
+let title1;
+let title2;
+let level;
+let parentID;
+let lastid;
+
 const curfile = reactive({});
 
 if (props.props.type == 'editar') {
@@ -57,10 +60,8 @@ if (props.props.type == 'editar') {
     level++;
   }
 
-  if (props.props.type == 'editar') {
-    regionsStore.getById(lastid);
-    curfile.name = singleTempRegions.value.shapefile;
-  }
+  regionsStore.getById(lastid);
+  curfile.name = singleTempRegions.value.shapefile;
 } else {
   title1 = 'Cadastro de';
   title2 = 'Município';
@@ -110,10 +111,20 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', () => { editModalStore.clear(); alertStore.clear(); router.push('/regioes'); });
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    editModalStore.clear();
+    alertStore.clear();
+    router.push('/regioes');
+  });
 }
-async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await regionsStore.delete(id)) { regionsStore.filterRegions(); editModalStore.clear(); router.push('/regioes'); } }, 'Remover');
+async function checkDelete(idDaRegião) {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await regionsStore.delete(idDaRegião)) {
+      regionsStore.filterRegions();
+      editModalStore.clear();
+      router.push('/regioes');
+    }
+  }, 'Remover');
 }
 function removeshape() {
   curfile.name = '';
@@ -197,15 +208,20 @@ async function uploadshape(e) {
             v-if="!curfile.loading&&!curfile.name"
             class="addlink"
           ><svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg> <span>Adicionar arquivo de shapefile ( formatos .KML, GeoJSON ou SHP até 2mb) *</span><input
-            id="shapefile"
-            type="file"
-            accept=".kml,.geojson,.json,.shp,.zip"
-            :onchange="uploadshape"
-            style="display:none;"
-          ></label>
+             width="20"
+             height="20"
+           ><use xlink:href="#i_+" /></svg>
+            <span>
+              Adicionar arquivo de shapefile ( formatos .KML, GeoJSON ou SHP até
+              2mb) *
+            </span>
+            <input
+              id="shapefile"
+              type="file"
+              accept=".kml,.geojson,.json,.shp,.zip"
+              :onchange="uploadshape"
+              style="display:none;"
+            ></label>
 
           <div
             v-else-if="curfile.loading"
