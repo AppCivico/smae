@@ -269,18 +269,6 @@ function maskDate(el) {
         </div>
         <div class="flex g2">
           <div class="f1">
-            <label class="label">Peso</label>
-            <Field
-              name="peso"
-              type="number"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.peso }"
-            />
-            <div class="error-msg">
-              {{ errors.peso }}
-            </div>
-          </div>
-          <div class="f1">
             <label class="label">Ordem</label>
             <Field
               name="ordem"
