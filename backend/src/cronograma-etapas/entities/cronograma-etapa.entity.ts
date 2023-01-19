@@ -44,6 +44,7 @@ export class CECronogramaEtapaDto {
 export class CECronogramaEtapaCronoId {
     id: number
     cronograma_id: number
+    ordem: number | null
 }
 
 export class CEEtapaDto {
