@@ -76,4 +76,10 @@ export const useVariaveisStore = defineStore({
       return false;
     },
   },
+  getters: {
+    valoresEmFoco({ Valores }) {
+      const { var_id: varId } = this.route.params;
+      return Valores[varId]?.linhas || [];
+    },
+  },
 });
