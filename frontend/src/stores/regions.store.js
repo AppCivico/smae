@@ -97,12 +97,38 @@ export const useRegionsStore = defineStore({
         parente_id: params.parente_id ? Number(params.parente_id) : null,
         descricao: params.descricao,
       };
-      if (params.upload_shapefile)m.upload_shapefile = params.upload_shapefile;
-      if (await requestS.patch(`${baseUrl}/regiao/${id}`, m)) return true;
-      return false;
+      if (params.upload_shapefile) {
+        m.upload_shapefile = params.upload_shapefile;
+      }
+
+      try {
+        await requestS.patch(`${baseUrl}/regiao/${id}`, m);
+
+        // devido a inconsistências no envio, é mais seguro não usar a carga
+        // da requisição para atualizar o objeto
+        this.getAll();
+        return true;
+      } catch (error) {
+        return false;
+      }
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/regiao/${id}`)) return true;
+      if (await requestS.delete(`${baseUrl}/regiao/${id}`)) {
+        this.$patch({
+          regions: this.regions.filter(function removerRegião(x) {
+            if (x.id == id) {
+              return false;
+            }
+            if (Array.isArray(x.children)) {
+              // eslint-disable-next-line no-param-reassign
+              x.children = x.children.filter(removerRegião);
+            }
+            return true;
+          }),
+        });
+
+        return true;
+      }
       return false;
     },
     async filterRegions(f) {
