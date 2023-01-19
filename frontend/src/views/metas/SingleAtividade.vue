@@ -1,10 +1,11 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { Dashboard} from '@/components';
+import { Dashboard } from '@/components';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import { useAuthStore, useMetasStore, useAtividadesStore } from '@/stores';
-import { useRoute } from 'vue-router';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
+import { useAtividadesStore, useAuthStore, useMetasStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
 AtividadeAtiva();
 
 const authStore = useAuthStore();
@@ -12,83 +13,116 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const route = useRoute();
-const meta_id = route.params.meta_id;
-const iniciativa_id = route.params.iniciativa_id;
-const atividade_id = route.params.atividade_id;
+const { meta_id } = route.params;
+const { iniciativa_id } = route.params;
+const { atividade_id } = route.params;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
-const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
+const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
 
 const AtividadesStore = useAtividadesStore();
 const { singleAtividade } = storeToRefs(AtividadesStore);
-if(singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa_id,atividade_id);
+if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa_id, atividade_id);
 
 </script>
 <template>
-    <Dashboard>
-        <div class="flex spacebetween center mb2">
-            <div>
-                <div class="t12 uc w700 tamarelo">{{activePdm.rotulo_atividade}}</div>
-                <h1>{{singleAtividade.titulo}}</h1>
+  <Dashboard>
+    <div class="flex spacebetween center mb2">
+      <div>
+        <div class="t12 uc w700 tamarelo">
+          {{ activePdm.rotulo_atividade }}
+        </div>
+        <h1>{{ singleAtividade.titulo }}</h1>
+      </div>
+      <hr class="ml2 f1">
+      <router-link
+        v-if="perm?.CadastroAtividade?.editar"
+        :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`"
+        class="btn big ml2"
+      >
+        Editar
+      </router-link>
+    </div>
+
+    <div class="boards">
+      <template v-if="singleAtividade.id">
+        <div class="flex g2">
+          <div class="mr2">
+            <div class="t12 uc w700 mb05 tamarelo">
+              ID
             </div>
-            <hr class="ml2 f1"/>
-            <router-link v-if="perm?.CadastroAtividade?.editar" :to="`/metas/${meta_id}/iniciativas/${iniciativa_id}/atividades/editar/${atividade_id}`" class="btn big ml2">Editar</router-link>
+            <div class="t13">
+              {{ singleAtividade.codigo }}
+            </div>
+          </div>
+          <div class="mr2">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão(s) participante(s)
+            </div>
+            <div class="t13">
+              {{ singleAtividade.orgaos_participantes.map(x=>x.orgao.descricao).join(', ') }}
+            </div>
+          </div>
+          <div class="mr2">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Responsável(eis) na Coordenadoria
+            </div>
+            <div class="t13">
+              {{ singleAtividade.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
+            </div>
+          </div>
         </div>
-        
-        <div class="boards">
-            <template v-if="singleAtividade.id">
-                <div class="flex g2">
-                    <div class="mr2">
-                        <div class="t12 uc w700 mb05 tamarelo">ID</div>
-                        <div class="t13">{{singleAtividade.codigo}}</div>
-                    </div>
-                    <div class="mr2">
-                        <div class="t12 uc w700 mb05 tamarelo">Órgão(s) participante(s)</div>
-                        <div class="t13">{{singleAtividade.orgaos_participantes.map(x=>x.orgao.descricao).join(', ')}}</div>
-                    </div>
-                    <div class="mr2">
-                        <div class="t12 uc w700 mb05 tamarelo">Responsável(eis) na Coordenadoria</div>
-                        <div class="t13">{{singleAtividade.coordenadores_cp.map(x=>x.nome_exibicao).join(', ')}}</div>
-                    </div>
-                </div>
-                
-                <template v-if="singleAtividade.contexto">
-                <hr class="mt2 mb2"/>
-                <div>
-                    <h4>Contexto</h4>
-                    <div>{{singleAtividade.contexto}}</div>
-                </div>
-                </template>
 
-                <template v-if="singleAtividade.complemento">
-                <hr class="mt2 mb2"/>
-                <div>
-                    <h4>Complemento</h4>
-                    <div>{{singleAtividade.complemento}}</div>
-                </div>
-                </template>
+        <template v-if="singleAtividade.contexto">
+          <hr class="mt2 mb2">
+          <div>
+            <h4>Contexto</h4>
+            <div>{{ singleAtividade.contexto }}</div>
+          </div>
+        </template>
 
-                <hr class="mt2 mb2"/>
+        <template v-if="singleAtividade.complemento">
+          <hr class="mt2 mb2">
+          <div>
+            <h4>Complemento</h4>
+            <div>{{ singleAtividade.complemento }}</div>
+          </div>
+        </template>
 
-                <SimpleIndicador 
-                    :parentlink="parentlink"
-                    :parent_id="atividade_id"
-                    parent_field="atividade_id"
-                />
+        <hr class="mt2 mb2">
 
-            </template>
-            <template v-else-if="singleAtividade.loading">
-                <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
-            </template>
-            <template v-else-if="singleAtividade.error">
-                <div class="error p1"><p class="error-msg">Error: {{singleAtividade.error}}</p></div>
-            </template>
-            <template v-else>
-                <div class="error p1"><p class="error-msg">Nenhum item encontrado.</p></div>
-            </template>
+        <SimpleIndicador
+          :parentlink="parentlink"
+          :parent_id="atividade_id"
+          parent_field="atividade_id"
+        />
+      </template>
+      <template v-else-if="singleAtividade.loading">
+        <div class="p1">
+          <span>Carregando</span> <svg
+            class="ml1 ib"
+            width="20"
+            height="20"
+          ><use xlink:href="#i_spin" /></svg>
         </div>
-    </Dashboard>
+      </template>
+      <template v-else-if="singleAtividade.error">
+        <div class="error p1">
+          <p class="error-msg">
+            Error: {{ singleAtividade.error }}
+          </p>
+        </div>
+      </template>
+      <template v-else>
+        <div class="error p1">
+          <p class="error-msg">
+            Nenhum item encontrado.
+          </p>
+        </div>
+      </template>
+    </div>
+  </Dashboard>
 </template>
