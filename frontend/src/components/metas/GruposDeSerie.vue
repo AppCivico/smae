@@ -6,7 +6,7 @@ function nestLinhas(l) {
     if (!a[x.agrupador]) a[x.agrupador] = [];
     a[x.agrupador].push(x);
   });
-  return Object.entries(a).reverse();
+  return Object.entries(a)
 }
 function toggleAccordeon(t) {
   t.target.closest('.tzaccordeon').classList.toggle('active');
