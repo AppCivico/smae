@@ -55,68 +55,34 @@ const minLevel = ref(0);
 
 const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
-(async () => {
-  await EtapasStore.getById(cronograma_id, etapa_id);
-  const p0 = singleEtapa.value.etapa;
-  let pc;
-  let p1;
-  let noregion = true;
-  if (group.value == 'subfase' && subfase_id) {
-    title.value = 'Editar subfase';
-    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
-    pc = p1;
-    const p2 = p1?.etapa_filha?.find((x) => x.id == subfase_id) ?? {};
-    currentFase.value = p2.id ? p2 : { error: 'Subfase não encontrada' };
-    if (p1?.regiao_id) {
-      getRegionByParent(p1.regiao_id, p2?.regiao_id);
-      noregion = false;
-    }
-  } else if (group.value == 'subfase') {
-    title.value = 'Adicionar subfase';
-    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
-    pc = p1;
-    if (p1?.regiao_id) {
-      getRegionByParent(p1.regiao_id);
-      noregion = false;
-    }
-  } else if (group.value == 'fase' && fase_id) {
-    title.value = `Editar ${group.value}`;
-    pc = p0;
-    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
-    currentFase.value = p1.id ? p1 : { error: 'Fase não encontrada' };
-    if (p1?.regiao_id) {
-      getRegionByParent(singleEtapa.value.etapa.regiao_id, p1?.regiao_id);
-      noregion = false;
-    }
-  } else {
-    pc = p0;
-  }
-  if (currentFase.value?.responsaveis) {
-    responsaveis.value.participantes = currentFase.value.responsaveis.map((x) => (x.id ? x.id : x.pessoa ? x.pessoa.id : null));
-  }
-  if (pc?.responsaveis) {
-    usersAvailable.value = pc.responsaveis.map((x) => (x.id ? x : x.pessoa ? x.pessoa : null));
-  }
-
-  if (noregion && singleEtapa.value?.etapa?.regiao_id) getRegionByParent(singleEtapa.value.etapa.regiao_id);
-  oktogo.value = 1;
-})();
 
 async function getRegionByParent(r_id, cur) {
   await RegionsStore.filterRegions({ id: r_id });
-  level1.value = tempRegions.value[0]?.children[0].index !== undefined ? tempRegions.value[0]?.children[0].id : '';
+
+  level1.value = tempRegions.value[0]?.children[0].index !== undefined
+    ? tempRegions.value[0]?.children[0].id
+    : '';
+
   if (level1.value) {
     minLevel.value = 1;
   } else if (cur) {
     level1.value = cur;
   }
-  level2.value = tempRegions.value[0]?.children[0]?.children[0].index !== undefined ? tempRegions.value[0]?.children[0]?.children[0].id : '';
+
+  level2.value = tempRegions.value[0]?.children[0]?.children[0].index !== undefined
+    ? tempRegions.value[0]?.children[0]?.children[0].id
+    : '';
+
   if (level2.value) {
     minLevel.value = 2;
   } else if (cur && cur != level1.value) {
     level2.value = cur;
   }
-  level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index !== undefined ? tempRegions.value[0]?.children[0]?.children[0]?.children[0].id : '';
+
+  level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index !== undefined
+    ? tempRegions.value[0]?.children[0]?.children[0]?.children[0].id
+    : '';
+
   if (level3.value) {
     minLevel.value = 3;
   } else if (cur && cur != level2.value) {
@@ -215,6 +181,56 @@ function maskDate(el) {
     }
   }
 }
+
+(async () => {
+  await EtapasStore.getById(cronograma_id, etapa_id);
+  const p0 = singleEtapa.value.etapa;
+  let pc;
+  let p1;
+  let noregion = true;
+  if (group.value == 'subfase' && subfase_id) {
+    title.value = 'Editar subfase';
+    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
+    pc = p1;
+    const p2 = p1?.etapa_filha?.find((x) => x.id == subfase_id) ?? {};
+    currentFase.value = p2.id ? p2 : { error: 'Subfase não encontrada' };
+    if (p1?.regiao_id) {
+      getRegionByParent(p1.regiao_id, p2?.regiao_id);
+      noregion = false;
+    }
+  } else if (group.value == 'subfase') {
+    title.value = 'Adicionar subfase';
+    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
+    pc = p1;
+    if (p1?.regiao_id) {
+      getRegionByParent(p1.regiao_id);
+      noregion = false;
+    }
+  } else if (group.value == 'fase' && fase_id) {
+    title.value = `Editar ${group.value}`;
+    pc = p0;
+    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
+    currentFase.value = p1.id ? p1 : { error: 'Fase não encontrada' };
+    if (p1?.regiao_id) {
+      getRegionByParent(singleEtapa.value.etapa.regiao_id, p1?.regiao_id);
+      noregion = false;
+    }
+  } else {
+    pc = p0;
+  }
+  if (currentFase.value?.responsaveis) {
+    responsaveis.value.participantes = currentFase.value.responsaveis
+      .map((x) => (x.id ? x.id : x.pessoa ? x.pessoa.id : null));
+  }
+  if (pc?.responsaveis) {
+    usersAvailable.value = pc.responsaveis.map((x) => (x.id ? x : x.pessoa ? x.pessoa : null));
+  }
+
+  if (noregion && singleEtapa.value?.etapa?.regiao_id) {
+    getRegionByParent(singleEtapa.value.etapa.regiao_id);
+  }
+  oktogo.value = 1;
+})();
 </script>
 <template>
   <div class="minimodal">
