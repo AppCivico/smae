@@ -220,7 +220,8 @@ export class CronogramaEtapaService {
                 etapa: {
                     CronogramaEtapa: [{
                         id: cronogramaEtapa.id,
-                        cronograma_id: cronogramaEtapa.cronograma_id
+                        cronograma_id: cronogramaEtapa.cronograma_id,
+                        ordem: cronogramaEtapa.ordem,
                     }],
 
                     id: cronogramaEtapa.etapa.id,
@@ -251,7 +252,8 @@ export class CronogramaEtapaService {
                         return {
                             CronogramaEtapa: f.CronogramaEtapa.map((x) => { return {
                                 id: x.id,
-                                cronograma_id: x.cronograma_id
+                                cronograma_id: x.cronograma_id,
+                                ordem: x.ordem
                             }}),
 
                             id: f.id,
@@ -279,7 +281,7 @@ export class CronogramaEtapaService {
                             etapa_filha: await Promise.all( f.etapa_filha.map( async ff => {
 
                                 return {
-                                    CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { id: x.id, cronograma_id: x.cronograma_id } }),
+                                    CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { id: x.id, cronograma_id: x.cronograma_id, ordem: x.ordem } }),
 
                                     id: ff.id,
                                     etapa_id: ff.id,
