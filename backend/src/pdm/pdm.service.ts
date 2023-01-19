@@ -37,8 +37,9 @@ export class PdmService {
         let arquivo_logo_id: undefined | number;
         if (createPdmDto.upload_logo) {
             arquivo_logo_id = this.uploadService.checkUploadToken(createPdmDto.upload_logo);
-            delete createPdmDto.upload_logo;
         }
+
+        delete createPdmDto.upload_logo;
 
         if (createPdmDto.possui_atividade && !createPdmDto.possui_iniciativa)
             throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
@@ -176,11 +177,15 @@ export class PdmService {
                 throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-        let arquivo_logo_id: number | undefined;
+        let arquivo_logo_id: number | undefined | null;
+        // se enviar vazio, transformar em null para limpar o logo
+        if (updatePdmDto.upload_logo == '') updatePdmDto.upload_logo = null;
         if (updatePdmDto.upload_logo) {
             arquivo_logo_id = this.uploadService.checkUploadToken(updatePdmDto.upload_logo);
-            delete updatePdmDto.upload_logo;
+        } else if (updatePdmDto.upload_logo === null) {
+            arquivo_logo_id = null;
         }
+        delete updatePdmDto.upload_logo;
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
