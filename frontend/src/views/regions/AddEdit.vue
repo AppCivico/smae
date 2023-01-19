@@ -1,13 +1,12 @@
 <script setup>
+import { região as schema } from '@/consts/formSchemas';
 import { requestS } from '@/helpers';
 import { router } from '@/router';
+import { useAlertStore, useEditModalStore, useRegionsStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
-
-import { useAlertStore, useEditModalStore, useRegionsStore } from '@/stores';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const props = defineProps(['props']);
@@ -87,13 +86,6 @@ if (props.props.type == 'editar') {
     level++;
   }
 }
-
-const schema = Yup.object().shape({
-  nivel: Yup.number(),
-  parente_id: Yup.number().nullable(),
-  descricao: Yup.string().required('Preencha a descrição'),
-  upload_shapefile: Yup.string().nullable(),
-});
 
 async function onSubmit(values) {
   try {
