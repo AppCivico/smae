@@ -268,6 +268,7 @@ export class CronogramaEtapaService {
                             termino_real: f.termino_real,
                             prazo: f.prazo,
                             titulo: f.titulo,
+                            ordem: f.CronogramaEtapa[0].ordem,
                             duracao: await this.getDuracao(f.inicio_real, f.termino_real),
                             atraso: await this.getAtraso(f.termino_previsto, f.termino_real),
 
@@ -295,6 +296,7 @@ export class CronogramaEtapaService {
                                     termino_real: ff.termino_real,
                                     prazo: ff.prazo,
                                     titulo: ff.titulo,
+                                    ordem: ff.CronogramaEtapa[0].ordem,
                                     duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
                                     atraso: await this.getAtraso(ff.termino_previsto, ff.termino_real),
 
