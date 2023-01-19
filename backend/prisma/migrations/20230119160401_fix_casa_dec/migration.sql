@@ -95,8 +95,12 @@ BEGIN
 
                     EXECUTE 'SELECT ' || r.formula INTO resultado;
 
-                    INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
-                        VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente);
+                    IF (resultado IS NOT NULL) THEN
+                        INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
+                            VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente);
+                    ELSE
+                        RAISE NOTICE ' RESULTADO NULO %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
+                    END IF;
                 END IF;
 
                 RAISE NOTICE 'r %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
