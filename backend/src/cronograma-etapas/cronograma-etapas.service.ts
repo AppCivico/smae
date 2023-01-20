@@ -248,13 +248,15 @@ export class CronogramaEtapaService {
                         }
                     }),
 
-                    etapa_filha: await Promise.all( cronogramaEtapa.etapa.etapa_filha.map( async f => {
+                    etapa_filha: await Promise.all(cronogramaEtapa.etapa.etapa_filha.map(async f => {
                         return {
-                            CronogramaEtapa: f.CronogramaEtapa.map((x) => { return {
-                                id: x.id,
-                                cronograma_id: x.cronograma_id,
-                                ordem: x.ordem
-                            }}),
+                            CronogramaEtapa: f.CronogramaEtapa.map((x) => {
+                                return {
+                                    id: x.id,
+                                    cronograma_id: x.cronograma_id,
+                                    ordem: x.ordem
+                                }
+                            }),
 
                             id: f.id,
                             etapa_id: f.id,
@@ -279,7 +281,7 @@ export class CronogramaEtapaService {
                                 }
                             }),
 
-                            etapa_filha: await Promise.all( f.etapa_filha.map( async ff => {
+                            etapa_filha: await Promise.all(f.etapa_filha.map(async ff => {
 
                                 return {
                                     CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { id: x.id, cronograma_id: x.cronograma_id, ordem: x.ordem } }),
@@ -309,9 +311,9 @@ export class CronogramaEtapaService {
                                 }
                             }))
                         }
-                        }),
+                    }),
                     )
-                    
+
                 },
 
                 cronograma_origem_etapa: {
@@ -324,6 +326,11 @@ export class CronogramaEtapaService {
     }
 
     async update(updateCronogoramaEtapaDto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
+
+        if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            // TODO buscar o ID da meta pelo cronograma, pra verificar
+        }
 
         let id;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -354,6 +361,11 @@ export class CronogramaEtapaService {
 
     async delete(id: number, user: PessoaFromJwt) {
 
+        if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            // TODO buscar o ID da meta pelo cronograma, pra verificar
+        }
+
         const deleted = await this.prisma.cronogramaEtapa.delete({
             where: { id: id },
         });
@@ -365,25 +377,25 @@ export class CronogramaEtapaService {
         if (!inicio_real) return '';
 
         const start: DateTime = DateTime.fromJSDate(inicio_real);
-        const end: DateTime   = termino_real ? ( DateTime.fromJSDate(termino_real) ) : ( DateTime.now() );
-        
+        const end: DateTime = termino_real ? (DateTime.fromJSDate(termino_real)) : (DateTime.now());
+
         const duration: Duration = end.diff(start, 'days');
 
         return await this.durationInDaysHuman(duration)
     }
 
-    async getAtraso(termino_previsto : Date | null, termino_real: Date | null): Promise<string> {
+    async getAtraso(termino_previsto: Date | null, termino_real: Date | null): Promise<string> {
         if (!termino_real || !termino_previsto) return '';
 
         const start: DateTime = DateTime.fromJSDate(termino_previsto);
-        const end: DateTime   = DateTime.fromJSDate(termino_real);
+        const end: DateTime = DateTime.fromJSDate(termino_real);
 
         const duration: Duration = end.diff(start, 'days');
 
         return await this.durationInDaysHuman(duration)
     }
 
-    async durationInDaysHuman (duration: Duration): Promise<string> {
+    async durationInDaysHuman(duration: Duration): Promise<string> {
         let string_format: string;
 
         if (duration.days === 1) {
