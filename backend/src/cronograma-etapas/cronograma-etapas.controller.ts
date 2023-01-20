@@ -1,10 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CronogramaEtapaService } from './cronograma-etapas.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { ListCronogramaEtapaDto } from './dto/list-cronograma-etapa.dto';
@@ -17,6 +16,7 @@ export class CronogramaEtapaController {
 
     @ApiBearerAuth('access-token')
     @Get()
+    // ja tava liberado pra todo mundo, vai continuar
     async findAll(@Query() filters: FilterCronogramaEtapaDto): Promise<ListCronogramaEtapaDto> {
         return { 'linhas': await this.cronogramaEtapaService.findAll(filters) };
     }
@@ -24,7 +24,7 @@ export class CronogramaEtapaController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.editar')
+    @Roles('CadastroCronograma.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async update(@Body() updateCronogramaEtapaDto: UpdateCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.cronogramaEtapaService.update(updateCronogramaEtapaDto, user);
     }
@@ -32,7 +32,7 @@ export class CronogramaEtapaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroEtapa.remover')
+    @Roles('CadastroEtapa.remover', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
