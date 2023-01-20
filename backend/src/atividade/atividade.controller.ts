@@ -19,21 +19,23 @@ export class AtividadeController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.inserir')
+    @Roles('CadastroAtividade.inserir', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createAtividadeDto: CreateAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.atividadeService.create(createAtividadeDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterAtividadeDto): Promise<ListAtividadeDto> {
-        return { 'linhas': await this.atividadeService.findAll(filters) };
+    // se um dia colocar @Roles, lembrar que existe o 'PDM.tecnico_cp', 'PDM.admin_cp'
+    // que também usa esse endpoint
+    async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
+        return { 'linhas': await this.atividadeService.findAll(filters, user) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.editar')
+    @Roles('CadastroAtividade.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async update(@Param() params: FindOneParams, @Body() updateAtividadeDto: UpdateAtividadeDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.atividadeService.update(+params.id, updateAtividadeDto, user);
     }
@@ -41,7 +43,7 @@ export class AtividadeController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.remover')
+    @Roles('CadastroAtividade.remover', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
