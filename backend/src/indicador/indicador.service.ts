@@ -28,7 +28,6 @@ export class IndicadorService {
         if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
             throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
 
-
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const indicador = await prisma.indicador.create({
                 data: {
@@ -110,6 +109,14 @@ export class IndicadorService {
                     }
                 }
             });
+
+            const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, prisma);
+            if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
+                const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+                // vai dar rollback, mas ai n repete o codigo pelo menos
+                if (filterIdIn.includes(meta_id) === false)
+                    throw new HttpException('Sem permissão para criar indicador para a meta', 400)
+            }
 
             // Verifica se há variaveis que devem ser 'herdadas'
             if (indicador.meta) {
@@ -232,7 +239,10 @@ export class IndicadorService {
         return formula_compilada;
     }
 
-    async findAll(filters: FilterIndicadorDto | undefined = undefined) : Promise<Indicador[]> {
+    async findAll(filters: FilterIndicadorDto | undefined = undefined, user: PessoaFromJwt): Promise<Indicador[]> {
+
+        // TODO cruzar até chegar nas metas pra fazer o filtro (PDM.tecnico_cp) se necessário, mesma situação das variaveis
+
         let listActive = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
@@ -296,6 +306,13 @@ export class IndicadorService {
             select: indicadorSelectData
         });
         if (!indicador) throw new HttpException('indicador não encontrado', 400);
+
+        const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, this.prisma);
+        if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) === false)
+                throw new HttpException('Sem permissão para editar indicador para a meta', 400)
+        }
 
         console.log('updateIndicadorDto', updateIndicadorDto);
 
@@ -397,6 +414,13 @@ export class IndicadorService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const meta_id = await this.variavelService.getMetaIdDoIndicador(id, this.prisma);
+        if (!user.hasSomeRoles(['CadastroIndicador.remover', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) === false)
+                throw new HttpException('Sem permissão para remover indicador para a meta', 400)
+        }
+
         const created = await this.prisma.indicador.updateMany({
             where: { id: id },
             data: {
@@ -494,6 +518,13 @@ export class IndicadorService {
             select: { id: true, inicio_medicao: true, fim_medicao: true, periodicidade: true }
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 404);
+
+        const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, this.prisma);
+        if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) === false)
+                throw new HttpException('Sem permissão para visualizar serie do indicador para a meta', 400)
+        }
 
         const result: ListSeriesAgrupadas = {
             variavel: undefined,
