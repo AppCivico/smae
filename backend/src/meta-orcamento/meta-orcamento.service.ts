@@ -18,6 +18,13 @@ export class MetaOrcamentoService {
 
     async create(dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) == false) {
+                throw new HttpException('Sem permissão para editar orçamento', 400)
+            }
+        }
 
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
@@ -60,11 +67,20 @@ export class MetaOrcamentoService {
         return created;
     }
 
-    async findAll(filters?: FilterMetaOrcamentoDto): Promise<MetaOrcamento[]> {
+    async findAll(filters: FilterMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamento[]> {
+
+        let filterIdIn: undefined | number[] = undefined;
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+        }
 
         const metaOrcamentos = await this.prisma.metaOrcamento.findMany({
             where: {
-                meta_id: filters?.meta_id,
+                AND: [
+                    { meta_id: filters?.meta_id },
+                    { meta_id: filterIdIn ? { in: filterIdIn } : undefined }
+                ],
                 ano_referencia: filters?.ano_referencia,
                 removido_em: null,
             },
@@ -111,6 +127,14 @@ export class MetaOrcamentoService {
 
     async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
+
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) == false) {
+                throw new HttpException('Sem permissão para editar orçamento', 400)
+            }
+        }
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: dto.meta_id, removido_em: null },
@@ -164,10 +188,18 @@ export class MetaOrcamentoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const metaOrcamento = await this.prisma.metaOrcamento.count({
+        const metaOrcamento = await this.prisma.metaOrcamento.findFirst({
             where: { id: +id, removido_em: null }
         });
         if (!metaOrcamento) throw new HttpException('meta orçamento não encontrada', 400);
+
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(metaOrcamento.meta_id) == false) {
+                throw new HttpException('Sem permissão para remover orçamento', 400)
+            }
+        }
 
         const now = new Date(Date.now());
         await this.prisma.metaOrcamento.updateMany({
