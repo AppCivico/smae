@@ -35,7 +35,7 @@ export class IndicadorController {
     @Patch('indicador/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
+    @Roles('CadastroIndicador.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async update(@Param() params: FindOneParams, @Body() updateIndicadorDto: UpdateIndicadorDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.indicadorService.update(+params.id, updateIndicadorDto, user);
     }
@@ -43,7 +43,7 @@ export class IndicadorController {
     @Delete('indicador/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.remover')
+    @Roles('CadastroIndicador.remover', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -56,10 +56,10 @@ export class IndicadorController {
     @Get('indicador/:id/serie')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
+    @Roles('CadastroIndicador.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiOperation({
         summary: 'Recebe o ID do indicador como parâmetro',
-        description: 'Filtros só podem ser usados encurtar os períodos do indicador, não é possivel puxar dados fora dos períodos existentes (será ignorado)'
+        description: 'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)'
     })
     async getSeriePrevistoRealizado(
         @Param() params: FindOneParams,
