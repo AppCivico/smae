@@ -11,7 +11,7 @@ export class CreateVariavelDto {
     */
     @IsInt({ message: '$property| indicador precisa existir' })
     @Type(() => Number)
-    indicador_id?: number
+    indicador_id?: number // manter undefined pq precisamos apagar antes do insert
 
     /**
     * lista dos responsáveis pelo preenchimento? pelo menos uma pessoa
@@ -20,7 +20,7 @@ export class CreateVariavelDto {
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(1, { message: '$property| precisa ter um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    responsaveis?: number[]
+    responsaveis?: number[] // manter undefined pq precisamos apagar antes do insert
 
     /**
     * ID do órgão
