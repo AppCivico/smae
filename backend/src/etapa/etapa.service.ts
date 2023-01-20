@@ -13,6 +13,12 @@ export class EtapaService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
+
+        if (!user.hasSomeRoles(['CadastroCronograma.inserir', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            // TODO buscar o ID da meta pelo cronograma, pra verificar
+        }
+
         const ordem = createEtapaDto.ordem ? createEtapaDto.ordem : null;
         const responsaveis = createEtapaDto.responsaveis || [];
         delete createEtapaDto.ordem;

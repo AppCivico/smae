@@ -12,11 +12,15 @@ export class CronogramaService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
+        if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
+            throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
+
+        if (!user.hasSomeRoles(['CadastroCronograma.inserir', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            // TODO buscar o ID da meta pelo cronograma, pra verificar
+        }
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
-                throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
-
             const cronograma = await prisma.cronograma.create({
                 data: {
                     criado_por: user.id,
@@ -25,7 +29,6 @@ export class CronogramaService {
                 },
                 select: { id: true }
             });
-
 
             return cronograma;
         });
@@ -71,6 +74,11 @@ export class CronogramaService {
 
     async update(id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
 
+        if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            // TODO buscar o ID da meta pelo cronograma, pra verificar
+        }
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
 
             const cronograma = await prisma.cronograma.update({
@@ -90,6 +98,11 @@ export class CronogramaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        if (!user.hasSomeRoles(['CadastroCronograma.remover', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            // TODO buscar o ID da meta pelo cronograma, pra verificar
+        }
+
         const removed = await this.prisma.cronograma.updateMany({
             where: { id: id },
             data: {
