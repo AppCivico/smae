@@ -43,7 +43,7 @@ export class PdmController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    //@Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar')
+    //@Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async findAll(@Query() filters: FilterPdmDto): Promise<ListPdmDto> {
 
         const linhas = await this.pdmService.findAll(filters);
@@ -73,7 +73,7 @@ export class PdmController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar')
+    @Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiExtraModels(Pdm, DetalhePdmDto)
     @ApiOkResponse({
         schema: { anyOf: refs(Pdm, DetalhePdmDto) },

@@ -21,15 +21,15 @@ export class IndicadorController {
     @Post('indicador')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir')
+    @Roles('CadastroIndicador.inserir', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createIndicadorDto: CreateIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.indicadorService.create(createIndicadorDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get('indicador')
-    async findAll(@Query() filters: FilterIndicadorDto): Promise<ListIndicadorDto> {
-        return { 'linhas': await this.indicadorService.findAll(filters) };
+    async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
+        return { 'linhas': await this.indicadorService.findAll(filters, user) };
     }
 
     @Patch('indicador/:id')
