@@ -32,8 +32,8 @@ export class OrcamentoRealizadoController {
     @ApiBearerAuth('access-token')
     @Get()
     @Roles('CadastroMeta.orcamento')
-    async findAll(@Query() filters: FilterOrcamentoRealizadoDto): Promise<ListOrcamentoRealizadoDto> {
-        return { 'linhas': await this.orcamentoRealizadoService.findAll(filters) };
+    async findAll(@Query() filters: FilterOrcamentoRealizadoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoRealizadoDto> {
+        return { 'linhas': await this.orcamentoRealizadoService.findAll(filters, user) };
     }
 
     @Delete(':id')
