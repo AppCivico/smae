@@ -26,13 +26,14 @@ export class CronogramaController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.inserir')
+    @Roles('CadastroCronograma.inserir', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createCronogramaDto: CreateCronogramaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.cronogramaService.create(createCronogramaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
+    // ja tava liberado pra todo mundo, vai continuar
     async findAll(@Query() filters: FilterCronogramaDto): Promise<ListCronogramaDto> {
         return { 'linhas': await this.cronogramaService.findAll(filters) };
     }
@@ -40,7 +41,7 @@ export class CronogramaController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.editar')
+    @Roles('CadastroCronograma.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async update(@Param() params: FindOneParams, @Body() updateCronogramaDto: UpdateCronogramaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.cronogramaService.update(+params.id, updateCronogramaDto, user);
     }
@@ -48,7 +49,7 @@ export class CronogramaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.remover')
+    @Roles('CadastroCronograma.remover', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -59,7 +60,7 @@ export class CronogramaController {
     @Post(':id/etapa')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.inserir')
+    @Roles('CadastroCronograma.inserir', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async createEtapa(@Body() createEtapaDto: CreateEtapaDto, @Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.etapaService.create(+params.id, createEtapaDto, user);
     }
