@@ -26,7 +26,6 @@ export class MetaService {
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
-
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = createMetaDto.orgaos_participantes!;
             let cp = createMetaDto.coordenadores_cp!;
@@ -159,13 +158,30 @@ export class MetaService {
         return arr;
     }
 
-    async findAll(filters: FilterMetaDto | undefined = undefined) {
+    async findAll(filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
+
+        // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
+        // 'CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover'
+        // atualmente nesse serviço não tem nada de painel, então acho que precisa rever esse TODO
+        // pra outro lugar (o frontend da um get em /painel sem informar qual meta
+        // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
+        // depois o busca a serie do painel-conteudo correspondente
+
+        let filterIdIn: undefined | number[] = undefined;
+        if (!user.hasSomeRoles(['CadastroMeta.inserir', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+        }
+
 
         const listActive = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
                 pdm_id: filters?.pdm_id,
-                id: filters?.id,
+                'AND': [
+                    { id: filters?.id, },
+                    { id: filterIdIn ? { in: filterIdIn } : undefined }
+                ]
             },
             orderBy: [
                 { codigo: 'asc' },
@@ -263,6 +279,11 @@ export class MetaService {
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
 
+        if (!user.hasSomeRoles(['CadastroMeta.inserir', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            await user.assertHasMetaPdmAccess(id, this.prisma.pessoaAcessoPdm);
+        }
+
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
         const tags = updateMetaDto.tags;
@@ -358,7 +379,7 @@ export class MetaService {
         const orgaos_match = orgaos_in_use.some(x => orgaos_to_be_created.includes(x));
 
         // if (!orgaos_match)
-            // throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
+        // throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
     }
 
     private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]): Promise<number[]> {
@@ -393,6 +414,11 @@ export class MetaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            await user.assertHasMetaPdmAccess(id, this.prisma.pessoaAcessoPdm);
+        }
+
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
             const removed = await prisma.meta.updateMany({
                 where: { id: id, removido_em: null },
