@@ -28,10 +28,9 @@ export class MetaController {
     @ApiBearerAuth('access-token')
     @Get()
     @ApiProduces("application/json", "text/csv", "text/csv; unwind-all", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    //@Roles('CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover')
-    async findAll(@Query() filters: FilterMetaDto): Promise<ListMetaDto> {
-        // TODO filtrar por apenas painel , se a pessoa nao tiver essas permissoes acima
-        return { 'linhas': await this.metaService.findAll(filters) };
+    // tbm ta liberado pra geral listar
+    async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
+        return { 'linhas': await this.metaService.findAll(filters, user) };
     }
 
     @ApiBearerAuth('access-token')
@@ -47,8 +46,8 @@ export class MetaController {
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get(':id')
-    async findOne(@Param() params: FindOneParams): Promise<Meta> {
-        const r = await this.metaService.findAll({ id: params.id });
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Meta> {
+        const r = await this.metaService.findAll({ id: params.id }, user);
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
         return r[0];
     }
