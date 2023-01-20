@@ -24,6 +24,14 @@ export class IniciativaService {
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
 
+        if (!user.hasSomeRoles(['CadastroIniciativa.inserir', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(createIniciativaDto.meta_id) == false) {
+                throw new HttpException('Sem permissão para criar inicaitiva nesta meta', 400)
+            }
+        }
+
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = createIniciativaDto.orgaos_participantes!;
             let cp = createIniciativaDto.coordenadores_cp!;
@@ -151,21 +159,22 @@ export class IniciativaService {
         return arr;
     }
 
-    async findAll(filters: FilterIniciativaDto | undefined = undefined) {
+    async findAll(filters: FilterIniciativaDto | undefined = undefined, user: PessoaFromJwt) {
         let meta_id = filters?.meta_id;
 
-        let cond;
-        if (meta_id) {
-            cond = {
-                removido_em: null,
-                meta_id: meta_id
-            }
-        } else {
-            cond = { removido_em: null }
+        let filterIdIn: undefined | number[] = undefined;
+        if (!user.hasSomeRoles(['CadastroIniciativa.inserir', 'PDM.admin_cp'])) {
+            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
         }
 
         let listActive = await this.prisma.iniciativa.findMany({
-            where: cond,
+            where: {
+                removido_em: null,
+                meta_id: meta_id ? meta_id : undefined,
+                AND: [
+                    { meta_id: filterIdIn ? { in: filterIdIn } : undefined }
+                ]
+            },
             orderBy: [
                 { codigo: 'asc' },
             ],
@@ -239,6 +248,13 @@ export class IniciativaService {
     }
 
     async update(id: number, updateIniciativaDto: UpdateIniciativaDto, user: PessoaFromJwt) {
+        const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
+
+        if (!user.hasSomeRoles(['CadastroIniciativa.editar', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(self.meta_id) == false)
+                throw new HttpException('Sem permissão para editar iniciativa', 400)
+        }
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = updateIniciativaDto.orgaos_participantes!;
@@ -309,6 +325,13 @@ export class IniciativaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
+
+        if (!user.hasSomeRoles(['CadastroIniciativa.remover', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(self.meta_id) == false)
+                throw new HttpException('Sem permissão para remover iniciativa', 400)
+        }
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
             const removed = await this.prisma.iniciativa.updateMany({
@@ -318,7 +341,7 @@ export class IniciativaService {
                     removido_em: new Date(Date.now()),
                 }
             });
-        
+
             // Caso a Iniciativa seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
             // public.painel_conteudo_detalhe
             await prisma.painelConteudoDetalhe.deleteMany({ where: { iniciativa_id: id } });
