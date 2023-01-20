@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -23,6 +23,15 @@ export class AtividadeService {
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
+
+        if (!user.hasSomeRoles(['CadastroAtividade.inserir', 'PDM.admin_cp'])) {
+            const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = (await this.prisma.iniciativa.findMany({
+                where: { removido_em: null, meta_id: { in: metas } }
+            })).map(r => r.id);
+            if (filterIdIn.includes(createAtividadeDto.iniciativa_id) === false)
+                throw new HttpException('Sem permissão para criar atividade nesta iniciativa (por não ter também permissão da meta)', 400)
+        }
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = createAtividadeDto.orgaos_participantes!;
@@ -153,21 +162,25 @@ export class AtividadeService {
         return arr;
     }
 
-    async findAll(filters: FilterAtividadeDto | undefined = undefined) {
+    async findAll(filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
         let iniciativa_id = filters?.iniciativa_id;
 
-        let cond;
-        if (iniciativa_id) {
-            cond = {
-                removido_em: null,
-                iniciativa_id: iniciativa_id
-            }
-        } else {
-            cond = { removido_em: null }
+        let filterIdIn: undefined | number[] = undefined;
+        if (!user.hasSomeRoles(['CadastroAtividade.inserir', 'PDM.admin_cp'])) {
+            const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            filterIdIn = (await this.prisma.iniciativa.findMany({
+                where: { removido_em: null, meta_id: { in: metas } }
+            })).map(r => r.id);
         }
 
         let listActive = await this.prisma.atividade.findMany({
-            where: cond,
+            where: {
+                removido_em: null,
+                AND: [
+                    { iniciativa_id: iniciativa_id ? iniciativa_id : undefined },
+                    { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined }
+                ]
+            },
             orderBy: [
                 { codigo: 'asc' },
             ],
@@ -242,7 +255,18 @@ export class AtividadeService {
 
     async update(id: number, updateAtividadeDto: UpdateAtividadeDto, user: PessoaFromJwt) {
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+        const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
+
+        if (!user.hasSomeRoles(['CadastroAtividade.editar', 'PDM.admin_cp'])) {
+            const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = (await this.prisma.iniciativa.findMany({
+                where: { removido_em: null, meta_id: { in: metas } }
+            })).map(r => r.id);
+            if (filterIdIn.includes(self.iniciativa_id) === false)
+                throw new HttpException('Sem permissão para editar atividade nesta iniciativa (por não ter também permissão da meta)', 400)
+        }
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             let op = updateAtividadeDto.orgaos_participantes!;
             let cp = updateAtividadeDto.coordenadores_cp!;
             delete updateAtividadeDto.orgaos_participantes;
@@ -252,7 +276,7 @@ export class AtividadeService {
             delete updateAtividadeDto.tags;
 
             if (updateAtividadeDto.ativo) {
-                const atividade = await prisma.atividade.findFirst({
+                const atividade = await prismaTx.atividade.findFirst({
                     where: {
                         id: id
                     },
@@ -267,7 +291,7 @@ export class AtividadeService {
                     throw new Error('Iniciativa está desativada, ative-a antes de ativar a Atividade')
             }
 
-            const atividade = await prisma.atividade.update({
+            const atividade = await prismaTx.atividade.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
@@ -279,25 +303,25 @@ export class AtividadeService {
                 select: { id: true }
             });
             await Promise.all([
-                prisma.atividadeOrgao.deleteMany({ where: { atividade_id: id } }),
-                prisma.atividadeResponsavel.deleteMany({ where: { atividade_id: id } }),
-                prisma.atividadeTag.deleteMany({ where: { atividade_id: id } }),
+                prismaTx.atividadeOrgao.deleteMany({ where: { atividade_id: id } }),
+                prismaTx.atividadeResponsavel.deleteMany({ where: { atividade_id: id } }),
+                prismaTx.atividadeTag.deleteMany({ where: { atividade_id: id } }),
 
             ]);
 
             await Promise.all([
-                prisma.atividadeOrgao.createMany({
+                prismaTx.atividadeOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(atividade.id, op),
                 }),
-                prisma.atividadeResponsavel.createMany({
+                prismaTx.atividadeResponsavel.createMany({
                     data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
                 }),
-                prisma.atividadeTag.createMany({
+                prismaTx.atividadeTag.createMany({
                     data: await this.buildAtividadeTags(atividade.id, tags)
                 })
             ]);
 
-            const indicador = await prisma.indicador.findFirst({
+            const indicador = await prismaTx.indicador.findFirst({
                 where: {
                     removido_em: null,
                     atividade_id: atividade.id
@@ -318,7 +342,7 @@ export class AtividadeService {
                 this.logger.log('não há indicador para a atividade')
             } else {
                 for (const variavel of indicador.IndicadorVariavel) {
-                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prisma)
+                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prismaTx)
                 }
             }
 
@@ -329,15 +353,26 @@ export class AtividadeService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
+
+        if (!user.hasSomeRoles(['CadastroAtividade.remover', 'PDM.admin_cp'])) {
+            const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = (await this.prisma.iniciativa.findMany({
+                where: { removido_em: null, meta_id: { in: metas } }
+            })).map(r => r.id);
+            if (filterIdIn.includes(self.iniciativa_id) === false)
+                throw new HttpException('Sem permissão para remover atividade nesta iniciativa (por não ter também permissão da meta)', 400)
+        }
+
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
-            const removed = await this.prisma.atividade.updateMany({
+            const removed = await prisma.atividade.updateMany({
                 where: { id: id },
                 data: {
                     removido_por: user.id,
                     removido_em: new Date(Date.now()),
                 }
             });
-            
+
             // Caso a Atividade seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
             // public.painel_conteudo_detalhe
             await prisma.painelConteudoDetalhe.deleteMany({ where: { atividade_id: id } });
