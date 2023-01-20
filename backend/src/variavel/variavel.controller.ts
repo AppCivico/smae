@@ -21,7 +21,7 @@ export class VariavelController {
     @Post('indicador-variavel')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir')
+    @Roles('CadastroIndicador.inserir', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createVariavelDto: CreateVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.variavelService.create(createVariavelDto, user);
     }
@@ -29,7 +29,7 @@ export class VariavelController {
     @Get('indicador-variavel')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroIndicador.editar')
+    @Roles('CadastroIndicador.inserir', 'CadastroIndicador.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
         return { linhas: await this.variavelService.findAll(filters) };
     }
@@ -37,7 +37,7 @@ export class VariavelController {
     @Patch('indicador-variavel/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
+    @Roles('CadastroIndicador.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async update(@Param() params: FindOneParams, @Body() updateUnidadeMedidaDto: UpdateVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.variavelService.update(+params.id, updateUnidadeMedidaDto, user);
     }
@@ -59,7 +59,7 @@ export class VariavelController {
     @Get('indicador-variavel/:id/serie')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
+    @Roles('CadastroIndicador.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(params.id);
     }

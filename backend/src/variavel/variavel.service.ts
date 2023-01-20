@@ -42,10 +42,16 @@ export class VariavelService {
         // se a região existe e está ativa, se é do mesmo nível que foi escolhido no indicador
         // se não vier, conferir se o indicador realmente não é por região
 
-        let responsaveis = createVariavelDto.responsaveis!;
-        delete createVariavelDto.responsaveis;
+        const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id!, this.prisma);
+        if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) === false)
+                throw new HttpException('Sem permissão para criar variável nesta meta', 400)
+        }
 
-        let indicador_id = createVariavelDto.indicador_id!;
+        const responsaveis = createVariavelDto.responsaveis!;
+        const indicador_id = createVariavelDto.indicador_id!;
+        delete createVariavelDto.responsaveis;
         delete createVariavelDto.indicador_id;
 
         if (createVariavelDto.atraso_meses === undefined) createVariavelDto.atraso_meses = 1;
@@ -240,6 +246,12 @@ export class VariavelService {
             throw new HttpException('Apenas filtrar por meta_id ou indicador_id por vez', 400);
         }
 
+        // TODO seria bom verificar permissões do usuário, se realmente poderia visualizar [logo fazer batch edit dos valores] de todas as variaveis
+        // do indicados, puxando as metas
+        // atualmente o filtro ta só no frontend, pq o usuário não chegaria nesse endpoint sem usar o filtro de ID,
+        // e o endpoint de metas já aplica o filtro
+        // já que nessa listagem é retornado o token usado no batch
+
         if (filters?.indicador_id) {
             filterQuery = {
                 indicador_variavel: {
@@ -425,7 +437,6 @@ export class VariavelService {
 
 
     async update(variavelId: number, updateVariavelDto: UpdateVariavelDto, user: PessoaFromJwt) {
-
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
 
         // buscando apenas pelo indicador pai verdadeiro desta variavel
@@ -434,6 +445,14 @@ export class VariavelService {
             select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true } } }
         });
         if (!selfIdicadorVariavel) throw new HttpException('Variavel não encontrada', 400);
+
+
+        const meta_id = await this.getMetaIdDoIndicador(selfIdicadorVariavel.indicador_id, this.prisma);
+        if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) === false)
+                throw new HttpException('Sem permissão para criar variável nesta meta', 400)
+        }
 
         const oldValorBase = selfIdicadorVariavel.variavel.valor_base;
         // e com o indicador verdadeiro, temos os dados para recalcular os niveis
@@ -645,14 +664,14 @@ export class VariavelService {
         return result;
     }
 
-    referencia_boba(varServerSideAcumulativa: boolean, sv: SerieValorNomimal): SerieValorNomimal {
+    private referencia_boba(varServerSideAcumulativa: boolean, sv: SerieValorNomimal): SerieValorNomimal {
         if (varServerSideAcumulativa) {
             sv.referencia = 'SS';
         }
         return sv;
     }
 
-    buildNonExistingSerieValor(periodo: DateYMD, variavelId: number, serie: Serie): SerieValorNomimal {
+    private buildNonExistingSerieValor(periodo: DateYMD, variavelId: number, serie: Serie): SerieValorNomimal {
         return {
             data_valor: periodo,
             referencia: this.getEditNonExistingSerieJwt(variavelId, periodo, serie),
@@ -661,7 +680,7 @@ export class VariavelService {
     }
 
 
-    getEditExistingSerieJwt(id: number, variavelId: number): string {
+    private getEditExistingSerieJwt(id: number, variavelId: number): string {
         // TODO opcionalmente adicionar o modificado_em aqui
         return this.jwtService.sign({
             id: id,
@@ -669,7 +688,7 @@ export class VariavelService {
         } as ExistingSerieJwt);
     }
 
-    getEditNonExistingSerieJwt(variavelId: number, period: DateYMD, serie: Serie): string {
+    private getEditNonExistingSerieJwt(variavelId: number, period: DateYMD, serie: Serie): string {
         return this.jwtService.sign({
             p: period,
             v: variavelId,
@@ -677,7 +696,7 @@ export class VariavelService {
         } as NonExistingSerieJwt);
     }
 
-    async gerarPeriodoVariavelEntreDatas(variavelId: number): Promise<DateYMD[]> {
+    private async gerarPeriodoVariavelEntreDatas(variavelId: number): Promise<DateYMD[]> {
         const dados: Record<string, string>[] = await this.prisma.$queryRaw`
             select to_char(p.p, 'yyyy-mm-dd') as dt
             from busca_periodos_variavel(${variavelId}::int) as g(p, inicio, fim),
@@ -687,7 +706,7 @@ export class VariavelService {
         return dados.map((e) => e.dt);
     }
 
-    validarValoresJwt(valores: SerieUpsert[]): ValidatedUpsert[] {
+    private validarValoresJwt(valores: SerieUpsert[]): ValidatedUpsert[] {
         const valids: ValidatedUpsert[] = [];
         console.log({ log: 'validation', valores })
         for (const valor of valores) {
@@ -857,7 +876,6 @@ export class VariavelService {
     }
 
     async getMetaIdDaVariavel(variavel_id: number, prismaTxn: Prisma.TransactionClient): Promise<number> {
-
         let result: {
             meta_id: number
         }[] = await prismaTxn.$queryRaw`
@@ -870,6 +888,7 @@ export class VariavelService {
                     join indicador i on i.meta_id = m.id and i.removido_em is null
                     join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
                     where iv.variavel_id = ${variavel_id}::int
+                    and i.removido_em is null
                 ),
                 (
                     select m.id
@@ -878,6 +897,7 @@ export class VariavelService {
                     join indicador i on  i.iniciativa_id = _i.id
                     join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
                     where iv.variavel_id = ${variavel_id}::int
+                    and i.removido_em is null
                 ),
                 (
                     select m.id
@@ -887,6 +907,7 @@ export class VariavelService {
                     join indicador i on  i.atividade_id = _a.id
                     join indicador_variavel iv on iv.indicador_id = i.id and iv.desativado=false and iv.indicador_origem_id is null
                     where iv.variavel_id = ${variavel_id}::int
+                    and i.removido_em is null
                 )
             ) as meta_id
         `;
@@ -897,4 +918,42 @@ export class VariavelService {
     }
 
 
+    async getMetaIdDoIndicador(indicador_id: number, prismaTxn: Prisma.TransactionClient): Promise<number> {
+
+        let result: {
+            meta_id: number
+        }[] = await prismaTxn.$queryRaw`
+            select coalesce(
+                -- busca pela diretamente na meta
+                (
+                    select m.id
+                    from meta m
+                    join indicador i on i.meta_id = m.id and i.removido_em is null
+                    where i.id = ${indicador_id}::int
+                    and i.removido_em is null
+                ),
+                (
+                    select m.id
+                    from meta m
+                    join iniciativa _i on _i.meta_id = m.id
+                    join indicador i on  i.iniciativa_id = _i.id
+                    where i.id = ${indicador_id}::int
+                    and i.removido_em is null
+                ),
+                (
+                    select m.id
+                    from meta m
+                    join iniciativa _i on _i.meta_id = m.id
+                    join atividade _a on _a.iniciativa_id = _i.id
+                    join indicador i on  i.atividade_id = _a.id
+                    where i.id = ${indicador_id}::int
+                    and i.removido_em is null
+                )
+            ) as meta_id
+        `;
+        console.log(result);
+
+        if (!result[0].meta_id) throw `getMetaIdDoIndicador: nenhum resultado para indicador ${indicador_id}`
+        return result[0].meta_id;
+    }
 }
