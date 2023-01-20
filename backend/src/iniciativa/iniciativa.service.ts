@@ -28,7 +28,7 @@ export class IniciativaService {
             // logo, é um tecnico_cp
             const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             if (filterIdIn.includes(createIniciativaDto.meta_id) == false) {
-                throw new HttpException('Sem permissão para criar inicaitiva nesta meta', 400)
+                throw new HttpException('Sem permissão para criar iniciativa nesta meta', 400)
             }
         }
 
