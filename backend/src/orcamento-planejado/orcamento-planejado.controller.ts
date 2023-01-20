@@ -16,7 +16,7 @@ export class OrcamentoPlanejadoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createMetaDto: CreateOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.orcamentoPlanejadoService.create(createMetaDto, user);
     }
@@ -24,23 +24,22 @@ export class OrcamentoPlanejadoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async update(@Param() params: FindOneParams, @Body() createMetaDto: UpdateOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.orcamentoPlanejadoService.update(+params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroMeta.orcamento')
-    async findAll(@Query() filters: FilterOrcamentoPlanejadoDto): Promise<ListOrcamentoPlanejadoDto> {
-
-        return { 'linhas': await this.orcamentoPlanejadoService.findAll(filters) };
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    async findAll(@Query() filters: FilterOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoPlanejadoDto> {
+        return { 'linhas': await this.orcamentoPlanejadoService.findAll(filters, user) };
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

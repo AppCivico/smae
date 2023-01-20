@@ -30,6 +30,14 @@ export class OrcamentoRealizadoService {
     async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(meta_id) == false) {
+                throw new HttpException('Sem permissão para criar orçamento na meta', 400)
+            }
+        }
+
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
             select: { pdm_id: true, id: true }
@@ -111,6 +119,14 @@ export class OrcamentoRealizadoService {
         });
         if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
         console.log(dto);
+
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(orcamentoRealizado.meta_id) == false) {
+                throw new HttpException('Sem permissão para editar orçamento', 400)
+            }
+        }
 
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
@@ -412,13 +428,21 @@ export class OrcamentoRealizadoService {
     }
 
 
-    async findAll(filters: FilterOrcamentoRealizadoDto): Promise<OrcamentoRealizado[]> {
+    async findAll(filters: FilterOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<OrcamentoRealizado[]> {
+        let filterIdIn: undefined | number[] = undefined;
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+        }
 
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
                 dotacao: filters?.dotacao,
-                meta_id: filters?.meta_id,
+                AND: [
+                    { meta_id: filters?.meta_id },
+                    { meta_id: filterIdIn ? { in: filterIdIn } : undefined }
+                ],
                 processo: filters?.processo,
                 nota_empenho: filters?.nota_empenho,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
@@ -593,10 +617,18 @@ export class OrcamentoRealizadoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const orcamentoRealizado = await this.prisma.orcamentoRealizado.count({
+        const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
         if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
+
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            if (filterIdIn.includes(orcamentoRealizado.meta_id) == false) {
+                throw new HttpException('Sem permissão para remover orçamento', 400)
+            }
+        }
 
         const now = new Date(Date.now());
 
