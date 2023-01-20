@@ -16,22 +16,22 @@ export class MetaOrcamentoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createMetaDto: CreateMetaOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.metaOrcamentoService.create(createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroMeta.orcamento')
-    async findAll(@Query() filters: FilterMetaOrcamentoDto): Promise<ListMetaOrcamentoDto> {
-        return { 'linhas': await this.metaOrcamentoService.findAll(filters) };
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    async findAll(@Query() filters: FilterMetaOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaOrcamentoDto> {
+        return { 'linhas': await this.metaOrcamentoService.findAll(filters, user) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @HttpCode(HttpStatus.ACCEPTED)
     async patch(
         @Param() params: FindOneParams,
@@ -45,7 +45,7 @@ export class MetaOrcamentoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
