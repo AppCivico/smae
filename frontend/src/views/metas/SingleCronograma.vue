@@ -180,8 +180,7 @@ onUpdated(() => { start(); });
         class="etapas"
       >
         <div
-          v-for="(r, index) in singleCronogramaEtapas?.filter(x => !x.inativo)
-            .sort((a, b) => a.ordem - b.ordem)"
+          v-for="(r, index) in singleCronogramaEtapas?.filter(x => !x.inativo)"
           :key="r.etapa.id"
           class="etapa"
         >
