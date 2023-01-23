@@ -1,4 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { arrayBuffer } from 'stream/consumers';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -20,13 +22,29 @@ export class PortfolioService {
         if (similarExists > 0)
             throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
 
-        const created = await this.prisma.portfolio.create({
-            data: {
-                criado_por: user.id,
-                criado_em: new Date(Date.now()),
-                ...dto,
-            },
-            select: { id: true }
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const row = await prismaTx.portfolio.create({
+                data: {
+                    criado_por: user.id,
+                    criado_em: new Date(Date.now()),
+                    titulo: dto.titulo,
+
+                },
+                select: { id: true }
+            });
+
+            if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
+                await prismaTx.portfolioOrgao.createMany({
+                    data: dto.orgaos.map(r => {
+                        return {
+                            orgao_id: r,
+                            portfolio_id: row.id
+                        }
+                    })
+                });
+            }
+
+            return row;
         });
 
         return created;
@@ -75,16 +93,37 @@ export class PortfolioService {
                 throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-        await this.prisma.portfolio.update({
-            where: { id: id },
-            data: {
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-                ...dto,
+
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+
+            const row = await prismaTx.portfolio.update({
+                where: { id: id },
+                data: {
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                    titulo: dto.titulo
+                },
+                select: { id: true }
+            });
+
+            await prismaTx.portfolioOrgao.deleteMany({
+                where: { portfolio_id: row.id }
+            })
+
+            if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
+                await prismaTx.portfolioOrgao.createMany({
+                    data: dto.orgaos.map(r => {
+                        return {
+                            orgao_id: r,
+                            portfolio_id: row.id
+                        }
+                    })
+                });
             }
+            return row;
         });
 
-        return { id };
+        return { id: created.id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
