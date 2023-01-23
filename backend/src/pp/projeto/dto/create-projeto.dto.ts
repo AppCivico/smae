@@ -1,16 +1,52 @@
 import { Type } from "class-transformer";
-import { IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateProjetoDto {
     /**
-    * diretorio_id
+    * portfolio_id
     * @example ""
     */
-    @IsOptional()
-    @IsInt({ message: '$property| diretorio_id precisa ser inteiro' })
+    @IsInt({ message: '$property| portfolio_id precisa ser inteiro' })
     @Type(() => Number)
-    diretorio_id?: number;
+    portfolio_id: number;
+
+    /**
+    * ID do órgão gestor
+    * @example ""
+    */
+    @IsInt({ message: '$property| orgao_gestor_id precisa ser inteiro' })
+    @Type(() => Number)
+    orgao_gestor_id: number;
+
+    /**
+    * ID das pessoas responsáveis no orgao gestor
+    * @example ""
+    */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    responsaveis_no_orgao_gestor: number[];
+
+    /**
+    * ID dos órgãos participantes do projeto
+    * @example ""
+    */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    orgaos_participantes: number[];
+
+    /**
+    * ID da pessoa responsável [apos o planejamento]
+    * @example ""
+    */
+    @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
+    @Type(() => Number)
+    responsavel_id: number | null;
+
 
     /**
     * nome
@@ -89,7 +125,6 @@ export class CreateProjetoDto {
     previsao_custo: number;
 
     // FONTE-RECURSO 1..N
-    // ORGAO 1..N
 
     /**
     * responsavel (id da pessoa que que for responsável)
@@ -114,4 +149,22 @@ export class CreateProjetoDto {
     @IsString()
     @MaxLength(50000)
     principais_etapas: string;
+
+
+    /**
+    * texto que representa a versão
+    * @example ""
+    */
+    @IsString()
+    @MaxLength(20)
+    versao: string;
+
+    /**
+    * data_aprovacao
+    * @example ""
+    */
+    @IsString()
+    @IsOnlyDate()
+    data_aprovacao: Date | null;
+
 }
