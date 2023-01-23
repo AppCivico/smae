@@ -9,7 +9,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegião.ts';
+import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
