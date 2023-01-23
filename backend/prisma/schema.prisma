@@ -213,8 +213,8 @@ model Orgao {
     tarefas                Tarefa[]
     PlanoAcao              PlanoAcao[]
 
-    PortifolioOrgao   PortifolioOrgao[]
-    orgao_responsavel Projeto[]         @relation("orgao_responsavel")
+    PortifolioOrgao   PortfolioOrgao[]
+    orgao_responsavel Projeto[]        @relation("orgao_responsavel")
 
     @@map("orgao")
 }
@@ -466,6 +466,7 @@ model SubTema {
 }
 
 model FonteRecurso {
+    // deprecated, precisamos remover os endpoints futuramente
     id    Int     @id @default(autoincrement())
     fonte String
     sigla String?
@@ -480,8 +481,6 @@ model FonteRecurso {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
-
-    projetos_fonte_recurso ProjetoFonteRecurso[]
 
     @@map("fonte_recurso")
 }
@@ -2052,19 +2051,19 @@ enum ProjetoStatus {
     Fechado //
 }
 
-model Portifolio {
-    id              Int               @id @default(autoincrement())
-    titulo          String            @unique
+model Portfolio {
+    id              Int              @id @default(autoincrement())
+    titulo          String           @unique
     Projeto         Projeto[]
-    PortifolioOrgao PortifolioOrgao[]
+    PortifolioOrgao PortfolioOrgao[]
 
-    @@map("portifolio")
+    @@map("Portfolio")
 }
 
-model PortifolioOrgao {
-    id            Int        @id @default(autoincrement())
-    portifolio_id Int
-    portifolio    Portifolio @relation(fields: [portifolio_id], references: [id])
+model PortfolioOrgao {
+    id           Int       @id @default(autoincrement())
+    portfolio_id Int       @map("portifolio_id")
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
 
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
@@ -2073,9 +2072,9 @@ model PortifolioOrgao {
 }
 
 model Projeto {
-    id            Int        @id @default(autoincrement())
-    portifolio_id Int
-    portifolio    Portifolio @relation(fields: [portifolio_id], references: [id])
+    id           Int       @id @default(autoincrement())
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
 
     meta_id       Int?
     iniciativa_id Int?
@@ -2132,7 +2131,7 @@ model Projeto {
 
     // fornecido pelo user
     data_aprovacao DateTime? @db.Date
-    versao         DateTime? @db.Date
+    versao         String?
 
     registrado_em    DateTime
     registrado_por   Int
@@ -2243,11 +2242,11 @@ model ProjetoLicaoAprendida {
 model ProjetoFonteRecurso {
     id Int @id @default(autoincrement())
 
-    projeto_id       Int
-    fonte_recurso_id Int
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    projeto       Projeto      @relation(fields: [projeto_id], references: [id])
-    fonte_recurso FonteRecurso @relation(fields: [fonte_recurso_id], references: [id])
+    fonte_recurso_cod_sof String
+    fonte_recurso_ano     Int
 
     valor_percentual Float?
     valor_nominal    Float?
