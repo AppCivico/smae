@@ -688,15 +688,14 @@ async function addFunction(f) {
 
         <div v-if="indicador_id&&!Variaveis[indicador_id]?.loading">
           <label class="label">Fórmula do Agregador</label>
-          <div class="inputtext light mb1">
-            <div
-              ref="formulaInput"
-              class="formula"
-              contenteditable="true"
-              @input="editFormula"
-              @click="trackClickFormula"
-            />
-          </div>
+          <div
+            ref="formulaInput"
+            class="inputtext light mb1 formula"
+            contenteditable="true"
+            @input="editFormula"
+            @click="trackClickFormula"
+          />
+
           <p
             v-if="errFormula"
             class="error-msg"
