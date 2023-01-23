@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard, SmallModal } from '@/components';
 import { indicador as schema } from '@/consts/formSchemas';
+import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useAuthStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useVariaveisStore
@@ -176,16 +177,6 @@ function maskMonth(el) {
     }
   }
 }
-function fieldToDate(d) {
-  if (d) {
-    if (d.length == 6) { d = `01/0${d}`; } else if (d.length == 7) { d = `01/${d}`; }
-    const x = d.split('/');
-    return (x.length == 3)
-      ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10)
-      : null;
-  }
-  return null;
-}
 function getCaretPosition(editableDiv) {
   let caretPos = [0, 0];
   let sel;
@@ -243,18 +234,14 @@ function formatFormula(p) {
         }
       }
 
-      r = ` <span class="v" contenteditable="false"
-                data-id="${m}"
-                data-var="${n}"
-                title="${t}"
-            >${m}</span> `;
+      r = ` <span class="v" contenteditable="false" data-id="${m}" data-var="${n}" title="${t}" >${m}</span> `;
     }
     return r;
   }).replace(/\s+/g, ' ');
 
-  for (const k in variaveisFormula) {
-    if (inuse.indexOf(k) == -1) delete variaveisFormula[k];
-  }
+  Object.entries(variaveisFormula).forEach((k) => {
+    if (inuse.indexOf(k) === -1) delete variaveisFormula[k];
+  });
 
   if (p) {
     const i = Array.from(formulaInput.value.childNodes).findIndex((x) => x?.dataset?.id == p);
@@ -311,7 +298,7 @@ function saveVar(e) {
 function cancelVar() {
   const v = formula.value;
   const i = v.indexOf('$xxx');
-  if (i != -1) formula.value = [v.slice(0, i), v.slice(i + 4)].join('');
+  if (i !== -1) formula.value = [v.slice(0, i), v.slice(i + 4)].join('');
   formatFormula(fieldsVariaveis.value.id);
   variaveisFormulaModal.value = 0;
 }
@@ -389,7 +376,7 @@ if (indicador_id) {
       <Form
         v-slot="{ errors, isSubmitting }"
         :validation-schema="schema"
-        :initial-values="indicador_id?singleIndicadores:{}"
+        :initial-values="indicador_id ? singleIndicadores : {}"
         @submit="onSubmit"
       >
         <div class="flex g2">
@@ -688,7 +675,7 @@ if (indicador_id) {
 
         <hr class="mt2 mb2">
 
-        <div v-if="indicador_id&&!Variaveis[indicador_id]?.loading">
+        <div v-if="indicador_id && !Variaveis[indicador_id]?.loading">
           <label class="label">Fórmula do Agregador</label>
           <div
             ref="formulaInput"
@@ -797,10 +784,10 @@ if (indicador_id) {
           <hr class="ml2 f1">
         </div>
       </Form>
-      <template v-if="indicador_id&&!Variaveis[indicador_id]?.loading">
+      <template v-if="indicador_id && !Variaveis[indicador_id]?.loading">
         <SmallModal
           :active="variaveisFormulaModal"
-          @close="()=>{variaveisFormulaModal=!variaveisFormulaModal;}"
+          @close="() => { variaveisFormulaModal = !variaveisFormulaModal; }"
         >
           <form @submit="saveVar">
             <h2 class="mb2">
@@ -858,7 +845,7 @@ if (indicador_id) {
               value="1"
             ><span>Utilizar valores acumulados</span></label>
 
-            <template v-if="fieldsVariaveis.periodo!=1">
+            <template v-if="fieldsVariaveis.periodo != 1">
               <label class="label">Meses</label>
               <input
                 v-model="fieldsVariaveis.meses"
@@ -899,7 +886,7 @@ if (indicador_id) {
         </div>
       </div>
     </template>
-    <template v-if="(!indicador_id&&singleIndicadores.length)">
+    <template v-if="(!indicador_id && singleIndicadores.length)">
       <div class="error p1">
         <div class="error-msg">
           Somente um indicador por meta
@@ -958,7 +945,7 @@ if (indicador_id) {
           <td>{{ v.unidade_medida?.sigla }}</td>
           <td>{{ v.peso }}</td>
           <td>{{ v.casas_decimais }}</td>
-          <td>{{ v.regiao?.descricao??'-' }}</td>
+          <td>{{ v.regiao?.descricao ?? '-' }}</td>
           <td style="white-space: nowrap; text-align: right;">
             <router-link
               :to="`${parentlink}/indicadores/${indicador_id}/variaveis/novo/${v.id}`"
@@ -1011,7 +998,7 @@ if (indicador_id) {
       </router-link>
     </div>
 
-    <template v-if="indicador_id&&singleIndicadores.id&&indicador_id==singleIndicadores.id">
+    <template v-if="indicador_id && singleIndicadores.id && indicador_id == singleIndicadores.id">
       <hr class="mt2 mb2">
       <button
         class="btn amarelo big"
