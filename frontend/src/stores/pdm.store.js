@@ -129,7 +129,7 @@ export const usePdMStore = defineStore({
       try {
         if (!this.activePdm.id && !this.activePdm.loading) {
           this.activePdm = { loading: true };
-          const r = await requestS.get(`${baseUrl}/pdm?ativo=true&incluir_auxiliares=true`);
+          const r = await requestS.get(`${baseUrl}/pdm?ativo=true`);
           if (r.linhas.length) {
             this.activePdm = ((x) => {
               x.data_inicio = this.dateToField(x.data_inicio);
