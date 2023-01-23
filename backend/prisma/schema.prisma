@@ -2043,22 +2043,19 @@ enum ProjetoStatus {
     Suspenso // Volta pra EmAcompanhamento ou Fechado
 }
 
-// Apenas um agrupador pra fazer os testes rodarem de forma independente
-// está para o Projeto como o PDM está para as Metas
-// podemos esconder completamente do frontend e usar um padrão para todos os registros
-// no ambiente de produção
-model Diretorio {
+model Portifolio {
     id      Int       @id @default(autoincrement())
     titulo  String    @unique
     padrao  Boolean
     ativo   Boolean
     Projeto Projeto[]
+	@@map("portifolio")
 }
 
 model Projeto {
     id           Int       @id @default(autoincrement())
-    diretorio_id Int
-    diretorio    Diretorio @relation(fields: [diretorio_id], references: [id])
+    portfolio_id Int @map("diretorio_id")
+    portfolio    Portifolio @relation(fields: [portfolio_id], references: [id])
 
     meta_id       Int?
     iniciativa_id Int?
@@ -2100,8 +2097,9 @@ model Projeto {
     // Fase=Detalhamento, required pra entrar na fase Planejamento
     secretario_responsavel String?
     secretario_executivo   String?
-    responsavel            String?
     coordenador_ue         String?
+
+    responsavel            Int?
 
     // fornecido pelo user
     data_aprovacao DateTime? @db.Date
