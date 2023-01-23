@@ -59,35 +59,7 @@ const fieldsVariaveis = ref({});
 let variaveisFormula = {};
 let currentCaretPos = -1;
 const errFormula = ref('');
-if (indicador_id) {
-  title = 'Editar Indicador';
 
-  Promise.all([
-    IndicadoresStore.getById(indicador_id),
-    VariaveisStore.getAll(indicador_id),
-  ]).then(() => {
-    if (singleIndicadores.value.formula) {
-      formula.value = singleIndicadores.value.formula;
-      variaveisFormula = {};
-      singleIndicadores.value.formula_variaveis.forEach((x) => {
-        variaveisFormula[`$${x.referencia}`] = {
-          id: `$${x.referencia}`,
-          periodo: x.janela < 0 ? -1 : x.janela > 1 ? 0 : 1,
-          meses: Math.abs(x.janela),
-          variavel_id: x.variavel_id,
-          usar_serie_acumulada: x.usar_serie_acumulada,
-        };
-      });
-      formatFormula();
-    }
-  });
-} else if (atividade_id) {
-  IndicadoresStore.getAll(atividade_id, 'atividade_id');
-} else if (iniciativa_id) {
-  IndicadoresStore.getAll(iniciativa_id, 'iniciativa_id');
-} else {
-  IndicadoresStore.getAll(meta_id, 'meta_id');
-}
 function start() {
   if (props.group == 'variaveis') editModalStore.modal(AddEditVariavel, props);
   if (props.group == 'valores') {
@@ -346,6 +318,36 @@ function cancelVar() {
 async function addFunction(f) {
   await setCaret(formulaInput.value, currentCaretPos);
   document.execCommand('insertText', false, f);
+}
+
+if (indicador_id) {
+  title = 'Editar Indicador';
+
+  Promise.all([
+    IndicadoresStore.getById(indicador_id),
+    VariaveisStore.getAll(indicador_id),
+  ]).then(() => {
+    if (singleIndicadores.value.formula) {
+      formula.value = singleIndicadores.value.formula;
+      variaveisFormula = {};
+      singleIndicadores.value.formula_variaveis.forEach((x) => {
+        variaveisFormula[`$${x.referencia}`] = {
+          id: `$${x.referencia}`,
+          periodo: x.janela < 0 ? -1 : x.janela > 1 ? 0 : 1,
+          meses: Math.abs(x.janela),
+          variavel_id: x.variavel_id,
+          usar_serie_acumulada: x.usar_serie_acumulada,
+        };
+      });
+      formatFormula();
+    }
+  });
+} else if (atividade_id) {
+  IndicadoresStore.getAll(atividade_id, 'atividade_id');
+} else if (iniciativa_id) {
+  IndicadoresStore.getAll(iniciativa_id, 'iniciativa_id');
+} else {
+  IndicadoresStore.getAll(meta_id, 'meta_id');
 }
 </script>
 
