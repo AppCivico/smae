@@ -147,7 +147,6 @@ async function onSubmit(values) {
     values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id)
       ? Number(values.regiao_id)
       : null;
-    values.peso = Number(values.peso) ?? null;
     values.ordem = Number(values.ordem) ?? null;
     values.etapa_pai_id = null;
 
@@ -289,18 +288,6 @@ function maskDate(el) {
         </div>
       </div>
       <div class="flex g2">
-        <div class="f1">
-          <label class="label">Peso</label>
-          <Field
-            name="peso"
-            type="number"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.peso }"
-          />
-          <div class="error-msg">
-            {{ errors.peso }}
-          </div>
-        </div>
         <div class="f1">
           <label class="label">Ordem</label>
           <Field

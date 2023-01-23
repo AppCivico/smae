@@ -19,7 +19,6 @@ const etapa = object().shape({
   titulo: string().required('Preencha o título'),
   descricao: string().nullable(),
   ordem: string().nullable(),
-  peso: string().nullable(),
 
   inicio_previsto: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
   termino_previsto: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),

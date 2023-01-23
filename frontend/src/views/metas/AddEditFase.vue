@@ -101,7 +101,6 @@ async function onSubmit(values) {
 
     values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id) ? Number(values.regiao_id) : null;
     values.ordem = Number(values.ordem) ?? null;
-    values.peso = Number(values.peso) ?? null;
     values.etapa_pai_id = currentParent;
 
     let rota = false;
