@@ -309,7 +309,6 @@ const PerfilAcessoConfig: any = [
 console.log(PerfilAcessoConfig);
 
 async function main() {
-    await criar_portfolio();
     await criar_emaildb_config();
     await criar_texto_config();
     await atualizar_modulos_e_privilegios();
@@ -466,16 +465,6 @@ async function criar_texto_config() {
     });
 }
 
-async function criar_portfolio() {
-    await prisma.portfolio.upsert({
-        where: { titulo: 'padrão' },
-        update: {},
-        create:
-        {
-            titulo: 'padrão',
-        },
-    });
-}
 
 async function criar_emaildb_config() {
     await prisma.emaildbConfig.upsert({
