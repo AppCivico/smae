@@ -165,8 +165,8 @@ const PrivConfig: any = {
         ['Projeto.priorizar', 'Priorizar projetos'],
         ['Projeto.aprovar', 'Aprovar projetos'],
         ['Projeto.arquivar', 'Arquivar projetos'],
-        //['SMAE.secretario_executivo', '(Projeto) Secretário Executivo'],
-        //['SMAE.secretario_executivo_responsavel', '(Projeto) Secretário Executivo Responsável'],
+        ['SMAE.admin_portfolio', '(Projeto) Administrar Portfolio'],
+        ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
@@ -204,7 +204,7 @@ const ModuloDescricao: any = {
     Reports: 'Relatórios',
     Projeto: 'Cadastro de Projetos',
     PDM: 'Regras de Negocio do PDM',
-    //SMAE: 'Regras de Negocio do SMAE',
+    SMAE: 'Regras de Negocio do SMAE',
 };
 
 let todosPrivilegios: string[] = [];
@@ -268,6 +268,20 @@ const PerfilAcessoConfig: any = [
             'PDM.ponto_focal',
         ]
     },
+    {
+        nome: 'Administrador de Portfolio',
+        descricao: 'Gerenciar os Portfolios',
+        privilegios: [
+            'SMAE.admin_portfolio',
+        ]
+    },
+    {
+        nome: 'Administrador de Portfolio',
+        descricao: 'Pode ser escolhido para administrar os projetos na fase de registro dentro do órgão que participar',
+        privilegios: [
+            'SMAE.gestor_de_projeto',
+        ]
+    },
     //    {
     //        nome: 'Secretário Executivo',
     //        descricao: 'Pode ser escolhido como secretário executivo nos projetos',
@@ -295,6 +309,7 @@ const PerfilAcessoConfig: any = [
 console.log(PerfilAcessoConfig);
 
 async function main() {
+    await criar_portfolio();
     await criar_emaildb_config();
     await criar_texto_config();
     await atualizar_modulos_e_privilegios();
@@ -446,19 +461,17 @@ async function criar_texto_config() {
         create:
         {
             bemvindo_email: 'Ao acessar o SMAE, Você está ciente e autoriza...',
-            tos: '...O acesso ao SMAE indica ciencia e concordancia com os termos acima',
+            tos: '...O acesso ao SMAE indica ciência e concordância com os termos acima',
         },
     });
 }
 
-async function criar_diretiorio() {
-    await prisma.diretorio.upsert({
+async function criar_portfolio() {
+    await prisma.portfolio.upsert({
         where: { titulo: 'padrão' },
-        update: { padrao: true, ativo: true },
+        update: {},
         create:
         {
-            padrao: true,
-            ativo: true,
             titulo: 'padrão',
         },
     });
