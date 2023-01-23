@@ -54,6 +54,8 @@ import { VariavelModule } from './variavel/variavel.module';
 import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
 import { ProjetoModule } from './pp/projeto/projeto.module';
+import { PortfolioService } from './pp/portfolio/portfolio.service';
+import { PortfolioModule } from './pp/portfolio/portfolio.module';
 
 
 @Module({
@@ -115,6 +117,7 @@ import { ProjetoModule } from './pp/projeto/projeto.module';
         IndicadoresModule,
         MonitoramentoMensalModule,
         ProjetoModule,
+        PortfolioModule,
     ],
     controllers: [AppController],
     providers: [
@@ -135,7 +138,8 @@ import { ProjetoModule } from './pp/projeto/projeto.module';
             provide: APP_INTERCEPTOR,
             useClass: ContentInterceptor
         },
-        UtilsService
+        UtilsService,
+        PortfolioService
     ],
 
 })
