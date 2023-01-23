@@ -53,6 +53,7 @@ import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
+import { ProjetoModule } from './pp/projeto/projeto.module';
 
 
 @Module({
@@ -113,6 +114,7 @@ import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monito
         TextoConfigModule,
         IndicadoresModule,
         MonitoramentoMensalModule,
+        ProjetoModule,
     ],
     controllers: [AppController],
     providers: [
