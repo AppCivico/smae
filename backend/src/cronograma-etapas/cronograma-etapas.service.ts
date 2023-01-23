@@ -195,7 +195,10 @@ export class CronogramaEtapaService {
         });
 
         let ret: CECronogramaEtapaDto[] = [];
-        let lastOrdemVal = 0;
+        let first_level_ordem: number = 0;
+        let second_level_ordem: number = 0;
+        let third_level_ordem: number = 0;
+
         for (const cronogramaEtapa of cronogramaEtapas) {
 
             if (cronogramaEtapa.etapa.etapa_pai_id) {
@@ -203,19 +206,14 @@ export class CronogramaEtapaService {
                 if (firstLevelParentIndex >= 0) continue;
             }
 
-            let ordem;
-            if (cronogramaEtapa.ordem) {
-                lastOrdemVal = ordem = cronogramaEtapa.ordem;
-            } else {
-                lastOrdemVal = ordem = lastOrdemVal + 1;
-            }
+            first_level_ordem = await this.getOrdem(cronogramaEtapa.ordem, first_level_ordem);
 
             ret.push({
                 id: cronogramaEtapa.id,
                 cronograma_id: cronogramaEtapa.cronograma_id,
                 etapa_id: cronogramaEtapa.etapa_id,
                 inativo: cronogramaEtapa.inativo,
-                ordem: ordem,
+                ordem: first_level_ordem,
 
                 etapa: {
                     CronogramaEtapa: [{
@@ -249,8 +247,11 @@ export class CronogramaEtapaService {
                     }),
 
                     etapa_filha: await Promise.all(cronogramaEtapa.etapa.etapa_filha.map(async f => {
+                        second_level_ordem = await this.getOrdem(f.CronogramaEtapa[0].ordem, second_level_ordem);
+
                         return {
                             CronogramaEtapa: f.CronogramaEtapa.map((x) => {
+
                                 return {
                                     id: x.id,
                                     cronograma_id: x.cronograma_id,
@@ -270,7 +271,7 @@ export class CronogramaEtapaService {
                             termino_real: f.termino_real,
                             prazo: f.prazo,
                             titulo: f.titulo,
-                            ordem: f.CronogramaEtapa[0].ordem,
+                            ordem: second_level_ordem,
                             duracao: await this.getDuracao(f.inicio_real, f.termino_real),
                             atraso: await this.getAtraso(f.termino_previsto, f.termino_real),
 
@@ -282,6 +283,7 @@ export class CronogramaEtapaService {
                             }),
 
                             etapa_filha: await Promise.all(f.etapa_filha.map(async ff => {
+                                third_level_ordem = await this.getOrdem(ff.CronogramaEtapa[0].ordem, third_level_ordem);
 
                                 return {
                                     CronogramaEtapa: ff.CronogramaEtapa.map((x) => { return { id: x.id, cronograma_id: x.cronograma_id, ordem: x.ordem } }),
@@ -298,7 +300,7 @@ export class CronogramaEtapaService {
                                     termino_real: ff.termino_real,
                                     prazo: ff.prazo,
                                     titulo: ff.titulo,
-                                    ordem: ff.CronogramaEtapa[0].ordem,
+                                    ordem: third_level_ordem,
                                     duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
                                     atraso: await this.getAtraso(ff.termino_previsto, ff.termino_real),
 
@@ -323,6 +325,13 @@ export class CronogramaEtapaService {
         }
 
         return ret;
+    }
+
+    private async getOrdem(ordem_config: number | null, last_ordem: number): Promise<number> {
+        if (ordem_config)
+            return ordem_config;
+
+        return last_ordem + 1;
     }
 
     async update(updateCronogoramaEtapaDto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
