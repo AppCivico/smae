@@ -165,6 +165,12 @@ model Pessoa {
     ProjetoLicoesAprendidasQCriei  ProjetoLicaoAprendida[] @relation("criador")
     ProjetoLicoesAprendidasQRemovi ProjetoLicaoAprendida[] @relation("removedor")
 
+    ppResponsavel     Projeto[] @relation("ppResponsavel")
+    ppQueCriei        Projeto[] @relation("criador")
+    ppSelecionado     Projeto[] @relation("ppSelecionado")
+    ppEm_planejamento Projeto[] @relation("ppEm_planejamento")
+    ppArquivado       Projeto[] @relation("ppArquivado")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -204,9 +210,11 @@ model Orgao {
     atividade_orgao        AtividadeOrgao[]
     atividade_responsavel  AtividadeResponsavel[]
     CronogramaOrgao        CronogramaOrgao[]
-    projeto_orgao          ProjetoOrgao[]
     tarefas                Tarefa[]
     PlanoAcao              PlanoAcao[]
+
+    PortifolioOrgao   PortifolioOrgao[]
+    orgao_responsavel Projeto[]         @relation("orgao_responsavel")
 
     @@map("orgao")
 }
@@ -2035,27 +2043,39 @@ enum ProjetoFase {
 
 enum ProjetoStatus {
     Registrado // Arquivado ou Priorizado caso seja priorizado
-    Priorizado // Arquivado ou EmPlanejamento caso seja Aprovado
+    Selecionado // Arquivado ou EmPlanejamento caso seja Aprovado
     EmPlanejamento // Arquivado ou Validado caso o iniciado
+    Planejado
     Validado // EmSuspensao ou EmFechamento caso fechado
     EmAcompanhamento // Suspenso, fechado
-    Fechado // Arquivado
     Suspenso // Volta pra EmAcompanhamento ou Fechado
+    Fechado //
 }
 
 model Portifolio {
-    id      Int       @id @default(autoincrement())
-    titulo  String    @unique
-    padrao  Boolean
-    ativo   Boolean
-    Projeto Projeto[]
-	@@map("portifolio")
+    id              Int               @id @default(autoincrement())
+    titulo          String            @unique
+    Projeto         Projeto[]
+    PortifolioOrgao PortifolioOrgao[]
+
+    @@map("portifolio")
+}
+
+model PortifolioOrgao {
+    id            Int        @id @default(autoincrement())
+    portifolio_id Int
+    portifolio    Portifolio @relation(fields: [portifolio_id], references: [id])
+
+    orgao_id Int
+    orgao    Orgao @relation(fields: [orgao_id], references: [id])
+
+    @@map("portifolio_orgao")
 }
 
 model Projeto {
-    id           Int       @id @default(autoincrement())
-    portfolio_id Int @map("diretorio_id")
-    portfolio    Portifolio @relation(fields: [portfolio_id], references: [id])
+    id            Int        @id @default(autoincrement())
+    portifolio_id Int
+    portifolio    Portifolio @relation(fields: [portifolio_id], references: [id])
 
     meta_id       Int?
     iniciativa_id Int?
@@ -2066,8 +2086,8 @@ model Projeto {
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
     codigo           String? // abre apenas depois de priorizado
-    resumo String // campo livre
-    previsao_custo Float?
+    resumo           String // campo livre
+    previsao_custo   Float?
     nome             String
     descricao        String
     objeto           String
@@ -2088,7 +2108,7 @@ model Projeto {
     eh_prioritario Boolean       @default(false)
 
     // Fase=Registro
-    escopo String?
+    escopo            String?
     principais_etapas String
 
     // Fase=Planejamento
@@ -2099,27 +2119,43 @@ model Projeto {
     secretario_executivo   String?
     coordenador_ue         String?
 
-    responsavel            Int?
+    orgao_gestor_id              Int
+    responsaveis_no_orgao_gestor Int[] @default([])
+
+    orgao_responsavel_id Int?
+    orgao_responsavel    Orgao? @relation("orgao_responsavel", fields: [orgao_responsavel_id], references: [id])
+
+    responsavel_id Int?
+    responsavel    Pessoa? @relation("ppResponsavel", fields: [responsavel_id], references: [id])
+
+    orgaos_participantes Int[] @default([])
 
     // fornecido pelo user
     data_aprovacao DateTime? @db.Date
     versao         DateTime? @db.Date
 
+    registrado_em    DateTime
+    registrado_por   Int
+    pessoaQRegistrou Pessoa?  @relation("criador", fields: [registrado_por], references: [id])
+
     // quem moveu de EmRegistro para EmDetalhamento
-    priorizado_em  DateTime?
-    priorizado_por Int?
+    selecionado_em    DateTime?
+    selecionado_por   Int?
+    pessoaQSelecionou Pessoa?   @relation("ppSelecionado", fields: [selecionado_por], references: [id])
 
     // quem moveu de EmDetalhamento para EmPlanejamento
-    aprovado_em  DateTime?
-    aprovado_por Int?
+    em_planejamento_em  DateTime?
+    em_planejamento_por Int?
+    pessoaQPlanejou     Pessoa?   @relation("ppEm_planejamento", fields: [em_planejamento_por], references: [id])
+
+    // quem arquivou, vindo de qualquer lugar
+    arquivado_em    DateTime?
+    arquivado_por   Int?
+    pessoaQArquivou Pessoa?   @relation("ppArquivado", fields: [arquivado_por], references: [id])
 
     // quem suspendeu (vindo do EmExecucao indo pro EmSuspensao)
     suspenso_em  DateTime?
     suspenso_por Int?
-
-    // quem arquivou, vindo de qualquer lugar
-    arquivado_em  DateTime?
-    arquivado_por Int?
 
     // quem migrou de EmSuspensao indo EmFechamento
     cancelado_em  DateTime?
@@ -2152,7 +2188,6 @@ model Projeto {
 
     premissas             ProjetoPremissa[]
     restricoes            ProjetoRestricao[]
-    orgaos                ProjetoOrgao[]
     licoes_aprendidas     ProjetoLicaoAprendida[]
     recursos              ProjetoFonteRecurso[]
     documentos            ProjetoDocumento[]
@@ -2183,20 +2218,6 @@ model ProjetoRestricao {
     restricao String
 
     @@map("projeto_restricao")
-}
-
-model ProjetoOrgao {
-    id Int @id @default(autoincrement())
-
-    projeto_id Int
-    orgao_id   Int
-
-    projeto Projeto @relation(fields: [projeto_id], references: [id])
-    orgao   Orgao   @relation(fields: [orgao_id], references: [id])
-
-    responsavel Boolean
-
-    @@map("projeto_orgao")
 }
 
 model ProjetoLicaoAprendida {
@@ -2263,7 +2284,6 @@ model Tarefa {
     inicio_planejado  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
     termino_planejado DateTime?
     duracao_planejado Int?
-
 
     inicio_real  DateTime?
     termino_real DateTime?
