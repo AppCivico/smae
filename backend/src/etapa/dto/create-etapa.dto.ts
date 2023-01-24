@@ -69,7 +69,8 @@ export class CreateEtapaDto {
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    inicio_previsto?: Date
+    @ValidateIf((object, value) => value !== null)
+    inicio_previsto?: Date | null
 
     /**
     * termino_previsto
@@ -78,7 +79,8 @@ export class CreateEtapaDto {
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    termino_previsto?: Date
+    @ValidateIf((object, value) => value !== null)
+    termino_previsto?: Date | null
 
     /**
     * inicio_real
@@ -87,7 +89,8 @@ export class CreateEtapaDto {
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    inicio_real?: Date
+    @ValidateIf((object, value) => value !== null)
+    inicio_real?: Date | null
 
     /**
     * termino_real
@@ -96,7 +99,8 @@ export class CreateEtapaDto {
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    termino_real?: Date
+    @ValidateIf((object, value) => value !== null)
+    termino_real?: Date | null
 
     @IsOptional()
     @IsInt({ message: '$property| Peso precisa ser um número ou null' })
