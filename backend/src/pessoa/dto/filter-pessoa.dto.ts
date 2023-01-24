@@ -4,9 +4,9 @@ import { IsBoolean, IsEmail, IsInt, IsOptional } from "class-validator";
 
 export class FilterPessoaDto {
     /**
-   * Filtrar pessoa com privilegio PDM.coordenador_responsavel_cp?
-   *  true filtra quem tem a PDM.coordenador_responsavel_cp; false filtra quem não tem
-   * @example "true"
+    * Filtrar pessoa com privilegio PDM.coordenador_responsavel_cp?
+    *  true filtra quem tem a PDM.coordenador_responsavel_cp; false filtra quem não tem
+    * @example "true"
     */
     @IsOptional()
     @IsBoolean()
@@ -16,12 +16,12 @@ export class FilterPessoaDto {
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
-    @ApiProperty({deprecated: true})
+    @ApiProperty({ deprecated: true })
     coorderandor_responsavel_cp?: boolean;
 
     /**
-   * Filtrar por órgão?
-   * @example "1"
+    * Filtrar por órgão?
+    * @example "1"
     */
     @IsOptional()
     @IsInt({ message: '$property| orgao_id' })
@@ -31,6 +31,16 @@ export class FilterPessoaDto {
     @IsOptional()
     @IsEmail()
     email?: string;
+
+    /**
+    * Filtrar pessoa com privilegio SMAE.gestor_de_projeto?
+    *  true filtra quem tem a SMAE.gestor_de_projeto; false filtra quem não tem
+    * @example "true"
+    */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    gestor_de_projeto?: boolean;
 
     /*
     versão alternativa para aceitar números negativos, e vazio como undefined caso seja adicionado @IsOptional()
