@@ -273,6 +273,7 @@ function newVariavel() {
   fieldsVariaveis.value = {
     id: next,
   };
+  fieldsVariaveis.value.periodo = 1;
   formatFormula(next);
   variaveisFormulaModal.value = 1;
 }
