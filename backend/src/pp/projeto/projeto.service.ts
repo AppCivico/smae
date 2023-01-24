@@ -1,26 +1,30 @@
 import { Injectable } from '@nestjs/common';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDto } from './dto/create-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
+import { ProjetoDetailDto, ProjetoDto } from './entities/projeto.entity';
 
 @Injectable()
 export class ProjetoService {
-  create(createProjetoDto: CreateProjetoDto) {
-    return 'This action adds a new projeto';
-  }
+    async create(createProjetoDto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        throw '...'
+    }
 
-  findAll() {
-    return `This action returns all projeto`;
-  }
+    async findAll(user: PessoaFromJwt): Promise<ProjetoDto[]> {
+        throw '...'
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} projeto`;
-  }
+    async findOne(id: number, user: PessoaFromJwt): Promise<ProjetoDetailDto> {
+        throw '...'
+    }
 
-  update(id: number, updateProjetoDto: UpdateProjetoDto) {
-    return `This action updates a #${id} projeto`;
-  }
+    async update(id: number, updateProjetoDto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        throw '...'
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} projeto`;
-  }
+    async remove(id: number, user: PessoaFromJwt) {
+
+        return;
+    }
 }

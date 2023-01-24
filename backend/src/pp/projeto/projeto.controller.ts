@@ -1,34 +1,60 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
 import { ProjetoService } from './projeto.service';
 import { CreateProjetoDto } from './dto/create-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { ListProjetoDto, ProjetoDetailDto } from './entities/projeto.entity';
 
+@ApiTags('Projeto')
 @Controller('projeto')
 export class ProjetoController {
-  constructor(private readonly projetoService: ProjetoService) {}
+    constructor(private readonly projetoService: ProjetoService) { }
 
-  @Post()
-  create(@Body() createProjetoDto: CreateProjetoDto) {
-    return this.projetoService.create(createProjetoDto);
-  }
+    @Post()
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    async create(@Body() createProjetoDto: CreateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.projetoService.create(createProjetoDto, user);
+    }
 
-  @Get()
-  findAll() {
-    return this.projetoService.findAll();
-  }
+    @Get()
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
+        return { linhas: await this.projetoService.findAll(user) };
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projetoService.findOne(+id);
-  }
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    async findOne(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
+        return await this.projetoService.findOne(+id, user);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjetoDto: UpdateProjetoDto) {
-    return this.projetoService.update(+id, updateProjetoDto);
-  }
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    async update(@Param('id') id: string, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.projetoService.update(+id, updateProjetoDto, user);
+    }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projetoService.remove(+id);
-  }
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.remove(+id, user);
+        return '';
+    }
+
 }
