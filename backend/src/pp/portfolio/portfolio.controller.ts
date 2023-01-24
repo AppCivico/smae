@@ -23,6 +23,8 @@ export class PortfolioController {
     }
 
     @Get()
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
     @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
