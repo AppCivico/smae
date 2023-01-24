@@ -118,6 +118,19 @@ const relatórioSemestralOuAnual = object({
   }),
 });
 
+const usuário = object().shape({
+  email: string().required('Preencha o e-mail').email('E-mail inválido'),
+  nome_completo: string().required('Preencha o nome'),
+  nome_exibicao: string().required('Preencha o nome social').max(20, 'Máximo de 20 caracteres'),
+  lotacao: string().required('Preencha a lotação'),
+  orgao_id: string().required('Selecione um órgão'),
+  perfil_acesso_ids: array().required('Selecione ao menos uma permissão'),
+  desativado: string().nullable(),
+  desativado_motivo: string().nullable()
+    .when('desativado', (desativado, field) => (desativado === '1' ? field.required('Escreva um motivo para a inativação') : field)),
+  grupos: array(),
+});
+
 const variável = (singleIndicadores) => object().shape({
   orgao_id: string().required('Selecione um orgão'),
   regiao_id: string().nullable().test('regiao_id', 'Selecione uma região', (value) => !singleIndicadores?.value?.regionalizavel || value),
@@ -156,5 +169,6 @@ export {
   relatórioMensal,
   relatórioOrçamentário,
   relatórioSemestralOuAnual,
+  usuário,
   variável,
 };
