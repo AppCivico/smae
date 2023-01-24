@@ -51,9 +51,22 @@ export class PortfolioService {
     }
 
     async findAll(user: PessoaFromJwt): Promise<PortfolioDto[]> {
+        let orgao_id: undefined | number = undefined;
+        if (!user.hasSomeRoles(['SMAE.admin_portfolio'])) {
+            // logo, é um SMAE.gestor_de_projeto
+            // só vai poder ver os portfolios que tem a organização dele
+            if (!user.orgao_id) throw new HttpException('usuário está sem órgão', 400);
+            orgao_id = user.orgao_id!;
+        }
+
         const listActive = await this.prisma.portfolio.findMany({
             where: {
                 removido_em: null,
+                orgaos: orgao_id ? {
+                    some: {
+                        orgao_id: orgao_id
+                    }
+                } : undefined
             },
             select: {
                 id: true,
