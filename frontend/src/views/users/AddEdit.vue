@@ -1,12 +1,11 @@
 <script setup>
 import { Dashboard } from '@/components';
+import { usuário as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import { useAlertStore, useOrgansStore, usePaineisGruposStore, useUsersStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
-
 
 const usersStore = useUsersStore();
 usersStore.clear();
@@ -30,23 +29,11 @@ if (id) {
   usersStore.getById(id);
 }
 
-const schema = Yup.object().shape({
-  email: Yup.string().required('Preencha o e-mail').email('E-mail inválido'),
-  nome_completo: Yup.string().required('Preencha o nome'),
-  nome_exibicao: Yup.string().required('Preencha o nome social').max(20, 'Máximo de 20 caracteres'),
-  lotacao: Yup.string().required('Preencha a lotação'),
-  orgao_id: Yup.string().required('Selecione um órgão'),
-  perfil_acesso_ids: Yup.array().required('Selecione ao menos uma permissão'),
-  desativado: Yup.string().nullable(),
-  desativado_motivo: Yup.string().nullable().when('desativado', (desativado, field) => (desativado == '1' ? field.required('Escreva um motivo para a inativação') : field)),
-  grupos: Yup.array().required('Selecione ao menos um grupo de painel'),
-});
-
 async function onSubmit(values) {
   try {
     let msg;
     let r;
-    if (!values.grupos.length) throw new Error('Selecione ao menos um grupo de painel');
+
     if (id && user) {
       r = await usersStore.update(user.value.id, values);
       msg = 'Dados salvos com sucesso!';
