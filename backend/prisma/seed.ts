@@ -276,7 +276,7 @@ const PerfilAcessoConfig: any = [
         ]
     },
     {
-        nome: 'Administrador de Portfolio',
+        nome: 'Órgão Gestor',
         descricao: 'Pode ser escolhido para administrar os projetos na fase de registro dentro do órgão que participar',
         privilegios: [
             'SMAE.gestor_de_projeto',
