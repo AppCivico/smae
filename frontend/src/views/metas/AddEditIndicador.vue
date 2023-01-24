@@ -856,13 +856,13 @@ if (indicador_id) {
                 required
                 class="inputtext light mb1"
               >
-            </template>
 
-            <p class="t300 tc500">
-              Para uma média móvel, insira o numero de meses considerados.<br>
-              Para ”mes anterior”, indique quantos meses atrás em relação ao mês
-              corrente está o valor da variável.
-            </p>
+              <p class="t300 tc500">
+                Para uma média móvel, insira o numero de meses considerados.<br>
+                Para ”mes anterior”, indique quantos meses atrás em relação ao mês
+                corrente está o valor da variável.
+              </p>
+            </template>
 
             <div class="tc">
               <a
