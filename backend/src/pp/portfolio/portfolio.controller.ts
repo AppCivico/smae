@@ -1,12 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { PortfolioService } from './portfolio.service';
-import { CreatePortfolioDto } from './dto/create-portfolio.dto';
-import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { CreatePortfolioDto } from './dto/create-portfolio.dto';
+import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
+import { ListPortfolioDto } from './entities/portfolio.entity';
+import { PortfolioService } from './portfolio.service';
 
 @ApiTags('Portfolio')
 @Controller('portfolio')

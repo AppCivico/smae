@@ -454,7 +454,7 @@ export class PessoaService {
 
     async criarPessoa(createPessoaDto: CreatePessoaDto, user?: PessoaFromJwt) {
 
-        if (user){
+        if (user) {
             await this.verificarPrivilegiosCriacao(createPessoaDto, user);
         }
         this.verificarCPFObrigatorio(createPessoaDto);
@@ -584,43 +584,7 @@ export class PessoaService {
             filters.coordenador_responsavel_cp = filters.coorderandor_responsavel_cp;
         }
 
-        let extraFilter: any = {};
-        if (filters?.coordenador_responsavel_cp) {
-            this.logger.log('filtrando apenas coordenador_responsavel_cp');
-            extraFilter = {
-                PessoaPerfil: {
-                    some: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'PDM.coordenador_responsavel_cp'
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-            }
-        } else if (filters?.coordenador_responsavel_cp === false) {
-            this.logger.log('filtrando quem não é coordenador_responsavel_cp');
-            extraFilter = {
-                PessoaPerfil: {
-                    none: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'PDM.coordenador_responsavel_cp'
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
+        let filtrosExtra = this.filtrosPrivilegios(filters);
         if (filters?.orgao_id) {
             this.logger.log(`filtrando órgão é ${filters?.orgao_id}`);
         }
@@ -631,7 +595,7 @@ export class PessoaService {
             },
             where: {
                 NOT: { pessoa_fisica_id: null },
-                ...extraFilter,
+                AND: [...filtrosExtra],
                 pessoa_fisica: {
                     orgao_id: filters?.orgao_id
                 },
@@ -658,6 +622,84 @@ export class PessoaService {
         this.logger.log(`encontrado ${listFixed.length} resultados`);
 
         return listFixed;
+    }
+
+    private filtrosPrivilegios(filters: FilterPessoaDto | undefined): object[] {
+        let extraFilter: object[] = [];
+
+        if (filters?.coordenador_responsavel_cp) {
+            this.logger.log('filtrando apenas coordenador_responsavel_cp');
+            extraFilter.push({
+                PessoaPerfil: {
+                    some: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'PDM.coordenador_responsavel_cp'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else if (filters?.coordenador_responsavel_cp === false) {
+            this.logger.log('filtrando quem não é coordenador_responsavel_cp');
+            extraFilter.push({
+                PessoaPerfil: {
+                    none: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'PDM.coordenador_responsavel_cp'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (filters?.gestor_de_projeto) {
+            this.logger.log('filtrando apenas gestor_de_projeto');
+            extraFilter.push({
+                PessoaPerfil: {
+                    some: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.gestor_de_projeto'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else if (filters?.gestor_de_projeto === false) {
+            this.logger.log('filtrando quem não é gestor_de_projeto');
+            extraFilter.push({
+                PessoaPerfil: {
+                    none: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.gestor_de_projeto'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        return extraFilter;
     }
 
     async findByEmailAsHash(email: string) {
