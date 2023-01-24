@@ -4,7 +4,7 @@ const prisma = new PrismaClient(
 )
 
 
-const PrivConfig: any = {
+const PrivConfig: Record<string, string[][] | false> = {
 
     CadastroCargo: false,
     CadastroCoordenadoria: false,
@@ -161,10 +161,7 @@ const PrivConfig: any = {
         ['Reports.remover', 'Remover relatórios'],
     ],
     Projeto: [
-        ['Projeto.criar', 'Criar novos Projetos'],
-        ['Projeto.priorizar', 'Priorizar projetos'],
-        ['Projeto.aprovar', 'Aprovar projetos'],
-        ['Projeto.arquivar', 'Arquivar projetos'],
+        ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
         ['SMAE.admin_portfolio', '(Projeto) Administrar Portfolio'],
         ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
     ],
@@ -177,7 +174,7 @@ const PrivConfig: any = {
 
 };
 
-const ModuloDescricao: any = {
+const ModuloDescricao: Record<string, string> = {
     CadastroOrgao: 'Cadastro de Órgão',
     CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
@@ -219,92 +216,97 @@ for (const codModulo in PrivConfig) {
 }
 console.log(todosPrivilegios)
 
-const PerfilAcessoConfig: any = [
-    {
-        nome: 'Administrador Geral',
-        descricao: 'Administrador Geral',
-        privilegios: todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false)
-    },
-    {
-        nome: 'Coordenadoria de Planejamento',
-        descricao: 'Coordenadoria de Planejamento',
-        privilegios: []
-    },
-    {
-        nome: 'Unidade de Entregas',
-        descricao: 'Unidade de Entregas',
-        privilegios: [
-            'Projeto.criar',
-            'Projeto.priorizar',
-            'Projeto.aprovar',
-            'Projeto.arquivar',
-        ]
-    },
-    {
-        nome: 'Responsável por meta na CP',
-        descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
-        privilegios: [
-            'PDM.coordenador_responsavel_cp',
-            'PDM.tecnico_cp',
-        ]
-    },
-    {
-        nome: 'Administrador CP',
-        descricao: 'Pode visualizar e editar dados de todas as metas, em todos os ciclos',
-        privilegios: [
-            'PDM.admin_cp',
-        ]
-    },
-    {
-        nome: 'Técnico CP',
-        descricao: 'REMOVER',
-        privilegios: [
-        ]
-    },
-    {
-        nome: 'Ponto Focal',
-        descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
-        privilegios: [
-            'PDM.ponto_focal',
-        ]
-    },
-    {
-        nome: 'Administrador de Portfolio',
-        descricao: 'Gerenciar os Portfolios',
-        privilegios: [
-            'SMAE.admin_portfolio',
-        ]
-    },
-    {
-        nome: 'Órgão Gestor',
-        descricao: 'Pode ser escolhido para administrar os projetos na fase de registro dentro do órgão que participar',
-        privilegios: [
-            'SMAE.gestor_de_projeto',
-        ]
-    },
-    //    {
-    //        nome: 'Secretário Executivo',
-    //        descricao: 'Pode ser escolhido como secretário executivo nos projetos',
-    //        privilegios: [
-    //            'SMAE.secretario_executivo',
-    //        ]
-    //    },
-    //    {
-    //        nome: 'Secretário Executivo Responsável',
-    //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
-    //        privilegios: [
-    //            'SMAE.secretario_executivo_responsavel',
-    //        ]
-    //    },
-    //    {
-    //        nome: 'Secretário Executivo Responsável',
-    //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
-    //        privilegios: [
-    //            'SMAE.secretario_executivo_responsavel',
-    //        ]
-    //    },
+const PerfilAcessoConfig: {
+    nome: string;
+    descricao: string;
+    privilegios: string[] | false
+}[] = [
+        {
+            nome: 'Administrador Geral',
+            descricao: 'Administrador Geral',
+            privilegios: todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false)
+        },
+        {
+            nome: 'Coordenadoria de Planejamento',
+            descricao: 'Coordenadoria de Planejamento',
+            privilegios: []
+        },
+        {
+            nome: 'Responsável por meta na CP',
+            descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+            privilegios: [
+                'PDM.coordenador_responsavel_cp',
+                'PDM.tecnico_cp',
+            ]
+        },
+        {
+            nome: 'Administrador CP',
+            descricao: 'Pode visualizar e editar dados de todas as metas, em todos os ciclos',
+            privilegios: [
+                'PDM.admin_cp',
+            ]
+        },
+        {
+            nome: 'Técnico CP',
+            descricao: 'REMOVER',
+            privilegios: false
+        },
+        {
+            nome: 'Ponto Focal',
+            descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
+            privilegios: [
+                'PDM.ponto_focal',
+            ]
+        },
+        {
+            nome: 'Administrador de Portfolio',
+            descricao: 'Gerenciar os Portfolios',
+            privilegios: [
+                'SMAE.admin_portfolio',
+            ]
+        },
+        {
+            nome: 'Órgão Gestor',
+            descricao: 'Pode ser escolhido para administrar os projetos, enquanto participar do órgão gestor',
+            privilegios: [
+                'SMAE.gestor_de_projeto',
+            ]
+        },
+        {
+            nome: 'Colaborador de Projetos',
+            descricao: 'Pode ser escolhido como responsável em projetos e contribuir durante a fase de planejamento',
+            privilegios: [
+                'SMAE.colaborador_de_projeto',
+            ]
+        },
+        {
+            nome: 'Unidade de Entregas',
+            descricao: 'Unidade de Entregas',
+            privilegios: false
+        },
+        //    {
+        //        nome: 'Secretário Executivo',
+        //        descricao: 'Pode ser escolhido como secretário executivo nos projetos',
+        //        privilegios: [
+        //            'SMAE.secretario_executivo',
+        //        ]
+        //    },
+        //    {
+        //        nome: 'Secretário Executivo Responsável',
+        //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
+        //        privilegios: [
+        //            'SMAE.secretario_executivo_responsavel',
+        //        ]
+        //    },
+        //    {
+        //        nome: 'Secretário Executivo Responsável',
+        //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
+        //        privilegios: [
+        //            'SMAE.secretario_executivo_responsavel',
+        //        ]
+        //    },
 
-];
+    ];
 
 console.log(PerfilAcessoConfig);
 
@@ -519,26 +521,35 @@ async function atualizar_perfil_acesso() {
             });
         }
 
-        for (const codPriv of perfilAcessoConf.privilegios) {
-            console.log(codPriv)
-            const idPriv = (await prisma.privilegio.findFirstOrThrow({ where: { codigo: codPriv } })).id;
+        if (perfilAcessoConf.privilegios === false) {
 
-            prisma.perfilPrivilegio.findFirst({
-                where: {
-                    perfil_acesso_id: perfilAcesso.id,
-                    privilegio_id: idPriv
-                }
-            }).then(async (match) => {
-                if (!match) {
-                    await prisma.perfilPrivilegio.create({
-                        data: {
-                            perfil_acesso_id: perfilAcesso?.id as number,
-                            privilegio_id: idPriv
-                        }
-                    })
-                }
-            });
+            // TODO apagar quem tiver acesso ao perfilAcesso e remover o próprio perfil
+            // assim como é no modulos
+
+        } else {
+
+            for (const codPriv of perfilAcessoConf.privilegios) {
+                console.log(codPriv)
+                const idPriv = (await prisma.privilegio.findFirstOrThrow({ where: { codigo: codPriv } })).id;
+
+                prisma.perfilPrivilegio.findFirst({
+                    where: {
+                        perfil_acesso_id: perfilAcesso.id,
+                        privilegio_id: idPriv
+                    }
+                }).then(async (match) => {
+                    if (!match) {
+                        await prisma.perfilPrivilegio.create({
+                            data: {
+                                perfil_acesso_id: perfilAcesso?.id as number,
+                                privilegio_id: idPriv
+                            }
+                        })
+                    }
+                });
+            }
         }
+
     }
 
     await Promise.all(promises);
