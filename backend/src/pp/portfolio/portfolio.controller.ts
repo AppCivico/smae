@@ -33,6 +33,7 @@ export class PortfolioController {
     }
 
     @Patch(':id')
+    @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('SMAE.admin_portfolio')
     async update(@Param('id') id: string, @Body() updatePortfolioDto: UpdatePortfolioDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
@@ -40,6 +41,7 @@ export class PortfolioController {
     }
 
     @Delete(':id')
+    @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('SMAE.admin_portfolio')
     @ApiNoContentResponse()
