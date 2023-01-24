@@ -34,7 +34,7 @@ export class CECronogramaEtapaDto {
     id: number
     cronograma_id: number
     etapa_id: number
-    ordem: number | null
+    ordem: number
     inativo: boolean
 
     etapa: CEEtapaDto | null
@@ -44,7 +44,7 @@ export class CECronogramaEtapaDto {
 export class CECronogramaEtapaCronoId {
     id: number
     cronograma_id: number
-    ordem: number | null
+    ordem: number
 }
 
 export class CEEtapaDto {
@@ -62,6 +62,7 @@ export class CEEtapaDto {
     titulo: string | null
     duracao: string
     atraso: string
+    ordem: number
 
     responsaveis: CronogramaEtapaResponsavel[] | null
     etapa_filha?: CEEtapaDto[] | null
