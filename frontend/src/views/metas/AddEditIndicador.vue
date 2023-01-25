@@ -751,10 +751,10 @@ if (indicador_id) {
 
           <label class="label">Adicionar operadores </label>
           <div class="formula">
-            <span
+            <!--span
               class="v"
               @click="newVariavel"
-            >Variável</span>
+            >Variável</span-->
             <span
               v-for="(item, index) in funções"
               :key="index"
@@ -762,6 +762,12 @@ if (indicador_id) {
               @click="addFunction(item.operador)"
             >{{ item.etiqueta }}</span>
           </div>
+
+          <p class="tc300 mb1">
+            Para adicionar uma variável, posicione o cursor piscante no ponto em
+            que deseja inserí-la e digite <kbd>$</kbd>. Um formulário aparecerá
+            para te auxiliar.
+          </p>
         </div>
         <div v-else-if="Variaveis[indicador_id]?.loading">
           <span class="spinner">Carregando</span>
