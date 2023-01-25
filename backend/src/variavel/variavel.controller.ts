@@ -29,7 +29,7 @@ export class VariavelController {
     @Get('indicador-variavel')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroIndicador.editar')
+    @Roles('CadastroIndicador.inserir', 'CadastroIndicador.editar', 'CadastroMeta.listar')
     async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
         return { linhas: await this.variavelService.findAll(filters) };
     }
