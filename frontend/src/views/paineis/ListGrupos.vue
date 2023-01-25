@@ -91,7 +91,7 @@ function toggleAccordeon(t) {
             <td>{{ p.ativo?"Ativo":"Inativo" }}</td>
             <td style="white-space: nowrap; text-align: right">
               <router-link
-                v-if="perm?.CadastroPainel?.editar"
+                v-if="perm?.CadastroGrupoPaineis?.editar"
                 :to="`/paineis-grupos/${p.id}`"
                 class="tprimary"
               >
