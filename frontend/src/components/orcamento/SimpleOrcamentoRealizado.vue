@@ -9,10 +9,6 @@ const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 OrcamentosStore.getOrcamentoRealizadoById(props.meta_id, props.config.ano_referencia);
 
-function dateToField(d) {
-  const dd = d ? new Date(d) : false;
-  return (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone: 'UTC' }) : '';
-}
 function formataValor(d) {
   return Number(d).toLocaleString('pt-BR', {
     style: 'currency',
