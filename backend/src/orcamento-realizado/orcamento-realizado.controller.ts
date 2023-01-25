@@ -16,7 +16,7 @@ export class OrcamentoRealizadoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createMetaDto: CreateOrcamentoRealizadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.orcamentoRealizadoService.create(createMetaDto, user);
     }
@@ -24,14 +24,14 @@ export class OrcamentoRealizadoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async update(@Param() params: FindOneParams, @Body() createMetaDto: UpdateOrcamentoRealizadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.orcamentoRealizadoService.update(+params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async findAll(@Query() filters: FilterOrcamentoRealizadoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoRealizadoDto> {
         return { 'linhas': await this.orcamentoRealizadoService.findAll(filters, user) };
     }
@@ -39,7 +39,7 @@ export class OrcamentoRealizadoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
