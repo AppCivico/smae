@@ -349,14 +349,8 @@ export class PessoaService {
                     grupos_to_assign.push({ grupo_painel_id: grupo })
                 }
 
-                await prismaTx.pessoaGrupoPainel.deleteMany({
-                    where: {
-                        pessoa_id: pessoaId,
-                        grupo_painel_id: {
-                            in: grupos
-                        }
-                    }
-                });
+                // apaga todos os grupos
+                await prismaTx.pessoaGrupoPainel.deleteMany({ where: { pessoa_id: pessoaId } });
             }
 
 
@@ -380,7 +374,7 @@ export class PessoaService {
                     },
 
                     GruposDePaineisQueParticipo: {
-                        // TODO verificar se isso realmente apaga os outros itens
+                        // aqui vai inserir de novo
                         createMany: {
                             data: grupos_to_assign
                         }
