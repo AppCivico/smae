@@ -32,7 +32,7 @@ export class OrcamentoRealizadoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) == false) {
                 throw new HttpException('Sem permissão para criar orçamento na meta', 400)
             }
@@ -122,7 +122,7 @@ export class OrcamentoRealizadoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(orcamentoRealizado.meta_id) == false) {
                 throw new HttpException('Sem permissão para editar orçamento', 400)
             }
@@ -432,7 +432,7 @@ export class OrcamentoRealizadoService {
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
@@ -624,7 +624,7 @@ export class OrcamentoRealizadoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(orcamentoRealizado.meta_id) == false) {
                 throw new HttpException('Sem permissão para remover orçamento', 400)
             }

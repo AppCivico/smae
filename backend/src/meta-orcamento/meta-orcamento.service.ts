@@ -20,7 +20,7 @@ export class MetaOrcamentoService {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) == false) {
                 throw new HttpException('Sem permissão para editar orçamento', 400)
             }
@@ -72,7 +72,7 @@ export class MetaOrcamentoService {
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
         const metaOrcamentos = await this.prisma.metaOrcamento.findMany({
@@ -130,7 +130,7 @@ export class MetaOrcamentoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) == false) {
                 throw new HttpException('Sem permissão para editar orçamento', 400)
             }
@@ -195,7 +195,7 @@ export class MetaOrcamentoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(metaOrcamento.meta_id) == false) {
                 throw new HttpException('Sem permissão para remover orçamento', 400)
             }
