@@ -284,6 +284,7 @@ export class MetasService {
 
 
         const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, metaEstaFaseColeta);
+        //console.dir(calcSerieVariaveis, { depth: 33 });
 
         const cicloFase = indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : '';
 
@@ -320,7 +321,7 @@ export class MetasService {
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
 
-            let atividadesComVarCount = 0;
+            let atividadesComVarCount = retornoIniciativa.variaveis.length;
             for (const atividade of atividades) {
                 if (+atividade.iniciativa_id != +iniciativa.id) continue;
 
