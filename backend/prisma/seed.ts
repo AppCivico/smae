@@ -223,14 +223,24 @@ const PerfilAcessoConfig: {
     privilegios: string[] | false
 }[] = [
         {
+            nome: 'Coordenadoria de Planejamento',
+            descricao: 'Coordenadoria de Planejamento',
+            privilegios: false
+        },
+        {
+            nome: 'Técnico CP',
+            descricao: 'REMOVER',
+            privilegios: false
+        },
+        {
+            nome: 'Unidade de Entregas',
+            descricao: 'Unidade de Entregas',
+            privilegios: false
+        },
+        {
             nome: 'Administrador Geral',
             descricao: 'Administrador Geral',
             privilegios: todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false)
-        },
-        {
-            nome: 'Coordenadoria de Planejamento',
-            descricao: 'Coordenadoria de Planejamento',
-            privilegios: []
         },
         {
             nome: 'Responsável por meta na CP',
@@ -246,11 +256,6 @@ const PerfilAcessoConfig: {
             privilegios: [
                 'PDM.admin_cp',
             ]
-        },
-        {
-            nome: 'Técnico CP',
-            descricao: 'REMOVER',
-            privilegios: false
         },
         {
             nome: 'Ponto Focal',
@@ -280,32 +285,6 @@ const PerfilAcessoConfig: {
                 'SMAE.colaborador_de_projeto',
             ]
         },
-        {
-            nome: 'Unidade de Entregas',
-            descricao: 'Unidade de Entregas',
-            privilegios: false
-        },
-        //    {
-        //        nome: 'Secretário Executivo',
-        //        descricao: 'Pode ser escolhido como secretário executivo nos projetos',
-        //        privilegios: [
-        //            'SMAE.secretario_executivo',
-        //        ]
-        //    },
-        //    {
-        //        nome: 'Secretário Executivo Responsável',
-        //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
-        //        privilegios: [
-        //            'SMAE.secretario_executivo_responsavel',
-        //        ]
-        //    },
-        //    {
-        //        nome: 'Secretário Executivo Responsável',
-        //        descricao: 'Pode ser escolhido como secretário executivo responsável nos projetos',
-        //        privilegios: [
-        //            'SMAE.secretario_executivo_responsavel',
-        //        ]
-        //    },
 
     ];
 
@@ -383,7 +362,7 @@ async function atualizar_tipo_orgao() {
 
 async function atualizar_modulos_e_privilegios() {
 
-    let promises: any[] = [];
+    const promises: Array<PromiseLike<any>> = [];
 
     for (const codModulo in PrivConfig) {
         const privilegio = PrivConfig[codModulo];
@@ -484,13 +463,13 @@ async function criar_emaildb_config() {
     });
 }
 
-async function upsert_privilegios(moduloId: number, codigo: string, arg2: string) {
+async function upsert_privilegios(moduloId: number, codigo: string, nome: string) {
 
     return prisma.privilegio.upsert({
         where: { codigo: codigo },
-        update: { nome: arg2, modulo_id: moduloId },
+        update: { nome: nome, modulo_id: moduloId },
         create: {
-            nome: arg2,
+            nome: nome,
             modulo_id: moduloId,
             codigo: codigo
         }
@@ -499,61 +478,83 @@ async function upsert_privilegios(moduloId: number, codigo: string, arg2: string
 
 
 async function atualizar_perfil_acesso() {
-    let promises: any[] = [];
 
     for (const perfilAcessoConf of PerfilAcessoConfig) {
-        let perfilAcesso = await prisma.perfilAcesso.findFirst({ where: { nome: perfilAcessoConf.nome }, select: { id: true } });
-        if (!perfilAcesso) {
-            perfilAcesso = await prisma.perfilAcesso.create({
-                data: {
-                    nome: perfilAcessoConf.nome,
-                    descricao: perfilAcessoConf.descricao,
-                }, select: { id: true }
-            });
-        } else {
-            await prisma.perfilAcesso.updateMany({
-                where: {
-                    id: perfilAcesso.id
-                },
-                data: {
-                    nome: perfilAcessoConf.nome,
-                    descricao: perfilAcessoConf.descricao,
-                }
-            });
-        }
 
         if (perfilAcessoConf.privilegios === false) {
 
-            // TODO apagar quem tiver acesso ao perfilAcesso e remover o próprio perfil
-            // assim como é no modulos
+            // apagar quem tiver acesso ao perfilAcesso e remover o próprio perfil
+            const perfilAcesso = await prisma.perfilAcesso.findFirst({ where: { nome: perfilAcessoConf.nome }, select: { id: true } });
+            if (!perfilAcesso) continue;
+
+            await prisma.pessoaPerfil.deleteMany({
+                where: {
+                    perfil_acesso_id: perfilAcesso.id
+                }
+            });
+
+            await prisma.perfilPrivilegio.deleteMany({
+                where: {
+                    perfil_acesso_id: perfilAcesso.id
+                }
+            });
+
+            await prisma.perfilAcesso.delete({
+                where: {
+                    id: perfilAcesso.id
+                }
+            });
 
         } else {
 
+            let perfilAcesso = await prisma.perfilAcesso.findFirst({ where: { nome: perfilAcessoConf.nome }, select: { id: true } });
+            if (!perfilAcesso) {
+                perfilAcesso = await prisma.perfilAcesso.create({
+                    data: {
+                        nome: perfilAcessoConf.nome,
+                        descricao: perfilAcessoConf.descricao,
+                    }, select: { id: true }
+                });
+            } else {
+                await prisma.perfilAcesso.update({
+                    where: { id: perfilAcesso.id },
+                    data: {
+                        nome: perfilAcessoConf.nome,
+                        descricao: perfilAcessoConf.descricao,
+                    }
+                });
+            }
+
+            await prisma.perfilPrivilegio.deleteMany({
+                where: {
+                    perfil_acesso_id: perfilAcesso.id,
+                    privilegio: {
+                        codigo: { notIn: perfilAcessoConf.privilegios }
+                    }
+                }
+            });
+
             for (const codPriv of perfilAcessoConf.privilegios) {
-                console.log(codPriv)
                 const idPriv = (await prisma.privilegio.findFirstOrThrow({ where: { codigo: codPriv } })).id;
 
-                prisma.perfilPrivilegio.findFirst({
+                const match = await prisma.perfilPrivilegio.findFirst({
                     where: {
                         perfil_acesso_id: perfilAcesso.id,
                         privilegio_id: idPriv
                     }
-                }).then(async (match) => {
-                    if (!match) {
-                        await prisma.perfilPrivilegio.create({
-                            data: {
-                                perfil_acesso_id: perfilAcesso?.id as number,
-                                privilegio_id: idPriv
-                            }
-                        })
-                    }
                 });
+                if (!match) {
+                    await prisma.perfilPrivilegio.create({
+                        data: {
+                            perfil_acesso_id: perfilAcesso?.id as number,
+                            privilegio_id: idPriv
+                        }
+                    })
+                }
             }
         }
 
     }
-
-    await Promise.all(promises);
 }
 
 
