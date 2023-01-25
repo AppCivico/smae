@@ -95,7 +95,11 @@ export const useOrcamentosStore = defineStore({
     // Dotacoes
     async getDotacaoSegmentos(ano) {
       try {
-        if (!this.DotacaoSegmentos[ano] || this.DotacaoSegmentos[ano]?.atualizado_em != new Date().toISOString().substring(0, 10)) this.DotacaoSegmentos[ano] = { loading: true };
+        if (!this.DotacaoSegmentos[ano]
+          || this.DotacaoSegmentos[ano]?.atualizado_em != new Date().toISOString().substring(0, 10)
+        ) {
+          this.DotacaoSegmentos[ano] = { loading: true };
+        }
 
         const r = await requestS.get(`${baseUrl}/sof-entidade/${ano}`);
         if (r.dados) {
@@ -151,8 +155,12 @@ export const useOrcamentosStore = defineStore({
     totaisDosItens() {
       const { itens = [], smae_soma_valor_empenho = '0', smae_soma_valor_liquidado = '0' } = this.orcamentoEmFoco || {};
 
-      const empenho = toFloat(smae_soma_valor_empenho) + itens.reduce((r, x) => r + toFloat(x.valor_empenho), 0) ?? 0;
-      const liquidacao = toFloat(smae_soma_valor_liquidado) + itens.reduce((r, x) => r + toFloat(x.valor_liquidado), 0) ?? 0;
+      const empenho = toFloat(smae_soma_valor_empenho)
+        + itens.reduce((r, x) => r + toFloat(x.valor_empenho), 0)
+        ?? 0;
+      const liquidacao = toFloat(smae_soma_valor_liquidado)
+        + itens.reduce((r, x) => r + toFloat(x.valor_liquidado), 0)
+        ?? 0;
 
       return {
         empenho,
