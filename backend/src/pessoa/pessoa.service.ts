@@ -302,9 +302,9 @@ export class PessoaService {
         this.verificarCPFObrigatorio(updatePessoaDto);
         this.verificarRFObrigatorio(updatePessoaDto);
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
 
-            const emailExists = updatePessoaDto.email ? await this.prisma.pessoa.count({
+            const emailExists = updatePessoaDto.email ? await prismaTx.pessoa.count({
                 where: {
                     email: updatePessoaDto.email,
                     NOT: {
@@ -317,7 +317,7 @@ export class PessoaService {
             }
 
             if (updatePessoaDto.registro_funcionario) {
-                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                const registroFuncionarioExists = await prismaTx.pessoa.count({
                     where: {
                         NOT: { id: pessoaId },
                         pessoa_fisica: { registro_funcionario: updatePessoaDto.registro_funcionario }
@@ -329,7 +329,7 @@ export class PessoaService {
             }
 
             if (updatePessoaDto.cpf) {
-                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                const registroFuncionarioExists = await prismaTx.pessoa.count({
                     where: {
                         NOT: { id: pessoaId },
                         pessoa_fisica: { cpf: updatePessoaDto.cpf }
@@ -349,7 +349,7 @@ export class PessoaService {
                     grupos_to_assign.push({ grupo_painel_id: grupo })
                 }
 
-                await prisma.pessoaGrupoPainel.deleteMany({
+                await prismaTx.pessoaGrupoPainel.deleteMany({
                     where: {
                         pessoa_id: pessoaId,
                         grupo_painel_id: {
@@ -360,7 +360,7 @@ export class PessoaService {
             }
 
 
-            const updated = await prisma.pessoa.update({
+            await prismaTx.pessoa.update({
                 where: {
                     id: pessoaId,
                 },
@@ -380,6 +380,7 @@ export class PessoaService {
                     },
 
                     GruposDePaineisQueParticipo: {
+                        // TODO verificar se isso realmente apaga os outros itens
                         createMany: {
                             data: grupos_to_assign
                         }
@@ -388,7 +389,7 @@ export class PessoaService {
             });
 
             if (updatePessoaDto.desativado === true) {
-                await prisma.pessoa.update({
+                await prismaTx.pessoa.update({
                     where: {
                         id: pessoaId,
                     },
@@ -400,7 +401,7 @@ export class PessoaService {
                     }
                 });
             } else if (updatePessoaDto.desativado === false) {
-                await prisma.pessoa.update({
+                await prismaTx.pessoa.update({
                     where: {
                         id: pessoaId,
                     },
@@ -415,7 +416,7 @@ export class PessoaService {
                 });
             } else {
 
-                await prisma.pessoa.update({
+                await prismaTx.pessoa.update({
                     where: {
                         id: pessoaId,
                     },
@@ -429,17 +430,17 @@ export class PessoaService {
             if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
                 let promises = [];
 
-                await prisma.pessoaPerfil.deleteMany({
+                await prismaTx.pessoaPerfil.deleteMany({
                     where: { pessoa_id: pessoaId }
                 });
 
                 for (const perm of updatePessoaDto.perfil_acesso_ids) {
-                    promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } }))
+                    promises.push(prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } }))
                 }
                 await Promise.all(promises);
 
                 this.logger.log(`recalculando pessoa_acesso_pdm...`)
-                await prisma.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
+                await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
             }
 
         }, {
@@ -475,15 +476,15 @@ export class PessoaService {
             senha_bloqueada_em: new Date(Date.now()),
         } as Prisma.PessoaCreateInput;
 
-        const pessoa = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+        const pessoa = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
 
-            const emailExists = await this.prisma.pessoa.count({ where: { email: createPessoaDto.email } });
+            const emailExists = await prismaTx.pessoa.count({ where: { email: createPessoaDto.email } });
             if (emailExists > 0) {
                 throw new HttpException('email| E-mail já tem conta', 400);
             }
 
             if (createPessoaDto.registro_funcionario) {
-                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                const registroFuncionarioExists = await prismaTx.pessoa.count({
                     where: { pessoa_fisica: { registro_funcionario: createPessoaDto.registro_funcionario } }
                 });
                 if (registroFuncionarioExists > 0) {
@@ -492,7 +493,7 @@ export class PessoaService {
             }
 
             if (createPessoaDto.cpf) {
-                const registroFuncionarioExists = await this.prisma.pessoa.count({
+                const registroFuncionarioExists = await prismaTx.pessoa.count({
                     where: { pessoa_fisica: { cpf: createPessoaDto.cpf } }
                 });
                 if (registroFuncionarioExists > 0) {
@@ -502,7 +503,7 @@ export class PessoaService {
 
             let pessoaFisica;
             if (createPessoaDto.orgao_id) {
-                pessoaFisica = await prisma.pessoaFisica.create({
+                pessoaFisica = await prismaTx.pessoaFisica.create({
                     data: {
                         orgao_id: createPessoaDto.orgao_id,
                         lotacao: createPessoaDto.lotacao,
@@ -522,7 +523,7 @@ export class PessoaService {
                 }
             }
 
-            const created = await prisma.pessoa.create({
+            const created = await prismaTx.pessoa.create({
                 data: {
                     ...pessoaData,
                     pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
@@ -537,13 +538,13 @@ export class PessoaService {
 
             let promises = [];
             for (const perm of createPessoaDto.perfil_acesso_ids) {
-                promises.push(prisma.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } }))
+                promises.push(prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } }))
             }
-            promises.push(this.enviaPrimeiraSenha(created, newPass, prisma));
+            promises.push(this.enviaPrimeiraSenha(created, newPass, prismaTx));
             await Promise.all(promises);
 
             this.logger.log(`calculando pessoa_acesso_pdm...`)
-            await prisma.$queryRaw`select pessoa_acesso_pdm(${created.id}::int)`;
+            await prismaTx.$queryRaw`select pessoa_acesso_pdm(${created.id}::int)`;
 
             return created;
         }, {
