@@ -165,8 +165,8 @@ class smaeChart {
   drawDataToolTipsBars(svg, rawData, xScale, yScale, X, metaVal, sizes, el = 'rect') {
     const data = {
       ...rawData,
-      projetado: Array.isArray(rawData.projetado) ? rawData.projetado.filter((x) => x.value !== '' && x.value !== null && typeof x.value !== 'undefined') : [],
-      realizado: Array.isArray(rawData.realizado) ? rawData.realizado.filter((x) => x.value !== '' && x.value !== null && typeof x.value !== 'undefined') : [],
+      projetado: Array.isArray(rawData.projetado) ? rawData.projetado.filter((x) => x.value !== '') : [],
+      realizado: Array.isArray(rawData.realizado) ? rawData.realizado.filter((x) => x.value !== '') : [],
     };
 
     // Creating guide line for tooltip
