@@ -21,13 +21,14 @@ export class IndicadorController {
     @Post('indicador')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
     async create(@Body() createIndicadorDto: CreateIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.indicadorService.create(createIndicadorDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get('indicador')
+    @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
         return { 'linhas': await this.indicadorService.findAll(filters, user) };
     }
@@ -35,7 +36,7 @@ export class IndicadorController {
     @Patch('indicador/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroIndicador.editar', 'CadastroMeta.inserir')
     async update(@Param() params: FindOneParams, @Body() updateIndicadorDto: UpdateIndicadorDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.indicadorService.update(+params.id, updateIndicadorDto, user);
     }
@@ -43,7 +44,7 @@ export class IndicadorController {
     @Delete('indicador/:id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.remover', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroIndicador.remover', 'CadastroMeta.inserir')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -56,7 +57,7 @@ export class IndicadorController {
     @Get('indicador/:id/serie')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroIndicador.editar', 'CadastroMeta.inserir', 'CadastroMeta.listar')
     @ApiOperation({
         summary: 'Recebe o ID do indicador como parâmetro',
         description: 'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)'
