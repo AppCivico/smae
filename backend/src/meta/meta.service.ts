@@ -161,14 +161,14 @@ export class MetaService {
     async findAll(filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
 
         // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
-        // 'CadastroMeta.inserir', 'CadastroMeta.editar', 'CadastroMeta.remover'
+        // 'CadastroMeta.inserir'
         // atualmente nesse serviço não tem nada de painel, então acho que precisa rever esse TODO
         // pra outro lugar (o frontend da um get em /painel sem informar qual meta
         // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
         // depois o busca a serie do painel-conteudo correspondente
 
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.inserir', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
         }
@@ -279,8 +279,7 @@ export class MetaService {
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
 
-        if (!user.hasSomeRoles(['CadastroMeta.inserir', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             await user.assertHasMetaPdmAccess(id, this.prisma.pessoaAcessoPdm);
         }
 
@@ -414,8 +413,9 @@ export class MetaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroMeta.inserir', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
+
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
+            // logo, só pode editar se for responsável
             await user.assertHasMetaPdmAccess(id, this.prisma.pessoaAcessoPdm);
         }
 

@@ -16,7 +16,7 @@ export class CronogramaEtapaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    // ja tava liberado pra todo mundo, vai continuar
+    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
     async findAll(@Query() filters: FilterCronogramaEtapaDto): Promise<ListCronogramaEtapaDto> {
         return { 'linhas': await this.cronogramaEtapaService.findAll(filters) };
     }
@@ -24,7 +24,7 @@ export class CronogramaEtapaController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
     async update(@Body() updateCronogramaEtapaDto: UpdateCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.cronogramaEtapaService.update(updateCronogramaEtapaDto, user);
     }
@@ -32,7 +32,7 @@ export class CronogramaEtapaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroEtapa.remover', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroMeta.remover', 'CadastroMeta.inserir')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

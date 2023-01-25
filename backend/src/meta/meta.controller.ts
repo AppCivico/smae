@@ -54,16 +54,16 @@ export class MetaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.editar' })
-    @Roles('CadastroMeta.editar')
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.editar ou CadastroMeta.inserir' })
+    @Roles('CadastroMeta.editar', 'CadastroMeta.inserir')
     async update(@Param() params: FindOneParams, @Body() updateMetaDto: UpdateMetaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.metaService.update(+params.id, updateMetaDto, user);
     }
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.remover' })
-    @Roles('CadastroMeta.remover')
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.remover ou CadastroMeta.inserir' })
+    @Roles('CadastroMeta.remover', 'CadastroMeta.inserir')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

@@ -1,5 +1,6 @@
 import { HttpException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { ListaDePrivilegios } from "../../common/ListaDePrivilegios";
 import { PessoaFromJwtBase } from "./PessoaFromJwtBase";
 
 
@@ -12,7 +13,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     }
 
     // não requirido, mas se não existir não vai autorizar
-    public hasSomeRoles(anyRequiredRole: string[]) {
+    public hasSomeRoles(anyRequiredRole: ListaDePrivilegios[]) {
         if (!this.privilegios) return false;
         return anyRequiredRole.some((role) => this.privilegios.includes(role));
     }
