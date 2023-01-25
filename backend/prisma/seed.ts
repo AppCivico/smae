@@ -124,7 +124,7 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     CadastroMeta: [
         // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
         // quando tem essa permissão, é liberado vários outros itens
-        ['CadastroMeta.inserir', 'Administrar Metas, Iniciativas, Atividades, Cronogramas/Etapas e Painéis.'],
+        ['CadastroMeta.inserir', 'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis.'],
         ['CadastroMeta.editar', 'Editar Metas que for responsável'],
         ['CadastroMeta.remover', 'Remover Metas que for responsável'],
         ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
