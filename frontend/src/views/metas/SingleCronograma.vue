@@ -14,6 +14,7 @@ import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
+const { temPermissãoPara } = authStore;
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
@@ -70,21 +71,25 @@ onUpdated(() => { start(); });
       </div>
       <hr class="ml2 f1">
       <router-link
-        v-if="perm?.CadastroCronograma?.editar && !singleCronograma?.loading && singleCronograma?.id"
+        v-if="perm?.CadastroCronograma?.editar
+          && !singleCronograma?.loading
+          && singleCronograma?.id"
         :to="`${parentlink}/cronograma/${singleCronograma?.id}`"
         class="btn ml2"
       >
         Editar Cronograma
       </router-link>
       <div
-        v-if="!singleCronograma?.loading && singleCronograma?.id"
+        v-if="perm?.CadastroCronograma?.inserir
+          && !singleCronograma?.loading && singleCronograma?.id
+        "
         class="ml1 dropbtn"
       >
         <span class="btn">Nova etapa</span>
         <ul>
           <li>
             <router-link
-              v-if="perm?.CadastroEtapa?.inserir"
+              v-if="perm?.CadastroCronograma?.inserir"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
             >
               Etapa da {{ parentLabel }}
@@ -92,7 +97,8 @@ onUpdated(() => { start(); });
           </li>
           <li>
             <router-link
-              v-if="activePdm.possui_iniciativa && perm?.CadastroEtapa?.inserir && meta_id && !iniciativa_id"
+              v-if="perm?.CadastroCronograma?.inserir
+                && activePdm.possui_iniciativa && meta_id && !iniciativa_id"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
             >
               A partir de {{ activePdm.rotulo_iniciativa }}
@@ -100,7 +106,8 @@ onUpdated(() => { start(); });
           </li>
           <li>
             <router-link
-              v-if="activePdm.possui_atividade && perm?.CadastroEtapa?.inserir && meta_id && !atividade_id"
+              v-if="perm?.CadastroCronograma?.inserir
+                && activePdm.possui_atividade && meta_id && !atividade_id"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
             >
               A partir de {{ activePdm.rotulo_atividade }}
@@ -240,7 +247,7 @@ onUpdated(() => { start(); });
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
               <div
-                v-if="perm?.CadastroEtapa?.editar"
+                v-if="perm?.CadastroCronograma?.editar"
                 class="dropbtn right"
               >
                 <span class=""><svg
@@ -250,7 +257,8 @@ onUpdated(() => { start(); });
                 <ul>
                   <li>
                     <router-link
-                      v-if="(!r.cronograma_origem_etapa || r.cronograma_origem_etapa.id == singleCronograma?.id)"
+                      v-if="!r.cronograma_origem_etapa
+                        || r.cronograma_origem_etapa.id == singleCronograma?.id"
                       :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`"
                     >
                       Editar Etapa
@@ -258,7 +266,8 @@ onUpdated(() => { start(); });
                   </li>
                   <li>
                     <router-link
-                      v-if="r.cronograma_origem_etapa && r.cronograma_origem_etapa?.id != singleCronograma?.id"
+                      v-if="r.cronograma_origem_etapa
+                        && r.cronograma_origem_etapa?.id != singleCronograma?.id"
                       :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`"
                     >
                       Editar Monitoramento
@@ -266,7 +275,8 @@ onUpdated(() => { start(); });
                   </li>
 
                   <li
-                    v-if="(!r.cronograma_origem_etapa || r.cronograma_origem_etapa.id == singleCronograma?.id)"
+                    v-if="!r.cronograma_origem_etapa
+                      || r.cronograma_origem_etapa.id == singleCronograma?.id"
                   >
                     <button
                       class="like-a__link"
@@ -283,7 +293,8 @@ onUpdated(() => { start(); });
           </div>
           <hr class="mb05">
           <div
-            v-if="r.cronograma_origem_etapa && r.cronograma_origem_etapa?.id != singleCronograma?.id"
+            v-if="r.cronograma_origem_etapa
+              && r.cronograma_origem_etapa?.id != singleCronograma?.id"
             class="pl3 flex center t11 w700 tc600"
           >
             <router-link
@@ -310,7 +321,11 @@ onUpdated(() => { start(); });
                 viewBox="0 0 12 14"
                 xmlns="http://www.w3.org/2000/svg"
               ><use xlink:href="#i_iniciativa" /></svg>
-              <span>Etapa via iniciativa {{ r.cronograma_origem_etapa.iniciativa.codigo }} {{ r.cronograma_origem_etapa.iniciativa.titulo }}</span>
+              <span>
+                Etapa via iniciativa
+                {{ r.cronograma_origem_etapa.iniciativa.codigo }}
+                {{ r.cronograma_origem_etapa.iniciativa.titulo }}
+              </span>
             </router-link>
           </div>
 
@@ -347,10 +362,12 @@ onUpdated(() => { start(); });
                 Atraso
               </div>
               <div
+                v-if="temPermissãoPara('CadastroCronograma.remover')"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
               <div
+                v-if="temPermissãoPara('CadastroCronograma.editar')"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
@@ -376,11 +393,13 @@ onUpdated(() => { start(); });
                 {{ rr.atraso ?? '-' }}
               </div>
               <div
+                v-if="temPermissãoPara('CadastroCronograma.remover')"
                 class="ml1 f0 flex center mr05"
                 style="flex-basis:20px; height: calc(20px + 1rem);"
               >
                 <button
-                  v-if="(!rr.cronograma_origem_etapa || rr.cronograma_origem_etapa.id == singleCronograma?.id)"
+                  v-if="!rr.cronograma_origem_etapa
+                    || rr.cronograma_origem_etapa.id == singleCronograma?.id"
                   type="button"
                   class="like-a__text"
                   title="Excluir Fase"
@@ -395,11 +414,13 @@ onUpdated(() => { start(); });
               </div>
 
               <div
+                v-if="temPermissãoPara('CadastroCronograma.editar')"
                 class="ml1 f0 flex center mr05"
                 style="flex-basis:20px; height: calc(20px + 1rem);"
               >
                 <router-link
-                  v-if="(!r.cronograma_origem_etapa || r.cronograma_origem_etapa.id == singleCronograma?.id)"
+                  v-if="!r.cronograma_origem_etapa
+                    || r.cronograma_origem_etapa.id == singleCronograma?.id"
                   :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"
                 >
                   <svg
@@ -439,10 +460,12 @@ onUpdated(() => { start(); });
                   Atraso
                 </div>
                 <div
+                  v-if="temPermissãoPara('CadastroCronograma.remover')"
                   class="ml1 f0"
                   style="flex-basis:20px;"
                 />
                 <div
+                  v-if="temPermissãoPara('CadastroCronograma.editar')"
                   class="ml1 f0"
                   style="flex-basis:20px;"
                 />
@@ -479,10 +502,12 @@ onUpdated(() => { start(); });
                   </div>
 
                   <div
+                    v-if="temPermissãoPara('CadastroCronograma.remover')"
                     class="ml1 f0 flex center mr05"
                   >
                     <button
-                      v-if="(!rrr.cronograma_origem_etapa || rrr.cronograma_origem_etapa.id == singleCronograma?.id)"
+                      v-if="!rrr.cronograma_origem_etapa
+                        || rrr.cronograma_origem_etapa.id == singleCronograma?.id"
                       type="button"
                       class="like-a__text"
                       title="Excluir Subfase"
@@ -497,11 +522,13 @@ onUpdated(() => { start(); });
                   </div>
 
                   <div
+                    v-if="temPermissãoPara('CadastroCronograma.editar')"
                     class="ml1 f0 flex center mr05"
                     style="flex-basis:20px; height: calc(20px + 1rem);"
                   >
                     <router-link
-                      v-if="(!r.cronograma_origem_etapa || r.cronograma_origem_etapa.id == singleCronograma?.id)"
+                      v-if="!r.cronograma_origem_etapa
+                        || r.cronograma_origem_etapa.id == singleCronograma?.id"
                       :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"
                     >
                       <svg
@@ -514,9 +541,13 @@ onUpdated(() => { start(); });
                 <hr>
               </template>
             </div>
-            <div class="pl3">
+            <div
+              v-if="temPermissãoPara('CadastroCronograma.inserir')"
+              class="pl3"
+            >
               <router-link
-                v-if="(!r.cronograma_origem_etapa || r.cronograma_origem_etapa.id == singleCronograma?.id)"
+                v-if="!r.cronograma_origem_etapa
+                  || r.cronograma_origem_etapa.id == singleCronograma?.id"
                 :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`"
                 class="addlink mt05 mb05"
               >
@@ -528,9 +559,13 @@ onUpdated(() => { start(); });
             </div>
             <hr class="mb1">
           </div>
-          <div class="pl1">
+          <div
+            v-if="temPermissãoPara('CadastroCronograma.inserir')"
+            class="pl1"
+          >
             <router-link
-              v-if="(!r.cronograma_origem_etapa || r.cronograma_origem_etapa.id == singleCronograma?.id)"
+              v-if="!r.cronograma_origem_etapa
+                || r.cronograma_origem_etapa.id == singleCronograma?.id"
               :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`"
               class="addlink"
             >
