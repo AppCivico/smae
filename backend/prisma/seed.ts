@@ -167,6 +167,7 @@ const PrivConfig: Record<string, string[][] | false> = {
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
+        ['PDM.coordenador_responsavel_cp_orcamento', '(PDM) Coordenador Responsável CP - Orçamento'],
         ['PDM.tecnico_cp', '(PDM) Técnico CP'],
         ['PDM.admin_cp', '(PDM) Administrador CP'],
         ['PDM.ponto_focal', '(PDM) Ponto Focal'],
