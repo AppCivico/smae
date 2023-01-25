@@ -27,8 +27,8 @@ const etapa = object().shape({
 });
 
 const etapaDeMonitoramento = object().shape({
-  inicio_real: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
-  termino_real: string().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+  inicio_real: string().nullable().required('Preencha a data').matches(regEx['day/month/year'], 'Formato inválido'),
+  termino_real: string().nullable().matches(regEx['day/month/year'], 'Formato inválido'),
 });
 
 const fase = object().shape({
