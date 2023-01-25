@@ -2,7 +2,9 @@
 import { Dashboard } from '@/components';
 import { usuário as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
-import { useAlertStore, useOrgansStore, usePaineisGruposStore, useUsersStore } from '@/stores';
+import {
+  useAlertStore, useOrgansStore, usePaineisGruposStore, useUsersStore
+} from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
@@ -205,15 +207,21 @@ async function checkClose() {
                 :class="{ 'error': errors.perfil_acesso_ids }"
                 :value="profile.id"
                 :checked="perfil_acesso_ids && perfil_acesso_ids.includes(profile.id)"
-              /><span>{{ profile.nome }} <span class="qtipitem">i <div class="qtip">
-                <p class="label">Privilegios</p>
-                <ul>
-                  <li
-                    v-for="privilegio in profile.perfil_privilegio"
-                    :key="privilegio.privilegio.nome"
-                  >{{ privilegio.privilegio.nome }}</li>
-                </ul>
-              </div></span></span>
+              /><span>
+                {{ profile.nome }}
+                <span class="qtipitem">i <div class="qtip">
+                  <p class="label">Privilegios</p>
+                  <ul>
+                    <li
+                      v-for="privilegio in profile.perfil_privilegio"
+                      :key="privilegio.privilegio.nome"
+                    >{{ privilegio.privilegio.nome }}</li>
+                  </ul>
+                </div></span></span>
+
+              <small class="block tc300">
+                {{ profile.descricao }}
+              </small>
             </label>
             <div class="error-msg">
               {{ errors.perfil_acesso_ids }}
