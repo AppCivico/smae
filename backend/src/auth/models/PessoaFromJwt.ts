@@ -25,6 +25,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         return;
     }
 
+    // TODO cruzar isso pela meta-responsável where coordenador_responsavel_cp=true
     public async getMetasPdmAccess(pessoaAcessoPdm: Prisma.PessoaAcessoPdmDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined>): Promise<number[]> {
         if (!this.privilegios) return [];
 
