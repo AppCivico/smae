@@ -13,6 +13,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import getCaretPosition from './auxiliares/getCaretPosition.ts';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -234,24 +235,6 @@ function maskMonth(el) {
     }
   }
 }
-function getCaretPosition(editableDiv) {
-  let caretPos = [0, 0];
-  let sel;
-  let range;
-  if (window.getSelection) {
-    sel = window.getSelection();
-    if (sel.rangeCount) {
-      range = sel.getRangeAt(0);
-      if (range.commonAncestorContainer.parentNode == editableDiv) {
-        const pi = Array.from(editableDiv.childNodes)
-          .findIndex((x) => x == range.commonAncestorContainer);
-        caretPos = [pi ?? 0, range.endOffset];
-      }
-    }
-  }
-  currentCaretPos = caretPos;
-  return caretPos;
-}
 function setCaret(el, p) {
   const range = document.createRange();
   const sel = window.getSelection();
@@ -316,8 +299,8 @@ function formatFormula(p) {
 }
 function editFormula(e) {
   const f = e.target;
-  getCaretPosition(f);
   const v = f.innerText;
+  currentCaretPos = getCaretPosition(f);
   formula.value = v;
 
   if (e.data == '$') {
@@ -335,7 +318,7 @@ function trackClickFormula(e) {
   if (id) {
     editVariavel(id);
   }
-  getCaretPosition(e.target);
+  currentCaretPos = getCaretPosition(e.target);
 }
 function newVariavel() {
   const vs = variaveisFormula ? Object.keys(variaveisFormula) : [];
