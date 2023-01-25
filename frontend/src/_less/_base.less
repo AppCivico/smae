@@ -500,8 +500,8 @@
 
 		.qtip{
 			position: absolute; z-index: 9; display: none; left: 50%; bottom:100%; margin-left: -120px;
-			animation: fadeInUp .4s; text-align: left;
-			width: 70vw; max-width: 240px; padding: 1rem;
+			animation: fadeInUp .4s; text-align: left; overflow: auto;
+			max-width: 70vw; width: max-content; padding: 1rem; max-height: 50vh;
 			background: @primary; color: @branco; .w400; .t12;
 			.br(8px); .bs();
 			li,p{
