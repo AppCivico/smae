@@ -23,8 +23,16 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    values.inicio_real = fieldToDate(values.inicio_real);
-    values.termino_real = fieldToDate(values.termino_real);
+    if (values.inicio_real) {
+      values.inicio_real = fieldToDate(values.inicio_real);
+    } else {
+      values.inicio_real = null;
+    }
+    if (values.termino_real) {
+      values.termino_real = fieldToDate(values.termino_real);
+    } else {
+      values.termino_real = null;
+    }
 
     r = await CiclosStore.updateEtapa(SingleEtapa.value.id, values);
     msg = 'Dados salvos com sucesso!';
@@ -115,7 +123,7 @@ function maskDate(el) {
           </div>
         </div>
         <div class="f1">
-          <label class="label">Término real <span class="tvermelho">*</span></label>
+          <label class="label">Término real </label>
           <Field
             name="termino_real"
             type="text"
