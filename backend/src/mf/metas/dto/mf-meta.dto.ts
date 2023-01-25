@@ -26,7 +26,7 @@ export class FilterMfVariaveis {
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
-    simular_ponto_focal: boolean
+    simular_ponto_focal?: boolean
 }
 
 
