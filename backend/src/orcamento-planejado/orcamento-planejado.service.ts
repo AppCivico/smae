@@ -24,7 +24,7 @@ export class OrcamentoPlanejadoService {
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) == false) {
                 throw new HttpException('Sem permissão para editar orçamento', 400)
             }
@@ -93,7 +93,7 @@ export class OrcamentoPlanejadoService {
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) == false) {
                 throw new HttpException('Sem permissão para editar orçamento', 400)
             }
@@ -205,7 +205,7 @@ export class OrcamentoPlanejadoService {
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
         const queryRows = await this.prisma.orcamentoPlanejado.findMany({
@@ -320,7 +320,7 @@ export class OrcamentoPlanejadoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(orcamentoPlanejado.meta_id) == false) {
                 throw new HttpException('Sem permissão para editar orçamento', 400)
             }

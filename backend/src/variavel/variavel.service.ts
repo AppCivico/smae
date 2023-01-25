@@ -44,7 +44,7 @@ export class VariavelService {
 
         const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id!, this.prisma);
         if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para criar variável nesta meta', 400)
         }
@@ -449,7 +449,7 @@ export class VariavelService {
 
         const meta_id = await this.getMetaIdDoIndicador(selfIdicadorVariavel.indicador_id, this.prisma);
         if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para criar variável nesta meta', 400)
         }
