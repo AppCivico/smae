@@ -1,5 +1,5 @@
 import { HttpException } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+//import { Prisma } from "@prisma/client";
 import { ListaDePrivilegios } from "../../common/ListaDePrivilegios";
 import { PessoaFromJwtBase } from "./PessoaFromJwtBase";
 
@@ -27,7 +27,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     }
 
     public async getMetasOndeSouResponsavel(
-        metaResponsavel: any,
+        metaResponsavel: any, // não consegui mais usar o delegate do prisma, o building fica em loop pra sempre....
     ): Promise<number[]> {
         if (!this.privilegios) return [];
 
