@@ -51,8 +51,12 @@ export class PortfolioService {
 
     async findAll(user: PessoaFromJwt): Promise<PortfolioDto[]> {
         let orgao_id: undefined | number = undefined;
-        if (!user.hasSomeRoles(['SMAE.admin_portfolio'])) {
-            // logo, é um SMAE.gestor_de_projeto
+        if (!user.hasSomeRoles(['Projeto.administrador'])) {
+            // provavelmente há outras situações para criar aqui, por exemplo, se a pessoa fizer
+            // parte dos responsáveis, ela pode visualizar mas não pode criar
+            if (user.hasSomeRoles(['SMAE.gestor_de_projeto']) === false)
+                throw new HttpException('Necessário SMAE.gestor_de_projeto se não for Projeto.administrador', 400);
+
             // só vai poder ver os portfolios que tem a organização dele
             if (!user.orgao_id) throw new HttpException('usuário está sem órgão', 400);
             orgao_id = user.orgao_id!;
