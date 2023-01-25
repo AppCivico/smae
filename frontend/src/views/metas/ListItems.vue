@@ -14,6 +14,8 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const editModalStore = useEditModalStore();
 
+const { temPermissãoPara } = useAuthStore();
+
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
@@ -67,44 +69,48 @@ function groupSlug(s) {
         {{ activePdm.nome }}
       </h1>
       <hr class="ml2 f1">
-      <div class="ml2 dropbtn">
+      <div
+        v-if="temPermissãoPara([
+          'CadastroMeta.inserir',
+          'CadastroMacroTema.inserir',
+          'CadastroTema.inserir',
+          'CadastroSubTema.inserir',
+          'CadastroTag.inserir'
+        ])"
+        class="ml2 dropbtn"
+      >
         <span class="btn">Adicionar</span>
         <ul>
-          <li>
+          <li v-if="perm?.CadastroMeta?.inserir">
             <router-link
-              v-if="perm?.CadastroMeta?.inserir"
               to="/metas/novo"
             >
               Nova Meta
             </router-link>
           </li>
-          <li>
+          <li v-if="perm?.CadastroMacroTema?.inserir && activePdm.possui_macro_tema">
             <router-link
-              v-if="perm?.CadastroMacroTema?.inserir&&activePdm.possui_macro_tema"
               to="/metas/macrotemas/novo"
             >
               {{ activePdm.rotulo_macro_tema??'Macrotema' }}
             </router-link>
           </li>
-          <li>
+          <li v-if="perm?.CadastroTema?.inserir && activePdm.possui_tema">
             <router-link
-              v-if="perm?.CadastroTema?.inserir&&activePdm.possui_tema"
               to="/metas/temas/novo"
             >
               {{ activePdm.rotulo_tema??'Tema' }}
             </router-link>
           </li>
-          <li>
+          <li v-if="perm?.CadastroSubTema?.inserir && activePdm.possui_sub_tema">
             <router-link
-              v-if="perm?.CadastroSubTema?.inserir&&activePdm.possui_sub_tema"
               to="/metas/subtemas/novo"
             >
               {{ activePdm.rotulo_sub_tema??'Subtema' }}
             </router-link>
           </li>
-          <li>
+          <li v-if="perm?.CadastroTag?.inserir">
             <router-link
-              v-if="perm?.CadastroTag?.inserir"
               to="/metas/tags/novo"
             >
               Tag
