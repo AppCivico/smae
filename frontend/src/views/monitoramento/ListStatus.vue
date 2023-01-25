@@ -26,7 +26,10 @@ const chaves = [];
         chaves.push(a.fase);
       }
       r[a.fase] = r[a.fase] || [];
-      r[a.fase].push(a);
+
+      if (a.coleta?.participante) {
+        r[a.fase].push(a);
+      }
       return r;
     }, Object.create(null))
     : MetasCiclos.value;
