@@ -60,7 +60,7 @@ export class CreateProjetoDto {
 
     /**
     * nome (mínimo 1 char)
-    * @example ""
+    * @example "name"
     */
     @IsString()
     @MaxLength(500)
@@ -69,7 +69,7 @@ export class CreateProjetoDto {
 
     /**
     * resumo (pode enviar string vazia)
-    * @example ""
+    * @example "lorem..."
     */
     @IsString()
     @MaxLength(500)
@@ -95,6 +95,7 @@ export class CreateProjetoDto {
 
     /**
     * origem, obrigatório se não enviar `meta_id`, `iniciativa_id` ou `atividade_id`
+    * @example "foobar"
     */
     @IsOptional()
     @IsString()
@@ -112,7 +113,7 @@ export class CreateProjetoDto {
 
     /**
     * iniciativa_id, se for por iniciativa
-    * @example "42"
+    * @example ""
     */
     @IsOptional()
     @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
@@ -121,7 +122,7 @@ export class CreateProjetoDto {
 
     /**
     * atividade_id, se for por atividade
-    * @example "42"
+    * @example ""
     */
     @IsOptional()
     @IsInt({ message: '$property| atividade_id precisa ser positivo' })
@@ -129,8 +130,9 @@ export class CreateProjetoDto {
     atividade_id?: number;
 
     /**
-     * previsão de custo, número positivo com até 2 casas, pode enviar null
-     **/
+    * previsão de custo, número positivo com até 2 casas, pode enviar null
+    * @example ""
+    **/
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
     @Min(0, { message: '$property| Custo precisa ser positivo' })
     @Type(() => Number)
@@ -141,7 +143,7 @@ export class CreateProjetoDto {
 
     /**
     * escopo
-    * @example ""
+    * @example "..."
     */
     @IsString()
     @MaxLength(50000)
@@ -149,7 +151,7 @@ export class CreateProjetoDto {
 
     /**
     * principais_etapas
-    * @example ""
+    * @example "1. doing xpto\n2. doing zoo"
     */
     @IsString()
     @MaxLength(50000)
@@ -157,7 +159,7 @@ export class CreateProjetoDto {
 
     /**
     * texto que representa a versão
-    * @example ""
+    * @example "..."
     */
     @IsString()
     @MaxLength(20)
@@ -165,7 +167,7 @@ export class CreateProjetoDto {
 
     /**
     * data_aprovacao
-    * @example ""
+    * @example "2022-01-20"
     */
     @IsOnlyDate()
     @Type(() => Date)
