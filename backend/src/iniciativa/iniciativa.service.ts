@@ -24,7 +24,7 @@ export class IniciativaService {
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
 
-        if (!user.hasSomeRoles(['CadastroIniciativa.inserir', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             if (filterIdIn.includes(createIniciativaDto.meta_id) == false) {
@@ -163,7 +163,7 @@ export class IniciativaService {
         let meta_id = filters?.meta_id;
 
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroIniciativa.inserir', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
         }
 
@@ -250,7 +250,7 @@ export class IniciativaService {
     async update(id: number, updateIniciativaDto: UpdateIniciativaDto, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
 
-        if (!user.hasSomeRoles(['CadastroIniciativa.editar', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             if (filterIdIn.includes(self.meta_id) == false)
                 throw new HttpException('Sem permissão para editar iniciativa', 400)
@@ -327,7 +327,7 @@ export class IniciativaService {
     async remove(id: number, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
 
-        if (!user.hasSomeRoles(['CadastroIniciativa.remover', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             if (filterIdIn.includes(self.meta_id) == false)
                 throw new HttpException('Sem permissão para remover iniciativa', 400)

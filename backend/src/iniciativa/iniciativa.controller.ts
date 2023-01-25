@@ -19,7 +19,7 @@ export class IniciativaController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIniciativa.inserir')
+    @Roles('CadastroIniciativa.inserir', 'CadastroMeta.inserir')
     async create(@Body() createIniciativaDto: CreateIniciativaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.iniciativaService.create(createIniciativaDto, user);
     }
@@ -35,7 +35,7 @@ export class IniciativaController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIniciativa.editar')
+    @Roles('CadastroIniciativa.editar', 'CadastroMeta.inserir')
     async update(@Param() params: FindOneParams, @Body() updateIniciativaDto: UpdateIniciativaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.iniciativaService.update(+params.id, updateIniciativaDto, user);
     }
@@ -43,7 +43,7 @@ export class IniciativaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIniciativa.remover')
+    @Roles('CadastroIniciativa.remover', 'CadastroMeta.inserir')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

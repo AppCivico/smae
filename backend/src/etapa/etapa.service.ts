@@ -14,7 +14,7 @@ export class EtapaService {
 
     async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
 
-        if (!user.hasSomeRoles(['CadastroCronograma.inserir', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }

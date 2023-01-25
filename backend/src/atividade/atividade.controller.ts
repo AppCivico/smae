@@ -19,7 +19,7 @@ export class AtividadeController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.inserir', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroAtividade.inserir', 'CadastroMeta.inserir')
     async create(@Body() createAtividadeDto: CreateAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.atividadeService.create(createAtividadeDto, user);
     }
@@ -35,7 +35,7 @@ export class AtividadeController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.editar', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroAtividade.editar', 'CadastroMeta.inserir')
     async update(@Param() params: FindOneParams, @Body() updateAtividadeDto: UpdateAtividadeDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.atividadeService.update(+params.id, updateAtividadeDto, user);
     }
@@ -43,7 +43,7 @@ export class AtividadeController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.remover', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles('CadastroAtividade.remover', 'CadastroMeta.inserir')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

@@ -15,7 +15,7 @@ export class CronogramaService {
         if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
             throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
 
-        if (!user.hasSomeRoles(['CadastroCronograma.inserir', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
@@ -74,7 +74,7 @@ export class CronogramaService {
 
     async update(id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
 
-        if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
@@ -98,7 +98,7 @@ export class CronogramaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroCronograma.remover', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }

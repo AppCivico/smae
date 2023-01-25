@@ -23,13 +23,13 @@ export class PainelController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroPainel.inserir')
+    @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir')
     async create(@Body() createPainelDto: CreatePainelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.painelService.create(createPainelDto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Get()
+    @Roles('CadastroPainel.visualizar')
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
         return { 'linhas': await this.painelService.findAll(filters, user) };
     }
@@ -43,7 +43,7 @@ export class PainelController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroPainel.editar')
+    @Roles('CadastroPainel.editar', 'CadastroMeta.inserir')
     async update(@Param() params: FindOneParams, @Body() updatePainelDto: UpdatePainelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.painelService.update(+params.id, updatePainelDto, user);
     }
@@ -51,7 +51,7 @@ export class PainelController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroPainel.remover')
+    @Roles('CadastroPainel.remover', 'CadastroMeta.inserir')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -62,31 +62,35 @@ export class PainelController {
     @Patch(':id/conteudo')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroPainel.inserir')
+    @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir')
     async createConteudo(@Param() params: FindOneParams, @Body() createConteudoDto: CreateParamsPainelConteudoDto, @CurrentUser() user: PessoaFromJwt): Promise<PainelConteudoUpsertRet> {
         return await this.painelService.createConteudo(+params.id, createConteudoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id/conteudo/:id2/visualizacao')
+    @Roles('CadastroPainel.visualizar')
     async detailPainelConteudoVisualizacao(@Param() params: FindTwoParams): Promise<DetailPainelVisualizacaoDto> {
         return await this.painelService.getPainelConteudoVisualizacao(+params.id2);
     }
 
     @ApiBearerAuth('access-token')
     @Patch(':id/conteudo/:id2/visualizacao')
+    @Roles('CadastroPainel.editar', 'CadastroMeta.inserir')
     async updateConteudoVisualizacao(@Param() params: FindTwoParams, @Body() updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto): Promise<RecordWithId> {
         return await this.painelService.updatePainelConteudoVisualizacao(+params.id, +params.id2, updatePainelConteudoDto);
     }
 
     @ApiBearerAuth('access-token')
     @Patch(':id/conteudo/:id2/detalhes')
+    @Roles('CadastroPainel.editar', 'CadastroMeta.inserir')
     async updateConteudoDetalhe(@Param() params: FindTwoParams, @Body() updatePainelConteudoDetalhesDto: UpdatePainelConteudoDetalheDto): Promise<PainelConteudoDetalheUpdateRet> {
         return await this.painelService.updatePainelConteudoDetalhes(+params.id, +params.id2, updatePainelConteudoDetalhesDto);
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id/conteudo/:id2/serie')
+    @Roles('CadastroPainel.visualizar')
     async getPainelConteudoSerie(@Param() params: FindTwoParams): Promise<PainelConteudoSerie> {
         const series_title_as_date = false;
 
