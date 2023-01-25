@@ -32,6 +32,7 @@ export class CronogramaController {
     }
 
     @ApiBearerAuth('access-token')
+    @Get()
     @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
     async findAll(@Query() filters: FilterCronogramaDto): Promise<ListCronogramaDto> {
         return { 'linhas': await this.cronogramaService.findAll(filters) };
