@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateProjetoDto {
@@ -20,8 +20,8 @@ export class CreateProjetoDto {
     orgao_gestor_id: number;
 
     /**
-    * ID das pessoas responsáveis no orgao gestor
-    * @example ""
+    * ID das pessoas responsáveis no orgao gestor [pessoas que aparecem no filtro do `gestor_de_projeto=true`]
+    * @example "[]"
     */
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(0, { message: '$property| precisa ter um item' })
@@ -31,7 +31,7 @@ export class CreateProjetoDto {
 
     /**
     * ID dos órgãos participantes do projeto
-    * @example ""
+    * @example "[]"
     */
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(0, { message: '$property| precisa ter um item' })
@@ -40,52 +40,61 @@ export class CreateProjetoDto {
     orgaos_participantes: number[];
 
     /**
-    * ID da pessoa responsável [apos o planejamento]
+    * dentro dos órgãos participantes, qual é o órgão responsável
+    * @example ""
+    */
+    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null)
+    orgao_responsavel_id: number | null;
+
+    /**
+    * ID da pessoa responsável [pelo planejamento, são as pessoas filtradas pelo filtro `colaborador_de_projeto=true`]
     * @example ""
     */
     @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
     @Type(() => Number)
+    @ValidateIf((object, value) => value !== null)
     responsavel_id: number | null;
 
 
     /**
-    * nome
+    * nome (mínimo 1 char)
     * @example ""
     */
     @IsString()
     @MaxLength(500)
     @MinLength(1)
-    nome: number;
+    nome: string;
 
     /**
-    * resumo
+    * resumo (pode enviar string vazia)
     * @example ""
     */
     @IsString()
     @MaxLength(500)
-    resumo: number;
+    resumo: string;
 
     /**
-    * previsao_inicio
+    * previsao_inicio ou null
     * @example ""
     */
-    @IsString()
     @IsOnlyDate()
     @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
     previsao_inicio: Date | null;
 
     /**
-    * previsao_inicio
+    * previsao_inicio ou null
     * @example ""
     */
-    @IsString()
     @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
     previsao_termino: Date | null;
 
     /**
-    * origem, required se não enviar
-    * meta_id, iniciativa_id ou atividade_id
-    * @example ""
+    * origem, obrigatório se não enviar `meta_id`, `iniciativa_id` ou `atividade_id`
     */
     @IsOptional()
     @IsString()
@@ -119,20 +128,16 @@ export class CreateProjetoDto {
     @Type(() => Number)
     atividade_id?: number;
 
+    /**
+     * previsão de custo, número positivo com até 2 casas, pode enviar null
+     **/
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
     @Min(0, { message: '$property| Custo precisa ser positivo' })
     @Type(() => Number)
-    previsao_custo: number;
+    @ValidateIf((object, value) => value !== null)
+    previsao_custo: number | null;
 
     // FONTE-RECURSO 1..N
-
-    /**
-    * responsavel (id da pessoa que que for responsável)
-    * @example "42"
-    */
-    @IsInt({ message: '$property| responsavel precisa ser positivo' })
-    @Type(() => Number)
-    responsavel: number;
 
     /**
     * escopo
@@ -150,7 +155,6 @@ export class CreateProjetoDto {
     @MaxLength(50000)
     principais_etapas: string;
 
-
     /**
     * texto que representa a versão
     * @example ""
@@ -163,8 +167,8 @@ export class CreateProjetoDto {
     * data_aprovacao
     * @example ""
     */
-    @IsString()
     @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
     data_aprovacao: Date | null;
-
 }
