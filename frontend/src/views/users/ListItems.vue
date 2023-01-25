@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
 const authStore = useAuthStore();
+const { temPermissãoPara } = authStore;
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
@@ -122,9 +123,12 @@ function filterPerfil(ids) {
             <td>{{ user.lotacao ?? '-' }}</td>
             <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
             <td>{{ user.perfil_acesso_ids ? filterPerfil(user.perfil_acesso_ids) : '-' }}</td>
-
             <td style="white-space: nowrap; text-align: right;">
-              <template v-if="perm?.CadastroPessoa?.administrador||(perm?.CadastroPessoa?.editar&&user.orgao_id==authStore.user.orgao_id)">
+              <template
+                v-if="temPermissãoPara('CadastroPessoa.administrador') ||
+                  (perm?.CadastroPessoa?.editar && user.orgao_id
+                    == authStore.user.orgao_id)"
+              >
                 <router-link
                   :to="`/usuarios/editar/${user.id}`"
                   class="tprimary"
