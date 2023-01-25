@@ -10,7 +10,9 @@ const PrivConfig: Record<string, string[][] | false> = {
     CadastroCoordenadoria: false,
     CadastroDepartamento: false,
     CadastroDivisaoTecnica: false,
-
+    CadastroCicloFisico: false,
+    CadastroEixo: false,
+    CadastroObjetivoEstrategico: false,
 
     CadastroFonteRecurso: [
         ['CadastroFonteRecurso.inserir', 'Inserir Fonte de Recurso'],
@@ -46,43 +48,45 @@ const PrivConfig: Record<string, string[][] | false> = {
         ['CadastroPessoa.ativar', 'Ativar pessoas com o mesmo órgão'],
         ['CadastroPessoa.administrador', 'Editar/Inserir/Inativar/Ativar qualquer pessoa, até mesmo outros administradores'],
     ],
-
-    CadastroEixo: false,
-    CadastroMacroTema: [
-        ['CadastroMacroTema.inserir', 'Inserir Macro Tema'],
-        ['CadastroMacroTema.editar', 'Editar Macro Tema'],
-        ['CadastroMacroTema.remover', 'Remover Macro Tema'],
+    CadastroUnidadeMedida: [
+        ['CadastroUnidadeMedida.inserir', 'Inserir Unidade de Medida'],
+        ['CadastroUnidadeMedida.editar', 'Editar Unidade de Medida'],
+        ['CadastroUnidadeMedida.remover', 'Remover Unidade de Medida'],
     ],
 
-    CadastroObjetivoEstrategico: false,
-    CadastroTema: [
-        ['CadastroTema.inserir', 'Inserir Macro Tema'],
-        ['CadastroTema.editar', 'Editar Macro Tema'],
-        ['CadastroTema.remover', 'Remover Macro Tema'],
+
+    CadastroRegiao: [
+        ['CadastroRegiao.inserir', 'Inserir Regiões'],
+        ['CadastroRegiao.editar', 'Editar Regiões'],
+        ['CadastroRegiao.remover', 'Remover Regiões'],
     ],
 
-    CadastroSubTema: [
-        ['CadastroSubTema.inserir', 'Inserir Macro Tema'],
-        ['CadastroSubTema.editar', 'Editar Macro Tema'],
-        ['CadastroSubTema.remover', 'Remover Macro Tema'],
-    ],
-
-    CadastroTag: [
-        ['CadastroTag.inserir', 'Inserir Tag'],
-        ['CadastroTag.editar', 'Editar Tag'],
-        ['CadastroTag.remover', 'Remover Tag'],
-    ],
-
+    // cadastros de PDM e metas
     CadastroPdm: [
         ['CadastroPdm.inserir', 'Inserir PDM'],
         ['CadastroPdm.editar', 'Editar PDM'],
         ['CadastroPdm.inativar', 'Inativar PDM'],
         ['CadastroPdm.ativar', 'Ativar PDM'],
     ],
-    CadastroRegiao: [
-        ['CadastroRegiao.inserir', 'Inserir Regiões'],
-        ['CadastroRegiao.editar', 'Editar Regiões'],
-        ['CadastroRegiao.remover', 'Remover Regiões'],
+    CadastroMacroTema: [
+        ['CadastroMacroTema.inserir', 'Inserir Macro Tema'],
+        ['CadastroMacroTema.editar', 'Editar Macro Tema'],
+        ['CadastroMacroTema.remover', 'Remover Macro Tema'],
+    ],
+    CadastroTema: [
+        ['CadastroTema.inserir', 'Inserir Macro Tema'],
+        ['CadastroTema.editar', 'Editar Macro Tema'],
+        ['CadastroTema.remover', 'Remover Macro Tema'],
+    ],
+    CadastroSubTema: [
+        ['CadastroSubTema.inserir', 'Inserir Macro Tema'],
+        ['CadastroSubTema.editar', 'Editar Macro Tema'],
+        ['CadastroSubTema.remover', 'Remover Macro Tema'],
+    ],
+    CadastroTag: [
+        ['CadastroTag.inserir', 'Inserir Tag'],
+        ['CadastroTag.editar', 'Editar Tag'],
+        ['CadastroTag.remover', 'Remover Tag'],
     ],
     CadastroMeta: [
         ['CadastroMeta.inserir', 'Inserir Metas'],
@@ -97,73 +101,50 @@ const PrivConfig: Record<string, string[][] | false> = {
         ['CadastroIndicador.inserir', 'Inserir Indicadores e variáveis'],
         ['CadastroIndicador.editar', 'Editar Indicadores e variáveis'],
         ['CadastroIndicador.remover', 'Remover Indicadores e variáveis'],
-        ['CadastroIndicador.inativar', 'Inativar Indicadores e variáveis'],
-        ['CadastroIndicador.ativar', 'Ativar Indicadores e variáveis'],
-    ],
-    CadastroUnidadeMedida: [
-        ['CadastroUnidadeMedida.inserir', 'Inserir Unidade de Medida'],
-        ['CadastroUnidadeMedida.editar', 'Editar Unidade de Medida'],
-        ['CadastroUnidadeMedida.remover', 'Remover Unidade de Medida'],
     ],
     CadastroIniciativa: [
         ['CadastroIniciativa.inserir', 'Inserir Iniciativas'],
         ['CadastroIniciativa.editar', 'Editar Iniciativas'],
         ['CadastroIniciativa.remover', 'Remover Iniciativas'],
-        ['CadastroIniciativa.inativar', 'Inativar Iniciativas'],
-        ['CadastroIniciativa.ativar', 'Ativar Iniciativas'],
     ],
     CadastroAtividade: [
         ['CadastroAtividade.inserir', 'Inserir Atividades'],
         ['CadastroAtividade.editar', 'Editar Atividades'],
         ['CadastroAtividade.remover', 'Remover Atividades'],
-        ['CadastroAtividade.inativar', 'Inativar Atividades'],
-        ['CadastroAtividade.ativar', 'Ativar Atividades'],
     ],
     CadastroCronograma: [
         ['CadastroCronograma.inserir', 'Inserir Cronogramas'],
         ['CadastroCronograma.editar', 'Editar Cronogramas'],
         ['CadastroCronograma.remover', 'Remover Cronogramas'],
-        ['CadastroCronograma.inativar', 'Inativar Cronogramas'],
-        ['CadastroCronograma.ativar', 'Ativar Cronogramas'],
     ],
     CadastroEtapa: [
         ['CadastroEtapa.inserir', 'Inserir Etapas'],
         ['CadastroEtapa.editar', 'Editar Etapas'],
         ['CadastroEtapa.remover', 'Remover Etapas'],
-        ['CadastroEtapa.inativar', 'Inativar Etapas'],
-        ['CadastroEtapa.ativar', 'Ativar Etapas'],
-    ],
-    CadastroCicloFisico: [
-        ['CadastroCicloFisico.inserir', 'Inserir Ciclos Físicos'],
-        ['CadastroCicloFisico.editar', 'Editar Ciclos Físicos'],
-        ['CadastroCicloFisico.remover', 'Remover Ciclos Físicos'],
-        ['CadastroCicloFisico.inativar', 'Inativar Ciclos Físicos'],
-        ['CadastroCicloFisico.ativar', 'Ativar Ciclos Físicos'],
     ],
     CadastroPainel: [
         ['CadastroPainel.inserir', 'Inserir Painéis'],
         ['CadastroPainel.editar', 'Editar Painéis'],
         ['CadastroPainel.remover', 'Remover Painéis'],
-        ['CadastroPainel.inativar', 'Inativar Painéis'],
-        ['CadastroPainel.ativar', 'Ativar Painéis'],
     ],
     CadastroGrupoPaineis: [
         ['CadastroGrupoPaineis.inserir', 'Inserir Painéis'],
         ['CadastroGrupoPaineis.editar', 'Editar Painéis'],
-        ['CadastroGrupoPaineis.inativar', 'Inativar Painéis'],
-        ['CadastroGrupoPaineis.ativar', 'Ativar Painéis'],
+        ['CadastroGrupoPaineis.remover', 'Remover Painéis'],
     ],
-    Config: [
-        ['Config.editar', 'Editar configuração de textos do sistema'],
-    ],
+
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
         ['Reports.remover', 'Remover relatórios'],
     ],
+
+    Config: [
+        ['Config.editar', 'Editar configuração de textos do sistema'],
+    ],
     Projeto: [
-        ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
-        ['SMAE.admin_portfolio', '(Projeto) Administrar Portfolio'],
+        ['Projeto.administrador', 'Administrar Portfolio e qualquer projetos'],
         ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
+        ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
@@ -223,38 +204,78 @@ const PerfilAcessoConfig: {
     privilegios: string[] | false
 }[] = [
         {
-            nome: 'Coordenadoria de Planejamento',
-            descricao: 'Coordenadoria de Planejamento',
-            privilegios: false
-        },
-        {
             nome: 'Técnico CP',
-            descricao: 'REMOVER',
+            descricao: '',
             privilegios: false
         },
         {
             nome: 'Unidade de Entregas',
-            descricao: 'Unidade de Entregas',
+            descricao: '',
             privilegios: false
         },
         {
             nome: 'Administrador Geral',
-            descricao: 'Administrador Geral',
+            descricao: 'Administrador Geral - Todas as permissões do sistema, exceto regras de negocio',
             privilegios: todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false)
         },
         {
-            nome: 'Responsável por meta na CP',
-            descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+            nome: 'Administrador CP',
+            descricao: 'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
             privilegios: [
-                'PDM.coordenador_responsavel_cp',
-                'PDM.tecnico_cp',
+                'PDM.admin_cp',
+                'CadastroPdm.editar',
+                'CadastroMacroTema.inserir',
+                'CadastroMacroTema.editar',
+                'CadastroMacroTema.remover',
+                'CadastroTema.inserir',
+                'CadastroTema.editar',
+                'CadastroTema.remover',
+                'CadastroSubTema.inserir',
+                'CadastroSubTema.editar',
+                'CadastroSubTema.remover',
+                'CadastroTag.inserir',
+                'CadastroTag.editar',
+                'CadastroTag.remover',
+                'CadastroMeta.inserir',
+                'CadastroMeta.editar',
+                'CadastroMeta.remover',
+                'CadastroMeta.inativar',
+                'CadastroIndicador.inserir',
+                'CadastroIndicador.editar',
+                'CadastroIndicador.remover',
+                'CadastroUnidadeMedida.inserir',
+                'CadastroUnidadeMedida.editar',
+                'CadastroUnidadeMedida.remover',
+                'CadastroIniciativa.inserir',
+                'CadastroIniciativa.editar',
+                'CadastroIniciativa.remover',
+                'CadastroAtividade.inserir',
+                'CadastroAtividade.editar',
+                'CadastroAtividade.remover',
+                'CadastroCronograma.inserir',
+                'CadastroCronograma.editar',
+                'CadastroCronograma.remover',
+                'CadastroEtapa.inserir',
+                'CadastroEtapa.editar',
+                'CadastroEtapa.remover',
+                'CadastroPainel.inserir',
+                'CadastroPainel.editar',
+                'CadastroPainel.remover',
+                'CadastroGrupoPaineis.inserir',
+                'CadastroGrupoPaineis.editar',
+                'CadastroGrupoPaineis.remover',
+                'Reports.executar',
+                'Reports.remover',
             ]
         },
         {
-            nome: 'Administrador CP',
-            descricao: 'Pode visualizar e editar dados de todas as metas, em todos os ciclos',
+            nome: 'Coordenadoria de Planejamento',
+            descricao: 'Pode criar pessoas no mesmo órgão',
             privilegios: [
-                'PDM.admin_cp',
+                'CadastroPessoa.inserir',
+                'CadastroPessoa.editar',
+                'CadastroPessoa.inativar',
+                'CadastroPessoa.ativar'
             ]
         },
         {
@@ -265,10 +286,27 @@ const PerfilAcessoConfig: {
             ]
         },
         {
+            nome: 'Responsável por meta na CP',
+            descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+            privilegios: [
+                'PDM.coordenador_responsavel_cp',
+                'PDM.tecnico_cp',
+            ]
+        },
+        {
+            nome: 'Responsável por meta na CP - orçamento',
+            descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+            privilegios: [
+                'PDM.coordenador_responsavel_cp',
+                'PDM.tecnico_cp',
+                'CadastroMeta.orcamento'
+            ]
+        },
+        {
             nome: 'Administrador de Portfolio',
             descricao: 'Gerenciar os Portfolios',
             privilegios: [
-                'SMAE.admin_portfolio',
+                'Projeto.admin_portfolio',
             ]
         },
         {
