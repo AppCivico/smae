@@ -52,7 +52,7 @@ export class RegiaoController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroRegiao.inserir', 'CadastroRegiao.editar', 'CadastroRegiao.inativar')
+    @Roles('CadastroRegiao.remover')
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DetalheRegiaoDto> {
         return await this.regiaoService.getDetail(+params.id, user);
     }
