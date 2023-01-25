@@ -28,6 +28,7 @@ export class PainelController {
         return await this.painelService.create(createPainelDto, user);
     }
 
+    @Get()
     @ApiBearerAuth('access-token')
     @Roles('CadastroPainel.visualizar')
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
@@ -36,6 +37,7 @@ export class PainelController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
+    @Roles('CadastroPainel.visualizar')
     async findOne(@Param() params: FindOneParams): Promise<PainelDto> {
         return await this.painelService.getDetail(+params.id);
     }
@@ -92,8 +94,6 @@ export class PainelController {
     @Get(':id/conteudo/:id2/serie')
     @Roles('CadastroPainel.visualizar')
     async getPainelConteudoSerie(@Param() params: FindTwoParams): Promise<PainelConteudoSerie> {
-        const series_title_as_date = false;
-
         return await this.painelService.getPainelConteudoSerie(+params.id2);
     }
 
