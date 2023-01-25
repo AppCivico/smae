@@ -1,10 +1,42 @@
 import { PrismaClient } from '@prisma/client'
+import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient(
     { log: ['query'] }
 )
 
 
-const PrivConfig: Record<string, string[][] | false> = {
+const ModuloDescricao: Record<string, string> = {
+    CadastroOrgao: 'Cadastro de Órgão',
+    CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
+    CadastroPessoa: 'Cadastro de pessoas',
+    CadastroOds: 'Cadastro de ODS',
+    CadastroPdm: 'Cadastro do PDM',
+    CadastroFonteRecurso: 'Cadastro de Fonte de Recurso',
+    CadastroTipoDocumento: 'Cadastro de Tipo de Arquivo',
+    CadastroTag: 'Cadastro de Tag',
+    CadastroMacroTema: 'Cadastro de Macro Tema',
+    CadastroSubTema: 'Cadastro de Sub Tema',
+    CadastroTema: 'Cadastro de Tema',
+    CadastroRegiao: 'Cadastro de Regiões',
+    CadastroMeta: 'Cadastro de Metas',
+    CadastroIndicador: 'Cadastro de Indicadores',
+    CadastroUnidadeMedida: 'Cadastro de Unidade de Medidas',
+    CadastroIniciativa: 'Cadastro de Iniciativas',
+    CadastroAtividade: 'Cadastro de Atividades',
+    CadastroCronograma: 'Cadastro de Cronogramas',
+    CadastroEtapa: 'Cadastro de Etapas',
+    CadastroCicloFisico: 'Cadastro de Ciclos Físicos',
+    CadastroPainel: 'Cadastro de Painéis',
+    CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
+    Config: 'Configurações do Sistema',
+    Reports: 'Relatórios',
+    Projeto: 'Cadastro de Projetos',
+    PDM: 'Regras de Negocio do PDM',
+    SMAE: 'Regras de Negocio do SMAE',
+};
+type ListaDeModulos = keyof typeof ModuloDescricao;
+
+const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]> = {
 
     CadastroCargo: false,
     CadastroCoordenadoria: false,
@@ -13,6 +45,7 @@ const PrivConfig: Record<string, string[][] | false> = {
     CadastroCicloFisico: false,
     CadastroEixo: false,
     CadastroObjetivoEstrategico: false,
+    CadastroEtapa: false,
 
     CadastroFonteRecurso: [
         ['CadastroFonteRecurso.inserir', 'Inserir Fonte de Recurso'],
@@ -89,48 +122,46 @@ const PrivConfig: Record<string, string[][] | false> = {
         ['CadastroTag.remover', 'Remover Tag'],
     ],
     CadastroMeta: [
-        ['CadastroMeta.inserir', 'Inserir Metas'],
-        ['CadastroMeta.editar', 'Editar Metas'],
-        ['CadastroMeta.remover', 'Remover Metas'],
-        ['CadastroMeta.inativar', 'Inativar Metas'],
-        ['CadastroMeta.ativar', 'Ativar Metas'],
-        ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária'],
+        // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
+        // quando tem essa permissão, é liberado vários outros itens
+        ['CadastroMeta.inserir', 'Administrar Metas, Iniciativas, Atividades, Cronogramas/Etapas e Painéis.'],
+        ['CadastroMeta.editar', 'Editar Metas que for responsável'],
+        ['CadastroMeta.remover', 'Remover Metas que for responsável'],
+        ['CadastroMeta.inativar', 'Inativar Metas que for responsável'],
+        ['CadastroMeta.ativar', 'Ativar Metas que for responsável'],
+        ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
     ],
     CadastroIndicador: [
         // quem puder editar ou inserir indicador, vai poder gerenciar as variáveis
-        ['CadastroIndicador.inserir', 'Inserir Indicadores e variáveis'],
-        ['CadastroIndicador.editar', 'Editar Indicadores e variáveis'],
-        ['CadastroIndicador.remover', 'Remover Indicadores e variáveis'],
+        ['CadastroIndicador.inserir', 'Inserir Indicadores e variáveis onde for responsável'],
+        ['CadastroIndicador.editar', 'Editar Indicadores e variáveis onde for responsável'],
+        ['CadastroIndicador.remover', 'Remover Indicadores e variáveis onde for responsável'],
     ],
     CadastroIniciativa: [
-        ['CadastroIniciativa.inserir', 'Inserir Iniciativas'],
-        ['CadastroIniciativa.editar', 'Editar Iniciativas'],
-        ['CadastroIniciativa.remover', 'Remover Iniciativas'],
+        ['CadastroIniciativa.inserir', 'Inserir Iniciativas que for responsável'],
+        ['CadastroIniciativa.editar', 'Editar Iniciativas que for responsável'],
+        ['CadastroIniciativa.remover', 'Remover Iniciativas que for responsável'],
     ],
     CadastroAtividade: [
-        ['CadastroAtividade.inserir', 'Inserir Atividades'],
-        ['CadastroAtividade.editar', 'Editar Atividades'],
-        ['CadastroAtividade.remover', 'Remover Atividades'],
+        ['CadastroAtividade.inserir', 'Inserir Atividades que for responsável'],
+        ['CadastroAtividade.editar', 'Editar Atividades que for responsável'],
+        ['CadastroAtividade.remover', 'Remover Atividades que for responsável'],
     ],
     CadastroCronograma: [
-        ['CadastroCronograma.inserir', 'Inserir Cronogramas'],
-        ['CadastroCronograma.editar', 'Editar Cronogramas'],
-        ['CadastroCronograma.remover', 'Remover Cronogramas'],
-    ],
-    CadastroEtapa: [
-        ['CadastroEtapa.inserir', 'Inserir Etapas'],
-        ['CadastroEtapa.editar', 'Editar Etapas'],
-        ['CadastroEtapa.remover', 'Remover Etapas'],
+        ['CadastroCronograma.inserir', 'Inserir Cronogramas que for responsável'],
+        ['CadastroCronograma.editar', 'Editar Cronogramas que for responsável'],
+        ['CadastroCronograma.remover', 'Remover Cronogramas que for responsável'],
     ],
     CadastroPainel: [
-        ['CadastroPainel.inserir', 'Inserir Painéis'],
-        ['CadastroPainel.editar', 'Editar Painéis'],
-        ['CadastroPainel.remover', 'Remover Painéis'],
+        ['CadastroPainel.visualizar', 'Visualizar Painéis e detalhes do conteúdo'],
+        ['CadastroPainel.inserir', 'Inserir Painéis que for responsável'],
+        ['CadastroPainel.editar', 'Editar Painéis que for responsável'],
+        ['CadastroPainel.remover', 'Remover Painéis que for responsável'],
     ],
     CadastroGrupoPaineis: [
-        ['CadastroGrupoPaineis.inserir', 'Inserir Painéis'],
-        ['CadastroGrupoPaineis.editar', 'Editar Painéis'],
-        ['CadastroGrupoPaineis.remover', 'Remover Painéis'],
+        ['CadastroGrupoPaineis.inserir', 'Inserir Grupo de Painéis'],
+        ['CadastroGrupoPaineis.editar', 'Editar Grupo de Painéis'],
+        ['CadastroGrupoPaineis.remover', 'Remover Grupo de Painéis'],
     ],
 
     Reports: [
@@ -153,36 +184,6 @@ const PrivConfig: Record<string, string[][] | false> = {
         ['PDM.ponto_focal', '(PDM) Ponto Focal'],
     ],
 
-};
-
-const ModuloDescricao: Record<string, string> = {
-    CadastroOrgao: 'Cadastro de Órgão',
-    CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
-    CadastroPessoa: 'Cadastro de pessoas',
-    CadastroOds: 'Cadastro de ODS',
-    CadastroPdm: 'Cadastro do PDM',
-    CadastroFonteRecurso: 'Cadastro de Fonte de Recurso',
-    CadastroTipoDocumento: 'Cadastro de Tipo de Arquivo',
-    CadastroTag: 'Cadastro de Tag',
-    CadastroMacroTema: 'Cadastro de Macro Tema',
-    CadastroSubTema: 'Cadastro de Sub Tema',
-    CadastroTema: 'Cadastro de Tema',
-    CadastroRegiao: 'Cadastro de Regiões',
-    CadastroMeta: 'Cadastro de Metas',
-    CadastroIndicador: 'Cadastro de Indicadores',
-    CadastroUnidadeMedida: 'Cadastro de Unidade de Medidas',
-    CadastroIniciativa: 'Cadastro de Iniciativas',
-    CadastroAtividade: 'Cadastro de Atividades',
-    CadastroCronograma: 'Cadastro de Cronogramas',
-    CadastroEtapa: 'Cadastro de Etapas',
-    CadastroCicloFisico: 'Cadastro de Ciclos Físicos',
-    CadastroPainel: 'Cadastro de Painéis',
-    CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
-    Config: 'Configurações do Sistema',
-    Reports: 'Relatórios',
-    Projeto: 'Cadastro de Projetos',
-    PDM: 'Regras de Negocio do PDM',
-    SMAE: 'Regras de Negocio do SMAE',
 };
 
 let todosPrivilegios: string[] = [];
@@ -235,7 +236,8 @@ const PerfilAcessoConfig: {
                 'CadastroTag.inserir',
                 'CadastroTag.editar',
                 'CadastroTag.remover',
-                'CadastroMeta.inserir',
+
+                'CadastroMeta.inserir',// pq ele é admin
                 'CadastroMeta.editar',
                 'CadastroMeta.remover',
                 'CadastroMeta.inativar',
@@ -254,9 +256,6 @@ const PerfilAcessoConfig: {
                 'CadastroCronograma.inserir',
                 'CadastroCronograma.editar',
                 'CadastroCronograma.remover',
-                'CadastroEtapa.inserir',
-                'CadastroEtapa.editar',
-                'CadastroEtapa.remover',
                 'CadastroPainel.inserir',
                 'CadastroPainel.editar',
                 'CadastroPainel.remover',

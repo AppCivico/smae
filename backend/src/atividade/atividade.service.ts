@@ -24,7 +24,7 @@ export class AtividadeService {
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
 
-        if (!user.hasSomeRoles(['CadastroAtividade.inserir', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             const filterIdIn = (await this.prisma.iniciativa.findMany({
                 where: { removido_em: null, meta_id: { in: metas } }
@@ -166,7 +166,7 @@ export class AtividadeService {
         let iniciativa_id = filters?.iniciativa_id;
 
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroAtividade.inserir', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             filterIdIn = (await this.prisma.iniciativa.findMany({
                 where: { removido_em: null, meta_id: { in: metas } }
@@ -257,7 +257,7 @@ export class AtividadeService {
 
         const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
 
-        if (!user.hasSomeRoles(['CadastroAtividade.editar', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             const filterIdIn = (await this.prisma.iniciativa.findMany({
                 where: { removido_em: null, meta_id: { in: metas } }
@@ -355,7 +355,7 @@ export class AtividadeService {
     async remove(id: number, user: PessoaFromJwt) {
         const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
 
-        if (!user.hasSomeRoles(['CadastroAtividade.remover', 'PDM.admin_cp'])) {
+        if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
             const filterIdIn = (await this.prisma.iniciativa.findMany({
                 where: { removido_em: null, meta_id: { in: metas } }

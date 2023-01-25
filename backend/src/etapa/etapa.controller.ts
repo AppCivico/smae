@@ -15,7 +15,7 @@ export class EtapaController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroEtapa.editar')
+    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
     async update(@Param() params: FindOneParams, @Body() updateEtapaDto: UpdateEtapaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.etapaService.update(+params.id, updateEtapaDto, user);
     }
@@ -23,8 +23,8 @@ export class EtapaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroEtapa.remover')
     @ApiNoContentResponse()
+    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.etapaService.remove(+params.id, user);
