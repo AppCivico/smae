@@ -79,7 +79,7 @@ authStore.getDados();
         </svg>
       </router-link>
       <router-link
-        v-if="perm.CadastroMeta"
+        v-if="perm.CadastroMeta || temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal', 'CadastroMeta.orcamento'])"
         to="/metas"
         :class="{ active: props.activate == 'SubmenuMetas' }"
         @click="toggleMenu"
