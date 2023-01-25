@@ -145,26 +145,28 @@ export class PdmService {
         };
     }
 
-    async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {
+    async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt, pdm: { ativo: boolean }) {
+
         if (
+            updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === true &&
             user.hasSomeRoles(['CadastroPdm.ativar']) === false
         ) {
             throw new ForbiddenException(`Você não pode ativar Plano de Metas`);
         } else if (
+            updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === false &&
             user.hasSomeRoles(['CadastroPdm.inativar']) === false
         ) {
             throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
         }
 
+
     }
 
     async update(id: number, updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {
-        let pdm = await this.prisma.pdm.count({ where: { id: id } });
-        if (!pdm) throw new HttpException('PDM não encontrado', 404);
-
-        await this.verificarPrivilegiosEdicao(updatePdmDto, user);
+        const pdm = await this.prisma.pdm.findFirstOrThrow({ where: { id: id } });
+        await this.verificarPrivilegiosEdicao(updatePdmDto, user, pdm);
 
         if (updatePdmDto.nome) {
             const similarExists = await this.prisma.pdm.count({
