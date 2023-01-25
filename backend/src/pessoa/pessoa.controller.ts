@@ -28,7 +28,7 @@ export class PessoaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroPessoa.inserir', 'CadastroPessoa.editar', 'CadastroPessoa.inativar')
+    @Roles('CadastroPessoa.inserir', 'CadastroPessoa.editar', 'CadastroPessoa.inativar', 'PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     async findAll(@Query() filters: FilterPessoaDto): Promise<ListPessoaDto> {
         return { 'linhas': await this.pessoaService.findAll(filters) };
     }
