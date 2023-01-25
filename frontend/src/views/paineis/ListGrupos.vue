@@ -31,7 +31,7 @@ function toggleAccordeon(t) {
       <h1>Grupos de paineis</h1>
       <hr class="ml2 f1">
       <router-link
-        v-if="perm?.CadastroPainel?.inserir"
+        v-if="perm?.CadastroGrupoPaineis?.inserir"
         to="/paineis-grupos/novo"
         class="btn big ml2"
       >
