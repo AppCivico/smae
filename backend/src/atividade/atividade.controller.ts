@@ -26,8 +26,8 @@ export class AtividadeController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    // se um dia colocar @Roles, lembrar que existe o 'PDM.tecnico_cp', 'PDM.admin_cp'
-    // que também usa esse endpoint
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
         return { 'linhas': await this.atividadeService.findAll(filters, user) };
     }

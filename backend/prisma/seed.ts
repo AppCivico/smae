@@ -127,8 +127,6 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['CadastroMeta.inserir', 'Administrar Metas, Iniciativas, Atividades, Cronogramas/Etapas e Painéis.'],
         ['CadastroMeta.editar', 'Editar Metas que for responsável'],
         ['CadastroMeta.remover', 'Remover Metas que for responsável'],
-        ['CadastroMeta.inativar', 'Inativar Metas que for responsável'],
-        ['CadastroMeta.ativar', 'Ativar Metas que for responsável'],
         ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
     ],
     CadastroIndicador: [
@@ -173,35 +171,60 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['Config.editar', 'Editar configuração de textos do sistema'],
     ],
     Projeto: [
-        ['Projeto.administrador', 'Administrar Portfolio e qualquer projetos'],
+        ['Projeto.administrador', '(Projeto) Administrar Portfolio e todos os projetos'],
         ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
     ],
     PDM: [
-        ['PDM.coordenador_responsavel_cp', '(PDM) Coordenador Responsável CP'],
-        ['PDM.tecnico_cp', '(PDM) Técnico CP'],
-        ['PDM.admin_cp', '(PDM) Administrador CP'],
-        ['PDM.ponto_focal', '(PDM) Ponto Focal'],
+        ['PDM.coordenador_responsavel_cp', 'Pode ser escolhido como Coordenador Responsável na CP'],
+        ['PDM.tecnico_cp', '(Monitoramento) Técnico CP'],
+        ['PDM.admin_cp', '(Monitoramento) Administrador CP'],
+        ['PDM.ponto_focal', '(Monitoramento) Ponto Focal'],
     ],
 
 };
 
-let todosPrivilegios: string[] = [];
+let todosPrivilegios: ListaDePrivilegios[] = [];
 
 for (const codModulo in PrivConfig) {
     const privilegio = PrivConfig[codModulo];
     if (privilegio === false) continue;
 
     for (const priv of privilegio) {
-        todosPrivilegios.push(priv[0] as string)
+        todosPrivilegios.push(priv[0])
     }
 }
 console.log(todosPrivilegios)
 
+
+const PrivRespNaCp: ListaDePrivilegios[] = [
+    'PDM.coordenador_responsavel_cp',
+    'PDM.tecnico_cp',
+    'CadastroMeta.listar',
+    'CadastroMeta.editar',
+    'CadastroMeta.remover',
+    'CadastroIndicador.inserir',
+    'CadastroIndicador.editar',
+    'CadastroIndicador.remover',
+    'CadastroIniciativa.inserir',
+    'CadastroIniciativa.editar',
+    'CadastroIniciativa.remover',
+    'CadastroAtividade.inserir',
+    'CadastroAtividade.editar',
+    'CadastroAtividade.remover',
+    'CadastroCronograma.inserir',
+    'CadastroCronograma.editar',
+    'CadastroCronograma.remover',
+    'CadastroPainel.inserir',
+    'CadastroPainel.editar',
+    'CadastroPainel.remover',
+    'CadastroPainel.visualizar',
+];
+
 const PerfilAcessoConfig: {
     nome: string;
     descricao: string;
-    privilegios: string[] | false
+    privilegios: ListaDePrivilegios[] | false
 }[] = [
         {
             nome: 'Técnico CP',
@@ -236,17 +259,13 @@ const PerfilAcessoConfig: {
                 'CadastroTag.inserir',
                 'CadastroTag.editar',
                 'CadastroTag.remover',
-
-                'CadastroMeta.inserir',// pq ele é admin
+                'CadastroMeta.inserir', // pq ele é admin_cp, vai poder editar varias coisas
+                'CadastroMeta.listar',
                 'CadastroMeta.editar',
                 'CadastroMeta.remover',
-                'CadastroMeta.inativar',
                 'CadastroIndicador.inserir',
                 'CadastroIndicador.editar',
                 'CadastroIndicador.remover',
-                'CadastroUnidadeMedida.inserir',
-                'CadastroUnidadeMedida.editar',
-                'CadastroUnidadeMedida.remover',
                 'CadastroIniciativa.inserir',
                 'CadastroIniciativa.editar',
                 'CadastroIniciativa.remover',
@@ -259,9 +278,8 @@ const PerfilAcessoConfig: {
                 'CadastroPainel.inserir',
                 'CadastroPainel.editar',
                 'CadastroPainel.remover',
-                'CadastroGrupoPaineis.inserir',
-                'CadastroGrupoPaineis.editar',
-                'CadastroGrupoPaineis.remover',
+                'CadastroPainel.visualizar',
+
                 'Reports.executar',
                 'Reports.remover',
             ]
@@ -281,22 +299,20 @@ const PerfilAcessoConfig: {
             descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
             privilegios: [
                 'PDM.ponto_focal',
+                'CadastroMeta.listar',
+                'CadastroPainel.visualizar',
             ]
         },
         {
             nome: 'Responsável por meta na CP',
             descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
-            privilegios: [
-                'PDM.coordenador_responsavel_cp',
-                'PDM.tecnico_cp',
-            ]
+            privilegios: PrivRespNaCp
         },
         {
             nome: 'Responsável por meta na CP - orçamento',
             descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
             privilegios: [
-                'PDM.coordenador_responsavel_cp',
-                'PDM.tecnico_cp',
+                ...PrivRespNaCp,
                 'CadastroMeta.orcamento'
             ]
         },
