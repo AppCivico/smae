@@ -27,6 +27,7 @@ export class GrupoPaineisController {
 
     @ApiBearerAuth('access-token')
     @Get('')
+    @Roles('CadastroPainel.visualizar', 'CadastroGrupoPaineis.inserir', 'CadastroGrupoPaineis.editar', 'CadastroGrupoPaineis.remover')
     async findAll(@Query() filters: FilterGrupoPaineisDto): Promise<ListGrupoPaineisDto> {
         return { 'linhas': await this.grupoPaineisService.findAll(filters) };
     }
@@ -52,6 +53,7 @@ export class GrupoPaineisController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
+    @Roles('CadastroPainel.visualizar', 'CadastroGrupoPaineis.inserir', 'CadastroGrupoPaineis.editar', 'CadastroGrupoPaineis.remover')
     async getDetail(@Param() params: FindOneParams): Promise<DetailGrupoPaineisDto> {
         return await this.grupoPaineisService.getDetail(params.id);
     }
