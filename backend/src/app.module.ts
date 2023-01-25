@@ -36,8 +36,12 @@ import { PainelModule } from './painel/painel.module';
 import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 import { PdmModule } from './pdm/pdm.module';
 import { PessoaModule } from './pessoa/pessoa.module';
+import { PortfolioModule } from './pp/portfolio/portfolio.module';
+import { ProjetoModule } from './pp/projeto/projeto.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RegiaoModule } from './regiao/regiao.module';
+import { IndicadoresModule } from './reports/indicadores/indicadores.module';
+import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
@@ -51,11 +55,6 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
-import { IndicadoresModule } from './reports/indicadores/indicadores.module';
-import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
-import { ProjetoModule } from './pp/projeto/projeto.module';
-import { PortfolioService } from './pp/portfolio/portfolio.service';
-import { PortfolioModule } from './pp/portfolio/portfolio.module';
 
 
 @Module({
