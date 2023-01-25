@@ -18,27 +18,25 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         return anyRequiredRole.some((role) => this.privilegios.includes(role));
     }
 
-    public async assertHasMetaPdmAccess(meta_id: number, pessoaAcessoPdm: Prisma.PessoaAcessoPdmDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined>) {
-        const varOuCrono = await this.getMetasPdmAccess(pessoaAcessoPdm);
+    public async assertHasMetaRespAccess(meta_id: number, metaResponsavel: any) {
+        const varOuCrono = await this.getMetasOndeSouResponsavel(metaResponsavel);
         if (varOuCrono.includes(+meta_id) == false) {
             throw new HttpException(`Seu perfil no momento não pode acessar a meta ${meta_id}`, 400);
         }
         return;
     }
 
-    // TODO cruzar isso pela meta-responsável where coordenador_responsavel_cp=true
-    public async getMetasPdmAccess(pessoaAcessoPdm: Prisma.PessoaAcessoPdmDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined>): Promise<number[]> {
+    public async getMetasOndeSouResponsavel(
+        metaResponsavel: any,
+    ): Promise<number[]> {
         if (!this.privilegios) return [];
 
-        if (!this.hasSomeRoles(['PDM.tecnico_cp', 'PDM.admin_cp']))
-            throw new HttpException('Você precisa ser tecnico_cp ou admin_cp para acessar este recurso no momento', 400);
+        const metas = await metaResponsavel.findMany({
+            where: { pessoa_id: this.id, },
+            select: { meta_id: true }
+        });
 
-        const perfilAcesso = await pessoaAcessoPdm.findFirst({ where: { pessoa_id: this.id } });
-        if (!perfilAcesso)
-            throw new HttpException('Não foi encontrado um perfil calculado para o seu usuário. Verificar se há PDM ativo com ciclos no momento', 400);
-
-        return [...perfilAcesso.metas_variaveis, ...perfilAcesso.metas_cronograma];
-
+        return (metas as { meta_id: number }[]).map(r => r.meta_id)
     }
 
 }

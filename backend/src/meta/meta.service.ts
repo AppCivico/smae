@@ -170,7 +170,7 @@ export class MetaService {
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
 
@@ -280,7 +280,7 @@ export class MetaService {
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            await user.assertHasMetaPdmAccess(id, this.prisma.pessoaAcessoPdm);
+            await user.assertHasMetaRespAccess(id, this.prisma.pessoaAcessoPdm);
         }
 
         const op = updateMetaDto.orgaos_participantes;
@@ -416,7 +416,7 @@ export class MetaService {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, só pode editar se for responsável
-            await user.assertHasMetaPdmAccess(id, this.prisma.pessoaAcessoPdm);
+            await user.assertHasMetaRespAccess(id, this.prisma.pessoaAcessoPdm);
         }
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {

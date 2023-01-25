@@ -623,9 +623,6 @@ export class PdmService {
 
     async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto) {
 
-        console.log("log debug");
-        console.log(updatePdmOrcamentoConfigDto);
-        console.log(updatePdmOrcamentoConfigDto.orcamento_config);
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
 

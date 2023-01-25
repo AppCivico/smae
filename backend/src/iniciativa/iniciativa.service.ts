@@ -26,7 +26,7 @@ export class IniciativaService {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(createIniciativaDto.meta_id) == false) {
                 throw new HttpException('Sem permissão para criar iniciativa nesta meta', 400)
             }
@@ -164,7 +164,7 @@ export class IniciativaService {
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
         let listActive = await this.prisma.iniciativa.findMany({
@@ -251,7 +251,7 @@ export class IniciativaService {
         const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(self.meta_id) == false)
                 throw new HttpException('Sem permissão para editar iniciativa', 400)
         }
@@ -328,7 +328,7 @@ export class IniciativaService {
         const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetasPdmAccess(this.prisma.pessoaAcessoPdm);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(self.meta_id) == false)
                 throw new HttpException('Sem permissão para remover iniciativa', 400)
         }
