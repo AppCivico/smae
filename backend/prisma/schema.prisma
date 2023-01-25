@@ -2209,6 +2209,9 @@ model Projeto {
     ProjetoRisco          ProjetoRisco[]
     ProjetoAcompanhamento ProjetoAcompanhamento[]
 
+    removido_em  DateTime?
+    removido_por Int?
+
     @@map("projeto")
 }
 

@@ -699,6 +699,42 @@ export class PessoaService {
             });
         }
 
+        if (filters?.colaborador_de_projeto) {
+            this.logger.log('filtrando apenas gestor_de_projeto');
+            extraFilter.push({
+                PessoaPerfil: {
+                    some: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.gestor_de_projeto'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else if (filters?.colaborador_de_projeto === false) {
+            this.logger.log('filtrando quem não é colaborador_de_projeto');
+            extraFilter.push({
+                PessoaPerfil: {
+                    none: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.colaborador_de_projeto'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         return extraFilter;
     }
 

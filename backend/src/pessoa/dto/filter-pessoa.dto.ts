@@ -42,6 +42,16 @@ export class FilterPessoaDto {
     @Transform(({ value }: any) => value === 'true')
     gestor_de_projeto?: boolean;
 
+    /**
+    * Filtrar pessoa com privilegio SMAE.colaborador_de_projeto?
+    *  true filtra quem tem a SMAE.colaborador_de_projeto; false filtra quem não tem
+    * @example "true"
+    */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    colaborador_de_projeto?: boolean;
+
     /*
     versão alternativa para aceitar números negativos, e vazio como undefined caso seja adicionado @IsOptional()
     @IsNumber()
