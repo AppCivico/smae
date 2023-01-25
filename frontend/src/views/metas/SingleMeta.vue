@@ -5,6 +5,7 @@ import { useAuthStore, useIniciativasStore, useMetasStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
+const { temPermissãoPara } = useAuthStore();
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
@@ -187,7 +188,10 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
                     {{ ini.titulo }}
                   </h2>
                 </router-link>
-                <div class="f0">
+                <div
+                  v-if="temPermissãoPara('CadastroIniciativa.editar')"
+                  class="f0"
+                >
                   <router-link
                     :to="`${parentlink}/iniciativas/editar/${ini.id}`"
                     class="tprimary"
