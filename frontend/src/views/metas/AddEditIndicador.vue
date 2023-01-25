@@ -120,8 +120,8 @@ let currentCaretPos = -1;
 const errFormula = ref('');
 
 function start() {
-  if (props.group == 'variaveis') editModalStore.modal(AddEditVariavel, props);
-  if (props.group == 'valores') {
+  if (props.group === 'variaveis') editModalStore.modal(AddEditVariavel, props);
+  if (props.group === 'valores') {
     editModalStore.modal(AddEditValores, {
       ...props,
       checkClose: () => {
@@ -132,7 +132,7 @@ function start() {
       },
     });
   }
-  if (props.group == 'retroativos') editModalStore.modal(AddEditRealizado, props);
+  if (props.group === 'retroativos') editModalStore.modal(AddEditRealizado, props);
 }
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
@@ -293,7 +293,7 @@ function formatFormula(p) {
   formulaInput.value.innerHTML = fórmulaLimpa.replace(/\s+/g, ' ');
 
   if (p) {
-    const i = Array.from(formulaInput.value.childNodes).findIndex((x) => x?.dataset?.id == p);
+    const i = Array.from(formulaInput.value.childNodes).findIndex((x) => x?.dataset?.id === p);
     setCaret(formulaInput.value, [i + 1, 0]);
   }
 }
