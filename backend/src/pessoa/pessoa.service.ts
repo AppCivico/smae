@@ -147,7 +147,7 @@ export class PessoaService {
 
     async verificarPrivilegiosCriacao(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
         if (createPessoaDto.orgao_id === undefined) {
-            if (user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false) {
+            if (user.hasSomeRoles(['CadastroPessoa.administrador']) === false) {
                 throw new ForbiddenException(`Para criar pessoas sem órgão é necessário ser um administrador.`);
             }
         }
@@ -155,8 +155,7 @@ export class PessoaService {
         if (
             createPessoaDto.orgao_id &&
             user.orgao_id &&
-            user.hasSomeRoles(['CadastroPessoa.inserir:apenas-mesmo-orgao']) &&
-            user.hasSomeRoles(['CadastroPessoa.inserir:administrador']) === false &&
+            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
             Number(createPessoaDto.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode criar pessoas para o seu próprio órgão.`);
