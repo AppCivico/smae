@@ -76,6 +76,9 @@ const funções = [
     operador: 'FACTORIAL()',
   },
 ];
+
+const operadores = funções.map((x) => x.operador);
+
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
 const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
@@ -273,7 +276,7 @@ function labelPeriodo(p, m) {
 function formatFormula(p) {
   const regex = /\$_[\d]{0,5}/gm;
   const inuse = [];
-  formulaInput.value.innerHTML = formula.value.replace(regex, (m) => {
+  let fórmulaLimpa = formula.value.replace(regex, (m) => {
     let r = m;
     if (variaveisFormula[m]) {
       inuse.push(m);
@@ -291,11 +294,20 @@ function formatFormula(p) {
       r = ` <span class="v" contenteditable="false" data-id="${m}" data-var="${n}" title="${t}" >${m}</span> `;
     }
     return r;
-  }).replace(/\s+/g, ' ');
+  });
 
   Object.entries(variaveisFormula).forEach((k) => {
     if (inuse.indexOf(k) === -1) delete variaveisFormula[k];
   });
+
+  operadores.forEach((x) => {
+    // selecionar todos os operadores que não estão entre limitadores de
+    // palavras. Atentar que RegEx LookBehind não é suportado no Safari
+    const regEx = new RegExp(`(?<![\b<])(\\${x})(?!\b)`);
+    fórmulaLimpa = fórmulaLimpa.replace(regEx, ' $1 ');
+  });
+
+  formulaInput.value.innerHTML = fórmulaLimpa.replace(/\s+/g, ' ');
 
   if (p) {
     const i = Array.from(formulaInput.value.childNodes).findIndex((x) => x?.dataset?.id == p);
@@ -312,6 +324,11 @@ function editFormula(e) {
     v = f.innerText;
     formula.value = v;
     newVariavel();
+
+    // vamos adicionar um espaço após cada operador para facilitar a leitura e
+    // prevenir erros de análise da fórmula
+  } else if (operadores.includes(e.data)) {
+    document.execCommand('insertText', false, ' ');
   }
 }
 function trackClickFormula(e) {
@@ -359,7 +376,7 @@ function cancelVar() {
 }
 async function addFunction(f) {
   await setCaret(formulaInput.value, currentCaretPos);
-  document.execCommand('insertText', false, f);
+  document.execCommand('insertText', false, `${f} `);
 }
 
 if (indicador_id) {
