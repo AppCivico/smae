@@ -610,6 +610,7 @@ export class VariavelService {
             ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']
         };
 
+        // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir
 
         const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id)
         for (const periodoYMD of todosPeriodos) {
