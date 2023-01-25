@@ -22,6 +22,60 @@ const { iniciativa_id } = route.params;
 const { atividade_id } = route.params;
 const { indicador_id } = route.params;
 
+const funções = [
+  {
+    etiqueta: '*',
+    operador: '*',
+  },
+  {
+    etiqueta: '/',
+    operador: '/',
+  },
+  {
+    etiqueta: '-',
+    operador: '-',
+  },
+  {
+    etiqueta: '+',
+    operador: '+',
+  },
+  {
+    etiqueta: '^',
+    operador: '^',
+  },
+  {
+    etiqueta: 'FLOOR',
+    operador: 'FLOOR()',
+  },
+  {
+    etiqueta: 'CEIL',
+    operador: 'CEIL()',
+  },
+  {
+    etiqueta: 'ROUND',
+    operador: 'ROUND()',
+  },
+  {
+    etiqueta: 'ABS',
+    operador: 'ABS()',
+  },
+  {
+    etiqueta: 'DIV',
+    operador: 'DIV()',
+  },
+  {
+    etiqueta: 'MOD',
+    operador: 'MOD()',
+  },
+  {
+    etiqueta: 'LOG',
+    operador: 'LOG()',
+  },
+  {
+    etiqueta: 'FACTORIAL',
+    operador: 'FACTORIAL()',
+  },
+];
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
 const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
@@ -699,75 +753,15 @@ if (indicador_id) {
           <label class="label">Adicionar operadores </label>
           <div class="formula">
             <span
-              readonly="readonly"
               class="v"
               @click="newVariavel"
             >Variável</span>
             <span
-              readonly="readonly"
+              v-for="(item, index) in funções"
+              :key="index"
               class="op"
-              @click="addFunction('*')"
-            >*</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('/')"
-            >/</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('-')"
-            >-</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('+')"
-            >+</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('^')"
-            >^</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('FLOOR()')"
-            >FLOOR</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('CEIL()')"
-            >CEIL</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('ROUND()')"
-            >ROUND</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('ABS()')"
-            >ABS</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('DIV()')"
-            >DIV</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('MOD()')"
-            >MOD</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('LOG()')"
-            >LOG</span>
-            <span
-              readonly="readonly"
-              class="op"
-              @click="addFunction('FACTORIAL()')"
-            >FACTORIAL</span>
+              @click="addFunction(item.operador)"
+            >{{ item.etiqueta }}</span>
           </div>
         </div>
         <div v-else-if="Variaveis[indicador_id]?.loading">
