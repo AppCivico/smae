@@ -65,11 +65,13 @@ import { PortfolioModule } from './pp/portfolio/portfolio.module';
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
+        PrismaModule,
+        PortfolioModule,
+        ProjetoModule,
+
+        AuthModule,
         ReportsModule,
         OrcamentoModule,
-        PrismaModule,
-        AuthModule,
-
         SofApiModule,
         OrcamentoPlanejadoModule,
         DotacaoModule,
@@ -116,8 +118,6 @@ import { PortfolioModule } from './pp/portfolio/portfolio.module';
         TextoConfigModule,
         IndicadoresModule,
         MonitoramentoMensalModule,
-        ProjetoModule,
-        PortfolioModule,
     ],
     controllers: [AppController],
     providers: [
@@ -138,8 +138,7 @@ import { PortfolioModule } from './pp/portfolio/portfolio.module';
             provide: APP_INTERCEPTOR,
             useClass: ContentInterceptor
         },
-        UtilsService,
-        PortfolioService
+        UtilsService
     ],
 
 })
