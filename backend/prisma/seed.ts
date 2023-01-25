@@ -305,7 +305,7 @@ const PerfilAcessoConfig: {
             nome: 'Administrador de Portfolio',
             descricao: 'Gerenciar os Portfolios',
             privilegios: [
-                'Projeto.admin_portfolio',
+                'Projeto.administrador',
             ]
         },
         {
@@ -572,7 +572,11 @@ async function atualizar_perfil_acesso() {
             });
 
             for (const codPriv of perfilAcessoConf.privilegios) {
-                const idPriv = (await prisma.privilegio.findFirstOrThrow({ where: { codigo: codPriv } })).id;
+                const priv = await prisma.privilegio.findFirst({ where: { codigo: codPriv } });
+                if (!priv) {
+                    throw `Não encontrado priv ${codPriv}`;
+                }
+                const idPriv = priv.id;
 
                 const match = await prisma.perfilPrivilegio.findFirst({
                     where: {
