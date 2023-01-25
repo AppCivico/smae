@@ -17,7 +17,7 @@ export class ProjetoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async create(@Body() createProjetoDto: CreateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.create(createProjetoDto, user);
     }
@@ -25,7 +25,7 @@ export class ProjetoController {
     @Get()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
         return { linhas: await this.projetoService.findAll(user) };
     }
@@ -33,7 +33,7 @@ export class ProjetoController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async findOne(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
         return await this.projetoService.findOne(+id, user);
     }
@@ -41,7 +41,7 @@ export class ProjetoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async update(@Param('id') id: string, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.update(+id, updateProjetoDto, user);
     }
@@ -49,7 +49,7 @@ export class ProjetoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {

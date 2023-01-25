@@ -17,7 +17,7 @@ export class PortfolioController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio')
+    @Roles('Projeto.administrador')
     async create(@Body() createPortfolioDto: CreatePortfolioDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.portfolioService.create(createPortfolioDto, user);
     }
@@ -25,7 +25,7 @@ export class PortfolioController {
     @Get()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
             linhas: await this.portfolioService.findAll(user)
@@ -35,7 +35,7 @@ export class PortfolioController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio')
+    @Roles('Projeto.administrador')
     async update(@Param('id') id: string, @Body() updatePortfolioDto: UpdatePortfolioDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.portfolioService.update(+id, updatePortfolioDto, user);
     }
@@ -43,7 +43,7 @@ export class PortfolioController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('SMAE.admin_portfolio')
+    @Roles('Projeto.administrador')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
