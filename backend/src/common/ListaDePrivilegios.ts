@@ -41,11 +41,10 @@ export type ListaDePrivilegios =
     'CadastroTag.inserir' |
     'CadastroTag.editar' |
     'CadastroTag.remover' |
+    'CadastroMeta.listar' |
     'CadastroMeta.inserir' |
     'CadastroMeta.editar' |
     'CadastroMeta.remover' |
-    'CadastroMeta.inativar' |
-    'CadastroMeta.ativar' |
     'CadastroMeta.orcamento' |
     'CadastroIndicador.inserir' |
     'CadastroIndicador.editar' |

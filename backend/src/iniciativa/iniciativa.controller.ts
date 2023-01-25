@@ -26,8 +26,8 @@ export class IniciativaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    // se um dia colocar @Roles, lembrar que existe o 'PDM.tecnico_cp', 'PDM.admin_cp'
-    // que também usa esse endpoint
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterIniciativaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIniciativaDto> {
         return { 'linhas': await this.iniciativaService.findAll(filters, user) };
     }
