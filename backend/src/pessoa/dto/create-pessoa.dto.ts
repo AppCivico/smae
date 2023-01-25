@@ -90,7 +90,7 @@ export class CreatePessoaDto {
 
     @IsArray()
     @IsOptional()
-    @ArrayMinSize(1, { message: '$property| grupo(s): precisa ter pelo menos um item' })
+    @ArrayMinSize(0, { message: '$property| grupo(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
     grupos?: number[]
 }
