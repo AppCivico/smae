@@ -316,13 +316,12 @@ function formatFormula(p) {
 }
 function editFormula(e) {
   const f = e.target;
-  let v = f.innerText;
   getCaretPosition(f);
+  const v = f.innerText;
   formula.value = v;
+
   if (e.data == '$') {
     document.execCommand('insertText', false, 'xxx');
-    v = f.innerText;
-    formula.value = v;
     newVariavel();
 
     // vamos adicionar um espaço após cada operador para facilitar a leitura e
