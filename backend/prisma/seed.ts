@@ -128,6 +128,7 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['CadastroMeta.editar', 'Editar Metas que for responsável'],
         ['CadastroMeta.remover', 'Remover Metas que for responsável'],
         ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
+        ['CadastroMeta.listar', 'Lista metas, iniciativas e atividades']
     ],
     CadastroIndicador: [
         // quem puder editar ou inserir indicador, vai poder gerenciar as variáveis
