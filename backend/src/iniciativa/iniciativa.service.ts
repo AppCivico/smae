@@ -165,6 +165,9 @@ export class IniciativaService {
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
+            // TODO: notei que existe responsavel na iniciativa, então talvez seja necessario na verdade,
+            // filtrar usando o responsavel da iniciativa e não da meta
+            // o mesmo vale pra atividade
         }
 
         let listActive = await this.prisma.iniciativa.findMany({
