@@ -28,24 +28,28 @@ export class MetaController {
     @ApiBearerAuth('access-token')
     @Get()
     @ApiProduces("application/json", "text/csv", "text/csv; unwind-all", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    // tbm ta liberado pra geral listar
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
+    @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
         return { 'linhas': await this.metaService.findAll(filters, user) };
     }
 
     @ApiBearerAuth('access-token')
     @Get('iniciativas-atividades')
-    //@Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal', '')
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
+    @Roles('CadastroMeta.listar')
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
         return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
     }
 
-    // precisa ficar depois
+    // Precisa ficar depois do método buscaMetasIniciativaAtividades, a ordem da definição afeta como será dado os matching
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get(':id')
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
+    @Roles('CadastroMeta.listar')
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Meta> {
         const r = await this.metaService.findAll({ id: params.id }, user);
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
