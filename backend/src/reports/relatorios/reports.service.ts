@@ -8,6 +8,7 @@ import { UploadService } from '../../upload/upload.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
+import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
@@ -29,6 +30,7 @@ export class ReportsService {
         private readonly uploadService: UploadService,
         private readonly indicadoresService: IndicadoresService,
         private readonly mmService: MonitoramentoMensalService,
+        private readonly previsaoCustoService: PrevisaoCustoService
     ) { }
 
     async runReport(dto: CreateReportDto, user: PessoaFromJwt): Promise<FileOutput[]> {
@@ -74,6 +76,7 @@ export class ReportsService {
             case 'Orcamento': service = this.orcamentoService; break;
             case 'Indicadores': service = this.indicadoresService; break;
             case 'MonitoramentoMensal': service = this.mmService; break;
+            case 'PrevisaoCusto': service = this.previsaoCustoService; break;
         }
         if (service === null)
             throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
