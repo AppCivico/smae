@@ -1,6 +1,7 @@
 import { ApiProperty, refs } from "@nestjs/swagger"
 import { FonteRelatorio } from "@prisma/client"
 import { IsBoolean, IsEnum, IsOptional } from "class-validator"
+import { CreateRelPrevisaoCustoDto } from "src/reports/previsao-custo/dto/create-previsao-custo.dto"
 import { CreateRelIndicadorDto } from "../../indicadores/dto/create-indicadore.dto"
 import { CreateRelMonitoramentoMensalDto } from "../../monitoramento-mensal/dto/create-monitoramento-mensal.dto"
 import { CreateOrcamentoExecutadoDto } from "../../orcamento/dto/create-orcamento-executado.dto"
@@ -19,7 +20,7 @@ export class CreateReportDto {
      * @example "{}"
     */
     @ReportValidatorOf('fonte')
-    @ApiProperty({oneOf: refs(CreateOrcamentoExecutadoDto, CreateRelIndicadorDto, CreateRelMonitoramentoMensalDto)})
+    @ApiProperty({oneOf: refs(CreateOrcamentoExecutadoDto, CreateRelIndicadorDto, CreateRelMonitoramentoMensalDto, CreateRelPrevisaoCustoDto)})
     parametros: any
 
     @IsOptional()
