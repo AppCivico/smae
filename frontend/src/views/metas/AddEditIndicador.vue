@@ -290,7 +290,7 @@ function formatFormula(p) {
     fórmulaLimpa = fórmulaLimpa.replace(regEx, ' $1 ');
   });
 
-  formulaInput.value.innerHTML = fórmulaLimpa.replace(/\s+/g, ' ');
+  formulaInput.value.innerHTML = `${fórmulaLimpa.replace(/\s+/g, ' ')} `;
 
   if (p) {
     const i = Array.from(formulaInput.value.childNodes).findIndex((x) => x?.dataset?.id === p);
