@@ -15,7 +15,7 @@ export class PrevisaoCustoParams {
     /**
      * @example "Corrente"
     */
-    @ApiProperty({ enum: PeriodoRelatorioPrevisaoCustoDto, enumName: 'PeriodoDto' })
+    @ApiProperty({ enum: PeriodoRelatorioPrevisaoCustoDto, enumName: 'PeriodoRelatorioPrevisaoCustoDto' })
     @IsEnum(PeriodoRelatorioPrevisaoCustoDto, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(PeriodoRelatorioPrevisaoCustoDto).join(', ')
     })
