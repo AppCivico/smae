@@ -27,6 +27,7 @@ export class PrevisaoCustoParams {
     */
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @IsOptional()
     ano?: number
 }
 
