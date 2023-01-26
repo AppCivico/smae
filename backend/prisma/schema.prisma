@@ -1781,6 +1781,7 @@ model MetaOrcamento {
     meta_id       Int
     iniciativa_id Int?
     atividade_id  Int?
+    versao_anterior_id Int? @unique
 
     ano_referencia Int
 
@@ -1803,6 +1804,9 @@ model MetaOrcamento {
     criador     Pessoa      @relation("criador", fields: [criado_por], references: [id])
     removedor   Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
     atualizador Pessoa?     @relation("atualizador", fields: [atualizado_por], references: [id])
+
+    versao_anterior MetaOrcamento? @relation("versao_anterior", fields: [versao_anterior_id], references: [id])
+    versao_seguinte MetaOrcamento? @relation("versao_anterior")
 
     @@index([meta_id, ano_referencia])
     @@map("meta_orcamento")

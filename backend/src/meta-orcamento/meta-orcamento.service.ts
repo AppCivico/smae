@@ -8,6 +8,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, UpdateMetaOrcamentoDto } from './dto/meta-orcamento.dto';
 import { MetaOrcamento } from './entities/meta-orcamento.entity';
 
+export class MetaOrcamentoUpdatedRet {
+    id: number
+    new_id: number
+}
 @Injectable()
 export class MetaOrcamentoService {
     constructor(
@@ -83,6 +87,7 @@ export class MetaOrcamentoService {
                 ],
                 ano_referencia: filters?.ano_referencia,
                 removido_em: null,
+                versao_anterior_id: null
             },
             select: {
                 id: true,
@@ -125,7 +130,7 @@ export class MetaOrcamentoService {
         return partes.join('.')
     }
 
-    async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamentoUpdatedRet> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
@@ -153,16 +158,11 @@ export class MetaOrcamentoService {
         if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
 
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        const new_id = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<number> => {
 
             const now = new Date(Date.now());
 
-            // TODO - Adicionar um histórico de versões (cada linha indicar o ID da linha anterior)
-            // ou então criar uma nova linha com a versão anterior, e manter o ID dos items estaveis
-            // pro frontend não se perder
-            // Criar relatório pra exporta todas as versoes do metaOrcamento
-
-            const metaOrcamento = await prisma.metaOrcamento.updateMany({
+            const metaOrcamento = await prisma.metaOrcamento.update({
                 where: {
                     id: +id
                 },
@@ -172,19 +172,44 @@ export class MetaOrcamentoService {
                     atividade_id,
 
                     atualizado_em: now,
-                    atualizado_por: user.id,
-
-                    custo_previsto: dto.custo_previsto,
-                    parte_dotacao: dto.parte_dotacao,
-
+                    atualizado_por: user.id
+                },
+                select: {
+                    id: true,
+                    meta_id: true,
+                    iniciativa_id: true,
+                    atividade_id: true,
+                    parte_dotacao: true,
+                    custo_previsto: true,
+                    ano_referencia: true
                 }
             });
+
+            const metaOrcamentoAtualizado = await prisma.metaOrcamento.create({
+                data: {
+                    versao_anterior_id: metaOrcamento.id,
+
+                    meta_id,
+                    iniciativa_id,
+                    atividade_id,
+
+                    ano_referencia: metaOrcamento.ano_referencia,
+
+                    custo_previsto: dto.custo_previsto || metaOrcamento.custo_previsto,
+                    parte_dotacao: dto.parte_dotacao || metaOrcamento.parte_dotacao,
+
+                    criado_por: user.id
+                },
+                select: { id: true }
+            });
+
+            return metaOrcamentoAtualizado.id;
         }, {
             maxWait: 5000,
             timeout: 100000
         });
 
-        return { id: id };
+        return { id: id, new_id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
