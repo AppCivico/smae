@@ -1,4 +1,5 @@
 export type ListaDePrivilegios =
+    'SMAE.superadmin' |
     'CadastroFonteRecurso.inserir' |
     'CadastroFonteRecurso.editar' |
     'CadastroFonteRecurso.remover' |

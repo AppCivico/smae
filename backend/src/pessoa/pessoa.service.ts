@@ -145,7 +145,7 @@ export class PessoaService {
         return updated;
     }
 
-    async verificarPrivilegiosCriacao(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
+    private async verificarPrivilegiosCriacao(createPessoaDto: CreatePessoaDto, user: PessoaFromJwt) {
         if (createPessoaDto.orgao_id === undefined) {
             if (user.hasSomeRoles(['CadastroPessoa.administrador']) === false) {
                 throw new ForbiddenException(`Para criar pessoas sem órgão é necessário ser um administrador.`);
@@ -161,9 +161,29 @@ export class PessoaService {
             throw new ForbiddenException(`Você só pode criar pessoas para o seu próprio órgão.`);
         }
 
+        if (user.hasSomeRoles(['SMAE.superadmin']) == false) {
+            await this.verificarPerfilNaoContemAdmin(createPessoaDto.perfil_acesso_ids);
+        }
     }
 
-    async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+    private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+        if (user.hasSomeRoles(['SMAE.superadmin']) == false && updatePessoaDto.perfil_acesso_ids) {
+            const oldPessoaPerfis = (await this.prisma.pessoaPerfil.findMany({
+                where: { pessoa_id: id },
+                select: { perfil_acesso_id: true }
+            })).map((e) => e.perfil_acesso_id).sort((a, b) => +a - +b).join(',');
+            const newPessoaPerfis = updatePessoaDto.perfil_acesso_ids.sort((a, b) => +a - +b).join(',');
+
+            // verificar se realmente esta acontecendo uma mudança, pois o frontend sempre envia os dados
+            if (newPessoaPerfis !== oldPessoaPerfis) {
+
+                // verifica tbm se não está tentando remover o admin, mas nesse caso, tbm é necessario
+                await this.verificarPerfilNaoContemAdmin(oldPessoaPerfis.split(',').map(n => +n));
+
+                // verifica se não está tentando adicionar admin
+                await this.verificarPerfilNaoContemAdmin(updatePessoaDto.perfil_acesso_ids);
+            }
+        }
 
         let pessoaCurrentOrgao = await this.prisma.pessoaFisica.findFirst({
             where: {
@@ -228,7 +248,35 @@ export class PessoaService {
         }
     }
 
-    verificarCPFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
+
+    async verificarPerfilNaoContemAdmin(perfil_acesso_ids: number[]) {
+        const privilegios = await this.prisma.perfilAcesso.findMany({
+            where: {
+                id: { in: perfil_acesso_ids }
+            },
+            select: {
+                perfil_privilegio: {
+                    select: {
+                        privilegio: {
+                            select: { codigo: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        const codigos = privilegios.reduce((prev, r) => {
+            return [...prev, ...r.perfil_privilegio.map(s => s.privilegio.codigo)]
+        }, []);
+
+        if (codigos.includes('SMAE.superadmin'))
+            throw new HttpException('O seu usuário não pode adicionar ou remover permissões de outros usuários que são administradores do sistema, ou adicionar a permissão de administrador para um usuário já existente.', 400);
+
+        console.log(codigos);
+
+    }
+
+    private verificarCPFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
         if (!this.#cpfObrigatorioSemRF) return
 
         if (!dto.registro_funcionario && !dto.cpf) {
@@ -236,7 +284,7 @@ export class PessoaService {
         }
     }
 
-    verificarRFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
+    private verificarRFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
         if (this.#matchEmailRFObrigatorio && !dto.registro_funcionario && dto.email && dto.email.indexOf(this.#matchEmailRFObrigatorio) == -1) {
             throw new HttpException(`registro_funcionario| Registro de funcionário obrigatório para e-mails contendo ${this.#matchEmailRFObrigatorio}`, 400);
         }
