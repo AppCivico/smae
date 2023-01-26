@@ -170,6 +170,7 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
 
     Config: [
         ['Config.editar', 'Editar configuração de textos do sistema'],
+        ['SMAE.superadmin', 'Faz parte do perfil Administrador Geral'],
     ],
     Projeto: [
         ['Projeto.administrador', '(Projeto) Administrar Portfolio e todos os projetos'],
