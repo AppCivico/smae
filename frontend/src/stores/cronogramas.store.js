@@ -112,33 +112,5 @@ export const useCronogramasStore = defineStore({
         return { error };
       }
     },
-
-    async excluirEtapa(idDaEtapa) {
-      const r = await requestS.delete(`${baseUrl}/etapa/${idDaEtapa}`);
-      if (r) {
-        // remover recursivamente da tela todas as etapas com o id informado
-        // para evitar recarregar tudo
-        this.singleCronogramaEtapas = toRaw(this.singleCronogramaEtapas).filter(function f(x) {
-          if (x.etapa_id === idDaEtapa) {
-            return false;
-          }
-
-          if (Array.isArray(x.etapa_filha)) {
-          // eslint-disable-next-line no-param-reassign
-            x.etapa_filha = x.etapa_filha.filter(f);
-          }
-          if (Array.isArray(x.etapa?.etapa_filha)) {
-          // eslint-disable-next-line no-param-reassign
-            x.etapa.etapa_filha = x.etapa.etapa_filha.filter(f);
-          }
-
-          return true;
-        });
-
-        return true;
-      }
-
-      return false;
-    },
   },
 });
