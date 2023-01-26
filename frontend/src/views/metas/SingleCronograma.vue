@@ -1,7 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import {
-  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useMetasStore
+  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useEtapasStore, useMetasStore
 } from '@/stores';
 import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
@@ -14,6 +14,7 @@ import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
+const EtapasStore = useEtapasStore();
 const { temPermissãoPara } = authStore;
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
@@ -43,8 +44,13 @@ const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStor
 const editModalStore = useEditModalStore();
 
 function excluirEtapa(id) {
-  alertStore.confirmAction('Deseja mesmo excluir?', () => {
-    CronogramasStore.excluirEtapa(id);
+  alertStore.confirmAction('Deseja mesmo excluir?', async () => {
+    const r = await EtapasStore.delete(id);
+    if (r) {
+      EtapasStore.clear();
+      CronogramasStore.clear();
+      CronogramasStore.getActiveByParent(parentVar, parentField);
+    }
   }, 'Excluir');
 }
 
