@@ -2012,6 +2012,7 @@ enum FonteRelatorio {
     Orcamento
     Indicadores
     MonitoramentoMensal
+    PrevisaoCusto
 }
 
 model Relatorio {
