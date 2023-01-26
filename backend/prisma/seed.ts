@@ -507,7 +507,7 @@ async function criar_emaildb_config() {
         update: {},
         create:
         {
-            from: 'Sistema" <sistema@exemplo.com>',
+            from: '"Sistema" <sistema@exemplo.com>',
             template_resolver_class: 'Shypper::TemplateResolvers::HTTP',
             template_resolver_config: { "base_url": "http://smae_api:3001/public/email-templates/" },
             email_transporter_class: 'Email::Sender::Transport::SMTP::Persistent',
