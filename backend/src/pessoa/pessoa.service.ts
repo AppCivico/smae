@@ -237,7 +237,7 @@ export class PessoaService {
     }
 
     verificarRFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
-        if (this.#matchEmailRFObrigatorio && !dto.registro_funcionario && dto.email && dto.email.indexOf(this.#matchEmailRFObrigatorio) >= 0) {
+        if (this.#matchEmailRFObrigatorio && !dto.registro_funcionario && dto.email && dto.email.indexOf(this.#matchEmailRFObrigatorio) == -1) {
             throw new HttpException(`registro_funcionario| Registro de funcionário obrigatório para e-mails contendo ${this.#matchEmailRFObrigatorio}`, 400);
         }
 
