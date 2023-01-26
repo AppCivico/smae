@@ -287,6 +287,7 @@ function formatFormula(p) {
     // selecionar todos os operadores que não estão entre limitadores de
     // palavras. Atentar que RegEx LookBehind não é suportado no Safari
     const regEx = new RegExp(`(?<![\b<])(\\${x})(?!\b)`);
+    // inserir espaços em volta dos operadores
     fórmulaLimpa = fórmulaLimpa.replace(regEx, ' $1 ');
   });
 
