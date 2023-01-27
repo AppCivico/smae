@@ -240,12 +240,17 @@ function setCaret(el, p) {
   const sel = window.getSelection();
 
   sel.removeAllRanges();
-  range.selectNodeContents(el);
-  if (p && el.childNodes[p[0]]) {
-    range.setStart(el.childNodes[p[0]], p[1]);
+  if (p) {
+    range.selectNodeContents(el);
+    if (p && el.childNodes[p[0]]) {
+      range.setStart(el.childNodes[p[0]], p[1]);
+    }
+    range.collapse(true);
+    sel.addRange(range);
+  } else {
+    sel.selectAllChildren(el);
+    sel.collapseToEnd();
   }
-  range.collapse(true);
-  sel.addRange(range);
   el.focus();
 }
 function labelPeriodo(p, m) {
