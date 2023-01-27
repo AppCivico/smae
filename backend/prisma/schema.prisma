@@ -1777,10 +1777,10 @@ model PdmOrcamentoConfig {
 }
 
 model MetaOrcamento {
-    id            Int  @id @default(autoincrement())
-    meta_id       Int
-    iniciativa_id Int?
-    atividade_id  Int?
+    id                 Int  @id @default(autoincrement())
+    meta_id            Int
+    iniciativa_id      Int?
+    atividade_id       Int?
     versao_anterior_id Int? @unique
 
     ano_referencia Int
@@ -2091,6 +2091,26 @@ model PortfolioOrgao {
     @@map("portifolio_orgao")
 }
 
+enum CategoriaProcessoSei {
+    Encerramento
+    Aprovacao
+    Manual
+}
+
+model ProjetoRegistroSei {
+    id         Int     @id @default(autoincrement())
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    categoria           CategoriaProcessoSei
+    processo_sei        String
+    registro_sei_info   Json
+    registro_sei_errmsg String?
+
+    criado_em  DateTime
+    criado_por Int
+}
+
 model Projeto {
     id           Int       @id @default(autoincrement())
     portfolio_id Int
@@ -2192,25 +2212,16 @@ model Projeto {
     fechado_em  DateTime?
     fechado_por Int?
 
-    encerramento_processo_sei        String?
-    encerramento_registro_sei_info   Json?
-    encerramento_registro_sei_errmsg String?
-
-    aprovacao_processo_sei        String?
-    aprovacao_registro_sei_info   Json?
-    aprovacao_registro_sei_errmsg String?
-
-
-//[um dos:
-//    origem: PDM(Sistema)
-//        meta_id
-//        iniciativa_id
-//        atividade_id
-//    origem: PDM(antigo)
-//        meta_codigo {string}
-//    origem: Ouros
-//        origem_outro
-//]
+    //[um dos:
+    //    origem: PDM(Sistema)
+    //        meta_id
+    //        iniciativa_id
+    //        atividade_id
+    //    origem: PDM(antigo)
+    //        meta_codigo {string}
+    //    origem: Ouros
+    //        origem_outro
+    //]
 
     // calculado pelo cronograma
     realizado_inicio  DateTime?
@@ -2226,8 +2237,9 @@ model Projeto {
     ProjetoRisco          ProjetoRisco[]
     ProjetoAcompanhamento ProjetoAcompanhamento[]
 
-    removido_em  DateTime?
-    removido_por Int?
+    removido_em        DateTime?
+    removido_por       Int?
+    ProjetoRegistroSei ProjetoRegistroSei[]
 
     @@map("projeto")
 }
