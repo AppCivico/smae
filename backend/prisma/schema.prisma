@@ -216,6 +216,8 @@ model Orgao {
     CronogramaOrgao        CronogramaOrgao[]
     tarefas                Tarefa[]
     PlanoAcao              PlanoAcao[]
+    projetos_participando  ProjetoOrgaoParticipante[]
+    projetos_geridos       Projeto[] @relation("orgao_gestor")
 
     PortifolioOrgao   PortfolioOrgao[]
     orgao_responsavel Projeto[]        @relation("orgao_responsavel")
@@ -2158,7 +2160,8 @@ model Projeto {
     secretario_executivo   String?
     coordenador_ue         String?
 
-    orgao_gestor_id              Int
+    orgao_gestor_id Int
+    orgao_gestor    Orgao @relation("orgao_gestor", fields: [orgao_gestor_id], references: [id])
     responsaveis_no_orgao_gestor Int[] @default([])
 
     orgao_responsavel_id Int?
@@ -2166,8 +2169,6 @@ model Projeto {
 
     responsavel_id Int?
     responsavel    Pessoa? @relation("ppResponsavel", fields: [responsavel_id], references: [id])
-
-    orgaos_participantes Int[] @default([])
 
     // fornecido pelo user
     data_aprovacao DateTime? @db.Date
@@ -2236,12 +2237,25 @@ model Projeto {
     tarefas               Tarefa[]
     ProjetoRisco          ProjetoRisco[]
     ProjetoAcompanhamento ProjetoAcompanhamento[]
+    orgaos_participantes  ProjetoOrgaoParticipante[]
 
     removido_em        DateTime?
     removido_por       Int?
     ProjetoRegistroSei ProjetoRegistroSei[]
 
     @@map("projeto")
+}
+
+model ProjetoOrgaoParticipante {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    orgao_id Int
+    orgao    Orgao @relation(fields: [orgao_id], references: [id])
+
+    @@map("projeto_orgao_participante")
 }
 
 model ProjetoPremissa {
