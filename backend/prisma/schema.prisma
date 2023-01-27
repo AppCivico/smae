@@ -2200,6 +2200,18 @@ model Projeto {
     aprovacao_registro_sei_info   Json?
     aprovacao_registro_sei_errmsg String?
 
+
+//[um dos:
+//    origem: PDM(Sistema)
+//        meta_id
+//        iniciativa_id
+//        atividade_id
+//    origem: PDM(antigo)
+//        meta_codigo {string}
+//    origem: Ouros
+//        origem_outro
+//]
+
     // calculado pelo cronograma
     realizado_inicio  DateTime?
     realizado_termino DateTime?
