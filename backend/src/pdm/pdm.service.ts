@@ -280,7 +280,7 @@ export class PdmService {
                 set acordar_ciclo_em = now()
                 where pdm_id = ${id}::int
                 AND data_ciclo = date_trunc('month', now() at time zone 'America/Sao_Paulo')
-                and (select count(1) from ciclo_fisico where acordar_ciclo_em is null and pdm_id = ${id}::int) = 0;`;
+                and (select count(1) from ciclo_fisico where acordar_ciclo_em is not null and pdm_id = ${id}::int) = 0;`;
             }
 
             // imediatamente, roda quantas vezes for necessário as evoluções de ciclo
