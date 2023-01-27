@@ -335,6 +335,14 @@ function trackClickFormula(e) {
   }
   currentCaretPos = getCaretPosition(e.target);
 }
+function chamarInserçãoDeVariável() {
+  formula.value = formulaInput.value.innerText;
+
+  setCaret(formulaInput.value, currentCaretPos);
+  document.execCommand('insertText', false, '$xxx');
+
+  newVariavel();
+}
 function newVariavel() {
   const vs = variaveisFormula ? Object.keys(variaveisFormula) : [];
   const next = vs.length ? `$_${Number(vs[vs.length - 1].replace('$_', '')) + 1}` : '$_1';
@@ -766,10 +774,10 @@ if (indicador_id) {
 
           <label class="label">Adicionar operadores </label>
           <div class="formula">
-            <!--span
+            <span
               class="v"
-              @click="newVariavel"
-            >Variável</span-->
+              @click="chamarInserçãoDeVariável"
+            >Variável</span>
             <span
               v-for="(item, index) in funções"
               :key="index"
