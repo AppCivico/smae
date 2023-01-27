@@ -252,6 +252,8 @@ function setCaret(el, p) {
     sel.collapseToEnd();
   }
   el.focus();
+
+  currentCaretPos = getCaretPosition(el);
 }
 function labelPeriodo(p, m) {
   if (p == 0 && m > 1) {
