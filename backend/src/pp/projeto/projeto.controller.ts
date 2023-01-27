@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, Query } from '@nestjs/common';
 import { ProjetoService } from './projeto.service';
 import { CreateProjetoDto } from './dto/create-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
@@ -8,6 +8,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListProjetoDto, ProjetoDetailDto } from './entities/projeto.entity';
+import { FilterProjetoDto } from './dto/filter-projeto.dto';
 
 @ApiTags('Projeto')
 @Controller('projeto')
@@ -26,8 +27,8 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
-    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
-        return { linhas: await this.projetoService.findAll(user) };
+    async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
+        return { linhas: await this.projetoService.findAll(filters, user) };
     }
 
     @Get(':id')

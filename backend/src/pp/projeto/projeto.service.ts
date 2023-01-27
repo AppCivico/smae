@@ -1,11 +1,12 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProjetoStatus } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDto } from './dto/create-projeto.dto';
+import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoDto } from './entities/projeto.entity';
 
@@ -107,10 +108,47 @@ export class ProjetoService {
         return created;
     }
 
-    async findAll(user: PessoaFromJwt): Promise<ProjetoDto[]> {
+    async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
+        class ProjetoQueryFilters {
+            eh_prioritario: boolean
+            status: ProjetoStatus
+            orgao_responsavel_id: number
+        };
 
+        const queryFilters = {
+            status: filters.status,
+            orgao_responsavel_id: filters.orgao
+        } as ProjetoQueryFilters;
+        
+        if (typeof(filters.prioritario) !== 'undefined') 
+            queryFilters.eh_prioritario = filters.prioritario
 
-        throw '...'
+        const ret: ProjetoDto[] = await this.prisma.projeto.findMany({
+            where: queryFilters,
+            select: {
+                id: true,
+                nome: true,
+                status: true,
+                
+                meta: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true
+                    }
+                },
+
+                orgao_responsavel: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true
+                    }
+                }
+            }
+        });
+
+        return ret;
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<ProjetoDetailDto> {
