@@ -19,5 +19,9 @@ export class ListProjetoDto {
 }
 
 export class ProjetoDetailDto {
-
+//     id
+// nome
+// status
+// orgao_responsavel
+// meta
 }
