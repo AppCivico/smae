@@ -198,20 +198,36 @@ export class PdmService {
             let ativo: boolean | undefined = undefined;
             if (updatePdmDto.ativo === true && pdm.ativo == false) {
                 ativo = true;
-                // desativa outros planos
-                await prisma.pdm.updateMany({
-                    where: {
-                        ativo: true
-                    },
-                    data: {
-                        ativo: false,
-                        desativado_em: now,
-                        desativado_por: user.id,
-                    }
-                });
+
+                const pdmAtivo = await prisma.pdm.findFirst({ where: { ativo: true } });
+                if (pdmAtivo) {
+                    await prisma.cicloFisico.updateMany({
+                        where: {
+                            pdm_id: pdmAtivo.id,
+                            ativo: true,
+                        },
+                        data: {
+                            acordar_ciclo_em: now
+                        }
+                    });
+
+                    // desativa outros planos
+                    await prisma.pdm.update({
+                        where: {
+                            id: pdmAtivo.id,
+                        },
+                        data: {
+                            ativo: false,
+                            desativado_em: now,
+                            desativado_por: user.id,
+                        }
+                    });
+                }
+
                 verificarCiclos = true;
             } else if (updatePdmDto.ativo === false && pdm.ativo == true) {
                 ativo = false;
+
                 await prisma.pdm.update({
                     where: { id: id },
                     data: {
@@ -221,6 +237,17 @@ export class PdmService {
                     },
                     select: { id: true }
                 });
+
+                await prisma.cicloFisico.updateMany({
+                    where: {
+                        pdm_id: id,
+                        ativo: true,
+                    },
+                    data: {
+                        acordar_ciclo_em: now
+                    }
+                });
+
                 verificarCiclos = true;
             }
             delete updatePdmDto.ativo;
@@ -240,6 +267,13 @@ export class PdmService {
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`)
                 this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
+
+                // se esse pdm é pra estar ativado,
+                // verificar se há algum item com acordar_ciclo_em, se não existir,
+                // precisa encontrar qual é o mes corrente que deve acordar
+                if (ativo) {
+
+                }
             }
 
         });
