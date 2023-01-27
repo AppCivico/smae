@@ -300,7 +300,13 @@ function formatFormula(p) {
 
   if (p) {
     const i = Array.from(formulaInput.value.childNodes).findIndex((x) => x?.dataset?.id === p);
-    setCaret(formulaInput.value, [i + 1, 0]);
+    if (i === -1) {
+      // Se a variável ainda não foi encontrada, deve ser a primeira.
+      // Então, vamos mover o cursor piscante para o final
+      setCaret(formulaInput.value);
+    } else {
+      setCaret(formulaInput.value, [i + 1, 0]);
+    }
   }
 }
 function editFormula(e) {
