@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma, ProjetoStatus } from '@prisma/client';
+import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -123,12 +124,42 @@ export class ProjetoService {
         if (typeof(filters.prioritario) !== 'undefined') 
             queryFilters.eh_prioritario = filters.prioritario
 
-        const ret: ProjetoDto[] = await this.prisma.projeto.findMany({
+        const ret: ProjetoDto[] = [];
+        
+        const rows = await this.prisma.projeto.findMany({
             where: queryFilters,
             select: {
                 id: true,
                 nome: true,
                 status: true,
+
+                atividade: {
+                    select: {
+                        iniciativa: {
+                            select: {
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        titulo: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+
+                iniciativa: {
+                    select: {
+                        meta: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true
+                            }
+                        }
+                    }
+                },
                 
                 meta: {
                     select: {
@@ -147,6 +178,28 @@ export class ProjetoService {
                 }
             }
         });
+
+        for (const row of rows) {
+            let meta: IdCodTituloDto | null;
+
+            if (row.atividade) {
+                meta = {...row.atividade.iniciativa.meta}
+            } else if (row.iniciativa) {
+                meta = {...row.iniciativa.meta}
+            } else if (row.meta) {
+                meta = row.meta
+            } else {
+                meta = null;
+            }
+
+            ret.push({
+                id: row.id,
+                nome: row.nome,
+                status: row.status,
+                meta: meta,
+                orgao_responsavel: row.orgao_responsavel ? {...row.orgao_responsavel} : null
+            })
+        }
 
         return ret;
     }
