@@ -370,8 +370,8 @@ function cancelVar() {
   formatFormula(fieldsVariaveis.value.id);
   variaveisFormulaModal.value = 0;
 }
-async function addFunction(f) {
-  await setCaret(formulaInput.value, currentCaretPos);
+function addFunction(f) {
+  setCaret(formulaInput.value, currentCaretPos);
   document.execCommand('insertText', false, `${f} `);
 }
 
