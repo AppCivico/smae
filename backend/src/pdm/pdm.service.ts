@@ -192,10 +192,10 @@ export class PdmService {
 
         const now = new Date(Date.now());
         let verificarCiclos = false;
+        let ativo: boolean | undefined = undefined;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
 
-            let ativo: boolean | undefined = undefined;
             if (updatePdmDto.ativo === true && pdm.ativo == false) {
                 ativo = true;
 
@@ -275,12 +275,13 @@ export class PdmService {
             // se esse pdm é pra estar ativado,
             // verificar se há algum item com acordar_ciclo_em, se não existir,
             // precisa encontrar qual é o mes corrente que deve acordar
-            if (updatePdmDto.ativo) {
-                await this.prisma.$executeRaw`update ciclo_fisico
+            if (ativo) {
+                const updatedRows = await this.prisma.$executeRaw`update ciclo_fisico
                 set acordar_ciclo_em = now()
                 where pdm_id = ${id}::int
                 AND data_ciclo = date_trunc('month', now() at time zone 'America/Sao_Paulo')
                 and (select count(1) from ciclo_fisico where acordar_ciclo_em is not null and pdm_id = ${id}::int) = 0;`;
+                this.logger.log(`atualizacao de acordar_ciclos atualizou ${updatedRows} linha`);
             }
 
             // imediatamente, roda quantas vezes for necessário as evoluções de ciclo
