@@ -267,22 +267,28 @@ export class PdmService {
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`)
                 this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
-
-                // se esse pdm é pra estar ativado,
-                // verificar se há algum item com acordar_ciclo_em, se não existir,
-                // precisa encontrar qual é o mes corrente que deve acordar
-                if (ativo) {
-
-                }
             }
 
         });
 
-        if (verificarCiclos)
+        if (verificarCiclos) {
+            // se esse pdm é pra estar ativado,
+            // verificar se há algum item com acordar_ciclo_em, se não existir,
+            // precisa encontrar qual é o mes corrente que deve acordar
+            if (updatePdmDto.ativo) {
+                await this.prisma.$queryRaw`update ciclo_fisico
+                set acordar_ciclo_em = now()
+                where pdm_id = ${id}::int
+                AND data_ciclo = date_trunc('month', now() at time zone 'America/Sao_Paulo')
+                and (select count(1) from ciclo_fisico where acordar_ciclo_em is null and pdm_id = ${id}::int) = 0;`;
+            }
+
+            // imediatamente, roda quantas vezes for necessário as evoluções de ciclo
             while (1) {
                 const keepGoing = await this.verificaCiclosPendentes(Date2YMD.toString(now));
                 if (!keepGoing) break;
             }
+        }
 
         // força o carregamento da tabela pdmOrcamentoConfig
         await this.getOrcamentoConfig(id, true);
