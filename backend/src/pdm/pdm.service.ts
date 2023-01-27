@@ -1,14 +1,15 @@
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
+import { DateTime } from "luxon";
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
-import { CicloFisicoDto, OrcamentoConfig } from './dto/list-pdm.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
+import { CicloFisicoDto, OrcamentoConfig } from './dto/list-pdm.dto';
 import { Pdm } from './dto/pdm.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
@@ -145,7 +146,7 @@ export class PdmService {
         };
     }
 
-    async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt, pdm: { ativo: boolean }) {
+    private async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt, pdm: { ativo: boolean }) {
 
         if (
             updatePdmDto.ativo !== pdm.ativo &&
@@ -189,10 +190,13 @@ export class PdmService {
         }
         delete updatePdmDto.upload_logo;
 
+        const now = new Date(Date.now());
+        let verificarCiclos = false;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
 
+
             let ativo: boolean | undefined = undefined;
-            if (updatePdmDto.ativo === true) {
+            if (updatePdmDto.ativo === true && pdm.ativo == false) {
                 ativo = true;
                 // desativa outros planos
                 await prisma.pdm.updateMany({
@@ -201,21 +205,23 @@ export class PdmService {
                     },
                     data: {
                         ativo: false,
-                        desativado_em: new Date(Date.now()),
+                        desativado_em: now,
                         desativado_por: user.id,
                     }
                 });
-            } else if (updatePdmDto.ativo === false) {
+                verificarCiclos = true;
+            } else if (updatePdmDto.ativo === false && pdm.ativo == true) {
                 ativo = false;
                 await prisma.pdm.update({
                     where: { id: id },
                     data: {
                         ativo: false,
-                        desativado_em: new Date(Date.now()),
+                        desativado_em: now,
                         desativado_por: user.id,
                     },
                     select: { id: true }
                 });
+                verificarCiclos = true;
             }
             delete updatePdmDto.ativo;
 
@@ -231,11 +237,20 @@ export class PdmService {
                 select: { id: true }
             });
 
-            this.logger.log(`chamando monta_ciclos_pdm...`)
-            this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
+            if (verificarCiclos) {
+                this.logger.log(`chamando monta_ciclos_pdm...`)
+                this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
+            }
 
         });
 
+        if (verificarCiclos)
+            while (1) {
+                const keepGoing = await this.verificaCiclosPendentes(Date2YMD.toString(now));
+                if (!keepGoing) break;
+            }
+
+        // força o carregamento da tabela pdmOrcamentoConfig
         await this.getOrcamentoConfig(id, true);
 
         return { id: id };
@@ -320,7 +335,10 @@ export class PdmService {
             }
 
             // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
-            await this.verificaCiclosPendentes(locked[0].now_ymd);
+            while (1) {
+                const keepGoing = await this.verificaCiclosPendentes(locked[0].now_ymd);
+                if (!keepGoing) break;
+            }
 
         }, {
             maxWait: 30000,
@@ -329,7 +347,7 @@ export class PdmService {
         });
     }
 
-    async verificaCiclosPendentes(today: DateYMD) {
+    private async verificaCiclosPendentes(today: DateYMD) {
         console.log(today)
         this.logger.debug(`Verificando ciclos físicos com tick faltando...`);
 
@@ -338,14 +356,29 @@ export class PdmService {
                 acordar_ciclo_em: {
                     lt: new Date(Date.now())
                 },
-                acordar_ciclo_errmsg: null,
+                OR: [
+
+                    { acordar_ciclo_errmsg: null },
+                    {
+                        // retry a cada 15 minutos, mesmo que tenha erro
+                        acordar_ciclo_executou_em: {
+                            lt: DateTime.now().minus({ minutes: 15 }).toJSDate()
+                        },
+                        acordar_ciclo_errmsg: { not: null }
+                    }
+
+                ]
             },
             select: {
                 pdm_id: true,
                 id: true,
                 data_ciclo: true,
                 ativo: true,
-                ciclo_fase_atual_id: true
+                ciclo_fase_atual_id: true,
+                acordar_ciclo_errmsg: true,
+                pdm: {
+                    select: { ativo: true }
+                }
             },
             orderBy: {
                 data_ciclo: 'asc'
@@ -353,20 +386,48 @@ export class PdmService {
             take: 1,
         });
         if (!cf) {
-            this.logger.debug('Não há Ciclo Físico com processamento pendente');
-            return;
+            this.logger.log('Não há Ciclo Físico com processamento pendente');
+            return false;
         }
 
         const mesCorrente = today.substring(0, 8) + '01';
-        this.logger.debug(JSON.stringify(cf) + ' mesCorrente=' + mesCorrente)
+        this.logger.log(`Executando ciclo ${JSON.stringify(cf)} mesCorrente=${mesCorrente}`)
 
         try {
-            if (Date2YMD.toString(cf.data_ciclo) < mesCorrente && cf.ativo) {
-                await this.inativarCiclo(cf);
-            } else if (Date2YMD.toString(cf.data_ciclo) === mesCorrente && !cf.ativo) {
-                await this.ativarCiclo(cf, today);
+            if (cf.acordar_ciclo_errmsg) {
+                this.logger.warn(`Mensagem de erro anterior: ${cf.acordar_ciclo_errmsg}, limpando mensagem e tentando novamente...`);
+                await this.prisma.cicloFisico.update({
+                    where: { id: cf.id },
+                    data: { acordar_ciclo_errmsg: null }
+                });
+            }
+
+            if (cf.pdm.ativo) {
+
+                if (Date2YMD.toString(cf.data_ciclo) < mesCorrente && cf.ativo) {
+                    await this.inativarCiclo(cf);
+                } else if (Date2YMD.toString(cf.data_ciclo) === mesCorrente && !cf.ativo) {
+                    await this.ativarCiclo(cf, today);
+                } else {
+                    await this.verificaFaseAtual(cf, today);
+                }
             } else {
-                await this.verificaFaseAtual(cf, today);
+                this.logger.warn('PDM foi desativado, não há mais ciclos até a proxima ativação');
+
+                await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+                    await prismaTxn.cicloFisico.update({
+                        where: {
+                            id: cf.id
+                        },
+                        data: {
+                            acordar_ciclo_em: null,
+                            acordar_ciclo_executou_em: new Date(Date.now()),
+                            ciclo_fase_atual_id: null,
+                            ativo: false,
+                        }
+                    });
+                });
+
             }
         } catch (error) {
             this.logger.error(error);
@@ -380,6 +441,8 @@ export class PdmService {
                 }
             });
         }
+
+        return true;
     }
 
     private async verificaFaseAtual(cf: {
