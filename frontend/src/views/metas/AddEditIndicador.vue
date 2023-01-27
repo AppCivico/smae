@@ -248,6 +248,7 @@ function setCaret(el, p) {
     range.collapse(true);
     sel.addRange(range);
   } else {
+    // https://stackoverflow.com/a/3866442/15425845
     sel.selectAllChildren(el);
     sel.collapseToEnd();
   }
