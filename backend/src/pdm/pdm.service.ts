@@ -276,7 +276,7 @@ export class PdmService {
             // verificar se há algum item com acordar_ciclo_em, se não existir,
             // precisa encontrar qual é o mes corrente que deve acordar
             if (updatePdmDto.ativo) {
-                await this.prisma.$queryRaw`update ciclo_fisico
+                await this.prisma.$executeRaw`update ciclo_fisico
                 set acordar_ciclo_em = now()
                 where pdm_id = ${id}::int
                 AND data_ciclo = date_trunc('month', now() at time zone 'America/Sao_Paulo')
