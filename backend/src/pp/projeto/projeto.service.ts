@@ -1,6 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
+import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -74,7 +75,11 @@ export class ProjetoService {
                     orgao_gestor_id: orgao_gestor_id,
                     responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
 
-                    orgaos_participantes: dto.orgaos_participantes,
+                    orgaos_participantes: {
+                        createMany: {
+                            data: dto.orgaos_participantes.map(o => { return {orgao_id: o} })
+                        }
+                    },
                     orgao_responsavel_id: dto.orgao_responsavel_id,
                     responsavel_id: dto.responsavel_id,
                     nome: dto.nome,
@@ -120,12 +125,12 @@ export class ProjetoService {
             status: filters.status,
             orgao_responsavel_id: filters.orgao
         } as ProjetoQueryFilters;
-        
-        if (typeof(filters.prioritario) !== 'undefined') 
+
+        if (typeof (filters.prioritario) !== 'undefined')
             queryFilters.eh_prioritario = filters.prioritario
 
         const ret: ProjetoDto[] = [];
-        
+
         const rows = await this.prisma.projeto.findMany({
             where: queryFilters,
             select: {
@@ -160,7 +165,7 @@ export class ProjetoService {
                         }
                     }
                 },
-                
+
                 meta: {
                     select: {
                         id: true,
@@ -183,9 +188,9 @@ export class ProjetoService {
             let meta: IdCodTituloDto | null;
 
             if (row.atividade) {
-                meta = {...row.atividade.iniciativa.meta}
+                meta = { ...row.atividade.iniciativa.meta }
             } else if (row.iniciativa) {
-                meta = {...row.iniciativa.meta}
+                meta = { ...row.iniciativa.meta }
             } else if (row.meta) {
                 meta = row.meta
             } else {
@@ -197,7 +202,7 @@ export class ProjetoService {
                 nome: row.nome,
                 status: row.status,
                 meta: meta,
-                orgao_responsavel: row.orgao_responsavel ? {...row.orgao_responsavel} : null
+                orgao_responsavel: row.orgao_responsavel ? { ...row.orgao_responsavel } : null
             })
         }
 
@@ -205,7 +210,107 @@ export class ProjetoService {
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<ProjetoDetailDto> {
-        throw '...'
+        const projetoRow = await this.prisma.projeto.findFirstOrThrow({
+            where: {id: id},
+            select: {
+                id: true,
+                meta_id: true,
+                iniciativa_id: true,
+                atividade_id: true,
+                nome: true,
+                status: true,
+                resumo: true,
+                codigo: true,
+                descricao: true,
+                objeto: true,
+                objetivo: true,
+                publico_alvo: true,
+                previsao_inicio: true,
+                previsao_custo: true,
+                previsao_duracao: true,
+                previsao_termino: true,
+                inicio_real: true,
+                custo_real: true,
+                realizado_inicio: true,
+                realizado_termino: true,
+                realizado_custo: true,
+                escopo: true,
+                nao_escopo: true,
+                principais_etapas: true,
+                responsaveis_no_orgao_gestor: true,
+
+                orgao_gestor: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true
+                    }
+                },
+                
+                orgao_responsavel: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true
+                    }
+                },
+
+                premissas: {
+                    select: {
+                        id: true,
+                        premissa: true
+                    }
+                },
+
+                restricoes: {
+                    select: {
+                        id: true,
+                        restricao: true,
+                    }
+                },
+
+                recursos: {
+                    select: {
+                        id: true,
+                        fonte_recurso_cod_sof: true,
+                        fonte_recurso_ano: true,
+                        valor_percentual: true,
+                        valor_nominal: true,
+                    }
+                },
+
+                responsavel: {
+                    select: {
+                        id: true,
+                        nome_exibicao: true,
+                    }
+                },
+
+                orgaos_participantes: {
+                    select: {
+                        orgao: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true
+                            }
+                        }
+                    }
+                }
+
+            }
+        });
+
+        return {
+            ...projetoRow,
+            orgaos_participantes: projetoRow.orgaos_participantes.map(o => {
+                return {
+                    id: o.orgao.id,
+                    sigla: o.orgao.sigla,
+                    descricao: o.orgao.descricao
+                }
+            })
+        }
     }
 
     async update(id: number, updateProjetoDto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
