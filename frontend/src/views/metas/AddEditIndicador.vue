@@ -375,6 +375,23 @@ function addFunction(f) {
   setCaret(formulaInput.value, currentCaretPos);
   document.execCommand('insertText', false, `${f} `);
 }
+// vamos usar `onkeydown` porque é o único evento disparado pelas teclas de
+// navegação em todos os navegadores
+function monitorarSetas(e) {
+  console.debug(e.key);
+  switch (e.key) {
+    case 'ArrowLeft':
+    case 'ArrowRight':
+    case 'ArrowUp':
+    case 'ArrowDown':
+    case 'Home':
+    case 'End':
+      currentCaretPos = getCaretPosition(e.target);
+      break;
+    default:
+      break;
+  }
+}
 
 if (indicador_id) {
   title = 'Editar Indicador';
@@ -751,6 +768,7 @@ if (indicador_id) {
             class="inputtext light mb1 formula"
             contenteditable="true"
             @input="editFormula"
+            @keydown="monitorarSetas"
             @click="trackClickFormula"
           />
 
