@@ -174,3 +174,13 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     data_aprovacao: Date | null;
 }
+
+export class CreateProjetoDocumentDto {
+
+    /**
+    * Upload do Documento
+    */
+    @IsString({ message: '$property| upload_token do documento' })
+    upload_token: string
+
+}
