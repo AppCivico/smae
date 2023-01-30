@@ -6,13 +6,15 @@ import { ListPortfolioDto, PortfolioDto } from '@/../../backend/src/pp/portfolio
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+interface ChamadasPendentes {
+  lista: boolean,
+  emFoco: boolean,
+}
+
 interface Estado {
   lista: ListPortfolioDto['linhas'];
   emFoco: PortfolioDto | null;
-  chamadasPendentes: {
-    lista: boolean,
-    emFoco: boolean,
-  };
+  chamadasPendentes: ChamadasPendentes;
   erro: null | Error,
 }
 
@@ -28,13 +30,17 @@ export const usePortfolioStore = defineStore('portfolios', {
     erro: null,
   }),
   actions: {
-    async buscarTudo(params = {}): Promise<void> {
+    async buscarTudo(this: {
+      chamadasPendentes: ChamadasPendentes;
+      lista: ListPortfolioDto['linhas'];
+      erro: unknown;
+    }, params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       try {
         const { linhas } = await requestS.get(`${baseUrl}/portfolio`, params);
         this.lista = linhas;
-      } catch (erro) {
-        this.$patch({ erro });
+      } catch (erro: unknown) {
+        this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
     },
