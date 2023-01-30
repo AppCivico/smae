@@ -1,11 +1,18 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ProjetoStatus } from "@prisma/client";
+import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsEnum, IsNumber, isNumber, IsOptional } from "class-validator";
 
 export class FilterProjetoDto {
     @IsOptional()
     @IsBoolean()
-    prioritario?: boolean
+    @Transform(({ value }: any) => value === 'true')
+    eh_prioritario?: boolean
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    arquivado?: boolean
 
     @IsOptional()
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
@@ -14,7 +21,11 @@ export class FilterProjetoDto {
     })
     status?: ProjetoStatus
 
+    /**
+     * órgão responsável
+     **/
     @IsOptional()
     @IsNumber()
-    orgao?: number
+    @Type(() => Number)
+    orgao_responsavel_id?: number
 }
