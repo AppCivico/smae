@@ -16,6 +16,7 @@ export * from './organs.store';
 export * from './paineis.store';
 export * from './paineisGrupos.store';
 export * from './pdm.store';
+export * from './portfolios.store.ts';
 export * from './regions.store';
 export * from './relatorios.store';
 export * from './resources.store';
