@@ -1,23 +1,23 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
-import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
-import { CreateProjetoDto } from './dto/create-projeto.dto';
+import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoDto } from './entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto } from './entities/projeto.entity';
 
 @Injectable()
 export class ProjetoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly portfolioService: PortfolioService,
-
+        private readonly uploadService: UploadService
     ) { }
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -201,6 +201,13 @@ export class ProjetoService {
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<ProjetoDetailDto> {
+
+        if (!user.hasSomeRoles(['Projeto.administrador'])) {
+            // TODO verificar a permissão do "user",
+            // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
+
+        }
+
         const projetoRow = await this.prisma.projeto.findFirstOrThrow({
             where: { id: id },
             select: {
@@ -319,4 +326,63 @@ export class ProjetoService {
         return;
     }
 
+    async append_document(projetoId: number, createPdmDocDto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
+        // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
+        await this.findOne(projetoId, user);
+
+        const arquivoId = this.uploadService.checkUploadToken(createPdmDocDto.upload_token);
+
+        const arquivo = await this.prisma.projetoDocumento.create({
+            data: {
+                criado_em: new Date(Date.now()),
+                criado_por: user.id,
+                arquivo_id: arquivoId,
+                projeto_id: projetoId
+            },
+            select: {
+                id: true
+            }
+        });
+
+        return { id: arquivo.id }
+    }
+
+    async list_document(projetoId: number, user: PessoaFromJwt) {
+        // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
+        await this.findOne(projetoId, user);
+
+        const arquivos: ProjetoDocumentoDto[] = await this.prisma.projetoDocumento.findMany({
+            where: { projeto_id: projetoId, removido_em: null },
+            select: {
+                id: true,
+                arquivo: {
+                    select: {
+                        id: true,
+                        tamanho_bytes: true,
+                        TipoDocumento: true,
+                        descricao: true,
+                        nome_original: true
+                    }
+                }
+            }
+        });
+        for (const item of arquivos) {
+            item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
+        }
+
+        return arquivos
+    }
+
+    async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
+        // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
+        await this.findOne(projetoId, user);
+
+        await this.prisma.projetoDocumento.updateMany({
+            where: { projeto_id: projetoId, removido_em: null, id: projetoDocId },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            }
+        });
+    }
 }
