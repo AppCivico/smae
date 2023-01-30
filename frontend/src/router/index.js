@@ -4,33 +4,43 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores';
 
 // Views
-import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
 import { default as SubmenuMonitoramento } from '@/components/SubmenuMonitoramento.vue';
-import { Administracao, Home } from '@/views';
+import { Home } from '@/views';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
-import { AddEditDocumentTypes, ListDocumentTypes } from '@/views/documentTypes';
 import {
-  AddEditAtividade, AddEditCronograma, AddEditIndicador, AddEditIniciativa, AddEditMetas, ListMetas, ListMetasGroup, SingleAtividade, SingleCronograma, SingleEvolucao, SingleIniciativa, SingleMeta, SinglePainelMeta
+  AddEditAtividade,
+  AddEditCronograma,
+  AddEditIndicador,
+  AddEditIniciativa,
+  AddEditMetas,
+  ListMetas,
+  ListMetasGroup,
+  SingleAtividade,
+  SingleCronograma,
+  SingleEvolucao,
+  SingleIniciativa,
+  SingleMeta, SinglePainelMeta,
 } from '@/views/metas';
 import {
-  ListCiclos, ListCiclosPassados, ListMonitoramentoMetas, ListMonitoramentoMetasCronograma, ListMonitoramentoMetasEvolucao, MonitoramentoMetas, MonitoramentoMetasCronograma
+  ListCiclos, ListCiclosPassados,
+  ListMonitoramentoMetas,
+  ListMonitoramentoMetasCronograma,
+  ListMonitoramentoMetasEvolucao,
+  MonitoramentoMetas,
+  MonitoramentoMetasCronograma,
 } from '@/views/monitoramento';
-import { AddEditODS, ListODS } from '@/views/ods';
 import {
-  AddEditCusteio, AddEditPlanejado, AddRealizado, AddRealizadoNota, AddRealizadoProcesso, EditRealizado, MetaOrcamento
+  AddEditCusteio,
+  AddEditPlanejado,
+  AddRealizado,
+  AddRealizadoNota,
+  AddRealizadoProcesso,
+  EditRealizado,
+  MetaOrcamento,
 } from '@/views/orcamento';
-import {
-  AddEditOrgans, AddEditOrganTypes, ListOrgans, ListOrganTypes
-} from '@/views/organs';
-import {
-  AddEditGrupo, AddEditPainel, ListGrupos, ListPainel
-} from '@/views/paineis';
-import { AddEditPdM, ListPdM } from '@/views/pdm';
-import { ListRegions } from '@/views/regions';
-import { AddEditResources, ListResources } from '@/views/resources';
-import { AddEditUsers, ListUsers } from '@/views/users';
+import administracao from './administracao';
 
 import relatorios from './relatorios';
 
@@ -40,143 +50,12 @@ export const router = createRouter({
   linkActiveClass: 'active',
   routes: [
     { path: '/', component: Home, props: { submenu: false } },
-    { path: '/administracao', component: Administracao, props: { submenu: SubmenuConfig } },
     { path: '/login', component: Login },
     { path: '/esqueci-minha-senha', component: LostPassword },
     { path: '/nova-senha', component: NewPassword },
-    {
-      path: '/usuarios',
-      children: [
-        { path: '', component: ListUsers, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditUsers, props: { submenu: SubmenuConfig } },
-        { path: 'editar/:id', component: AddEditUsers, props: { submenu: SubmenuConfig } },
-      ],
-    },
-    {
-      path: '/orgaos',
-      children: [
-        { path: '', component: ListOrgans, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditOrgans, props: { submenu: SubmenuConfig } },
-        { path: 'editar/:id', component: AddEditOrgans, props: { submenu: SubmenuConfig } },
-        { path: 'tipos', component: ListOrganTypes, props: { submenu: SubmenuConfig } },
-        { path: 'tipos/novo', component: AddEditOrganTypes, props: { submenu: SubmenuConfig } },
-        { path: 'tipos/editar/:id', component: AddEditOrganTypes, props: { submenu: SubmenuConfig } },
-      ],
-    },
-    {
-      path: '/fonte-recurso',
-      children: [
-        { path: '', component: ListResources, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditResources, props: { submenu: SubmenuConfig } },
-        { path: 'editar/:id', component: AddEditResources, props: { submenu: SubmenuConfig } },
-      ],
-    },
-    {
-      path: '/tipo-documento',
-      children: [
-        { path: '', component: ListDocumentTypes, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditDocumentTypes, props: { submenu: SubmenuConfig } },
-        { path: 'editar/:id', component: AddEditDocumentTypes, props: { submenu: SubmenuConfig } },
-      ],
-    },
-    {
-      path: '/ods',
-      children: [
-        { path: '', component: ListODS, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditODS, props: { submenu: SubmenuConfig } },
-        { path: 'editar/:id', component: AddEditODS, props: { submenu: SubmenuConfig } },
-      ],
-    },
-    {
-      path: '/pdm',
-      children: [
-        { path: '', component: ListPdM, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditPdM, props: { submenu: SubmenuConfig } },
-        { path: ':pdm_id', component: AddEditPdM, props: { submenu: SubmenuConfig } },
-        {
-          path: ':pdm_id/arquivos/novo',
-          component: ListPdM,
-          props: {
-            type: 'novo', group: 'arquivos', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/macrotemas/novo',
-          component: ListPdM,
-          props: {
-            type: 'novo', group: 'macrotemas', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/macrotemas/:id',
-          component: ListPdM,
-          props: {
-            type: 'editar', group: 'macrotemas', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/subtemas/novo',
-          component: ListPdM,
-          props: {
-            type: 'novo', group: 'subtemas', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/subtemas/:id',
-          component: ListPdM,
-          props: {
-            type: 'editar', group: 'subtemas', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/temas/novo',
-          component: ListPdM,
-          props: {
-            type: 'novo', group: 'temas', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/temas/:id',
-          component: ListPdM,
-          props: {
-            type: 'editar', group: 'temas', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/tags/novo',
-          component: ListPdM,
-          props: {
-            type: 'novo', group: 'tags', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-        {
-          path: ':pdm_id/tags/:id',
-          component: ListPdM,
-          props: {
-            type: 'editar', group: 'tags', submenu: SubmenuConfig, parentPage: 'pdm',
-          },
-        },
-      ],
-    },
-    {
-      path: '/paineis',
-      children: [
-        { path: '', component: ListPainel, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditPainel, props: { submenu: SubmenuConfig } },
-        { path: ':painel_id', component: AddEditPainel, props: { submenu: SubmenuConfig } },
-        { path: ':painel_id/metas', component: AddEditPainel, props: { type: 'selecionarMetas', submenu: SubmenuConfig } },
-        { path: ':painel_id/metas/:conteudo_id', component: AddEditPainel, props: { type: 'editarMeta', submenu: SubmenuConfig } },
-        { path: ':painel_id/metas/:conteudo_id/detalhes', component: AddEditPainel, props: { type: 'editarDetalhe', submenu: SubmenuConfig } },
-      ],
-    },
-    {
-      path: '/paineis-grupos',
-      children: [
-        { path: '', component: ListGrupos, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: AddEditGrupo, props: { submenu: SubmenuConfig } },
-        { path: ':grupo_id', component: AddEditGrupo, props: { submenu: SubmenuConfig } },
-      ],
-    },
+
+    ...administracao,
+
     {
       path: '/monitoramento',
       children: [
@@ -331,21 +210,6 @@ export const router = createRouter({
 
       ],
     },
-    {
-      path: '/regioes',
-      children: [
-        { path: '', component: ListRegions, props: { submenu: SubmenuConfig } },
-        { path: 'novo', component: ListRegions, props: { type: 'novo', submenu: SubmenuConfig } },
-        { path: 'novo/:id', component: ListRegions, props: { type: 'novo', submenu: SubmenuConfig } },
-        { path: 'novo/:id/:id2', component: ListRegions, props: { type: 'novo', submenu: SubmenuConfig } },
-        { path: 'novo/:id/:id2/:id3', component: ListRegions, props: { type: 'novo', submenu: SubmenuConfig } },
-        { path: 'editar/:id', component: ListRegions, props: { type: 'editar', submenu: SubmenuConfig } },
-        { path: 'editar/:id/:id2', component: ListRegions, props: { type: 'editar', submenu: SubmenuConfig } },
-        { path: 'editar/:id/:id2/:id3', component: ListRegions, props: { type: 'editar', submenu: SubmenuConfig } },
-        { path: 'editar/:id/:id2/:id3/:id4', component: ListRegions, props: { type: 'editar', submenu: SubmenuConfig } },
-      ],
-    },
-
     relatorios,
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
