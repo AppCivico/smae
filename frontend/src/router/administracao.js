@@ -24,6 +24,8 @@ import {
   AddEditPdM,
   ListPdM,
 } from '@/views/pdm';
+
+import { PortfoliosLista } from '@/views/portfolios';
 import { ListRegions } from '@/views/regions';
 import {
   AddEditResources,
@@ -86,6 +88,7 @@ export default [
         },
       },
       {
+        name: 'ÓrgãosItem',
         path: 'editar/:id',
         component: AddEditOrgans,
         props: {
@@ -457,6 +460,27 @@ export default [
         props: {
           type: 'editar',
           submenu: SubmenuConfig,
+        },
+      },
+    ],
+  },
+  {
+    path: '/portfolios',
+    name: 'portfolios',
+    meta: {
+      requerAutenticação: true,
+      title: 'Portfolios',
+    },
+    props: {
+      submenu: SubmenuConfig,
+    },
+
+    children: [
+      {
+        path: '',
+        component: PortfoliosLista,
+        meta: {
+          título: 'Portfolios',
         },
       },
     ],
