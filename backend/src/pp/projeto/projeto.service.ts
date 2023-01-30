@@ -77,7 +77,7 @@ export class ProjetoService {
 
                     orgaos_participantes: {
                         createMany: {
-                            data: dto.orgaos_participantes.map(o => { return {orgao_id: o} })
+                            data: dto.orgaos_participantes.map(o => { return { orgao_id: o } })
                         }
                     },
                     orgao_responsavel_id: dto.orgao_responsavel_id,
@@ -115,24 +115,15 @@ export class ProjetoService {
     }
 
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
-        class ProjetoQueryFilters {
-            eh_prioritario: boolean
-            status: ProjetoStatus
-            orgao_responsavel_id: number
-        };
-
-        const queryFilters = {
-            status: filters.status,
-            orgao_responsavel_id: filters.orgao
-        } as ProjetoQueryFilters;
-
-        if (typeof (filters.prioritario) !== 'undefined')
-            queryFilters.eh_prioritario = filters.prioritario
-
         const ret: ProjetoDto[] = [];
 
         const rows = await this.prisma.projeto.findMany({
-            where: queryFilters,
+            where: {
+                eh_prioritario: filters.eh_prioritario,
+                orgao_responsavel_id: filters.orgao_responsavel_id,
+                arquivado: filters.arquivado,
+                status: filters.status,
+            },
             select: {
                 id: true,
                 nome: true,
@@ -211,7 +202,7 @@ export class ProjetoService {
 
     async findOne(id: number, user: PessoaFromJwt): Promise<ProjetoDetailDto> {
         const projetoRow = await this.prisma.projeto.findFirstOrThrow({
-            where: {id: id},
+            where: { id: id },
             select: {
                 id: true,
                 meta_id: true,
@@ -246,7 +237,7 @@ export class ProjetoService {
                         descricao: true
                     }
                 },
-                
+
                 orgao_responsavel: {
                     select: {
                         id: true,
