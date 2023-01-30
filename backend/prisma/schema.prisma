@@ -88,6 +88,10 @@ model Pessoa {
     ArquivoDocQueDesativei ArquivoDocumento[] @relation("Removedor")
     ArquivoDocQueAtualizei ArquivoDocumento[] @relation("Atualizador")
 
+    PPArquivoDocQueCriei     ProjetoDocumento[] @relation("Criador")
+    PPArquivoDocQueDesativei ProjetoDocumento[] @relation("Removedor")
+    PPArquivoDocQueAtualizei ProjetoDocumento[] @relation("Atualizador")
+
     MetaQueCriei     Meta[] @relation("Criador")
     MetaQueDesativei Meta[] @relation("Desativador")
     MetaQueAtualizei Meta[] @relation("Atualizador")
@@ -203,9 +207,9 @@ model Orgao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador            Pessoa?                 @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador                Pessoa?                 @relation("Criador", fields: [criado_por], references: [id])
-    removedor              Pessoa?                 @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador            Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
+    removedor              Pessoa?                    @relation("Removedor", fields: [removido_por], references: [id])
     meta_orgao             MetaOrgao[]
     meta_responsavel       MetaResponsavel[]
     Variavel               Variavel[]
@@ -217,7 +221,7 @@ model Orgao {
     tarefas                Tarefa[]
     PlanoAcao              PlanoAcao[]
     projetos_participando  ProjetoOrgaoParticipante[]
-    projetos_geridos       Projeto[] @relation("orgao_gestor")
+    projetos_geridos       Projeto[]                  @relation("orgao_gestor")
 
     PortifolioOrgao   PortfolioOrgao[]
     orgao_responsavel Projeto[]        @relation("orgao_responsavel")
@@ -2160,8 +2164,8 @@ model Projeto {
     secretario_executivo   String?
     coordenador_ue         String?
 
-    orgao_gestor_id Int
-    orgao_gestor    Orgao @relation("orgao_gestor", fields: [orgao_gestor_id], references: [id])
+    orgao_gestor_id              Int
+    orgao_gestor                 Orgao @relation("orgao_gestor", fields: [orgao_gestor_id], references: [id])
     responsaveis_no_orgao_gestor Int[] @default([])
 
     orgao_responsavel_id Int?
@@ -2318,11 +2322,22 @@ model ProjetoFonteRecurso {
 model ProjetoDocumento {
     id Int @id @default(autoincrement())
 
-    projeto_id   Int
-    documento_id Int
+    projeto_id Int
+    arquivo_id Int
 
-    projeto   Projeto @relation(fields: [projeto_id], references: [id])
-    documento Arquivo @relation(fields: [documento_id], references: [id])
+    projeto Projeto @relation(fields: [projeto_id], references: [id])
+    arquivo Arquivo @relation(fields: [arquivo_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("projeto_documento")
 }
