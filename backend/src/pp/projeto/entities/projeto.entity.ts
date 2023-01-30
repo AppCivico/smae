@@ -2,6 +2,7 @@ import { ProjetoStatus } from "@prisma/client"
 import { IdCodTituloDto } from "src/common/dto/IdCodTitulo.dto"
 import { IdNomeExibicao } from "src/common/dto/IdNomeExibicao.dto"
 import { IdSiglaDescricao } from "src/common/dto/IdSigla.dto"
+import { TipoDocumento } from "../../../tipo-documento/entities/tipo-documento.entity"
 
 export class ProjetoDto {
     id: number
@@ -67,4 +68,20 @@ export class ProjetoRecursos {
     fonte_recurso_ano: number
     valor_percentual: number | null
     valor_nominal: number | null
+}
+
+export class ProjetoDocumentoDto {
+    arquivo: {
+        id: number;
+        descricao: string | null;
+        tamanho_bytes: number;
+        TipoDocumento: TipoDocumento | null;
+        nome_original: string;
+        download_token?: string
+    };
+    id: number;
+}
+
+export class ListProjetoDocumento {
+    linhas: ProjetoDocumentoDto[]
 }
