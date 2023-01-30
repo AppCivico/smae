@@ -159,4 +159,9 @@ export const useOrgansStore = defineStore({
       }
     },
   },
+  getters: {
+    órgãosPorId: ({ organs }) => (Array.isArray(organs)
+      ? organs.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
+      : {}),
+  },
 });
