@@ -184,7 +184,8 @@ function vazio(s) {
       <span class="spinner">Carregando</span>
     </div>
     <div
-      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) && MetaVars.permissoes?.fechamento"
+      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) &&
+        MetaVars.permissoes?.fechamento && !SingleFechamento?.id"
       class="p1 bgc50 tc mb2"
     >
       <button
@@ -197,7 +198,7 @@ function vazio(s) {
     </div>
 
     <div
-      v-if="SingleRisco.detalhamento||SingleRisco.ponto_de_atencao"
+      v-if="SingleRisco.detalhamento || SingleRisco.ponto_de_atencao"
       class="mb2"
     >
       <div class="flex spacebetween center mb1">
