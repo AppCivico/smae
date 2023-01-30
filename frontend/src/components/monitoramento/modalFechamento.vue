@@ -26,16 +26,13 @@ const schema = Yup.object().shape({
 
 async function onSubmit(values) {
   try {
-    let msg;
-    let r;
-
     const v = {
       ciclo_fisico_id: props.ciclo_id,
       meta_id: props.meta_id,
-      comentario: values.comentario,
+      comentario: values.comentario || '',
     };
-    r = await CiclosStore.updateMetaFechamento(v);
-    msg = 'Ciclo fechado com sucesso!';
+    const r = await CiclosStore.updateMetaFechamento(v);
+    const msg = 'Ciclo fechado com sucesso!';
     if (r == true) {
       editModalStore.clear();
       alertStore.success(msg);
