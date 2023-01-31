@@ -13,20 +13,20 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 @ApiTags('Fonte de Recurso')
 @Controller('fonte-recurso')
 export class FonteRecursoController {
-    constructor(private readonly fonteRecursoService: FonteRecursoService) { }
+    constructor(private readonly fonteRecursoService: FonteRecursoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroFonteRecurso.inserir')
-    async create(@Body() createFonteRecursoDto: CreateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt) : Promise<RecordWithId>{
+    async create(@Body() createFonteRecursoDto: CreateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.fonteRecursoService.create(createFonteRecursoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(): Promise<ListFonteRecursoDto> {
-        return { 'linhas': await this.fonteRecursoService.findAll() };
+        return { linhas: await this.fonteRecursoService.findAll() };
     }
 
     @Patch(':id')

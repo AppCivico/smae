@@ -6,17 +6,16 @@ import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
 
 @Injectable()
 export class TipoOrgaoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createTipoOrgaoDto: CreateTipoOrgaoDto, user?: PessoaFromJwt) {
         const similarExists = await this.prisma.tipoOrgao.count({
             where: {
                 descricao: { endsWith: createTipoOrgaoDto.descricao, mode: 'insensitive' },
                 removido_em: null,
-            }
+            },
         });
-        if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoOrgao.create({
             data: {
@@ -24,7 +23,7 @@ export class TipoOrgaoService {
                 criado_em: new Date(Date.now()),
                 ...createTipoOrgaoDto,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return created;
@@ -35,7 +34,7 @@ export class TipoOrgaoService {
             where: {
                 removido_em: null,
             },
-            select: { id: true, descricao: true }
+            select: { id: true, descricao: true },
         });
 
         return listActive;
@@ -50,11 +49,10 @@ export class TipoOrgaoService {
                 where: {
                     descricao: { endsWith: updateTipoOrgaoDto.descricao, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.tipoOrgao.update({
@@ -74,7 +72,7 @@ export class TipoOrgaoService {
         if (!self) throw new HttpException('Tipo de órgão não encontrado', 404);
 
         const existsDown = await this.prisma.orgao.count({
-            where: { tipo_orgao_id: id, removido_em: null }
+            where: { tipo_orgao_id: id, removido_em: null },
         });
         if (existsDown > 0) throw new HttpException(`Não é possível remover: Há ${existsDown} órgão(ãos) dependentes.`, 400);
 
@@ -83,7 +81,7 @@ export class TipoOrgaoService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return created;

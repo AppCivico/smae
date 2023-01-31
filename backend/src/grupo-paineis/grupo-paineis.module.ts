@@ -6,6 +6,6 @@ import { GrupoPaineisService } from './grupo-paineis.service';
 @Module({
     imports: [PrismaModule],
     controllers: [GrupoPaineisController],
-    providers: [GrupoPaineisService]
+    providers: [GrupoPaineisService],
 })
-export class GrupoPaineisModule { }
+export class GrupoPaineisModule {}

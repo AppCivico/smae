@@ -16,7 +16,7 @@ import { VariavelService } from './variavel.service';
 @ApiTags('Indicador')
 @Controller('')
 export class VariavelController {
-    constructor(private readonly variavelService: VariavelService) { }
+    constructor(private readonly variavelService: VariavelService) {}
 
     @Post('indicador-variavel')
     @ApiBearerAuth('access-token')
@@ -63,5 +63,4 @@ export class VariavelController {
     async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(params.id);
     }
-
 }

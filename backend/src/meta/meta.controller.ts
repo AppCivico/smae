@@ -9,13 +9,13 @@ import { CreateMetaDto, ListDadosMetaIniciativaAtividadesDto } from './dto/creat
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { Meta } from "./entities/meta.entity";
+import { Meta } from './entities/meta.entity';
 import { MetaService } from './meta.service';
 
 @ApiTags('Meta')
 @Controller('meta')
 export class MetaController {
-    constructor(private readonly metaService: MetaService) { }
+    constructor(private readonly metaService: MetaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -27,20 +27,18 @@ export class MetaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @ApiProduces("application/json", "text/csv", "text/csv; unwind-all", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    @ApiProduces('application/json', 'text/csv', 'text/csv; unwind-all', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
     @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
-        return { 'linhas': await this.metaService.findAll(filters, user) };
+        return { linhas: await this.metaService.findAll(filters, user) };
     }
 
     @ApiBearerAuth('access-token')
     @Get('iniciativas-atividades')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
     @Roles('CadastroMeta.listar')
-    async buscaMetasIniciativaAtividades(
-        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
-    ): Promise<ListDadosMetaIniciativaAtividadesDto> {
+    async buscaMetasIniciativaAtividades(@Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]): Promise<ListDadosMetaIniciativaAtividadesDto> {
         return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
     }
 
@@ -74,6 +72,4 @@ export class MetaController {
         await this.metaService.remove(+params.id, user);
         return '';
     }
-
-
 }

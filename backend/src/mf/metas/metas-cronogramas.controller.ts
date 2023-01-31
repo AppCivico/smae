@@ -16,7 +16,6 @@ import { MetasCronogramaService } from './../metas/metas-cronograma.service';
 import { MfService } from '../mf.service';
 import { RequestInfoDto } from './dto/mf-meta.dto';
 
-
 @ApiTags('Monitoramento Fisico - Cronogramas')
 @Controller('metas')
 export class MetasCronogramaController {
@@ -25,9 +24,8 @@ export class MetasCronogramaController {
         private readonly cronogramaEtapaService: CronogramaEtapaService,
         private readonly metasCronogramaService: MetasCronogramaService,
         private readonly etapaService: EtapaService,
-        private readonly mfService: MfService
-    ) { }
-
+        private readonly mfService: MfService,
+    ) {}
 
     @Get('cronograma')
     @ApiBearerAuth('access-token')
@@ -36,17 +34,14 @@ export class MetasCronogramaController {
     @ApiOkResponse({
         schema: { allOf: refs(ListCronogramaDto, RequestInfoDto) },
     })
-    async cronogramas(
-        @Query() filters: FilterCronogramaDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListCronogramaDto & RequestInfoDto> {
+    async cronogramas(@Query() filters: FilterCronogramaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListCronogramaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         filters.cronograma_etapa_ids = config.cronogramas_etapas;
 
         return {
-            'linhas': await this.cronogramaService.findAll(filters),
+            linhas: await this.cronogramaService.findAll(filters),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -58,21 +53,17 @@ export class MetasCronogramaController {
     @ApiOkResponse({
         schema: { allOf: refs(ListCronogramaEtapaDto, RequestInfoDto) },
     })
-    async cronogramas_etapas(
-        @Query() filters: FilterCronogramaEtapaDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListCronogramaEtapaDto & RequestInfoDto> {
+    async cronogramas_etapas(@Query() filters: FilterCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListCronogramaEtapaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         filters.cronograma_etapa_ids = config.cronogramas_etapas;
 
         return {
-            'linhas': await this.cronogramaEtapaService.findAll(filters),
+            linhas: await this.cronogramaEtapaService.findAll(filters),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
-
 
     @Patch('cronograma/etapa/:id')
     @ApiBearerAuth('access-token')
@@ -104,7 +95,7 @@ export class MetasCronogramaController {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         if (config.metas_cronograma.includes(params.id) == false) {
-            return { meta: null }
+            return { meta: null };
             //throw new HttpException('Meta não encontrada no ciclo', 404);
         }
 
@@ -112,5 +103,4 @@ export class MetasCronogramaController {
 
         return ret;
     }
-
 }

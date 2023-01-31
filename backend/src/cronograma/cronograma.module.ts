@@ -8,6 +8,6 @@ import { CronogramaService } from './cronograma.service';
     imports: [PrismaModule],
     controllers: [CronogramaController],
     providers: [CronogramaService, EtapaService],
-    exports: [CronogramaService, EtapaService]
+    exports: [CronogramaService, EtapaService],
 })
-export class CronogramaModule { }
+export class CronogramaModule {}

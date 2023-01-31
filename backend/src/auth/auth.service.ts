@@ -14,24 +14,18 @@ import { PerfilAcessoPrivilegios } from '../pessoa/dto/perifl-acesso-privilegios
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly jwtService: JwtService,
-        private readonly pessoaService: PessoaService,
-    ) { }
+    constructor(private readonly jwtService: JwtService, private readonly pessoaService: PessoaService) {}
 
     async login(pessoa: Pessoa): Promise<AccessToken | ReducedAccessToken> {
-
         if (pessoa.senha_bloqueada) {
-
             const payload: JwtReducedAccessToken = {
                 aud: 'resetPass',
-                pessoaId: pessoa.id as number
+                pessoaId: pessoa.id as number,
             };
 
             return {
                 reduced_access_token: this.jwtService.sign(payload, { expiresIn: '10 minutes' }),
-            } as ReducedAccessToken
-
+            } as ReducedAccessToken;
         }
 
         if (pessoa.desativado) {
@@ -46,12 +40,12 @@ export class AuthService {
         const payload: JwtPessoaPayload = {
             sid: sessaoId,
             iat: Date.now(),
-            aud: 'l'
+            aud: 'l',
         };
 
         return {
             access_token: this.jwtService.sign(payload),
-        } as AccessToken
+        } as AccessToken;
     }
 
     async logout(pessoa: Pessoa) {
@@ -61,13 +55,11 @@ export class AuthService {
     async pessoaPeloEmailSenha(email: string, senhaInformada: string): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findByEmail(email);
 
-        if (!pessoa)
-            throw new BadRequestException('email| E-mail ou senha inválidos');
+        if (!pessoa) throw new BadRequestException('email| E-mail ou senha inválidos');
 
-        let isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
+        const isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
         if (!isPasswordValid) {
-            if (pessoa.senha_bloqueada)
-                throw new BadRequestException('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
+            if (pessoa.senha_bloqueada) throw new BadRequestException('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
 
             await this.pessoaService.incrementarSenhaInvalida(pessoa);
             throw new BadRequestException('email| E-mail ou senha inválidos');
@@ -75,7 +67,6 @@ export class AuthService {
 
         return pessoa as Pessoa;
     }
-
 
     async pessoaPeloSessionId(id: number): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findBySessionId(id);
@@ -97,13 +88,13 @@ export class AuthService {
         let result: JwtReducedAccessToken;
         try {
             result = this.jwtService.verify(body.reduced_access_token, {
-                audience: 'resetPass'
+                audience: 'resetPass',
             });
         } catch {
             throw new BadRequestException('reduced_access_token| token inválido');
         }
 
-        let updated = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
+        const updated = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
         if (updated) {
             return this.criarSession(result.pessoaId);
         } else {
@@ -114,15 +105,11 @@ export class AuthService {
     async solicitarNovaSenha(body: SolicitarNovaSenhaRequestBody) {
         const pessoa = await this.pessoaService.findByEmail(body.email);
 
-        if (!pessoa)
-            throw new BadRequestException('email| E-mail não encontrado');
+        if (!pessoa) throw new BadRequestException('email| E-mail não encontrado');
 
-        if (pessoa.senha_bloqueada &&
-            pessoa.senha_bloqueada_em &&
-            Date.now() - pessoa.senha_bloqueada_em.getTime() < 60 * 1000)
+        if (pessoa.senha_bloqueada && pessoa.senha_bloqueada_em && Date.now() - pessoa.senha_bloqueada_em.getTime() < 60 * 1000)
             throw new BadRequestException('email| Solicitação já foi efetuada recentemente. Conferia seu e-mail.');
 
         await this.pessoaService.criaNovaSenha(pessoa, true);
     }
-
 }

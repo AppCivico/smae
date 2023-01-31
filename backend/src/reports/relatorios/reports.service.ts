@@ -14,11 +14,10 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 
-
 class NextPageTokenJwtBody {
-    offset: number
-    ipp: number
-};
+    offset: number;
+    ipp: number;
+}
 
 @Injectable()
 export class ReportsService {
@@ -30,11 +29,11 @@ export class ReportsService {
         private readonly uploadService: UploadService,
         private readonly indicadoresService: IndicadoresService,
         private readonly mmService: MonitoramentoMensalService,
-        private readonly previsaoCustoService: PrevisaoCustoService
-    ) { }
+        private readonly previsaoCustoService: PrevisaoCustoService,
+    ) {}
 
     async runReport(dto: CreateReportDto, user: PessoaFromJwt): Promise<FileOutput[]> {
-        let service: ReportableService | null = this.servicoDaFonte(dto);
+        const service: ReportableService | null = this.servicoDaFonte(dto);
 
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
@@ -64,33 +63,39 @@ export class ReportsService {
                 criado_por: user.id,
                 criado_em: new Date(),
             },
-            select: { id: true }
+            select: { id: true },
         });
         this.logger.log(`persistido arquivo ${arquivoId} no relatorio ${result.id}`);
-        return { id: result.id }
+        return { id: result.id };
     }
 
     private servicoDaFonte(dto: CreateReportDto) {
         let service: ReportableService | null = null;
         switch (dto.fonte) {
-            case 'Orcamento': service = this.orcamentoService; break;
-            case 'Indicadores': service = this.indicadoresService; break;
-            case 'MonitoramentoMensal': service = this.mmService; break;
-            case 'PrevisaoCusto': service = this.previsaoCustoService; break;
+            case 'Orcamento':
+                service = this.orcamentoService;
+                break;
+            case 'Indicadores':
+                service = this.indicadoresService;
+                break;
+            case 'MonitoramentoMensal':
+                service = this.mmService;
+                break;
+            case 'PrevisaoCusto':
+                service = this.previsaoCustoService;
+                break;
         }
-        if (service === null)
-            throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
+        if (service === null) throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
         return service;
     }
 
-
     async findAll(filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
-        let tem_mais: boolean = false;
+        let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
         let ipp = filters.ipp ? filters.ipp : 25;
         let offset = 0;
-        let decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
 
         if (decodedPageToken) {
             offset = decodedPageToken.offset;
@@ -101,7 +106,7 @@ export class ReportsService {
             where: {
                 fonte: filters.fonte,
                 pdm_id: filters.pdm_id,
-                removido_em: null
+                removido_em: null,
             },
             select: {
                 id: true,
@@ -116,46 +121,46 @@ export class ReportsService {
                 criado_em: 'desc',
             },
             skip: offset,
-            take: ipp + 1
+            take: ipp + 1,
         });
 
         if (rows.length > ipp) {
             tem_mais = true;
-            rows.pop()
-            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp })
+            rows.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
         }
 
         return {
-            linhas: rows.map((r) => {
+            linhas: rows.map(r => {
                 return {
                     ...r,
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
-                }
+                };
             }),
             tem_mais: tem_mais,
-            token_proxima_pagina: token_proxima_pagina
+            token_proxima_pagina: token_proxima_pagina,
         };
     }
 
     async delete(id: number, user: PessoaFromJwt) {
         await this.prisma.relatorio.updateMany({
             where: {
-                id: id
-            }, data: {
+                id: id,
+            },
+            data: {
                 removido_em: new Date(),
-                removido_por: user.id
-            }
+                removido_por: user.id,
+            },
         });
     }
 
     decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
         let tmp: NextPageTokenJwtBody | null = null;
         try {
-            if (jwt)
-                tmp = this.jwtService.decode(jwt) as NextPageTokenJwtBody;
+            if (jwt) tmp = this.jwtService.decode(jwt) as NextPageTokenJwtBody;
         } catch {
-            throw new HttpException('Param next_page_token is invalid', 400)
+            throw new HttpException('Param next_page_token is invalid', 400);
         }
         return tmp;
     }
@@ -163,5 +168,4 @@ export class ReportsService {
     encodeNextPageToken(opt: NextPageTokenJwtBody): string {
         return this.jwtService.sign(opt);
     }
-
 }

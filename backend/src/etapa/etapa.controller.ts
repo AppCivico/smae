@@ -10,7 +10,7 @@ import { EtapaService } from './etapa.service';
 @ApiTags('Etapa')
 @Controller('etapa')
 export class EtapaController {
-    constructor(private readonly etapaService: EtapaService) { }
+    constructor(private readonly etapaService: EtapaService) {}
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
@@ -30,5 +30,4 @@ export class EtapaController {
         await this.etapaService.remove(+params.id, user);
         return '';
     }
-
 }

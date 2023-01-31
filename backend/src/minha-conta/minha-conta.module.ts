@@ -4,6 +4,6 @@ import { MinhaContaController } from './minha-conta.controller';
 
 @Module({
     controllers: [MinhaContaController],
-    imports: [PessoaModule]
+    imports: [PessoaModule],
 })
-export class MinhaContaModule { }
+export class MinhaContaModule {}

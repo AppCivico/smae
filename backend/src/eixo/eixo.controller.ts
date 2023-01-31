@@ -14,7 +14,7 @@ import { FilterEixoDto } from './dto/filter-eixo.dto';
 @ApiTags('Eixo (Acessa via MacroTema)')
 @Controller('eixo')
 export class EixoController {
-    constructor(private readonly eixoService: EixoService) { }
+    constructor(private readonly eixoService: EixoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -27,7 +27,7 @@ export class EixoController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
-        return { 'linhas': await this.eixoService.findAll(filters) };
+        return { linhas: await this.eixoService.findAll(filters) };
     }
 
     @Patch(':id')
@@ -53,7 +53,7 @@ export class EixoController {
 @ApiTags('Macro Tema (Antigo Eixo)')
 @Controller('macrotema')
 export class EixoController2 {
-    constructor(private readonly eixoService: EixoService) { }
+    constructor(private readonly eixoService: EixoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -66,7 +66,7 @@ export class EixoController2 {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
-        return { 'linhas': await this.eixoService.findAll(filters) };
+        return { linhas: await this.eixoService.findAll(filters) };
     }
 
     @Patch(':id')

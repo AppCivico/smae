@@ -10,7 +10,6 @@ import { DotacaoModule } from 'src/dotacao/dotacao.module';
     imports: [PrismaModule, MetaOrcamentoModule, DotacaoModule],
     controllers: [PrevisaoCustoController],
     providers: [PrevisaoCustoService, UtilsService],
-    exports: [PrevisaoCustoService]
+    exports: [PrevisaoCustoService],
 })
-
-export class PrevisaoCustoModule { }
+export class PrevisaoCustoModule {}

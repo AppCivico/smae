@@ -10,10 +10,9 @@ import { Etapa } from './entities/etapa.entity';
 
 @Injectable()
 export class EtapaService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
-
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
@@ -25,16 +24,15 @@ export class EtapaService {
         delete createEtapaDto.responsaveis;
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-
             const etapa = await prisma.etapa.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     ...createEtapaDto,
                     cronograma_id: cronogramaId,
-                    responsaveis: undefined
+                    responsaveis: undefined,
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             await prisma.etapaResponsavel.createMany({
@@ -45,9 +43,9 @@ export class EtapaService {
                 data: {
                     cronograma_id: cronogramaId,
                     etapa_id: etapa.id,
-                    ordem: ordem
-                }
-            })
+                    ordem: ordem,
+                },
+            });
 
             return etapa;
         });
@@ -55,13 +53,12 @@ export class EtapaService {
         return created;
     }
 
-
     async findAll(filters: FilterEtapaDto | undefined = undefined) {
-        let ret: Etapa[] = [];
+        const ret: Etapa[] = [];
 
-        let etapaPaiId = filters?.etapa_pai_id;
-        let regiaoId = filters?.regiao_id;
-        let cronogramaId = filters?.cronograma_id;
+        const etapaPaiId = filters?.etapa_pai_id;
+        const regiaoId = filters?.regiao_id;
+        const cronogramaId = filters?.cronograma_id;
 
         const etapas = await this.prisma.etapa.findMany({
             where: {
@@ -75,30 +72,30 @@ export class EtapaService {
                         cronograma_id: cronogramaId,
                         etapa_filha: {
                             some: {
-                                cronograma_id: cronogramaId
-                            }
-                        }
-                    }
+                                cronograma_id: cronogramaId,
+                            },
+                        },
+                    },
                 },
                 CronogramaEtapa: {
                     every: {
-                        cronograma_id: cronogramaId
-                    }
-                }
+                        cronograma_id: cronogramaId,
+                    },
+                },
             },
             include: {
                 etapa_filha: {
                     include: {
-                        etapa_filha: true
-                    }
+                        etapa_filha: true,
+                    },
                 },
-                CronogramaEtapa: true
-            }
+                CronogramaEtapa: true,
+            },
         });
 
         for (const etapa of etapas) {
             const cronograma_etapa = etapa.CronogramaEtapa.filter(r => {
-                return r.cronograma_id === cronogramaId
+                return r.cronograma_id === cronogramaId;
             });
 
             ret.push({
@@ -116,47 +113,46 @@ export class EtapaService {
                 inicio_real: etapa.inicio_real,
                 termino_real: etapa.termino_real,
                 etapa_filha: etapa.etapa_filha,
-                ordem: cronograma_etapa[0].ordem
-            })
+                ordem: cronograma_etapa[0].ordem,
+            });
         }
 
-        return ret
+        return ret;
     }
 
     async update(id: number, updateEtapaDto: UpdateEtapaDto, user: PessoaFromJwt) {
-
         const responsaveis = updateEtapaDto.responsaveis === null ? [] : updateEtapaDto.responsaveis;
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-
             const etapa = await prisma.etapa.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                     ...updateEtapaDto,
-                    responsaveis: undefined
+                    responsaveis: undefined,
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             if (Array.isArray(responsaveis)) {
-
                 const operations = [];
                 for (const responsavel of responsaveis) {
-                    operations.push(prisma.etapaResponsavel.upsert({
-                        where: {
-                            etapa_pessoa_uniq: {
+                    operations.push(
+                        prisma.etapaResponsavel.upsert({
+                            where: {
+                                etapa_pessoa_uniq: {
+                                    pessoa_id: responsavel,
+                                    etapa_id: etapa.id,
+                                },
+                            },
+                            create: {
                                 pessoa_id: responsavel,
-                                etapa_id: etapa.id
-                            }
-                        },
-                        create: {
-                            pessoa_id: responsavel,
-                            etapa_id: etapa.id
-                        },
-                        update: {}
-                    }));
+                                etapa_id: etapa.id,
+                            },
+                            update: {},
+                        }),
+                    );
                 }
 
                 await Promise.all(operations);
@@ -172,16 +168,15 @@ export class EtapaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const etapa_has_children = await this.prisma.etapa.count({where: { etapa_pai_id: id, removido_em: null }});
-        if (etapa_has_children)
-            throw new HttpException('Apague primeiro os filhos', 400);
+        const etapa_has_children = await this.prisma.etapa.count({ where: { etapa_pai_id: id, removido_em: null } });
+        if (etapa_has_children) throw new HttpException('Apague primeiro os filhos', 400);
 
         const removed = await this.prisma.etapa.updateMany({
             where: { id: id },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return removed;
@@ -192,10 +187,9 @@ export class EtapaService {
         for (const pessoaId of responsaveis) {
             arr.push({
                 etapa_id: etapaId,
-                pessoa_id: pessoaId
+                pessoa_id: pessoaId,
             });
         }
         return arr;
     }
-
 }

@@ -1,4 +1,3 @@
-
 export class IdSigla {
     id: number;
     sigla: string;

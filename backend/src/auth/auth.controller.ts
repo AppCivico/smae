@@ -1,13 +1,4 @@
-import {
-    Body,
-    Controller,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Request,
-    UseGuards
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthRequestLogin } from './models/AuthRequestLogin';
@@ -24,7 +15,7 @@ import { AccessToken } from './models/AccessToken';
 
 @Controller()
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(private readonly authService: AuthService) {}
 
     @ApiTags('Público')
     @Post('login')
@@ -48,7 +39,7 @@ export class AuthController {
     @ApiNoContentResponse()
     async logout(@CurrentUser() user: Pessoa) {
         await this.authService.logout(user);
-        return ''
+        return '';
     }
 
     @ApiTags('Público')
@@ -77,7 +68,7 @@ export class AuthController {
     @ApiResponse({ type: PerfilDeAcessoLinhaDto, description: 'Retorna todos os perfis de acesso do sistema' })
     async perfilDeAcesso(): Promise<PerfilDeAcessoLinhaDto> {
         return {
-            linhas: await this.authService.listaPerfilAcesso()
+            linhas: await this.authService.listaPerfilAcesso(),
         };
     }
 }

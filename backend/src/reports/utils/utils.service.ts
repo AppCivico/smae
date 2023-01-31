@@ -10,13 +10,9 @@ import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 
 @Injectable()
 export class UtilsService {
+    constructor(private readonly prisma: PrismaService) {}
 
-    constructor(
-        private readonly prisma: PrismaService,
-    ) { }
-
-    async applyFilter(filters: FiltroMetasIniAtividadeDto, getResult: { atividades: boolean, iniciativas: boolean }) {
-
+    async applyFilter(filters: FiltroMetasIniAtividadeDto, getResult: { atividades: boolean; iniciativas: boolean }) {
         const tags = Array.isArray(filters.tags) && filters.tags.length > 0 ? filters.tags : [];
 
         const metas = await this.prisma.meta.findMany({
@@ -24,58 +20,70 @@ export class UtilsService {
                 pdm_id: filters.pdm_id,
                 removido_em: null,
                 id: filters.meta_id ? filters.meta_id : undefined,
-                meta_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } }
+                meta_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         // aqui há uma duvida, se devemos buscar as iniciativas q deram match nas metas, ou se pelo filtro
-        const iniciativas = getResult.iniciativas ? await this.prisma.iniciativa.findMany({
-            where: {
-                meta_id: { in: metas.map(r => r.id) },
-                removido_em: null,
-                id: filters.meta_id ? filters.meta_id : undefined,
-                iniciativa_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } }
-            },
-            select: { id: true }
-        }) : [];
+        const iniciativas = getResult.iniciativas
+            ? await this.prisma.iniciativa.findMany({
+                  where: {
+                      meta_id: { in: metas.map(r => r.id) },
+                      removido_em: null,
+                      id: filters.meta_id ? filters.meta_id : undefined,
+                      iniciativa_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
+                  },
+                  select: { id: true },
+              })
+            : [];
 
-        const atividades = getResult.atividades ? await this.prisma.atividade.findMany({
-            where: {
-                iniciativa_id: { in: iniciativas.map(r => r.id) },
-                removido_em: null,
-                id: filters.meta_id ? filters.meta_id : undefined,
-                atividade_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } }
-            },
-            select: { id: true }
-        }) : [];
+        const atividades = getResult.atividades
+            ? await this.prisma.atividade.findMany({
+                  where: {
+                      iniciativa_id: { in: iniciativas.map(r => r.id) },
+                      removido_em: null,
+                      id: filters.meta_id ? filters.meta_id : undefined,
+                      atividade_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
+                  },
+                  select: { id: true },
+              })
+            : [];
 
         return {
             atividades,
             iniciativas,
-            metas
-        }
+            metas,
+        };
     }
 }
 
 export class FileOutput {
-    name: string
-    buffer: Buffer
+    name: string;
+    buffer: Buffer;
 }
 
 export interface ReportableService {
-    getFiles(output: any, pdm_id: number, params: any): Promise<FileOutput[]>
-    create(params: any): Promise<any>
+    getFiles(output: any, pdm_id: number, params: any): Promise<FileOutput[]>;
+    create(params: any): Promise<any>;
 }
 
 export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
     let theClass: any = undefined;
 
     switch (fonte) {
-        case 'Orcamento': theClass = CreateOrcamentoExecutadoDto; break;
-        case 'Indicadores': theClass = CreateRelIndicadorDto; break;
-        case 'MonitoramentoMensal': theClass = CreateRelMonitoramentoMensalDto; break;
-        case 'PrevisaoCusto': theClass = CreateRelPrevisaoCustoDto; break;
+        case 'Orcamento':
+            theClass = CreateOrcamentoExecutadoDto;
+            break;
+        case 'Indicadores':
+            theClass = CreateRelIndicadorDto;
+            break;
+        case 'MonitoramentoMensal':
+            theClass = CreateRelMonitoramentoMensalDto;
+            break;
+        case 'PrevisaoCusto':
+            theClass = CreateRelPrevisaoCustoDto;
+            break;
         default:
             return false;
     }
@@ -86,6 +94,6 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
 
 export const DefaultCsvOptions = {
     excelStrings: false,
-    eol: "\r\n",
-    withBOM: false,// dont be evil!
-}
+    eol: '\r\n',
+    withBOM: false, // dont be evil!
+};

@@ -1,15 +1,15 @@
-import { ApiProperty, OmitType, refs } from "@nestjs/swagger"
-import { Periodicidade, Serie } from "@prisma/client"
-import { Decimal } from "@prisma/client/runtime"
-import { IsString } from "class-validator"
-import { DateYMD } from "../../common/date2ymd"
-import { OrgaoResumo } from "../../orgao/entities/orgao.entity"
-import { Regiao } from "../../regiao/entities/regiao.entity"
-import { UnidadeMedida } from "../../unidade-medida/entities/unidade-medida.entity"
+import { ApiProperty, OmitType, refs } from '@nestjs/swagger';
+import { Periodicidade, Serie } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime';
+import { IsString } from 'class-validator';
+import { DateYMD } from '../../common/date2ymd';
+import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
+import { Regiao } from '../../regiao/entities/regiao.entity';
+import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 
 export class IdTitulo {
-    id: number
-    titulo: string
+    id: number;
+    titulo: string;
 }
 
 export class IndicadorVariavel {
@@ -27,35 +27,35 @@ export class IndicadorVariavel {
         meta: IdTitulo | null;
         iniciativa: IdTitulo | null;
         atividade: IdTitulo | null;
-    } | null
+    } | null;
 }
 
 export class IdNomeExibicao {
-    id: number
-    nome_exibicao: string
+    id: number;
+    nome_exibicao: string;
 }
 
 export class Variavel {
-    id: number
-    titulo: string
-    acumulativa: boolean
-    unidade_medida: UnidadeMedida
-    casas_decimais: number
+    id: number;
+    titulo: string;
+    acumulativa: boolean;
+    unidade_medida: UnidadeMedida;
+    casas_decimais: number;
     /**
      * numérico, vem string pra não perder precisão durante o encoding do JSON
-    */
-    valor_base: Decimal
+     */
+    valor_base: Decimal;
     @ApiProperty({ type: String })
-    periodicidade: Periodicidade
-    orgao: OrgaoResumo
-    regiao: Regiao | null
-    indicador_variavel: IndicadorVariavel[]
-    responsaveis?: IdNomeExibicao[]
-    ano_base?: number | null
-    codigo: string
-    atraso_meses: number
-    inicio_medicao: String | null
-    fim_medicao: String | null
+    periodicidade: Periodicidade;
+    orgao: OrgaoResumo;
+    regiao: Regiao | null;
+    indicador_variavel: IndicadorVariavel[];
+    responsaveis?: IdNomeExibicao[];
+    ano_base?: number | null;
+    codigo: string;
+    atraso_meses: number;
+    inicio_medicao: string | null;
+    fim_medicao: string | null;
 }
 
 export class SerieValorNomimal {
@@ -64,19 +64,19 @@ export class SerieValorNomimal {
      * @example "880.12359876352"
      */
     @IsString()
-    valor_nominal: string
+    valor_nominal: string;
 
     /**
      * token para editar/criar este valor
      * @example "token.nao-tao-grande.assim"
      */
-    referencia: string
+    referencia: string;
 
     /**
      * referencia em data para usar caso não seja um humano consumindo a api
      * @example "2023-01-01"
      */
-    data_valor: DateYMD
+    data_valor: DateYMD;
 
     /**
      * Apenas em indicadores
@@ -86,28 +86,28 @@ export class SerieValorNomimal {
      * Apenas em variaveis
      **/
     conferida?: boolean;
-};
+}
 
-export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>
+export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>;
 
 export class SerieValorPorPeriodo {
     [periodo: DateYMD]: SerieIndicadorValorNomimal;
 }
 
-export class SerieIndicadorValorNominal extends OmitType(SerieValorNomimal, ['referencia'] as const) { }
+export class SerieIndicadorValorNominal extends OmitType(SerieValorNomimal, ['referencia'] as const) {}
 
 export class SeriesAgrupadas {
     /**
      * categoria do batch
      * @example "2020"
      */
-    agrupador: string
+    agrupador: string;
 
     /**
      * "Fevereiro 2021"
      * @example "Fevereiro 2021"
      */
-    periodo: string
+    periodo: string;
 
     @ApiProperty({
         type: 'array',
@@ -115,12 +115,12 @@ export class SeriesAgrupadas {
             {
                 type: 'array',
                 items: {
-                    oneOf: refs(SerieValorNomimal, SerieIndicadorValorNominal)
-                }
-            }
+                    oneOf: refs(SerieValorNomimal, SerieIndicadorValorNominal),
+                },
+            },
         ],
     })
-    series: SerieValorNomimal[] | SerieIndicadorValorNominal[]
+    series: SerieValorNomimal[] | SerieIndicadorValorNominal[];
 }
 
 export type SerieIndicadorValores = Record<Serie, SerieIndicadorValorNominal | undefined>;
@@ -145,15 +145,15 @@ export class ValorSerieExistente {
 }
 
 export class Iniciativa {
-    id: number
-    meta_id: number
-    codigo: string
-    titulo: string
+    id: number;
+    meta_id: number;
+    codigo: string;
+    titulo: string;
 }
 
 export class Atividade {
-    id: number
-    iniciativa_id: number
-    codigo: string
-    titulo: string
+    id: number;
+    iniciativa_id: number;
+    codigo: string;
+    titulo: string;
 }

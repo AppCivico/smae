@@ -1,3 +1,3 @@
 export class Upload {
-    upload_token: string
+    upload_token: string;
 }

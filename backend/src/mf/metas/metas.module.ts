@@ -21,26 +21,8 @@ import { VariavelModule } from '../../variavel/variavel.module';
 
 @Module({
     imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule, CronogramaEtapaModule, EtapaModule],
-    controllers: [
-        MetasController,
-        MetasAnaliseQualiController,
-        MetasRiscoController,
-        MetasFechamentoController,
-        MetasCronogramaController
-    ],
-    providers: [
-        MetasService,
-        MetasAnaliseQualiService,
-        MetasRiscoService,
-        MetasFechamentoService,
-        CronogramaService,
-        CronogramaEtapaService,
-        MetasCronogramaService,
-    ],
-    exports: [
-        MetasAnaliseQualiService,
-        MetasRiscoService,
-        MetasFechamentoService,
-    ]
+    controllers: [MetasController, MetasAnaliseQualiController, MetasRiscoController, MetasFechamentoController, MetasCronogramaController],
+    providers: [MetasService, MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService, CronogramaService, CronogramaEtapaService, MetasCronogramaService],
+    exports: [MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService],
 })
-export class MetasModule { }
+export class MetasModule {}

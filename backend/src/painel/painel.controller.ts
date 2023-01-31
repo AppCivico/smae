@@ -18,7 +18,7 @@ import { PainelService } from './painel.service';
 @ApiTags('Painel')
 @Controller('painel')
 export class PainelController {
-    constructor(private readonly painelService: PainelService) { }
+    constructor(private readonly painelService: PainelService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -32,7 +32,7 @@ export class PainelController {
     @ApiBearerAuth('access-token')
     @Roles('CadastroPainel.visualizar')
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
-        return { 'linhas': await this.painelService.findAll(filters, user) };
+        return { linhas: await this.painelService.findAll(filters, user) };
     }
 
     @ApiBearerAuth('access-token')
@@ -65,7 +65,11 @@ export class PainelController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir')
-    async createConteudo(@Param() params: FindOneParams, @Body() createConteudoDto: CreateParamsPainelConteudoDto, @CurrentUser() user: PessoaFromJwt): Promise<PainelConteudoUpsertRet> {
+    async createConteudo(
+        @Param() params: FindOneParams,
+        @Body() createConteudoDto: CreateParamsPainelConteudoDto,
+        @CurrentUser() user: PessoaFromJwt,
+    ): Promise<PainelConteudoUpsertRet> {
         return await this.painelService.createConteudo(+params.id, createConteudoDto, user);
     }
 
@@ -96,6 +100,4 @@ export class PainelController {
     async getPainelConteudoSerie(@Param() params: FindTwoParams): Promise<PainelConteudoSerie> {
         return await this.painelService.getPainelConteudoSerie(+params.id2);
     }
-
-
 }

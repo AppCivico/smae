@@ -1,5 +1,5 @@
-import { Meta } from "../entities/meta.entity";
+import { Meta } from '../entities/meta.entity';
 
 export class ListMetaDto {
-    linhas: Meta[]
+    linhas: Meta[];
 }

@@ -1,12 +1,10 @@
-
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class FonteRecurso {
-    @ApiProperty({ description: 'ID', })
+    @ApiProperty({ description: 'ID' })
     id?: number;
-    @ApiProperty({ description: 'Sigla', })
+    @ApiProperty({ description: 'Sigla' })
     sigla?: string | null;
-    @ApiProperty({ description: 'Fonte', })
+    @ApiProperty({ description: 'Fonte' })
     fonte: string;
 }
-

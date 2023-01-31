@@ -1,48 +1,46 @@
 export class ValorPlanejadoDto {
-    informacao_valida: boolean
-    val_orcado_atualizado: string
-    val_orcado_inicial: string
-    saldo_disponivel: string
-    id: number
-    smae_soma_valor_planejado: string
-    mes_utilizado: number
-    projeto_atividade: string
+    informacao_valida: boolean;
+    val_orcado_atualizado: string;
+    val_orcado_inicial: string;
+    saldo_disponivel: string;
+    id: number;
+    smae_soma_valor_planejado: string;
+    mes_utilizado: number;
+    projeto_atividade: string;
 }
 
 export class ValorRealizadoDotacaoDto {
-    id: number
-    dotacao: string
-    informacao_valida: boolean
-    empenho_liquido: string
-    valor_liquidado: string
-    mes_utilizado: number
+    id: number;
+    dotacao: string;
+    informacao_valida: boolean;
+    empenho_liquido: string;
+    valor_liquidado: string;
+    mes_utilizado: number;
 
-    smae_soma_valor_empenho: string
-    smae_soma_valor_liquidado: string
+    smae_soma_valor_empenho: string;
+    smae_soma_valor_liquidado: string;
 
-    projeto_atividade: string
+    projeto_atividade: string;
 }
 
 export class ListValorRealizadoDotacaoDto {
-    linhas: ValorRealizadoDotacaoDto[]
+    linhas: ValorRealizadoDotacaoDto[];
 }
 
 export class ValorRealizadoProcessoDto extends ValorRealizadoDotacaoDto {
-    processo: string
+    processo: string;
 }
 
 export class ListValorRealizadoProcessoDto {
-    linhas: ValorRealizadoProcessoDto[]
+    linhas: ValorRealizadoProcessoDto[];
 }
 
 export class ValorRealizadoNotaEmpenhoDto extends ValorRealizadoProcessoDto {
-    nota_empenho: string
+    nota_empenho: string;
 }
 
 export class ListValorRealizadoNotaEmpenhoDto {
-    linhas: ValorRealizadoNotaEmpenhoDto[]
+    linhas: ValorRealizadoNotaEmpenhoDto[];
 }
 
-export class OrcadoProjetoDto {
-
-}
+export class OrcadoProjetoDto {}

@@ -1,11 +1,11 @@
-import { Transform } from "class-transformer";
-import { IsBoolean, IsOptional } from "class-validator";
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class FilterPdmDto {
     /**
-   * Filtrar Pdm com Ativo?
-   * @example "true"
-    */
+     * Filtrar Pdm com Ativo?
+     * @example "true"
+     */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
@@ -14,9 +14,9 @@ export class FilterPdmDto {
 
 export class FilterPdmDetailDto {
     /**
-   * Incluir dados auxiliares
-   * @example "true"
-    */
+     * Incluir dados auxiliares
+     * @example "true"
+     */
     @IsBoolean()
     @IsOptional()
     @Transform(({ value }: any) => value === 'true')

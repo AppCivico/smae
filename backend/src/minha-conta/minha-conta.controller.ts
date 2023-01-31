@@ -9,15 +9,14 @@ import { NovaSenhaDto } from './models/nova-senha.dto';
 @ApiTags('Minha Conta')
 @Controller('')
 export class MinhaContaController {
-    constructor(private readonly pessoaService: PessoaService) { }
+    constructor(private readonly pessoaService: PessoaService) {}
 
     @Get('minha-conta')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     getMe(@CurrentUser() user: PessoaFromJwt): MinhaContaDto {
-        return { 'sessao': user };
+        return { sessao: user };
     }
-
 
     @Post('trocar-senha')
     @ApiBearerAuth('access-token')

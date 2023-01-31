@@ -6,6 +6,6 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
     imports: [PrismaModule],
     controllers: [FonteRecursoController],
-    providers: [FonteRecursoService]
+    providers: [FonteRecursoService],
 })
-export class FonteRecursoModule { }
+export class FonteRecursoModule {}

@@ -1,13 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsEmail, IsInt, IsOptional } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEmail, IsInt, IsOptional } from 'class-validator';
 
 export class FilterPessoaDto {
     /**
-    * Filtrar pessoa com privilegio PDM.coordenador_responsavel_cp?
-    *  true filtra quem tem a PDM.coordenador_responsavel_cp; false filtra quem não tem
-    * @example "true"
-    */
+     * Filtrar pessoa com privilegio PDM.coordenador_responsavel_cp?
+     *  true filtra quem tem a PDM.coordenador_responsavel_cp; false filtra quem não tem
+     * @example "true"
+     */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
@@ -20,9 +20,9 @@ export class FilterPessoaDto {
     coorderandor_responsavel_cp?: boolean;
 
     /**
-    * Filtrar por órgão?
-    * @example "1"
-    */
+     * Filtrar por órgão?
+     * @example "1"
+     */
     @IsOptional()
     @IsInt({ message: '$property| orgao_id' })
     @Type(() => Number)
@@ -33,20 +33,20 @@ export class FilterPessoaDto {
     email?: string;
 
     /**
-    * Filtrar pessoa com privilegio SMAE.gestor_de_projeto?
-    *  true filtra quem tem a SMAE.gestor_de_projeto; false filtra quem não tem
-    * @example "true"
-    */
+     * Filtrar pessoa com privilegio SMAE.gestor_de_projeto?
+     *  true filtra quem tem a SMAE.gestor_de_projeto; false filtra quem não tem
+     * @example "true"
+     */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     gestor_de_projeto?: boolean;
 
     /**
-    * Filtrar pessoa com privilegio SMAE.colaborador_de_projeto?
-    *  true filtra quem tem a SMAE.colaborador_de_projeto; false filtra quem não tem
-    * @example "true"
-    */
+     * Filtrar pessoa com privilegio SMAE.colaborador_de_projeto?
+     *  true filtra quem tem a SMAE.colaborador_de_projeto; false filtra quem não tem
+     * @example "true"
+     */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
@@ -58,5 +58,4 @@ export class FilterPessoaDto {
     @Transform((a: any) => a.value === '' ? undefined : +a.value)
     XXXX?: number;
     */
-
 }

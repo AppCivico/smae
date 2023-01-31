@@ -14,7 +14,7 @@ import { UploadService } from './upload.service';
 @Controller('')
 @ApiTags('Upload')
 export class UploadController {
-    constructor(private readonly uploadService: UploadService) { }
+    constructor(private readonly uploadService: UploadService) {}
 
     @Post('upload')
     @ApiConsumes('multipart/form-data')
@@ -24,8 +24,8 @@ export class UploadController {
         @Body() createUploadDto: CreateUploadDto,
         @CurrentUser() user: PessoaFromJwt,
         @UploadedFile() file: Express.Multer.File,
-        @IpAddress() ipAddress: string): Promise<Upload> {
-
+        @IpAddress() ipAddress: string,
+    ): Promise<Upload> {
         const uploadFile = await this.uploadService.upload(createUploadDto, user, file, ipAddress);
 
         const uploadToken = await this.uploadService.getUploadToken(uploadFile);
@@ -37,25 +37,20 @@ export class UploadController {
     @IsPublic()
     @ApiOkResponse({
         description: 'Conteúdo do arquivo',
-        type: ''
+        type: '',
     })
-    async get(
-        @Query() filters: DownloadOptions,
-        @Param('token') dlToken: string,
-        @Res() res: Response
-    ) {
+    async get(@Query() filters: DownloadOptions, @Param('token') dlToken: string, @Res() res: Response) {
         const data = await this.uploadService.getBufferByToken(dlToken);
 
         if (!filters.inline) {
             res.set({
-                'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"'
+                'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"',
             });
         }
         res.set({
-            'Content-Type': data.mime_type
+            'Content-Type': data.mime_type,
         });
 
         data.stream.pipe(res);
     }
-
 }
