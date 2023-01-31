@@ -56,11 +56,8 @@ export class PPrestricaoDto {
     restricao: string;
 }
 
-
 export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['portfolio_id', 'orgao_gestor_id']) {
-
     // FONTE-RECURSO 1..N
-
 
     @IsOptional()
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
@@ -74,11 +71,9 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @Type(() => PPrestricaoDto)
     restricoes?: PPrestricaoDto[];
 
-
     @IsOptional()
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
     @Type(() => PPfonteRecursoDto)
     fonte_recursos?: PPfonteRecursoDto[];
-
 }

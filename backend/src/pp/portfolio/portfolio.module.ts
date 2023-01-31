@@ -7,6 +7,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
     imports: [PrismaModule],
     controllers: [PortfolioController],
     providers: [PortfolioService],
-    exports: [PortfolioService]
+    exports: [PortfolioService],
 })
-export class PortfolioModule { }
+export class PortfolioModule {}

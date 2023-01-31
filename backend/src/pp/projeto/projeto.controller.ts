@@ -14,7 +14,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 @ApiTags('Projeto')
 @Controller('projeto')
 export class ProjetoController {
-    constructor(private readonly projetoService: ProjetoService) { }
+    constructor(private readonly projetoService: ProjetoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -63,12 +63,7 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
-    async upload(
-        @Param() params: FindOneParams,
-        @Body() createPdmDocDto: CreateProjetoDocumentDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-
+    async upload(@Param() params: FindOneParams, @Body() createPdmDocDto: CreateProjetoDocumentDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.append_document(params.id, createPdmDocDto, user);
     }
 
@@ -76,11 +71,7 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
-    async download(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListProjetoDocumento> {
-
+    async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDocumento> {
         return { linhas: await this.projetoService.list_document(params.id, user) };
     }
 
@@ -90,11 +81,8 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
-    async removerDownload(
-        @Param() params: FindTwoParams,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
-        await this.projetoService.remove_document(params.id, params.id2, user)
+    async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.remove_document(params.id, params.id2, user);
         return null;
     }
 }
