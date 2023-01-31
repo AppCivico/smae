@@ -11,7 +11,7 @@ import { OrcamentoPlanejadoService } from './orcamento-planejado.service';
 @ApiTags('Orçamento - Planejado')
 @Controller('orcamento-planejado')
 export class OrcamentoPlanejadoController {
-    constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) { }
+    constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -33,7 +33,7 @@ export class OrcamentoPlanejadoController {
     @Get()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async findAll(@Query() filters: FilterOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoPlanejadoDto> {
-        return { 'linhas': await this.orcamentoPlanejadoService.findAll(filters, user) };
+        return { linhas: await this.orcamentoPlanejadoService.findAll(filters, user) };
     }
 
     @Delete(':id')
@@ -46,5 +46,4 @@ export class OrcamentoPlanejadoController {
         await this.orcamentoPlanejadoService.remove(+params.id, user);
         return '';
     }
-
 }

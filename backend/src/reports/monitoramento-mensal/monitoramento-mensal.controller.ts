@@ -5,11 +5,10 @@ import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mens
 import { RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
 import { MonitoramentoMensalService } from './monitoramento-mensal.service';
 
-
 @ApiTags('Relatórios - API')
 @Controller('relatorio/monitoramento-mensal')
 export class MonitoramentoMensalController {
-    constructor(private readonly monitoramentoMensalService: MonitoramentoMensalService) { }
+    constructor(private readonly monitoramentoMensalService: MonitoramentoMensalService) {}
 
     @Post()
     @ApiBearerAuth('access-token')

@@ -6,28 +6,25 @@ import { UpdateFonteRecursoDto } from './dto/update-fonte-recurso.dto';
 
 @Injectable()
 export class FonteRecursoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createFonteRecursoDto: CreateFonteRecursoDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.fonteRecurso.count({
             where: {
                 fonte: { endsWith: createFonteRecursoDto.fonte, mode: 'insensitive' },
-                removido_em: null
-            }
+                removido_em: null,
+            },
         });
-        if (similarExists > 0)
-            throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0) throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
 
         if (createFonteRecursoDto.sigla) {
             const similarExists = await this.prisma.fonteRecurso.count({
                 where: {
                     sigla: { endsWith: createFonteRecursoDto.sigla, mode: 'insensitive' },
                     removido_em: null,
-
-                }
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         const created = await this.prisma.fonteRecurso.create({
@@ -36,14 +33,14 @@ export class FonteRecursoService {
                 criado_em: new Date(Date.now()),
                 ...createFonteRecursoDto,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return created;
     }
 
     async findAll() {
-        let listActive = await this.prisma.fonteRecurso.findMany({
+        const listActive = await this.prisma.fonteRecurso.findMany({
             where: {
                 removido_em: null,
             },
@@ -51,7 +48,7 @@ export class FonteRecursoService {
                 id: true,
                 fonte: true,
                 sigla: true,
-            }
+            },
         });
         return listActive;
     }
@@ -62,22 +59,20 @@ export class FonteRecursoService {
                 where: {
                     fonte: { endsWith: updateFonteRecursoDto.fonte, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
         }
         if (updateFonteRecursoDto.sigla) {
             const similarExists = await this.prisma.fonteRecurso.count({
                 where: {
                     sigla: { endsWith: updateFonteRecursoDto.sigla, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.fonteRecurso.update({
@@ -86,7 +81,7 @@ export class FonteRecursoService {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateFonteRecursoDto,
-            }
+            },
         });
 
         return { id };
@@ -98,7 +93,7 @@ export class FonteRecursoService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return created;

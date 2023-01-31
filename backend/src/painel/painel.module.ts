@@ -9,4 +9,4 @@ import { PainelService } from './painel.service';
     providers: [PainelService],
     exports: [PainelService],
 })
-export class PainelModule { }
+export class PainelModule {}

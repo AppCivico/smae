@@ -1,3 +1,3 @@
 export class Download {
-    download_token: string
+    download_token: string;
 }

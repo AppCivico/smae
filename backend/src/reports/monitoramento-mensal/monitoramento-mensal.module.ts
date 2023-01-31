@@ -8,17 +8,9 @@ import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service'
 import { MetasModule } from '../../../src/mf/metas/metas.module';
 
 @Module({
-    imports: [
-        PrismaModule,
-        PainelModule,
-        MetasModule
-    ],
+    imports: [PrismaModule, PainelModule, MetasModule],
     controllers: [MonitoramentoMensalController],
-    providers: [
-        MonitoramentoMensalService,
-        MonitoramentoMensalMfService,
-        UtilsService,
-    ],
+    providers: [MonitoramentoMensalService, MonitoramentoMensalMfService, UtilsService],
     exports: [MonitoramentoMensalService],
 })
-export class MonitoramentoMensalModule { }
+export class MonitoramentoMensalModule {}

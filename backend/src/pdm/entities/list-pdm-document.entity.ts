@@ -1,5 +1,5 @@
-import { PdmDocument } from "./pdm-document.entity";
+import { PdmDocument } from './pdm-document.entity';
 
 export class ListPdmDocument {
-    linhas: PdmDocument[]
+    linhas: PdmDocument[];
 }

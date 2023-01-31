@@ -1,27 +1,22 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { DotacaoRealizado, Prisma } from "@prisma/client";
+import { DotacaoRealizado, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
 import { AnoDotacaoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
-import { OrcadoProjetoDto, ValorPlanejadoDto, ValorRealizadoDotacaoDto } from "./entities/dotacao.entity";
+import { OrcadoProjetoDto, ValorPlanejadoDto, ValorRealizadoDotacaoDto } from './entities/dotacao.entity';
 
 @Injectable()
 export class DotacaoService {
-
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly sof: SofApiService,
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
 
     async orcadoProjeto(dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
         try {
-
             const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
             const r = await this.sof.orcadoProjeto({
                 ano: dto.ano,
                 mes: mesMaisAtual,
-                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.parte_dotacao)
+                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.parte_dotacao),
             });
 
             const dotacao = r.data[0];
@@ -30,11 +25,10 @@ export class DotacaoService {
                 val_orcado_atualizado: dotacao.val_orcado_atualizado,
                 val_orcado_inicial: dotacao.val_orcado_inicial,
                 saldo_disponivel: dotacao.saldo_disponivel,
-            }
-
+            };
         } catch (error) {
             if (error instanceof SofError) {
-                throw new HttpException(error.message, 400)
+                throw new HttpException(error.message, 400);
             }
 
             throw error;
@@ -42,18 +36,18 @@ export class DotacaoService {
     }
 
     private getDotacaoOrgaoUnidadeProjFonte(dotacao: string): {
-        orgao: string
-        unidade: string
-        proj_atividade: string
-        fonte: string
+        orgao: string;
+        unidade: string;
+        proj_atividade: string;
+        fonte: string;
     } {
         const partes = dotacao.split('.');
         return {
             orgao: partes[0],
             unidade: partes[1],
             proj_atividade: partes.slice(5, 7).join(''),
-            fonte: partes[8]
-        }
+            fonte: partes[8],
+        };
     }
 
     async getOneProjetoAtividade(ano: number, dotacao: string): Promise<string> {
@@ -64,23 +58,21 @@ export class DotacaoService {
         const codigo = dotacao.split('.').slice(5, 7).join('');
 
         const r: {
-            descricao: string
+            descricao: string;
         }[] = await this.prisma.$queryRaw`select descricao from sof_entidades_linhas where col = 'projetos_atividades' and ano = ${ano}::int and codigo = ${codigo}`;
         if (r.length > 0) return r[0].descricao;
         return `(projeto/atividade ${codigo} não foi encontrado)`;
     }
 
-    async setManyProjetoAtividade(srcDestList:
-        { dotacao: string, projeto_atividade: string, ano_referencia: number }[]
-        |
-        { parte_dotacao: string, projeto_atividade: string, ano_referencia: number }[]
+    async setManyProjetoAtividade(
+        srcDestList: { dotacao: string; projeto_atividade: string; ano_referencia: number }[] | { parte_dotacao: string; projeto_atividade: string; ano_referencia: number }[],
     ) {
         const byYear: Record<string, Record<string, boolean>> = {};
         for (const r of srcDestList) {
             let codigo: string;
-            if ("dotacao" in r && r.dotacao.length >= 35) {
+            if ('dotacao' in r && r.dotacao.length >= 35) {
                 codigo = r.dotacao.split('.').slice(5, 7).join('');
-            } else if ("parte_dotacao" in r && r.parte_dotacao) {
+            } else if ('parte_dotacao' in r && r.parte_dotacao) {
                 const split = r.parte_dotacao.split('.');
                 const joined = [split[5], split[6]].join('');
 
@@ -88,7 +80,7 @@ export class DotacaoService {
                 if (joined.length == 4) {
                     codigo = joined;
                 } else {
-                    continue
+                    continue;
                 }
             } else {
                 continue;
@@ -104,8 +96,8 @@ export class DotacaoService {
         for (const ano in byYear) {
             const codigos = Object.keys(byYear[ano]);
             const rows: {
-                codigo: string
-                descricao: string
+                codigo: string;
+                descricao: string;
             }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'projetos_atividades'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
@@ -122,23 +114,17 @@ export class DotacaoService {
                 delete (r as any).__codigo;
                 r.projeto_atividade = results[r.ano_referencia] && results[r.ano_referencia][codigo] ? results[r.ano_referencia][codigo] : '';
             } else {
-                r.projeto_atividade = ''
+                r.projeto_atividade = '';
             }
         }
     }
 
-    async setManyOrgaoUnidadeFonte(srcDestList:
-        { dotacao: string, dotacao_ano_utilizado: string }[]
-        |
-        { dotacao: string, plan_dotacao_ano_utilizado: string }[]
-    ) {
+    async setManyOrgaoUnidadeFonte(srcDestList: { dotacao: string; dotacao_ano_utilizado: string }[] | { dotacao: string; plan_dotacao_ano_utilizado: string }[]) {
         const byYearOrgao: Record<string, Record<string, boolean>> = {};
         const byYearUnidade: Record<string, Record<string, boolean>> = {};
         const byYearFonte: Record<string, Record<string, boolean>> = {};
         for (const r of srcDestList) {
-            const ano: string = "plan_dotacao_ano_utilizado" in r
-                && r.plan_dotacao_ano_utilizado
-                ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
+            const ano: string = 'plan_dotacao_ano_utilizado' in r && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
             if (!ano) continue;
 
             const orgao = r.dotacao.substring(0, 2);
@@ -166,8 +152,8 @@ export class DotacaoService {
         for (const ano in byYearFonte) {
             const codigos = Object.keys(byYearFonte[ano]);
             const rows: {
-                codigo: string
-                descricao: string
+                codigo: string;
+                descricao: string;
             }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
@@ -181,8 +167,8 @@ export class DotacaoService {
         for (const ano in byYearOrgao) {
             const codigos = Object.keys(byYearOrgao[ano]);
             const rows: {
-                codigo: string
-                descricao: string
+                codigo: string;
+                descricao: string;
             }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'orgaos'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
@@ -193,13 +179,12 @@ export class DotacaoService {
             }
         }
 
-
         for (const ano in byYearUnidade) {
             const codigos = Object.keys(byYearUnidade[ano]);
             const rows: {
-                codigo: string
-                descricao: string
-                cod_orgao: string
+                codigo: string;
+                descricao: string;
+                cod_orgao: string;
             }[] = await this.prisma.$queryRaw`select codigo, cod_orgao, descricao from sof_entidades_linhas where col = 'unidades'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
@@ -214,9 +199,7 @@ export class DotacaoService {
         for (let i = 0; i < srcDestList.length; i++) {
             const r = srcDestList[i];
 
-            const ano: string = "plan_dotacao_ano_utilizado" in r
-                && r.plan_dotacao_ano_utilizado
-                ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
+            const ano: string = 'plan_dotacao_ano_utilizado' in r && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
 
             if (!ano) continue;
 
@@ -230,51 +213,49 @@ export class DotacaoService {
             if (orgao !== undefined && resultsOrgao[ano] && resultsOrgao[ano][orgao]) {
                 (r as any).orgao = {
                     codigo: orgao,
-                    nome: resultsOrgao[ano] && resultsOrgao[ano][orgao]
-                }
+                    nome: resultsOrgao[ano] && resultsOrgao[ano][orgao],
+                };
             } else {
                 (r as any).orgao = {
                     codigo: orgao || '',
-                    nome: ''
-                }
+                    nome: '',
+                };
             }
 
-            if (unidade !== undefined && orgao !== undefined &&
-                resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade]) {
+            if (unidade !== undefined && orgao !== undefined && resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade]) {
                 (r as any).unidade = {
                     codigo: unidade,
-                    nome: resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade]
-                }
+                    nome: resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade],
+                };
             } else {
                 (r as any).unidade = {
                     codigo: unidade || '',
-                    nome: ''
-                }
+                    nome: '',
+                };
             }
 
             if (fonte !== undefined && resultsFonte[ano] && resultsFonte[ano][fonte]) {
                 (r as any).fonte = {
                     codigo: fonte,
-                    nome: resultsFonte[ano] && resultsFonte[ano][fonte]
-                }
+                    nome: resultsFonte[ano] && resultsFonte[ano][fonte],
+                };
             } else {
                 (r as any).fonte = {
                     codigo: fonte || '',
-                    nome: ''
-                }
+                    nome: '',
+                };
             }
         }
     }
 
     async valorPlanejado(dto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {
-
         const dotacaoExistente = await this.prisma.dotacaoPlanejado.findUnique({
             where: {
                 ano_referencia_dotacao: {
                     ano_referencia: dto.ano,
                     dotacao: dto.dotacao,
-                }
-            }
+                },
+            },
         });
 
         const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
@@ -290,11 +271,10 @@ export class DotacaoService {
                 smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado.toFixed(2),
                 mes_utilizado: dotacaoExistente.mes_utilizado,
                 projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
-            }
+            };
         }
 
-        if (dotacaoExistente)
-            await this.prisma.dotacaoPlanejado.delete({ where: { id: dotacaoExistente.id } });
+        if (dotacaoExistente) await this.prisma.dotacaoPlanejado.delete({ where: { id: dotacaoExistente.id } });
 
         await this.sincronizarDotacaoPlanejado(dto, mesMaisAtual);
 
@@ -302,7 +282,7 @@ export class DotacaoService {
             where: {
                 ano_referencia: dto.ano,
                 dotacao: dto.dotacao,
-            }
+            },
         });
 
         return {
@@ -314,27 +294,23 @@ export class DotacaoService {
             smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado.toFixed(2),
             mes_utilizado: dotacaoPlanejado.mes_utilizado,
             projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
-        }
+        };
     }
 
-
     async valorRealizadoDotacao(dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto[]> {
-
         const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findUnique({
             where: {
                 ano_referencia_dotacao: {
                     ano_referencia: dto.ano,
                     dotacao: dto.dotacao,
-                }
-            }
+                },
+            },
         });
 
         const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
 
         if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual) {
-            return [
-                await this.renderDotacaoRealizado(dotacaoRealizadoExistente)
-            ]
+            return [await this.renderDotacaoRealizado(dotacaoRealizadoExistente)];
         }
 
         await this.sincronizarDotacaoRealizado(dto, mesMaisAtual);
@@ -344,13 +320,11 @@ export class DotacaoService {
                 ano_referencia_dotacao: {
                     ano_referencia: dto.ano,
                     dotacao: dto.dotacao,
-                }
-            }
+                },
+            },
         });
 
-        return [
-            await this.renderDotacaoRealizado(dotacaoRealizado)
-        ]
+        return [await this.renderDotacaoRealizado(dotacaoRealizado)];
     }
 
     private async renderDotacaoRealizado(dotacao: DotacaoRealizado): Promise<ValorRealizadoDotacaoDto> {
@@ -369,195 +343,194 @@ export class DotacaoService {
         };
     }
 
-
     private async sincronizarDotacaoRealizado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
         try {
             const r = await this.sof.empenhoDotacao({
                 dotacao: dto.dotacao,
                 ano: dto.ano,
-                mes: mes
+                mes: mes,
             });
 
             for (const dotacao of r.data) {
-                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacaoRealizado.findUnique({
-                        where: {
-                            ano_referencia_dotacao: {
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                            }
-                        }
-                    });
-
-                    // se ja existe, atualiza caso estiver com dados inválidos, ou se o valor for diferente no empenho_liquido
-                    if (jaExiste && (
-                        jaExiste.informacao_valida == false
-                        || (jaExiste.valor_liquidado.toFixed(2) != dotacao.val_liquidado.toFixed(2))
-                        || (jaExiste.empenho_liquido.toFixed(2) != dotacao.empenho_liquido.toFixed(2))
-                        || (jaExiste.mes_utilizado != mes)
-                    )) {
-                        await prisma.dotacaoRealizado.update({
+                await this.prisma.$transaction(
+                    async (prisma: Prisma.TransactionClient) => {
+                        const jaExiste = await prisma.dotacaoRealizado.findUnique({
                             where: {
-                                id: jaExiste.id
+                                ano_referencia_dotacao: {
+                                    ano_referencia: dto.ano,
+                                    dotacao: dto.dotacao,
+                                },
                             },
-                            data: {
-                                informacao_valida: true,
-                                sincronizado_em: now,
-                                mes_utilizado: mes,
-                                empenho_liquido: dotacao.empenho_liquido,
-                                valor_liquidado: dotacao.val_liquidado
-                            }
-                        });
-                    }
-
-                    if (!jaExiste) {
-                        await prisma.dotacaoRealizado.create({
-                            data: {
-                                informacao_valida: true,
-                                sincronizado_em: now,
-                                empenho_liquido: dotacao.empenho_liquido,
-                                valor_liquidado: dotacao.val_liquidado,
-                                mes_utilizado: mes,
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                                smae_soma_valor_empenho: 0,
-                                smae_soma_valor_liquidado: 0,
-                            },
-                            select: { id: true },
                         });
 
-                    }
+                        // se ja existe, atualiza caso estiver com dados inválidos, ou se o valor for diferente no empenho_liquido
+                        if (
+                            jaExiste &&
+                            (jaExiste.informacao_valida == false ||
+                                jaExiste.valor_liquidado.toFixed(2) != dotacao.val_liquidado.toFixed(2) ||
+                                jaExiste.empenho_liquido.toFixed(2) != dotacao.empenho_liquido.toFixed(2) ||
+                                jaExiste.mes_utilizado != mes)
+                        ) {
+                            await prisma.dotacaoRealizado.update({
+                                where: {
+                                    id: jaExiste.id,
+                                },
+                                data: {
+                                    informacao_valida: true,
+                                    sincronizado_em: now,
+                                    mes_utilizado: mes,
+                                    empenho_liquido: dotacao.empenho_liquido,
+                                    valor_liquidado: dotacao.val_liquidado,
+                                },
+                            });
+                        }
 
-                }, {
-                    isolationLevel: 'Serializable',
-                    maxWait: 15000,
-                    timeout: 60000,
-                });
+                        if (!jaExiste) {
+                            await prisma.dotacaoRealizado.create({
+                                data: {
+                                    informacao_valida: true,
+                                    sincronizado_em: now,
+                                    empenho_liquido: dotacao.empenho_liquido,
+                                    valor_liquidado: dotacao.val_liquidado,
+                                    mes_utilizado: mes,
+                                    ano_referencia: dto.ano,
+                                    dotacao: dto.dotacao,
+                                    smae_soma_valor_empenho: 0,
+                                    smae_soma_valor_liquidado: 0,
+                                },
+                                select: { id: true },
+                            });
+                        }
+                    },
+                    {
+                        isolationLevel: 'Serializable',
+                        maxWait: 15000,
+                        timeout: 60000,
+                    },
+                );
             }
-
-
         } catch (error) {
             if (error instanceof SofError) {
-                throw new HttpException('No momento, o serviço SOF está indisponível, e não é possível criar uma dotação de realizado manualmente nesta versão do SMAE.\n\nTente novamente mais tarde', 400);
+                throw new HttpException(
+                    'No momento, o serviço SOF está indisponível, e não é possível criar uma dotação de realizado manualmente nesta versão do SMAE.\n\nTente novamente mais tarde',
+                    400,
+                );
             }
 
             throw error;
         }
     }
 
-
     private async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
         try {
-
             const r = await this.sof.orcadoProjeto({
                 ano: dto.ano,
                 mes: mes,
-                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.dotacao)
+                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.dotacao),
             });
 
             // na teoria só volta 1 item
             for (const dotacao of r.data) {
-                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
-                        where: {
-                            ano_referencia_dotacao: {
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                            },
-                        }
-                    });
-
-                    // se ja existe, atualiza caso estiver com dados inválidos, ou se o valor for diferente no empenho_liquido
-                    if (jaExiste && (
-                        jaExiste.informacao_valida == false
-                        || (jaExiste.val_orcado_atualizado.toFixed(2) != dotacao.val_orcado_atualizado.toFixed(2))
-                        || (jaExiste.val_orcado_inicial.toFixed(2) != dotacao.val_orcado_inicial.toFixed(2))
-                    )) {
-                        await prisma.dotacaoPlanejado.update({
+                await this.prisma.$transaction(
+                    async (prisma: Prisma.TransactionClient) => {
+                        const jaExiste = await prisma.dotacaoPlanejado.findUnique({
                             where: {
-                                id: jaExiste.id
+                                ano_referencia_dotacao: {
+                                    ano_referencia: dto.ano,
+                                    dotacao: dto.dotacao,
+                                },
                             },
-                            data: {
-                                informacao_valida: true,
-                                sincronizado_em: now,
-                                val_orcado_atualizado: dotacao.val_orcado_atualizado,
-                                val_orcado_inicial: dotacao.val_orcado_inicial,
-                                saldo_disponivel: dotacao.saldo_disponivel,
-                                pressao_orcamentaria: Math.round(jaExiste.smae_soma_valor_planejado * 100) > Math.round(dotacao.val_orcado_atualizado * 100),
-                            }
-                        });
-                    }
-
-                    if (!jaExiste) {
-                        await prisma.dotacaoPlanejado.create({
-                            data: {
-                                informacao_valida: true,
-                                sincronizado_em: now,
-                                val_orcado_atualizado: dotacao.val_orcado_atualizado,
-                                val_orcado_inicial: dotacao.val_orcado_inicial,
-                                saldo_disponivel: dotacao.saldo_disponivel,
-                                mes_utilizado: mes,
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                                pressao_orcamentaria: false,
-                                smae_soma_valor_planejado: 0
-                            },
-                            select: { id: true },
                         });
 
-                    }
+                        // se ja existe, atualiza caso estiver com dados inválidos, ou se o valor for diferente no empenho_liquido
+                        if (
+                            jaExiste &&
+                            (jaExiste.informacao_valida == false ||
+                                jaExiste.val_orcado_atualizado.toFixed(2) != dotacao.val_orcado_atualizado.toFixed(2) ||
+                                jaExiste.val_orcado_inicial.toFixed(2) != dotacao.val_orcado_inicial.toFixed(2))
+                        ) {
+                            await prisma.dotacaoPlanejado.update({
+                                where: {
+                                    id: jaExiste.id,
+                                },
+                                data: {
+                                    informacao_valida: true,
+                                    sincronizado_em: now,
+                                    val_orcado_atualizado: dotacao.val_orcado_atualizado,
+                                    val_orcado_inicial: dotacao.val_orcado_inicial,
+                                    saldo_disponivel: dotacao.saldo_disponivel,
+                                    pressao_orcamentaria: Math.round(jaExiste.smae_soma_valor_planejado * 100) > Math.round(dotacao.val_orcado_atualizado * 100),
+                                },
+                            });
+                        }
 
-                }, {
-                    isolationLevel: 'Serializable',
-                    maxWait: 15000,
-                    timeout: 60000,
-                });
+                        if (!jaExiste) {
+                            await prisma.dotacaoPlanejado.create({
+                                data: {
+                                    informacao_valida: true,
+                                    sincronizado_em: now,
+                                    val_orcado_atualizado: dotacao.val_orcado_atualizado,
+                                    val_orcado_inicial: dotacao.val_orcado_inicial,
+                                    saldo_disponivel: dotacao.saldo_disponivel,
+                                    mes_utilizado: mes,
+                                    ano_referencia: dto.ano,
+                                    dotacao: dto.dotacao,
+                                    pressao_orcamentaria: false,
+                                    smae_soma_valor_planejado: 0,
+                                },
+                                select: { id: true },
+                            });
+                        }
+                    },
+                    {
+                        isolationLevel: 'Serializable',
+                        maxWait: 15000,
+                        timeout: 60000,
+                    },
+                );
             }
-
-
         } catch (error) {
             if (error instanceof SofError) {
-
-                await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-
-                    const jaExiste = await prisma.dotacaoPlanejado.findUnique({
-                        where: {
-                            ano_referencia_dotacao: {
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                            }
-                        }
-                    });
-
-                    // se ainda não existe (pode ter iniciado já por causa do lock)
-                    if (!jaExiste) {
-
-                        await prisma.dotacaoPlanejado.create({
-                            data: {
-                                informacao_valida: false,
-                                sincronizado_em: null,
-                                val_orcado_atualizado: 0,
-                                val_orcado_inicial: 0,
-                                saldo_disponivel: 0,
-                                mes_utilizado: mes,
-                                ano_referencia: dto.ano,
-                                dotacao: dto.dotacao,
-                                pressao_orcamentaria: false,
-                                smae_soma_valor_planejado: 0,
+                await this.prisma.$transaction(
+                    async (prisma: Prisma.TransactionClient) => {
+                        const jaExiste = await prisma.dotacaoPlanejado.findUnique({
+                            where: {
+                                ano_referencia_dotacao: {
+                                    ano_referencia: dto.ano,
+                                    dotacao: dto.dotacao,
+                                },
                             },
-                            select: { id: true },
                         });
-                    }
-                }, {
-                    isolationLevel: 'Serializable'
-                });
+
+                        // se ainda não existe (pode ter iniciado já por causa do lock)
+                        if (!jaExiste) {
+                            await prisma.dotacaoPlanejado.create({
+                                data: {
+                                    informacao_valida: false,
+                                    sincronizado_em: null,
+                                    val_orcado_atualizado: 0,
+                                    val_orcado_inicial: 0,
+                                    saldo_disponivel: 0,
+                                    mes_utilizado: mes,
+                                    ano_referencia: dto.ano,
+                                    dotacao: dto.dotacao,
+                                    pressao_orcamentaria: false,
+                                    smae_soma_valor_planejado: 0,
+                                },
+                                select: { id: true },
+                            });
+                        }
+                    },
+                    {
+                        isolationLevel: 'Serializable',
+                    },
+                );
                 return;
             }
 
             throw error;
         }
     }
-
 }

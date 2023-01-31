@@ -8,7 +8,7 @@ import { OrcamentoService } from './orcamento.service';
 @ApiTags('Relatórios - API')
 @Controller('relatorio/orcamento')
 export class OrcamentoController {
-    constructor(private readonly orcamentoExecutadoService: OrcamentoService) { }
+    constructor(private readonly orcamentoExecutadoService: OrcamentoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')

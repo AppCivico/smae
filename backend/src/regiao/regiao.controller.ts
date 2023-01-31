@@ -14,7 +14,7 @@ import { DetalheRegiaoDto } from './dto/detalhe-regiao.dto';
 @ApiTags('Regiao')
 @Controller('regiao')
 export class RegiaoController {
-    constructor(private readonly regiaoService: RegiaoService) { }
+    constructor(private readonly regiaoService: RegiaoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -27,7 +27,7 @@ export class RegiaoController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(): Promise<ListRegiaoDto> {
-        return { 'linhas': await this.regiaoService.findAll() };
+        return { linhas: await this.regiaoService.findAll() };
     }
 
     @Patch(':id')
@@ -56,5 +56,4 @@ export class RegiaoController {
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DetalheRegiaoDto> {
         return await this.regiaoService.getDetail(+params.id, user);
     }
-
 }

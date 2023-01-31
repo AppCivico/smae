@@ -20,9 +20,8 @@ import { SolicitarNovaSenhaValidationMiddleware } from './middlewares/solicitar-
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, LocalStrategy, JwtStrategy]
+    providers: [AuthService, LocalStrategy, JwtStrategy],
 })
-
 export class AuthModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(LoginValidationMiddleware).forRoutes('login');

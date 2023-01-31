@@ -28,24 +28,22 @@ export class PdmController {
         private readonly objetivoEstrategicoService: ObjetivoEstrategicoService,
         private readonly subTemaService: SubTemaService,
         private readonly eixoService: EixoService,
-        private readonly tagService: TagService
-    ) { }
+        private readonly tagService: TagService,
+    ) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.inserir')
     create(@Body() createPdmDto: CreatePdmDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        console.log(createPdmDto)
+        console.log(createPdmDto);
         return this.pdmService.create(createPdmDto, user);
     }
-
 
     @ApiBearerAuth('access-token')
     @Get()
     //@Roles('CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async findAll(@Query() filters: FilterPdmDto): Promise<ListPdmDto> {
-
         const linhas = await this.pdmService.findAll(filters);
         let ciclo_fisico_ativo: CicloFisicoDto | null | undefined = undefined;
         let orcamento_config: OrcamentoConfig[] | null | undefined = undefined;
@@ -56,7 +54,7 @@ export class PdmController {
         }
 
         return {
-            'linhas': linhas,
+            linhas: linhas,
             ciclo_fisico_ativo,
             orcamento_config,
         };
@@ -81,8 +79,7 @@ export class PdmController {
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @Query() detail: FilterPdmDetailDto): Promise<Pdm | DetalhePdmDto> {
         const pdm = await this.pdmService.getDetail(+params.id, user);
 
-        if (!detail.incluir_auxiliares)
-            return pdm;
+        if (!detail.incluir_auxiliares) return pdm;
 
         const filter_opts = { pdm_id: +params.id };
         const [tema, sub_tema, eixo, tag, orcamento_config] = await Promise.all([
@@ -90,19 +87,28 @@ export class PdmController {
             this.subTemaService.findAll(filter_opts),
             this.eixoService.findAll(filter_opts),
             this.tagService.findAll(filter_opts),
-            this.pdmService.getOrcamentoConfig(+params.id)
+            this.pdmService.getOrcamentoConfig(+params.id),
         ]);
 
         return {
-            pdm, tema, sub_tema, eixo, tag, orcamento_config
-        }
+            pdm,
+            tema,
+            sub_tema,
+            eixo,
+            tag,
+            orcamento_config,
+        };
     }
 
     @Patch(':id/orcamento-config')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.editar')
-    async updatePdmOrcamentoConfig(@Param() params: FindOneParams, @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId[]> {
+    async updatePdmOrcamentoConfig(
+        @Param() params: FindOneParams,
+        @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
+        @CurrentUser() user: PessoaFromJwt,
+    ): Promise<RecordWithId[]> {
         return await this.pdmService.updatePdmOrcamentoConfig(+params.id, updatePdmOrcamentoConfigDto);
     }
 
@@ -110,12 +116,7 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.inserir', 'CadastroPdm.editar')
-    async upload(
-        @Param() params: FindOneParams,
-        @Body() createPdmDocDto: CreatePdmDocumentDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-
+    async upload(@Param() params: FindOneParams, @Body() createPdmDocDto: CreatePdmDocumentDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.pdmService.append_document(params.id, createPdmDocDto, user);
     }
 
@@ -123,11 +124,7 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.inserir', 'CadastroPdm.editar')
-    async download(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListPdmDocument> {
-
+    async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDocument> {
         return { linhas: await this.pdmService.list_document(params.id, user) };
     }
 
@@ -137,11 +134,8 @@ export class PdmController {
     @ApiUnauthorizedResponse()
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
-    async removerDownload(
-        @Param() params: FindTwoParams,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
-        await this.pdmService.remove_document(params.id, params.id2, user)
+    async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.pdmService.remove_document(params.id, params.id2, user);
         return null;
     }
 }

@@ -1,21 +1,20 @@
-import { ApiProperty, OmitType } from "@nestjs/swagger";
-import { CicloFase, Periodicidade, Serie, TipoDocumento } from "@prisma/client";
-import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "../../../common/decorators/IsDateOnly";
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { CicloFase, Periodicidade, Serie, TipoDocumento } from '@prisma/client';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
-import { IdCodTituloDto } from "../../../common/dto/IdCodTitulo.dto";
-import { SerieValorNomimal } from "../../../variavel/entities/variavel.entity";
+import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
+import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
 
 export class FilterMfMetasDto {
     /**
-   * Qual ciclo usar para calcular o status (exceto Coleta, que o status é sempre em branco)
-   * @example "Fechamento"
-    */
+     * Qual ciclo usar para calcular o status (exceto Coleta, que o status é sempre em branco)
+     * @example "Fechamento"
+     */
     @IsOptional()
     @ApiProperty({ enum: CicloFase })
     ciclo_fase?: CicloFase;
-
 }
 
 export class FilterMfVariaveis {
@@ -26,15 +25,14 @@ export class FilterMfVariaveis {
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
-    simular_ponto_focal?: boolean
+    simular_ponto_focal?: boolean;
 }
 
-
 export class MfMetaAgrupadaDto {
-    grupo: string
-    id: number
-    titulo: string
-    codigo: string
+    grupo: string;
+    id: number;
+    titulo: string;
+    codigo: string;
 }
 
 export class CicloAtivoDto {
@@ -47,238 +45,229 @@ export class CicloAtivoDto {
 
 export class RequestInfoDto {
     requestInfo: {
-        queryTook: number
-    }
+        queryTook: number;
+    };
 }
 
 export class ListMfMetasAgrupadasDto {
-    linhas: MfMetaAgrupadaDto[]
+    linhas: MfMetaAgrupadaDto[];
     @ApiProperty({ enum: ['Status', 'Fase'] })
-    agrupador: string
-    perfil: string
-    ciclo_ativo: CicloAtivoDto
+    agrupador: string;
+    perfil: string;
+    ciclo_ativo: CicloAtivoDto;
 }
 
 export class MfMetaDto {
-    id: number
-    titulo: string
-    codigo: string
-    fase: string
+    id: number;
+    titulo: string;
+    codigo: string;
+    fase: string;
     cronograma: {
-        participante: boolean
-        status: string
-    }
+        participante: boolean;
+        status: string;
+    };
     coleta: {
-        participante: boolean
-        status: string
-    }
-    codigo_organizacoes: string[]
+        participante: boolean;
+        status: string;
+    };
+    codigo_organizacoes: string[];
     /**
      * Só aparece quando filtrado por algum ciclo-fase em especial
-    */
-    status_ciclo_fase?: string
+     */
+    status_ciclo_fase?: string;
 }
 
 export class ListMfMetasDto {
-    linhas: MfMetaDto[]
-    perfil: string
-    ciclo_ativo: CicloAtivoDto
+    linhas: MfMetaDto[];
+    perfil: string;
+    ciclo_ativo: CicloAtivoDto;
 }
 
 export class IdCodTituloRespDto {
-    id: number
-    codigo: string
-    titulo: string
+    id: number;
+    codigo: string;
+    titulo: string;
 
-    orgaos_responsaveis: string[]
-    orgaos_participantes: string[]
-    responsaveis_na_cp: string[]
+    orgaos_responsaveis: string[];
+    orgaos_participantes: string[];
+    responsaveis_na_cp: string[];
 }
-
 
 export class VariavelQtdeDto {
-    aguarda_cp: number
-    aguarda_complementacao: number
-    nao_preenchidas: number
-    nao_enviadas: number
+    aguarda_cp: number;
+    aguarda_complementacao: number;
+    nao_preenchidas: number;
+    nao_enviadas: number;
 }
 
-
-export type Status = keyof VariavelQtdeDto
+export type Status = keyof VariavelQtdeDto;
 
 export class VariavelComSeries {
-    variavel: IdCodTituloDto
-    series: MfSeriesAgrupadas[]
+    variavel: IdCodTituloDto;
+    series: MfSeriesAgrupadas[];
 }
 
-export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) { }
+export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) {}
 
 export class MfSeriesAgrupadas {
-    eh_corrente: boolean
-    pode_editar: boolean
-    aguarda_cp?: boolean
-    aguarda_complementacao?: boolean
-    nao_preenchida?: boolean
-    nao_enviada?: boolean
+    eh_corrente: boolean;
+    pode_editar: boolean;
+    aguarda_cp?: boolean;
+    aguarda_complementacao?: boolean;
+    nao_preenchida?: boolean;
+    nao_enviada?: boolean;
 
     /**
      * Data completa do mês de referencia do ciclo
      * @example "2020-01-01"
      */
-    periodo: string
-    series: MfSerieValorNomimal[]
+    periodo: string;
+    series: MfSerieValorNomimal[];
 }
 
 export class AtividadesRetorno {
-    indicador: IdCodTituloDto | null
-    atividade: IdCodTituloRespDto
-    variaveis: VariavelComSeries[]
-    totais: VariavelQtdeDto
+    indicador: IdCodTituloDto | null;
+    atividade: IdCodTituloRespDto;
+    variaveis: VariavelComSeries[];
+    totais: VariavelQtdeDto;
 }
 
 export class IniciativasRetorno {
-    indicador: IdCodTituloDto | null
-    iniciativa: IdCodTituloRespDto
-    atividades: AtividadesRetorno[]
-    variaveis: VariavelComSeries[]
-    totais: VariavelQtdeDto
+    indicador: IdCodTituloDto | null;
+    iniciativa: IdCodTituloRespDto;
+    atividades: AtividadesRetorno[];
+    variaveis: VariavelComSeries[];
+    totais: VariavelQtdeDto;
 }
 export class MfFasesPermissoesDto {
-    fechamento: boolean
-    risco: boolean
-    analiseQualitativa: boolean
+    fechamento: boolean;
+    risco: boolean;
+    analiseQualitativa: boolean;
 }
 
 export type MfAvancarFasesDto = CicloFase[];
 
 export class RetornoMetaVariaveisDto {
-    perfil: string
+    perfil: string;
 
     meta: {
-        indicador: IdCodTituloDto | null
-        iniciativas: IniciativasRetorno[]
-        variaveis: VariavelComSeries[]
-        totais: VariavelQtdeDto,
-        codigo: string
-        titulo: string
-        id: number
-        ciclo_fase: string
-        orgaos_responsaveis: string[]
-        orgaos_participantes: string[]
-        responsaveis_na_cp: string[]
-    }
+        indicador: IdCodTituloDto | null;
+        iniciativas: IniciativasRetorno[];
+        variaveis: VariavelComSeries[];
+        totais: VariavelQtdeDto;
+        codigo: string;
+        titulo: string;
+        id: number;
+        ciclo_fase: string;
+        orgaos_responsaveis: string[];
+        orgaos_participantes: string[];
+        responsaveis_na_cp: string[];
+    };
 
-    permissoes: MfFasesPermissoesDto
-    avancarFases: MfAvancarFasesDto
+    permissoes: MfFasesPermissoesDto;
+    avancarFases: MfAvancarFasesDto;
 
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro das series
-    * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
-    */
-    ordem_series: Serie[]
+     * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
+     */
+    ordem_series: Serie[];
 }
 
 type ColunasAtualizaveis = 'valor_realizado' | 'valor_realizado_acumulado';
 export const CamposRealizado: ColunasAtualizaveis[] = ['valor_realizado', 'valor_realizado_acumulado'];
 export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
-    'valor_realizado': 'Realizado',
-    'valor_realizado_acumulado': 'RealizadoAcumulado',
+    valor_realizado: 'Realizado',
+    valor_realizado_acumulado: 'RealizadoAcumulado',
 };
 
-
-
 export class CicloFaseDto {
-
     /**
-    * ciclo_fase_id -- precisa ser uma fase mais avançada que a atual
-    * @example "1"
-    */
+     * ciclo_fase_id -- precisa ser uma fase mais avançada que a atual
+     * @example "1"
+     */
     @IsNumber()
-    ciclo_fase_id: number
-
+    ciclo_fase_id: number;
 }
 
-
 export class VariavelComplementacaoDto {
-
     /**
-    * data_valor
-    * @example YYYY-MM-DD
-    */
+     * data_valor
+     * @example YYYY-MM-DD
+     */
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    data_valor: Date
-
+    data_valor: Date;
 
     /**
-    * variavel_id
-    * @example "1"
-    */
+     * variavel_id
+     * @example "1"
+     */
     @IsNumber()
-    variavel_id: number
+    variavel_id: number;
 
     @IsString()
-    pedido: string
-
+    pedido: string;
 }
 
 export class VariavelConferidaDto {
-
     /**
-    * data_valor
-    * @example YYYY-MM-DD
-    */
+     * data_valor
+     * @example YYYY-MM-DD
+     */
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    data_valor: Date
-
+    data_valor: Date;
 
     /**
-    * variavel_id
-    * @example "1"
-    */
+     * variavel_id
+     * @example "1"
+     */
     @IsNumber()
-    variavel_id: number
-
+    variavel_id: number;
 }
 
 export class VariavelAnaliseQualitativaDto {
-
     /**
-    * data_valor
-    * @example YYYY-MM-DD
-    */
+     * data_valor
+     * @example YYYY-MM-DD
+     */
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    data_valor: Date
-
+    data_valor: Date;
 
     /**
-    * variavel_id
-    * @example "1"
-    */
+     * variavel_id
+     * @example "1"
+     */
     @IsNumber()
-    variavel_id: number
+    variavel_id: number;
 
     @IsOptional()
-    @IsNumberString({ maxDecimalPlaces: 30 }, { message: "Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover" })
+    @IsNumberString(
+        { maxDecimalPlaces: 30 },
+        { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
+    )
     @ValidateIf((object, value) => value !== '')
-    valor_realizado?: string
+    valor_realizado?: string;
 
     @IsOptional()
-    @IsNumberString({ maxDecimalPlaces: 30 }, { message: "Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover" })
+    @IsNumberString(
+        { maxDecimalPlaces: 30 },
+        { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
+    )
     @ValidateIf((object, value) => value !== '')
-    valor_realizado_acumulado?: string
+    valor_realizado_acumulado?: string;
 
     @IsString()
-    analise_qualitativa: string
+    analise_qualitativa: string;
 
     @IsOptional()
     @IsBoolean()
-    enviar_para_cp?: boolean
+    enviar_para_cp?: boolean;
 
     /**
      * válido apenas para CP e técnico CP simular o comportamento do envio como se fosse um ponto_focal
@@ -286,51 +275,47 @@ export class VariavelAnaliseQualitativaDto {
      **/
     @IsOptional()
     @IsBoolean()
-    simular_ponto_focal: boolean
-
-
+    simular_ponto_focal: boolean;
 }
 
 export class FilterVariavelAnaliseQualitativaDto {
     /**
-    * data_valor
-    * @example YYYY-MM-DD
-    */
+     * data_valor
+     * @example YYYY-MM-DD
+     */
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    data_valor: Date
+    data_valor: Date;
 
     /**
-    * variavel_id
-    * @example "1"
-    */
+     * variavel_id
+     * @example "1"
+     */
     @IsNumber()
     @Transform(({ value }: any) => +value)
-    variavel_id: number
+    variavel_id: number;
 
     /**
-   * trazer apenas a analise mais recente?
-   * @example "true"
-    */
+     * trazer apenas a analise mais recente?
+     * @example "true"
+     */
     @IsBoolean()
     @IsOptional()
     @Transform(({ value }: any) => value === 'true')
     apenas_ultima_revisao?: boolean;
-
 }
 
-
 export class DetailAnaliseQualitativaDto {
-    analise_qualitativa: string
-    ultima_revisao: boolean
-    criado_em: Date
+    analise_qualitativa: string;
+    ultima_revisao: boolean;
+    criado_em: Date;
     criador: {
-        nome_exibicao: string
-    }
-    meta_id: number
-    enviado_para_cp: boolean
-    id: number
+        nome_exibicao: string;
+    };
+    meta_id: number;
+    enviado_para_cp: boolean;
+    id: number;
 }
 
 export class ArquivoVariavelAnaliseQualitativaDocumentoDto {
@@ -340,78 +325,72 @@ export class ArquivoVariavelAnaliseQualitativaDocumentoDto {
         tamanho_bytes: number;
         TipoDocumento: TipoDocumento | null;
         nome_original: string;
-        download_token?: string
-    }
-    id: number
-    criado_em: Date
+        download_token?: string;
+    };
+    id: number;
+    criado_em: Date;
     criador: {
-        nome_exibicao: string
-    }
+        nome_exibicao: string;
+    };
 }
 
 export class DetailPedidoComplementacaoDto {
-    pedido: string
-    criado_em: Date
+    pedido: string;
+    criado_em: Date;
     criador: {
-        nome_exibicao: string
-    }
-    atendido: boolean
-    id: number
+        nome_exibicao: string;
+    };
+    atendido: boolean;
+    id: number;
 }
 
-
 export class MfListVariavelAnaliseQualitativaDto {
-
     variavel: {
-        id: number
-        codigo: string
-        titulo: string
+        id: number;
+        codigo: string;
+        titulo: string;
         unidade_medida: {
-            sigla: string
-            descricao: string
-        }
+            sigla: string;
+            descricao: string;
+        };
         regiao: {
-            id: number
-            descricao: string
-        } | null
-        casas_decimais: number
-        acumulativa: boolean
-        periodicidade: Periodicidade
-    }
+            id: number;
+            descricao: string;
+        } | null;
+        casas_decimais: number;
+        acumulativa: boolean;
+        periodicidade: Periodicidade;
+    };
 
-    arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[]
+    arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[];
 
-    ultimoPedidoComplementacao: DetailPedidoComplementacaoDto | null
-    analises: DetailAnaliseQualitativaDto[]
+    ultimoPedidoComplementacao: DetailPedidoComplementacaoDto | null;
+    analises: DetailAnaliseQualitativaDto[];
 
-    ordem_series: Serie[]
-    series: MfSerieValorNomimal[]
-
+    ordem_series: Serie[];
+    series: MfSerieValorNomimal[];
 }
 
 export class VariavelAnaliseQualitativaDocumentoDto {
-
     /**
-    * data_valor
-    * @example YYYY-MM-DD
-    */
+     * data_valor
+     * @example YYYY-MM-DD
+     */
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    data_valor: Date
-
+    data_valor: Date;
 
     /**
-    * variavel_id
-    * @example "1"
-    */
+     * variavel_id
+     * @example "1"
+     */
     @IsNumber()
-    variavel_id: number
+    variavel_id: number;
 
     /**
      * Upload do Documento
      */
     @IsString({ message: '$property| upload_token de um arquivo' })
-    upload_token: string
-
+    upload_token: string;
 }

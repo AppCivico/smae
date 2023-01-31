@@ -14,7 +14,7 @@ import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 @ApiTags('SubTema')
 @Controller('subtema')
 export class SubTemaController {
-    constructor(private readonly subTemaService: SubTemaService) { }
+    constructor(private readonly subTemaService: SubTemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -27,7 +27,7 @@ export class SubTemaController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterSubTemaDto): Promise<ListSubTemaDto> {
-        return { 'linhas': await this.subTemaService.findAll(filters) };
+        return { linhas: await this.subTemaService.findAll(filters) };
     }
 
     @Patch(':id')

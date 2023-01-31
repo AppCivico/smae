@@ -6,6 +6,6 @@ import { SubTemaController } from './subtema.controller';
 @Module({
     imports: [PrismaModule],
     controllers: [SubTemaController],
-    providers: [SubTemaService]
+    providers: [SubTemaService],
 })
-export class SubTemaModule { }
+export class SubTemaModule {}

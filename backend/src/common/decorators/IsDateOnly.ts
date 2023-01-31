@@ -17,7 +17,6 @@ export function IsOnlyDate(validationOptions?: ValidationOptions) {
                     return value instanceof Date && !isNaN(value as any) && /T00:00:00/.test(value.toISOString());
                 },
             },
-
         });
     };
 }

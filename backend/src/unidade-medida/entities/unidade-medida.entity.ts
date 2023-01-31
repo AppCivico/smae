@@ -1,5 +1,5 @@
 export class UnidadeMedida {
-    id: number
-    sigla: string
-    descricao: string
+    id: number;
+    sigla: string;
+    descricao: string;
 }

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-const AdmZip = require("adm-zip");
+const AdmZip = require('adm-zip');
 
 import { Response } from 'express';
 import { DateTime } from 'luxon';
@@ -18,16 +18,12 @@ import { RelatorioDto } from './entities/report.entity';
 import { ReportsService } from './reports.service';
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
-var XLSX_ZAHL_PAYLOAD = require("xlsx/dist/xlsx.zahl");
-
+const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 @ApiTags('Relatórios')
 @Controller('relatorios')
 export class ReportsController {
-    constructor(
-        private readonly reportsService: ReportsService,
-        private readonly uploadService: UploadService
-    ) { }
+    constructor(private readonly reportsService: ReportsService, private readonly uploadService: UploadService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -35,22 +31,23 @@ export class ReportsController {
     @Roles('Reports.executar')
     @ApiOkResponse({
         description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
-        type: ''
+        type: '',
     })
-    async create(
-        @Body() dto: CreateReportDto,
-        @CurrentUser() user: PessoaFromJwt,
-        @Res() res: Response) {
+    async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt, @Res() res: Response) {
         const contentType = 'application/zip';
         const filename = [
             dto.fonte,
             (dto.parametros as any)['tipo'],
-            (dto.parametros as any)['ano'], ,
+            (dto.parametros as any)['ano'],
+            ,
             (dto.parametros as any)['mes'],
             (dto.parametros as any)['periodo'],
             (dto.parametros as any)['semestre'],
-            DateTime.local({ zone: "America/Sao_Paulo" }).toISO(),
-            '.zip'].filter((r) => r !== undefined).join('-');
+            DateTime.local({ zone: 'America/Sao_Paulo' }).toISO(),
+            '.zip',
+        ]
+            .filter(r => r !== undefined)
+            .join('-');
         const files = await this.reportsService.runReport(dto, user);
 
         const zip = new AdmZip();
@@ -62,8 +59,8 @@ export class ReportsController {
                 const readCsv: any[] = await new Promise((resolve, reject) => {
                     parse(file.buffer, { columns: true }, (err: any, data: any) => {
                         if (err) throw reject(err);
-                        resolve(data)
-                    })
+                        resolve(data);
+                    });
                 });
 
                 // converte o que se parece com números automaticamente
@@ -80,22 +77,13 @@ export class ReportsController {
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Sheet1');
 
-                zip.addFile(
-                    file.name.replace(/\.csv$/, '.xlsx'),
-                    XLSX.write(workbook, { type: "buffer", bookType: "xlsx", numbers: XLSX_ZAHL_PAYLOAD, compression: true })
-                );
+                zip.addFile(file.name.replace(/\.csv$/, '.xlsx'), XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx', numbers: XLSX_ZAHL_PAYLOAD, compression: true }));
             }
-        };
+        }
         const zipBuffer = zip.toBuffer();
 
         if (dto.salvar_arquivo) {
-            const arquivoId = await this.uploadService.uploadReport(
-                dto.fonte,
-                filename,
-                zipBuffer,
-                contentType,
-                user
-            );
+            const arquivoId = await this.uploadService.uploadReport(dto.fonte, filename, zipBuffer, contentType, user);
 
             await this.reportsService.saveReport(dto, arquivoId, user);
         }
@@ -106,9 +94,8 @@ export class ReportsController {
             'Access-Control-Expose-Headers': 'content-disposition',
         });
         res.write(zipBuffer);
-        res.send()
+        res.send();
     }
-
 
     @ApiBearerAuth('access-token')
     @Get()
@@ -124,12 +111,8 @@ export class ReportsController {
     @ApiUnauthorizedResponse()
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
-    async remover(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
-        await this.reportsService.delete(params.id, user)
+    async remover(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.reportsService.delete(params.id, user);
         return null;
     }
-
 }

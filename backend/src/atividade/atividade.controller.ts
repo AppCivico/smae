@@ -14,7 +14,7 @@ import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 @ApiTags('Atividade')
 @Controller('atividade')
 export class AtividadeController {
-    constructor(private readonly atividadeService: AtividadeService) { }
+    constructor(private readonly atividadeService: AtividadeService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -29,7 +29,7 @@ export class AtividadeController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
-        return { 'linhas': await this.atividadeService.findAll(filters, user) };
+        return { linhas: await this.atividadeService.findAll(filters, user) };
     }
 
     @Patch(':id')
@@ -50,5 +50,4 @@ export class AtividadeController {
         await this.atividadeService.remove(+params.id, user);
         return '';
     }
-
 }

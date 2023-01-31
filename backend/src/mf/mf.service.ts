@@ -6,13 +6,11 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class MfService {
-
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async pessoaAcessoPdm(user: PessoaFromJwt): Promise<PessoaAcessoPdm> {
         const perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
-        if (!perfil)
-            throw new HttpException('Faltando pessoaAcessoPdm', 404)
+        if (!perfil) throw new HttpException('Faltando pessoaAcessoPdm', 404);
 
         // apenas pra ter certeza, mas eu acredito que o Prisma já faz isso sozinho
         perfil.cronogramas_etapas = perfil.cronogramas_etapas.map(n => +n);
@@ -29,17 +27,16 @@ export class MfService {
             where: {
                 ativo: true,
                 pdm: {
-                    ativo: true
-                }
+                    ativo: true,
+                },
             },
             select: {
                 id: true,
                 data_ciclo: true,
-                pdm: { select: { id: true } }
-            }
+                pdm: { select: { id: true } },
+            },
         });
-        if (!cicloAtivo)
-            throw new HttpException('Faltando ciclo ativo', 404)
+        if (!cicloAtivo) throw new HttpException('Faltando ciclo ativo', 404);
 
         return cicloAtivo;
     }
@@ -52,44 +49,44 @@ export class MfService {
             where: {
                 ciclo_fisico_id: ciclo_fisico_id,
                 meta_id: meta_id,
-            }
+            },
         });
     }
 
     extraiResponsaveis(
         responsaveis: {
-            coordenador_responsavel_cp: boolean,
+            coordenador_responsavel_cp: boolean;
             orgao: {
-                sigla: string | null
-            },
+                sigla: string | null;
+            };
             pessoa: {
-                nome_exibicao: string
-            },
-        }[]
+                nome_exibicao: string;
+            };
+        }[],
     ): {
-        orgaos_responsaveis: string[],
-        orgaos_participantes: string[],
-        responsaveis_na_cp: string[]
+        orgaos_responsaveis: string[];
+        orgaos_participantes: string[];
+        responsaveis_na_cp: string[];
     } {
-        let orgaos_responsaveis: string[] = [];
-        let orgaos_participantes: string[] = [];
-        let responsaveis_na_cp: string[] = [];
+        const orgaos_responsaveis: string[] = [];
+        const orgaos_participantes: string[] = [];
+        const responsaveis_na_cp: string[] = [];
 
         for (const r of responsaveis) {
             const sigla = r.orgao.sigla || '';
 
             if (r.coordenador_responsavel_cp) {
                 if (orgaos_responsaveis.includes(sigla) == false) {
-                    orgaos_responsaveis.push(sigla)
+                    orgaos_responsaveis.push(sigla);
                 }
 
                 if (responsaveis_na_cp.includes(r.pessoa.nome_exibicao) == false) {
-                    responsaveis_na_cp.push(r.pessoa.nome_exibicao)
+                    responsaveis_na_cp.push(r.pessoa.nome_exibicao);
                 }
             }
 
             if (orgaos_participantes.includes(sigla) == false) {
-                orgaos_participantes.push(sigla)
+                orgaos_participantes.push(sigla);
             }
         }
 
@@ -97,6 +94,6 @@ export class MfService {
             orgaos_responsaveis,
             orgaos_participantes,
             responsaveis_na_cp,
-        }
+        };
     }
 }

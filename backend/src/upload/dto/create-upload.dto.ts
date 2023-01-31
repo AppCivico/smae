@@ -1,29 +1,28 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
-import { TipoUpload } from "../entities/tipo-upload";
-
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { TipoUpload } from '../entities/tipo-upload';
 
 export class CreateUploadDto {
     /**
      * tipo - local onde o documento será usado
      * @example SHAPEFILE
-    * */
+     * */
     @ApiProperty({ enum: TipoUpload, enumName: 'TipoUpload' })
     @IsEnum(TipoUpload, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoUpload).join(', ')
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoUpload).join(', '),
     })
-    tipo: TipoUpload
+    tipo: TipoUpload;
 
     /**
      * tipo_documento_id só é necessário quando tipo = DOCUMENTO
      * @example 1
-    * */
+     * */
     @IsOptional()
     @IsInt({ message: '$property| Necessário ID do Tipo Documento' })
     @ValidateIf((object: CreateUploadDto) => object.tipo === TipoUpload.DOCUMENTO)
     @Type(() => Number)
-    tipo_documento_id?: number | null
+    tipo_documento_id?: number | null;
 
     /*
      * Descrição do arquivo
@@ -31,9 +30,8 @@ export class CreateUploadDto {
     @IsOptional()
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
     @MaxLength(10000, { message: '$property| descrição: Máximo 10000 caracteres' })
-    descricao?: string
+    descricao?: string;
 
     @ApiProperty({ type: 'string', format: 'binary', required: true })
-    arquivo: Express.Multer.File
-
+    arquivo: Express.Multer.File;
 }

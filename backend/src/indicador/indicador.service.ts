@@ -12,16 +12,13 @@ import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto
 import { Indicador } from './entities/indicador.entity';
 import { VariavelService } from '../variavel/variavel.service';
 
-const FP = require("../../public/js/formula_parser.js");
+const FP = require('../../public/js/formula_parser.js');
 
 @Injectable()
 export class IndicadorService {
     private readonly logger = new Logger(IndicadorService.name);
 
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly variavelService: VariavelService,
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) {}
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         console.log({ createIndicadorDto });
@@ -48,10 +45,10 @@ export class IndicadorService {
                                             iniciativa_id: true,
                                             IndicadorVariavel: {
                                                 select: {
-                                                    variavel_id: true
-                                                }
-                                            }
-                                        }
+                                                    variavel_id: true,
+                                                },
+                                            },
+                                        },
                                     },
 
                                     atividade: {
@@ -63,16 +60,16 @@ export class IndicadorService {
                                                     atividade_id: true,
                                                     IndicadorVariavel: {
                                                         select: {
-                                                            variavel_id: true
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                                                            variavel_id: true,
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
 
                     iniciativa: {
@@ -83,10 +80,10 @@ export class IndicadorService {
                                     iniciativa_id: true,
                                     IndicadorVariavel: {
                                         select: {
-                                            variavel_id: true
-                                        }
-                                    }
-                                }
+                                            variavel_id: true,
+                                        },
+                                    },
+                                },
                             },
 
                             atividade: {
@@ -98,24 +95,23 @@ export class IndicadorService {
                                             atividade_id: true,
                                             IndicadorVariavel: {
                                                 select: {
-                                                    variavel_id: true
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                                                    variavel_id: true,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             });
 
             const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, prisma);
             if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
                 const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
                 // vai dar rollback, mas ai n repete o codigo pelo menos
-                if (filterIdIn.includes(meta_id) === false)
-                    throw new HttpException('Sem permissão para criar indicador para a meta', 400)
+                if (filterIdIn.includes(meta_id) === false) throw new HttpException('Sem permissão para criar indicador para a meta', 400);
             }
 
             // Verifica se há variaveis que devem ser 'herdadas'
@@ -127,7 +123,7 @@ export class IndicadorService {
                                 id: indicador.id,
                                 iniciativa_id: indicador.iniciativa_id,
                                 meta_id: null,
-                                atividade_id: null
+                                atividade_id: null,
                             };
 
                             await this.variavelService.resyncIndicadorVariavel(indicador_for_sync, variavel.variavel_id, prisma);
@@ -141,7 +137,7 @@ export class IndicadorService {
                                     id: indicador.id,
                                     atividade_id: indicador.atividade_id,
                                     meta_id: null,
-                                    iniciativa_id: null
+                                    iniciativa_id: null,
                                 };
 
                                 await this.variavelService.resyncIndicadorVariavel(indicador_for_sync, variavel.variavel_id, prisma);
@@ -157,7 +153,7 @@ export class IndicadorService {
                                 id: indicador.id,
                                 atividade_id: indicador.atividade_id,
                                 meta_id: null,
-                                iniciativa_id: null
+                                iniciativa_id: null,
                             };
 
                             await this.variavelService.resyncIndicadorVariavel(indicador_for_sync, variavel.variavel_id, prisma);
@@ -176,7 +172,7 @@ export class IndicadorService {
 
     async #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined, indicador_id: number, formula: string): Promise<string> {
         let formula_compilada = '';
-        let neededRefs: Record<string, number> = {};
+        const neededRefs: Record<string, number> = {};
         if (formula) {
             try {
                 formula_compilada = FP.parse(formula.toLocaleUpperCase());
@@ -185,14 +181,14 @@ export class IndicadorService {
             }
 
             for (const match of formula_compilada.matchAll(/\$[A-Z]+\b/g)) {
-                let referencia = match[0].replace('$', '');
+                const referencia = match[0].replace('$', '');
                 if (!neededRefs[referencia]) neededRefs[referencia] = 0;
                 neededRefs[referencia]++;
             }
         }
 
-        let uniqueRef: Record<string, boolean> = {};
-        let variables: number[] = [];
+        const uniqueRef: Record<string, boolean> = {};
+        const variables: number[] = [];
 
         if (formula_variaveis && formula_variaveis.length > 0) {
             for (const fv of formula_variaveis) {
@@ -202,8 +198,7 @@ export class IndicadorService {
                     throw new HttpException(`formula_variaveis| ${fv.referencia} duplicada, utilize apenas uma vez!`, 400);
                 }
 
-                if (variables.includes(fv.variavel_id) == false)
-                    variables.push(+fv.variavel_id)
+                if (variables.includes(fv.variavel_id) == false) variables.push(+fv.variavel_id);
             }
 
             const count = await this.prisma.indicadorVariavel.count({
@@ -211,22 +206,26 @@ export class IndicadorService {
                     desativado: false,
                     indicador_id: indicador_id,
                     variavel_id: {
-                        in: variables
-                    }
-                }
+                        in: variables,
+                    },
+                },
             });
 
             if (count !== variables.length) {
-
                 const found = await this.prisma.indicadorVariavel.findMany({
                     where: {
                         indicador_id: indicador_id,
-                        desativado: false
+                        desativado: false,
                     },
-                    select: { variavel_id: true }
+                    select: { variavel_id: true },
                 });
 
-                throw new HttpException(`formula_variaveis| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(variables)}, Existentes: ${JSON.stringify(found.map(e => e.variavel_id))}`, 400);
+                throw new HttpException(
+                    `formula_variaveis| Uma ou mais variável enviada não faz parte do indicador. Enviadas: ${JSON.stringify(variables)}, Existentes: ${JSON.stringify(
+                        found.map(e => e.variavel_id),
+                    )}`,
+                    400,
+                );
             }
         }
 
@@ -240,10 +239,9 @@ export class IndicadorService {
     }
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined, user: PessoaFromJwt): Promise<Indicador[]> {
-
         // TODO cruzar até chegar nas metas pra fazer o filtro (PDM.tecnico_cp) se necessário, mesma situação das variaveis
 
-        let listActive = await this.prisma.indicador.findMany({
+        const listActive = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
                 id: filters?.id,
@@ -272,12 +270,12 @@ export class IndicadorService {
                         variavel_id: true,
                         janela: true,
                         usar_serie_acumulada: true,
-                    }
+                    },
                 },
                 formula: true,
                 acumulado_usa_formula: true,
-                casas_decimais: true
-            }
+                casas_decimais: true,
+            },
         });
 
         return listActive;
@@ -297,21 +295,20 @@ export class IndicadorService {
                     variavel_id: true,
                     janela: true,
                     referencia: true,
-                    usar_serie_acumulada: true
-                }
-            }
+                    usar_serie_acumulada: true,
+                },
+            },
         };
-        let indicador = await this.prisma.indicador.findFirst({
+        const indicador = await this.prisma.indicador.findFirst({
             where: { id: id },
-            select: indicadorSelectData
+            select: indicadorSelectData,
         });
         if (!indicador) throw new HttpException('indicador não encontrado', 400);
 
         const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, this.prisma);
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) === false)
-                throw new HttpException('Sem permissão para editar indicador para a meta', 400)
+            if (filterIdIn.includes(meta_id) === false) throw new HttpException('Sem permissão para editar indicador para a meta', 400);
         }
 
         console.log('updateIndicadorDto', updateIndicadorDto);
@@ -319,7 +316,7 @@ export class IndicadorService {
         const formula_variaveis = updateIndicadorDto.formula_variaveis;
         delete updateIndicadorDto.formula_variaveis;
         let formula: string = updateIndicadorDto.formula ? updateIndicadorDto.formula : '';
-        let antigaFormulaCompilada = indicador.formula_compilada || '';
+        const antigaFormulaCompilada = indicador.formula_compilada || '';
         if (updateIndicadorDto.formula_variaveis && !updateIndicadorDto.formula) {
             formula = antigaFormulaCompilada;
         }
@@ -330,24 +327,23 @@ export class IndicadorService {
             throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
         }
 
-        let formula_compilada: string = await this.#validateVariaveis(formula_variaveis, id, formula);
+        const formula_compilada: string = await this.#validateVariaveis(formula_variaveis, id, formula);
         console.log({ formula_variaveis });
 
         const oldVersion = IndicadorService.getIndicadorHash(indicador);
         this.logger.debug({ oldVersion });
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-
             const indicador = await prisma.indicador.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
-                    ...updateIndicadorDto as any, // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
+                    ...(updateIndicadorDto as any), // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
                     formula_compilada: formula_compilada,
                     acumulado_usa_formula: updateIndicadorDto.acumulado_usa_formula === null ? undefined : updateIndicadorDto.acumulado_usa_formula,
                 },
-                select: indicadorSelectData
+                select: indicadorSelectData,
             });
 
             const newVersion = IndicadorService.getIndicadorHash(indicador);
@@ -355,23 +351,23 @@ export class IndicadorService {
 
             if (formula_variaveis) {
                 await prisma.indicadorFormulaVariavel.deleteMany({
-                    where: { indicador_id: indicador.id }
-                })
+                    where: { indicador_id: indicador.id },
+                });
                 await prisma.indicadorFormulaVariavel.createMany({
-                    data: formula_variaveis.map((fv) => {
+                    data: formula_variaveis.map(fv => {
                         return {
                             usar_serie_acumulada: fv.usar_serie_acumulada,
                             indicador_id: indicador.id,
                             janela: fv.janela === 0 ? 1 : fv.janela,
                             variavel_id: fv.variavel_id,
                             referencia: fv.referencia,
-                        }
-                    })
+                        };
+                    }),
                 });
             }
 
             //if (!(oldVersion === newVersion)) {
-            this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`)
+            this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`);
             await prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
             //}
 
@@ -381,22 +377,20 @@ export class IndicadorService {
         return { id };
     }
 
-    static getIndicadorHash(
-        indicador: {
-            formula_variaveis: {
-                variavel_id: number;
-                referencia: string;
-                janela: number;
-                usar_serie_acumulada: boolean;
-            }[];
-            acumulado_valor_base: Prisma.Decimal | null;
-            formula_compilada: string | null;
-            acumulado_usa_formula: boolean;
-            periodicidade: Periodicidade;
-            inicio_medicao: Date;
-            fim_medicao: Date;
-        }): string {
-
+    static getIndicadorHash(indicador: {
+        formula_variaveis: {
+            variavel_id: number;
+            referencia: string;
+            janela: number;
+            usar_serie_acumulada: boolean;
+        }[];
+        acumulado_valor_base: Prisma.Decimal | null;
+        formula_compilada: string | null;
+        acumulado_usa_formula: boolean;
+        periodicidade: Periodicidade;
+        inicio_medicao: Date;
+        fim_medicao: Date;
+    }): string {
         let str = [
             indicador.formula_compilada || '()',
             Date2YMD.toString(indicador.inicio_medicao),
@@ -408,7 +402,7 @@ export class IndicadorService {
         ].join(',');
         indicador.formula_variaveis.sort((a, b) => ('' + a.referencia).localeCompare(b.referencia));
         for (const fv of indicador.formula_variaveis) {
-            str += '-' + [fv.referencia, fv.janela, fv.variavel_id, fv.usar_serie_acumulada].join(',')
+            str += '-' + [fv.referencia, fv.janela, fv.variavel_id, fv.usar_serie_acumulada].join(',');
         }
         return str;
     }
@@ -417,8 +411,7 @@ export class IndicadorService {
         const meta_id = await this.variavelService.getMetaIdDoIndicador(id, this.prisma);
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) === false)
-                throw new HttpException('Sem permissão para remover indicador para a meta', 400)
+            if (filterIdIn.includes(meta_id) === false) throw new HttpException('Sem permissão para remover indicador para a meta', 400);
         }
 
         const created = await this.prisma.indicador.updateMany({
@@ -426,7 +419,7 @@ export class IndicadorService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return created;
@@ -447,8 +440,8 @@ export class IndicadorService {
             porPeriodo[Date2YMD.toString(serieValor.data_valor)][serieValor.serie] = {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toPrecision(),
-                ha_conferencia_pendente: serieValor.ha_conferencia_pendente
-            }
+                ha_conferencia_pendente: serieValor.ha_conferencia_pendente,
+            };
         }
 
         return porPeriodo;
@@ -478,15 +471,14 @@ export class IndicadorService {
                 (select periodicidade_intervalo(${periodicidade}::"Periodicidade"))
             ) p
         `;
-            return dados.map((e) => e.dt);
-
+            return dados.map(e => e.dt);
         } else {
             // versao otimizada e sem chance de bugs
             const dados: Record<string, string>[] = await this.prisma.$queryRaw`
                 select to_char(p.p, 'yyyy-mm-dd') as dt
                 from generate_series(${startStr}::date, ${endStr}::date, (select periodicidade_intervalo(${periodicidade}::"Periodicidade"))) p
             `;
-            return dados.map((e) => e.dt);
+            return dados.map(e => e.dt);
         }
     }
 
@@ -496,40 +488,36 @@ export class IndicadorService {
                 indicador_id: +indicadorId,
                 serie: {
                     in: series,
-                }
+                },
             },
             select: {
                 id: true,
                 serie: true,
                 data_valor: true,
                 valor_nominal: true,
-                ha_conferencia_pendente: true
+                ha_conferencia_pendente: true,
             },
-            orderBy: [
-                { serie: 'asc' },
-                { data_valor: 'asc' },
-            ]
+            orderBy: [{ serie: 'asc' }, { data_valor: 'asc' }],
         });
     }
 
     async getSeriesIndicador(id: number, user: PessoaFromJwt, filters: FilterIndicadorSerieDto): Promise<ListSeriesAgrupadas> {
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: +id },
-            select: { id: true, inicio_medicao: true, fim_medicao: true, periodicidade: true }
+            select: { id: true, inicio_medicao: true, fim_medicao: true, periodicidade: true },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 404);
 
         const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, this.prisma);
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) === false)
-                throw new HttpException('Sem permissão para visualizar serie do indicador para a meta', 400)
+            if (filterIdIn.includes(meta_id) === false) throw new HttpException('Sem permissão para visualizar serie do indicador para a meta', 400);
         }
 
         const result: ListSeriesAgrupadas = {
             variavel: undefined,
             linhas: [],
-            ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']
+            ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'],
         };
 
         const valoresExistentes = await this.getValorSerieExistente(indicador.id, ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado']);
@@ -541,12 +529,7 @@ export class IndicadorService {
             const seriesExistentes: SerieIndicadorValorNominal[] = [];
 
             const existeValor = porPeriodo[periodoYMD];
-            if (existeValor && (
-                existeValor.Previsto
-                || existeValor.PrevistoAcumulado
-                || existeValor.Realizado
-                || existeValor.RealizadoAcumulado
-            )) {
+            if (existeValor && (existeValor.Previsto || existeValor.PrevistoAcumulado || existeValor.Realizado || existeValor.RealizadoAcumulado)) {
                 if (existeValor.Previsto) {
                     seriesExistentes.push(existeValor.Previsto);
                 } else {
@@ -582,10 +565,8 @@ export class IndicadorService {
                 // TODO: botar o label de acordo com a periodicidade"
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
-            })
-
+            });
         }
-
 
         return result;
     }
@@ -593,8 +574,7 @@ export class IndicadorService {
     buildNonExistingSerieValor(periodo: DateYMD, serie: Serie): SerieIndicadorValorNominal {
         return {
             data_valor: periodo,
-            valor_nominal: ''
-        }
+            valor_nominal: '',
+        };
     }
-
 }

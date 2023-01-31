@@ -15,7 +15,7 @@ import { PessoaService } from './pessoa.service';
 @ApiTags('Pessoa')
 @Controller('pessoa')
 export class PessoaController {
-    constructor(private readonly pessoaService: PessoaService) { }
+    constructor(private readonly pessoaService: PessoaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -25,12 +25,11 @@ export class PessoaController {
         return this.pessoaService.criarPessoa(createPessoaDto, user);
     }
 
-
     @ApiBearerAuth('access-token')
     @Get()
     @Roles('CadastroPessoa.inserir', 'CadastroPessoa.editar', 'CadastroPessoa.inativar', 'PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     async findAll(@Query() filters: FilterPessoaDto): Promise<ListPessoaDto> {
-        return { 'linhas': await this.pessoaService.findAll(filters) };
+        return { linhas: await this.pessoaService.findAll(filters) };
     }
 
     @Patch(':id')
@@ -48,5 +47,4 @@ export class PessoaController {
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         return await this.pessoaService.getDetail(+params.id, user);
     }
-
 }

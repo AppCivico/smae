@@ -6,21 +6,16 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from './../metas/dto/mf-meta-risco.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 
-
 @Injectable()
 export class MetasRiscoService {
-
-    constructor(
-        private readonly prisma: PrismaService,
-    ) { }
-
+    constructor(private readonly prisma: PrismaService) {}
 
     private async carregaCicloPorId(ciclo_fisico_id: number) {
         const ret = await this.prisma.cicloFisico.findFirst({
             where: { id: ciclo_fisico_id },
             select: {
-                data_ciclo: true
-            }
+                data_ciclo: true,
+            },
         });
         if (!ret) {
             throw new HttpException(`Ciclo não encontrado no PDM`, 404);
@@ -30,7 +25,6 @@ export class MetasRiscoService {
     }
 
     async getMetaRisco(dto: FilterRiscoDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListRiscoDto> {
-
         const analisesResult = await this.prisma.metaCicloFisicoRisco.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -48,15 +42,14 @@ export class MetasRiscoService {
                 criado_em: true,
                 meta_id: true,
                 pessoaCriador: {
-                    select: { nome_exibicao: true }
+                    select: { nome_exibicao: true },
                 },
-                id: true
-            }
+                id: true,
+            },
         });
 
-
         return {
-            riscos: analisesResult.map((r) => {
+            riscos: analisesResult.map(r => {
                 return {
                     detalhamento: r.detalhamento || '',
                     ponto_de_atencao: r.ponto_de_atencao || '',
@@ -66,13 +59,10 @@ export class MetasRiscoService {
                     meta_id: r.meta_id,
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                }
+                };
             }),
-        }
+        };
     }
-
-
-
 
     async addMetaRisco(dto: RiscoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
@@ -81,9 +71,7 @@ export class MetasRiscoService {
         }
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
-
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
-
             const cfq = await prismaTxn.metaCicloFisicoRisco.create({
                 data: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -96,15 +84,12 @@ export class MetasRiscoService {
                     detalhamento: dto.detalhamento,
                     meta_id: dto.meta_id,
                 },
-                select: { id: true }
+                select: { id: true },
             });
-
 
             return cfq.id;
         });
 
-        return { id: id }
+        return { id: id };
     }
-
-
 }

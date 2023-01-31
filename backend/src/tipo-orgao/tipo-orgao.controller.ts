@@ -13,7 +13,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 @ApiTags('Tipo de Órgão')
 @Controller('tipo-orgao')
 export class TipoOrgaoController {
-    constructor(private readonly tipoOrgaoService: TipoOrgaoService) { }
+    constructor(private readonly tipoOrgaoService: TipoOrgaoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -26,7 +26,7 @@ export class TipoOrgaoController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(): Promise<ListTipoOrgaoDto> {
-        return { 'linhas': await this.tipoOrgaoService.findAll() };
+        return { linhas: await this.tipoOrgaoService.findAll() };
     }
 
     @Patch(':id')

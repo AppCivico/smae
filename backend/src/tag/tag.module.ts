@@ -5,11 +5,8 @@ import { TagController } from './tag.controller';
 import { TagService } from './tag.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        UploadModule
-    ],
+    imports: [PrismaModule, UploadModule],
     controllers: [TagController],
-    providers: [TagService]
+    providers: [TagService],
 })
-export class TagModule { }
+export class TagModule {}

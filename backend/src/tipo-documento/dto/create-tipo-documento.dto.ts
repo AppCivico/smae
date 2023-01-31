@@ -16,41 +16,37 @@ function CheckExt(validationOptions?: ValidationOptions) {
                     return typeof value === 'string' && /^(?:(?:[\w0-9]{1,8}))(?:\s*\,\s*(?:[\w0-9]{1,8})){0,99}$/.test(value);
                 },
             },
-
         });
     };
 }
 
 export class CreateTipoDocumentoDto {
     /**
-    * Extensão separada por virgula
-    * passar na regexp: /^(?:(?:[\w0-9]{1,8}))(?:\s*\,\s*(?:[\w0-9]{1,8})){0,99}$/
-    * @example "doc, docx"
-    */
+     * Extensão separada por virgula
+     * passar na regexp: /^(?:(?:[\w0-9]{1,8}))(?:\s*\,\s*(?:[\w0-9]{1,8})){0,99}$/
+     * @example "doc, docx"
+     */
     @IsOptional()
     @CheckExt()
-    extensoes?: string | null
+    extensoes?: string | null;
 
     /**
-    * Descrição
-    */
+     * Descrição
+     */
     @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| Descrição: Máximo 250 caracteres' })
-    descricao: string
+    descricao: string;
 
     /**
-    * Código do tipo de upload [usar para identificar os lugares onde pode ser aceito]
-    * @example PDM
-    */
+     * Código do tipo de upload [usar para identificar os lugares onde pode ser aceito]
+     * @example PDM
+     */
     @IsString({ message: '$property| Código: Precisa ser alfanumérico' })
-    codigo: string
+    codigo: string;
 
     /**
-    * Título
-    */
+     * Título
+     */
     @IsString({ message: '$property| Código: Precisa ser alfanumérico' })
-    titulo: string
-
-
-
+    titulo: string;
 }

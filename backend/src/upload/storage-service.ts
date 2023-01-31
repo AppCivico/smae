@@ -13,7 +13,7 @@ export class StorageService {
         if (!process.env.S3_HOST) throw new Error('Please set an value for S3_HOST');
         if (/^https?\:\:/.test(process.env.S3_HOST)) throw new Error('S3_HOST must start with https:// or http://');
 
-        let endpoint = new URL(process.env.S3_HOST);
+        const endpoint = new URL(process.env.S3_HOST);
         this.S3 = new MinioJS.Client({
             accessKey: process.env.S3_ACCESS_KEY,
             secretKey: process.env.S3_SECRET_KEY,
@@ -34,8 +34,7 @@ export class StorageService {
             return await this.S3.putObject(this.BUCKET, key, blob, metadata);
         } catch (error) {
             console.log(error);
-            throw error
+            throw error;
         }
     }
-
 }

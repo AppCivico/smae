@@ -18,5 +18,4 @@ export class ErrorFilter implements ExceptionFilter {
             response.status(500).json({ message: 'Erro interno durante execução, banco de dados: Prisma Code: ' + exception.code });
         }
     }
-
 }

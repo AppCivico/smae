@@ -1,4 +1,4 @@
 export class IdNomeExibicao {
-    id: number
-    nome_exibicao: string
+    id: number;
+    nome_exibicao: string;
 }

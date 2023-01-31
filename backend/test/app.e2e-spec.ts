@@ -16,19 +16,13 @@ describe('AppController (e2e)', () => {
     });
     afterAll(async () => {
         await app.close();
-
     });
 
     it('/ (GET) should be 404', async () => {
-        return await request(app.getHttpServer())
-            .get('/')
-            .expect(404);
+        return await request(app.getHttpServer()).get('/').expect(404);
     });
 
     it('/ping (GET)', async () => {
-        return await request(app.getHttpServer())
-            .get('/ping')
-            .expect(200);
+        return await request(app.getHttpServer()).get('/ping').expect(200);
     });
-
 });

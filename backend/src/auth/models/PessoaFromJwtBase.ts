@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 export class PessoaFromJwtBase {
     @ApiProperty({ description: 'ID da Pessoa' })
     id: number;

@@ -1,74 +1,72 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Periodicidade, Periodo } from "@prisma/client";
-import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "../../common/decorators/IsDateOnly";
-
+import { ApiProperty } from '@nestjs/swagger';
+import { Periodicidade, Periodo } from '@prisma/client';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
+import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class CreateParamsPainelConteudoDto {
-
     @IsArray({ message: '$property| precisa ser uma array, campo obrigatório' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    metas: number[]
+    metas: number[];
 }
 
 export class CreatePainelConteudoDto {
     @IsInt({ message: '$property| painel precisa ser um número' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
-    painel_id: number
+    painel_id: number;
 
     @IsInt({ message: '$property| meta precisa ser um número' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
-    meta_id: number
+    meta_id: number;
 
     @IsInt({ message: '$property| indicador precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
-    indicador_id?: number
+    indicador_id?: number;
 
     @IsInt({ message: '$property| tema precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
-    ordem?: number
+    ordem?: number;
 
     @IsBoolean()
-    mostrar_acumulado: boolean
+    mostrar_acumulado: boolean;
 
     @IsBoolean()
-    mostrar_indicador: boolean
+    mostrar_indicador: boolean;
 
     @IsBoolean()
-    mostrar_planejado: boolean
+    mostrar_planejado: boolean;
 
     @ApiProperty({ enum: Periodicidade, enumName: 'Periodicidade' })
     @IsEnum(Periodicidade, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', ')
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
     })
-    periodicidade: Periodicidade
+    periodicidade: Periodicidade;
 
     @ApiProperty({ enum: Periodo, enumName: 'Periodo' })
     @IsEnum(Periodo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodo).join(', ')
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodo).join(', '),
     })
-    periodo?: Periodo
+    periodo?: Periodo;
 
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    periodo_fim?: Date
+    periodo_fim?: Date;
 
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    periodo_inicio?: Date
+    periodo_inicio?: Date;
 
     @IsOptional()
     @IsNumber()
-    periodo_valor?: number
+    periodo_valor?: number;
 
     @IsOptional()
     @IsBoolean()
-    mostrar_acumulado_periodo?: boolean
+    mostrar_acumulado_periodo?: boolean;
 }

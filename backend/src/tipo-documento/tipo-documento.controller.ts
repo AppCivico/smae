@@ -13,7 +13,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 @ApiTags('Tipo de Documento')
 @Controller('tipo-documento')
 export class TipoDocumentoController {
-    constructor(private readonly tipoDocumentoService: TipoDocumentoService) { }
+    constructor(private readonly tipoDocumentoService: TipoDocumentoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -26,7 +26,7 @@ export class TipoDocumentoController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(): Promise<ListTipoDocumentoDto> {
-        return { 'linhas': await this.tipoDocumentoService.findAll() };
+        return { linhas: await this.tipoDocumentoService.findAll() };
     }
 
     @Patch(':id')

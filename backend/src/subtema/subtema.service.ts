@@ -7,26 +7,25 @@ import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 
 @Injectable()
 export class SubTemaService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createSubTemaDto: CreateSubTemaDto, user: PessoaFromJwt) {
-
         const created = await this.prisma.subTema.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 ...createSubTemaDto,
             },
-            select: { id: true, descricao: true }
+            select: { id: true, descricao: true },
         });
 
         return created;
     }
 
     async findAll(filters: FilterSubTemaDto | undefined = undefined) {
-        let pdmId = filters?.pdm_id;
+        const pdmId = filters?.pdm_id;
 
-        let listActive = await this.prisma.subTema.findMany({
+        const listActive = await this.prisma.subTema.findMany({
             where: {
                 removido_em: null,
                 pdm_id: pdmId,
@@ -35,7 +34,7 @@ export class SubTemaService {
                 id: true,
                 descricao: true,
                 pdm_id: true,
-            }
+            },
         });
         return listActive;
     }
@@ -61,7 +60,7 @@ export class SubTemaService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return created;

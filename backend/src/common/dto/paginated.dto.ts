@@ -1,4 +1,4 @@
-import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 export class PaginatedDto<TData> {
     @ApiProperty()
