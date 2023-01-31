@@ -1,5 +1,5 @@
 <script setup>
-import { relatórioOrçamentário as schema } from "@/consts/formSchemas";
+import { relatórioOrçamentário as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { router } from '@/router';
@@ -15,7 +15,7 @@ const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const { current } = storeToRefs(relatoriosStore);
 
-let { loading } = storeToRefs(relatoriosStore);
+const { loading } = storeToRefs(relatoriosStore);
 
 current.value = {
   fonte: 'Orcamento',
@@ -29,12 +29,12 @@ current.value = {
     orgaos: [],
   },
   salvar_arquivo: false,
-}
+};
 
 async function onSubmit(values) {
   try {
-    var msg;
-    var r;
+    let msg;
+    let r;
 
     values.parametros.inicio = monthAndYearToDate(values.parametros.inicio);
     values.parametros.fim = monthAndYearToDate(values.parametros.fim);
@@ -69,66 +69,140 @@ onMounted(() => {
 </script>
 
 <template>
-  <Form @submit="onSubmit" :validation-schema="schema" :initial-values="current" v-slot="{ errors, isSubmitting, values }">
-      <div class="flex g2 mb2">
-        <div class="f1">
-            <label class="label"><abbr title="Programa de metas">PdM</abbr> <span class="tvermelho">*</span></label>
-            <Field name="parametros.pdm_id" as="select" class="inputtext light
-            mb1" :class="{ 'error': errors['parametros.pdm_id'] }" :disabled="loading" v-model="current.parametros.pdm_id">
-                <option value="">Selecionar</option>
-                <option v-for="item in PdMStore.PdM" :value="item.id"
-                :key="item.id">{{ item.nome }}</option>
-            </Field>
-            <div class="error-msg">{{ errors['parametros.pdm_id'] }}</div>
+  <Form
+    v-slot="{ errors, isSubmitting, values }"
+    :validation-schema="schema"
+    :initial-values="current"
+    @submit="onSubmit"
+  >
+    <div class="flex g2 mb2">
+      <div class="f1">
+        <label class="label">
+          <abbr title="Programa de metas">PdM</abbr>
+          <span class="tvermelho">*</span>
+        </label>
+        <Field
+          v-model="current.parametros.pdm_id"
+          name="parametros.pdm_id"
+          as="select"
+          class="inputtext light
+            mb1"
+          :class="{ 'error': errors['parametros.pdm_id'] }"
+          :disabled="loading"
+        >
+          <option value="">
+            Selecionar
+          </option>
+          <option
+            v-for="item in PdMStore.PdM"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <div class="error-msg">
+          {{ errors['parametros.pdm_id'] }}
         </div>
-        <div class="f1">
-            <label for="inicio" class="label">mês/ano início <span class="tvermelho">*</span></label>
-            <Field placeholder="01/2003" name="parametros.inicio" id="inicio" type="text" class="inputtext light mb1"
-            :class="{ 'error': errors['parametro.inicio'] }" maxlength="7" @keyup="maskMonth" v-model="current.parametros.inicio" />
-            <div class="error-msg">{{ errors['parametros.inicio'] }}</div>
+      </div>
+      <div class="f1">
+        <label
+          for="inicio"
+          class="label"
+        >mês/ano início <span class="tvermelho">*</span></label>
+        <Field
+          id="inicio"
+          v-model="current.parametros.inicio"
+          placeholder="01/2003"
+          name="parametros.inicio"
+          type="text"
+          class="inputtext light mb1"
+          :class="{ 'error': errors['parametro.inicio'] }"
+          maxlength="7"
+          @keyup="maskMonth"
+        />
+        <div class="error-msg">
+          {{ errors['parametros.inicio'] }}
         </div>
-        <div class="f1">
-            <label for="fim" class="label">mês/ano final <span class="tvermelho">*</span></label>
-            <Field placeholder="01/2003" name="parametros.fim" id="fim" type="text" class="inputtext light mb1"
-            :class="{ 'error': errors['parametros.fim'] }" maxlength="7" @keyup="maskMonth" v-model="current.parametros.fim" />
-            <div class="error-msg">{{ errors['parametros.fim'] }}</div>
+      </div>
+      <div class="f1">
+        <label
+          for="fim"
+          class="label"
+        >mês/ano final <span class="tvermelho">*</span></label>
+        <Field
+          id="fim"
+          v-model="current.parametros.fim"
+          placeholder="01/2003"
+          name="parametros.fim"
+          type="text"
+          class="inputtext light mb1"
+          :class="{ 'error': errors['parametros.fim'] }"
+          maxlength="7"
+          @keyup="maskMonth"
+        />
+        <div class="error-msg">
+          {{ errors['parametros.fim'] }}
         </div>
       </div>
+    </div>
 
-      <div class="mb2">
-          <div class="pl2">
-            <label class="block mb1">
-              <Field name="parametros.tipo" type="radio" value="Consolidado"
-              class="inputcheckbox" :class="{ 'error': errors['parametros.tipo'] }" />
-              <span>Consolidado</span>
-            </label>
-            <label class="block mb1">
-              <Field name="parametros.tipo" type="radio" value="Analitico"
-              class="inputcheckbox" :class="{ 'error': errors['parametros.tipo'] }" />
-              <span>Analítico</span>
-            </label>
-          </div>
-          <div class="error-msg">{{ errors['parametros.tipo'] }}</div>
+    <div class="mb2">
+      <div class="pl2">
+        <label class="block mb1">
+          <Field
+            name="parametros.tipo"
+            type="radio"
+            value="Consolidado"
+            class="inputcheckbox"
+            :class="{ 'error': errors['parametros.tipo'] }"
+          />
+          <span>Consolidado</span>
+        </label>
+        <label class="block mb1">
+          <Field
+            name="parametros.tipo"
+            type="radio"
+            value="Analitico"
+            class="inputcheckbox"
+            :class="{ 'error': errors['parametros.tipo'] }"
+          />
+          <span>Analítico</span>
+        </label>
       </div>
+      <div class="error-msg">
+        {{ errors['parametros.tipo'] }}
+      </div>
+    </div>
 
-      <div class="mb2">
-          <div class="pl2">
-            <label class="block">
-                <Field name="salvar_arquivo" type="checkbox"
-                :value="true" class="inputcheckbox" />
-                <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-            </label>
-          </div>
-        <div class="error-msg">{{ errors.salvar_arquivo }}</div>
+    <div class="mb2">
+      <div class="pl2">
+        <label class="block">
+          <Field
+            name="salvar_arquivo"
+            type="checkbox"
+            :value="true"
+            class="inputcheckbox"
+          />
+          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
+        </label>
       </div>
+      <div class="error-msg">
+        {{ errors.salvar_arquivo }}
+      </div>
+    </div>
 
-      <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1"/>
-          <button type="submit" class="btn big" :disabled="loading ||
-          isSubmitting">
-            {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
-          </button>
-          <hr class="ml2 f1"/>
-      </div>
+    <div class="flex spacebetween center mb2">
+      <hr class="mr2 f1">
+      <button
+        type="submit"
+        class="btn big"
+        :disabled="loading ||
+          isSubmitting"
+      >
+        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+      </button>
+      <hr class="ml2 f1">
+    </div>
   </Form>
 </template>

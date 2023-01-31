@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
