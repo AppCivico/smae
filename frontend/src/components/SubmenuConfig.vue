@@ -9,7 +9,12 @@ const perm = permissions.value;
 <template>
   <div id="submenu">
     <div class="subpadding">
-      <template v-if="perm?.CadastroPessoa||perm?.CadastroRegiao||perm?.CadastroPdm">
+      <template
+        v-if="perm?.CadastroPessoa
+          || perm?.CadastroRegiao
+          || perm?.CadastroPdm
+          || perm?.Projeto?.administrador"
+      >
         <h2>Entrada de dados</h2>
         <div class="links-container mb2">
           <router-link
@@ -31,10 +36,21 @@ const perm = permissions.value;
           >
             Programa de Metas
           </router-link>
+          <router-link
+            v-if="perm?.Projeto?.administrador"
+            :to="{ name: 'portfoliosListar' }"
+            :class="{ active: parentPage == 'portfolio' }"
+          >
+            Portfolio
+          </router-link>
         </div>
       </template>
-
-      <template v-if="perm?.CadastroOrgao||perm?.CadastroFonteRecurso||perm?.CadastroTipoDocumento||perm?.CadastroOds">
+      <template
+        v-if="perm?.CadastroOrgao
+          || perm?.CadastroFonteRecurso
+          || perm?.CadastroTipoDocumento
+          || perm?.CadastroOds"
+      >
         <h2>Formulários básicos</h2>
         <div class="links-container mb2">
           <router-link
