@@ -10,4 +10,4 @@ import { UploadModule } from '../../upload/upload.module';
     controllers: [ProjetoController],
     providers: [ProjetoService],
 })
-export class ProjetoModule { }
+export class ProjetoModule {}

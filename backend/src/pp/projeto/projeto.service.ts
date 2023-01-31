@@ -14,54 +14,51 @@ import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto } from './entities/pr
 
 @Injectable()
 export class ProjetoService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly portfolioService: PortfolioService,
-        private readonly uploadService: UploadService
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
-        let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
-        let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
-        let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
-        let origem_outro: string = dto.origem_outro || '';
+        const meta_id: number | null = dto.meta_id ? dto.meta_id : null;
+        const iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
+        const atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
+        const origem_outro: string = dto.origem_outro || '';
 
         if (dto.origem_outro && (dto.atividade_id || dto.iniciativa_id || dto.meta_id))
             throw new HttpException('origem_outro| não pode ser definido se enviar meta|iniciativa|atividade', 400);
 
         if (!dto.atividade_id && !dto.iniciativa_id && !dto.meta_id) {
-            if (!dto.origem_outro)
-                throw new HttpException('origem_outro| é obrigatório quando não enviar meta|iniciativa|atividade', 400);
+            if (!dto.origem_outro) throw new HttpException('origem_outro| é obrigatório quando não enviar meta|iniciativa|atividade', 400);
         }
 
         // verificar se a meta/ini/ativ existem, preencher os parents
 
         return {
-            meta_id, atividade_id, iniciativa_id, origem_outro,
-        }
+            meta_id,
+            atividade_id,
+            iniciativa_id,
+            origem_outro,
+        };
     }
 
     private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
-        let orgao_gestor_id: number = + dto.orgao_gestor_id;
-        let responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor;
+        const orgao_gestor_id: number = +dto.orgao_gestor_id;
+        const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor;
 
-        if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false)
-            throw new HttpException('orgao_gestor_id| não faz parte do Portfolio', 400);
+        if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false) throw new HttpException('orgao_gestor_id| não faz parte do Portfolio', 400);
 
         // TODO verificar se cada [responsaveis_no_orgao_gestor] existe realmente
         // e se tem o privilegio gestor_de_projeto
 
         return {
-            orgao_gestor_id, responsaveis_no_orgao_gestor
-        }
+            orgao_gestor_id,
+            responsaveis_no_orgao_gestor,
+        };
     }
 
     async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const portfolios = await this.portfolioService.findAll(user);
 
         const portfolio = portfolios.filter(r => r.id == dto.portfolio_id)[0];
-        if (!portfolio)
-            throw new HttpException('portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário', 400);
+        if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário', 400);
 
         const { meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio);
@@ -79,8 +76,10 @@ export class ProjetoService {
 
                     orgaos_participantes: {
                         createMany: {
-                            data: dto.orgaos_participantes.map(o => { return { orgao_id: o } })
-                        }
+                            data: dto.orgaos_participantes.map(o => {
+                                return { orgao_id: o };
+                            }),
+                        },
                     },
                     orgao_responsavel_id: dto.orgao_responsavel_id,
                     responsavel_id: dto.responsavel_id,
@@ -107,7 +106,7 @@ export class ProjetoService {
                     fase: 'Registro',
                     status: 'Registrado',
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             return row;
@@ -140,12 +139,12 @@ export class ProjetoService {
                                     select: {
                                         id: true,
                                         codigo: true,
-                                        titulo: true
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        titulo: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
 
                 iniciativa: {
@@ -154,39 +153,39 @@ export class ProjetoService {
                             select: {
                                 id: true,
                                 codigo: true,
-                                titulo: true
-                            }
-                        }
-                    }
+                                titulo: true,
+                            },
+                        },
+                    },
                 },
 
                 meta: {
                     select: {
                         id: true,
                         codigo: true,
-                        titulo: true
-                    }
+                        titulo: true,
+                    },
                 },
 
                 orgao_responsavel: {
                     select: {
                         id: true,
                         sigla: true,
-                        descricao: true
-                    }
-                }
-            }
+                        descricao: true,
+                    },
+                },
+            },
         });
 
         for (const row of rows) {
             let meta: IdCodTituloDto | null;
 
             if (row.atividade) {
-                meta = { ...row.atividade.iniciativa.meta }
+                meta = { ...row.atividade.iniciativa.meta };
             } else if (row.iniciativa) {
-                meta = { ...row.iniciativa.meta }
+                meta = { ...row.iniciativa.meta };
             } else if (row.meta) {
-                meta = row.meta
+                meta = row.meta;
             } else {
                 meta = null;
             }
@@ -196,15 +195,14 @@ export class ProjetoService {
                 nome: row.nome,
                 status: row.status,
                 meta: meta,
-                orgao_responsavel: row.orgao_responsavel ? { ...row.orgao_responsavel } : null
-            })
+                orgao_responsavel: row.orgao_responsavel ? { ...row.orgao_responsavel } : null,
+            });
         }
 
         return ret;
     }
 
     async findOne(id: number, user: PessoaFromJwt, readonly: boolean): Promise<ProjetoDetailDto> {
-
         if (!user.hasSomeRoles(['Projeto.administrador'])) {
             // TODO verificar a permissão do "user",
             // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
@@ -244,30 +242,30 @@ export class ProjetoService {
                     select: {
                         id: true,
                         sigla: true,
-                        descricao: true
-                    }
+                        descricao: true,
+                    },
                 },
 
                 orgao_responsavel: {
                     select: {
                         id: true,
                         sigla: true,
-                        descricao: true
-                    }
+                        descricao: true,
+                    },
                 },
 
                 premissas: {
                     select: {
                         id: true,
-                        premissa: true
-                    }
+                        premissa: true,
+                    },
                 },
 
                 restricoes: {
                     select: {
                         id: true,
                         restricao: true,
-                    }
+                    },
                 },
 
                 recursos: {
@@ -277,14 +275,14 @@ export class ProjetoService {
                         fonte_recurso_ano: true,
                         valor_percentual: true,
                         valor_nominal: true,
-                    }
+                    },
                 },
 
                 responsavel: {
                     select: {
                         id: true,
                         nome_exibicao: true,
-                    }
+                    },
                 },
 
                 orgaos_participantes: {
@@ -293,13 +291,12 @@ export class ProjetoService {
                             select: {
                                 id: true,
                                 sigla: true,
-                                descricao: true
-                            }
-                        }
-                    }
-                }
-
-            }
+                                descricao: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         return {
@@ -308,28 +305,25 @@ export class ProjetoService {
                 return {
                     id: o.orgao.id,
                     sigla: o.orgao.sigla,
-                    descricao: o.orgao.descricao
-                }
-            })
-        }
+                    descricao: o.orgao.descricao,
+                };
+            }),
+        };
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(projetoId, user, false);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
 
             // TODO continuar com os outros updates
-
         });
 
-        return { id: projetoId }
+        return { id: projetoId };
     }
 
     private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
@@ -339,25 +333,24 @@ export class ProjetoService {
         for (const premissa of dto.premissas!) {
             if ('id' in premissa && premissa.id) {
                 await prismaTx.projetoPremissa.findFirstOrThrow({
-                    where: { projeto_id: projetoId, id: premissa.id }
+                    where: { projeto_id: projetoId, id: premissa.id },
                 });
                 await prismaTx.projetoPremissa.update({
                     where: { id: premissa.id },
-                    data: { premissa: premissa.premissa }
+                    data: { premissa: premissa.premissa },
                 });
                 keepIds.push(premissa.id);
             } else {
                 const row = await prismaTx.projetoPremissa.create({
-                    data: { premissa: premissa.premissa, projeto_id: projetoId }
+                    data: { premissa: premissa.premissa, projeto_id: projetoId },
                 });
                 keepIds.push(row.id);
             }
         }
         await prismaTx.projetoPremissa.deleteMany({
-            where: { projeto_id: projetoId, id: { notIn: keepIds } }
+            where: { projeto_id: projetoId, id: { notIn: keepIds } },
         });
     }
-
 
     private async upsertRestricoes(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
         if (Array.isArray(dto.restricoes) == false) return;
@@ -366,22 +359,22 @@ export class ProjetoService {
         for (const restricao of dto.restricoes!) {
             if ('id' in restricao && restricao.id) {
                 await prismaTx.projetoRestricao.findFirstOrThrow({
-                    where: { projeto_id: projetoId, id: restricao.id }
+                    where: { projeto_id: projetoId, id: restricao.id },
                 });
                 await prismaTx.projetoRestricao.update({
                     where: { id: restricao.id },
-                    data: { restricao: restricao.restricao }
+                    data: { restricao: restricao.restricao },
                 });
                 keepIds.push(restricao.id);
             } else {
                 const row = await prismaTx.projetoRestricao.create({
-                    data: { restricao: restricao.restricao, projeto_id: projetoId }
+                    data: { restricao: restricao.restricao, projeto_id: projetoId },
                 });
                 keepIds.push(row.id);
             }
         }
         await prismaTx.projetoRestricao.deleteMany({
-            where: { projeto_id: projetoId, id: { notIn: keepIds } }
+            where: { projeto_id: projetoId, id: { notIn: keepIds } },
         });
     }
 
@@ -392,14 +385,12 @@ export class ProjetoService {
         for (const fonteRecurso of dto.fonte_recursos!) {
             const valor_nominal = fonteRecurso.valor_nominal !== undefined ? fonteRecurso.valor_nominal : null;
             const valor_percentual = fonteRecurso.valor_percentual !== undefined ? fonteRecurso.valor_percentual : null;
-            if (valor_nominal == null && valor_percentual == null)
-                throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400)
-            if (valor_nominal !== null && valor_percentual !== null)
-                throw new HttpException('Valor Percentual e Valor Nominal são mutuamente exclusivos', 400)
+            if (valor_nominal == null && valor_percentual == null) throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400);
+            if (valor_nominal !== null && valor_percentual !== null) throw new HttpException('Valor Percentual e Valor Nominal são mutuamente exclusivos', 400);
 
             if ('id' in fonteRecurso && fonteRecurso.id) {
                 await prismaTx.projetoFonteRecurso.findFirstOrThrow({
-                    where: { projeto_id: projetoId, id: fonteRecurso.id }
+                    where: { projeto_id: projetoId, id: fonteRecurso.id },
                 });
                 await prismaTx.projetoFonteRecurso.update({
                     where: { id: fonteRecurso.id },
@@ -408,7 +399,7 @@ export class ProjetoService {
                         fonte_recurso_cod_sof: fonteRecurso.fonte_recurso_cod_sof,
                         valor_nominal: valor_nominal,
                         valor_percentual: valor_percentual,
-                    }
+                    },
                 });
                 keepIds.push(fonteRecurso.id);
             } else {
@@ -418,14 +409,14 @@ export class ProjetoService {
                         fonte_recurso_cod_sof: fonteRecurso.fonte_recurso_cod_sof,
                         valor_nominal: valor_nominal,
                         valor_percentual: valor_percentual,
-                        projeto_id: projetoId
-                    }
+                        projeto_id: projetoId,
+                    },
                 });
                 keepIds.push(row.id);
             }
         }
         await prismaTx.projetoFonteRecurso.deleteMany({
-            where: { projeto_id: projetoId, id: { notIn: keepIds } }
+            where: { projeto_id: projetoId, id: { notIn: keepIds } },
         });
     }
 
@@ -435,7 +426,7 @@ export class ProjetoService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
         return;
     }
@@ -451,14 +442,14 @@ export class ProjetoService {
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
                 arquivo_id: arquivoId,
-                projeto_id: projetoId
+                projeto_id: projetoId,
             },
             select: {
-                id: true
-            }
+                id: true,
+            },
         });
 
-        return { id: arquivo.id }
+        return { id: arquivo.id };
     }
 
     async list_document(projetoId: number, user: PessoaFromJwt) {
@@ -475,16 +466,16 @@ export class ProjetoService {
                         tamanho_bytes: true,
                         TipoDocumento: true,
                         descricao: true,
-                        nome_original: true
-                    }
-                }
-            }
+                        nome_original: true,
+                    },
+                },
+            },
         });
         for (const item of arquivos) {
             item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
         }
 
-        return arquivos
+        return arquivos;
     }
 
     async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
@@ -496,7 +487,7 @@ export class ProjetoService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
     }
 }

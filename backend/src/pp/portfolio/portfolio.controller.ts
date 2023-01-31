@@ -12,7 +12,7 @@ import { PortfolioService } from './portfolio.service';
 @ApiTags('Portfolio')
 @Controller('portfolio')
 export class PortfolioController {
-    constructor(private readonly portfolioService: PortfolioService) { }
+    constructor(private readonly portfolioService: PortfolioService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -28,7 +28,7 @@ export class PortfolioController {
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
-            linhas: await this.portfolioService.findAll(user)
+            linhas: await this.portfolioService.findAll(user),
         };
     }
 
