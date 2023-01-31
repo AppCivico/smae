@@ -5,11 +5,11 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
-import { PortfolioDto } from './entities/portfolio.entity';
+import { PortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
 
 @Injectable()
 export class PortfolioService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.portfolio.count({
@@ -47,6 +47,48 @@ export class PortfolioService {
         return created;
     }
 
+    async findOne(id: number, user: PessoaFromJwt): Promise<PortfolioOneDto> {
+        let orgao_id: undefined | number = undefined;
+        if (!user.hasSomeRoles(['Projeto.administrador'])) {
+            // provavelmente há outras situações para criar aqui, por exemplo, se a pessoa fizer
+            // parte dos responsáveis, ela pode visualizar mas não pode criar
+            if (user.hasSomeRoles(['SMAE.gestor_de_projeto']) === false) throw new HttpException('Necessário SMAE.gestor_de_projeto se não for Projeto.administrador', 400);
+
+            // só vai poder ver os portfolios que tem a organização dele
+            if (!user.orgao_id) throw new HttpException('usuário está sem órgão', 400);
+            orgao_id = user.orgao_id!;
+        }
+
+        const listActive = await this.prisma.portfolio.findMany({
+            where: {
+                removido_em: null,
+                orgaos: orgao_id
+                    ? {
+                        some: {
+                            orgao_id: orgao_id,
+                        },
+                    }
+                    : undefined,
+            },
+            select: {
+                id: true,
+                titulo: true,
+                orgaos: {
+                    select: {
+                        orgao_id: true
+                    },
+                },
+            },
+        });
+
+        return listActive.map(r => {
+            return {
+                ...r,
+                orgaos: r.orgaos.map(rr => rr.orgao_id),
+            };
+        })[0];
+    }
+
     async findAll(user: PessoaFromJwt): Promise<PortfolioDto[]> {
         let orgao_id: undefined | number = undefined;
         if (!user.hasSomeRoles(['Projeto.administrador'])) {
@@ -64,10 +106,10 @@ export class PortfolioService {
                 removido_em: null,
                 orgaos: orgao_id
                     ? {
-                          some: {
-                              orgao_id: orgao_id,
-                          },
-                      }
+                        some: {
+                            orgao_id: orgao_id,
+                        },
+                    }
                     : undefined,
             },
             select: {

@@ -3,16 +3,17 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse }
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { FindOneParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
-import { ListPortfolioDto } from './entities/portfolio.entity';
+import { ListPortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
 import { PortfolioService } from './portfolio.service';
 
 @ApiTags('Portfolio')
 @Controller('portfolio')
 export class PortfolioController {
-    constructor(private readonly portfolioService: PortfolioService) {}
+    constructor(private readonly portfolioService: PortfolioService) { }
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -32,12 +33,21 @@ export class PortfolioController {
         };
     }
 
+
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioOneDto> {
+        return await this.portfolioService.findOne(params.id, user)
+    }
+
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador')
-    async update(@Param('id') id: string, @Body() updatePortfolioDto: UpdatePortfolioDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.portfolioService.update(+id, updatePortfolioDto, user);
+    async update(@Param() params: FindOneParams, @Body() updatePortfolioDto: UpdatePortfolioDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.portfolioService.update(params.id, updatePortfolioDto, user);
     }
 
     @Delete(':id')
@@ -46,8 +56,8 @@ export class PortfolioController {
     @Roles('Projeto.administrador')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
-        await this.portfolioService.remove(+id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.portfolioService.remove(params.id, user);
         return '';
     }
 }
