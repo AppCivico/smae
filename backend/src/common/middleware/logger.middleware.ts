@@ -10,9 +10,7 @@ export class LoggerMiddleware implements NestMiddleware {
         const { ip, method, path: url } = request;
         const userAgent = request.get('user-agent') || '';
         const startReqTime = Date.now();
-        this.logger.log(
-            `${method} ${url} from user-agent '${userAgent || '(no-user-agent)'}' IP '${ip || '(no-ip)'}'`
-        );
+        this.logger.log(`${method} ${url} from user-agent '${userAgent || '(no-user-agent)'}' IP '${ip || '(no-ip)'}'`);
 
         response.on('close', () => {
             const { statusCode } = response;
@@ -20,13 +18,9 @@ export class LoggerMiddleware implements NestMiddleware {
             const took = Date.now() - startReqTime;
 
             if (statusCode == 304 || statusCode == 204) {
-                this.logger.log(
-                    `${method} ${url} ${statusCode} NO CONTENT in ${took} ms`
-                );
+                this.logger.log(`${method} ${url} ${statusCode} NO CONTENT in ${took} ms`);
             } else {
-                this.logger.log(
-                    `${method} ${url} ${statusCode} returning ${contentLength} bytes in ${took} ms`
-                );
+                this.logger.log(`${method} ${url} ${statusCode} returning ${contentLength} bytes in ${took} ms`);
             }
         });
 

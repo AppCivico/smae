@@ -6,6 +6,6 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
     imports: [PrismaModule],
     controllers: [TipoDocumentoController],
-    providers: [TipoDocumentoService]
+    providers: [TipoDocumentoService],
 })
-export class TipoDocumentoModule { }
+export class TipoDocumentoModule {}

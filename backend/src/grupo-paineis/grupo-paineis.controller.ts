@@ -15,7 +15,7 @@ import { GrupoPaineisService } from './grupo-paineis.service';
 @ApiTags('Grupos de Painéis')
 @Controller('grupo-paineis')
 export class GrupoPaineisController {
-    constructor(private readonly grupoPaineisService: GrupoPaineisService) { }
+    constructor(private readonly grupoPaineisService: GrupoPaineisService) {}
 
     @Post('')
     @ApiBearerAuth('access-token')
@@ -29,7 +29,7 @@ export class GrupoPaineisController {
     @Get('')
     @Roles('CadastroPainel.visualizar', 'CadastroGrupoPaineis.inserir', 'CadastroGrupoPaineis.editar', 'CadastroGrupoPaineis.remover')
     async findAll(@Query() filters: FilterGrupoPaineisDto): Promise<ListGrupoPaineisDto> {
-        return { 'linhas': await this.grupoPaineisService.findAll(filters) };
+        return { linhas: await this.grupoPaineisService.findAll(filters) };
     }
 
     @Patch(':id')
@@ -57,5 +57,4 @@ export class GrupoPaineisController {
     async getDetail(@Param() params: FindOneParams): Promise<DetailGrupoPaineisDto> {
         return await this.grupoPaineisService.getDetail(params.id);
     }
-
 }

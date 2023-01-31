@@ -7,6 +7,6 @@ import { EtapaService } from './etapa.service';
     imports: [PrismaModule],
     controllers: [EtapaController],
     providers: [EtapaService],
-    exports: [EtapaService]
+    exports: [EtapaService],
 })
-export class EtapaModule { }
+export class EtapaModule {}

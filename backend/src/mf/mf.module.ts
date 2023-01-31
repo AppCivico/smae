@@ -7,4 +7,4 @@ import { MfService } from './mf.service';
     providers: [MfService],
     exports: [MfService],
 })
-export class MfModule { }
+export class MfModule {}

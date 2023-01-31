@@ -7,6 +7,6 @@ import { VariavelModule } from '../variavel/variavel.module';
 @Module({
     imports: [PrismaModule, VariavelModule],
     controllers: [IniciativaController],
-    providers: [IniciativaService]
+    providers: [IniciativaService],
 })
-export class IniciativaModule { }
+export class IniciativaModule {}

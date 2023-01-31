@@ -9,4 +9,4 @@ import { AtividadeService } from './atividade.service';
     controllers: [AtividadeController],
     providers: [AtividadeService],
 })
-export class AtividadeModule { }
+export class AtividadeModule {}

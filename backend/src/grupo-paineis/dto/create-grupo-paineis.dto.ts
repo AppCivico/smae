@@ -1,16 +1,16 @@
-import { IsBoolean, IsString, MaxLength } from "class-validator";
+import { IsBoolean, IsString, MaxLength } from 'class-validator';
 
 export class CreateGrupoPaineisDto {
     /**
-    * nome
-    */
+     * nome
+     */
     @IsString({ message: '$property| Precisa ser alfanumérico' })
     @MaxLength(30, { message: '$property| código 30 caracteres' })
-    nome: string
+    nome: string;
 
     /**
-    * ativo
-    */
+     * ativo
+     */
     @IsBoolean()
-    ativo: boolean
+    ativo: boolean;
 }

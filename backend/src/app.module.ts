@@ -56,7 +56,6 @@ import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 
-
 @Module({
     imports: [
         ConfigModule.forRoot(),
@@ -107,9 +106,7 @@ import { VariavelModule } from './variavel/variavel.module';
             {
                 path: 'mf',
                 module: MfModule,
-                children: [
-                    MfMetasModule
-                ]
+                children: [MfMetasModule],
             },
         ]),
         PdmCicloModule,
@@ -123,7 +120,7 @@ import { VariavelModule } from './variavel/variavel.module';
         AppService,
         {
             provide: APP_GUARD,
-            useClass: JwtAuthGuard
+            useClass: JwtAuthGuard,
         },
         {
             provide: APP_GUARD,
@@ -131,24 +128,20 @@ import { VariavelModule } from './variavel/variavel.module';
         },
         {
             provide: APP_FILTER,
-            useClass: ErrorFilter
+            useClass: ErrorFilter,
         },
         {
             provide: APP_INTERCEPTOR,
-            useClass: ContentInterceptor
+            useClass: ContentInterceptor,
         },
-        UtilsService
+        UtilsService,
     ],
-
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer
-            .apply(LoggerMiddleware)
-            .forRoutes({
-                path: '*',
-                method: RequestMethod.ALL
-            });
+        consumer.apply(LoggerMiddleware).forRoutes({
+            path: '*',
+            method: RequestMethod.ALL,
+        });
     }
-
 }

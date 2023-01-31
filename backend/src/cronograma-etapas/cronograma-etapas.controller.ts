@@ -12,13 +12,13 @@ import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 @ApiTags('Cronograma-Etapa')
 @Controller('cronograma-etapa')
 export class CronogramaEtapaController {
-    constructor(private readonly cronogramaEtapaService: CronogramaEtapaService) { }
+    constructor(private readonly cronogramaEtapaService: CronogramaEtapaService) {}
 
     @ApiBearerAuth('access-token')
     @Get()
     @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
     async findAll(@Query() filters: FilterCronogramaEtapaDto): Promise<ListCronogramaEtapaDto> {
-        return { 'linhas': await this.cronogramaEtapaService.findAll(filters) };
+        return { linhas: await this.cronogramaEtapaService.findAll(filters) };
     }
 
     @Post()
@@ -39,5 +39,4 @@ export class CronogramaEtapaController {
         await this.cronogramaEtapaService.delete(+params.id, user);
         return '';
     }
-
 }

@@ -1,5 +1,4 @@
-
 export class CodigoNome {
-    codigo: string
+    codigo: string;
     nome: string;
 }

@@ -15,7 +15,7 @@ import { FilterObjetivoEstrategicoDto } from './dto/filter-objetivo-estrategico.
 @ApiTags('Objetivo Estratégico (Acessa via Tema)')
 @Controller('objetivo-estrategico')
 export class ObjetivoEstrategicoController {
-    constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) { }
+    constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -28,7 +28,7 @@ export class ObjetivoEstrategicoController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
-        return { 'linhas': await this.objetivoEstrategicoService.findAll(filters) };
+        return { linhas: await this.objetivoEstrategicoService.findAll(filters) };
     }
 
     @Patch(':id')
@@ -54,7 +54,7 @@ export class ObjetivoEstrategicoController {
 @ApiTags('Tema (Antigo Objetivo Estratégico)')
 @Controller('tema')
 export class ObjetivoEstrategicoController2 {
-    constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) { }
+    constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -67,7 +67,7 @@ export class ObjetivoEstrategicoController2 {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
-        return { 'linhas': await this.objetivoEstrategicoService.findAll(filters) };
+        return { linhas: await this.objetivoEstrategicoService.findAll(filters) };
     }
 
     @Patch(':id')

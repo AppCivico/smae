@@ -11,7 +11,7 @@ import { MetaOrcamentoService } from './meta-orcamento.service';
 @Controller('meta-orcamento')
 @ApiTags('Orçamento - Meta (Custeio e Investimento)')
 export class MetaOrcamentoController {
-    constructor(private readonly metaOrcamentoService: MetaOrcamentoService) { }
+    constructor(private readonly metaOrcamentoService: MetaOrcamentoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -25,7 +25,7 @@ export class MetaOrcamentoController {
     @Get()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async findAll(@Query() filters: FilterMetaOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaOrcamentoDto> {
-        return { 'linhas': await this.metaOrcamentoService.findAll(filters, user) };
+        return { linhas: await this.metaOrcamentoService.findAll(filters, user) };
     }
 
     @Patch(':id')
@@ -33,14 +33,9 @@ export class MetaOrcamentoController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @HttpCode(HttpStatus.ACCEPTED)
-    async patch(
-        @Param() params: FindOneParams,
-        @Body() updateMetaDto: UpdateMetaOrcamentoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<void> {
+    async patch(@Param() params: FindOneParams, @Body() updateMetaDto: UpdateMetaOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
         await this.metaOrcamentoService.update(+params.id, updateMetaDto, user);
     }
-
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
@@ -52,5 +47,4 @@ export class MetaOrcamentoController {
         await this.metaOrcamentoService.remove(+params.id, user);
         return '';
     }
-
 }

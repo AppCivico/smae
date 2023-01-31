@@ -16,7 +16,7 @@ import { IndicadorService } from './indicador.service';
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorController {
-    constructor(private readonly indicadorService: IndicadorService) { }
+    constructor(private readonly indicadorService: IndicadorService) {}
 
     @Post('indicador')
     @ApiBearerAuth('access-token')
@@ -30,7 +30,7 @@ export class IndicadorController {
     @Get('indicador')
     @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
-        return { 'linhas': await this.indicadorService.findAll(filters, user) };
+        return { linhas: await this.indicadorService.findAll(filters, user) };
     }
 
     @Patch('indicador/:id')
@@ -60,14 +60,9 @@ export class IndicadorController {
     @Roles('CadastroIndicador.editar', 'CadastroMeta.inserir', 'CadastroMeta.listar')
     @ApiOperation({
         summary: 'Recebe o ID do indicador como parâmetro',
-        description: 'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)'
+        description: 'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)',
     })
-    async getSeriePrevistoRealizado(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt,
-        @Query() filters: FilterIndicadorSerieDto
-    ): Promise<ListSeriesAgrupadas> {
+    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @Query() filters: FilterIndicadorSerieDto): Promise<ListSeriesAgrupadas> {
         return await this.indicadorService.getSeriesIndicador(params.id, user, filters || {});
     }
-
 }

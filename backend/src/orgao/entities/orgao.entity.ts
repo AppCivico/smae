@@ -1,16 +1,16 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { TipoOrgao } from "../../tipo-orgao/entities/tipo-orgao.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import { TipoOrgao } from '../../tipo-orgao/entities/tipo-orgao.entity';
 
 export class Orgao {
-    @ApiProperty({ description: 'ID do Órgão', })
+    @ApiProperty({ description: 'ID do Órgão' })
     id?: number;
-    @ApiProperty({ description: 'Sigla', })
+    @ApiProperty({ description: 'Sigla' })
     sigla: string | null;
-    @ApiProperty({ description: 'Descrição', })
+    @ApiProperty({ description: 'Descrição' })
     descricao?: string;
 
     tipo_orgao_id?: number;
-    @ApiProperty({ description: 'Tipo do Órgão - Apenas na listagem dos órgãos', })
+    @ApiProperty({ description: 'Tipo do Órgão - Apenas na listagem dos órgãos' })
     tipo_orgao?: TipoOrgao;
 }
 

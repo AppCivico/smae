@@ -1,14 +1,14 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TipoDocumento {
-    @ApiProperty({ description: 'ID', })
+    @ApiProperty({ description: 'ID' })
     id?: number;
-    @ApiProperty({ description: 'Extensões aceitas', })
+    @ApiProperty({ description: 'Extensões aceitas' })
     extensoes?: string | null;
-    @ApiProperty({ description: 'Descrição', })
-    descricao?: string| null;
-    @ApiProperty({ description: 'Título', })
+    @ApiProperty({ description: 'Descrição' })
+    descricao?: string | null;
+    @ApiProperty({ description: 'Título' })
     titulo: string;
-    @ApiProperty({ description: 'Código', })
+    @ApiProperty({ description: 'Código' })
     codigo: string;
 }

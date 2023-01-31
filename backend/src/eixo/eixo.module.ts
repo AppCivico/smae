@@ -6,6 +6,6 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
     imports: [PrismaModule],
     controllers: [EixoController, EixoController2],
-    providers: [EixoService]
+    providers: [EixoService],
 })
-export class EixoModule { }
+export class EixoModule {}

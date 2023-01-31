@@ -6,26 +6,24 @@ import { UpdateUnidadeMedidaDto } from './dto/update-unidade-medida.dto';
 
 @Injectable()
 export class UnidadeMedidaService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createUnidadeMedidaDto: CreateUnidadeMedidaDto, user: PessoaFromJwt) {
         const similarDescExists = await this.prisma.unidadeMedida.count({
             where: {
                 descricao: { endsWith: createUnidadeMedidaDto.descricao, mode: 'insensitive' },
                 removido_em: null,
-            }
+            },
         });
-        if (similarDescExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarDescExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const similarSiglaExists = await this.prisma.unidadeMedida.count({
             where: {
                 sigla: { endsWith: createUnidadeMedidaDto.sigla, mode: 'insensitive' },
                 removido_em: null,
-            }
+            },
         });
-        if (similarSiglaExists > 0)
-            throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarSiglaExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.unidadeMedida.create({
             data: {
@@ -33,7 +31,7 @@ export class UnidadeMedidaService {
                 criado_em: new Date(Date.now()),
                 ...createUnidadeMedidaDto,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return created;
@@ -44,7 +42,7 @@ export class UnidadeMedidaService {
             where: {
                 removido_em: null,
             },
-            select: { id: true, descricao: true, sigla: true }
+            select: { id: true, descricao: true, sigla: true },
         });
 
         return listActive;
@@ -59,21 +57,19 @@ export class UnidadeMedidaService {
                 where: {
                     descricao: { endsWith: updateUnidadeMedidaDto.descricao, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarDescExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarDescExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
             const similarSiglaExists = await this.prisma.unidadeMedida.count({
                 where: {
                     sigla: { endsWith: updateUnidadeMedidaDto.sigla, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarSiglaExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarSiglaExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.unidadeMedida.update({
@@ -96,7 +92,7 @@ export class UnidadeMedidaService {
         const existsDown = await this.prisma.variavel.count({
             where: {
                 unidade_medida_id: id,
-            }
+            },
         });
         if (existsDown > 0) throw new HttpException(`Não é possível remover: Há ${existsDown} variáveis dependentes.`, 400);
 
@@ -105,7 +101,7 @@ export class UnidadeMedidaService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return created;

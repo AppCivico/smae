@@ -2,17 +2,19 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Request, Response } from 'express';
-const { Parser, transforms: { flatten, unwind } } = require('json2csv');
+const {
+    Parser,
+    transforms: { flatten, unwind },
+} = require('json2csv');
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
 
-const linhasTransforms = [unwind({
-    paths: [
-        'linhas',
-        'linhas_planejado',
-        'meta.indicador.series'
-    ]
-}), flatten({ paths: [] })];
+const linhasTransforms = [
+    unwind({
+        paths: ['linhas', 'linhas_planejado', 'meta.indicador.series'],
+    }),
+    flatten({ paths: [] }),
+];
 const allTransforms = [unwind(), flatten({ paths: [] })];
 
 const contType = 'Content-Type';
@@ -28,7 +30,7 @@ export class ContentInterceptor implements NestInterceptor {
         const res = context.switchToHttp().getResponse<Response>();
         const content = req.header('Accept');
         return next.handle().pipe(
-            map(async (data) => {
+            map(async data => {
                 if (typeof data !== 'object') return data;
 
                 switch (content) {
@@ -44,15 +46,15 @@ export class ContentInterceptor implements NestInterceptor {
                             const readCsv = await new Promise((resolve, reject) => {
                                 parse(data, { columns: true }, (err: any, data: any) => {
                                     if (err) throw reject(err);
-                                    resolve(data)
-                                })
+                                    resolve(data);
+                                });
                             });
 
                             const csvDataArray = XLSX.utils.json_to_sheet(readCsv);
                             const workbook = XLSX.utils.book_new();
                             XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Sheet1');
 
-                            res.write(XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }))
+                            res.write(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
                             data = null;
                         }
                         break;
@@ -69,7 +71,7 @@ export class ContentInterceptor implements NestInterceptor {
                         break;
                 }
                 return data;
-            })
+            }),
         );
     }
 }

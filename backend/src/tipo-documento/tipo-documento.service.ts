@@ -6,19 +6,16 @@ import { UpdateTipoDocumentoDto } from './dto/update-tipo-documento.dto';
 
 @Injectable()
 export class TipoDocumentoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createTipoDocumentoDto: CreateTipoDocumentoDto, user: PessoaFromJwt) {
-
         const similarExists = await this.prisma.tipoDocumento.count({
             where: {
                 descricao: { endsWith: createTipoDocumentoDto.descricao, mode: 'insensitive' },
                 removido_em: null,
-            }
+            },
         });
-        if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
-
+        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoDocumento.create({
             data: {
@@ -26,14 +23,14 @@ export class TipoDocumentoService {
                 criado_em: new Date(Date.now()),
                 ...createTipoDocumentoDto,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return created;
     }
 
     async findAll() {
-        let listActive = await this.prisma.tipoDocumento.findMany({
+        const listActive = await this.prisma.tipoDocumento.findMany({
             where: {
                 removido_em: null,
             },
@@ -43,7 +40,7 @@ export class TipoDocumentoService {
                 extensoes: true,
                 titulo: true,
                 codigo: true,
-            }
+            },
         });
         return listActive;
     }
@@ -54,11 +51,10 @@ export class TipoDocumentoService {
                 where: {
                     descricao: { endsWith: updateTipoDocumentoDto.descricao, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.tipoDocumento.update({
@@ -79,7 +75,7 @@ export class TipoDocumentoService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return created;

@@ -1,10 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { IdCodTituloDto } from "../../../common/dto/IdCodTitulo.dto"
+import { ApiProperty } from '@nestjs/swagger';
+import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 
 export class RelPrevisaoCustoDto {
-    meta: IdCodTituloDto | null
-    iniciativa: IdCodTituloDto | null
-    atividade: IdCodTituloDto | null
+    meta: IdCodTituloDto | null;
+    iniciativa: IdCodTituloDto | null;
+    atividade: IdCodTituloDto | null;
 
     custo_previsto: string;
     projeto_atividade: string;
@@ -16,5 +16,5 @@ export class RelPrevisaoCustoDto {
 }
 
 export class ListPrevisaoCustoDto {
-    linhas: RelPrevisaoCustoDto[]
+    linhas: RelPrevisaoCustoDto[];
 }

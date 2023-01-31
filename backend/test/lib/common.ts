@@ -6,9 +6,9 @@ import { PessoaService } from '../../src/pessoa/pessoa.service';
 import { TipoOrgaoService } from '../../src/tipo-orgao/tipo-orgao.service';
 
 export class TestOrgData {
-    sigla: string
-    descricao: string
-    tipo_orgao_id?: number
+    sigla: string;
+    descricao: string;
+    tipo_orgao_id?: number;
 }
 
 export class OrganizacaoExpert {
@@ -40,13 +40,12 @@ export class OrganizacaoExpert {
     }
 }
 
-
 export class TestPessoaData {
-    email?: string
-    perfil_acesso_ids?: number[]
-    nome_exibicao?: string
-    nome_completo?: string
-    orgao_id?: number
+    email?: string;
+    perfil_acesso_ids?: number[];
+    nome_exibicao?: string;
+    nome_completo?: string;
+    orgao_id?: number;
 }
 export class PessoaExpert {
     /**
@@ -69,7 +68,7 @@ export class PessoaExpert {
         const email = cusData.email ?? ['test', randomStr, '@test.com'].join('');
 
         const findPessoa = await pessoaService.findAll({
-            email: email
+            email: email,
         });
         exitingPessoa = findPessoa.filter(o => o.email == email)[0];
         if (!exitingPessoa) {
@@ -82,13 +81,12 @@ export class PessoaExpert {
             });
 
             const findPessoa = await pessoaService.findAll({
-                email: email
+                email: email,
             });
             exitingPessoa = findPessoa[0];
-
         }
 
-        if (!exitingPessoa) throw new Error(`failed to create pessoa`)
+        if (!exitingPessoa) throw new Error(`failed to create pessoa`);
 
         console.log(exitingPessoa);
         return exitingPessoa;

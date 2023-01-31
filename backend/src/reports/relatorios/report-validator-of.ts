@@ -17,7 +17,6 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
             },
             validator: {
                 async validate(value: any, args: ValidationArguments) {
-
                     const [fonteNome] = args.constraints;
                     const fonte = (args.object as any)[fonteNome] as FonteRelatorio;
 
@@ -34,7 +33,6 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                     return true;
                 },
             },
-
         });
     };
 }

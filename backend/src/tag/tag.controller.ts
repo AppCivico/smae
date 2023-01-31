@@ -14,7 +14,7 @@ import { FilterTagDto } from './dto/filter-tag.dto';
 @ApiTags('Tag')
 @Controller('tag')
 export class TagController {
-    constructor(private readonly tagService: TagService) { }
+    constructor(private readonly tagService: TagService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -27,7 +27,7 @@ export class TagController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterTagDto): Promise<ListTagDto> {
-        return { 'linhas': await this.tagService.findAll(filters) };
+        return { linhas: await this.tagService.findAll(filters) };
     }
 
     @Patch(':id')

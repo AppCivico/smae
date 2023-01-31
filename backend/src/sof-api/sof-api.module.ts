@@ -3,7 +3,6 @@ import { SofApiService } from './sof-api.service';
 
 @Module({
     providers: [SofApiService],
-    exports: [SofApiService]
+    exports: [SofApiService],
 })
-export class SofApiModule { }
-
+export class SofApiModule {}

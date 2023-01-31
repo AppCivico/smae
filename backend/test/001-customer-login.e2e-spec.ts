@@ -3,12 +3,10 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
-
 import { AuthService } from '../src/auth/auth.service';
 import { AccessToken } from '../src/auth/models/AccessToken';
 import { OrganizacaoExpert, PessoaExpert } from './lib/common';
 import { Orgao } from '../src/orgao/entities/orgao.entity';
-
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
@@ -44,23 +42,14 @@ describe('AppController (e2e)', () => {
     });
 
     it('/minha-conta (GET) should be 401 without session', async () => {
-        return await request(app.getHttpServer())
-            .get('/minha-conta')
-            .expect(401);
+        return await request(app.getHttpServer()).get('/minha-conta').expect(401);
     });
 
     it('/minha-conta (GET) should be 401 with invalid session', async () => {
-        return await request(app.getHttpServer())
-            .get('/minha-conta')
-            .auth('het', { type: "bearer" })
-            .expect(401);
+        return await request(app.getHttpServer()).get('/minha-conta').auth('het', { type: 'bearer' }).expect(401);
     });
 
     it('/minha-conta (GET) should be 200', async () => {
-        return await request(app.getHttpServer())
-            .get('/minha-conta')
-            .auth(session.access_token, { type: "bearer" })
-            .expect(200);
+        return await request(app.getHttpServer()).get('/minha-conta').auth(session.access_token, { type: 'bearer' }).expect(200);
     });
-
 });

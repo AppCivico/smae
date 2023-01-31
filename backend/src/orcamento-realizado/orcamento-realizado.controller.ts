@@ -11,7 +11,7 @@ import { OrcamentoRealizadoService } from './orcamento-realizado.service';
 @ApiTags('Orçamento - Realizado')
 @Controller('orcamento-realizado')
 export class OrcamentoRealizadoController {
-    constructor(private readonly orcamentoRealizadoService: OrcamentoRealizadoService) { }
+    constructor(private readonly orcamentoRealizadoService: OrcamentoRealizadoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -33,7 +33,7 @@ export class OrcamentoRealizadoController {
     @Get()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async findAll(@Query() filters: FilterOrcamentoRealizadoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoRealizadoDto> {
-        return { 'linhas': await this.orcamentoRealizadoService.findAll(filters, user) };
+        return { linhas: await this.orcamentoRealizadoService.findAll(filters, user) };
     }
 
     @Delete(':id')
@@ -46,5 +46,4 @@ export class OrcamentoRealizadoController {
         await this.orcamentoRealizadoService.remove(+params.id, user);
         return '';
     }
-
 }

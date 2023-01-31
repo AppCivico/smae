@@ -1,21 +1,19 @@
-import { HttpException } from "@nestjs/common";
+import { HttpException } from '@nestjs/common';
 //import { Prisma } from "@prisma/client";
-import { ListaDePrivilegios } from "../../common/ListaDePrivilegios";
-import { PessoaFromJwtBase } from "./PessoaFromJwtBase";
-
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
+import { PessoaFromJwtBase } from './PessoaFromJwtBase';
 
 export class PessoaFromJwt extends PessoaFromJwtBase {
-
     // facilitando pra ter que não ter que usar um método estático aqui
     constructor(opts: PessoaFromJwtBase) {
-        super()
-        Object.assign(this, opts)
+        super();
+        Object.assign(this, opts);
     }
 
     // não requirido, mas se não existir não vai autorizar
     public hasSomeRoles(anyRequiredRole: ListaDePrivilegios[]) {
         if (!this.privilegios) return false;
-        return anyRequiredRole.some((role) => this.privilegios.includes(role));
+        return anyRequiredRole.some(role => this.privilegios.includes(role));
     }
 
     public async assertHasMetaRespAccess(meta_id: number, metaResponsavel: any) {
@@ -32,11 +30,10 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         if (!this.privilegios) return [];
 
         const metas = await metaResponsavel.findMany({
-            where: { pessoa_id: this.id, },
-            select: { meta_id: true }
+            where: { pessoa_id: this.id },
+            select: { meta_id: true },
         });
 
-        return (metas as { meta_id: number }[]).map(r => r.meta_id)
+        return (metas as { meta_id: number }[]).map(r => r.meta_id);
     }
-
 }

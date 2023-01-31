@@ -1,64 +1,60 @@
-import { ApiProperty, IntersectionType } from "@nestjs/swagger"
-import { TipoRelatorio } from "@prisma/client"
-import { Transform } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, ValidateIf } from "class-validator"
-import { FiltroMetasIniAtividadeDto } from "../../relatorios/dto/filtros.dto"
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
+import { TipoRelatorio } from '@prisma/client';
+import { Transform } from 'class-transformer';
+import { IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
+import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 
 export const SemestreDto = {
     Primeiro: 'Primeiro',
-    Segundo: 'Segundo'
+    Segundo: 'Segundo',
 };
 
-export type SemestreDto = (typeof SemestreDto)[keyof typeof SemestreDto]
+export type SemestreDto = (typeof SemestreDto)[keyof typeof SemestreDto];
 
 export const PeriodoRelatorioDto = {
     Anual: 'Anual',
-    Semestral: 'Semestral'
+    Semestral: 'Semestral',
 };
 
-export type PeriodoRelatorioDto = (typeof PeriodoRelatorioDto)[keyof typeof PeriodoRelatorioDto]
+export type PeriodoRelatorioDto = (typeof PeriodoRelatorioDto)[keyof typeof PeriodoRelatorioDto];
 
 export class IndicadorParams {
     /**
      * @example "Analitico"
-    */
+     */
     @ApiProperty({ enum: TipoRelatorio, enumName: 'TipoRelatorio' })
     @IsEnum(TipoRelatorio, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', ')
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
     })
-    tipo: TipoRelatorio
+    tipo: TipoRelatorio;
 
     /**
      * required se enviar que o tipo é semestre
      * @example ""
-    */
+     */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
     @ApiProperty({ enum: SemestreDto, enumName: 'SemestreDto' })
     @IsEnum(SemestreDto, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(SemestreDto).join(', ')
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(SemestreDto).join(', '),
     })
-    semestre?: SemestreDto | null
+    semestre?: SemestreDto | null;
 
     /**
      * @example "Primeiro"
-    */
+     */
     @ApiProperty({ enum: PeriodoRelatorioDto, enumName: 'PeriodoDto' })
     @IsEnum(PeriodoRelatorioDto, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(PeriodoRelatorioDto).join(', ')
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(PeriodoRelatorioDto).join(', '),
     })
-    periodo: PeriodoRelatorioDto
-
+    periodo: PeriodoRelatorioDto;
 
     /**
      * @example "2022"
-    */
+     */
     @IsInt()
     @Transform(({ value }: any) => +value)
-    ano: number
+    ano: number;
 }
 
-export class CreateRelIndicadorDto extends IntersectionType(
-    FiltroMetasIniAtividadeDto,
-    IndicadorParams
-) { }
+export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {}

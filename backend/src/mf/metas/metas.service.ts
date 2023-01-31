@@ -8,15 +8,36 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelService } from '../../variavel/variavel.service';
-import { CamposRealizado, CamposRealizadoParaSerie, CicloAtivoDto, CicloFaseDto, FilterMfMetasDto, FilterVariavelAnaliseQualitativaDto, IniciativasRetorno, MfFasesPermissoesDto, MfListVariavelAnaliseQualitativaDto, MfMetaDto, MfAvancarFasesDto, MfSeriesAgrupadas, MfSerieValorNomimal, RetornoMetaVariaveisDto, VariavelAnaliseQualitativaDocumentoDto, VariavelAnaliseQualitativaDto, VariavelComplementacaoDto, VariavelComSeries, VariavelConferidaDto, VariavelQtdeDto } from './dto/mf-meta.dto';
+import {
+    CamposRealizado,
+    CamposRealizadoParaSerie,
+    CicloAtivoDto,
+    CicloFaseDto,
+    FilterMfMetasDto,
+    FilterVariavelAnaliseQualitativaDto,
+    IniciativasRetorno,
+    MfFasesPermissoesDto,
+    MfListVariavelAnaliseQualitativaDto,
+    MfMetaDto,
+    MfAvancarFasesDto,
+    MfSeriesAgrupadas,
+    MfSerieValorNomimal,
+    RetornoMetaVariaveisDto,
+    VariavelAnaliseQualitativaDocumentoDto,
+    VariavelAnaliseQualitativaDto,
+    VariavelComplementacaoDto,
+    VariavelComSeries,
+    VariavelConferidaDto,
+    VariavelQtdeDto,
+} from './dto/mf-meta.dto';
 
-type DadosCiclo = { variavelParticipa: boolean, id: number, ativo: boolean, meta_esta_na_coleta: boolean };
+type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
 type DadosMetaIndicadores = {
-    meta_id: number
-    iniciativa_id: number | null
-    atividade_id: number | null
-    indicador_id: number
+    meta_id: number;
+    iniciativa_id: number | null;
+    atividade_id: number | null;
+    indicador_id: number;
 };
 
 type VariavelDetalhe = {
@@ -29,13 +50,13 @@ type VariavelDetalhe = {
             atividade_id?: number | null;
             meta_id?: number | null;
         };
-    }[]
+    }[];
 };
 
 type SerieseTotais = {
-    totais: VariavelQtdeDto
-    variaveis: VariavelComSeries[]
-}
+    totais: VariavelQtdeDto;
+    variaveis: VariavelComSeries[];
+};
 
 function shuffleArray(array: any[]) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -53,10 +74,9 @@ export class MetasService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly mfService: MfService,
-    ) { }
+    ) {}
 
     async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
-
         const rows = await this.prisma.meta.findMany({
             where: {
                 id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
@@ -66,29 +86,29 @@ export class MetasService {
                 titulo: true,
                 codigo: true,
                 ciclo_fase: {
-                    select: { ciclo_fase: true }
+                    select: { ciclo_fase: true },
                 },
                 StatusMetaCicloFisico: {
                     where: {
-                        ciclo_fisico_id: cicloAtivoId
+                        ciclo_fisico_id: cicloAtivoId,
                     },
                     select: {
                         status_coleta: true,
                         status_cronograma: true,
-                    }
+                    },
                 },
                 meta_orgao: {
                     where: {
                         responsavel: true,
                     },
                     select: {
-                        orgao: { select: { sigla: true, descricao: true } }
-                    }
-                }
+                        orgao: { select: { sigla: true, descricao: true } },
+                    },
+                },
             },
             orderBy: {
-                codigo: 'asc'
-            }
+                codigo: 'asc',
+            },
         });
 
         let metaStatus: { meta_id: number }[] | undefined = undefined;
@@ -96,41 +116,40 @@ export class MetasService {
         if (params.ciclo_fase == 'Analise') {
             metaStatus = await this.prisma.metaCicloFisicoAnalise.findMany({
                 where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
-                select: { meta_id: true }
+                select: { meta_id: true },
             });
         } else if (params.ciclo_fase == 'Risco') {
             metaStatus = await this.prisma.metaCicloFisicoRisco.findMany({
                 where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
-                select: { meta_id: true }
+                select: { meta_id: true },
             });
         } else if (params.ciclo_fase == 'Fechamento') {
             metaStatus = await this.prisma.metaCicloFisicoFechamento.findMany({
                 where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
-                select: { meta_id: true }
+                select: { meta_id: true },
             });
-
         }
         const labelsPorStatus: Record<CicloFase, Record<'true' | 'false', string>> = {
             Analise: {
-                'false': 'Metas sem análise qualitativa',
-                'true': 'Metas com análise qualitativa',
+                false: 'Metas sem análise qualitativa',
+                true: 'Metas com análise qualitativa',
             },
             Coleta: {
-                'false': '',
-                'true': '',
+                false: '',
+                true: '',
             },
             Risco: {
-                'false': 'Metas sem análise de risco',
-                'true': 'Metas com análise de risco',
+                false: 'Metas sem análise de risco',
+                true: 'Metas com análise de risco',
             },
             Fechamento: {
-                'false': 'Metas não fechadas',
-                'true': 'Metas fechadas',
+                false: 'Metas não fechadas',
+                true: 'Metas fechadas',
             },
         };
         console.log(params.ciclo_fase);
 
-        let metasStatusPorMeta: Record<number, boolean> = {};
+        const metasStatusPorMeta: Record<number, boolean> = {};
         if (metaStatus) {
             for (const r of metaStatus) {
                 metasStatusPorMeta[r.meta_id] = true;
@@ -151,7 +170,7 @@ export class MetasService {
                 // busca novamente, há uma pequena chance de já ter sido invalidado, nesse caso, ignora o status nesse render
                 const novoStatus = await this.prisma.statusMetaCicloFisico.findFirst({
                     where: { ciclo_fisico_id: cicloAtivoId, meta_id: r.id, pessoa_id: config.pessoa_id },
-                    select: { status_coleta: true, status_cronograma: true }
+                    select: { status_coleta: true, status_cronograma: true },
                 });
                 if (novoStatus) {
                     status_coleta = novoStatus.status_coleta;
@@ -173,27 +192,25 @@ export class MetasService {
                 codigo_organizacoes: r.meta_orgao ? r.meta_orgao.map(e => e.orgao.sigla || e.orgao.descricao) : ['Sem Organização'],
                 coleta: {
                     participante: coleta,
-                    status: coleta ? (status_coleta || 'Outros') : ''
+                    status: coleta ? status_coleta || 'Outros' : '',
                 },
                 cronograma: {
                     participante: cronograma,
-                    status: cronograma ? (status_cronograma || 'Outros') : ''
+                    status: cronograma ? status_cronograma || 'Outros' : '',
                 },
             });
-
         }
 
         return out;
     }
 
-
     extraiVariaveis(
         map: VariavelDetalhePorID,
         seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>,
-        fieldName: 'meta_id' | 'iniciativa_id' | 'atividade_id', fieldMatch: number,
+        fieldName: 'meta_id' | 'iniciativa_id' | 'atividade_id',
+        fieldMatch: number,
         cicloFisicoAtivo: CicloAtivoDto,
     ): SerieseTotais {
-
         const seriesDaX: VariavelComSeries[] = [];
         let aguarda_complementacao = 0;
         let aguarda_cp = 0;
@@ -203,7 +220,6 @@ export class MetasService {
         for (const varId of Object.keys(map)) {
             const variavel = map[+varId];
             if (variavel.indicador_variavel[0].indicador[fieldName] === fieldMatch) {
-
                 for (const variavelPeriodo of seriesPorVariavel[+varId]) {
                     if (variavelPeriodo.aguarda_cp) {
                         aguarda_cp++;
@@ -218,7 +234,7 @@ export class MetasService {
 
                 seriesDaX.push({
                     variavel: { id: variavel.id, codigo: variavel.codigo, titulo: variavel.titulo },
-                    series: seriesPorVariavel[+varId]
+                    series: seriesPorVariavel[+varId],
                 });
             }
         }
@@ -230,32 +246,27 @@ export class MetasService {
                 nao_preenchidas,
                 nao_enviadas,
             },
-            variaveis: seriesDaX
-        }
-
+            variaveis: seriesDaX,
+        };
     }
 
-
-    async metaVariaveis(
-        meta_id: number,
-        config: PessoaAcessoPdm,
-        cicloFisicoAtivo: CicloAtivoDto,
-        user: PessoaFromJwt
-    ): Promise<RetornoMetaVariaveisDto> {
+    async metaVariaveis(meta_id: number, config: PessoaAcessoPdm, cicloFisicoAtivo: CicloAtivoDto, user: PessoaFromJwt): Promise<RetornoMetaVariaveisDto> {
         const dadosMetas: DadosMetaIndicadores[] = await this.buscaMetaIndicadores(meta_id);
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
 
         const indicadorMeta = await this.prisma.indicador.findFirst({
             where: {
                 meta_id: meta_id,
-                removido_em: null
+                removido_em: null,
             },
             select: {
-                titulo: true, id: true, codigo: true,
+                titulo: true,
+                id: true,
+                codigo: true,
                 meta: {
                     select: {
                         ciclo_fase: {
-                            select: { ciclo_fase: true }
+                            select: { ciclo_fase: true },
                         },
                         codigo: true,
                         titulo: true,
@@ -264,24 +275,23 @@ export class MetasService {
                             select: {
                                 pessoa: {
                                     select: {
-                                        nome_exibicao: true
+                                        nome_exibicao: true,
                                     },
                                 },
                                 orgao: {
                                     select: {
-                                        sigla: true
-                                    }
+                                        sigla: true,
+                                    },
                                 },
-                                coordenador_responsavel_cp: true
-                            }
-                        }
-                    }
-                }
-            }
+                                coordenador_responsavel_cp: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         if (!indicadorMeta || !indicadorMeta.meta) throw new HttpException('404', 404);
-        let metaEstaFaseColeta = indicadorMeta.meta.ciclo_fase?.ciclo_fase === 'Coleta';
-
+        const metaEstaFaseColeta = indicadorMeta.meta.ciclo_fase?.ciclo_fase === 'Coleta';
 
         const calcSerieVariaveis = await this.calcSerieVariaveis(variaveisMeta, config, cicloFisicoAtivo, metaEstaFaseColeta);
         //console.dir(calcSerieVariaveis, { depth: 33 });
@@ -299,7 +309,7 @@ export class MetasService {
                 id: meta_id,
                 titulo: indicadorMeta.meta.titulo,
                 codigo: indicadorMeta.meta.codigo,
-                ciclo_fase: cicloFase
+                ciclo_fase: cicloFase,
             },
             permissoes: this.calculaPermissoesFase(cicloFase as CicloFase, config.perfil),
             avancarFases: this.avancarFases(cicloFase as CicloFase, config.perfil),
@@ -315,8 +325,10 @@ export class MetasService {
                 atividades: [],
                 indicador: { ...iniciativa.Indicador[0] },
                 iniciativa: {
-                    id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo,
-                    ...this.mfService.extraiResponsaveis(iniciativa.iniciativa_responsavel)
+                    id: iniciativa.id,
+                    codigo: iniciativa.codigo,
+                    titulo: iniciativa.titulo,
+                    ...this.mfService.extraiResponsaveis(iniciativa.iniciativa_responsavel),
                 },
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
@@ -325,11 +337,13 @@ export class MetasService {
             for (const atividade of atividades) {
                 if (+atividade.iniciativa_id != +iniciativa.id) continue;
 
-                let tmp: typeof retornoIniciativa.atividades[0] = {
+                const tmp: (typeof retornoIniciativa.atividades)[0] = {
                     indicador: { ...atividade.Indicador[0] },
                     atividade: {
-                        id: atividade.id, codigo: atividade.codigo, titulo: atividade.titulo,
-                        ...this.mfService.extraiResponsaveis(atividade.atividade_responsavel)
+                        id: atividade.id,
+                        codigo: atividade.codigo,
+                        titulo: atividade.titulo,
+                        ...this.mfService.extraiResponsaveis(atividade.atividade_responsavel),
                     },
                     ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
                 };
@@ -338,44 +352,37 @@ export class MetasService {
                     retornoIniciativa.atividades.push(tmp);
                     atividadesComVarCount++;
                 }
-
             }
 
-            if (atividadesComVarCount > 0)
-                retorno.meta.iniciativas.push(retornoIniciativa)
+            if (atividadesComVarCount > 0) retorno.meta.iniciativas.push(retornoIniciativa);
         }
 
         return retorno;
-
     }
 
-    private calculaPermissoesFase(
-        cicloFase: CicloFase, perfil: string
-    ): MfFasesPermissoesDto {
-
+    private calculaPermissoesFase(cicloFase: CicloFase, perfil: string): MfFasesPermissoesDto {
         if (perfil == 'tecnico_cp' || perfil == 'admin_cp') {
-
             const map = {
-                'Coleta': {
+                Coleta: {
                     analiseQualitativa: false,
                     fechamento: false,
-                    risco: false
+                    risco: false,
                 },
-                'Analise': {
+                Analise: {
                     analiseQualitativa: true,
                     fechamento: false,
-                    risco: false
+                    risco: false,
                 },
-                'Risco': {
+                Risco: {
                     analiseQualitativa: true,
                     fechamento: false,
-                    risco: true
+                    risco: true,
                 },
-                'Fechamento': {
+                Fechamento: {
                     analiseQualitativa: true,
                     fechamento: true,
-                    risco: true
-                }
+                    risco: true,
+                },
             } as const;
 
             if (map[cicloFase]) return map[cicloFase];
@@ -384,25 +391,22 @@ export class MetasService {
         return {
             analiseQualitativa: false,
             fechamento: false,
-            risco: false
-        }
+            risco: false,
+        };
     }
 
-    private avancarFases(
-        cicloFase: CicloFase, perfil: string
-    ): MfAvancarFasesDto {
-
+    private avancarFases(cicloFase: CicloFase, perfil: string): MfAvancarFasesDto {
         if (perfil == 'tecnico_cp' || perfil == 'admin_cp') {
             const map: Record<CicloFase, MfAvancarFasesDto> = {
-                'Coleta': ['Analise', 'Risco', 'Fechamento'],
-                'Analise': ['Risco', 'Fechamento'],
-                'Risco': ['Fechamento'],
-                'Fechamento': []
+                Coleta: ['Analise', 'Risco', 'Fechamento'],
+                Analise: ['Risco', 'Fechamento'],
+                Risco: ['Fechamento'],
+                Fechamento: [],
             };
             if (map[cicloFase]) return map[cicloFase];
         }
 
-        return []
+        return [];
     }
 
     private async buscaMetaIndicadores(meta_id: number): Promise<DadosMetaIndicadores[]> {
@@ -451,16 +455,14 @@ export class MetasService {
         map: VariavelDetalhePorID,
         config: PessoaAcessoPdm,
         ciclo: CicloAtivoDto,
-        metaEstaFaseColeta: boolean): Promise<{
-            ordem_series: Serie[],
-            seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>
-        }> {
-        const [statusVariaveisCorrente, buscaSerieValoresResult] = await Promise.all([
-            this.statusVariaveisDb(map, ciclo),
-            this.buscaSeriesValores(map, ciclo)
-        ]);
+        metaEstaFaseColeta: boolean,
+    ): Promise<{
+        ordem_series: Serie[];
+        seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>;
+    }> {
+        const [statusVariaveisCorrente, buscaSerieValoresResult] = await Promise.all([this.statusVariaveisDb(map, ciclo), this.buscaSeriesValores(map, ciclo)]);
 
-        const statusPorVariavel: Record<number, typeof statusVariaveisCorrente[0] | null> = {};
+        const statusPorVariavel: Record<number, (typeof statusVariaveisCorrente)[0] | null> = {};
         for (const r of statusVariaveisCorrente) {
             statusPorVariavel[r.variavel_id] = r;
         }
@@ -471,10 +473,9 @@ export class MetasService {
         const seriesValores = buscaSerieValoresResult.seriesValores;
 
         // map pra variavel, depois a data, depois a serie
-        const porVariavelIdDataSerie: Record<number, Record<DateYMD, Record<Serie, typeof seriesValores[0] | null>>> = {};
+        const porVariavelIdDataSerie: Record<number, Record<DateYMD, Record<Serie, (typeof seriesValores)[0] | null>>> = {};
         for (const r of seriesValores) {
-            if (!porVariavelIdDataSerie[r.variavel_id])
-                porVariavelIdDataSerie[r.variavel_id] = {};
+            if (!porVariavelIdDataSerie[r.variavel_id]) porVariavelIdDataSerie[r.variavel_id] = {};
 
             if (!porVariavelIdDataSerie[r.variavel_id][Date2YMD.toString(r.data_valor)])
                 porVariavelIdDataSerie[r.variavel_id][Date2YMD.toString(r.data_valor)] = {
@@ -487,8 +488,7 @@ export class MetasService {
             porVariavelIdDataSerie[r.variavel_id][Date2YMD.toString(r.data_valor)][r.serie] = r;
         }
 
-
-        let ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+        const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
 
         const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
@@ -511,7 +511,7 @@ export class MetasService {
 
             const aguarda_complementacao = status ? status && status.aguarda_complementacao : false;
             // se ja conferiu (mesmo que um valor em branco) então ta pronta
-            const nao_preenchida = (status && status.conferida === true) ? false : permissoes.ha_valor === false;
+            const nao_preenchida = status && status.conferida === true ? false : permissoes.ha_valor === false;
 
             seriesPorVariavel[variavel.id] = [
                 {
@@ -522,22 +522,21 @@ export class MetasService {
                     aguarda_cp: status && status.aguarda_cp ? true : false,
                     aguarda_complementacao: aguarda_complementacao,
                     nao_enviada: permissoes.nao_enviada,
-                    nao_preenchida: nao_preenchida
+                    nao_preenchida: nao_preenchida,
                 },
                 {
                     eh_corrente: false,
                     periodo: r.data_anterior,
                     series: anterior,
-                    pode_editar: config.perfil !== 'ponto_focal'
-                }
+                    pode_editar: config.perfil !== 'ponto_focal',
+                },
             ];
-
         }
 
         return {
             ordem_series,
-            seriesPorVariavel: seriesPorVariavel
-        }
+            seriesPorVariavel: seriesPorVariavel,
+        };
     }
 
     private calculaPermissoesSerieCorrente(
@@ -546,26 +545,26 @@ export class MetasService {
         porVariavelIdDataSerie: any,
         idVariavel: number,
         dataReferencia: DateYMD,
-        metaEstaFaseColeta: boolean
+        metaEstaFaseColeta: boolean,
     ) {
         // verifica apenas se existe valor
-        const existeSerieValorRealizado = porVariavelIdDataSerie[idVariavel]
-            && porVariavelIdDataSerie[idVariavel][dataReferencia] &&
-            porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado
-            && porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
-            ? true : false;
+        const existeSerieValorRealizado =
+            porVariavelIdDataSerie[idVariavel] &&
+            porVariavelIdDataSerie[idVariavel][dataReferencia] &&
+            porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado &&
+            porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
+                ? true
+                : false;
 
         // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
         // verifica se já foi enviada (se ta conferida, já foi enviada alguma vez)
         // se ta aguardando_cp, tbm já foi enviado
         // se tem valor, então suponhamos que não foi enviada ainda mas já foi preenchida
-        const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true)
-            ? false : existeSerieValorRealizado;
+        const nao_enviada = (status && status.conferida === true) || (status && status.aguarda_cp === true) ? false : existeSerieValorRealizado;
 
         let todasConferidas = true;
         let existeValorRealizado = false;
         if (porVariavelIdDataSerie[idVariavel] && porVariavelIdDataSerie[idVariavel][dataReferencia]) {
-
             for (const serie in porVariavelIdDataSerie[idVariavel][dataReferencia]) {
                 const element = porVariavelIdDataSerie[idVariavel][dataReferencia][serie];
                 if (!element) continue;
@@ -574,7 +573,7 @@ export class MetasService {
                 }
 
                 if (element.conferida == false) {
-                    todasConferidas = false
+                    todasConferidas = false;
                 }
             }
         }
@@ -586,53 +585,42 @@ export class MetasService {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
                 nao_enviada: nao_enviada,
-                pode_editar: status ?
-                    (status.aguarda_complementacao ? true :
-                        status.aguarda_cp || status.conferida ? false : metaEstaFaseColeta
-                    )
-                    : metaEstaFaseColeta
-            }
+                pode_editar: status ? (status.aguarda_complementacao ? true : status.aguarda_cp || status.conferida ? false : metaEstaFaseColeta) : metaEstaFaseColeta,
+            };
         } else {
             return {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
                 nao_enviada: nao_enviada,
                 pode_editar: true,
-            }
+            };
         }
     }
 
-    private pushSerieVariavel(
-        serieValores: SerieValorNomimal[],
-        porVariavelIdDataSerie: any,
-        idVariavel: number,
-        dataReferencia: DateYMD,
-        ehCorrente: boolean,
-        serie: Serie
-    ) {
-        const existeSerieValor = porVariavelIdDataSerie[idVariavel]
-            && porVariavelIdDataSerie[idVariavel][dataReferencia] &&
-            porVariavelIdDataSerie[idVariavel][dataReferencia][serie] ? porVariavelIdDataSerie[idVariavel][dataReferencia][serie] : undefined;
+    private pushSerieVariavel(serieValores: SerieValorNomimal[], porVariavelIdDataSerie: any, idVariavel: number, dataReferencia: DateYMD, ehCorrente: boolean, serie: Serie) {
+        const existeSerieValor =
+            porVariavelIdDataSerie[idVariavel] && porVariavelIdDataSerie[idVariavel][dataReferencia] && porVariavelIdDataSerie[idVariavel][dataReferencia][serie]
+                ? porVariavelIdDataSerie[idVariavel][dataReferencia][serie]
+                : undefined;
         if (existeSerieValor) {
             serieValores.push({
                 data_valor: Date2YMD.toString(existeSerieValor.data_valor),
                 referencia: '',
                 valor_nominal: existeSerieValor.valor_nominal.toString(),
-                conferida: existeSerieValor.conferida
+                conferida: existeSerieValor.conferida,
             });
         } else {
             serieValores.push({
                 data_valor: dataReferencia,
                 referencia: '',
                 valor_nominal: '',
-                conferida: ehCorrente ? false : true // -- datas no passado sao sempre conferidas
+                conferida: ehCorrente ? false : true, // -- datas no passado sao sempre conferidas
             });
         }
     }
 
     private async buscaSeriesValores(map: VariavelDetalhePorID, ciclo: CicloAtivoDto) {
-        const seriesVariavel: { data_corrente: string, data_anterior: string, variavel_id: number }[]
-            = await this.prisma.$queryRaw`select
+        const seriesVariavel: { data_corrente: string; data_anterior: string; variavel_id: number }[] = await this.prisma.$queryRaw`select
             (cte.data - (atraso_meses || 'month')::interval)::date::text as data_corrente,
             (cte.data - (atraso_meses || 'month')::interval - periodicidade_intervalo(periodicidade))::date::text as data_anterior,
             id as variavel_id
@@ -642,28 +630,28 @@ export class MetasService {
         where v.id = ANY(${Object.keys(map)}::int[])
         `;
 
-        const conditions: { variavel_id: number, data_valor: Date }[] = [];
+        const conditions: { variavel_id: number; data_valor: Date }[] = [];
         for (const variavel of seriesVariavel) {
             conditions.push({
                 variavel_id: variavel.variavel_id,
-                data_valor: Date2YMD.fromString(variavel.data_anterior)
+                data_valor: Date2YMD.fromString(variavel.data_anterior),
             });
             conditions.push({
                 variavel_id: variavel.variavel_id,
-                data_valor: Date2YMD.fromString(variavel.data_corrente)
+                data_valor: Date2YMD.fromString(variavel.data_corrente),
             });
         }
 
         return {
             seriesValores: await this.prisma.serieVariavel.findMany({
-                where: { 'OR': conditions },
+                where: { OR: conditions },
                 select: {
                     data_valor: true,
                     serie: true,
                     valor_nominal: true,
                     conferida: true,
-                    variavel_id: true
-                }
+                    variavel_id: true,
+                },
             }),
             seriesVariavel: seriesVariavel,
         };
@@ -673,14 +661,14 @@ export class MetasService {
         return await this.prisma.statusVariavelCicloFisico.findMany({
             where: {
                 variavel_id: { in: Object.keys(map).map(n => +n) },
-                ciclo_fisico_id: ciclo.id
+                ciclo_fisico_id: ciclo.id,
             },
             select: {
                 aguarda_complementacao: true,
                 aguarda_cp: true,
                 variavel_id: true,
                 conferida: true,
-            }
+            },
         });
     }
 
@@ -691,19 +679,23 @@ export class MetasService {
                 Indicador: {
                     some: {
                         id: {
-                            in: dadosMeta.filter(r => r.atividade_id !== null).map(r => r.indicador_id)
-                        }
-                    }
-                }
+                            in: dadosMeta.filter(r => r.atividade_id !== null).map(r => r.indicador_id),
+                        },
+                    },
+                },
             },
             select: {
-                titulo: true, id: true, codigo: true,
+                titulo: true,
+                id: true,
+                codigo: true,
                 Indicador: {
                     where: {
                         removido_em: null,
                     },
                     select: {
-                        id: true, titulo: true, codigo: true,
+                        id: true,
+                        titulo: true,
+                        codigo: true,
                     },
                 },
                 iniciativa_id: true,
@@ -711,23 +703,23 @@ export class MetasService {
                     select: {
                         pessoa: {
                             select: {
-                                nome_exibicao: true
+                                nome_exibicao: true,
                             },
                         },
                         orgao: {
                             select: {
-                                sigla: true
-                            }
+                                sigla: true,
+                            },
                         },
-                        coordenador_responsavel_cp: true
-                    }
-                }
-            }
+                        coordenador_responsavel_cp: true,
+                    },
+                },
+            },
         });
     }
 
     private async getIniciativas(meta_id: number, dadosMeta: DadosMetaIndicadores[]) {
-        console.log({ dadosMeta, 'ini': dadosMeta.filter(r => r.iniciativa_id !== null).map(r => r.indicador_id) });
+        console.log({ dadosMeta, ini: dadosMeta.filter(r => r.iniciativa_id !== null).map(r => r.indicador_id) });
 
         return await this.prisma.iniciativa.findMany({
             where: {
@@ -736,35 +728,37 @@ export class MetasService {
                 Indicador: {
                     some: {
                         id: {
-                            in: dadosMeta.filter(r => r.iniciativa_id !== null).map(r => r.indicador_id)
-                        }
-                    }
-                }
+                            in: dadosMeta.filter(r => r.iniciativa_id !== null).map(r => r.indicador_id),
+                        },
+                    },
+                },
             },
             select: {
-                titulo: true, id: true, codigo: true,
+                titulo: true,
+                id: true,
+                codigo: true,
                 Indicador: {
                     where: {
                         removido_em: null,
                     },
-                    select: { id: true, titulo: true, codigo: true }
+                    select: { id: true, titulo: true, codigo: true },
                 },
                 iniciativa_responsavel: {
                     select: {
                         pessoa: {
                             select: {
-                                nome_exibicao: true
+                                nome_exibicao: true,
                             },
                         },
                         orgao: {
                             select: {
-                                sigla: true
-                            }
+                                sigla: true,
+                            },
                         },
-                        coordenador_responsavel_cp: true
-                    }
-                }
-            }
+                        coordenador_responsavel_cp: true,
+                    },
+                },
+            },
         });
     }
 
@@ -779,9 +773,9 @@ export class MetasService {
                         indicador_origem: null,
                         indicador: {
                             meta_id: meta_id,
-                            removido_em: null
-                        }
-                    }
+                            removido_em: null,
+                        },
+                    },
                 },
             },
             select: {
@@ -796,12 +790,12 @@ export class MetasService {
                     select: {
                         indicador: {
                             select: {
-                                meta_id: true
-                            }
-                        }
-                    }
-                }
-            }
+                                meta_id: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         for (const r of variaveis_da_meta) {
@@ -819,10 +813,10 @@ export class MetasService {
                             removido_em: null,
                             iniciativa: {
                                 meta_id: meta_id,
-                                removido_em: null
-                            }
-                        }
-                    }
+                                removido_em: null,
+                            },
+                        },
+                    },
                 },
             },
             select: {
@@ -838,11 +832,11 @@ export class MetasService {
                         indicador: {
                             select: {
                                 iniciativa_id: true,
-                            }
-                        }
-                    }
-                }
-            }
+                            },
+                        },
+                    },
+                },
+            },
         });
         for (const r of variaveis_da_iniciativa) {
             map[r.id] = r;
@@ -860,11 +854,11 @@ export class MetasService {
                                 removido_em: null,
                                 iniciativa: {
                                     meta_id: meta_id,
-                                    removido_em: null
-                                }
-                            }
-                        }
-                    }
+                                    removido_em: null,
+                                },
+                            },
+                        },
+                    },
                 },
             },
             select: {
@@ -879,12 +873,12 @@ export class MetasService {
                     select: {
                         indicador: {
                             select: {
-                                atividade_id: true
-                            }
-                        }
-                    }
-                }
-            }
+                                atividade_id: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         for (const r of variaveis_da_atividade) {
             map[r.id] = r;
@@ -892,7 +886,6 @@ export class MetasService {
 
         return map;
     }
-
 
     async addMetaVariavelAnaliseQualitativaDocumento(dto: VariavelAnaliseQualitativaDocumentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
@@ -918,21 +911,21 @@ export class MetasService {
                     meta_id: meta_id,
                     arquivo_id: uploadId,
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             return cfq.id;
         });
 
-        return { id: id }
+        return { id: id };
     }
 
     async deleteMetaVariavelAnaliseQualitativaDocumento(id: number, config: PessoaAcessoPdm, user: PessoaFromJwt) {
         const arquivo = await this.prisma.variavelCicloFisicoDocumento.findFirst({
             where: {
                 id: id,
-                removido_em: null
-            }
+                removido_em: null,
+            },
         });
         if (!arquivo) throw new HttpException('404', 404);
 
@@ -948,7 +941,7 @@ export class MetasService {
 
         await this.prisma.variavelCicloFisicoDocumento.update({
             where: { id: id },
-            data: { removido_em: now, removido_por: user.id }
+            data: { removido_em: now, removido_por: user.id },
         });
     }
 
@@ -966,18 +959,16 @@ export class MetasService {
             // isolation lock
             await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
 
-
             let needRecalc = false;
             for (const campo of CamposRealizado) {
-
                 const existeValor = await this.prisma.serieVariavel.findFirst({
                     where: {
                         variavel_id: dto.variavel_id,
                         serie: CamposRealizadoParaSerie[campo],
                         data_valor: dto.data_valor,
-                        conferida: false
+                        conferida: false,
                     },
-                    select: { id: true }
+                    select: { id: true },
                 });
 
                 if (existeValor) {
@@ -990,8 +981,8 @@ export class MetasService {
                             conferida_em: now,
                             conferida_por: user.id,
                             ciclo_fisico_id: dadosCiclo.id,
-                            conferida: true
-                        }
+                            conferida: true,
+                        },
                     });
                 }
             }
@@ -1010,22 +1001,19 @@ export class MetasService {
                     // marcando que foi conferida, mesmo que o valor não exista na serie-variavel
                     conferida: true,
                     aguarda_cp: false,
-                }
+                },
             });
 
             await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
-
         });
-
     }
-
 
     private async removeStatusVariavel(prismaTxn: Prisma.TransactionClient, dto: VariavelConferidaDto, dadosCiclo: DadosCiclo) {
         await prismaTxn.statusVariavelCicloFisico.deleteMany({
             where: {
                 variavel_id: dto.variavel_id,
                 ciclo_fisico_id: dadosCiclo.id,
-            }
+            },
         });
     }
 
@@ -1052,9 +1040,8 @@ export class MetasService {
                     criado_por: user.id,
                     criado_em: now,
                     atendido: false,
-                }
+                },
             });
-
 
             await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
             await prismaTxn.statusVariavelCicloFisico.create({
@@ -1063,14 +1050,13 @@ export class MetasService {
                     variavel_id: dto.variavel_id,
                     meta_id: meta_id,
                     aguarda_cp: false,
-                    aguarda_complementacao: true
-                }
+                    aguarda_complementacao: true,
+                },
             });
 
             await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
         });
     }
-
 
     async addMetaVariavelAnaliseQualitativa(dto: VariavelAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
@@ -1097,145 +1083,110 @@ export class MetasService {
                 variavel_id: dto.variavel_id,
                 ciclo_fisico_id: dadosCiclo.id,
             },
-            select: { aguarda_complementacao: true }
+            select: { aguarda_complementacao: true },
         });
 
-        if (ehPontoFocal && dadosCiclo.meta_esta_na_coleta == false &&
-            (!status || status.aguarda_complementacao == false)) {
+        if (ehPontoFocal && dadosCiclo.meta_esta_na_coleta == false && (!status || status.aguarda_complementacao == false)) {
             throw new HttpException('Você não pode enviar valores fora da fase de Coleta se não há pedido de complementação', 400);
         }
 
         // o trabalho pra montar um SerieJwt não faz sentido
         // então vamos operar diretamente na SerieVariavel
-        const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
-            // isolation lock
-            await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
+        const id = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+                // isolation lock
+                await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
 
-            let needRecalc = false;
-            for (const campo of CamposRealizado) {
-                const valor_nominal = dto[campo] === null ? '' : dto[campo];
-                if (valor_nominal === undefined) continue;
+                let needRecalc = false;
+                for (const campo of CamposRealizado) {
+                    const valor_nominal = dto[campo] === null ? '' : dto[campo];
+                    if (valor_nominal === undefined) continue;
 
-                const existeValor = await prismaTxn.serieVariavel.findFirst({
-                    where: {
-                        variavel_id: dto.variavel_id,
-                        serie: CamposRealizadoParaSerie[campo],
-                        data_valor: dto.data_valor,
-                    },
-                    select: { id: true, valor_nominal: true, ciclo_fisico_id: true }
-                });
-
-                if (existeValor && valor_nominal === '') {
-                    // existe o valor, mas é pra remover, então bora
-                    needRecalc = true;
-
-                    await prismaTxn.serieVariavel.delete({
+                    const existeValor = await prismaTxn.serieVariavel.findFirst({
                         where: {
-                            id: existeValor.id
-                        }
-                    });
-                } else if (!existeValor && valor_nominal !== '') {
-                    // valor não existe, entao vamos criar
-                    needRecalc = true;
-
-                    await prismaTxn.serieVariavel.create({
-                        data: {
                             variavel_id: dto.variavel_id,
                             serie: CamposRealizadoParaSerie[campo],
                             data_valor: dto.data_valor,
-                            valor_nominal: valor_nominal,
-                            atualizado_em: now,
-                            atualizado_por: user.id,
-                            ciclo_fisico_id: dadosCiclo.id,
-                            conferida: ehPontoFocal ? false : true,
-                        }
+                        },
+                        select: { id: true, valor_nominal: true, ciclo_fisico_id: true },
                     });
-                } else if (existeValor && valor_nominal !== '') {
 
-                    var valorModificado = existeValor.valor_nominal.toString() !== valor_nominal;
-                    // se os valores mudaram, ou se faltava o ciclo_fisico_id
-                    if (
-                        valorModificado
-                        ||
-                        existeValor.ciclo_fisico_id === null
-                    ) {
+                    if (existeValor && valor_nominal === '') {
+                        // existe o valor, mas é pra remover, então bora
                         needRecalc = true;
 
-                        await prismaTxn.serieVariavel.update({
-                            where: { id: existeValor.id },
+                        await prismaTxn.serieVariavel.delete({
+                            where: {
+                                id: existeValor.id,
+                            },
+                        });
+                    } else if (!existeValor && valor_nominal !== '') {
+                        // valor não existe, entao vamos criar
+                        needRecalc = true;
+
+                        await prismaTxn.serieVariavel.create({
                             data: {
+                                variavel_id: dto.variavel_id,
+                                serie: CamposRealizadoParaSerie[campo],
+                                data_valor: dto.data_valor,
                                 valor_nominal: valor_nominal,
                                 atualizado_em: now,
                                 atualizado_por: user.id,
                                 ciclo_fisico_id: dadosCiclo.id,
-                                conferida: valorModificado ? (ehPontoFocal ? false : true) : undefined,
-                            }
+                                conferida: ehPontoFocal ? false : true,
+                            },
                         });
+                    } else if (existeValor && valor_nominal !== '') {
+                        const valorModificado = existeValor.valor_nominal.toString() !== valor_nominal;
+                        // se os valores mudaram, ou se faltava o ciclo_fisico_id
+                        if (valorModificado || existeValor.ciclo_fisico_id === null) {
+                            needRecalc = true;
+
+                            await prismaTxn.serieVariavel.update({
+                                where: { id: existeValor.id },
+                                data: {
+                                    valor_nominal: valor_nominal,
+                                    atualizado_em: now,
+                                    atualizado_por: user.id,
+                                    ciclo_fisico_id: dadosCiclo.id,
+                                    conferida: valorModificado ? (ehPontoFocal ? false : true) : undefined,
+                                },
+                            });
+                        }
                     }
                 }
-
-            }
-            if (needRecalc) {
-                await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
-                await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
-            }
-
-            await prismaTxn.variavelCicloFisicoQualitativo.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    variavel_id: dto.variavel_id,
-                    ultima_revisao: true
-                },
-                data: {
-                    ultima_revisao: false,
+                if (needRecalc) {
+                    await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
+                    await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
                 }
-            });
 
-
-            const cfq = await prismaTxn.variavelCicloFisicoQualitativo.create({
-                data: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    variavel_id: dto.variavel_id,
-                    ultima_revisao: true,
-                    criado_por: user.id,
-                    criado_em: now,
-                    referencia_data: dto.data_valor,
-                    analise_qualitativa: dto.analise_qualitativa,
-                    meta_id: meta_id,
-                    enviado_para_cp: dto.enviar_para_cp === true,
-                },
-                select: { id: true }
-            });
-
-            if (dto.enviar_para_cp) {
-                await prismaTxn.pedidoComplementacao.updateMany({
+                await prismaTxn.variavelCicloFisicoQualitativo.updateMany({
                     where: {
                         ciclo_fisico_id: dadosCiclo.id,
                         variavel_id: dto.variavel_id,
                         ultima_revisao: true,
-                        atendido: false,
                     },
                     data: {
-                        atendido_em: now,
-                        atendido: true,
-                        atendido_por: user.id,
-                    }
+                        ultima_revisao: false,
+                    },
                 });
 
-                await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
-                await prismaTxn.statusVariavelCicloFisico.create({
+                const cfq = await prismaTxn.variavelCicloFisicoQualitativo.create({
                     data: {
-                        variavel_id: dto.variavel_id,
                         ciclo_fisico_id: dadosCiclo.id,
-                        aguarda_cp: true,
+                        variavel_id: dto.variavel_id,
+                        ultima_revisao: true,
+                        criado_por: user.id,
+                        criado_em: now,
+                        referencia_data: dto.data_valor,
+                        analise_qualitativa: dto.analise_qualitativa,
                         meta_id: meta_id,
-                    }
+                        enviado_para_cp: dto.enviar_para_cp === true,
+                    },
+                    select: { id: true },
                 });
 
-
-            } else {
-                if (ehPontoFocal == false) {
-                    // limpa o pedido de complementacao, se existir
+                if (dto.enviar_para_cp) {
                     await prismaTxn.pedidoComplementacao.updateMany({
                         where: {
                             ciclo_fisico_id: dadosCiclo.id,
@@ -1247,32 +1198,60 @@ export class MetasService {
                             atendido_em: now,
                             atendido: true,
                             atendido_por: user.id,
-                        }
+                        },
                     });
 
                     await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
-                    // ja marca como conferida, nao há aguarda CP para os admins
                     await prismaTxn.statusVariavelCicloFisico.create({
                         data: {
                             variavel_id: dto.variavel_id,
                             ciclo_fisico_id: dadosCiclo.id,
+                            aguarda_cp: true,
                             meta_id: meta_id,
-                            conferida: true,
-                        }
+                        },
                     });
+                } else {
+                    if (ehPontoFocal == false) {
+                        // limpa o pedido de complementacao, se existir
+                        await prismaTxn.pedidoComplementacao.updateMany({
+                            where: {
+                                ciclo_fisico_id: dadosCiclo.id,
+                                variavel_id: dto.variavel_id,
+                                ultima_revisao: true,
+                                atendido: false,
+                            },
+                            data: {
+                                atendido_em: now,
+                                atendido: true,
+                                atendido_por: user.id,
+                            },
+                        });
+
+                        await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
+                        // ja marca como conferida, nao há aguarda CP para os admins
+                        await prismaTxn.statusVariavelCicloFisico.create({
+                            data: {
+                                variavel_id: dto.variavel_id,
+                                ciclo_fisico_id: dadosCiclo.id,
+                                meta_id: meta_id,
+                                conferida: true,
+                            },
+                        });
+                    }
                 }
-            }
 
-            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+                await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
 
-            return cfq.id;
-        }, {
-            isolationLevel: 'Serializable',
-            maxWait: 15000,
-            timeout: 25000,
-        });
+                return cfq.id;
+            },
+            {
+                isolationLevel: 'Serializable',
+                maxWait: 15000,
+                timeout: 25000,
+            },
+        );
 
-        return { id: id }
+        return { id: id };
     }
 
     async getMetaVariavelAnaliseQualitativa(dto: FilterVariavelAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListVariavelAnaliseQualitativaDto> {
@@ -1293,22 +1272,22 @@ export class MetasService {
                 unidade_medida: {
                     select: {
                         sigla: true,
-                        descricao: true
-                    }
+                        descricao: true,
+                    },
                 },
                 regiao: {
                     select: {
                         id: true,
-                        descricao: true
-                    }
+                        descricao: true,
+                    },
                 },
                 casas_decimais: true,
                 acumulativa: true,
                 periodicidade: true,
-            }
+            },
         });
 
-        let ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+        const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
 
         const serieValores = await this.prisma.serieVariavel.findMany({
@@ -1321,28 +1300,28 @@ export class MetasService {
                 valor_nominal: true,
                 serie: true,
                 conferida: true,
-            }
+            },
         });
-        const seriesValoresBySerie: Record<string, typeof serieValores[0]> = {};
+        const seriesValoresBySerie: Record<string, (typeof serieValores)[0]> = {};
         for (const r of serieValores) {
             seriesValoresBySerie[r.serie] = r;
         }
 
-        const series: MfSerieValorNomimal[] = ordem_series.map((serie) => {
+        const series: MfSerieValorNomimal[] = ordem_series.map(serie => {
             const existe = seriesValoresBySerie[serie];
             if (existe)
                 return {
                     data_valor: dateYMD,
                     conferida: existe.conferida,
                     valor_nominal: existe.valor_nominal.toString(),
-                }
+                };
 
             return {
                 data_valor: dateYMD,
                 conferida: false,
-                valor_nominal: ''
-            }
-        })
+                valor_nominal: '',
+            };
+        });
 
         const analisesResult = await this.prisma.variavelCicloFisicoQualitativo.findMany({
             where: {
@@ -1360,17 +1339,17 @@ export class MetasService {
                 meta_id: true,
                 enviado_para_cp: true,
                 pessoaCriador: {
-                    select: { nome_exibicao: true }
+                    select: { nome_exibicao: true },
                 },
-                id: true
-            }
+                id: true,
+            },
         });
 
         const arquivosResult = await this.prisma.variavelCicloFisicoDocumento.findMany({
             where: {
                 ciclo_fisico_id: dadosCiclo.id,
                 variavel_id: dto.variavel_id,
-                removido_em: null
+                removido_em: null,
             },
             orderBy: {
                 criado_em: 'desc',
@@ -1378,7 +1357,7 @@ export class MetasService {
             select: {
                 criado_em: true,
                 pessoaCriador: {
-                    select: { nome_exibicao: true }
+                    select: { nome_exibicao: true },
                 },
                 id: true,
                 arquivo: {
@@ -1387,12 +1366,11 @@ export class MetasService {
                         tamanho_bytes: true,
                         TipoDocumento: true,
                         descricao: true,
-                        nome_original: true
-                    }
-                }
-            }
+                        nome_original: true,
+                    },
+                },
+            },
         });
-
 
         const pedido = await this.prisma.pedidoComplementacao.findFirst({
             where: {
@@ -1406,29 +1384,31 @@ export class MetasService {
                 atendido: true,
                 criado_em: true,
                 pessoaCriador: {
-                    select: { nome_exibicao: true }
+                    select: { nome_exibicao: true },
                 },
-                id: true
-            }
+                id: true,
+            },
         });
 
         return {
-            ultimoPedidoComplementacao: pedido ? {
-                pedido: pedido.pedido || '',
-                criado_em: pedido.criado_em,
-                id: pedido.id,
-                criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
-                atendido: pedido.atendido,
-            } : null,
-            arquivos: arquivosResult.map((r) => {
+            ultimoPedidoComplementacao: pedido
+                ? {
+                      pedido: pedido.pedido || '',
+                      criado_em: pedido.criado_em,
+                      id: pedido.id,
+                      criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
+                      atendido: pedido.atendido,
+                  }
+                : null,
+            arquivos: arquivosResult.map(r => {
                 return {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
                     arquivo: { ...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes') },
-                }
+                };
             }),
-            analises: analisesResult.map((r) => {
+            analises: analisesResult.map(r => {
                 return {
                     analise_qualitativa: r.analise_qualitativa || '',
                     ultima_revisao: r.ultima_revisao,
@@ -1437,14 +1417,13 @@ export class MetasService {
                     enviado_para_cp: r.enviado_para_cp,
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                }
+                };
             }),
             ordem_series: ordem_series,
             series: series,
             variavel: variavel,
-        }
+        };
     }
-
 
     private async capturaDadosCicloVariavel(dateYMD: string, variavel_id: number, meta_id: number) {
         const dadosCicloResult: DadosCiclo[] = await this.prisma.$queryRaw`
@@ -1469,11 +1448,9 @@ export class MetasService {
         const dadosCiclo = dadosCicloResult[0];
         console.log(dadosCiclo);
         if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
-        if (!dadosCiclo.variavelParticipa)
-            throw new HttpException(`Nenhum ciclo encontrado para preenchimento em ${dateYMD} na variável ${variavel_id}`, 400);
+        if (!dadosCiclo.variavelParticipa) throw new HttpException(`Nenhum ciclo encontrado para preenchimento em ${dateYMD} na variável ${variavel_id}`, 400);
         return dadosCiclo;
     }
-
 
     async mudarMetaCicloFase(meta_id: number, dto: CicloFaseDto, config: PessoaAcessoPdm, cf: CicloAtivoDto, user: PessoaFromJwt) {
         const now = new Date(Date.now());
@@ -1488,10 +1465,10 @@ export class MetasService {
                     select: {
                         data_inicio: true,
                         id: true,
-                        ciclo_fase: true
-                    }
-                }
-            }
+                        ciclo_fase: true,
+                    },
+                },
+            },
         });
         if (!meta) throw new HttpException('Meta não encontrada', 404);
         if (!meta.ciclo_fase) throw new HttpException('Meta não tem uma fase de atualmente', 404);
@@ -1505,7 +1482,7 @@ export class MetasService {
                 data_inicio: true,
                 ciclo_fase: true,
                 id: true,
-            }
+            },
         });
         if (!cicloFase) throw new HttpException('Fase não encontrada', 404);
 
@@ -1524,9 +1501,7 @@ export class MetasService {
                 ciclo_fase_id: cicloFase.id,
                 atualizado_em: now,
                 atualizado_por: user.id,
-            }
+            },
         });
-
     }
-
 }

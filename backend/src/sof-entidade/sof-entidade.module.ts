@@ -7,6 +7,6 @@ import { SofApiModule } from '../sof-api/sof-api.module';
 @Module({
     imports: [PrismaModule, SofApiModule],
     controllers: [SofEntidadeController],
-    providers: [SofEntidadeService]
+    providers: [SofEntidadeService],
 })
-export class SofEntidadeModule { }
+export class SofEntidadeModule {}

@@ -8,6 +8,6 @@ import { DotacaoModule } from '../dotacao/dotacao.module';
     imports: [PrismaModule, DotacaoModule],
     controllers: [OrcamentoPlanejadoController],
     providers: [OrcamentoPlanejadoService],
-    exports: [OrcamentoPlanejadoService]
+    exports: [OrcamentoPlanejadoService],
 })
-export class OrcamentoPlanejadoModule { }
+export class OrcamentoPlanejadoModule {}

@@ -9,14 +9,10 @@ import { RequestInfoDto } from './../metas/dto/mf-meta.dto';
 import { MfService } from '../mf.service';
 import { MetasFechamentoService } from './metas-fechamento.service';
 
-
 @ApiTags('Monitoramento Fisico - Fechamento')
 @Controller('metas')
 export class MetasFechamentoController {
-    constructor(
-        private readonly metasFechamentoService: MetasFechamentoService,
-        private readonly mfService: MfService
-    ) { }
+    constructor(private readonly metasFechamentoService: MetasFechamentoService, private readonly mfService: MfService) {}
 
     @ApiBearerAuth('access-token')
     @Get('fechamento')
@@ -25,19 +21,12 @@ export class MetasFechamentoController {
     @ApiOkResponse({
         schema: { allOf: refs(MfListFechamentoDto, RequestInfoDto) },
     })
-    async GetMetaFechamento(
-        @Query() dto: FilterFechamentoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<MfListFechamentoDto & RequestInfoDto> {
+    async GetMetaFechamento(@Query() dto: FilterFechamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<MfListFechamentoDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {
-            ...await this.metasFechamentoService.getMetaFechamento(
-                dto,
-                config,
-                user
-            ),
+            ...(await this.metasFechamentoService.getMetaFechamento(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -49,19 +38,12 @@ export class MetasFechamentoController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaFechamento(
-        @Body() dto: FechamentoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaFechamento(@Body() dto: FechamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {
-            ...await this.metasFechamentoService.addMetaFechamento(
-                dto,
-                config,
-                user
-            ),
+            ...(await this.metasFechamentoService.addMetaFechamento(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }

@@ -9,35 +9,30 @@ import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '
 import { CreateRelPrevisaoCustoDto, PeriodoRelatorioPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto, RelPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
-const { Parser, transforms: { flatten } } = require('json2csv');
+const {
+    Parser,
+    transforms: { flatten },
+} = require('json2csv');
 const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class PrevisaoCustoService implements ReportableService {
-    constructor(
-        private readonly utils: UtilsService,
-        private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService,
-    ) { }
+    constructor(private readonly utils: UtilsService, private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
 
     async create(dto: CreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
-
         let ano: number;
 
         if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente) {
             ano = DateTime.now().year;
         } else {
-            if (!dto.ano)
-                throw new HttpException('Ano deve ser enviado', 400);
+            if (!dto.ano) throw new HttpException('Ano deve ser enviado', 400);
 
-            ano = dto.ano
+            ano = dto.ano;
         }
 
         const metaOrcamentos = await this.prisma.metaOrcamento.findMany({
             where: {
-                AND: [
-                    { meta_id: dto?.meta_id },
-                ],
+                AND: [{ meta_id: dto?.meta_id }],
                 ano_referencia: ano,
                 removido_em: null,
             },
@@ -52,38 +47,33 @@ export class PrevisaoCustoService implements ReportableService {
                 ano_referencia: true,
                 custo_previsto: true,
                 parte_dotacao: true,
-                atualizado_em: true
+                atualizado_em: true,
             },
-            orderBy: [
-                { meta_id: 'asc' },
-                { criado_em: 'desc' },
-            ]
+            orderBy: [{ meta_id: 'asc' }, { criado_em: 'desc' }],
         });
 
-        let list = metaOrcamentos.map((r) => {
+        const list = metaOrcamentos.map(r => {
             return {
                 ...r,
                 custo_previsto: r.custo_previsto.toFixed(2),
                 projeto_atividade: '',
-                parte_dotacao: this.expandirParteDotacao(r.parte_dotacao)
-            }
+                parte_dotacao: this.expandirParteDotacao(r.parte_dotacao),
+            };
         });
         await this.dotacaoService.setManyProjetoAtividade(list);
-    
-        return {
-            linhas: list
-        };
 
+        return {
+            linhas: list,
+        };
     }
 
     private expandirParteDotacao(parte_dotacao: string): string {
         const partes = parte_dotacao.split('.');
-        if (partes[1] = '*') partes[1] = '**';
-        if (partes[4] = '*') partes[4] = '****';
-        if (partes[7] = '*') partes[7] = '********';
-        return partes.join('.')
+        if ((partes[1] = '*')) partes[1] = '**';
+        if ((partes[4] = '*')) partes[4] = '****';
+        if ((partes[7] = '*')) partes[7] = '********';
+        return partes.join('.');
     }
-
 
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
         const dados = myInput as ListPrevisaoCustoDto;
@@ -108,35 +98,31 @@ export class PrevisaoCustoService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: [
-                    ...camposMetaIniAtv,
-                    'id',
-                    'id_versao_anterior',
-                    'projeto_atividade',
-                    'criado_em',
-                    'ano_referencia',
-                    'custo_previsto',
-                    'parte_dotacao',
-                    'atualizado_em'
-                ]
+                fields: [...camposMetaIniAtv, 'id', 'id_versao_anterior', 'projeto_atividade', 'criado_em', 'ano_referencia', 'custo_previsto', 'parte_dotacao', 'atualizado_em'],
             });
-            const linhas = json2csvParser.parse(dados.linhas.map((r) => { return { ...r } }));
+            const linhas = json2csvParser.parse(
+                dados.linhas.map(r => {
+                    return { ...r };
+                }),
+            );
             out.push({
                 name: 'previsao-custo.csv',
-                buffer: Buffer.from(linhas, "utf8")
+                buffer: Buffer.from(linhas, 'utf8'),
             });
         }
 
         return [
             {
                 name: 'info.json',
-                buffer: Buffer.from(JSON.stringify({
-                    params: params,
-                    "horario": Date2YMD.tzSp2UTC(new Date())
-                }), "utf8")
+                buffer: Buffer.from(
+                    JSON.stringify({
+                        params: params,
+                        horario: Date2YMD.tzSp2UTC(new Date()),
+                    }),
+                    'utf8',
+                ),
             },
-            ...out
-        ]
+            ...out,
+        ];
     }
-
 }

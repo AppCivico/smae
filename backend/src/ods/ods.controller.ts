@@ -13,7 +13,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 @ApiTags('ODS')
 @Controller('ods')
 export class OdsController {
-    constructor(private readonly odsService: OdsService) { }
+    constructor(private readonly odsService: OdsService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -26,7 +26,7 @@ export class OdsController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(): Promise<ListOdsDto> {
-        return { 'linhas': await this.odsService.findAll() };
+        return { linhas: await this.odsService.findAll() };
     }
 
     @Patch(':id')

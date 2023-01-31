@@ -8,7 +8,7 @@ import { IndicadoresService } from './indicadores.service';
 @ApiTags('Relatórios - API')
 @Controller('relatorio/indicadores')
 export class IndicadoresController {
-    constructor(private readonly indicadoresService: IndicadoresService) { }
+    constructor(private readonly indicadoresService: IndicadoresService) {}
 
     @Post()
     @ApiBearerAuth('access-token')

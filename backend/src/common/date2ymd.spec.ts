@@ -1,4 +1,4 @@
-import { Date2YMD } from "./date2ymd";
+import { Date2YMD } from './date2ymd';
 
 describe('date2ymd', () => {
     describe('date from string to date', () => {
