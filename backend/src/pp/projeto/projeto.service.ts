@@ -14,12 +14,12 @@ import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto } from './entities/pr
 
 @Injectable()
 export class ProjetoService {
-    constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) {}
+    constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) { }
 
-    private async processaOrigem(dto: CreateProjetoDto) {
-        const meta_id: number | null = dto.meta_id ? dto.meta_id : null;
-        const iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
-        const atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
+    private async processaOrigem(dto: CreateProjetoDto | UpdateProjetoDto) {
+        let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
+        let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
+        let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
         const origem_outro: string = dto.origem_outro || '';
 
         if (dto.origem_outro && (dto.atividade_id || dto.iniciativa_id || dto.meta_id))
@@ -29,7 +29,21 @@ export class ProjetoService {
             if (!dto.origem_outro) throw new HttpException('origem_outro| é obrigatório quando não enviar meta|iniciativa|atividade', 400);
         }
 
-        // verificar se a meta/ini/ativ existem, preencher os parents
+        if (atividade_id !== null) {
+            const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
+            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true } });
+            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
+
+            iniciativa_id = ini.meta_id;
+            meta_id = ini.meta_id;
+        } else if (iniciativa_id !== null) {
+            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
+            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
+
+            meta_id = ini.meta_id;
+        } else if (meta_id !== null) {
+            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
+        }
 
         return {
             meta_id,
@@ -314,6 +328,8 @@ export class ProjetoService {
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(projetoId, user, false);
+
+        const { meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
