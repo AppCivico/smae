@@ -66,6 +66,8 @@ export class ProjetoService {
         const { meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio);
 
+        console.log(dto);
+
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const row = await prismaTx.projeto.create({
                 data: {
