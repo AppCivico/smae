@@ -466,7 +466,6 @@ export default [
   },
   {
     path: '/portfolios',
-    name: 'portfolios',
     meta: {
       requerAutenticação: true,
       title: 'Portfolios',
@@ -477,6 +476,7 @@ export default [
 
     children: [
       {
+        name: 'portfoliosListar',
         path: '',
         component: PortfoliosLista,
         meta: {
