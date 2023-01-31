@@ -139,8 +139,6 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     previsao_custo: number | null;
 
-    // FONTE-RECURSO 1..N
-
     /**
     * escopo
     * @example "..."

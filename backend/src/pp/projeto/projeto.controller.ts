@@ -37,7 +37,7 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async findOne(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
-        return await this.projetoService.findOne(+id, user);
+        return await this.projetoService.findOne(+id, user, true);
     }
 
     @Patch(':id')
