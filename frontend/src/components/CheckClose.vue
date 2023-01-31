@@ -14,6 +14,14 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', route.meta?.rotaDeEscape || route.matched?.[parentRoutePosition].path);
 }
 </script>
-<template >
-  <button @click="checkClose" class="btn round ml2"><svg width="12" height="12"><use xlink:href="#i_x"></use></svg></button>
+<template>
+  <button
+    class="btn round ml2"
+    @click="checkClose"
+  >
+    <svg
+      width="12"
+      height="12"
+    ><use xlink:href="#i_x" /></svg>
+  </button>
 </template>

@@ -21,7 +21,7 @@ import {
   SingleCronograma,
   SingleEvolucao,
   SingleIniciativa,
-  SingleMeta, SinglePainelMeta,
+  SingleMeta, SinglePainelMeta
 } from '@/views/metas';
 import {
   ListCiclos, ListCiclosPassados,
@@ -29,7 +29,7 @@ import {
   ListMonitoramentoMetasCronograma,
   ListMonitoramentoMetasEvolucao,
   MonitoramentoMetas,
-  MonitoramentoMetasCronograma,
+  MonitoramentoMetasCronograma
 } from '@/views/monitoramento';
 import {
   AddEditCusteio,
@@ -38,7 +38,7 @@ import {
   AddRealizadoNota,
   AddRealizadoProcesso,
   EditRealizado,
-  MetaOrcamento,
+  MetaOrcamento
 } from '@/views/orcamento';
 import administracao from './administracao';
 
