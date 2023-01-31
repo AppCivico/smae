@@ -6,6 +6,13 @@ export class PortfolioDto {
     orgaos: IdSiglaDescricao[];
 }
 
+export class PortfolioOneDto {
+    id: number;
+    titulo: string;
+    orgaos: number[];
+}
+
+
 export class ListPortfolioDto {
     linhas: PortfolioDto[];
 }
