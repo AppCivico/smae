@@ -429,7 +429,7 @@ export class ProjetoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        await this.prisma.portfolio.updateMany({
+        await this.prisma.projeto.updateMany({
             where: { id: id, removido_em: null },
             data: {
                 removido_por: user.id,
