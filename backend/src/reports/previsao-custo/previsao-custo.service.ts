@@ -1,13 +1,12 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { MetaOrcamentoService } from 'src/meta-orcamento/meta-orcamento.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelPrevisaoCustoDto, PeriodoRelatorioPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
-import { ListPrevisaoCustoDto, RelPrevisaoCustoDto } from './entities/previsao-custo.entity';
+import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
 const {
     Parser,
@@ -17,13 +16,15 @@ const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class PrevisaoCustoService implements ReportableService {
-    constructor(private readonly utils: UtilsService, private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
+    constructor(private readonly utils: UtilsService, private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) { }
 
     async create(dto: CreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
         let ano: number;
 
+        const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+
         if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente) {
-            ano = DateTime.now().year;
+            ano = DateTime.local({ zone: "America/Sao_Paulo" }).year;
         } else {
             if (!dto.ano) throw new HttpException('Ano deve ser enviado', 400);
 
@@ -32,7 +33,7 @@ export class PrevisaoCustoService implements ReportableService {
 
         const metaOrcamentos = await this.prisma.metaOrcamento.findMany({
             where: {
-                AND: [{ meta_id: dto?.meta_id }],
+                meta_id: { in: metas.map(r => r.id) },
                 ano_referencia: ano,
                 removido_em: null,
             },
