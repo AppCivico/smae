@@ -1,7 +1,11 @@
 import { default as MenuSecundario } from '@/components/MenuSecundario.vue';
 
 import {
-  RelatoriosMensais, RelatoriosOrcamentarios, RelatoriosRaiz, RelatoriosSemestraisOuAnuais, RelatórioCriarOuEditar
+  RelatoriosMensais,
+  RelatoriosOrcamentarios,
+  RelatoriosRaiz,
+  RelatoriosSemestraisOuAnuais,
+  RelatórioCriarOuEditar,
 } from '@/views/relatorios';
 
 export default {
