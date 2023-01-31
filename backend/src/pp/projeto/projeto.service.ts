@@ -397,32 +397,59 @@ export class ProjetoService {
     private async upsertFonteRecurso(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
         if (Array.isArray(dto.fonte_recursos) == false) return;
 
+        const byYearFonte: Record<string, Record<string, boolean>> = {};
+
+        for (const fr of dto.fonte_recursos!) {
+            if (!byYearFonte[fr.fonte_recurso_ano]) byYearFonte[fr.fonte_recurso_ano] = {};
+            if (!byYearFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof])
+                byYearFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof] = true;
+        }
+
+        const resultsFonte: Record<string, Record<string, string>> = {};
+        for (const ano in byYearFonte) {
+            const codigos = Object.keys(byYearFonte[ano]);
+            const rows: {
+                codigo: string;
+                descricao: string;
+            }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
+            and ano = ${ano}::int
+            and codigo = ANY(${codigos}::varchar[])`;
+            if (!resultsFonte[ano]) resultsFonte[ano] = {};
+            for (const r of rows) {
+                resultsFonte[ano][r.codigo] = r.descricao;
+            }
+        }
+
         const keepIds: number[] = [];
-        for (const fonteRecurso of dto.fonte_recursos!) {
-            const valor_nominal = fonteRecurso.valor_nominal !== undefined ? fonteRecurso.valor_nominal : null;
-            const valor_percentual = fonteRecurso.valor_percentual !== undefined ? fonteRecurso.valor_percentual : null;
+        for (const fr of dto.fonte_recursos!) {
+            const valor_nominal = fr.valor_nominal !== undefined ? fr.valor_nominal : null;
+            const valor_percentual = fr.valor_percentual !== undefined ? fr.valor_percentual : null;
             if (valor_nominal == null && valor_percentual == null) throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400);
             if (valor_nominal !== null && valor_percentual !== null) throw new HttpException('Valor Percentual e Valor Nominal são mutuamente exclusivos', 400);
 
-            if ('id' in fonteRecurso && fonteRecurso.id) {
+            if (resultsFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof] == undefined) {
+                throw new HttpException(`Fonte de recurso ${fr.fonte_recurso_cod_sof} não foi encontrada para o ano ${fr.fonte_recurso_ano}.`, 400);
+            }
+
+            if ('id' in fr && fr.id) {
                 await prismaTx.projetoFonteRecurso.findFirstOrThrow({
-                    where: { projeto_id: projetoId, id: fonteRecurso.id },
+                    where: { projeto_id: projetoId, id: fr.id },
                 });
                 await prismaTx.projetoFonteRecurso.update({
-                    where: { id: fonteRecurso.id },
+                    where: { id: fr.id },
                     data: {
-                        fonte_recurso_ano: fonteRecurso.fonte_recurso_ano,
-                        fonte_recurso_cod_sof: fonteRecurso.fonte_recurso_cod_sof,
+                        fonte_recurso_ano: fr.fonte_recurso_ano,
+                        fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
                         valor_nominal: valor_nominal,
                         valor_percentual: valor_percentual,
                     },
                 });
-                keepIds.push(fonteRecurso.id);
+                keepIds.push(fr.id);
             } else {
                 const row = await prismaTx.projetoFonteRecurso.create({
                     data: {
-                        fonte_recurso_ano: fonteRecurso.fonte_recurso_ano,
-                        fonte_recurso_cod_sof: fonteRecurso.fonte_recurso_cod_sof,
+                        fonte_recurso_ano: fr.fonte_recurso_ano,
+                        fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
                         valor_nominal: valor_nominal,
                         valor_percentual: valor_percentual,
                         projeto_id: projetoId,
