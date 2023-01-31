@@ -9,5 +9,6 @@ import { UploadModule } from '../../upload/upload.module';
     imports: [PrismaModule, PortfolioModule, UploadModule],
     controllers: [ProjetoController],
     providers: [ProjetoService],
+    exports: [ProjetoService]
 })
-export class ProjetoModule {}
+export class ProjetoModule { }

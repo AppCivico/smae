@@ -5,6 +5,7 @@ import { CreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create
 import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadore.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import { CreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
+import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
 import { ReportValidatorOf } from '../report-validator-of';
 
 export class CreateReportDto {
@@ -20,7 +21,15 @@ export class CreateReportDto {
      * @example "{}"
      */
     @ReportValidatorOf('fonte')
-    @ApiProperty({ oneOf: refs(CreateOrcamentoExecutadoDto, CreateRelIndicadorDto, CreateRelMonitoramentoMensalDto, CreateRelPrevisaoCustoDto) })
+    @ApiProperty({
+        oneOf: refs(
+            CreateOrcamentoExecutadoDto,
+            CreateRelIndicadorDto,
+            CreateRelMonitoramentoMensalDto,
+            CreateRelPrevisaoCustoDto,
+            CreateRelProjetoDto
+        )
+    })
     parametros: any;
 
     @IsOptional()

@@ -5,5 +5,5 @@ export class RelatorioDto {
     fonte: string;
     arquivo: string;
     parametros: any;
-    pdm_id: number;
+    pdm_id: number | null;
 }
