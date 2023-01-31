@@ -200,12 +200,12 @@ export class ProjetoService {
         return ret;
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<ProjetoDetailDto> {
+    async findOne(id: number, user: PessoaFromJwt, readonly: boolean): Promise<ProjetoDetailDto> {
 
         if (!user.hasSomeRoles(['Projeto.administrador'])) {
             // TODO verificar a permissão do "user",
             // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
-
+            // usar campo readonly, pq há chamadas para essa função quando há escritas
         }
 
         const projetoRow = await this.prisma.projeto.findFirstOrThrow({
@@ -311,8 +311,119 @@ export class ProjetoService {
         }
     }
 
-    async update(id: number, updateProjetoDto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        throw '...'
+    async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+
+        // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
+        await this.findOne(projetoId, user, false);
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+
+            await this.upsertPremissas(dto, prismaTx, projetoId);
+            await this.upsertRestricoes(dto, prismaTx, projetoId);
+            await this.upsertFonteRecurso(dto, prismaTx, projetoId);
+
+            // TODO continuar com os outros updates
+
+        });
+
+        return { id: projetoId }
+    }
+
+    private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
+        if (Array.isArray(dto.premissas) == false) return;
+
+        const keepIds: number[] = [];
+        for (const premissa of dto.premissas!) {
+            if ('id' in premissa && premissa.id) {
+                await prismaTx.projetoPremissa.findFirstOrThrow({
+                    where: { projeto_id: projetoId, id: premissa.id }
+                });
+                await prismaTx.projetoPremissa.update({
+                    where: { id: premissa.id },
+                    data: { premissa: premissa.premissa }
+                });
+                keepIds.push(premissa.id);
+            } else {
+                const row = await prismaTx.projetoPremissa.create({
+                    data: { premissa: premissa.premissa, projeto_id: projetoId }
+                });
+                keepIds.push(row.id);
+            }
+        }
+        await prismaTx.projetoPremissa.deleteMany({
+            where: { projeto_id: projetoId, id: { notIn: keepIds } }
+        });
+    }
+
+
+    private async upsertRestricoes(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
+        if (Array.isArray(dto.restricoes) == false) return;
+
+        const keepIds: number[] = [];
+        for (const restricao of dto.restricoes!) {
+            if ('id' in restricao && restricao.id) {
+                await prismaTx.projetoRestricao.findFirstOrThrow({
+                    where: { projeto_id: projetoId, id: restricao.id }
+                });
+                await prismaTx.projetoRestricao.update({
+                    where: { id: restricao.id },
+                    data: { restricao: restricao.restricao }
+                });
+                keepIds.push(restricao.id);
+            } else {
+                const row = await prismaTx.projetoRestricao.create({
+                    data: { restricao: restricao.restricao, projeto_id: projetoId }
+                });
+                keepIds.push(row.id);
+            }
+        }
+        await prismaTx.projetoRestricao.deleteMany({
+            where: { projeto_id: projetoId, id: { notIn: keepIds } }
+        });
+    }
+
+    private async upsertFonteRecurso(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
+        if (Array.isArray(dto.fonte_recursos) == false) return;
+
+        const keepIds: number[] = [];
+        for (const fonteRecurso of dto.fonte_recursos!) {
+            const valor_nominal = fonteRecurso.valor_nominal !== undefined ? fonteRecurso.valor_nominal : null;
+            const valor_percentual = fonteRecurso.valor_percentual !== undefined ? fonteRecurso.valor_percentual : null;
+            if (valor_nominal == null && valor_percentual == null)
+                throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400)
+            if (valor_nominal !== null && valor_percentual !== null)
+                throw new HttpException('Valor Percentual e Valor Nominal são mutuamente exclusivos', 400)
+
+            if ('id' in fonteRecurso && fonteRecurso.id) {
+                await prismaTx.projetoFonteRecurso.findFirstOrThrow({
+                    where: { projeto_id: projetoId, id: fonteRecurso.id }
+                });
+                await prismaTx.projetoFonteRecurso.update({
+                    where: { id: fonteRecurso.id },
+                    data: {
+                        fonte_recurso_ano: fonteRecurso.fonte_recurso_ano,
+                        fonte_recurso_cod_sof: fonteRecurso.fonte_recurso_cod_sof,
+                        valor_nominal: valor_nominal,
+                        valor_percentual: valor_percentual,
+                    }
+                });
+                keepIds.push(fonteRecurso.id);
+            } else {
+                const row = await prismaTx.projetoFonteRecurso.create({
+                    data: {
+                        fonte_recurso_ano: fonteRecurso.fonte_recurso_ano,
+                        fonte_recurso_cod_sof: fonteRecurso.fonte_recurso_cod_sof,
+                        valor_nominal: valor_nominal,
+                        valor_percentual: valor_percentual,
+                        projeto_id: projetoId
+                    }
+                });
+                keepIds.push(row.id);
+            }
+        }
+        await prismaTx.projetoFonteRecurso.deleteMany({
+            where: { projeto_id: projetoId, id: { notIn: keepIds } }
+        });
     }
 
     async remove(id: number, user: PessoaFromJwt) {
@@ -328,7 +439,7 @@ export class ProjetoService {
 
     async append_document(projetoId: number, createPdmDocDto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user);
+        await this.findOne(projetoId, user, false);
 
         const arquivoId = this.uploadService.checkUploadToken(createPdmDocDto.upload_token);
 
@@ -349,7 +460,7 @@ export class ProjetoService {
 
     async list_document(projetoId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user);
+        await this.findOne(projetoId, user, false);
 
         const arquivos: ProjetoDocumentoDto[] = await this.prisma.projetoDocumento.findMany({
             where: { projeto_id: projetoId, removido_em: null },
@@ -375,7 +486,7 @@ export class ProjetoService {
 
     async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user);
+        await this.findOne(projetoId, user, false);
 
         await this.prisma.projetoDocumento.updateMany({
             where: { projeto_id: projetoId, removido_em: null, id: projetoDocId },
