@@ -121,6 +121,7 @@ export class ProjetoService {
 
         const rows = await this.prisma.projeto.findMany({
             where: {
+                removido_em: null,
                 eh_prioritario: filters.eh_prioritario,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 arquivado: filters.arquivado,
