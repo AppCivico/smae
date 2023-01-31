@@ -44,7 +44,7 @@ export class CreateProjetoDto {
     * @example ""
     */
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: any) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     orgao_responsavel_id: number | null;
 
@@ -53,7 +53,7 @@ export class CreateProjetoDto {
     * @example ""
     */
     @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: any) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     responsavel_id: number | null;
 
@@ -108,7 +108,7 @@ export class CreateProjetoDto {
     */
     @IsOptional()
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: any) => (a.value === null ? null : +a.value))
     meta_id?: number;
 
     /**
@@ -117,7 +117,7 @@ export class CreateProjetoDto {
     */
     @IsOptional()
     @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: any) => (a.value === null ? null : +a.value))
     iniciativa_id?: number;
 
     /**
@@ -126,7 +126,7 @@ export class CreateProjetoDto {
     */
     @IsOptional()
     @IsInt({ message: '$property| atividade_id precisa ser positivo' })
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: any) => (a.value === null ? null : +a.value))
     atividade_id?: number;
 
     /**
@@ -135,7 +135,7 @@ export class CreateProjetoDto {
     **/
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
     @Min(0, { message: '$property| Custo precisa ser positivo' })
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: any) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     previsao_custo: number | null;
 
