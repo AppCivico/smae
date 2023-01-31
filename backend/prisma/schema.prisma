@@ -2019,12 +2019,13 @@ enum FonteRelatorio {
     Indicadores
     MonitoramentoMensal
     PrevisaoCusto
+    Projeto
 }
 
 model Relatorio {
     id Int @id @default(autoincrement())
 
-    pdm_id Int
+    pdm_id Int?
 
     parametros Json @default("{}") @db.Json
 
@@ -2041,7 +2042,7 @@ model Relatorio {
     criador   Pessoa? @relation("criador", fields: [criado_por], references: [id])
     removedor Pessoa? @relation("removedor", fields: [removido_por], references: [id])
     arquivo   Arquivo @relation(fields: [arquivo_id], references: [id])
-    pdm       Pdm     @relation(fields: [pdm_id], references: [id])
+    pdm       Pdm?    @relation(fields: [pdm_id], references: [id])
 
     @@index([pdm_id, criado_em, removido_em])
     @@index([fonte, criado_em])

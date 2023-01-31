@@ -216,8 +216,8 @@ export class ProjetoService {
         return ret;
     }
 
-    async findOne(id: number, user: PessoaFromJwt, readonly: boolean): Promise<ProjetoDetailDto> {
-        if (!user.hasSomeRoles(['Projeto.administrador'])) {
+    async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
+        if (user && !user.hasSomeRoles(['Projeto.administrador'])) {
             // TODO verificar a permissão do "user",
             // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
             // usar campo readonly, pq há chamadas para essa função quando há escritas
