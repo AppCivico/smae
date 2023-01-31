@@ -1,7 +1,6 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
-import { TipoRelatorio } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
+import { IsEnum, IsInt, IsOptional } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 
 export const PeriodoRelatorioPrevisaoCustoDto = {
