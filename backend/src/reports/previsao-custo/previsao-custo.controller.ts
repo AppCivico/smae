@@ -8,7 +8,7 @@ import { PrevisaoCustoService } from './previsao-custo.service';
 @ApiTags('Relatórios - API')
 @Controller('relatorio/previsao-custo')
 export class PrevisaoCustoController {
-    constructor(private readonly previsaoCustoService: PrevisaoCustoService) { }
+    constructor(private readonly previsaoCustoService: PrevisaoCustoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')

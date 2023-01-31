@@ -9,14 +9,10 @@ import { RequestInfoDto } from './../metas/dto/mf-meta.dto';
 import { MetasRiscoService } from './../metas/metas-risco.service';
 import { MfService } from '../mf.service';
 
-
 @ApiTags('Monitoramento Fisico - Risco')
 @Controller('metas')
 export class MetasRiscoController {
-    constructor(
-        private readonly metasRiscoService: MetasRiscoService,
-        private readonly mfService: MfService
-    ) { }
+    constructor(private readonly metasRiscoService: MetasRiscoService, private readonly mfService: MfService) {}
 
     @ApiBearerAuth('access-token')
     @Get('risco')
@@ -25,19 +21,12 @@ export class MetasRiscoController {
     @ApiOkResponse({
         schema: { allOf: refs(MfListRiscoDto, RequestInfoDto) },
     })
-    async GetMetaRisco(
-        @Query() dto: FilterRiscoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<MfListRiscoDto & RequestInfoDto> {
+    async GetMetaRisco(@Query() dto: FilterRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<MfListRiscoDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {
-            ...await this.metasRiscoService.getMetaRisco(
-                dto,
-                config,
-                user
-            ),
+            ...(await this.metasRiscoService.getMetaRisco(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -49,19 +38,12 @@ export class MetasRiscoController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaRisco(
-        @Body() dto: RiscoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaRisco(@Body() dto: RiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {
-            ...await this.metasRiscoService.addMetaRisco(
-                dto,
-                config,
-                user
-            ),
+            ...(await this.metasRiscoService.addMetaRisco(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }

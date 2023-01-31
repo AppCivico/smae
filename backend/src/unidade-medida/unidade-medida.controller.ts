@@ -13,7 +13,7 @@ import { ListUnidadeMedidaDto } from './dto/list-unidade-medida.dto';
 @ApiTags('Unidade de Órgão')
 @Controller('unidade-medida')
 export class UnidadeMedidaController {
-    constructor(private readonly unidadeMedidaService: UnidadeMedidaService) { }
+    constructor(private readonly unidadeMedidaService: UnidadeMedidaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -26,7 +26,7 @@ export class UnidadeMedidaController {
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(): Promise<ListUnidadeMedidaDto> {
-        return { 'linhas': await this.unidadeMedidaService.findAll() };
+        return { linhas: await this.unidadeMedidaService.findAll() };
     }
 
     @Patch(':id')

@@ -5,19 +5,20 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit {
     constructor() {
         super({
-            log: [{
-                emit: 'event',
-                level: 'query',
-            },],
+            log: [
+                {
+                    emit: 'event',
+                    level: 'query',
+                },
+            ],
         });
-
     }
 
     async onModuleInit() {
         await this.$connect();
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        this.$on('query', async (e) => {
+        this.$on('query', async e => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             console.log(`${e.query} ${e.params}`);
@@ -29,5 +30,4 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
             await app.close();
         });
     }
-
 }

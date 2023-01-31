@@ -9,7 +9,7 @@ import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
 
 @Injectable()
 export class CronogramaService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
         if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
@@ -27,7 +27,7 @@ export class CronogramaService {
                     criado_em: new Date(Date.now()),
                     ...createCronogramaDto,
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             return cronograma;
@@ -36,11 +36,10 @@ export class CronogramaService {
         return created;
     }
 
-
     async findAll(filters: FilterCronogramaDto | undefined = undefined) {
-        let metaId = filters?.meta_id;
-        let atividadeId = filters?.atividade_id;
-        let iniciativaId = filters?.iniciativa_id;
+        const metaId = filters?.meta_id;
+        const atividadeId = filters?.atividade_id;
+        const iniciativaId = filters?.iniciativa_id;
 
         return await this.prisma.cronograma.findMany({
             where: {
@@ -49,11 +48,14 @@ export class CronogramaService {
                 iniciativa_id: iniciativaId,
                 removido_em: null,
 
-                CronogramaEtapa: filters && filters.cronograma_etapa_ids ? {
-                    some: {
-                        etapa_id: { in: filters.cronograma_etapa_ids }
-                    }
-                } : undefined,
+                CronogramaEtapa:
+                    filters && filters.cronograma_etapa_ids
+                        ? {
+                              some: {
+                                  etapa_id: { in: filters.cronograma_etapa_ids },
+                              },
+                          }
+                        : undefined,
             },
             select: {
                 id: true,
@@ -68,19 +70,17 @@ export class CronogramaService {
                 termino_real: true,
                 regionalizavel: true,
                 nivel_regionalizacao: true,
-            }
+            },
         });
     }
 
     async update(id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
-
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-
             const cronograma = await prisma.cronograma.update({
                 where: { id: id },
                 data: {
@@ -88,7 +88,7 @@ export class CronogramaService {
                     atualizado_em: new Date(Date.now()),
                     ...updateCronogoramaDto,
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             return cronograma;
@@ -108,10 +108,9 @@ export class CronogramaService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return removed;
     }
-
 }

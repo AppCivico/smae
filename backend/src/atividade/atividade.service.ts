@@ -13,10 +13,7 @@ import { Atividade, AtividadeOrgao, IdNomeExibicao } from './entities/atividade.
 @Injectable()
 export class AtividadeService {
     private readonly logger = new Logger(AtividadeService.name);
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly variavelService: VariavelService
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) {}
 
     async create(createAtividadeDto: CreateAtividadeDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -26,32 +23,33 @@ export class AtividadeService {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            const filterIdIn = (await this.prisma.iniciativa.findMany({
-                where: { removido_em: null, meta_id: { in: metas } }
-            })).map(r => r.id);
+            const filterIdIn = (
+                await this.prisma.iniciativa.findMany({
+                    where: { removido_em: null, meta_id: { in: metas } },
+                })
+            ).map(r => r.id);
             if (filterIdIn.includes(createAtividadeDto.iniciativa_id) === false)
-                throw new HttpException('Sem permissão para criar atividade nesta iniciativa (por não ter também permissão da meta)', 400)
+                throw new HttpException('Sem permissão para criar atividade nesta iniciativa (por não ter também permissão da meta)', 400);
         }
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            let op = createAtividadeDto.orgaos_participantes!;
-            let cp = createAtividadeDto.coordenadores_cp!;
+            const op = createAtividadeDto.orgaos_participantes!;
+            const cp = createAtividadeDto.coordenadores_cp!;
             delete createAtividadeDto.orgaos_participantes;
             delete createAtividadeDto.coordenadores_cp;
 
-            let tags = createAtividadeDto.tags || [];
+            const tags = createAtividadeDto.tags || [];
             delete createAtividadeDto.tags;
 
             if (createAtividadeDto.ativo) {
                 const iniciativaAtivaCount = await prisma.iniciativa.count({
                     where: {
                         id: createAtividadeDto.iniciativa_id,
-                        ativo: true
-                    }
+                        ativo: true,
+                    },
                 });
 
-                if (iniciativaAtivaCount === 0)
-                    throw new Error('Iniciativa está desativada, ative-a antes de criar uma Atividade ativa')
+                if (iniciativaAtivaCount === 0) throw new Error('Iniciativa está desativada, ative-a antes de criar uma Atividade ativa');
             }
 
             const atividade = await prisma.atividade.create({
@@ -60,7 +58,7 @@ export class AtividadeService {
                     criado_em: new Date(Date.now()),
                     ...createAtividadeDto,
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             await prisma.atividadeOrgao.createMany({
@@ -72,7 +70,7 @@ export class AtividadeService {
             });
 
             await prisma.atividadeTag.createMany({
-                data: await this.buildAtividadeTags(atividade.id, tags)
+                data: await this.buildAtividadeTags(atividade.id, tags),
             });
 
             return atividade;
@@ -85,14 +83,14 @@ export class AtividadeService {
         const arr: Prisma.AtividadeTagCreateManyInput[] = [];
 
         if (typeof tags !== 'object') {
-            tags = []
+            tags = [];
         }
 
         for (const tag of tags) {
             arr.push({
                 atividade_id: atividadeId,
-                tag_id: tag
-            })
+                tag_id: tag,
+            });
         }
 
         return arr;
@@ -101,11 +99,10 @@ export class AtividadeService {
     async buildOrgaosParticipantes(atividadeId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.AtividadeOrgaoCreateManyInput[]> {
         const arr: Prisma.AtividadeOrgaoCreateManyInput[] = [];
 
-        let orgaoVisto: Record<number, boolean> = {};
+        const orgaoVisto: Record<number, boolean> = {};
         // ordena por responsáveis primeiro
         orgaos_participantes.sort((a, b) => {
-            return a.responsavel && !b.responsavel ? -1 :
-                a.responsavel && !b.responsavel ? 0 : 1;
+            return a.responsavel && !b.responsavel ? -1 : a.responsavel && !b.responsavel ? 0 : 1;
         });
 
         for (const orgao of orgaos_participantes) {
@@ -115,14 +112,18 @@ export class AtividadeService {
                 arr.push({
                     orgao_id: orgao.orgao_id,
                     responsavel: orgao.responsavel,
-                    atividade_id: atividadeId
+                    atividade_id: atividadeId,
                 });
             }
         }
 
         return arr;
     }
-    async buildAtividadeResponsaveis(atividadeId: number, orgaos_participantes: AtividadeOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.AtividadeResponsavelCreateManyInput[]> {
+    async buildAtividadeResponsaveis(
+        atividadeId: number,
+        orgaos_participantes: AtividadeOrgaoParticipante[],
+        coordenadores_cp: number[],
+    ): Promise<Prisma.AtividadeResponsavelCreateManyInput[]> {
         const arr: Prisma.AtividadeResponsavelCreateManyInput[] = [];
 
         for (const orgao of orgaos_participantes) {
@@ -139,11 +140,11 @@ export class AtividadeService {
         for (const CoordenadoriaParticipanteId of coordenadores_cp) {
             const pessoaFisicaOrgao = await this.prisma.pessoa.findFirst({
                 where: {
-                    id: CoordenadoriaParticipanteId
+                    id: CoordenadoriaParticipanteId,
                 },
                 select: {
-                    pessoa_fisica: { select: { orgao_id: true } }
-                }
+                    pessoa_fisica: { select: { orgao_id: true } },
+                },
             });
 
             const orgaoId = pessoaFisicaOrgao?.pessoa_fisica?.orgao_id;
@@ -154,36 +155,31 @@ export class AtividadeService {
                     orgao_id: orgaoId,
                     coordenador_responsavel_cp: true,
                 });
-
             }
-
         }
 
         return arr;
     }
 
     async findAll(filters: FilterAtividadeDto | undefined = undefined, user: PessoaFromJwt) {
-        let iniciativa_id = filters?.iniciativa_id;
+        const iniciativa_id = filters?.iniciativa_id;
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            filterIdIn = (await this.prisma.iniciativa.findMany({
-                where: { removido_em: null, meta_id: { in: metas } }
-            })).map(r => r.id);
+            filterIdIn = (
+                await this.prisma.iniciativa.findMany({
+                    where: { removido_em: null, meta_id: { in: metas } },
+                })
+            ).map(r => r.id);
         }
 
-        let listActive = await this.prisma.atividade.findMany({
+        const listActive = await this.prisma.atividade.findMany({
             where: {
                 removido_em: null,
-                AND: [
-                    { iniciativa_id: iniciativa_id ? iniciativa_id : undefined },
-                    { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined }
-                ]
+                AND: [{ iniciativa_id: iniciativa_id ? iniciativa_id : undefined }, { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined }],
             },
-            orderBy: [
-                { codigo: 'asc' },
-            ],
+            orderBy: [{ codigo: 'asc' }],
             select: {
                 id: true,
                 titulo: true,
@@ -197,20 +193,20 @@ export class AtividadeService {
                 atividade_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
-                        responsavel: true
-                    }
+                        responsavel: true,
+                    },
                 },
                 atividade_responsavel: {
                     select: {
                         orgao: { select: { id: true, descricao: true } },
                         pessoa: { select: { id: true, nome_exibicao: true } },
                         coordenador_responsavel_cp: true,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
 
-        let ret: Atividade[] = [];
+        const ret: Atividade[] = [];
         for (const dbAtividade of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
             const orgaos: Record<number, AtividadeOrgao> = {};
@@ -219,7 +215,7 @@ export class AtividadeService {
                 orgaos[orgao.orgao.id] = {
                     orgao: orgao.orgao,
                     responsavel: orgao.responsavel,
-                    participantes: []
+                    participantes: [],
                 };
             }
 
@@ -228,9 +224,9 @@ export class AtividadeService {
                     coordenadores_cp.push({
                         id: responsavel.pessoa.id,
                         nome_exibicao: responsavel.pessoa.nome_exibicao,
-                    })
+                    });
                 } else {
-                    let orgao = orgaos[responsavel.orgao.id];
+                    const orgao = orgaos[responsavel.orgao.id];
                     orgao.participantes.push(responsavel.pessoa);
                 }
             }
@@ -246,49 +242,49 @@ export class AtividadeService {
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
                 compoe_indicador_iniciativa: dbAtividade.compoe_indicador_iniciativa,
-                ativo: dbAtividade.ativo
-            })
+                ativo: dbAtividade.ativo,
+            });
         }
 
         return ret;
     }
 
     async update(id: number, updateAtividadeDto: UpdateAtividadeDto, user: PessoaFromJwt) {
-
         const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            const filterIdIn = (await this.prisma.iniciativa.findMany({
-                where: { removido_em: null, meta_id: { in: metas } }
-            })).map(r => r.id);
+            const filterIdIn = (
+                await this.prisma.iniciativa.findMany({
+                    where: { removido_em: null, meta_id: { in: metas } },
+                })
+            ).map(r => r.id);
             if (filterIdIn.includes(self.iniciativa_id) === false)
-                throw new HttpException('Sem permissão para editar atividade nesta iniciativa (por não ter também permissão da meta)', 400)
+                throw new HttpException('Sem permissão para editar atividade nesta iniciativa (por não ter também permissão da meta)', 400);
         }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            let op = updateAtividadeDto.orgaos_participantes!;
-            let cp = updateAtividadeDto.coordenadores_cp!;
+            const op = updateAtividadeDto.orgaos_participantes!;
+            const cp = updateAtividadeDto.coordenadores_cp!;
             delete updateAtividadeDto.orgaos_participantes;
             delete updateAtividadeDto.coordenadores_cp;
 
-            let tags = updateAtividadeDto.tags!;
+            const tags = updateAtividadeDto.tags!;
             delete updateAtividadeDto.tags;
 
             if (updateAtividadeDto.ativo) {
                 const atividade = await prismaTx.atividade.findFirst({
                     where: {
-                        id: id
+                        id: id,
                     },
                     select: {
                         iniciativa: {
-                            select: { ativo: true }
-                        }
-                    }
-                })
+                            select: { ativo: true },
+                        },
+                    },
+                });
 
-                if (!atividade?.iniciativa.ativo)
-                    throw new Error('Iniciativa está desativada, ative-a antes de ativar a Atividade')
+                if (!atividade?.iniciativa.ativo) throw new Error('Iniciativa está desativada, ative-a antes de ativar a Atividade');
             }
 
             const atividade = await prismaTx.atividade.update({
@@ -300,13 +296,12 @@ export class AtividadeService {
                     ativo: true,
                     ...updateAtividadeDto,
                 },
-                select: { id: true }
+                select: { id: true },
             });
             await Promise.all([
                 prismaTx.atividadeOrgao.deleteMany({ where: { atividade_id: id } }),
                 prismaTx.atividadeResponsavel.deleteMany({ where: { atividade_id: id } }),
                 prismaTx.atividadeTag.deleteMany({ where: { atividade_id: id } }),
-
             ]);
 
             await Promise.all([
@@ -317,14 +312,14 @@ export class AtividadeService {
                     data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
                 }),
                 prismaTx.atividadeTag.createMany({
-                    data: await this.buildAtividadeTags(atividade.id, tags)
-                })
+                    data: await this.buildAtividadeTags(atividade.id, tags),
+                }),
             ]);
 
             const indicador = await prismaTx.indicador.findFirst({
                 where: {
                     removido_em: null,
-                    atividade_id: atividade.id
+                    atividade_id: atividade.id,
                 },
                 select: {
                     id: true,
@@ -333,16 +328,16 @@ export class AtividadeService {
                     meta_id: true,
                     IndicadorVariavel: {
                         where: { desativado: false },
-                        select: { variavel_id: true }
-                    }
-                }
+                        select: { variavel_id: true },
+                    },
+                },
             });
 
             if (!indicador) {
-                this.logger.log('não há indicador para a atividade')
+                this.logger.log('não há indicador para a atividade');
             } else {
                 for (const variavel of indicador.IndicadorVariavel) {
-                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prismaTx)
+                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prismaTx);
                 }
             }
 
@@ -357,11 +352,13 @@ export class AtividadeService {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            const filterIdIn = (await this.prisma.iniciativa.findMany({
-                where: { removido_em: null, meta_id: { in: metas } }
-            })).map(r => r.id);
+            const filterIdIn = (
+                await this.prisma.iniciativa.findMany({
+                    where: { removido_em: null, meta_id: { in: metas } },
+                })
+            ).map(r => r.id);
             if (filterIdIn.includes(self.iniciativa_id) === false)
-                throw new HttpException('Sem permissão para remover atividade nesta iniciativa (por não ter também permissão da meta)', 400)
+                throw new HttpException('Sem permissão para remover atividade nesta iniciativa (por não ter também permissão da meta)', 400);
         }
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
@@ -370,7 +367,7 @@ export class AtividadeService {
                 data: {
                     removido_por: user.id,
                     removido_em: new Date(Date.now()),
-                }
+                },
             });
 
             // Caso a Atividade seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
@@ -380,5 +377,4 @@ export class AtividadeService {
             return removed;
         });
     }
-
 }

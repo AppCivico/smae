@@ -1,36 +1,36 @@
-import { Type } from "class-transformer"
-import { IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator"
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 
 export class CreateTagDto {
     /**
-    * Descrição
-    */
+     * Descrição
+     */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
     @MaxLength(1000, { message: '$property| descrição: Máximo 1000 caracteres' })
-    descricao: string
+    descricao: string;
 
     /**
-    * Upload do Ícone
-    */
+     * Upload do Ícone
+     */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
     @IsString({ message: '$property| upload_token de um arquivo de ícone' })
-    upload_icone?: string | null
+    upload_icone?: string | null;
 
     /**
-    * ID do PDM
-    */
+     * ID do PDM
+     */
     @IsInt({ message: '$property| Necessário ID do PDM' })
     @IsOptional()
     @Type(() => Number)
-    pdm_id: number
+    pdm_id: number;
 
     /**
-    * ID do ODS (opcional, enviar null para remover/não existir)
-    */
+     * ID do ODS (opcional, enviar null para remover/não existir)
+     */
     @IsOptional()
     @IsInt({ message: '$property| ODS no PATCH pode não existir (fica o antigo), se enviado precisa ser nulo ou numérico' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
-    ods_id?: number
+    ods_id?: number;
 }

@@ -11,7 +11,7 @@ export class TextoConfigController {
         // TODO implementar o patch
         private readonly textoConfigService: TextoConfigService,
         private readonly prisma: PrismaService,
-    ) { }
+    ) {}
 
     @ApiTags('Público')
     @IsPublic()
@@ -23,5 +23,4 @@ export class TextoConfigController {
             tos: textoConfig.tos,
         };
     }
-
 }

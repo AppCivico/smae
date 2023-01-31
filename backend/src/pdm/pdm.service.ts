@@ -1,7 +1,7 @@
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
@@ -20,20 +20,15 @@ const JOB_LOCK_NUMBER = 65656565;
 @Injectable()
 export class PdmService {
     private readonly logger = new Logger(PdmService.name);
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly uploadService: UploadService
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
 
     async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
-
         const similarExists = await this.prisma.pdm.count({
             where: {
                 descricao: { endsWith: createPdmDto.nome, mode: 'insensitive' },
-            }
+            },
         });
-        if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let arquivo_logo_id: undefined | number;
         if (createPdmDto.upload_logo) {
@@ -51,12 +46,12 @@ export class PdmService {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     arquivo_logo_id: arquivo_logo_id,
-                    ...createPdmDto as any,
+                    ...(createPdmDto as any),
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
-            this.logger.log(`chamando monta_ciclos_pdm...`)
+            this.logger.log(`chamando monta_ciclos_pdm...`);
             await prisma.$queryRaw`select monta_ciclos_pdm(${c.id}::int, false)`;
 
             return c;
@@ -99,14 +94,14 @@ export class PdmService {
                 possui_atividade: true,
                 possui_iniciativa: true,
                 arquivo_logo_id: true,
-                nivel_orcamento: true
-            }
+                nivel_orcamento: true,
+            },
         });
 
         const listActiveTmp = listActive.map(pdm => {
             let logo = null;
             if (pdm.arquivo_logo_id) {
-                logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token
+                logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
             }
 
             return {
@@ -118,22 +113,22 @@ export class PdmService {
                 data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
                 periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
                 periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
-            }
+            };
         });
 
         return listActiveTmp;
     }
 
     async getDetail(id: number, user: PessoaFromJwt): Promise<Pdm> {
-        let pdm = await this.prisma.pdm.findFirst({
+        const pdm = await this.prisma.pdm.findFirst({
             where: {
-                id: id
-            }
+                id: id,
+            },
         });
-        if (!pdm) throw new HttpException('PDM não encontrado', 404)
+        if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         if (pdm.arquivo_logo_id) {
-            pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token
+            pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
         }
 
         return {
@@ -147,22 +142,11 @@ export class PdmService {
     }
 
     private async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt, pdm: { ativo: boolean }) {
-
-        if (
-            updatePdmDto.ativo !== pdm.ativo &&
-            updatePdmDto.ativo === true &&
-            user.hasSomeRoles(['CadastroPdm.ativar']) === false
-        ) {
+        if (updatePdmDto.ativo !== pdm.ativo && updatePdmDto.ativo === true && user.hasSomeRoles(['CadastroPdm.ativar']) === false) {
             throw new ForbiddenException(`Você não pode ativar Plano de Metas`);
-        } else if (
-            updatePdmDto.ativo !== pdm.ativo &&
-            updatePdmDto.ativo === false &&
-            user.hasSomeRoles(['CadastroPdm.inativar']) === false
-        ) {
+        } else if (updatePdmDto.ativo !== pdm.ativo && updatePdmDto.ativo === false && user.hasSomeRoles(['CadastroPdm.inativar']) === false) {
             throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
         }
-
-
     }
 
     async update(id: number, updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {
@@ -173,11 +157,10 @@ export class PdmService {
             const similarExists = await this.prisma.pdm.count({
                 where: {
                     descricao: { endsWith: updatePdmDto.nome, mode: 'insensitive' },
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         let arquivo_logo_id: number | undefined | null;
@@ -194,8 +177,6 @@ export class PdmService {
         let verificarCiclos = false;
         let ativo: boolean | undefined = undefined;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-
-
             if (updatePdmDto.ativo === true && pdm.ativo == false) {
                 ativo = true;
 
@@ -207,8 +188,8 @@ export class PdmService {
                             ativo: true,
                         },
                         data: {
-                            acordar_ciclo_em: now
-                        }
+                            acordar_ciclo_em: now,
+                        },
                     });
 
                     // desativa outros planos
@@ -220,7 +201,7 @@ export class PdmService {
                             ativo: false,
                             desativado_em: now,
                             desativado_por: user.id,
-                        }
+                        },
                     });
                 }
 
@@ -235,7 +216,7 @@ export class PdmService {
                         desativado_em: now,
                         desativado_por: user.id,
                     },
-                    select: { id: true }
+                    select: { id: true },
                 });
 
                 await prisma.cicloFisico.updateMany({
@@ -244,8 +225,8 @@ export class PdmService {
                         ativo: true,
                     },
                     data: {
-                        acordar_ciclo_em: now
-                    }
+                        acordar_ciclo_em: now,
+                    },
                 });
 
                 verificarCiclos = true;
@@ -259,16 +240,15 @@ export class PdmService {
                     atualizado_em: new Date(Date.now()),
                     ...updatePdmDto,
                     ativo: ativo,
-                    arquivo_logo_id: arquivo_logo_id
+                    arquivo_logo_id: arquivo_logo_id,
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
             if (verificarCiclos) {
-                this.logger.log(`chamando monta_ciclos_pdm...`)
+                this.logger.log(`chamando monta_ciclos_pdm...`);
                 this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
             }
-
         });
 
         if (verificarCiclos) {
@@ -298,7 +278,7 @@ export class PdmService {
     }
 
     async append_document(pdm_id: number, createPdmDocDto: CreatePdmDocumentDto, user: PessoaFromJwt) {
-        let pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const arquivoId = this.uploadService.checkUploadToken(createPdmDocDto.upload_token);
@@ -308,18 +288,18 @@ export class PdmService {
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
                 arquivo_id: arquivoId,
-                pdm_id: pdm_id
+                pdm_id: pdm_id,
             },
             select: {
-                id: true
-            }
+                id: true,
+            },
         });
 
-        return { id: arquivo.id }
+        return { id: arquivo.id };
     }
 
     async list_document(pdm_id: number, user: PessoaFromJwt) {
-        let pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const arquivos: PdmDocument[] = await this.prisma.arquivoDocumento.findMany({
@@ -332,20 +312,20 @@ export class PdmService {
                         tamanho_bytes: true,
                         TipoDocumento: true,
                         descricao: true,
-                        nome_original: true
-                    }
-                }
-            }
+                        nome_original: true,
+                    },
+                },
+            },
         });
         for (const item of arquivos) {
             item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
         }
 
-        return arquivos
+        return arquivos;
     }
 
     async remove_document(pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
-        let pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         await this.prisma.arquivoDocumento.updateMany({
@@ -353,7 +333,7 @@ export class PdmService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
     }
 
@@ -361,54 +341,54 @@ export class PdmService {
     async handleCron() {
         if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-            this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
-            const locked: {
-                locked: boolean,
-                now_ymd: DateYMD
-            }[] = await prisma.$queryRaw`SELECT
+        await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient) => {
+                this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
+                const locked: {
+                    locked: boolean;
+                    now_ymd: DateYMD;
+                }[] = await prisma.$queryRaw`SELECT
                 pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked,
                 (now() at time zone 'America/Sao_Paulo')::date::text as now_ymd
             `;
-            if (!locked[0].locked) {
-                this.logger.debug(`Já está em processamento...`);
-                return;
-            }
+                if (!locked[0].locked) {
+                    this.logger.debug(`Já está em processamento...`);
+                    return;
+                }
 
-            // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
-            while (1) {
-                const keepGoing = await this.verificaCiclosPendentes(locked[0].now_ymd);
-                if (!keepGoing) break;
-            }
-
-        }, {
-            maxWait: 30000,
-            timeout: 60 * 1000 * 5,
-            isolationLevel: 'Serializable',
-        });
+                // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
+                while (1) {
+                    const keepGoing = await this.verificaCiclosPendentes(locked[0].now_ymd);
+                    if (!keepGoing) break;
+                }
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
+                isolationLevel: 'Serializable',
+            },
+        );
     }
 
     private async verificaCiclosPendentes(today: DateYMD) {
-        console.log(today)
+        console.log(today);
         this.logger.debug(`Verificando ciclos físicos com tick faltando...`);
 
         const cf = await this.prisma.cicloFisico.findFirst({
             where: {
                 acordar_ciclo_em: {
-                    lt: new Date(Date.now())
+                    lt: new Date(Date.now()),
                 },
                 OR: [
-
                     { acordar_ciclo_errmsg: null },
                     {
                         // retry a cada 15 minutos, mesmo que tenha erro
                         acordar_ciclo_executou_em: {
-                            lt: DateTime.now().minus({ minutes: 15 }).toJSDate()
+                            lt: DateTime.now().minus({ minutes: 15 }).toJSDate(),
                         },
-                        acordar_ciclo_errmsg: { not: null }
-                    }
-
-                ]
+                        acordar_ciclo_errmsg: { not: null },
+                    },
+                ],
             },
             select: {
                 pdm_id: true,
@@ -418,11 +398,11 @@ export class PdmService {
                 ciclo_fase_atual_id: true,
                 acordar_ciclo_errmsg: true,
                 pdm: {
-                    select: { ativo: true }
-                }
+                    select: { ativo: true },
+                },
             },
             orderBy: {
-                data_ciclo: 'asc'
+                data_ciclo: 'asc',
             },
             take: 1,
         });
@@ -432,19 +412,18 @@ export class PdmService {
         }
 
         const mesCorrente = today.substring(0, 8) + '01';
-        this.logger.log(`Executando ciclo ${JSON.stringify(cf)} mesCorrente=${mesCorrente}`)
+        this.logger.log(`Executando ciclo ${JSON.stringify(cf)} mesCorrente=${mesCorrente}`);
 
         try {
             if (cf.acordar_ciclo_errmsg) {
                 this.logger.warn(`Mensagem de erro anterior: ${cf.acordar_ciclo_errmsg}, limpando mensagem e tentando novamente...`);
                 await this.prisma.cicloFisico.update({
                     where: { id: cf.id },
-                    data: { acordar_ciclo_errmsg: null }
+                    data: { acordar_ciclo_errmsg: null },
                 });
             }
 
             if (cf.pdm.ativo) {
-
                 if (Date2YMD.toString(cf.data_ciclo) < mesCorrente && cf.ativo) {
                     await this.inativarCiclo(cf);
                 } else if (Date2YMD.toString(cf.data_ciclo) === mesCorrente && !cf.ativo) {
@@ -458,50 +437,53 @@ export class PdmService {
                 await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
                     await prismaTxn.cicloFisico.update({
                         where: {
-                            id: cf.id
+                            id: cf.id,
                         },
                         data: {
                             acordar_ciclo_em: null,
                             acordar_ciclo_executou_em: new Date(Date.now()),
                             ciclo_fase_atual_id: null,
                             ativo: false,
-                        }
+                        },
                     });
                 });
-
             }
         } catch (error) {
             this.logger.error(error);
             await this.prisma.cicloFisico.update({
                 where: {
-                    id: cf.id
+                    id: cf.id,
                 },
                 data: {
                     acordar_ciclo_errmsg: `${error}`,
                     acordar_ciclo_executou_em: new Date(Date.now()),
-                }
+                },
             });
         }
 
         return true;
     }
 
-    private async verificaFaseAtual(cf: {
-        id: number; pdm_id: number; data_ciclo: Date;
-        ciclo_fase_atual_id: number | null;
-    }, today: string) {
-
+    private async verificaFaseAtual(
+        cf: {
+            id: number;
+            pdm_id: number;
+            data_ciclo: Date;
+            ciclo_fase_atual_id: number | null;
+        },
+        today: string,
+    ) {
         const proxima_fase = await this.prisma.cicloFisicoFase.findFirst({
             where: {
                 ciclo_fisico_id: cf.id,
                 data_inicio: {
-                    lte: new Date(today)
-                }
+                    lte: new Date(today),
+                },
             },
             orderBy: {
-                data_inicio: 'desc'
+                data_inicio: 'desc',
             },
-            take: 1
+            take: 1,
         });
 
         if (!proxima_fase) {
@@ -525,7 +507,6 @@ export class PdmService {
             this.logger.log(`chamando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
             await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
         } else {
-
             this.logger.log(`Recalculando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
             await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
 
@@ -539,8 +520,7 @@ export class PdmService {
         }
     }
 
-
-    private async inativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date; }) {
+    private async inativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date }) {
         this.logger.log(`desativando ciclo ${cf.data_ciclo}`);
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
@@ -548,15 +528,15 @@ export class PdmService {
                 where: { id: cf.id },
                 data: {
                     ativo: false,
-                    acordar_ciclo_em: null
-                }
+                    acordar_ciclo_em: null,
+                },
             });
 
             const proximoCiclo = await this.prisma.cicloFisico.findFirst({
                 where: {
                     pdm_id: cf.pdm_id,
                     data_ciclo: {
-                        gt: cf.data_ciclo
+                        gt: cf.data_ciclo,
                     },
                 },
                 select: {
@@ -564,7 +544,7 @@ export class PdmService {
                     data_ciclo: true,
                 },
                 orderBy: {
-                    data_ciclo: 'asc'
+                    data_ciclo: 'asc',
                 },
                 take: 1,
             });
@@ -576,7 +556,7 @@ export class PdmService {
                     data: {
                         acordar_ciclo_em: new Date(Date.now()),
                         acordar_ciclo_executou_em: new Date(Date.now()),
-                    }
+                    },
                 });
             } else {
                 this.logger.log(`não há próximos ciclos`);
@@ -585,15 +565,14 @@ export class PdmService {
                     data: {
                         acordar_ciclo_em: null,
                         acordar_ciclo_executou_em: new Date(Date.now()),
-                    }
+                    },
                 });
             }
         });
     }
 
-    private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date; }, today: string) {
+    private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date }, today: string) {
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-
             const count = await prismaTxn.cicloFisico.count({ where: { ativo: true, pdm_id: cf.pdm_id } });
             if (count) {
                 this.logger.error(`Não é possível ativar o ciclo ${cf.data_ciclo} pois ainda há outros ciclos que não foram fechados`);
@@ -605,13 +584,13 @@ export class PdmService {
                 where: {
                     ciclo_fisico_id: cf.id,
                     data_inicio: {
-                        lte: new Date(today)
-                    }
+                        lte: new Date(today),
+                    },
                 },
                 orderBy: {
-                    data_inicio: 'desc'
+                    data_inicio: 'desc',
                 },
-                take: 1
+                take: 1,
             });
             if (!proxima_fase) {
                 throw new Error(`Faltando próxima fase do ciclo!`);
@@ -621,8 +600,8 @@ export class PdmService {
                     data: {
                         ativo: true,
                         ciclo_fase_atual_id: proxima_fase.id,
-                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1))
-                    }
+                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1)),
+                    },
                 });
             }
         });
@@ -633,15 +612,15 @@ export class PdmService {
         const found = await this.prisma.cicloFisico.findFirst({
             where: { pdm_id: pdm_id, ativo: true },
             include: {
-                fases: true
-            }
+                fases: true,
+            },
         });
         if (found) {
             ciclo = {
                 id: found.id,
                 data_ciclo: Date2YMD.toString(found.data_ciclo),
                 fases: [],
-                ativo: found.ativo
+                ativo: found.ativo,
             };
             for (const fase of found.fases) {
                 ciclo.fases.push({
@@ -649,7 +628,7 @@ export class PdmService {
                     ciclo_fase: fase.ciclo_fase,
                     data_inicio: Date2YMD.toString(fase.data_inicio),
                     data_fim: Date2YMD.toString(fase.data_fim),
-                    fase_corrente: found.ciclo_fase_atual_id == fase.id
+                    fase_corrente: found.ciclo_fase_atual_id == fase.id,
                 });
             }
         }
@@ -657,24 +636,22 @@ export class PdmService {
         return ciclo;
     }
 
-
-
-    async getOrcamentoConfig(pdm_id: number, deleteExtraYears: boolean = false): Promise<OrcamentoConfig[] | null> {
+    async getOrcamentoConfig(pdm_id: number, deleteExtraYears = false): Promise<OrcamentoConfig[] | null> {
         const pdm = await this.prisma.pdm.findFirstOrThrow({
             where: { id: pdm_id },
             select: {
                 data_inicio: true,
                 data_fim: true,
-            }
+            },
         });
 
         const rows: {
-            ano_referencia: number
-            id: number
-            pdm_id: number
-            previsao_custo_disponivel: boolean
-            planejado_disponivel: boolean
-            execucao_disponivel: boolean
+            ano_referencia: number;
+            id: number;
+            pdm_id: number;
+            previsao_custo_disponivel: boolean;
+            planejado_disponivel: boolean;
+            execucao_disponivel: boolean;
         }[] = await this.prisma.$queryRaw`
             select
                 extract('year' from x.x)::int as ano_referencia,
@@ -687,29 +664,32 @@ export class PdmService {
             LEFT JOIN meta_orcamento_config oc ON oc.pdm_id = ${pdm_id}::int AND oc.ano_referencia = extract('year' from x.x)
         `;
 
-        let anoVistos: number[] = [];
+        const anoVistos: number[] = [];
         for (const r of rows) {
             anoVistos.push(r.ano_referencia);
             if (r.id === null) {
-                const created_orcamento_config = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-                    await this.prisma.pdmOrcamentoConfig.deleteMany({
-                        where: {
-                            ano_referencia: r.ano_referencia,
-                            pdm_id: pdm_id
-                        }
-                    });
+                const created_orcamento_config = await this.prisma.$transaction(
+                    async (prisma: Prisma.TransactionClient) => {
+                        await this.prisma.pdmOrcamentoConfig.deleteMany({
+                            where: {
+                                ano_referencia: r.ano_referencia,
+                                pdm_id: pdm_id,
+                            },
+                        });
 
-                    return await this.prisma.pdmOrcamentoConfig.create({
-                        data: {
-                            ano_referencia: r.ano_referencia,
-                            pdm_id: pdm_id
-                        },
-                        select: { id: true }
-                    });
-                }, { isolationLevel: 'Serializable' });
+                        return await this.prisma.pdmOrcamentoConfig.create({
+                            data: {
+                                ano_referencia: r.ano_referencia,
+                                pdm_id: pdm_id,
+                            },
+                            select: { id: true },
+                        });
+                    },
+                    { isolationLevel: 'Serializable' },
+                );
 
                 const row_without_id_idx = rows.findIndex(rwi => rwi.ano_referencia === r.ano_referencia);
-                rows[row_without_id_idx].id = created_orcamento_config.id
+                rows[row_without_id_idx].id = created_orcamento_config.id;
             }
         }
 
@@ -718,25 +698,23 @@ export class PdmService {
             await this.prisma.pdmOrcamentoConfig.deleteMany({
                 where: {
                     ano_referencia: { notIn: anoVistos },
-                    pdm_id: pdm_id
-                }
+                    pdm_id: pdm_id,
+                },
             });
 
         return rows;
     }
 
     async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto) {
-
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
-
 
             for (const orcamentoConfig of Object.values(updatePdmOrcamentoConfigDto.orcamento_config)) {
                 const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
                     where: {
                         pdm_id: pdm_id,
-                        id: orcamentoConfig.id
-                    }
+                        id: orcamentoConfig.id,
+                    },
                 });
                 if (!pdmOrcamentoConfig) continue;
 
@@ -746,16 +724,14 @@ export class PdmService {
                         data: {
                             previsao_custo_disponivel: orcamentoConfig.previsao_custo_disponivel,
                             planejado_disponivel: orcamentoConfig.planejado_disponivel,
-                            execucao_disponivel: orcamentoConfig.execucao_disponivel
+                            execucao_disponivel: orcamentoConfig.execucao_disponivel,
                         },
-                        select: { id: true }
-                    })
-                )
+                        select: { id: true },
+                    }),
+                );
             }
 
             return await Promise.all(operations);
         });
-
     }
-
 }

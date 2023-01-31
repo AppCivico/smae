@@ -6,30 +6,25 @@ import { UpdateOrgaoDto } from './dto/update-orgao.dto';
 
 @Injectable()
 export class OrgaoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createOrgaoDto: CreateOrgaoDto, user?: PessoaFromJwt) {
-
         const similarExists = await this.prisma.orgao.count({
             where: {
                 descricao: { endsWith: createOrgaoDto.descricao, mode: 'insensitive' },
                 removido_em: null,
-
-            }
+            },
         });
-        if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         if (createOrgaoDto.sigla) {
             const similarExists = await this.prisma.orgao.count({
                 where: {
                     sigla: { endsWith: createOrgaoDto.sigla, mode: 'insensitive' },
                     removido_em: null,
-
-                }
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         const created = await this.prisma.orgao.create({
@@ -38,14 +33,14 @@ export class OrgaoService {
                 criado_em: new Date(Date.now()),
                 ...createOrgaoDto,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return created;
     }
 
     async findAll() {
-        let listActive = await this.prisma.orgao.findMany({
+        const listActive = await this.prisma.orgao.findMany({
             where: {
                 removido_em: null,
             },
@@ -54,9 +49,9 @@ export class OrgaoService {
                 descricao: true,
                 sigla: true,
                 tipo_orgao: {
-                    select: { descricao: true, id: true }
+                    select: { descricao: true, id: true },
                 },
-            }
+            },
         });
         return listActive;
     }
@@ -64,8 +59,8 @@ export class OrgaoService {
     async findOne(id: number) {
         return await this.prisma.orgao.findUniqueOrThrow({
             where: {
-                id: id
-            }
+                id: id,
+            },
         });
     }
 
@@ -75,11 +70,10 @@ export class OrgaoService {
                 where: {
                     descricao: { endsWith: updateOrgaoDto.descricao, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (updateOrgaoDto.sigla) {
@@ -87,11 +81,10 @@ export class OrgaoService {
                 where: {
                     sigla: { endsWith: updateOrgaoDto.sigla, mode: 'insensitive' },
                     removido_em: null,
-                    NOT: { id: id }
-                }
+                    NOT: { id: id },
+                },
             });
-            if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.orgao.update({
@@ -100,7 +93,7 @@ export class OrgaoService {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 ...updateOrgaoDto,
-            }
+            },
         });
 
         return { id };
@@ -114,7 +107,7 @@ export class OrgaoService {
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
-            }
+            },
         });
 
         return created;

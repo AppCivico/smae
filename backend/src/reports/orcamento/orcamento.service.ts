@@ -7,76 +7,74 @@ import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '
 import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto, OrcamentoExecutadoSaidaDto, OrcamentoPlanejadoSaidaDto } from './entities/orcamento-executado.entity';
 
-const { Parser, transforms: { flatten } } = require('json2csv');
+const {
+    Parser,
+    transforms: { flatten },
+} = require('json2csv');
 const defaultTransform = [flatten({ paths: [] })];
 
 class RetornoRealizadoDb {
-    plan_dotacao_ano_utilizado: string | null
-    plan_dotacao_mes_utilizado: string | null
-    plan_sof_val_orcado_atualizado: string | null
-    plan_valor_planejado: string | null
-    plan_dotacao_sincronizado_em: Date | null
-    dotacao: string
-    processo: string | null
-    nota_empenho: string | null
-    dotacao_valor_empenhado: string
-    dotacao_valor_liquidado: string
-    dotacao_mes_utilizado: string | null
-    dotacao_ano_utilizado: string | null
-    dotacao_sincronizado_em: string
-    meta_id: string
-    meta_codigo: string
-    meta_titulo: string
-    iniciativa_id: string
-    iniciativa_codigo: string
-    iniciativa_titulo: string
-    atividade_id: string
-    atividade_codigo: string
-    atividade_titulo: string
-    ano: string
-    mes: string
-    mes_corrente: boolean
-    smae_valor_empenhado: string
-    smae_valor_liquidado: string
-    total_registros?: number
-    orcamento_realizado_item_id?: number
+    plan_dotacao_ano_utilizado: string | null;
+    plan_dotacao_mes_utilizado: string | null;
+    plan_sof_val_orcado_atualizado: string | null;
+    plan_valor_planejado: string | null;
+    plan_dotacao_sincronizado_em: Date | null;
+    dotacao: string;
+    processo: string | null;
+    nota_empenho: string | null;
+    dotacao_valor_empenhado: string;
+    dotacao_valor_liquidado: string;
+    dotacao_mes_utilizado: string | null;
+    dotacao_ano_utilizado: string | null;
+    dotacao_sincronizado_em: string;
+    meta_id: string;
+    meta_codigo: string;
+    meta_titulo: string;
+    iniciativa_id: string;
+    iniciativa_codigo: string;
+    iniciativa_titulo: string;
+    atividade_id: string;
+    atividade_codigo: string;
+    atividade_titulo: string;
+    ano: string;
+    mes: string;
+    mes_corrente: boolean;
+    smae_valor_empenhado: string;
+    smae_valor_liquidado: string;
+    total_registros?: number;
+    orcamento_realizado_item_id?: number;
 }
 
 class RetornoPlanejadoDb {
-    plan_dotacao_ano_utilizado: string | null
-    plan_dotacao_mes_utilizado: string | null
-    plan_sof_val_orcado_atualizado: string
-    plan_valor_planejado: string
-    plan_dotacao_sincronizado_em: Date | null
-    dotacao: string
+    plan_dotacao_ano_utilizado: string | null;
+    plan_dotacao_mes_utilizado: string | null;
+    plan_sof_val_orcado_atualizado: string;
+    plan_valor_planejado: string;
+    plan_dotacao_sincronizado_em: Date | null;
+    dotacao: string;
 
-    meta_id: string
-    meta_codigo: string
-    meta_titulo: string
+    meta_id: string;
+    meta_codigo: string;
+    meta_titulo: string;
 
-    iniciativa_id: string
-    iniciativa_codigo: string
-    iniciativa_titulo: string
+    iniciativa_id: string;
+    iniciativa_codigo: string;
+    iniciativa_titulo: string;
 
-    atividade_id: string
-    atividade_codigo: string
-    atividade_titulo: string
-    ano: string
+    atividade_id: string;
+    atividade_codigo: string;
+    atividade_titulo: string;
+    ano: string;
 
-    total_registros?: number
-    orcamento_planejado_id?: number
+    total_registros?: number;
+    orcamento_planejado_id?: number;
 }
 
 @Injectable()
 export class OrcamentoService implements ReportableService {
-    constructor(
-        private readonly utils: UtilsService,
-        private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService
-    ) { }
+    constructor(private readonly utils: UtilsService, private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
 
     async create(dto: CreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
-
         const anoIni = Date2YMD.toString(dto.inicio).substring(0, 4);
         const anoFim = Date2YMD.toString(dto.fim).substring(0, 4);
 
@@ -88,7 +86,7 @@ export class OrcamentoService implements ReportableService {
                 orgaoMatch.push({
                     dotacao: {
                         startsWith: orgao + '.',
-                    }
+                    },
                 });
             }
 
@@ -98,40 +96,39 @@ export class OrcamentoService implements ReportableService {
                 OrcamentoRealizado: {
                     meta_id: { in: metas.map(r => r.id) },
                     removido_em: null,
-                    'OR': orgaoMatch.length === 0 ? undefined : orgaoMatch,
+                    OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
                 },
                 data_referencia: {
                     gte: Date2YMD.tzSp2UTC(dto.inicio),
                     lte: Date2YMD.tzSp2UTC(dto.fim),
-                }
+                },
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
         const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
 
-        if ((dto.tipo == 'Analitico') && search.length > 0) {
+        if (dto.tipo == 'Analitico' && search.length > 0) {
             const resultadosRealizado: RetornoRealizadoDb[] = await this.queryAnaliticoExecutado(search);
             for (const r of resultadosRealizado) {
-                retExecutado.push(this.convertRealizadoRow(r))
+                retExecutado.push(this.convertRealizadoRow(r));
             }
 
             const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim);
             for (const r of resultadosPlanejados) {
-                retPlanejado.push(this.convertPlanejadoRow(r))
+                retPlanejado.push(this.convertPlanejadoRow(r));
             }
-
-        } else if ((dto.tipo == 'Consolidado') && search.length > 0) {
+        } else if (dto.tipo == 'Consolidado' && search.length > 0) {
             const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(search);
 
             for (const r of resultados) {
-                retExecutado.push(this.convertRealizadoRow(r))
+                retExecutado.push(this.convertRealizadoRow(r));
             }
 
             const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim);
             for (const r of resultadosPlanejados) {
-                retPlanejado.push(this.convertPlanejadoRow(r))
+                retPlanejado.push(this.convertPlanejadoRow(r));
             }
         }
 
@@ -140,11 +137,9 @@ export class OrcamentoService implements ReportableService {
 
         return {
             linhas: retExecutado,
-            linhas_planejado: retPlanejado
+            linhas_planejado: retPlanejado,
         };
-
     }
-
 
     private async queryConsolidadoPlanejado(ano_ini: string, ano_fim: string): Promise<RetornoPlanejadoDb[]> {
         return await this.prisma.$queryRaw`
@@ -246,7 +241,7 @@ export class OrcamentoService implements ReportableService {
             `;
     }
 
-    private async queryConsolidadoExecutado(search: { id: number; }[]): Promise<RetornoRealizadoDb[]> {
+    private async queryConsolidadoExecutado(search: { id: number }[]): Promise<RetornoRealizadoDb[]> {
         return await this.prisma.$queryRaw`
             with custos as (
                 select
@@ -344,7 +339,7 @@ export class OrcamentoService implements ReportableService {
             `;
     }
 
-    private async queryAnaliticoExecutado(search: { id: number; }[]): Promise<RetornoRealizadoDb[]> {
+    private async queryAnaliticoExecutado(search: { id: number }[]): Promise<RetornoRealizadoDb[]> {
         return await this.prisma.$queryRaw`
             with custos as (
                 select
@@ -411,16 +406,14 @@ export class OrcamentoService implements ReportableService {
             `;
     }
 
-
-
     private convertPlanejadoRow(db: RetornoPlanejadoDb): OrcamentoPlanejadoSaidaDto {
         const logs: string[] = [];
 
-        if ("total_registros" in db && db.total_registros) {
-            logs.push(`Total de Itens Consolidados ${db.total_registros}`)
+        if ('total_registros' in db && db.total_registros) {
+            logs.push(`Total de Itens Consolidados ${db.total_registros}`);
         }
-        if ("orcamento_planejado_id" in db && db.orcamento_planejado_id) {
-            logs.push(`orcamento_planejado_id = ${db.orcamento_planejado_id}`)
+        if ('orcamento_planejado_id' in db && db.orcamento_planejado_id) {
+            logs.push(`orcamento_planejado_id = ${db.orcamento_planejado_id}`);
         }
 
         return {
@@ -442,21 +435,19 @@ export class OrcamentoService implements ReportableService {
 
             ano: db.ano,
 
-            logs: logs
-        }
-
+            logs: logs,
+        };
     }
-
 
     private convertRealizadoRow(db: RetornoRealizadoDb): OrcamentoExecutadoSaidaDto {
         const logs: string[] = [];
 
-        if ("total_registros" in db && db.total_registros) {
-            logs.push(`Total de Itens Consolidados ${db.total_registros}`)
+        if ('total_registros' in db && db.total_registros) {
+            logs.push(`Total de Itens Consolidados ${db.total_registros}`);
         }
 
-        if ("orcamento_realizado_item_id" in db && db.orcamento_realizado_item_id) {
-            logs.push(`orcamento_realizado_item_id = ${db.orcamento_realizado_item_id}`)
+        if ('orcamento_realizado_item_id' in db && db.orcamento_realizado_item_id) {
+            logs.push(`orcamento_realizado_item_id = ${db.orcamento_realizado_item_id}`);
         }
 
         return {
@@ -490,9 +481,8 @@ export class OrcamentoService implements ReportableService {
             ano: db.ano,
             mes_corrente: db.mes_corrente,
 
-            logs: logs
-        }
-
+            logs: logs,
+        };
     }
 
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
@@ -504,16 +494,17 @@ export class OrcamentoService implements ReportableService {
         const out: FileOutput[] = [];
 
         let camposAnoMes: any[] = [];
-        let camposAno: any[] = [];
+        const camposAno: any[] = [];
         if (dto.tipo == 'Analitico') {
             camposAnoMes = [
                 { value: 'mes', label: 'mês' },
                 'ano',
                 {
                     value: (r: RetornoRealizadoDb) => {
-                        return r.mes_corrente ? 'Sim' : 'Não'
-                    }, label: 'mês corrente'
-                }
+                        return r.mes_corrente ? 'Sim' : 'Não';
+                    },
+                    label: 'mês corrente',
+                },
             ];
             camposAno[0] = camposAnoMes[0];
         }
@@ -559,12 +550,16 @@ export class OrcamentoService implements ReportableService {
                     'smae_valor_empenhado',
                     'smae_valor_liquidado',
                     'logs',
-                ]
+                ],
             });
-            const linhas = json2csvParser.parse(dados.linhas.map((r) => { return { ...r, logs: r.logs.join("\r\n") } }));
+            const linhas = json2csvParser.parse(
+                dados.linhas.map(r => {
+                    return { ...r, logs: r.logs.join('\r\n') };
+                }),
+            );
             out.push({
                 name: 'executado.csv',
-                buffer: Buffer.from(linhas, "utf8")
+                buffer: Buffer.from(linhas, 'utf8'),
             });
         }
 
@@ -588,25 +583,31 @@ export class OrcamentoService implements ReportableService {
                     'plan_dotacao_ano_utilizado',
                     'plan_dotacao_mes_utilizado',
                     'logs',
-                ]
+                ],
             });
-            const linhas = json2csvParser.parse(dados.linhas_planejado.map((r) => { return { ...r, logs: r.logs.join("\r\n") } }));
+            const linhas = json2csvParser.parse(
+                dados.linhas_planejado.map(r => {
+                    return { ...r, logs: r.logs.join('\r\n') };
+                }),
+            );
             out.push({
                 name: 'planejado.csv',
-                buffer: Buffer.from(linhas, "utf8")
+                buffer: Buffer.from(linhas, 'utf8'),
             });
         }
 
         return [
             {
                 name: 'info.json',
-                buffer: Buffer.from(JSON.stringify({
-                    params: params,
-                    "horario": Date2YMD.tzSp2UTC(new Date())
-                }), "utf8")
+                buffer: Buffer.from(
+                    JSON.stringify({
+                        params: params,
+                        horario: Date2YMD.tzSp2UTC(new Date()),
+                    }),
+                    'utf8',
+                ),
             },
-            ...out
-        ]
+            ...out,
+        ];
     }
-
 }

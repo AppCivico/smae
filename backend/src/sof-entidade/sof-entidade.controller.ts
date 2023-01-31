@@ -6,7 +6,7 @@ import { SofEntidadeService } from './sof-entidade.service';
 
 @Controller('sof-entidade')
 export class SofEntidadeController {
-    constructor(private readonly sofEntidadeService: SofEntidadeService) { }
+    constructor(private readonly sofEntidadeService: SofEntidadeService) {}
 
     @Get(':ano')
     @ApiBearerAuth('access-token')
@@ -16,5 +16,4 @@ export class SofEntidadeController {
     async findByYear(@Param() params: FindAnoParams): Promise<SofEntidadeDto> {
         return (await this.sofEntidadeService.findByYear(+params.ano)) as any as SofEntidadeDto;
     }
-
 }

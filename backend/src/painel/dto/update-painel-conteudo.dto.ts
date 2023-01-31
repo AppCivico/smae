@@ -4,41 +4,37 @@ import { IsArray, IsBoolean, IsNumber, IsOptional, ValidateIf, ValidateNested } 
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreatePainelConteudoDto } from './create-painel-conteudo.dto';
 
-export class UpdatePainelConteudoVisualizacaoDto extends PartialType(OmitType(CreatePainelConteudoDto, [
-    'meta_id',
-    'mostrar_indicador',
-    'painel_id'
-])) { }
+export class UpdatePainelConteudoVisualizacaoDto extends PartialType(OmitType(CreatePainelConteudoDto, ['meta_id', 'mostrar_indicador', 'painel_id'])) {}
 
 export class UpdatePainelConteudoDetalheDto {
     @IsBoolean()
     @IsOptional()
-    mostrar_indicador_meta?: boolean | null
+    mostrar_indicador_meta?: boolean | null;
 
     @IsArray()
     @IsOptional()
     @ValidateNested()
     @Type(() => UpdatePainelConteudoDetalheRowsDto)
     @ValidateIf((object, value) => value !== null)
-    detalhes?: UpdatePainelConteudoDetalheRowsDto[] | null
+    detalhes?: UpdatePainelConteudoDetalheRowsDto[] | null;
 }
 
 export class UpdatePainelConteudoDetalheRowsDto {
     @IsBoolean()
-    mostrar_indicador: boolean
+    mostrar_indicador: boolean;
 
     @IsNumber()
-    id: number
+    id: number;
 }
 export class PainelConteudoIdAndMeta {
-    id: number
-    meta_id: number
+    id: number;
+    meta_id: number;
 }
 
 export class PainelConteudoUpsertRet {
-    created: PainelConteudoIdAndMeta[]
-    deleted: PainelConteudoIdAndMeta[]
+    created: PainelConteudoIdAndMeta[];
+    deleted: PainelConteudoIdAndMeta[];
 }
 export class PainelConteudoDetalheUpdateRet {
-    updated: RecordWithId[]
+    updated: RecordWithId[];
 }

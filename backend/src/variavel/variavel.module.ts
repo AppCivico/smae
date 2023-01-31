@@ -10,10 +10,10 @@ import { VariavelService } from './variavel.service';
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + 'for-variables',
             signOptions: { expiresIn: '1d' },
-        })
+        }),
     ],
     controllers: [VariavelController],
     providers: [VariavelService],
     exports: [VariavelService],
 })
-export class VariavelModule { }
+export class VariavelModule {}

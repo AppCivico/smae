@@ -1,6 +1,6 @@
 export class Ods {
-    descricao: string
-    titulo: string
-    id: number
-    numero: number
+    descricao: string;
+    titulo: string;
+    id: number;
+    numero: number;
 }

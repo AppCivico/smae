@@ -12,9 +12,9 @@ import { Download } from './entities/download.entity';
 import { TipoUpload } from './entities/tipo-upload';
 
 interface TokenResponse {
-    stream: NodeJS.ReadableStream
-    nome: string
-    mime_type: string
+    stream: NodeJS.ReadableStream;
+    nome: string;
+    mime_type: string;
 }
 
 const DOWNLOAD_AUD = 'dl';
@@ -22,11 +22,7 @@ const UPLOAD_AUD = 'upload';
 
 @Injectable()
 export class UploadService {
-    constructor(
-        private readonly jwtService: JwtService,
-        private readonly prisma: PrismaService,
-        private readonly storage: StorageService,
-    ) { }
+    constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService, private readonly storage: StorageService) {}
 
     async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File, ip: string) {
         if (file.size < 1) {
@@ -36,17 +32,16 @@ export class UploadService {
         if (createUploadDto.tipo_documento_id) {
             const tipoDoc = await this.prisma.tipoDocumento.findFirst({
                 where: { id: createUploadDto.tipo_documento_id },
-                select: { extensoes: true }
+                select: { extensoes: true },
             });
             if (!tipoDoc) throw new HttpException('Tipo de Documento não encontrado', 404);
 
             const tipoDocExtensoes = tipoDoc.extensoes ? tipoDoc.extensoes.toLowerCase().split(',') || [] : [];
             if (tipoDocExtensoes.length > 0) {
-
                 // TODO adicionar inteligência para verificar mimetype por ext?
                 const extSomeExtExists = tipoDocExtensoes.some(ext => {
                     return file.originalname.toLocaleLowerCase().endsWith('.' + ext.trim());
-                })
+                });
 
                 if (!extSomeExtExists) throw new HttpException(`Arquivo deve contem um das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`, 400);
             }
@@ -75,23 +70,22 @@ export class UploadService {
         // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
         // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
         if (!/[^\u0000-\u00ff]/.test(originalname)) {
-            originalname = Buffer.from(originalname, 'latin1').toString('utf8')
+            originalname = Buffer.from(originalname, 'latin1').toString('utf8');
         }
 
         const arquivoId = await this.nextSequence();
 
-        let key = [
+        const key = [
             'uploads',
             String(createUploadDto.tipo).toLocaleLowerCase(),
             'by-user',
             String(user.id),
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
+            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, ''),
         ].join('/');
 
-        createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id &&
-            createUploadDto.tipo_documento_id > 0 ? createUploadDto.tipo_documento_id : null;
+        createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id && createUploadDto.tipo_documento_id > 0 ? createUploadDto.tipo_documento_id : null;
 
         await this.storage.putBlob(key, file.buffer, {
             'Content-Type': file.mimetype || 'application/octet-stream',
@@ -115,25 +109,25 @@ export class UploadService {
                 tipo: String(createUploadDto.tipo),
                 tipo_documento_id: createUploadDto.tipo_documento_id,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return arquivoId;
     }
 
     async uploadReport(category: string, filename: string, buffer: Buffer, mimetype: string | undefined, user: PessoaFromJwt) {
-        let originalname = filename;
+        const originalname = filename;
 
         const arquivoId = await this.nextSequence();
 
-        let key = [
+        const key = [
             'reports',
             category,
             'by-user',
             String(user.id),
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, '')
+            originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, ''),
         ].join('/');
 
         await this.storage.putBlob(key, buffer, {
@@ -154,9 +148,9 @@ export class UploadService {
                 mime_type: mimetype || 'application/octet-stream',
                 tamanho_bytes: buffer.length,
                 descricao: '',
-                tipo: 'reports'
+                tipo: 'reports',
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return arquivoId;
@@ -171,10 +165,13 @@ export class UploadService {
 
     async getUploadToken(id: number): Promise<Upload> {
         return {
-            upload_token: this.jwtService.sign({
-                arquivo_id: id,
-                aud: UPLOAD_AUD
-            }, { expiresIn: '30 days' }),
+            upload_token: this.jwtService.sign(
+                {
+                    arquivo_id: id,
+                    aud: UPLOAD_AUD,
+                },
+                { expiresIn: '30 days' },
+            ),
         } as Upload;
     }
 
@@ -185,10 +182,9 @@ export class UploadService {
         try {
             decoded = this.jwtService.decode(token) as UploadBody;
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-        if (!decoded || ![UPLOAD_AUD, DOWNLOAD_AUD].includes(decoded.aud))
-            throw new HttpException('upload_token inválido', 400);
+        if (!decoded || ![UPLOAD_AUD, DOWNLOAD_AUD].includes(decoded.aud)) throw new HttpException('upload_token inválido', 400);
 
         return decoded.arquivo_id;
     }
@@ -197,23 +193,24 @@ export class UploadService {
         if (!expiresIn) expiresIn = '10 minutes';
 
         return {
-            download_token: this.jwtService.sign({
-                arquivo_id: id,
-                aud: DOWNLOAD_AUD
-            }, { expiresIn }),
+            download_token: this.jwtService.sign(
+                {
+                    arquivo_id: id,
+                    aud: DOWNLOAD_AUD,
+                },
+                { expiresIn },
+            ),
         } as Download;
     }
 
     checkDownloadToken(downloadToken: string): number {
-
         let decoded: UploadBody | null = null;
         try {
             decoded = this.jwtService.decode(downloadToken) as DownloadBody;
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-        if (!decoded || decoded.aud != DOWNLOAD_AUD)
-            throw new HttpException('download_token inválido', 400);
+        if (!decoded || decoded.aud != DOWNLOAD_AUD) throw new HttpException('download_token inválido', 400);
 
         return decoded.arquivo_id;
     }
@@ -221,7 +218,7 @@ export class UploadService {
     async getBufferByToken(downloadToken: string): Promise<TokenResponse> {
         const arquivo = await this.prisma.arquivo.findFirst({
             where: { id: this.checkDownloadToken(downloadToken) },
-            select: { caminho: true, nome_original: true, mime_type: true }
+            select: { caminho: true, nome_original: true, mime_type: true },
         });
 
         if (!arquivo) throw new HttpException('Arquivo não encontrado', 400);
@@ -231,6 +228,5 @@ export class UploadService {
             nome: arquivo.nome_original,
             mime_type: arquivo.mime_type || 'application/octet-stream',
         };
-
     }
 }

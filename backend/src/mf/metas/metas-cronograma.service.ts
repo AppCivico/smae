@@ -3,21 +3,16 @@ import { IniciativasCronoRetorno, RetornoMetaCronogramaDto } from './../metas/dt
 import { MfService } from './../mf.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-
 @Injectable()
 export class MetasCronogramaService {
-
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly mfService: MfService,
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly mfService: MfService) {}
 
     async metaIniciativaAtividadesComCrono(meta_id: number): Promise<RetornoMetaCronogramaDto> {
         const dadosMetas: {
-            meta_id: number
-            iniciativa_id: number | null
-            atividade_id: number | null
-            cronograma_id: number
+            meta_id: number;
+            iniciativa_id: number | null;
+            atividade_id: number | null;
+            cronograma_id: number;
         }[] = await this.prisma.$queryRaw`
         select
             m.id as meta_id,
@@ -68,21 +63,21 @@ export class MetasCronogramaService {
                     select: {
                         pessoa: {
                             select: {
-                                nome_exibicao: true
+                                nome_exibicao: true,
                             },
                         },
                         orgao: {
                             select: {
-                                sigla: true
-                            }
+                                sigla: true,
+                            },
                         },
-                        coordenador_responsavel_cp: true
-                    }
-                }
+                        coordenador_responsavel_cp: true,
+                    },
+                },
             },
             orderBy: {
-                codigo: 'asc'
-            }
+                codigo: 'asc',
+            },
         });
 
         const iniciativas = await this.prisma.iniciativa.findMany({
@@ -91,29 +86,31 @@ export class MetasCronogramaService {
                 removido_em: null,
             },
             select: {
-                titulo: true, id: true, codigo: true,
+                titulo: true,
+                id: true,
+                codigo: true,
                 Indicador: {
                     where: {
                         removido_em: null,
                     },
-                    select: { id: true, titulo: true, codigo: true }
+                    select: { id: true, titulo: true, codigo: true },
                 },
                 iniciativa_responsavel: {
                     select: {
                         pessoa: {
                             select: {
-                                nome_exibicao: true
+                                nome_exibicao: true,
                             },
                         },
                         orgao: {
                             select: {
-                                sigla: true
-                            }
+                                sigla: true,
+                            },
                         },
-                        coordenador_responsavel_cp: true
-                    }
-                }
-            }
+                        coordenador_responsavel_cp: true,
+                    },
+                },
+            },
         });
 
         const atividades = await this.prisma.atividade.findMany({
@@ -122,13 +119,17 @@ export class MetasCronogramaService {
                 removido_em: null,
             },
             select: {
-                titulo: true, id: true, codigo: true,
+                titulo: true,
+                id: true,
+                codigo: true,
                 Indicador: {
                     where: {
                         removido_em: null,
                     },
                     select: {
-                        id: true, titulo: true, codigo: true,
+                        id: true,
+                        titulo: true,
+                        codigo: true,
                     },
                 },
                 iniciativa_id: true,
@@ -136,20 +137,19 @@ export class MetasCronogramaService {
                     select: {
                         pessoa: {
                             select: {
-                                nome_exibicao: true
+                                nome_exibicao: true,
                             },
                         },
                         orgao: {
                             select: {
-                                sigla: true
-                            }
+                                sigla: true,
+                            },
                         },
-                        coordenador_responsavel_cp: true
-                    }
-                }
-            }
+                        coordenador_responsavel_cp: true,
+                    },
+                },
+            },
         });
-
 
         const retorno: RetornoMetaCronogramaDto = {
             meta: {
@@ -166,8 +166,10 @@ export class MetasCronogramaService {
             const retornoIniciativa: IniciativasCronoRetorno = {
                 atividades: [],
                 iniciativa: {
-                    id: iniciativa.id, codigo: iniciativa.codigo, titulo: iniciativa.titulo,
-                    ...this.mfService.extraiResponsaveis(iniciativa.iniciativa_responsavel)
+                    id: iniciativa.id,
+                    codigo: iniciativa.codigo,
+                    titulo: iniciativa.titulo,
+                    ...this.mfService.extraiResponsaveis(iniciativa.iniciativa_responsavel),
                 },
                 cronogramas: dadosMetas.filter(n => n.atividade_id == null && n.iniciativa_id == iniciativa.id).map(n => n.cronograma_id),
             };
@@ -177,20 +179,18 @@ export class MetasCronogramaService {
 
                 retornoIniciativa.atividades.push({
                     atividade: {
-                        id: atividade.id, codigo: atividade.codigo, titulo: atividade.titulo,
-                        ...this.mfService.extraiResponsaveis(atividade.atividade_responsavel)
+                        id: atividade.id,
+                        codigo: atividade.codigo,
+                        titulo: atividade.titulo,
+                        ...this.mfService.extraiResponsaveis(atividade.atividade_responsavel),
                     },
-                    cronogramas: dadosMetas.filter(n => n.atividade_id == atividade.id).map(n => n.cronograma_id)
+                    cronogramas: dadosMetas.filter(n => n.atividade_id == atividade.id).map(n => n.cronograma_id),
                 });
             }
 
-            retorno.meta!.iniciativas.push(retornoIniciativa)
+            retorno.meta!.iniciativas.push(retornoIniciativa);
         }
 
         return retorno;
-
     }
-
-
-
 }

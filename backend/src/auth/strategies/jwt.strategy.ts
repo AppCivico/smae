@@ -8,7 +8,6 @@ import { AuthService } from './../auth.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(private authService: AuthService) {
-
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
@@ -20,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     async validate(payload: JwtPessoaPayload): Promise<PessoaFromJwt> {
         const pessoa = await this.authService.pessoaPeloSessionId(payload.sid);
 
-        let modPriv = await this.authService.listaPrivilegiosPessoa(pessoa.id as number);
+        const modPriv = await this.authService.listaPrivilegiosPessoa(pessoa.id as number);
 
         return new PessoaFromJwt({
             id: pessoa.id as number,
@@ -28,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             session_id: payload.sid,
             modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
-            orgao_id: pessoa.pessoa_fisica?.orgao_id
+            orgao_id: pessoa.pessoa_fisica?.orgao_id,
         });
     }
 }

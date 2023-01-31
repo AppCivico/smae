@@ -1,5 +1,5 @@
-import { FonteRecurso } from "../entities/fonte-recurso.entity";
+import { FonteRecurso } from '../entities/fonte-recurso.entity';
 
 export class ListFonteRecursoDto {
-    linhas: FonteRecurso[]
+    linhas: FonteRecurso[];
 }

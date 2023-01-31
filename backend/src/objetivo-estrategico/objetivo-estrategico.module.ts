@@ -5,7 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
     imports: [PrismaModule],
-    controllers: [ObjetivoEstrategicoController,ObjetivoEstrategicoController2],
-    providers: [ObjetivoEstrategicoService]
+    controllers: [ObjetivoEstrategicoController, ObjetivoEstrategicoController2],
+    providers: [ObjetivoEstrategicoService],
 })
-export class ObjetivoEstrategicoModule { }
+export class ObjetivoEstrategicoModule {}

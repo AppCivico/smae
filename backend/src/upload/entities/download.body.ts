@@ -1,4 +1,4 @@
 export class DownloadBody {
-    arquivo_id: number
-    aud: string
+    arquivo_id: number;
+    aud: string;
 }

@@ -10,17 +10,8 @@ import { TagService } from '../tag/tag.service';
 import { SubTemaService } from '../subtema/subtema.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        UploadModule
-    ],
+    imports: [PrismaModule, UploadModule],
     controllers: [PdmController],
-    providers: [
-        PdmService,
-        ObjetivoEstrategicoService,
-        SubTemaService,
-        EixoService,
-        TagService
-    ]
+    providers: [PdmService, ObjetivoEstrategicoService, SubTemaService, EixoService, TagService],
 })
-export class PdmModule { }
+export class PdmModule {}

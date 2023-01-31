@@ -10,14 +10,10 @@ import { MetasAnaliseQualiService } from './../metas/metas-analise-quali.service
 import { MfService } from '../mf.service';
 import { MfListVariavelAnaliseQualitativaDto, RequestInfoDto } from './dto/mf-meta.dto';
 
-
 @ApiTags('Monitoramento Fisico - análise qualitativa da meta')
 @Controller('metas')
 export class MetasAnaliseQualiController {
-    constructor(
-        private readonly metasAnaliseQualiService: MetasAnaliseQualiService,
-        private readonly mfService: MfService
-    ) { }
+    constructor(private readonly metasAnaliseQualiService: MetasAnaliseQualiService, private readonly mfService: MfService) {}
 
     @ApiBearerAuth('access-token')
     @Get('analise-qualitativa')
@@ -26,19 +22,12 @@ export class MetasAnaliseQualiController {
     @ApiOkResponse({
         schema: { allOf: refs(MfListVariavelAnaliseQualitativaDto, RequestInfoDto) },
     })
-    async GetMetaAnaliseQualitativa(
-        @Query() dto: FilterAnaliseQualitativaDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<MfListAnaliseQualitativaDto & RequestInfoDto> {
+    async GetMetaAnaliseQualitativa(@Query() dto: FilterAnaliseQualitativaDto, @CurrentUser() user: PessoaFromJwt): Promise<MfListAnaliseQualitativaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {
-            ...await this.metasAnaliseQualiService.getMetaAnaliseQualitativa(
-                dto,
-                config,
-                user
-            ),
+            ...(await this.metasAnaliseQualiService.getMetaAnaliseQualitativa(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -50,38 +39,23 @@ export class MetasAnaliseQualiController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaAnaliseQualitativaDocumento(
-        @Body() dto: AnaliseQualitativaDocumentoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaAnaliseQualitativaDocumento(@Body() dto: AnaliseQualitativaDocumentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         return {
-            ...await this.metasAnaliseQualiService.addMetaAnaliseQualitativaDocumento(
-                dto,
-                config,
-                user
-            ),
+            ...(await this.metasAnaliseQualiService.addMetaAnaliseQualitativaDocumento(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
-
 
     @ApiBearerAuth('access-token')
     @Delete('analise-qualitativa/documento/:id')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async DeleteMetaAnaliseQualitativaDocumento(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
+    async DeleteMetaAnaliseQualitativaDocumento(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         const config = await this.mfService.pessoaAcessoPdm(user);
-        await this.metasAnaliseQualiService.deleteMetaAnaliseQualitativaDocumento(
-            params.id,
-            config,
-            user
-        );
+        await this.metasAnaliseQualiService.deleteMetaAnaliseQualitativaDocumento(params.id, config, user);
 
         return '';
     }
@@ -93,19 +67,12 @@ export class MetasAnaliseQualiController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaAnaliseQualitativa(
-        @Body() dto: AnaliseQualitativaDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaAnaliseQualitativa(@Body() dto: AnaliseQualitativaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {
-            ...await this.metasAnaliseQualiService.addMetaAnaliseQualitativa(
-                dto,
-                config,
-                user
-            ),
+            ...(await this.metasAnaliseQualiService.addMetaAnaliseQualitativa(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }

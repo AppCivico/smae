@@ -10,4 +10,4 @@ import { MetaOrcamentoService } from './meta-orcamento.service';
     controllers: [MetaOrcamentoController],
     providers: [MetaOrcamentoService],
 })
-export class MetaOrcamentoModule { }
+export class MetaOrcamentoModule {}

@@ -1,3 +1,1 @@
-export class UpdateTextoConfigDto {
-
-}
+export class UpdateTextoConfigDto {}

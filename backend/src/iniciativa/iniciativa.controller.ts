@@ -14,7 +14,7 @@ import { IniciativaService } from './iniciativa.service';
 @ApiTags('Iniciativa')
 @Controller('iniciativa')
 export class IniciativaController {
-    constructor(private readonly iniciativaService: IniciativaService) { }
+    constructor(private readonly iniciativaService: IniciativaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -29,7 +29,7 @@ export class IniciativaController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterIniciativaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIniciativaDto> {
-        return { 'linhas': await this.iniciativaService.findAll(filters, user) };
+        return { linhas: await this.iniciativaService.findAll(filters, user) };
     }
 
     @Patch(':id')
@@ -50,5 +50,4 @@ export class IniciativaController {
         await this.iniciativaService.remove(+params.id, user);
         return '';
     }
-
 }

@@ -7,6 +7,6 @@ import { UploadModule } from '../upload/upload.module';
 @Module({
     imports: [PrismaModule, UploadModule],
     controllers: [RegiaoController],
-    providers: [RegiaoService]
+    providers: [RegiaoService],
 })
-export class RegiaoModule { }
+export class RegiaoModule {}

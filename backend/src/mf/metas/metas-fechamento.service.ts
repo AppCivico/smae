@@ -6,21 +6,16 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { FilterFechamentoDto, MfListFechamentoDto, FechamentoDto } from './../metas/dto/mf-meta-fechamento.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 
-
 @Injectable()
 export class MetasFechamentoService {
-
-    constructor(
-        private readonly prisma: PrismaService,
-    ) { }
-
+    constructor(private readonly prisma: PrismaService) {}
 
     private async carregaCicloPorId(ciclo_fisico_id: number) {
         const ret = await this.prisma.cicloFisico.findFirst({
             where: { id: ciclo_fisico_id },
             select: {
-                data_ciclo: true
-            }
+                data_ciclo: true,
+            },
         });
         if (!ret) {
             throw new HttpException(`Ciclo não encontrado no PDM`, 404);
@@ -30,7 +25,6 @@ export class MetasFechamentoService {
     }
 
     async getMetaFechamento(dto: FilterFechamentoDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListFechamentoDto> {
-
         const analisesResult = await this.prisma.metaCicloFisicoFechamento.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -47,15 +41,14 @@ export class MetasFechamentoService {
                 meta_id: true,
                 referencia_data: true,
                 pessoaCriador: {
-                    select: { nome_exibicao: true }
+                    select: { nome_exibicao: true },
                 },
-                id: true
-            }
+                id: true,
+            },
         });
 
-
         return {
-            Fechamentos: analisesResult.map((r) => {
+            Fechamentos: analisesResult.map(r => {
                 return {
                     comentario: r.comentario || '',
                     referencia_data: Date2YMD.toString(r.referencia_data),
@@ -64,13 +57,10 @@ export class MetasFechamentoService {
                     meta_id: r.meta_id,
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                }
+                };
             }),
-        }
+        };
     }
-
-
-
 
     async addMetaFechamento(dto: FechamentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
@@ -79,9 +69,7 @@ export class MetasFechamentoService {
         }
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
-
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
-
             const cfq = await prismaTxn.metaCicloFisicoFechamento.create({
                 data: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -93,15 +81,12 @@ export class MetasFechamentoService {
                     comentario: dto.comentario,
                     meta_id: dto.meta_id,
                 },
-                select: { id: true }
+                select: { id: true },
             });
-
 
             return cfq.id;
         });
 
-        return { id: id }
+        return { id: id };
     }
-
-
 }

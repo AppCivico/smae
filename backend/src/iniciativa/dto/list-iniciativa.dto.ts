@@ -1,5 +1,5 @@
-import { Iniciativa } from "../entities/iniciativa.entity";
+import { Iniciativa } from '../entities/iniciativa.entity';
 
 export class ListIniciativaDto {
-    linhas: Iniciativa[]
+    linhas: Iniciativa[];
 }

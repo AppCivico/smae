@@ -12,8 +12,7 @@ export class DotacaoController {
         private readonly dotacaoService: DotacaoService,
         private readonly processoService: DotacaoProcessoService,
         private readonly notaEmpenhoService: DotacaoProcessoNotaService,
-
-    ) { }
+    ) {}
 
     @ApiTags('Orçamento - Planejado')
     @ApiOperation({
@@ -21,7 +20,7 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados da dotação, utilizando sempre o mês de janeiro como referencia para o empenho.\n\n' +
             'Caso o SOF esteja com problemas (offline), ainda é salvo um registro, onde preenchimento do planejado poderá ser utilizado\n\n' +
-            'Neste caso, deve-se chamar novamente este serviço para que o calculo da pressão orçamentaria seja feito com os dados reais. **Não há processo em background para retentavas ou buscar atualizações**'
+            'Neste caso, deve-se chamar novamente este serviço para que o calculo da pressão orçamentaria seja feito com os dados reais. **Não há processo em background para retentavas ou buscar atualizações**',
     })
     @Patch('valor-planejado')
     @ApiBearerAuth('access-token')
@@ -37,12 +36,12 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados da dotação, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
-            '**Retorna sempre apenas uma linha**'
+            '**Retorna sempre apenas uma linha**',
     })
     async valorRealizadoDotacao(@Body() createDotacaoDto: AnoDotacaoDto): Promise<ListValorRealizadoDotacaoDto> {
         return {
-            linhas: await this.dotacaoService.valorRealizadoDotacao(createDotacaoDto)
-        }
+            linhas: await this.dotacaoService.valorRealizadoDotacao(createDotacaoDto),
+        };
     }
 
     @ApiTags('Orçamento - Realizado')
@@ -53,12 +52,12 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados de dotação a partir do Processo SEI, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
-            '**Retorna mais de uma linha, todas as dotações ficam disponíveis para utilizar no Orçamento Realizado**'
+            '**Retorna mais de uma linha, todas as dotações ficam disponíveis para utilizar no Orçamento Realizado**',
     })
     async valorRealizadoDotacaoProcesso(@Body() dto: AnoDotacaoProcessoDto): Promise<ListValorRealizadoProcessoDto> {
         return {
-            linhas: await this.processoService.valorRealizadoProcesso(dto)
-        }
+            linhas: await this.processoService.valorRealizadoProcesso(dto),
+        };
     }
 
     @ApiTags('Orçamento - Realizado')
@@ -69,12 +68,12 @@ export class DotacaoController {
         description:
             'Realiza a busca e cache dos dados de dotação a partir da Nota de Empenho, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
-            '**Retorna sempre apenas uma linha, se voltar mais de uma no SOF, retorna erro 400**'
+            '**Retorna sempre apenas uma linha, se voltar mais de uma no SOF, retorna erro 400**',
     })
     async valorRealizadoDotacaoNotaEmpenho(@Body() dto: AnoDotacaoNotaEmpenhoDto): Promise<ListValorRealizadoNotaEmpenhoDto> {
         return {
-            linhas: await this.notaEmpenhoService.valorRealizadoNotaEmpenho(dto)
-        }
+            linhas: await this.notaEmpenhoService.valorRealizadoNotaEmpenho(dto),
+        };
     }
 
     @ApiTags('Orçamento - Meta (Custeio e Investimento)')
@@ -82,12 +81,11 @@ export class DotacaoController {
     @ApiBearerAuth('access-token')
     @ApiOperation({
         summary: 'Consulta SOF fazendo o parse da dotação parcial, retornando Orçamento Inicial/Atualizado e saldo',
-        description: 'Não salva nenhum retorno no banco.'
+        description: 'Não salva nenhum retorno no banco.',
     })
     async orcadoProjeto(@Body() dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
         return {
-            linhas: await this.dotacaoService.orcadoProjeto(dto)
-        }
+            linhas: await this.dotacaoService.orcadoProjeto(dto),
+        };
     }
-
 }

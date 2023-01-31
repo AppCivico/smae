@@ -1,4 +1,3 @@
-
 import { SetMetadata } from '@nestjs/common';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 

@@ -18,10 +18,7 @@ import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
 @ApiTags('Cronograma')
 @Controller('cronograma')
 export class CronogramaController {
-    constructor(
-        private readonly cronogramaService: CronogramaService,
-        private readonly etapaService: EtapaService
-    ) { }
+    constructor(private readonly cronogramaService: CronogramaService, private readonly etapaService: EtapaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -35,7 +32,7 @@ export class CronogramaController {
     @Get()
     @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
     async findAll(@Query() filters: FilterCronogramaDto): Promise<ListCronogramaDto> {
-        return { 'linhas': await this.cronogramaService.findAll(filters) };
+        return { linhas: await this.cronogramaService.findAll(filters) };
     }
 
     @Patch(':id')
@@ -70,11 +67,10 @@ export class CronogramaController {
     @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
     async findAllEtapas(@Query() filters: FilterEtapaSemCronoIdDto, @Param() params: FindOneParams): Promise<ListEtapaDto> {
         return {
-            'linhas': await this.etapaService.findAll({
+            linhas: await this.etapaService.findAll({
                 ...filters,
-                cronograma_id: +params.id
-            })
+                cronograma_id: +params.id,
+            }),
         };
     }
-
 }

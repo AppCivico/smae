@@ -6,6 +6,6 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
     imports: [PrismaModule],
     controllers: [TextoConfigController],
-    providers: [TextoConfigService]
+    providers: [TextoConfigService],
 })
-export class TextoConfigModule { }
+export class TextoConfigModule {}

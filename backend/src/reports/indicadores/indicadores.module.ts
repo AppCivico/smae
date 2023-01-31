@@ -10,4 +10,4 @@ import { PrismaModule } from '../../prisma/prisma.module';
     providers: [IndicadoresService, UtilsService],
     exports: [IndicadoresService],
 })
-export class IndicadoresModule { }
+export class IndicadoresModule {}
