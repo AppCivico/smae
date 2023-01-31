@@ -5,12 +5,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadore.dto';
 import { CreateRelMonitoramentoMensalDto } from '../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
+import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { CreateRelPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao-custo.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 
 @Injectable()
 export class UtilsService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async applyFilter(filters: FiltroMetasIniAtividadeDto, getResult: { atividades: boolean; iniciativas: boolean }) {
         const tags = Array.isArray(filters.tags) && filters.tags.length > 0 ? filters.tags : [];
@@ -28,26 +29,26 @@ export class UtilsService {
         // aqui há uma duvida, se devemos buscar as iniciativas q deram match nas metas, ou se pelo filtro
         const iniciativas = getResult.iniciativas
             ? await this.prisma.iniciativa.findMany({
-                  where: {
-                      meta_id: { in: metas.map(r => r.id) },
-                      removido_em: null,
-                      id: filters.meta_id ? filters.meta_id : undefined,
-                      iniciativa_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
-                  },
-                  select: { id: true },
-              })
+                where: {
+                    meta_id: { in: metas.map(r => r.id) },
+                    removido_em: null,
+                    id: filters.meta_id ? filters.meta_id : undefined,
+                    iniciativa_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
+                },
+                select: { id: true },
+            })
             : [];
 
         const atividades = getResult.atividades
             ? await this.prisma.atividade.findMany({
-                  where: {
-                      iniciativa_id: { in: iniciativas.map(r => r.id) },
-                      removido_em: null,
-                      id: filters.meta_id ? filters.meta_id : undefined,
-                      atividade_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
-                  },
-                  select: { id: true },
-              })
+                where: {
+                    iniciativa_id: { in: iniciativas.map(r => r.id) },
+                    removido_em: null,
+                    id: filters.meta_id ? filters.meta_id : undefined,
+                    atividade_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
+                },
+                select: { id: true },
+            })
             : [];
 
         return {
@@ -64,7 +65,7 @@ export class FileOutput {
 }
 
 export interface ReportableService {
-    getFiles(output: any, pdm_id: number, params: any): Promise<FileOutput[]>;
+    getFiles(output: any, pdm_id: number | null, params: any): Promise<FileOutput[]>;
     create(params: any): Promise<any>;
 }
 
@@ -83,6 +84,9 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'PrevisaoCusto':
             theClass = CreateRelPrevisaoCustoDto;
+            break;
+        case 'Projeto':
+            theClass = CreateRelProjetoDto;
             break;
         default:
             return false;

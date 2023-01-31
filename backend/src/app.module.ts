@@ -43,6 +43,7 @@ import { RegiaoModule } from './regiao/regiao.module';
 import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
+import { PPProjetoModule } from './reports/pp-projeto/pp-projeto.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { SofApiModule } from './sof-api/sof-api.module';
@@ -114,6 +115,7 @@ import { VariavelModule } from './variavel/variavel.module';
         TextoConfigModule,
         IndicadoresModule,
         MonitoramentoMensalModule,
+        PPProjetoModule,
     ],
     controllers: [AppController],
     providers: [

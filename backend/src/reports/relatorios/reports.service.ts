@@ -8,6 +8,7 @@ import { UploadService } from '../../upload/upload.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
+import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -30,7 +31,8 @@ export class ReportsService {
         private readonly indicadoresService: IndicadoresService,
         private readonly mmService: MonitoramentoMensalService,
         private readonly previsaoCustoService: PrevisaoCustoService,
-    ) {}
+        private readonly ppProjetoService: PPProjetoService,
+    ) { }
 
     async runReport(dto: CreateReportDto, user: PessoaFromJwt): Promise<FileOutput[]> {
         const service: ReportableService | null = this.servicoDaFonte(dto);
@@ -38,8 +40,7 @@ export class ReportsService {
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
-        const pdmId = parametros.pdm_id;
-        if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para executar um relatório', 400);
+        const pdmId = parametros.pdm_id !== undefined ? parametros.pdm_id : null;
 
         const result = await service.create(parametros);
 
@@ -48,14 +49,14 @@ export class ReportsService {
 
     async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt): Promise<RecordWithId> {
         const parametros = dto.parametros;
-        const pdmId = parametros.pdm_id;
-        if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
+        const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
+        //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
 
         const tipo = parametros.tipo;
 
         const result = await this.prisma.relatorio.create({
             data: {
-                pdm_id: +pdmId,
+                pdm_id: pdmId,
                 arquivo_id: arquivoId,
                 fonte: dto.fonte,
                 tipo: tipo && tipo.length ? tipo : null,
@@ -65,7 +66,7 @@ export class ReportsService {
             },
             select: { id: true },
         });
-        this.logger.log(`persistido arquivo ${arquivoId} no relatorio ${result.id}`);
+        this.logger.log(`persistido arquivo ${arquivoId} no relatório ${result.id}`);
         return { id: result.id };
     }
 
@@ -83,6 +84,9 @@ export class ReportsService {
                 break;
             case 'PrevisaoCusto':
                 service = this.previsaoCustoService;
+                break;
+            case 'Projeto':
+                service = this.ppProjetoService;
                 break;
         }
         if (service === null) throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
