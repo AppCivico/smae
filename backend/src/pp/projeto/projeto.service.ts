@@ -211,7 +211,7 @@ export class ProjetoService {
         }
 
         const projetoRow = await this.prisma.projeto.findFirstOrThrow({
-            where: { id: id },
+            where: { id: id, removido_em: null },
             select: {
                 id: true,
                 meta_id: true,
