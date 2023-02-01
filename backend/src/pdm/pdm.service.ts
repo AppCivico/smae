@@ -227,7 +227,9 @@ export class PdmService {
         if (ativo) {
             const updatedRows = await this.prisma.$executeRaw`
                 update ciclo_fisico
-                set acordar_ciclo_em = now()
+                set
+                    acordar_ciclo_em = now(),
+                    acordar_ciclo_executou_em = null -- garante que será executado imediatamente após o save
                 where id = (
                     select a.ciclo_fisico_id
                     from ciclo_fisico_fase a
@@ -410,6 +412,19 @@ export class PdmService {
                         acordar_ciclo_errmsg: { not: null },
                     },
                 ],
+                // evitar loops infinitos, verificar que tem pelo menos 1 min desde a ultima execução
+                AND: [
+                    {
+                        OR: [
+                            { acordar_ciclo_executou_em: null },
+                            {
+                                acordar_ciclo_executou_em: {
+                                    lt: DateTime.now().minus({ minutes: 1 }).toJSDate(),
+                                }
+                            },
+                        ]
+                    }
+                ]
             },
             select: {
                 pdm_id: true,
