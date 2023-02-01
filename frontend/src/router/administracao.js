@@ -26,6 +26,7 @@ import {
 } from '@/views/pdm';
 import PortfoliosCriarEditar from '@/views/portfolios/PortfoliosCriarEditar.vue';
 import PortfoliosLista from '@/views/portfolios/PortfoliosLista.vue';
+import PortfoliosRaiz from '@/views/portfolios/PortfoliosRaiz.vue';
 import { ListRegions } from '@/views/regions';
 import {
   AddEditResources,
@@ -466,6 +467,7 @@ export default [
   },
   {
     path: '/portfolios',
+    component: PortfoliosRaiz,
     meta: {
       requerAutenticação: true,
       title: 'Portfolios',
