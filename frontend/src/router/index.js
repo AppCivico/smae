@@ -42,6 +42,7 @@ import {
 } from '@/views/orcamento';
 import administracao from './administracao';
 
+import projetos from './projetos';
 import relatorios from './relatorios';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -210,6 +211,7 @@ export const router = createRouter({
 
       ],
     },
+    projetos,
     relatorios,
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
