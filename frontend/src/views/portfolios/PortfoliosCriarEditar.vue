@@ -64,7 +64,9 @@ async function onSubmit(values) {
 if (props.portfolioId && !itemParaEdição.value) {
   portfolioStore.buscarTudo();
 }
-ÓrgãosStore.getAll();
+ÓrgãosStore.getAll().finally(() => {
+  chamadasPendentes.value.emFoco = false;
+});
 </script>
 
 <template>
@@ -77,7 +79,7 @@ if (props.portfolioId && !itemParaEdição.value) {
 
     <Form
       v-if="!erro && órgãosOrdenados?.length"
-      v-slot="{ errors, isSubmitting, values, meta }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
       :initial-values="itemParaEdição"
       @submit="onSubmit"
