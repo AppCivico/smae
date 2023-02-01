@@ -32,8 +32,8 @@ async function onSubmit(values) {
     const v = {
       ciclo_fisico_id: props.ciclo_id,
       meta_id: props.meta_id,
-      detalhamento: detalhamento.value,
-      ponto_de_atencao: ponto_de_atencao.value,
+      detalhamento: detalhamento.value || '',
+      ponto_de_atencao: ponto_de_atencao.value || '',
     };
     r = await CiclosStore.updateMetaRisco(v);
     msg = 'Análise de risco salva com sucesso!';
