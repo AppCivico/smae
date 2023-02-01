@@ -271,7 +271,7 @@ export const useCiclosStore = defineStore({
       this.SingleFechamento = { loading: true };
       try {
         const r = await requestS.get(`${baseUrl}/mf/metas/fechamento?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
-        this.SingleFechamento = r.Fechamentos[0] ? r.Fechamentos[0] : {};
+        this.SingleFechamento = r.fechamentos[0] ? r.fechamentos[0] : {};
       } catch (error) {
         this.SingleFechamento = { error };
       }
