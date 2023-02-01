@@ -1,14 +1,29 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { useOrgansStore, usePortfolioStore } from '@/stores';
+import {
+  useAlertStore, useOrgansStore, usePortfolioStore
+} from '@/stores';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
-const portfolioStore = usePortfolioStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(portfolioStore);
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
+const portfolioStore = usePortfolioStore();
+const {
+  lista, chamadasPendentes, erro, excluirItem,
+} = storeToRefs(portfolioStore);
 const route = useRoute();
+const alertStore = useAlertStore();
+
+async function excluirPortfolio(id) {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await portfolioStore.excluirItem(id)) {
+      portfolioStore.$reset();
+      portfolioStore.buscarTudo();
+      alertStore.success('Portfolio removido.');
+    }
+  }, 'Remover');
+}
 
 portfolioStore.$reset();
 portfolioStore.buscarTudo();
@@ -22,10 +37,18 @@ if (!organs.length) {
     <div class="flex spacebetween center mb2">
       <h1>{{ route?.meta?.title || 'Portfolios' }}</h1>
       <hr class="ml2 f1">
+      <router-link
+        :to="{name: 'portfoliosCriar'}"
+        class="btn big ml1"
+      >
+        Novo portfolio
+      </router-link>
     </div>
+
     <table class="tablemain">
-      <col style="width: 50%">
-      <col style="width: 20%">
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <thead>
         <tr>
@@ -36,6 +59,7 @@ if (!organs.length) {
             Órgãos
           </th>
           <th />
+          <th />
         </tr>
       </thead>
       <tbody>
@@ -45,32 +69,30 @@ if (!organs.length) {
         >
           <td>{{ item.titulo }}</td>
           <td>
-            <router-link
-              v-for="órgão in item.orgaos"
-              :key="órgão.id"
-              :title="órgãosPorId[órgão.id]?.descricao"
-              :to="{
-                name: 'ÓrgãosItem',
-                params: {
-                  id: órgão.id
-                }
-              }"
-            >
-              {{ órgãosPorId[órgão.id]?.sigla || órgão.id }}
-            </router-link>
+            {{ item.orgaos.map((x) => órgãosPorId[x.id]?.sigla || x.id).join(', ') }}
           </td>
           <td>
-            <template v-if="perm?.CadastroOrgao?.editar">
-              <router-link
-                :to="`/portfolios/${item.id}`"
-                class="tprimary"
+            <button
+              class="like-a__text"
+              arial-label="excluir"
+              title="excluir"
+              @click="excluirPortfolio(item.id)"
+            >
+              <img
+                src="../../assets/icons/excluir.svg"
               >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </template>
+            </button>
+          </td>
+          <td>
+            <router-link
+              :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
+              class="tprimary"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </router-link>
           </td>
         </tr>
         <tr v-if="chamadasPendentes.lista">
