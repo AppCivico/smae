@@ -36,7 +36,7 @@ export class MfFechamentoDto {
 
 // que raiva desse lugar que ficou com uppercase!
 export class MfListFechamentoDto {
-    Fechamentos: MfFechamentoDto[];
+    fechamentos: MfFechamentoDto[];
 }
 
 export class FechamentoDto {

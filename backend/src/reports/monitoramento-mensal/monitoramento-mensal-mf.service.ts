@@ -94,7 +94,7 @@ export class MonitoramentoMensalMfService {
 
             if (results[1].riscos.length) ret.analiseRisco = results[1].riscos[0];
 
-            if (results[2].Fechamentos) ret.fechamento = results[2].Fechamentos[0];
+            if (results[2].fechamentos) ret.fechamento = results[2].fechamentos[0];
 
             metasOut.push(ret);
         }
