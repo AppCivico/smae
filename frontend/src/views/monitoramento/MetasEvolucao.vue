@@ -4,6 +4,7 @@ import { default as countVars } from '@/components/monitoramento/countVars.vue';
 import { default as listVars } from '@/components/monitoramento/listVars.vue';
 import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
 import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
+import dateToField from '@/helpers/dateToField';
 import { storeToRefs } from 'pinia';
 
 import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
@@ -45,18 +46,6 @@ CiclosStore.getMetaVars(meta_id);
   CiclosStore.getMetaRisco(activePdm.value.ciclo_fisico_ativo.id, meta_id);
   CiclosStore.getMetaFechamento(activePdm.value.ciclo_fisico_ativo.id, meta_id);
 })();
-
-function dateToField(d) {
-  const dd = d ? new Date(d) : false;
-  return (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone: 'UTC' }) : '';
-}
-function dateToTitle(d) {
-  const dd = d ? new Date(d) : false;
-  if (!dd) return d;
-  const month = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][dd.getUTCMonth()];
-  const year = dd.getUTCFullYear();
-  return `${month} ${year}`;
-}
 function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.clear();
@@ -160,7 +149,7 @@ function vazio(s) {
       </div>
     </div>
     <div
-      v-if="SingleFechamento.comentario?.length"
+      v-if="SingleFechamento?.id"
       class="mb2"
     >
       <div class="flex spacebetween center mb1">
@@ -178,14 +167,28 @@ function vazio(s) {
       <div class="label tc300">
         Comentários
       </div>
-      <div>{{ vazio(SingleFechamento.comentario) }}</div>
+      <div class="mb2">
+        {{ vazio(SingleFechamento.comentario) }}
+      </div>
+
+      <div class="label tc300">
+        Fechado por
+      </div>
+      <div
+        class="contentStyle mb2"
+      >
+        <strong>{{ SingleFechamento.criador?.nome_exibicao || SingleFechamento.criador }}</strong>
+        em <time :datetime="SingleFechamento.criado_em">
+          {{ dateToField(SingleFechamento.criado_em) }}
+        </time>
+      </div>
     </div>
     <div v-else-if="SingleFechamento.loading">
       <span class="spinner">Carregando</span>
     </div>
     <div
       v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) &&
-        MetaVars.permissoes?.fechamento && !SingleFechamento?.id"
+        MetaVars.permissoes?.fechamento"
       class="p1 bgc50 tc mb2"
     >
       <button
@@ -198,7 +201,7 @@ function vazio(s) {
     </div>
 
     <div
-      v-if="SingleRisco.detalhamento || SingleRisco.ponto_de_atencao"
+      v-if="SingleRisco.id"
       class="mb2"
     >
       <div class="flex spacebetween center mb1">
@@ -218,15 +221,27 @@ function vazio(s) {
       </div>
       <div
         class="contentStyle mb2"
-        v-html="SingleRisco.detalhamento"
+        v-html="SingleRisco.detalhamento || '-'"
       />
       <div class="label tc300">
         Pontos de atenção
       </div>
       <div
-        class="contentStyle "
-        v-html="SingleRisco.ponto_de_atencao"
+        class="contentStyle mb2"
+        v-html="SingleRisco.ponto_de_atencao || '-'"
       />
+
+      <div class="label tc300">
+        Analisado por
+      </div>
+      <div
+        class="contentStyle mb2"
+      >
+        <strong>{{ SingleRisco.criador?.nome_exibicao || SingleRisco.criador }}</strong>
+        em <time :datetime="SingleRisco.criado_em">
+          {{ dateToField(SingleRisco.criado_em) }}
+        </time>
+      </div>
     </div>
     <div v-else-if="SingleRisco.loading">
       <span class="spinner">Carregando</span>
@@ -245,7 +260,7 @@ function vazio(s) {
     </div>
 
     <div
-      v-if="SingleMetaAnalise.informacoes_complementares"
+      v-if="SingleMetaAnalise.id"
       class="mb2"
     >
       <div class="flex spacebetween center mb1">
@@ -263,7 +278,21 @@ function vazio(s) {
       <div class="label tc300">
         Informações complementares
       </div>
-      <div>{{ vazio(SingleMetaAnalise.informacoes_complementares) }}</div>
+      <div class="mb2">
+        {{ vazio(SingleMetaAnalise.informacoes_complementares) }}
+      </div>
+
+      <div class="label tc300">
+        Qualificado por
+      </div>
+      <div
+        class="contentStyle mb2"
+      >
+        <strong>{{ SingleMetaAnalise.criador?.nome_exibicao || SingleMetaAnalise.criador }}</strong>
+        em <time :datetime="SingleMetaAnalise.criado_em">
+          {{ dateToField(SingleMetaAnalise.criado_em) }}
+        </time>
+      </div>
 
       <table class="tablemain mt2 mb2 pl0">
         <thead>
