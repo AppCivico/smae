@@ -22,6 +22,7 @@ interface Estado {
 
 async function buscarTudo(this: Estado, params = {}): Promise<void> {
   this.chamadasPendentes.lista = true;
+  this.chamadasPendentes.emFoco = true;
   try {
     const { linhas } = await requestS.get(`${baseUrl}/portfolio`, params);
     this.lista = linhas;
@@ -29,6 +30,7 @@ async function buscarTudo(this: Estado, params = {}): Promise<void> {
     this.erro = erro;
   }
   this.chamadasPendentes.lista = false;
+  this.chamadasPendentes.emFoco = false;
 }
 
 async function salvarItem(this: Estado, params = {}, id = 0): Promise<boolean> {
@@ -79,7 +81,7 @@ export const usePortfolioStore = defineStore('portfolios', {
 
     chamadasPendentes: {
       lista: true,
-      emFoco: false,
+      emFoco: true,
     },
     erro: null,
   }),
