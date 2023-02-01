@@ -494,12 +494,13 @@ export class PdmService {
         },
         today: string,
     ) {
-        this.logger.log(`verificando ciclo atual ${cf.data_ciclo}`);
-        const proxima_fase = await this.prisma.cicloFisicoFase.findFirst({
+        const todayAtSp = DateTime.local({ zone: 'America/Sao_Paulo' }).toJSDate();
+        this.logger.log(`verificando ciclo atual ${cf.data_ciclo} - Hoje em SP = ${todayAtSp.toISOString()}`);
+        const fase_corrente = await this.prisma.cicloFisicoFase.findFirst({
             where: {
                 ciclo_fisico_id: cf.id,
                 data_inicio: {
-                    lte: new Date(today),
+                    lte: todayAtSp,
                 },
             },
             orderBy: {
@@ -507,22 +508,24 @@ export class PdmService {
             },
             take: 1,
         });
+        this.logger.warn(`Fase corrente (as of ${todayAtSp.toISOString()}): ${JSON.stringify(fase_corrente)}`)
 
-        if (!proxima_fase) {
+        if (!fase_corrente) {
             throw new Error(`Faltando próxima fase do ciclo!`);
         } else if (cf.ciclo_fase_atual_id === null) {
             this.logger.warn(`ciclo_fase_atual_id está null, provavelmente o ciclo não deveria ter sido executado ainda, ou o PDM acabou de ser re-ativado`);
         }
 
-        if (cf.ciclo_fase_atual_id === null || cf.ciclo_fase_atual_id !== proxima_fase.id) {
-            this.logger.log(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id ?? 'null'} para ${proxima_fase.id} (${proxima_fase.ciclo_fase})`);
+        if (cf.ciclo_fase_atual_id === null || cf.ciclo_fase_atual_id !== fase_corrente.id) {
+            this.logger.log(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id ?? 'null'} para ${fase_corrente.id} (${fase_corrente.ciclo_fase})`);
 
             await this.prisma.cicloFisico.update({
                 where: { id: cf.id },
                 data: {
-                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1)),
+                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
                     acordar_ciclo_executou_em: new Date(Date.now()),
-                    ciclo_fase_atual_id: proxima_fase.id,
+                    ciclo_fase_atual_id: fase_corrente.id,
+                    ativo: true,
                 },
             });
 
@@ -535,8 +538,9 @@ export class PdmService {
             await this.prisma.cicloFisico.update({
                 where: { id: cf.id },
                 data: {
-                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1)),
+                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
                     acordar_ciclo_executou_em: new Date(Date.now()),
+                    ativo: true,
                 },
             });
         }
@@ -602,7 +606,7 @@ export class PdmService {
                 return;
             }
 
-            const proxima_fase = await prismaTxn.cicloFisicoFase.findFirst({
+            const fase_corrente = await prismaTxn.cicloFisicoFase.findFirst({
                 where: {
                     ciclo_fisico_id: cf.id,
                     data_inicio: {
@@ -614,15 +618,15 @@ export class PdmService {
                 },
                 take: 1,
             });
-            if (!proxima_fase) {
-                throw new Error(`Faltando próxima fase do ciclo!`);
+            if (!fase_corrente) {
+                throw new Error(`Faltando fase corrente, não é possível ativar o ciclo!`);
             } else {
                 await prismaTxn.cicloFisico.update({
                     where: { id: cf.id },
                     data: {
                         ativo: true,
-                        ciclo_fase_atual_id: proxima_fase.id,
-                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(proxima_fase.data_fim, 1)),
+                        ciclo_fase_atual_id: fase_corrente.id,
+                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
                     },
                 });
             }
