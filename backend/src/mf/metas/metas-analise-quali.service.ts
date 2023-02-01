@@ -154,6 +154,16 @@ export class MetasAnaliseQualiService {
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+            await prismaTxn.metaCicloFisicoAnalise.updateMany({
+                where: {
+                    ciclo_fisico_id: dto.ciclo_fisico_id,
+                    ultima_revisao: true,
+                },
+                data: {
+                    ultima_revisao: false,
+                },
+            });
+
             const cfq = await prismaTxn.metaCicloFisicoAnalise.create({
                 data: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
