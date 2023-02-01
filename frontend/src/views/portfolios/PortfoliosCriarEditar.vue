@@ -74,26 +74,6 @@ if (props.portfolioId && !itemParaEdição.value) {
       <hr class="ml2 f1">
       <CheckClose />
     </div>
-    <!--pre>
-Object.keys(ÓrgãosStore): {{ Object.keys(ÓrgãosStore) }}
-</pre-->
-
-    <!--pre>
-ÓrgãosStore?.organResponsibles: {{ ÓrgãosStore?.organResponsibles }}
-</pre-->
-
-    <!--pre>
-ÓrgãosStore?.organs: {{ ÓrgãosStore?.organs }}
-</pre-->
-
-    <!--pre>
-props.portfolioId: {{ props.portfolioId }}
-chamadasPendentes?.emFoco: {{ chamadasPendentes?.emFoco }}
-erro: {{ erro }}
-portfoliosPorId[props.portfolioId]: {{ portfoliosPorId[props.portfolioId] }}
-itemParaEdição: {{ itemParaEdição }}
-typeof itemParaEdição: {{ typeof itemParaEdição }}
-</pre-->
 
     <Form
       v-if="!erro"
@@ -102,15 +82,6 @@ typeof itemParaEdição: {{ typeof itemParaEdição }}
       :initial-values="itemParaEdição"
       @submit="onSubmit"
     >
-      <div class="flex spacebetween center mb2">
-        <hr class="mr2 f1">
-        <button
-          class="btn big"
-          :disabled="isSubmitting"
-        >
-          Salvar
-        </button>
-      </div>
       <div class="flex g2 mb1">
         <div class="f1">
           <label class="label">
@@ -121,14 +92,6 @@ typeof itemParaEdição: {{ typeof itemParaEdição }}
             type="text"
             class="inputtext light mb1"
           />
-
-          <!--pre>
-errors: {{ errors }}
-isSubmitting: {{ isSubmitting }}
-meta: {{ meta }}
-values: {{ values }}
-</pre-->
-
           <ErrorMessage
             class="error-msg mb1"
             name="titulo"
@@ -140,11 +103,6 @@ values: {{ values }}
           Órgãos <span class="tvermelho">*</span>
         </div>
         <template v-if="órgãosOrdenados?.length">
-          <ErrorMessage
-            name="orgaos"
-            class="error-msg mb1"
-          />
-
           <label
             v-for="item in órgãosOrdenados"
             :key="item.id"
