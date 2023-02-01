@@ -494,6 +494,7 @@ export class PdmService {
         },
         today: string,
     ) {
+        this.logger.log(`verificando ciclo atual ${cf.data_ciclo}`);
         const proxima_fase = await this.prisma.cicloFisicoFase.findFirst({
             where: {
                 ciclo_fisico_id: cf.id,
@@ -510,11 +511,11 @@ export class PdmService {
         if (!proxima_fase) {
             throw new Error(`Faltando próxima fase do ciclo!`);
         } else if (cf.ciclo_fase_atual_id === null) {
-            throw new Error(`ciclo_fase_atual_id está null, provavelmente o ciclo não deveria ter sido executado ainda`);
+            this.logger.warn(`ciclo_fase_atual_id está null, provavelmente o ciclo não deveria ter sido executado ainda, ou o PDM acabou de ser re-ativado`);
         }
 
-        if (cf.ciclo_fase_atual_id !== proxima_fase.id) {
-            this.logger.debug(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id} para ${proxima_fase.id} (${proxima_fase.ciclo_fase})`);
+        if (cf.ciclo_fase_atual_id === null || cf.ciclo_fase_atual_id !== proxima_fase.id) {
+            this.logger.log(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id ?? 'null'} para ${proxima_fase.id} (${proxima_fase.ciclo_fase})`);
 
             await this.prisma.cicloFisico.update({
                 where: { id: cf.id },
@@ -593,13 +594,13 @@ export class PdmService {
     }
 
     private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date }, today: string) {
+        this.logger.log(`ativando ciclo ${cf.data_ciclo}`);
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             const count = await prismaTxn.cicloFisico.count({ where: { ativo: true, pdm_id: cf.pdm_id } });
             if (count) {
                 this.logger.error(`Não é possível ativar o ciclo ${cf.data_ciclo} pois ainda há outros ciclos que não foram fechados`);
                 return;
             }
-            this.logger.log(`ativando ciclo ${cf.data_ciclo}`);
 
             const proxima_fase = await prismaTxn.cicloFisicoFase.findFirst({
                 where: {
