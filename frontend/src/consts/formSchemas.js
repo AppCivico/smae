@@ -71,6 +71,11 @@ const novaSenha = object().shape({
     .oneOf([ref('password'), null], 'Senhas não coincidem'),
 });
 
+const portfolio = object({
+  titulo: string().required('Um portfolio requer um título'),
+  orgaos: array().min(1, 'Selecione ao menos um órgão').required(),
+});
+
 const região = object().shape({
   nivel: number(),
   parente_id: number().nullable(),
@@ -165,6 +170,7 @@ export {
   fase,
   indicador,
   novaSenha,
+  portfolio,
   região,
   relatórioMensal,
   relatórioOrçamentário,

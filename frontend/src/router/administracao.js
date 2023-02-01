@@ -24,8 +24,8 @@ import {
   AddEditPdM,
   ListPdM
 } from '@/views/pdm';
-
-import { PortfoliosLista } from '@/views/portfolios';
+import PortfoliosCriarEditar from '@/views/portfolios/PortfoliosCriarEditar.vue';
+import PortfoliosLista from '@/views/portfolios/PortfoliosLista.vue';
 import { ListRegions } from '@/views/regions';
 import {
   AddEditResources,
@@ -481,6 +481,27 @@ export default [
         component: PortfoliosLista,
         meta: {
           título: 'Portfolios',
+        },
+      },
+      {
+        name: 'portfoliosCriar',
+        path: 'novo',
+        component: PortfoliosCriarEditar,
+        meta: {
+          título: 'Novo portfolio',
+        },
+      },
+      {
+        path: ':portfolioId',
+        name: 'portfoliosEditar',
+        component: PortfoliosCriarEditar,
+        props: ({ params }) => ({
+          ...params,
+          ...{ portfolioId: Number.parseInt(params.portfolioId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar portfolio',
         },
       },
     ],
