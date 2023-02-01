@@ -48,7 +48,7 @@ export class MetasFechamentoService {
         });
 
         return {
-            Fechamentos: analisesResult.map(r => {
+            fechamentos: analisesResult.map(r => {
                 return {
                     comentario: r.comentario || '',
                     referencia_data: Date2YMD.toString(r.referencia_data),
