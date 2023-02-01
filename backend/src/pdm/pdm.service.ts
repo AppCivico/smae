@@ -20,7 +20,7 @@ const JOB_LOCK_NUMBER = 65656565;
 @Injectable()
 export class PdmService {
     private readonly logger = new Logger(PdmService.name);
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
+    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) { }
 
     async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.pdm.count({
@@ -175,71 +175,30 @@ export class PdmService {
 
         const now = new Date(Date.now());
         let verificarCiclos = false;
-        let ativo: boolean | undefined = undefined;
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        let ativarPdm: boolean | undefined = undefined;
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             if (updatePdmDto.ativo === true && pdm.ativo == false) {
-                ativo = true;
+                ativarPdm = true;
 
-                const pdmAtivo = await prisma.pdm.findFirst({ where: { ativo: true } });
-                if (pdmAtivo) {
-                    await prisma.cicloFisico.updateMany({
-                        where: {
-                            pdm_id: pdmAtivo.id,
-                            ativo: true,
-                        },
-                        data: {
-                            acordar_ciclo_em: now,
-                        },
-                    });
-
-                    // desativa outros planos
-                    await prisma.pdm.update({
-                        where: {
-                            id: pdmAtivo.id,
-                        },
-                        data: {
-                            ativo: false,
-                            desativado_em: now,
-                            desativado_por: user.id,
-                        },
-                    });
-                }
+                await this.desativaPdmAtivo(prismaTx, now, user);
 
                 verificarCiclos = true;
             } else if (updatePdmDto.ativo === false && pdm.ativo == true) {
-                ativo = false;
+                ativarPdm = false;
 
-                await prisma.pdm.update({
-                    where: { id: id },
-                    data: {
-                        ativo: false,
-                        desativado_em: now,
-                        desativado_por: user.id,
-                    },
-                    select: { id: true },
-                });
-
-                await prisma.cicloFisico.updateMany({
-                    where: {
-                        pdm_id: id,
-                        ativo: true,
-                    },
-                    data: {
-                        acordar_ciclo_em: now,
-                    },
-                });
+                await this.desativaPdm(prismaTx, id, now, user);
 
                 verificarCiclos = true;
             }
             delete updatePdmDto.ativo;
 
-            await prisma.pdm.update({
+            await prismaTx.pdm.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                     ...updatePdmDto,
-                    ativo: ativo,
+                    ativo: ativarPdm,
                     arquivo_logo_id: arquivo_logo_id,
                 },
                 select: { id: true },
@@ -247,34 +206,96 @@ export class PdmService {
 
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
-                this.logger.log(JSON.stringify(await prisma.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
+                this.logger.log(JSON.stringify(await prismaTx.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
             }
         });
 
-        if (verificarCiclos) {
-            // se esse pdm é pra estar ativado,
-            // verificar se há algum item com acordar_ciclo_em, se não existir,
-            // precisa encontrar qual é o mes corrente que deve acordar
-            if (ativo) {
-                const updatedRows = await this.prisma.$executeRaw`update ciclo_fisico
-                set acordar_ciclo_em = now()
-                where pdm_id = ${id}::int
-                AND data_ciclo = date_trunc('month', now() at time zone 'America/Sao_Paulo')
-                and (select count(1) from ciclo_fisico where acordar_ciclo_em is not null and pdm_id = ${id}::int) = 0;`;
-                this.logger.log(`atualizacao de acordar_ciclos atualizou ${updatedRows} linha`);
-            }
-
-            // imediatamente, roda quantas vezes for necessário as evoluções de ciclo
-            while (1) {
-                const keepGoing = await this.verificaCiclosPendentes(Date2YMD.toString(now));
-                if (!keepGoing) break;
-            }
-        }
+        if (verificarCiclos)
+            await this.executaJobCicloFisico(ativarPdm, id, now);
 
         // força o carregamento da tabela pdmOrcamentoConfig
         await this.getOrcamentoConfig(id, true);
 
         return { id: id };
+    }
+
+    private async executaJobCicloFisico(ativo: boolean | undefined, pdmId: number, now: Date) {
+        // se esse pdm é pra estar ativado,
+        // verificar se há algum item com acordar_ciclo_em, se não existir,
+        // precisa encontrar qual é o mes corrente que deve acordar
+        // ps: na hora de buscar o mes corrente, vamos usar a data final das fase, no lugar da data do ciclo
+        if (ativo) {
+            const updatedRows = await this.prisma.$executeRaw`
+                update ciclo_fisico
+                set acordar_ciclo_em = now()
+                where id = (
+                    select a.ciclo_fisico_id
+                    from ciclo_fisico_fase a
+                    join ciclo_fisico b on b.id=a.ciclo_fisico_id
+                    where b.pdm_id = pdm_id = ${pdmId}::int
+                    and data_fim <= date_trunc('day', now() at time zone 'America/Sao_Paulo')
+                    order by data_fim desc
+                    limit 1
+                )
+                and (select count(1) from ciclo_fisico where acordar_ciclo_em is not null and pdm_id = ${pdmId}::int) = 0;`;
+            this.logger.log(`atualizacao de acordar_ciclos atualizou ${updatedRows} linha`);
+        }
+
+        // imediatamente, roda quantas vezes for necessário as evoluções de ciclo
+        while (1) {
+            const keepGoing = await this.verificaCiclosPendentes(Date2YMD.toString(now));
+            if (!keepGoing)
+                break;
+        }
+    }
+
+    private async desativaPdm(prismaTx: Prisma.TransactionClient, id: number, now: Date, user: PessoaFromJwt) {
+        await prismaTx.pdm.update({
+            where: { id: id },
+            data: {
+                ativo: false,
+                desativado_em: now,
+                desativado_por: user.id,
+            },
+            select: { id: true },
+        });
+
+        // notifica o cicloFisico
+        await prismaTx.cicloFisico.updateMany({
+            where: {
+                pdm_id: id,
+                ativo: true,
+            },
+            data: {
+                acordar_ciclo_em: now,
+            },
+        });
+    }
+
+    private async desativaPdmAtivo(prismaTx: Prisma.TransactionClient, now: Date, user: PessoaFromJwt) {
+        const pdmAtivoExistente = await prismaTx.pdm.findFirst({ where: { ativo: true } });
+        if (!pdmAtivoExistente) return;
+
+        await prismaTx.cicloFisico.updateMany({
+            where: {
+                pdm_id: pdmAtivoExistente.id,
+                ativo: true,
+            },
+            data: {
+                acordar_ciclo_em: now,
+            },
+        });
+
+        await prismaTx.pdm.update({
+            where: {
+                id: pdmAtivoExistente.id,
+            },
+            data: {
+                ativo: false,
+                desativado_em: now,
+                desativado_por: user.id,
+            },
+        });
     }
 
     async append_document(pdm_id: number, createPdmDocDto: CreatePdmDocumentDto, user: PessoaFromJwt) {
