@@ -232,7 +232,7 @@ export class PdmService {
                     select a.ciclo_fisico_id
                     from ciclo_fisico_fase a
                     join ciclo_fisico b on b.id=a.ciclo_fisico_id
-                    where b.pdm_id = pdm_id = ${pdmId}::int
+                    where b.pdm_id = ${pdmId}::int
                     and data_fim <= date_trunc('day', now() at time zone 'America/Sao_Paulo')
                     order by data_fim desc
                     limit 1
