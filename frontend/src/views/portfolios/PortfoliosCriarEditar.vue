@@ -76,7 +76,7 @@ if (props.portfolioId && !itemParaEdição.value) {
     </div>
 
     <Form
-      v-if="!erro"
+      v-if="!erro && órgãosOrdenados?.length"
       v-slot="{ errors, isSubmitting, values, meta }"
       :validation-schema="schema"
       :initial-values="itemParaEdição"
@@ -102,33 +102,33 @@ if (props.portfolioId && !itemParaEdição.value) {
         <div class="label">
           Órgãos <span class="tvermelho">*</span>
         </div>
-        <template v-if="órgãosOrdenados?.length">
-          <label
-            v-for="item in órgãosOrdenados"
-            :key="item.id"
-            class="block mb1"
-            :class="{ 'error': errors.orgaos }"
-          >
-            <Field
-              name="orgaos"
-              class="inputcheckbox"
-              type="checkbox"
-              :value="item.id"
-              :checked="values.orgaos?.includes(item.id)"
-            /><span>{{ item.sigla }}</span> <small>- {{ item.descricao }}</small>
-          </label>
 
-          <ErrorMessage
+        <label
+          v-for="item in órgãosOrdenados"
+          :key="item.id"
+          class="block mb1"
+          :class="{ 'error': errors.orgaos }"
+        >
+          <Field
             name="orgaos"
-            class="error-msg"
-          />
-        </template>
-        <span
+            class="inputcheckbox"
+            type="checkbox"
+            :value="item.id"
+            :checked="values.orgaos?.includes(item.id)"
+          /><span>{{ item.sigla }}</span> <small>- {{ item.descricao }}</small>
+        </label>
+
+        <ErrorMessage
+          name="orgaos"
+          class="error-msg"
+        />
+
+        <div
           v-if="chamadasPendentes?.emFoco"
           class="spinner"
         >
           Carregando
-        </span>
+        </div>
       </div>
 
       <div class="flex spacebetween center mb2">
