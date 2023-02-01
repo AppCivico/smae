@@ -41,7 +41,7 @@ const perm = permissions.value;
             :to="{ name: 'portfoliosListar' }"
             :class="{ active: parentPage == 'portfolio' }"
           >
-            Portfolio
+            Portfolios
           </router-link>
         </div>
       </template>
