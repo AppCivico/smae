@@ -61,13 +61,14 @@ export class MetaService {
                         data: await this.buildTags(meta.id, tags),
                     });
 
-                // reagenda o PDM para recalcular as fases
+                // reagenda o PDM para recalcular as fases (e status)
                 await this.prisma.cicloFisico.updateMany({
                     where: {
                         ativo: true,
                     },
                     data: {
                         acordar_ciclo_em: now,
+                        acordar_ciclo_executou_em: null,
                     },
                 });
 
