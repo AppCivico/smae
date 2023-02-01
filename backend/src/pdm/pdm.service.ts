@@ -436,7 +436,7 @@ export class PdmService {
                 pdm: {
                     select: { ativo: true },
                 },
-                fases: true
+                CicloFaseAtual: true
             },
             orderBy: {
                 data_ciclo: 'asc',
@@ -461,8 +461,7 @@ export class PdmService {
             }
 
             if (cf.pdm.ativo) {
-                let faseAtual: typeof cf.fases[0] | undefined = undefined;
-                faseAtual = cf.fases.filter(r => r.id == cf.ciclo_fase_atual_id)[0] || undefined;
+                const faseAtual = cf.CicloFaseAtual;
 
                 if (
                     (
@@ -471,7 +470,6 @@ export class PdmService {
                     ) && cf.ativo) {
                     await this.inativarCiclo(cf);
                 } else if (
-
                     (
                         (!faseAtual && Date2YMD.toString(cf.data_ciclo) === mesCorrente)
                         ||
