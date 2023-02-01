@@ -41,7 +41,7 @@ async function onSubmit(values) {
     const v = {
       ciclo_fisico_id: props.ciclo_id,
       meta_id: props.meta_id,
-      informacoes_complementares: values.informacoes_complementares,
+      informacoes_complementares: values.informacoes_complementares || '',
     };
     r = await CiclosStore.updateMetaAnalise(v);
     msg = 'Análise qualitativa salva com sucesso!';
