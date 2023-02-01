@@ -95,7 +95,13 @@ function dateToTitle(d) {
                 <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled" to="/monitoramento/">Análise de risco</router-link>
                 <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled" to="/monitoramento/">Fechamento</router-link> -->
       </div>
-      <template v-if="perm.CadastroCicloFisico">
+      <template
+        v-if="perm.CadastroCicloFisico
+          || perm.PDM.admin_cp
+          || perm.CadastroIndicador.inserir
+          || perm.PDM.tecnico_cp
+        "
+      >
         <h2>Configuração</h2>
         <div class="links-container mb2">
           <router-link to="/monitoramento/ciclos">
