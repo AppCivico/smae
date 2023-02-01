@@ -436,6 +436,7 @@ export class PdmService {
                 pdm: {
                     select: { ativo: true },
                 },
+                fases: true
             },
             orderBy: {
                 data_ciclo: 'asc',
@@ -460,9 +461,22 @@ export class PdmService {
             }
 
             if (cf.pdm.ativo) {
-                if (Date2YMD.toString(cf.data_ciclo) < mesCorrente && cf.ativo) {
+                let faseAtual: typeof cf.fases[0] | undefined = undefined;
+                faseAtual = cf.fases.filter(r => r.id == cf.ciclo_fase_atual_id)[0] || undefined;
+
+                if (
+                    (
+                        (!faseAtual && Date2YMD.toString(cf.data_ciclo) < mesCorrente) ||
+                        (faseAtual && Date2YMD.toString(faseAtual.data_fim) < mesCorrente)
+                    ) && cf.ativo) {
                     await this.inativarCiclo(cf);
-                } else if (Date2YMD.toString(cf.data_ciclo) === mesCorrente && !cf.ativo) {
+                } else if (
+
+                    (
+                        (!faseAtual && Date2YMD.toString(cf.data_ciclo) === mesCorrente)
+                        ||
+                        (faseAtual && Date2YMD.toString(faseAtual.data_inicio).substring(0, 7) === mesCorrente.substring(0, 7))
+                    ) && !cf.ativo) {
                     await this.ativarCiclo(cf, today);
                 } else {
                     await this.verificaFaseAtual(cf, today);

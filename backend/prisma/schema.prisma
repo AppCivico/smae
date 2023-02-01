@@ -1482,7 +1482,7 @@ model CicloFisico {
     pdm                 Pdm              @relation(fields: [pdm_id], references: [id])
     data_ciclo          DateTime         @db.Date()
     ciclo_fase_atual_id Int?
-    ciclo_fase_atual    CicloFisicoFase? @relation("atual", fields: [ciclo_fase_atual_id], references: [id])
+    CicloFaseAtual      CicloFisicoFase? @relation("atual", fields: [ciclo_fase_atual_id], references: [id])
     ativo               Boolean          @default(false)
 
     acordar_ciclo_em                DateTime?
