@@ -23,11 +23,11 @@ const route = useRoute();
 </script>
 
 <template>
-    <div class="flex spacebetween center mb2">
-        <h1>{{ route.meta.título || route.name }}</h1>
-        <hr class="ml2 f1"/>
-        <CheckClose />
-    </div>
+  <div class="flex spacebetween center mb2">
+    <h1>{{ route.meta.título || route.name }}</h1>
+    <hr class="ml2 f1">
+    <CheckClose />
+  </div>
 
-    <component :is="formulários[route.name]" />
+  <component :is="formulários[route.name]" />
 </template>
