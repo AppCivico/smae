@@ -8,7 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class MetasFechamentoService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     private async carregaCicloPorId(ciclo_fisico_id: number) {
         const ret = await this.prisma.cicloFisico.findFirst({
@@ -70,6 +70,16 @@ export class MetasFechamentoService {
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+            await prismaTxn.metaCicloFisicoFechamento.updateMany({
+                where: {
+                    ciclo_fisico_id: dto.ciclo_fisico_id,
+                    ultima_revisao: true,
+                },
+                data: {
+                    ultima_revisao: false,
+                },
+            });
+
             const cfq = await prismaTxn.metaCicloFisicoFechamento.create({
                 data: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
