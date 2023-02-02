@@ -420,7 +420,7 @@ export class ProjetoService {
         }
         console.log(dto);
 
-
+        // Caso o código seja modificado
         // if (dto.codigo) {
         //     const currentCodigo = await this.prisma.projeto.findFirst({
         //         where: {id: projetoId},
@@ -602,6 +602,31 @@ export class ProjetoService {
             },
         });
         return;
+    }
+
+    async archive(id: number, user: PessoaFromJwt) {
+        await this.prisma.projeto.updateMany({
+            where: { id: id, arquivado_em: null },
+            data: {
+                arquivado: true,
+                arquivado_por: user.id,
+                arquivado_em: new Date(Date.now()),
+            }
+        });
+
+        return {id}
+    }
+
+    async restore(id: number, user: PessoaFromJwt) {
+        await this.prisma.projeto.updateMany({
+            where: { id: id, arquivado: true },
+            data: {
+                arquivado: false,
+                arquivado_por: null,
+                arquivado_em: null,
+            },
+        });
+        return {id};
     }
 
     async append_document(projetoId: number, createPdmDocDto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
