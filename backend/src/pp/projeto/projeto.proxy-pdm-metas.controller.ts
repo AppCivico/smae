@@ -1,18 +1,18 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, ParseArrayPipe, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { ListProjetoDto } from './entities/projeto.entity';
+import { ListDadosMetaIniciativaAtividadesDto } from '../../meta/dto/create-meta.dto';
+import { MetaService } from '../../meta/meta.service';
 import { ListProjetoProxyPdmMetaDto } from './entities/projeto.proxy-pdm-meta.entity';
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
-import { ProjetoService } from './projeto.service';
 
 @ApiTags('Projeto')
 @Controller('projeto/proxy')
 export class ProjetoProxyPdmMetasController {
-    constructor(private readonly svc: ProjetoProxyPdmMetasService) { }
+    constructor(
+        private readonly svc: ProjetoProxyPdmMetasService,
+        private readonly metaService: MetaService
+    ) { }
 
     @Get('pdm-e-metas')
     @ApiBearerAuth('access-token')
@@ -24,5 +24,13 @@ export class ProjetoProxyPdmMetasController {
     })
     async findAll(): Promise<ListProjetoProxyPdmMetaDto> {
         return { linhas: await this.svc.findAll() };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('iniciativas-atividades')
+    @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    async buscaMetasIniciativaAtividades(@Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]): Promise<ListDadosMetaIniciativaAtividadesDto> {
+        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
     }
 }
