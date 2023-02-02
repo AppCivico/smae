@@ -94,14 +94,24 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     previsao_termino: Date | null;
 
+    @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
+    @IsEnum(ProjetoOrigemTipo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
+    })
+    origem_tipo: ProjetoOrigemTipo
+
     /**
-     * origem, obrigatório se não enviar `meta_id`, `iniciativa_id` ou `atividade_id`
+     * origem, não é obrigatório se enviar o campo `origem_tipo` com os valores `PdmSistema`.
+     *
+     * Obrigatório em caso de `PdmAntigo` ou `Outro`
+     *
+     * Quando enviar como `PdmSistema` também é necessário enviar `meta_id`, `iniciativa_id` ou `atividade_id`
      * @example "foobar"
      */
     @IsOptional()
     @IsString()
     @MaxLength(500)
-    origem_outro: string;
+    origem_outro?: string;
 
     /**
      * meta_id, se for por meta
@@ -129,6 +139,10 @@ export class CreateProjetoDto {
     @IsInt({ message: '$property| atividade_id precisa ser positivo' })
     @Transform((a: any) => (a.value === null ? null : +a.value))
     atividade_id?: number;
+
+    @IsOptional()
+    @IsString()
+    meta_codigo?: string
 
     /**
      * previsão de custo, número positivo com até 2 casas, pode enviar null
@@ -173,15 +187,6 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     data_aprovacao: Date | null;
 
-    @IsOptional()
-    @IsString()
-    meta_codigo?: string
-
-    @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
-    @IsEnum(ProjetoOrigemTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
-    })
-    origem_tipo: ProjetoOrigemTipo
 }
 
 export class CreateProjetoDocumentDto {
