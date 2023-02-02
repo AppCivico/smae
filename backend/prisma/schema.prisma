@@ -2140,6 +2140,7 @@ model Projeto {
     objetivo         String
     origem_eh_pdm    Boolean   @default(false)
     origem_outro     String?
+    meta_codigo      String?
     publico_alvo     String
     previsao_inicio  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
     previsao_termino DateTime?

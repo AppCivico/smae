@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsInt, isInt, IsNumber, isNumber, IsOptional, isString, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, isInt, IsNumber, isNumber, IsOptional, isString, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { CreateProjetoDto } from './create-projeto.dto';
 
@@ -133,4 +133,8 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsOptional()
     @IsString()
     nao_escopo?: string
+
+    @IsOptional()
+    @IsBoolean()
+    arquivado?: boolean
 }

@@ -21,6 +21,14 @@ export class ProjetoService {
         let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
         const origem_outro: string = dto.origem_outro || '';
+        const origem_eh_pdm: boolean = dto.origem_eh_pdm || false;
+        const meta_codigo: string | undefined = dto.meta_codigo;
+
+        if (dto.origem_eh_pdm && !dto.meta_codigo)
+            throw new HttpException('meta_codigo| deve ser enviado quando a origem for um PDM antigo', 400);
+
+        if (dto.meta_codigo && !dto.origem_eh_pdm)
+            throw new HttpException('meta_codigo| só pode ser enviado para um PDM antigo', 400);
 
         if (dto.origem_outro && (dto.atividade_id || dto.iniciativa_id || dto.meta_id))
             throw new HttpException('origem_outro| não pode ser definido se enviar meta|iniciativa|atividade', 400);
@@ -50,6 +58,8 @@ export class ProjetoService {
             atividade_id,
             iniciativa_id,
             origem_outro,
+            origem_eh_pdm,
+            meta_codigo
         };
     }
 
@@ -330,7 +340,18 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(projetoId, user, false);
 
-        const { meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
+        const { meta_id, atividade_id, iniciativa_id, origem_outro, origem_eh_pdm, meta_codigo } = await this.processaOrigem(dto);
+
+
+        // if (dto.codigo) {
+        //     const currentCodigo = await this.prisma.projeto.findFirst({
+        //         where: {id: projetoId},
+        //         select: { codigo: true }
+        //     });
+
+        //     if (!currentCodigo?.codigo)
+
+        // }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
@@ -344,6 +365,8 @@ export class ProjetoService {
                     atividade_id,
                     iniciativa_id,
                     origem_outro,
+                    origem_eh_pdm,
+                    meta_codigo,
                     nome:  dto.nome,
                     resumo: dto.resumo,
                     codigo: dto.codigo,
