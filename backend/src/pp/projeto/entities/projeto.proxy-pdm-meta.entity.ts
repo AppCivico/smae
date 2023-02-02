@@ -6,4 +6,7 @@ export class ProjetoProxyPdmMetaDto {
     metas: IdCodTituloDto[];
 }
 
+export class ListProjetoProxyPdmMetaDto {
+    linhas: ProjetoProxyPdmMetaDto[]
+}
 
