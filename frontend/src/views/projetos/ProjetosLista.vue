@@ -113,7 +113,7 @@ if (!organs.length) {
             </button>
           </td>
           <td>
-            <router-link
+            <!--router-link
               :to="{ name: 'projetosEditar', params: { projetoId: item.id } }"
               class="tprimary"
             >
@@ -121,7 +121,7 @@ if (!organs.length) {
                 width="20"
                 height="20"
               ><use xlink:href="#i_edit" /></svg>
-            </router-link>
+            </router-link-->
           </td>
         </tr>
         <tr v-if="chamadasPendentes.lista">
