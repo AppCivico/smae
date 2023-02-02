@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import CheckClose from '@/components/CheckClose.vue';
 import { portfolio as schema } from '@/consts/formSchemas';
 import {
@@ -70,93 +69,91 @@ if (props.portfolioId && !itemParaEdição.value) {
 </script>
 
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ route?.meta?.title || 'Portfolios' }}</h1>
-      <hr class="ml2 f1">
-      <CheckClose />
-    </div>
+  <div class="flex spacebetween center mb2">
+    <h1>{{ route?.meta?.title || 'Portfolios' }}</h1>
+    <hr class="ml2 f1">
+    <CheckClose />
+  </div>
 
-    <Form
-      v-if="!erro && órgãosOrdenados?.length"
-      v-slot="{ errors, isSubmitting, values }"
-      :validation-schema="schema"
-      :initial-values="itemParaEdição"
-      @submit="onSubmit"
-    >
-      <div class="flex g2 mb1">
-        <div class="f1">
-          <label class="label">
-            Título <span class="tvermelho">*</span>
-          </label>
-          <Field
-            name="titulo"
-            type="text"
-            class="inputtext light mb1"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="titulo"
-          />
-        </div>
-      </div>
-      <div class="mb2">
-        <div class="label">
-          Órgãos <span class="tvermelho">*</span>
-        </div>
-
-        <label
-          v-for="item in órgãosOrdenados"
-          :key="item.id"
-          class="block mb1"
-          :class="{ 'error': errors.orgaos }"
-        >
-          <Field
-            name="orgaos"
-            class="inputcheckbox"
-            type="checkbox"
-            :value="item.id"
-            :checked="values.orgaos?.includes(item.id)"
-          /><span>{{ item.sigla }}</span> <small>- {{ item.descricao }}</small>
+  <Form
+    v-if="!erro && órgãosOrdenados?.length"
+    v-slot="{ errors, isSubmitting, values }"
+    :validation-schema="schema"
+    :initial-values="itemParaEdição"
+    @submit="onSubmit"
+  >
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <label class="label">
+          Título <span class="tvermelho">*</span>
         </label>
-
-        <ErrorMessage
-          name="orgaos"
-          class="error-msg"
+        <Field
+          name="titulo"
+          type="text"
+          class="inputtext light mb1"
         />
-
-        <div
-          v-if="chamadasPendentes?.emFoco"
-          class="spinner"
-        >
-          Carregando
-        </div>
-      </div>
-
-      <div class="flex spacebetween center mb2">
-        <hr class="mr2 f1">
-        <button
-          class="btn big"
-          :disabled="isSubmitting"
-        >
-          Salvar
-        </button>
-        <hr class="ml2 f1">
-      </div>
-    </Form>
-
-    <span
-      v-if="chamadasPendentes?.emFoco"
-      class="spinner"
-    >Carregando</span>
-
-    <div
-      v-if="erro"
-      class="error p1"
-    >
-      <div class="error-msg">
-        {{ erro }}
+        <ErrorMessage
+          class="error-msg mb1"
+          name="titulo"
+        />
       </div>
     </div>
-  </Dashboard>
+    <div class="mb2">
+      <div class="label">
+        Órgãos <span class="tvermelho">*</span>
+      </div>
+
+      <label
+        v-for="item in órgãosOrdenados"
+        :key="item.id"
+        class="block mb1"
+        :class="{ 'error': errors.orgaos }"
+      >
+        <Field
+          name="orgaos"
+          class="inputcheckbox"
+          type="checkbox"
+          :value="item.id"
+          :checked="values.orgaos?.includes(item.id)"
+        /><span>{{ item.sigla }}</span> <small>- {{ item.descricao }}</small>
+      </label>
+
+      <ErrorMessage
+        name="orgaos"
+        class="error-msg"
+      />
+
+      <div
+        v-if="chamadasPendentes?.emFoco"
+        class="spinner"
+      >
+        Carregando
+      </div>
+    </div>
+
+    <div class="flex spacebetween center mb2">
+      <hr class="mr2 f1">
+      <button
+        class="btn big"
+        :disabled="isSubmitting"
+      >
+        Salvar
+      </button>
+      <hr class="ml2 f1">
+    </div>
+  </Form>
+
+  <span
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >Carregando</span>
+
+  <div
+    v-if="erro"
+    class="error p1"
+  >
+    <div class="error-msg">
+      {{ erro }}
+    </div>
+  </div>
 </template>
