@@ -6,9 +6,10 @@ import { PortfolioModule } from '../portfolio/portfolio.module';
 import { UploadModule } from '../../upload/upload.module';
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 import { ProjetoProxyPdmMetasController } from './projeto.proxy-pdm-metas.controller';
+import { MetaModule } from '../../meta/meta.module';
 
 @Module({
-    imports: [PrismaModule, PortfolioModule, UploadModule],
+    imports: [PrismaModule, PortfolioModule, UploadModule, MetaModule],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService],
     exports: [ProjetoService]
