@@ -22,67 +22,88 @@ function excluirRelatório(id) {
 </script>
 <template>
   <table class="tablemain">
-      <colgroup>
-        <col />
-        <col />
-        <col />
-        <!--col /-->
-        <col class="col--dataHora" />
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <!--col /-->
+      <col class="col--dataHora">
 
-        <col v-if="temPermissãoPara(['Reports.remover'])" class="col--botão-de-ação" />
-        <!--col v-if="temPermissãoPara('Reports.executar')" class="col--botão-de-ação" /-->
-        <col class="col--botão-de-ação" />
-      </colgroup>
-      <thead>
-          <tr>
-              <th>mês/ano início</th>
-              <th>mês/ano fim</th>
-              <th>tipo</th>
-              <!--th>órgãos</th-->
-              <th>gerado em</th>
-              <th v-if="temPermissãoPara(['Reports.remover'])"></th>
-              <!--th v-if="temPermissãoPara('Reports.executar')"></th-->
-              <th></th>
-          </tr>
-      </thead>
-      <tbody>
-          <template v-if="relatoriosStore.relatorios.length">
-              <tr v-for="item in relatoriosStore.relatorios" :key="item.id">
-                  <td>{{ dateToTitle(item.parametros.inicio) }}</td>
-                  <td>{{ dateToTitle(item.parametros.fim) }}</td>
-                  <td>{{ item.parametros.tipo }}</td>
-                  <!--td>{{ item.parametros.orgaos }}</td-->
-                  <td>{{ localizeDate(item.criado_em) }}</td>
-                  <td v-if="temPermissãoPara(['Reports.remover'])">
-                    <button @click="excluirRelatório(item.id)" class="like-a__text" arial-label="excluir" title="excluir"><img
-                    src="../../assets/icons/excluir.svg" /></button>
-                  </td>
-                  <!--td v-if="temPermissãoPara('Reports.executar')">
+      <col
+        v-if="temPermissãoPara(['Reports.remover'])"
+        class="col--botão-de-ação"
+      >
+      <!--col v-if="temPermissãoPara('Reports.executar')" class="col--botão-de-ação" /-->
+      <col class="col--botão-de-ação">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>mês/ano início</th>
+        <th>mês/ano fim</th>
+        <th>tipo</th>
+        <!--th>órgãos</th-->
+        <th>gerado em</th>
+        <th v-if="temPermissãoPara(['Reports.remover'])" />
+        <!--th v-if="temPermissãoPara('Reports.executar')"></th-->
+        <th />
+      </tr>
+    </thead>
+    <tbody>
+      <template v-if="relatoriosStore.relatorios.length">
+        <tr
+          v-for="item in relatoriosStore.relatorios"
+          :key="item.id"
+        >
+          <td>{{ dateToTitle(item.parametros.inicio) }}</td>
+          <td>{{ dateToTitle(item.parametros.fim) }}</td>
+          <td>{{ item.parametros.tipo }}</td>
+          <!--td>{{ item.parametros.orgaos }}</td-->
+          <td>{{ localizeDate(item.criado_em) }}</td>
+          <td v-if="temPermissãoPara(['Reports.remover'])">
+            <button
+              class="like-a__text"
+              arial-label="excluir"
+              title="excluir"
+              @click="excluirRelatório(item.id)"
+            >
+              <img
+                src="../../assets/icons/excluir.svg"
+              >
+            </button>
+          </td>
+          <!--td v-if="temPermissãoPara('Reports.executar')">
                     <button class="like-a__text" arial-label="duplicar" title="duplicar"><img
                     src="../../assets/icons/duplicar.svg" /></button>
                   </td-->
-                  <td>
-                    <a :href="`${baseUrl}/download/${item.arquivo}`"
-                    download title="baixar"><img
-                    src="../../assets/icons/baixar.svg" /></a>
-                  </td>
-              </tr>
-          </template>
-          <tr v-else-if="relatoriosStore.loading">
-              <td colspan="8" aria-busy="true">
-                  Carregando
-              </td>
-          </tr>
-          <tr v-else-if="relatoriosStore.error">
-              <td colspan="8">
-                  erro: {{ relatoriosStore.error }}
-              </td>
-          </tr>
-          <tr v-else>
-              <td colspan="8">
-                  Nenhum resultado encontrado.
-              </td>
-          </tr>
-      </tbody>
+          <td>
+            <a
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            ><img
+              src="../../assets/icons/baixar.svg"
+            ></a>
+          </td>
+        </tr>
+      </template>
+      <tr v-else-if="relatoriosStore.loading">
+        <td
+          colspan="8"
+          aria-busy="true"
+        >
+          Carregando
+        </td>
+      </tr>
+      <tr v-else-if="relatoriosStore.error">
+        <td colspan="8">
+          erro: {{ relatoriosStore.error }}
+        </td>
+      </tr>
+      <tr v-else>
+        <td colspan="8">
+          Nenhum resultado encontrado.
+        </td>
+      </tr>
+    </tbody>
   </table>
 </template>
