@@ -50,6 +50,11 @@ export class ProjetoDetailDto {
     recursos: ProjetoRecursos[] | null;
 
     // responsaveis_no_orgao_gestor:
+
+//    permissoes: {
+//        arquivar: boolean,
+//        premissas: boolean
+    //}
 }
 
 export class ProjetoPremissa {
