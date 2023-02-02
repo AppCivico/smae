@@ -1,5 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { ProjetoOrigemTipo } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateProjetoDto {
@@ -175,8 +177,11 @@ export class CreateProjetoDto {
     @IsString()
     meta_codigo?: string
 
-    @IsBoolean()
-    origem_eh_pdm: boolean
+    @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
+    @IsEnum(ProjetoOrigemTipo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
+    })
+    origem_tipo: ProjetoOrigemTipo
 }
 
 export class CreateProjetoDocumentDto {
