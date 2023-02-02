@@ -7,5 +7,6 @@ import { PrismaModule } from '../prisma/prisma.module';
     imports: [PrismaModule],
     controllers: [MetaController],
     providers: [MetaService],
+    exports: [MetaService]
 })
 export class MetaModule {}
