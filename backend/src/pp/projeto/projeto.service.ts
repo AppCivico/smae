@@ -24,11 +24,11 @@ export class ProjetoService {
         let meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
         let origem_tipo: ProjetoOrigemTipo | undefined = dto.origem_tipo ? dto.origem_tipo : undefined;
 
-        if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmSistema) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmSistema)) {
+        if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmSistema) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmSistema)) {
             await this.assertOrigemTipoPdmSistema(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmAntigo) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmAntigo)) {
+        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmAntigo) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmAntigo)) {
             await this.assertOrigemTipoPdmAntigo(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.Outro) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.Outro)) {
+        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.Outro) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.Outro)) {
             await this.assertOrigemTipoOutro(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
         }
 
