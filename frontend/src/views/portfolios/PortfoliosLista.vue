@@ -78,9 +78,10 @@ if (!organs.length) {
               title="excluir"
               @click="excluirPortfolio(item.id)"
             >
-              <img
-                src="../../assets/icons/excluir.svg"
-              >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
             </button>
           </td>
           <td>
