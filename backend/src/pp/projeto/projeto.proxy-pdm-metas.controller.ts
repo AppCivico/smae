@@ -5,12 +5,14 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { ListProjetoDto } from './entities/projeto.entity';
+import { ListProjetoProxyPdmMetaDto } from './entities/projeto.proxy-pdm-meta.entity';
+import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 import { ProjetoService } from './projeto.service';
 
 @ApiTags('Projeto')
 @Controller('projeto/proxy')
 export class ProjetoProxyPdmMetasController {
-    constructor(private readonly projetoService: ProjetoService) { }
+    constructor(private readonly svc: ProjetoProxyPdmMetasService) { }
 
     @Get('pdm-e-metas')
     @ApiBearerAuth('access-token')
@@ -20,7 +22,7 @@ export class ProjetoProxyPdmMetasController {
         summary: 'Consulta Metas e PDM do sistema',
         description: 'Como não há necessidade de puxar todo os dados da meta e do PDM, esse endpoint retorna um resumo de Meta+PDM',
     })
-    async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
-        return { linhas: await this.projetoService.findAll(filters, user) };
+    async findAll(): Promise<ListProjetoProxyPdmMetaDto> {
+        return { linhas: await this.svc.findAll() };
     }
 }
