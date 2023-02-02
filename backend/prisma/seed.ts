@@ -239,6 +239,11 @@ const PerfilAcessoConfig: {
             privilegios: false
         },
         {
+            nome: 'Responsável por meta na CP - orçamento',
+            descricao: '',
+            privilegios: false
+        },
+        {
             nome: 'Administrador Geral',
             descricao: 'Administrador Geral - Todas as permissões do sistema, exceto regras de negocio',
             privilegios: [
@@ -314,10 +319,9 @@ const PerfilAcessoConfig: {
             privilegios: PrivRespNaCp
         },
         {
-            nome: 'Responsável por meta na CP - orçamento',
-            descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+            nome: 'Orçamento',
+            descricao: 'Pode criar orçamento para as metas que tem acesso.',
             privilegios: [
-                ...PrivRespNaCp,
                 'CadastroMeta.orcamento'
             ]
         },
