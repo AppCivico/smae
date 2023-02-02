@@ -59,6 +59,22 @@ export class ProjetoController {
         return '';
     }
 
+    @Post(':id/arquivar')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    async archive(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.projetoService.archive(params.id , user);
+    }
+
+    @Post(':id/desarquivar')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    async restore(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.projetoService.restore(params.id , user);
+    }
+
     @Post(':id/documento')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
