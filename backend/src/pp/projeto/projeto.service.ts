@@ -251,6 +251,7 @@ export class ProjetoService {
                 nao_escopo: true,
                 principais_etapas: true,
                 responsaveis_no_orgao_gestor: true,
+                versao: true,
 
                 orgao_gestor: {
                     select: {
@@ -336,7 +337,35 @@ export class ProjetoService {
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
 
-            // TODO continuar com os outros updates
+            await prismaTx.projeto.update({
+                where: { id: projetoId },
+                data: {
+                    meta_id,
+                    atividade_id,
+                    iniciativa_id,
+                    origem_outro,
+                    nome:  dto.nome,
+                    resumo: dto.resumo,
+                    codigo: dto.codigo,
+                    descricao: dto.descricao,
+                    objeto: dto.objeto,
+                    objetivo: dto.objetivo,
+                    publico_alvo: dto.publico_alvo,
+                    previsao_inicio: dto.previsao_inicio,
+                    previsao_custo: dto.previsao_custo,
+                    previsao_termino: dto.previsao_termino,
+                    inicio_real: dto.inicio_real,
+                    custo_real: dto.custo_real,
+                    realizado_inicio: dto.realizado_inicio,
+                    realizado_termino: dto.realizado_termino,
+                    realizado_custo: dto.realizado_custo,
+                    escopo: dto.escopo,
+                    nao_escopo: dto.nao_escopo,
+                    principais_etapas: dto.principais_etapas,
+                    responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
+                    versao: dto.versao,
+                }
+            })
         });
 
         return { id: projetoId };
