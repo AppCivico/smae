@@ -18,6 +18,21 @@ export class ListProjetoDto {
     linhas: ProjetoDto[];
 }
 
+export class ProjetoPermissoesDto {
+    acao_arquivar: boolean
+    acao_restaurar: boolean
+    acao_iniciar_planejamento: boolean
+    acao_finalizar_planejamento: boolean
+    acao_validar: boolean
+    acao_iniciar: boolean
+    acao_suspender: boolean
+    acao_reiniciar: boolean
+    acao_cancelar: boolean
+    acao_terminar: boolean
+    campo_premissas: boolean
+    campo_restricoes: boolean
+}
+
 export class ProjetoDetailDto {
     id: number;
     meta_id: number | null;
@@ -56,10 +71,7 @@ export class ProjetoDetailDto {
 
     // responsaveis_no_orgao_gestor:
 
-    //    permissoes: {
-    //        arquivar: boolean,
-    //        premissas: boolean
-    //}
+    permissoes: ProjetoPermissoesDto
 }
 
 export class ProjetoPremissa {
