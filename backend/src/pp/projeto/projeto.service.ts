@@ -396,6 +396,7 @@ export class ProjetoService {
         const projeto = await this.findOne(projetoId, user, false);
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro, meta_codigo } = await this.processaOrigem(dto, projeto.origem_tipo);
+        console.log(dto);
 
 
         // if (dto.codigo) {
