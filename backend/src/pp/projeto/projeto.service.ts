@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma, ProjetoStatus } from '@prisma/client';
+import { Prisma, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -16,20 +16,35 @@ import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto } from './entities/pr
 export class ProjetoService {
     constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) { }
 
-    private async processaOrigem(dto: CreateProjetoDto | UpdateProjetoDto) {
+    private async processaOrigem(dto: CreateProjetoDto | UpdateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
         let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
         let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
-        const origem_outro: string = dto.origem_outro || '';
-        const meta_codigo: string | undefined = dto.meta_codigo;
+        let origem_outro: string = dto.origem_outro || '';
+        let meta_codigo: string | undefined = dto.meta_codigo;
+        let origem_tipo: ProjetoOrigemTipo | undefined = dto.origem_tipo ? dto.origem_tipo : undefined;
 
-
-        if (dto.origem_outro && (dto.atividade_id || dto.iniciativa_id || dto.meta_id))
-            throw new HttpException('origem_outro| não pode ser definido se enviar meta|iniciativa|atividade', 400);
-
-        if (!dto.atividade_id && !dto.iniciativa_id && !dto.meta_id) {
-            if (!dto.origem_outro) throw new HttpException('origem_outro| é obrigatório quando não enviar meta|iniciativa|atividade', 400);
+        if (origem_tipo! === ProjetoOrigemTipo.PdmSistema || currentOrigemTipo! === ProjetoOrigemTipo.PdmSistema) {
+            await this.assertOrigemTipoPdmSistema(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
+        } else if (origem_tipo! === ProjetoOrigemTipo.PdmAntigo || currentOrigemTipo! === ProjetoOrigemTipo.PdmAntigo) {
+            await this.assertOrigemTipoPdmAntigo(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
+        } else if (origem_tipo! === ProjetoOrigemTipo.Outro || currentOrigemTipo! === ProjetoOrigemTipo.Outro) {
+            await this.assertOrigemTipoOutro(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
         }
+
+        return {
+            origem_tipo,
+            meta_id,
+            atividade_id,
+            iniciativa_id,
+            origem_outro,
+            meta_codigo
+        };
+    }
+
+    private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | undefined) {
+        if (!(atividade_id || iniciativa_id ||meta_id))
+            throw new HttpException('meta| é obrigatório enviar meta|iniciativa|atividade quando origem_tipo for PdmSistema', 400);
 
         if (atividade_id !== null) {
             const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
@@ -46,6 +61,43 @@ export class ProjetoService {
         } else if (meta_id !== null) {
             await this.prisma.iniciativa.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
         }
+
+        if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+        if (meta_codigo)  throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+
+        return {
+            meta_id,
+            atividade_id,
+            iniciativa_id,
+            origem_outro,
+            meta_codigo
+        };
+    }
+
+    private async assertOrigemTipoPdmAntigo(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | undefined) {
+        if (!meta_codigo) throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
+
+        if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+        if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+        if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+        if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+
+        return {
+            meta_id,
+            atividade_id,
+            iniciativa_id,
+            origem_outro,
+            meta_codigo
+        };
+    }
+
+    private async assertOrigemTipoOutro(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | undefined) {
+        if (!origem_outro) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
+
+        if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+        if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+        if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+        if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
 
         return {
             meta_id,
@@ -77,10 +129,12 @@ export class ProjetoService {
         const portfolio = portfolios.filter(r => r.id == dto.portfolio_id)[0];
         if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário', 400);
 
-        const { meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
+        const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio);
 
         console.log(dto);
+
+        if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const row = await prismaTx.projeto.create({
@@ -105,6 +159,7 @@ export class ProjetoService {
                     previsao_inicio: dto.previsao_inicio,
                     previsao_termino: dto.previsao_termino,
 
+                    origem_tipo: origem_tipo,
                     origem_outro: origem_outro,
                     meta_id: meta_id,
                     iniciativa_id: iniciativa_id,
@@ -122,8 +177,6 @@ export class ProjetoService {
                     publico_alvo: '',
                     fase: 'Registro',
                     status: 'Registrado',
-
-                    origem_tipo: dto.origem_tipo
                 },
                 select: { id: true },
             });
@@ -236,9 +289,12 @@ export class ProjetoService {
             where: { id: id, removido_em: null },
             select: {
                 id: true,
+                origem_tipo: true,
                 meta_id: true,
                 iniciativa_id: true,
                 atividade_id: true,
+                origem_outro: true,
+                meta_codigo: true,
                 nome: true,
                 status: true,
                 resumo: true,
@@ -337,9 +393,9 @@ export class ProjetoService {
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, false);
+        const projeto = await this.findOne(projetoId, user, false);
 
-        const { meta_id, atividade_id, iniciativa_id, origem_outro, meta_codigo } = await this.processaOrigem(dto);
+        const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro, meta_codigo } = await this.processaOrigem(dto, projeto.origem_tipo);
 
 
         // if (dto.codigo) {
@@ -365,6 +421,7 @@ export class ProjetoService {
                     iniciativa_id,
                     origem_outro,
                     meta_codigo,
+                    origem_tipo,
                     nome: dto.nome,
                     resumo: dto.resumo,
                     codigo: dto.codigo,

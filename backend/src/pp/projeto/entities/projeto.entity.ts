@@ -1,4 +1,4 @@
-import { ProjetoStatus } from '@prisma/client';
+import { ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
@@ -50,6 +50,9 @@ export class ProjetoDetailDto {
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
     recursos: ProjetoRecursos[] | null;
+    origem_tipo: ProjetoOrigemTipo;
+    origem_outro: string | null;
+    meta_codigo: string | null
 
     // responsaveis_no_orgao_gestor:
 
