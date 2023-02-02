@@ -21,7 +21,7 @@ export class ListProjetoDto {
 export class ProjetoPermissoesDto {
     acao_arquivar: boolean
     acao_restaurar: boolean
-    acao_iniciar_planejamento: boolean
+    acao_selecionar: boolean
     acao_finalizar_planejamento: boolean
     acao_validar: boolean
     acao_iniciar: boolean
@@ -31,6 +31,7 @@ export class ProjetoPermissoesDto {
     acao_terminar: boolean
     campo_premissas: boolean
     campo_restricoes: boolean
+    campo_codigo_liberado: boolean
 }
 
 export class ProjetoDetailDto {

@@ -19,7 +19,7 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Planejado: 'Planejamento',
     Validado: 'Acompanhamento',
     EmAcompanhamento: 'Acompanhamento',
-    Suspenso: 'Registro',
+    Suspenso: 'Acompanhamento',
     Fechado: 'Encerramento'
 } as const;
 
@@ -294,7 +294,7 @@ export class ProjetoService {
         const permissoes: ProjetoPermissoesDto = {
             acao_arquivar: false,
             acao_restaurar: false,
-            acao_iniciar_planejamento: false,
+            acao_selecionar: false,
             acao_finalizar_planejamento: false,
             acao_validar: false,
             acao_iniciar: false,
@@ -302,6 +302,7 @@ export class ProjetoService {
             acao_reiniciar: false,
             acao_cancelar: false,
             acao_terminar: false,
+            campo_codigo_liberado: false,
             campo_premissas: false,
             campo_restricoes: false,
         };
@@ -410,10 +411,25 @@ export class ProjetoService {
             permissoes.acao_arquivar = true;
         }
 
+        const userCanWrite = true;
         if (user && !user.hasSomeRoles(['Projeto.administrador'])) {
             // TODO verificar a permissão do "user",
             // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
             // usar campo readonly, pq há chamadas para essa função quando há escritas
+
+
+        }
+
+        if (projeto.arquivado == false) {
+            // se já saiu da fase de registro, então está liberado preencher o campo
+            // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
+            // migrar o status para "EmPlanejamento"
+            if (projeto.status !== 'Registrado')
+                permissoes.campo_codigo_liberado = true;
+
+            if (userCanWrite) {
+
+            }
         }
 
         return {
@@ -432,6 +448,27 @@ export class ProjetoService {
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
+
+        let moverStatusParaPlanejamento: boolean = false;
+        if (dto.codigo) {
+            if (projeto.permissoes.campo_codigo_liberado == false)
+                throw new HttpException('Campo "Código" não pode ser preenchido ou alterado no momento', 400);
+
+            if (projeto.status == 'Selecionado') {
+                moverStatusParaPlanejamento = true;
+
+                const countInUse = await this.prisma.projeto.count({
+                    where: {
+                        codigo: { equals: dto.codigo, mode: 'insensitive' },
+                        NOT: {
+                            id: projeto.id
+                        },
+                    }
+                });
+                if (countInUse)
+                    throw new HttpException('codigo| Código informado já está em uso em outro projeto.', 400);
+            }
+        }
 
         // aqui tem que prestar atenção, pq se não enviar o campo, não deve ser feito update
         // se enviar o origem_tipo como undefined (ou seja, se ele não existir) todos esses campos aqui precisam ficar
@@ -464,21 +501,13 @@ export class ProjetoService {
 
         console.log(dto);
 
-        // Caso o código seja modificado
-        // if (dto.codigo) {
-        //     const currentCodigo = await this.prisma.projeto.findFirst({
-        //         where: {id: projetoId},
-        //         select: { codigo: true }
-        //     });
-
-        //     if (!currentCodigo?.codigo)
-
-        // }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
+
+            const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
@@ -509,6 +538,10 @@ export class ProjetoService {
                     principais_etapas: dto.principais_etapas,
                     responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
                     versao: dto.versao,
+
+                    // por padrão undefined, não faz nenhuma alteração
+                    status: novoStatus,
+                    fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
                 }
             })
         });
