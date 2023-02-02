@@ -28,7 +28,7 @@ export class ProjetoService {
             await this.assertOrigemTipoPdmSistema(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
         } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmAntigo) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmAntigo)) {
             await this.assertOrigemTipoPdmAntigo(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ( origem_tipo === ProjetoOrigemTipo.Outro || currentOrigemTipo === ProjetoOrigemTipo.Outro ) {
+        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.Outro) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.Outro)) {
             await this.assertOrigemTipoOutro(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
         }
 
