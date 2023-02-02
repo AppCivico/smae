@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateProjetoDto {
@@ -170,6 +170,13 @@ export class CreateProjetoDto {
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
     data_aprovacao: Date | null;
+
+    @IsOptional()
+    @IsString()
+    meta_codigo?: string
+
+    @IsBoolean()
+    origem_eh_pdm: boolean
 }
 
 export class CreateProjetoDocumentDto {
