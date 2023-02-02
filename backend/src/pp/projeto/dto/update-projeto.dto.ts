@@ -1,6 +1,7 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsInt, isInt, IsNumber, isNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsInt, isInt, IsNumber, isNumber, IsOptional, isString, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { CreateProjetoDto } from './create-projeto.dto';
 
 export class PPfonteRecursoDto {
@@ -76,4 +77,60 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @ValidateNested({ each: true })
     @Type(() => PPfonteRecursoDto)
     fonte_recursos?: PPfonteRecursoDto[];
+
+    @IsOptional()
+    @IsString()
+    codigo?: string
+
+    @IsOptional()
+    @IsString()
+    descricao?: string
+
+    @IsOptional()
+    @IsString()
+    objeto?: string
+
+    @IsOptional()
+    @IsString()
+    objetivo?: string
+
+    @IsOptional()
+    @IsString()
+    publico_alvo?: string
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    inicio_real?: Date
+
+    @IsOptional()
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+    @Min(0, { message: '$property| Custo precisa ser positivo' })
+    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    custo_real?: number
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    realizado_inicio?: Date
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    realizado_termino?: Date
+
+    @IsOptional()
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+    @Min(0, { message: '$property| Custo precisa ser positivo' })
+    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    realizado_custo?: number
+
+    @IsOptional()
+    @IsString()
+    nao_escopo?: string
 }
