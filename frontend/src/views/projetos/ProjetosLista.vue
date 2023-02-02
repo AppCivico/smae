@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import {
   useOrgansStore, useProjetosStore
 } from '@/stores';
@@ -34,45 +33,54 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
 
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ route?.meta?.title || 'Projetos' }}</h1>
-      <hr class="ml2 f1">
+  <div class="flex spacebetween center mb2">
+    <h1>{{ route?.meta?.title || 'Projetos' }}</h1>
+    <hr class="ml2 f1">
       <!--router-link
-        :to="{ name: 'projetosCriar' }"
-        class="btn big ml1"
-      >
-        Novo projeto
+      :to="{ name: 'projetosCriar' }"
+      class="btn big ml1"
+    >
+      Novo projeto
       </router-link-->
-    </div>
+  </div>
 
-    <div class="boards">
-      <template v-if="Object.keys(listasAgrupadas).length">
-        <div class="flex flexwrap g2">
-          <div
-            v-for="item in Object.keys(listasAgrupadas)"
-            :key="item"
-            class="board"
-          >
-            <h2>{{ listasAgrupadas[item].titulo }}</h2>
-            <div class="t11 tc300 mb2">
-              {{ listasAgrupadas[item].lista.length }}
-              <template v-if="listasAgrupadas[item].lista.length === 1">
-                projeto
-              </template>
-              <template v-else>
-                projetos
-              </template>
-            </div>
-
-            <TabelaDeProjetos
-              :lista="listasAgrupadas[item].lista"
-              :pendente="chamadasPendentes.lista"
-              :erro="erro"
-            />
+  <div class="boards">
+    <template v-if="Object.keys(listasAgrupadas).length">
+      <div class="flex flexwrap g2">
+        <div
+          v-for="item in Object.keys(listasAgrupadas)"
+          :key="item"
+          class="board"
+        >
+          <h2>{{ listasAgrupadas[item].titulo }}</h2>
+          <div class="t11 tc300 mb2">
+            {{ listasAgrupadas[item].lista.length }}
+            <template v-if="listasAgrupadas[item].lista.length === 1">
+              projeto
+            </template>
+            <template v-else>
+              projetos
+            </template>
           </div>
+
+          <TabelaDeProjetos
+            :lista="listasAgrupadas[item].lista"
+            :pendente="chamadasPendentes.lista"
+            :erro="erro"
+          />
+
+          <hr class="mt1 mb1">
+          <router-link
+            :to="{ name: 'projetosCriar', query: { portfolio_id: listasAgrupadas[item].id } }"
+            class="addlink"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg> <span>Adicionar projeto</span>
+          </router-link>
         </div>
-      </template>
-    </div>
-  </Dashboard>
+      </div>
+    </template>
+  </div>
 </template>
