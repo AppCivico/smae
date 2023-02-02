@@ -250,7 +250,7 @@ const PerfilAcessoConfig: {
         },
         {
             nome: 'Administrador Geral',
-            descricao: 'Administrador Geral - Todas as permissões do sistema, exceto regras de negocio',
+            descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
             privilegios: [
                 'SMAE.superadmin',
                 ...todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false),
