@@ -395,6 +395,10 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
 
+        // aqui tem que prestar atenção, pq se não enviar o campo, não deve ser feito update
+        // se enviar o origem_tipo como undefined (ou seja, se ele não existir) todos esses campos aqui precisam ficar
+        // necessariamente undefined, pro prisma não rodar o update em nenhum deles
+
         let origem_tipo: ProjetoOrigemTipo | undefined;
         let meta_id: number | null;
         let iniciativa_id: number | null;
@@ -418,6 +422,8 @@ export class ProjetoService {
             origem_outro = origemVerification.origem_outro;
             meta_codigo = origemVerification.meta_codigo;
         }
+
+
         console.log(dto);
 
         // Caso o código seja modificado
