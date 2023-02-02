@@ -20,7 +20,7 @@ export class ProjetoService {
         let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
         let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
-        let origem_outro: string = dto.origem_outro || '';
+        let origem_outro: string | null = dto.origem_outro ? dto.origem_outro : null;
         let meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
         let origem_tipo: ProjetoOrigemTipo | undefined = dto.origem_tipo ? dto.origem_tipo : undefined;
 
