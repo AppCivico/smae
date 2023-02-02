@@ -63,14 +63,15 @@ function excluirRelatório(id) {
           <td>{{ localizeDate(item.criado_em) }}</td>
           <td v-if="temPermissãoPara(['Reports.remover'])">
             <button
-              class="like-a__text"
+              class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
               @click="excluirRelatório(item.id)"
             >
-              <img
-                src="../../assets/icons/excluir.svg"
-              >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
             </button>
           </td>
           <!--td v-if="temPermissãoPara('Reports.executar')">
