@@ -7,7 +7,7 @@ import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 export class CreateProjetoDto {
     /**
      * portfolio_id
-     * @example ""
+     * @example 0
      */
     @IsInt({ message: '$property| portfolio_id precisa ser inteiro' })
     @Type(() => Number)
@@ -15,7 +15,7 @@ export class CreateProjetoDto {
 
     /**
      * ID do órgão gestor
-     * @example ""
+     * @example 0
      */
     @IsInt({ message: '$property| orgao_gestor_id precisa ser inteiro' })
     @Type(() => Number)
@@ -43,7 +43,6 @@ export class CreateProjetoDto {
 
     /**
      * dentro dos órgãos participantes, qual é o órgão responsável
-     * @example ""
      */
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: any) => (a.value === null ? null : +a.value))
@@ -52,7 +51,6 @@ export class CreateProjetoDto {
 
     /**
      * ID da pessoa responsável [pelo planejamento, são as pessoas filtradas pelo filtro `colaborador_de_projeto=true`]
-     * @example ""
      */
     @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
     @Transform((a: any) => (a.value === null ? null : +a.value))
@@ -61,7 +59,7 @@ export class CreateProjetoDto {
 
     /**
      * nome (mínimo 1 char)
-     * @example "name"
+     * @example "Nome"
      */
     @IsString()
     @MaxLength(500)
@@ -78,7 +76,7 @@ export class CreateProjetoDto {
 
     /**
      * previsao_inicio ou null
-     * @example ""
+     * @example "2020-01-01"
      */
     @IsOnlyDate()
     @Type(() => Date)
@@ -87,13 +85,18 @@ export class CreateProjetoDto {
 
     /**
      * previsao_inicio ou null
-     * @example ""
+     * @example "2020-01-01"
      */
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
     previsao_termino: Date | null;
 
+    /**
+     * tipo da origem
+     *
+     * @example "Outro"
+     */
     @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
     @IsEnum(ProjetoOrigemTipo, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
@@ -115,7 +118,6 @@ export class CreateProjetoDto {
 
     /**
      * meta_id, se for por meta
-     * @example "42"
      */
     @IsOptional()
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
@@ -124,7 +126,6 @@ export class CreateProjetoDto {
 
     /**
      * iniciativa_id, se for por iniciativa
-     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
@@ -133,7 +134,6 @@ export class CreateProjetoDto {
 
     /**
      * atividade_id, se for por atividade
-     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| atividade_id precisa ser positivo' })
@@ -146,7 +146,6 @@ export class CreateProjetoDto {
 
     /**
      * previsão de custo, número positivo com até 2 casas, pode enviar null
-     * @example ""
      **/
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
     @Min(0, { message: '$property| Custo precisa ser positivo' })
