@@ -21,14 +21,14 @@ export class ProjetoService {
         let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
         let origem_outro: string = dto.origem_outro || '';
-        let meta_codigo: string | undefined = dto.meta_codigo;
+        let meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
         let origem_tipo: ProjetoOrigemTipo | undefined = dto.origem_tipo ? dto.origem_tipo : undefined;
 
         if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmSistema) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmSistema)) {
             await this.assertOrigemTipoPdmSistema(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
         } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmAntigo) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmAntigo)) {
             await this.assertOrigemTipoPdmAntigo(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.Outro) || (currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.Outro)) {
+        } else if ( origem_tipo === ProjetoOrigemTipo.Outro || currentOrigemTipo === ProjetoOrigemTipo.Outro ) {
             await this.assertOrigemTipoOutro(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
         }
 
@@ -42,7 +42,7 @@ export class ProjetoService {
         };
     }
 
-    private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | undefined) {
+    private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
         if (!(atividade_id || iniciativa_id ||meta_id))
             throw new HttpException('meta| é obrigatório enviar meta|iniciativa|atividade quando origem_tipo for PdmSistema', 400);
 
@@ -74,7 +74,7 @@ export class ProjetoService {
         };
     }
 
-    private async assertOrigemTipoPdmAntigo(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | undefined) {
+    private async assertOrigemTipoPdmAntigo(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
         if (!meta_codigo) throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
 
         if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
@@ -91,8 +91,8 @@ export class ProjetoService {
         };
     }
 
-    private async assertOrigemTipoOutro(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | undefined) {
-        if (!origem_outro) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
+    private async assertOrigemTipoOutro(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
+        if (!origem_outro || origem_outro.length < 1) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
 
         if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
         if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
