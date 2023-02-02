@@ -43,7 +43,7 @@ export class ProjetoService {
     }
 
     private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
-        if (!(atividade_id || iniciativa_id ||meta_id))
+        if (!(atividade_id || iniciativa_id || meta_id))
             throw new HttpException('meta| é obrigatório enviar meta|iniciativa|atividade quando origem_tipo for PdmSistema', 400);
 
         if (atividade_id !== null) {
@@ -63,7 +63,7 @@ export class ProjetoService {
         }
 
         if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
-        if (meta_codigo)  throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+        if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
 
         return {
             meta_id,
@@ -395,7 +395,29 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
 
-        const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro, meta_codigo } = await this.processaOrigem(dto, projeto.origem_tipo);
+        let origem_tipo: ProjetoOrigemTipo | undefined;
+        let meta_id: number | null;
+        let iniciativa_id: number | null;
+        let atividade_id: number | null;
+        let origem_outro: string | null;
+        let meta_codigo: string | null;
+
+        if (dto.origem_tipo ||
+            dto.meta_id ||
+            dto.iniciativa_id ||
+            dto.atividade_id ||
+            dto.origem_outro ||
+            dto.meta_codigo) {
+
+            const origemVerification = await this.processaOrigem(dto, projeto.origem_tipo);
+
+            origem_tipo = origemVerification.origem_tipo;
+            meta_id = origemVerification.meta_id;
+            iniciativa_id = origemVerification.iniciativa_id;
+            atividade_id = origemVerification.atividade_id;
+            origem_outro = origemVerification.origem_outro;
+            meta_codigo = origemVerification.meta_codigo;
+        }
         console.log(dto);
 
 
