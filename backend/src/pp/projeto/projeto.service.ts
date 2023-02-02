@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -10,7 +10,18 @@ import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto } from './entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
+
+const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
+    Registrado: 'Registro',
+    Selecionado: 'Planejamento',
+    EmPlanejamento: 'Planejamento',
+    Planejado: 'Planejamento',
+    Validado: 'Acompanhamento',
+    EmAcompanhamento: 'Acompanhamento',
+    Suspenso: 'Registro',
+    Fechado: 'Encerramento'
+} as const;
 
 @Injectable()
 export class ProjetoService {
@@ -175,8 +186,8 @@ export class ProjetoService {
                     objetivo: '',
                     objeto: '',
                     publico_alvo: '',
-                    fase: 'Registro',
                     status: 'Registrado',
+                    fase: StatusParaFase['Registrado'],
                 },
                 select: { id: true },
             });
@@ -279,16 +290,28 @@ export class ProjetoService {
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
-        if (user && !user.hasSomeRoles(['Projeto.administrador'])) {
-            // TODO verificar a permissão do "user",
-            // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
-            // usar campo readonly, pq há chamadas para essa função quando há escritas
-        }
 
-        const projetoRow = await this.prisma.projeto.findFirstOrThrow({
+        const permissoes: ProjetoPermissoesDto = {
+            acao_arquivar: false,
+            acao_restaurar: false,
+            acao_iniciar_planejamento: false,
+            acao_finalizar_planejamento: false,
+            acao_validar: false,
+            acao_iniciar: false,
+            acao_suspender: false,
+            acao_reiniciar: false,
+            acao_cancelar: false,
+            acao_terminar: false,
+            campo_premissas: false,
+            campo_restricoes: false,
+        };
+
+
+        const projeto = await this.prisma.projeto.findFirstOrThrow({
             where: { id: id, removido_em: null },
             select: {
                 id: true,
+                arquivado: true,
                 origem_tipo: true,
                 meta_id: true,
                 iniciativa_id: true,
@@ -379,9 +402,24 @@ export class ProjetoService {
             },
         });
 
+        // se o projeto está arquivado, não podemos arquivar novamente
+        // mas podemos restaurar (retornar para o status e fase anterior)
+        if (projeto.arquivado == true) {
+            permissoes.acao_restaurar = true;
+        } else {
+            permissoes.acao_arquivar = true;
+        }
+
+        if (user && !user.hasSomeRoles(['Projeto.administrador'])) {
+            // TODO verificar a permissão do "user",
+            // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
+            // usar campo readonly, pq há chamadas para essa função quando há escritas
+        }
+
         return {
-            ...projetoRow,
-            orgaos_participantes: projetoRow.orgaos_participantes.map(o => {
+            ...projeto,
+            permissoes: permissoes,
+            orgaos_participantes: projeto.orgaos_participantes.map(o => {
                 return {
                     id: o.orgao.id,
                     sigla: o.orgao.sigla,
@@ -620,7 +658,7 @@ export class ProjetoService {
             }
         });
 
-        return {id}
+        return { id }
     }
 
     async restore(id: number, user: PessoaFromJwt) {
@@ -632,7 +670,7 @@ export class ProjetoService {
                 arquivado_em: null,
             },
         });
-        return {id};
+        return { id };
     }
 
     async append_document(projetoId: number, createPdmDocDto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
