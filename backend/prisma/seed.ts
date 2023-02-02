@@ -244,6 +244,11 @@ const PerfilAcessoConfig: {
             privilegios: false
         },
         {
+            nome: 'Administrador de Portfolio',
+            descricao: '',
+            privilegios: false
+        },
+        {
             nome: 'Administrador Geral',
             descricao: 'Administrador Geral - Todas as permissões do sistema, exceto regras de negocio',
             privilegios: [
