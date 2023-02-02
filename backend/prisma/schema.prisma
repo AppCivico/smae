@@ -2137,7 +2137,7 @@ model Projeto {
     descricao        String
     objeto           String
     objetivo         String
-    origem_tipo      ProjetoOrigemTipo
+    origem_tipo      ProjetoOrigemTipo @default(Outro)
     origem_eh_pdm    Boolean   @default(false)
     origem_outro     String?
     meta_codigo      String?
