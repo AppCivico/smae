@@ -2132,7 +2132,6 @@ model Projeto {
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
     codigo           String? // abre apenas depois de priorizado
-    resumo           String // campo livre
     previsao_custo   Float?
     nome             String
     descricao        String
@@ -2155,8 +2154,9 @@ model Projeto {
     eh_prioritario Boolean       @default(false)
 
     // Fase=Registro
+    resumo            String // campo livre
     escopo            String?
-    principais_etapas String
+    principais_etapas String // read-only apos Fase=Registro
 
     // Fase=Planejamento
     nao_escopo String?
@@ -2235,15 +2235,16 @@ model Projeto {
     realizado_termino DateTime?
     realizado_custo   Float?
 
-    premissas             ProjetoPremissa[]
-    restricoes            ProjetoRestricao[]
-    licoes_aprendidas     ProjetoLicaoAprendida[]
-    recursos              ProjetoFonteRecurso[]
-    documentos            ProjetoDocumento[]
-    tarefas               Tarefa[]
-    ProjetoRisco          ProjetoRisco[]
-    ProjetoAcompanhamento ProjetoAcompanhamento[]
-    orgaos_participantes  ProjetoOrgaoParticipante[]
+    premissas             ProjetoPremissa[] // depois de selecionado
+    restricoes            ProjetoRestricao[] // depois de selecionado
+
+    licoes_aprendidas     ProjetoLicaoAprendida[] // só na execucao
+    recursos              ProjetoFonteRecurso[] // sempre
+    documentos            ProjetoDocumento[] // sempre
+    tarefas               Tarefa[] // depois de EmPlanejamento
+    ProjetoRisco          ProjetoRisco[]//  depois de EmPlanejamento
+    ProjetoAcompanhamento ProjetoAcompanhamento[] // depois de EmAcompanhamento
+    orgaos_participantes  ProjetoOrgaoParticipante[] // sempre
 
     removido_em        DateTime?
     removido_por       Int?
