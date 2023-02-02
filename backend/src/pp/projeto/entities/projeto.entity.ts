@@ -2,6 +2,7 @@ import { ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { TipoDocumento } from '../../../tipo-documento/entities/tipo-documento.entity';
 
 export class ProjetoDto {
@@ -10,6 +11,7 @@ export class ProjetoDto {
     status: ProjetoStatus;
     orgao_responsavel: IdSiglaDescricao | null;
     meta: IdCodTituloDto | null;
+    portfolio: IdTituloDto
 }
 
 export class ListProjetoDto {
@@ -51,9 +53,9 @@ export class ProjetoDetailDto {
 
     // responsaveis_no_orgao_gestor:
 
-//    permissoes: {
-//        arquivar: boolean,
-//        premissas: boolean
+    //    permissoes: {
+    //        arquivar: boolean,
+    //        premissas: boolean
     //}
 }
 

@@ -193,6 +193,9 @@ export class ProjetoService {
                         descricao: true,
                     },
                 },
+                portfolio: {
+                    select: { id: true, titulo: true }
+                }
             },
         });
 
@@ -215,6 +218,7 @@ export class ProjetoService {
                 status: row.status,
                 meta: meta,
                 orgao_responsavel: row.orgao_responsavel ? { ...row.orgao_responsavel } : null,
+                portfolio: row.portfolio
             });
         }
 
@@ -361,7 +365,7 @@ export class ProjetoService {
                     iniciativa_id,
                     origem_outro,
                     meta_codigo,
-                    nome:  dto.nome,
+                    nome: dto.nome,
                     resumo: dto.resumo,
                     codigo: dto.codigo,
                     descricao: dto.descricao,
