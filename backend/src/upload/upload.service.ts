@@ -114,9 +114,9 @@ export class UploadService {
 
     private checkShapeFile(file: Express.Multer.File) {
         if (/\.zip$/i.test(file.originalname) == false || file.mimetype != 'application/zip') {
-            throw new HttpException('O arquivo precisa ser do tipo arquivo ZIP', 400);
+            throw new HttpException(`O arquivo precisa ser do tipo arquivo ZIP\nRecebido mimetype=${file.mimetype}, originalname=${file.originalname}`, 400);
         } else if (file.size > 2097152) {
-            throw new HttpException('O arquivo ZIP precisa ser menor que 2 Megabytes', 400);
+            throw new HttpException(`O arquivo ZIP precisa ser menor que 2 Megabytes.\n Recebido ${file.size} bytes`, 400);
         }
 
         let totalSize = 0;
