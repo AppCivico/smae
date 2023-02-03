@@ -77,8 +77,8 @@ const portfolio = object({
 });
 
 const região = object().shape({
-  nivel: number(),
-  parente_id: number().nullable(),
+  nivel: number().required(),
+  parente_id: number().nullable().when('nivel', (nivel, field) => (nivel > 1 ? field.required('Esse campo é obrigatório para o nível maior do que 1') : field)),
   descricao: string().required('Preencha a descrição'),
   upload_shapefile: string().nullable(),
 });
