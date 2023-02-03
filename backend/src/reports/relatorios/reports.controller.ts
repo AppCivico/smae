@@ -1,10 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import AdmZip from 'adm-zip';
-
 import { Response } from 'express';
 import { DateTime } from 'luxon';
-
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { ApiPaginatedResponse } from '../../auth/decorators/paginated.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -16,6 +13,7 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { ReportsService } from './reports.service';
+const AdmZip = require("adm-zip");
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
@@ -23,7 +21,7 @@ const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 @ApiTags('Relatórios')
 @Controller('relatorios')
 export class ReportsController {
-    constructor(private readonly reportsService: ReportsService, private readonly uploadService: UploadService) {}
+    constructor(private readonly reportsService: ReportsService, private readonly uploadService: UploadService) { }
 
     @Post()
     @ApiBearerAuth('access-token')
