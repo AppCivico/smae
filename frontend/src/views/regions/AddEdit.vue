@@ -154,6 +154,9 @@ async function uploadShapeFile(e) {
 
   curfile.loading = null;
 }
+
+singleTempRegions.value.nivel = level;
+singleTempRegions.value.parente_id = parentID;
 </script>
 <template>
   <div class="flex spacebetween center mb2">
