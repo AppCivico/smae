@@ -23,6 +23,11 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Fechado: 'Encerramento'
 } as const;
 
+export class ProjetoOrgaoParticipante {
+    projeto_id: number
+    orgao_id: number
+}
+
 @Injectable()
 export class ProjetoService {
     constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) { }
@@ -526,24 +531,14 @@ export class ProjetoService {
             }
         }
 
-        // aqui tem que prestar atenção, pq se não enviar o campo, não deve ser feito update
-        // se enviar o origem_tipo como undefined (ou seja, se ele não existir) todos esses campos aqui precisam ficar
-        // necessariamente undefined, pro prisma não rodar o update em nenhum deles
-
         let origem_tipo: ProjetoOrigemTipo | undefined;
-        let meta_id: number | null;
-        let iniciativa_id: number | null;
-        let atividade_id: number | null;
-        let origem_outro: string | null;
-        let meta_codigo: string | null;
+        let meta_id: number | null | undefined;
+        let iniciativa_id: number | null | undefined;
+        let atividade_id: number | null | undefined;
+        let origem_outro: string | null | undefined;
+        let meta_codigo: string | null | undefined;
 
-        if (dto.origem_tipo ||
-            dto.meta_id ||
-            dto.iniciativa_id ||
-            dto.atividade_id ||
-            dto.origem_outro ||
-            dto.meta_codigo) {
-
+        if ("origem_tipo" in dto) {
             const origemVerification = await this.processaOrigem(dto, projeto.origem_tipo);
 
             origem_tipo = origemVerification.origem_tipo;
@@ -554,10 +549,6 @@ export class ProjetoService {
             meta_codigo = origemVerification.meta_codigo;
         }
 
-
-        console.log(dto);
-
-
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
@@ -565,7 +556,8 @@ export class ProjetoService {
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
             // TODO se entrar o novo status, tbm precisa chamar um export do relatório
-
+            
+            await prismaTx.projetoOrgaoParticipante.deleteMany({where: {projeto_id: projetoId}});
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
@@ -594,6 +586,14 @@ export class ProjetoService {
                     // por padrão undefined, não faz nenhuma alteração
                     status: novoStatus,
                     fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
+
+                    orgaos_participantes: {
+                        createMany: {
+                            data: dto.orgaos_participantes!.map(o => {
+                                return { orgao_id: o };
+                            }),
+                        },
+                    },
                 }
             })
         });
@@ -817,4 +817,5 @@ export class ProjetoService {
             },
         });
     }
+
 }
