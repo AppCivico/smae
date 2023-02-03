@@ -1,6 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import AdmZip from 'adm-zip';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
@@ -10,6 +9,7 @@ import { TipoUpload } from './entities/tipo-upload';
 import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
+const AdmZip = require("adm-zip");
 
 interface TokenResponse {
     stream: NodeJS.ReadableStream;
