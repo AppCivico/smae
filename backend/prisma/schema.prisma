@@ -2134,11 +2134,10 @@ model Projeto {
     codigo           String? // abre apenas depois de priorizado
     previsao_custo   Float?
     nome             String
-    descricao        String
     objeto           String
     objetivo         String
     origem_tipo      ProjetoOrigemTipo @default(Outro)
-    origem_eh_pdm    Boolean   @default(false)
+    origem_eh_pdm    Boolean           @default(false)
     origem_outro     String?
     meta_codigo      String?
     publico_alvo     String
@@ -2179,6 +2178,7 @@ model Projeto {
 
     // fornecido pelo user
     data_aprovacao DateTime? @db.Date
+    data_revisao   DateTime? @db.Date
     versao         String?
 
     registrado_em    DateTime
@@ -2236,14 +2236,14 @@ model Projeto {
     realizado_termino DateTime?
     realizado_custo   Float?
 
-    premissas             ProjetoPremissa[] // depois de selecionado
-    restricoes            ProjetoRestricao[] // depois de selecionado
+    premissas  ProjetoPremissa[] // depois de selecionado
+    restricoes ProjetoRestricao[] // depois de selecionado
 
     licoes_aprendidas     ProjetoLicaoAprendida[] // só na execucao
     recursos              ProjetoFonteRecurso[] // sempre
     documentos            ProjetoDocumento[] // sempre
     tarefas               Tarefa[] // depois de EmPlanejamento
-    ProjetoRisco          ProjetoRisco[]//  depois de EmPlanejamento
+    ProjetoRisco          ProjetoRisco[] //  depois de EmPlanejamento
     ProjetoAcompanhamento ProjetoAcompanhamento[] // depois de EmAcompanhamento
     orgaos_participantes  ProjetoOrgaoParticipante[] // sempre
 
