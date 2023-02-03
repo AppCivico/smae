@@ -393,8 +393,8 @@ export class PdmService {
         );
     }
 
-    private async verificaCiclosPendentes(today: DateYMD) {
-        console.log(today);
+    private async verificaCiclosPendentes(hoje: DateYMD) {
+        console.log(hoje);
         this.logger.debug(`Verificando ciclos físicos com tick faltando...`);
 
         const cf = await this.prisma.cicloFisico.findFirst({
@@ -448,8 +448,8 @@ export class PdmService {
             return false;
         }
 
-        const mesCorrente = today.substring(0, 8) + '01';
-        this.logger.log(`Executando ciclo ${JSON.stringify(cf)} mesCorrente=${mesCorrente}`);
+        const mesCorrente = hoje.substring(0, 8) + '01';
+        this.logger.log(`Executando ciclo ${JSON.stringify(cf)} mesCorrente=${mesCorrente}, hoje=${hoje}`);
 
         try {
             if (cf.acordar_ciclo_errmsg) {
@@ -466,7 +466,7 @@ export class PdmService {
                 if (
                     (
                         (!faseAtual && Date2YMD.toString(cf.data_ciclo) < mesCorrente) ||
-                        (faseAtual && Date2YMD.toString(faseAtual.data_fim) < mesCorrente)
+                        (faseAtual && Date2YMD.toString(faseAtual.data_fim) < hoje)
                     ) && cf.ativo) {
                     await this.inativarCiclo(cf);
                 } else if (
@@ -475,9 +475,9 @@ export class PdmService {
                         ||
                         (faseAtual && Date2YMD.toString(faseAtual.data_inicio).substring(0, 7) === mesCorrente.substring(0, 7))
                     ) && !cf.ativo) {
-                    await this.ativarCiclo(cf, today);
+                    await this.ativarCiclo(cf, hoje);
                 } else {
-                    await this.verificaFaseAtual(cf, today);
+                    await this.verificaFaseAtual(cf, hoje);
                 }
             } else {
                 this.logger.warn('PDM foi desativado, não há mais ciclos até a proxima ativação');
@@ -656,6 +656,9 @@ export class PdmService {
                         acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
                     },
                 });
+
+                this.logger.log(`Recalculando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
+                await prismaTxn.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
             }
         });
     }
