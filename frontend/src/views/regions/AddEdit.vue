@@ -126,10 +126,10 @@ async function checkDelete(idDaRegião) {
     }
   }, 'Remover');
 }
-function removeshape() {
+function removeShapeFile() {
   curfile.name = '';
   curfile.loading = null;
-  singleTempRegions.value.upload_shapefile = curfile.name;
+  singleTempRegions.value.upload_shapefile = '';
 }
 async function uploadShapeFile(e) {
   curfile.name = '';
@@ -144,7 +144,7 @@ async function uploadShapeFile(e) {
     const u = await requestS.upload(`${baseUrl}/upload`, formData);
 
     if (u.upload_token) {
-      curfile.name = u.upload_token;
+      curfile.name = files[0].name;
       singleTempRegions.value.upload_shapefile = curfile.name;
     }
   } catch (erro) {
@@ -239,7 +239,7 @@ async function uploadShapeFile(e) {
 
           <div v-else-if="curfile.name">
             <span>{{ curfile?.name?.slice(0,30) }}</span> <a
-              :onclick="removeshape"
+              :onclick="removeShapeFile"
               class="addlink"
             ><svg
               width="20"
@@ -276,10 +276,10 @@ async function uploadShapeFile(e) {
   <template v-if="singleTempRegions?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="singleTempRegions?.error||error">
+  <template v-if="singleTempRegions?.error || error">
     <div class="error p1">
       <div class="error-msg">
-        {{ singleTempRegions.error??error }}
+        {{ singleTempRegions.error ?? error }}
       </div>
     </div>
   </template>
