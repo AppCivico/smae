@@ -181,8 +181,8 @@ export class ProjetoService {
                     principais_etapas: dto.principais_etapas,
                     versao: dto.versao,
                     data_aprovacao: dto.data_aprovacao,
+                    data_revisao: dto.data_revisao,
 
-                    descricao: '',
                     objetivo: '',
                     objeto: '',
                     publico_alvo: '',
