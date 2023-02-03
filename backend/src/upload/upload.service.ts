@@ -1,15 +1,15 @@
-import { ReadStream } from 'fs';
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import AdmZip from 'adm-zip';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { StorageService } from './storage-service';
 import { CreateUploadDto } from './dto/create-upload.dto';
-import { Upload } from './entities/upload.entity';
-import { JwtService } from '@nestjs/jwt';
-import { UploadBody } from './entities/upload.body';
 import { DownloadBody } from './entities/download.body';
 import { Download } from './entities/download.entity';
 import { TipoUpload } from './entities/tipo-upload';
+import { UploadBody } from './entities/upload.body';
+import { Upload } from './entities/upload.entity';
+import { StorageService } from './storage-service';
 
 interface TokenResponse {
     stream: NodeJS.ReadableStream;
@@ -22,7 +22,7 @@ const UPLOAD_AUD = 'upload';
 
 @Injectable()
 export class UploadService {
-    constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService, private readonly storage: StorageService) {}
+    constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService, private readonly storage: StorageService) { }
 
     async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File, ip: string) {
         if (file.size < 1) {
@@ -47,11 +47,7 @@ export class UploadService {
             }
         }
         if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
-            if (/\.zip$/i.test(file.originalname) == false || file.mimetype != 'application/zip') {
-                throw new HttpException('O arquivo de shapefile precisa ser um arquivo ZIP', 400);
-            } else if (file.size > 2097152) {
-                throw new HttpException('O arquivo de shapefile precisa ser menor que 2 Megabytes', 400);
-            }
+            this.checkShapeFile(file);
         } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
             if (file.size > 204800) {
                 throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
@@ -113,6 +109,47 @@ export class UploadService {
         });
 
         return arquivoId;
+    }
+
+    private checkShapeFile(file: Express.Multer.File) {
+        if (/\.zip$/i.test(file.originalname) == false || file.mimetype != 'application/zip') {
+            throw new HttpException('O arquivo precisa ser do tipo arquivo ZIP', 400);
+        } else if (file.size > 2097152) {
+            throw new HttpException('O arquivo ZIP precisa ser menor que 2 Megabytes', 400);
+        }
+
+        let totalSize = 0;
+        let hasShp = false, hasDbf = false, hasShx = false, hasCpg = false;
+        try {
+            const zip = new AdmZip(file.buffer);
+            const entries = zip.getEntries();
+
+            entries.forEach(entry => {
+                totalSize += entry.header.size;
+                const entryName = entry.entryName.toLocaleLowerCase();
+                if (entryName.endsWith('.shp')) hasShp = true;
+                if (entryName.endsWith('.dbf')) hasDbf = true;
+                if (entryName.endsWith('.shx')) hasShx = true;
+                if (entryName.endsWith('.cpg')) hasCpg = true;
+            });
+        } catch (error) {
+            throw new HttpException(`Erro ao abrir arquivo zip: ${error}`, 400);
+        }
+
+        if (!hasShp || !hasDbf || !hasShx || !hasCpg) {
+            let missingExtensions = [];
+            if (!hasShp) missingExtensions.push('.shp');
+            if (!hasDbf) missingExtensions.push('.dbf');
+            if (!hasShx) missingExtensions.push('.shx');
+            if (!hasCpg) missingExtensions.push('.cpg');
+
+            const errorMessage = 'O arquivo zip não contém os arquivos necessários: ' + missingExtensions.join(', ');
+            throw new HttpException(errorMessage, 400);
+        } else if (totalSize >= 100 * 1024 * 1024) {
+            const errorMessage = 'O tamanho total do arquivo zip após a descompactação excede 100 MB. Isso pode travar os leitores em navegador.';
+            throw new HttpException(errorMessage, 400);
+        }
+
     }
 
     async uploadReport(category: string, filename: string, buffer: Buffer, mimetype: string | undefined, user: PessoaFromJwt) {

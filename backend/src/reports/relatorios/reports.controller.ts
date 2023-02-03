@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-const AdmZip = require('adm-zip');
+import AdmZip from 'adm-zip';
 
 import { Response } from 'express';
 import { DateTime } from 'luxon';
