@@ -98,6 +98,9 @@ export class CreateOrcamentoRealizadoDto {
     @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
 
+    @IsOptional()
+    @IsString()
+    @Matches(/^\d{4}$/, { message: 'Valor do ano da nota' })
     nota_ano?: number;
 
     @ValidateNested({ each: true })

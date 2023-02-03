@@ -416,7 +416,7 @@ export class OrcamentoRealizadoService {
             const notaDb = await this.prisma.dotacaoProcessoNota.findUnique({
                 where: {
                     ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
-                        ano_referencia: dto.nota_ano!,
+                        ano_referencia: +dto.nota_ano!,
                         dotacao: dto.dotacao,
                         dotacao_processo: processo,
                         dotacao_processo_nota: nota_empenho,
