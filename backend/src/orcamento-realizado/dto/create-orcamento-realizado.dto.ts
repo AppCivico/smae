@@ -98,6 +98,8 @@ export class CreateOrcamentoRealizadoDto {
     @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
 
+    nota_ano?: number;
+
     @ValidateNested({ each: true })
     @Type(() => CreateOrcamentoRealizadoItemDto)
     @ArrayMinSize(1)
