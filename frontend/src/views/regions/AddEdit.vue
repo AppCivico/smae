@@ -131,7 +131,7 @@ function removeshape() {
   curfile.loading = null;
   singleTempRegions.value.upload_shapefile = curfile.name;
 }
-async function uploadshape(e) {
+async function uploadShapeFile(e) {
   curfile.name = '';
   curfile.loading = true;
 
@@ -140,16 +140,21 @@ async function uploadshape(e) {
   formData.append('tipo', 'SHAPEFILE');
   formData.append('arquivo', files[0]);
 
-  const u = await requestS.upload(`${baseUrl}/upload`, formData);
-  if (u.upload_token) {
-    curfile.name = u.upload_token;
-    curfile.loading = null;
-    singleTempRegions.value.upload_shapefile = curfile.name;
+  try {
+    const u = await requestS.upload(`${baseUrl}/upload`, formData);
+
+    if (u.upload_token) {
+      curfile.name = u.upload_token;
+      singleTempRegions.value.upload_shapefile = curfile.name;
+    }
+  } catch (erro) {
+    curfile.name = '';
+    singleTempRegions.value.upload_shapefile = '';
   }
+
+  curfile.loading = null;
 }
-
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h2>{{ title1 }} {{ title2 }}</h2>
@@ -218,7 +223,7 @@ async function uploadshape(e) {
               id="shapefile"
               type="file"
               accept=".kml,.geojson,.json,.shp,.zip"
-              :onchange="uploadshape"
+              :onchange="uploadShapeFile"
               style="display:none;"
             ></label>
 
