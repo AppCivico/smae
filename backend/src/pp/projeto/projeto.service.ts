@@ -323,9 +323,11 @@ export class ProjetoService {
                 status: true,
                 resumo: true,
                 codigo: true,
-                descricao: true,
                 objeto: true,
                 objetivo: true,
+                data_aprovacao: true,
+                data_revisao: true,
+                versao: true,
                 publico_alvo: true,
                 previsao_inicio: true,
                 previsao_custo: true,
@@ -340,7 +342,6 @@ export class ProjetoService {
                 nao_escopo: true,
                 principais_etapas: true,
                 responsaveis_no_orgao_gestor: true,
-                versao: true,
 
                 orgao_gestor: {
                     select: {
@@ -521,7 +522,6 @@ export class ProjetoService {
                     nome: dto.nome,
                     resumo: dto.resumo,
                     codigo: dto.codigo,
-                    descricao: dto.descricao,
                     objeto: dto.objeto,
                     objetivo: dto.objetivo,
                     publico_alvo: dto.publico_alvo,
@@ -538,7 +538,8 @@ export class ProjetoService {
                     principais_etapas: dto.principais_etapas,
                     responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
                     versao: dto.versao,
-
+                    data_aprovacao: dto.data_aprovacao,
+                    data_revisao: dto.data_revisao,
                     // por padrão undefined, não faz nenhuma alteração
                     status: novoStatus,
                     fase: novoStatus ? StatusParaFase[novoStatus] : undefined,

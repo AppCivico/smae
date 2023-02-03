@@ -43,7 +43,6 @@ export class ProjetoDetailDto {
     status: ProjetoStatus;
     resumo: string;
     codigo: string | null;
-    descricao: string;
     objeto: string;
     objetivo: string;
     publico_alvo: string | null;
@@ -69,6 +68,10 @@ export class ProjetoDetailDto {
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;
     meta_codigo: string | null
+
+    data_aprovacao: Date | null
+    data_revisao: Date | null
+    versao: string | null
 
     // responsaveis_no_orgao_gestor:
 
