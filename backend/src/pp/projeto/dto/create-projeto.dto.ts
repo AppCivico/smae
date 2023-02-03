@@ -186,6 +186,17 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     data_aprovacao: Date | null;
 
+
+    /**
+     * data_revisao
+     * @example "2022-01-20"
+     */
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data_revisao: Date | null;
+
+
 }
 
 export class CreateProjetoDocumentDto {
