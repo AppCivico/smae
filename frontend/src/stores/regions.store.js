@@ -88,7 +88,10 @@ export const useRegionsStore = defineStore({
         descricao: params.descricao,
       };
       if (params.upload_shapefile)m.upload_shapefile = params.upload_shapefile;
-      if (await requestS.post(`${baseUrl}/regiao`, m)) return true;
+      if (await requestS.post(`${baseUrl}/regiao`, m)) {
+        this.getAll();
+        return true;
+      }
       return false;
     },
     async update(id, params) {
