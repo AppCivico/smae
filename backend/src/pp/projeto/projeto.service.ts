@@ -133,8 +133,32 @@ export class ProjetoService {
             responsaveis_no_orgao_gestor,
         };
     }
-
+    /**
+     *
+     * orgao_gestor_id tem que ser um dos órgãos que fazem parte do portfólio escolhido pro projeto ¹,
+     * esse campo é required (por enquanto eu estou deixando mudar, não está afetando tanta coisa assim a mudança dele)
+     * responsaveis_no_orgao_gestor é a lista de pessoas dentro do órgão escolhido, que tem a permissão SMAE.gestor_de_projeto² e
+     * quem for escolhido aqui poderá visualizar o projeto mesmo não sendo um Projeto.administrador, esse campo pode ficar vazio,
+     * pois na criação os PMO não sabem exatamente quem vai acompanhar o projeto
+     *
+     * Esses dois campos acima são referentes as pessoas que estão administrando o projeto, não necessariamente estão envolvidas no projeto.
+     *
+     *
+     * orgaos_participantes são a lista dos órgãos que participam do projeto em si
+     * (por exemplo, se for pra construir escola em Itaquera, um dos órgãos participantes pode ser a "Subprefeitura Itaquera"³ e
+     * mais um órgão "Secretaria Municipal de Educação")
+     *
+     * E o órgão responsável, tem que escolher a partir do órgão pra ser o responsável,
+     * e dentro desse órgão responsável uma pessoa (e apenas uma) pra cuidar do registro e planejamento desse projeto,
+     * essa pessoa é quem tem a permissão SMAE.colaborador_de_projeto
+     * ¹: as pessoas que fazem parte desse órgão (e tiver a permissão de SMAE.gestor_de_projeto) e gestoras, poderão visualizar o projeto, mesmo não fazendo parte do mesmo.
+     * ²: tem em algum card aqui os novos filtros que entrou pra essa parte do sistema, mas ta tudo nos filtros do GET /pessoa Swagger UI
+     * ³: chute total, pode ser totalmente diferente o uso ou a secretaria
+     * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
+     * */
     async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
+        // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(user);
 
         const portfolio = portfolios.filter(r => r.id == dto.portfolio_id)[0];
@@ -201,6 +225,26 @@ export class ProjetoService {
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
 
+        let permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
+        let orgao_id: undefined | number = undefined;
+        if (!user.hasSomeRoles(['Projeto.administrador'])) {
+
+            if (user.hasSomeRoles(['SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto']) === false)
+                throw new HttpException('Necessário SMAE.gestor_de_projeto, SMAE.colaborador_de_projeto ou Projeto.administrador para listar os projetos', 400);
+
+            if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
+                permissionsSet.push({
+                    responsaveis_no_orgao_gestor: { has: user.id }
+                });
+            }
+
+            if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
+                permissionsSet.push({
+                    responsavel_id: user.id
+                });
+            }
+        }
+
         const rows = await this.prisma.projeto.findMany({
             where: {
                 removido_em: null,
@@ -208,6 +252,11 @@ export class ProjetoService {
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 arquivado: filters.arquivado,
                 status: filters.status,
+                AND: permissionsSet.length > 0 ? [
+                    {
+                        OR: permissionsSet
+                    }
+                ] : undefined,
             },
             select: {
                 id: true,
@@ -402,6 +451,28 @@ export class ProjetoService {
             },
         });
 
+        await this.calcPermissions(projeto, permissoes, user, readonly);
+
+        return {
+            ...projeto,
+            permissoes: permissoes,
+            orgaos_participantes: projeto.orgaos_participantes.map(o => {
+                return {
+                    id: o.orgao.id,
+                    sigla: o.orgao.sigla,
+                    descricao: o.orgao.descricao,
+                };
+            }),
+        };
+    }
+
+
+    private async calcPermissions(
+        projeto: { arquivado: boolean; status: ProjetoStatus; id: number; },
+        permissoes: ProjetoPermissoesDto,
+        user: PessoaFromJwt | undefined,
+        readonly: boolean
+    ) {
         // se o projeto está arquivado, não podemos arquivar novamente
         // mas podemos restaurar (retornar para o status e fase anterior)
         if (projeto.arquivado == true) {
@@ -415,8 +486,6 @@ export class ProjetoService {
             // TODO verificar a permissão do "user",
             // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
             // usar campo readonly, pq há chamadas para essa função quando há escritas
-
-
         }
 
         if (projeto.arquivado == false) {
@@ -427,21 +496,8 @@ export class ProjetoService {
                 permissoes.campo_codigo_liberado = true;
 
             if (userCanWrite) {
-
             }
         }
-
-        return {
-            ...projeto,
-            permissoes: permissoes,
-            orgaos_participantes: projeto.orgaos_participantes.map(o => {
-                return {
-                    id: o.orgao.id,
-                    sigla: o.orgao.sigla,
-                    descricao: o.orgao.descricao,
-                };
-            }),
-        };
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -466,6 +522,7 @@ export class ProjetoService {
                 });
                 if (countInUse)
                     throw new HttpException('codigo| Código informado já está em uso em outro projeto.', 400);
+
             }
         }
 
@@ -507,6 +564,7 @@ export class ProjetoService {
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
+            // TODO se entrar o novo status, tbm precisa chamar um export do relatório
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
