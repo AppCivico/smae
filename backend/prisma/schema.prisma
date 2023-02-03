@@ -2145,9 +2145,11 @@ model Projeto {
     previsao_termino DateTime?
     previsao_duracao Int?
 
-    inicio_real    DateTime?
-    termino_real   DateTime?
-    custo_real     Float?        @db.DoublePrecision
+    // calculado pelo cronograma
+    realizado_inicio  DateTime?
+    realizado_termino DateTime?
+    realizado_custo   Float?
+
     status         ProjetoStatus
     fase           ProjetoFase
     arquivado      Boolean       @default(false)
@@ -2219,22 +2221,6 @@ model Projeto {
     // quem migrou de EmExecucao para EmFechamento
     fechado_em  DateTime?
     fechado_por Int?
-
-    //[um dos:
-    //    origem: PDM(Sistema)
-    //        meta_id
-    //        iniciativa_id
-    //        atividade_id
-    //    origem: PDM(antigo)
-    //        meta_codigo {string}
-    //    origem: Ouros
-    //        origem_outro
-    //]
-
-    // calculado pelo cronograma
-    realizado_inicio  DateTime?
-    realizado_termino DateTime?
-    realizado_custo   Float?
 
     premissas  ProjetoPremissa[] // depois de selecionado
     restricoes ProjetoRestricao[] // depois de selecionado
