@@ -145,7 +145,7 @@ async function uploadShapeFile(e) {
 
     if (u.upload_token) {
       curfile.name = files[0].name;
-      singleTempRegions.value.upload_shapefile = curfile.name;
+      singleTempRegions.value.upload_shapefile = u.upload_token;
     }
   } catch (erro) {
     curfile.name = '';
