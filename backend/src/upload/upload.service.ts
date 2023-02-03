@@ -21,6 +21,14 @@ interface TokenResponse {
 const DOWNLOAD_AUD = 'dl';
 const UPLOAD_AUD = 'upload';
 
+const ZipContentTypes = [
+    'application/zip',
+    'multipart/x-zip',
+    'application/zip-compressed',
+    'application/x-zip-compressed',
+    'application/x-zip',
+];
+
 @Injectable()
 export class UploadService {
     constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService, private readonly storage: StorageService) { }
@@ -113,8 +121,8 @@ export class UploadService {
     }
 
     private checkShapeFile(file: Express.Multer.File) {
-        if (/\.zip$/i.test(file.originalname) == false || ['application/x-zip-compressed', 'application/zip'].includes(file.mimetype)) {
-            throw new HttpException(`O arquivo precisa ser do tipo arquivo ZIP\nRecebido mimetype=${file.mimetype}, originalname=${file.originalname}`, 400);
+        if (/\.zip$/i.test(file.originalname) == false || ZipContentTypes.includes(file.mimetype)) {
+            throw new HttpException(`O arquivo precisa ser do tipo arquivo ZIP\n\nRecebido mimetype=${file.mimetype}, aceito apenas ${ZipContentTypes.join(', ')}\nOriginal Name=${file.originalname}, aceito apenas .zip`, 400);
         } else if (file.size > 2097152) {
             throw new HttpException(`O arquivo ZIP precisa ser menor que 2 Megabytes.\n Recebido ${file.size} bytes`, 400);
         }
