@@ -54,10 +54,10 @@ function busca(e, item, g, label) {
       </ul>
     </div>
     <span
-      v-for="p in grupo.filter(x=>control.participantes.includes(x.id))"
+      v-for="p in grupo.filter((x) => control.participantes.includes(x.id))"
       :key="p.id"
       class="tagsmall"
-      @click="removeParticipante(control,p.id)"
+      @click="removeParticipante(control, p.id)"
     >{{ p[label] }}<svg
       width="12"
       height="12"
