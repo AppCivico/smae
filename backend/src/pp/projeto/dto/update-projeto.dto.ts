@@ -98,37 +98,26 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsString()
     publico_alvo?: string
 
-    @IsOptional()
-    @IsOnlyDate()
-    @Type(() => Date)
-    @ValidateIf((object, value) => value !== null)
-    inicio_real?: Date
 
-    @IsOptional()
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
-    @Min(0, { message: '$property| Custo precisa ser positivo' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
-    custo_real?: number
-
-    @IsOptional()
-    @IsOnlyDate()
-    @Type(() => Date)
-    @ValidateIf((object, value) => value !== null)
-    realizado_inicio?: Date
-
-    @IsOptional()
-    @IsOnlyDate()
-    @Type(() => Date)
-    @ValidateIf((object, value) => value !== null)
-    realizado_termino?: Date
-
-    @IsOptional()
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
-    @Min(0, { message: '$property| Custo precisa ser positivo' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
-    realizado_custo?: number
+    // esses campos serão updated apenas via sistema (pelas tarefas)
+    //    @IsOptional()
+    //    @IsOnlyDate()
+    //    @Type(() => Date)
+    //    @ValidateIf((object, value) => value !== null)
+    //    realizado_inicio?: Date
+    //
+    //    @IsOptional()
+    //    @IsOnlyDate()
+    //    @Type(() => Date)
+    //    @ValidateIf((object, value) => value !== null)
+    //    realizado_termino?: Date
+    //
+    //    @IsOptional()
+    //    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+    //    @Min(0, { message: '$property| Custo precisa ser positivo' })
+    //    @Transform((a: any) => (a.value === null ? null : +a.value))
+    //    @ValidateIf((object, value) => value !== null)
+    //    realizado_custo?: number
 
     @IsOptional()
     @IsString()

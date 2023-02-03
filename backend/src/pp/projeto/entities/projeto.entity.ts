@@ -50,11 +50,11 @@ export class ProjetoDetailDto {
     previsao_custo: number | null;
     previsao_duracao: number | null;
     previsao_termino: Date | null;
-    inicio_real: Date | null;
-    custo_real: number | null;
+
     realizado_inicio: Date | null;
     realizado_termino: Date | null;
     realizado_custo: number | null;
+
     escopo: string | null;
     nao_escopo: string | null;
     orgaos_participantes: IdSiglaDescricao[];
