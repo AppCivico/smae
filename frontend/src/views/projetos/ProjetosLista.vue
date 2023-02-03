@@ -34,7 +34,7 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.title || 'Projetos' }}</h1>
+    <h1>{{ route?.meta?.título || 'Projetos' }}</h1>
     <hr class="ml2 f1">
       <!--router-link
       :to="{ name: 'projetosCriar' }"
