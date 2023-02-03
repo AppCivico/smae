@@ -580,8 +580,6 @@ export class PainelService {
                 });
             });
 
-            console.log(existent_painel_conteudo_detalhes);
-
             const meta_indicador = await prisma.indicador.findMany({
                 where: {
                     meta_id: painel_conteudo.meta_id,
@@ -1375,7 +1373,7 @@ export class PainelService {
                         series: series_template.map(t => {
                             const series_for_period =
                                 d.variavel?.serie_variavel.filter(r => {
-                                    r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
+                                    return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
                                 }) || [];
 
                             return {
