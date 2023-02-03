@@ -1,4 +1,5 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import { portfolio as schema } from '@/consts/formSchemas';
 import {
@@ -77,7 +78,7 @@ if (props.portfolioId && !itemParaEdição.value) {
 
   <Form
     v-if="!erro && órgãosOrdenados?.length"
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -98,31 +99,22 @@ if (props.portfolioId && !itemParaEdição.value) {
         />
       </div>
     </div>
-    <div class="mb2">
-      <div class="label">
-        Órgãos <span class="tvermelho">*</span>
-      </div>
 
-      <label
-        v-for="item in órgãosOrdenados"
-        :key="item.id"
-        class="block mb1"
-        :class="{ 'error': errors.orgaos }"
-      >
-        <Field
-          name="orgaos"
-          class="inputcheckbox"
-          type="checkbox"
-          :value="item.id"
-          :checked="values.orgaos?.includes(item.id)"
-        /><span>{{ item.sigla }}</span> <small>- {{ item.descricao }}</small>
+    <div class="f1 mb2">
+      <label class="label">
+        Órgãos <span class="tvermelho">*</span>
       </label>
 
+      <AutocompleteField
+        name="orgaos"
+        :controlador="{ busca: '', participantes: values.orgaos || [] }"
+        :grupo="órgãosOrdenados"
+        label="sigla"
+      />
       <ErrorMessage
         name="orgaos"
         class="error-msg"
       />
-
       <div
         v-if="chamadasPendentes?.emFoco"
         class="spinner"
