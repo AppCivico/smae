@@ -35,7 +35,7 @@ if (!organs.length) {
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
-      <h1>{{ route?.meta?.title || 'Portfolios' }}</h1>
+      <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
       <hr class="ml2 f1">
       <router-link
         :to="{name: 'portfoliosCriar'}"
