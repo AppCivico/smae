@@ -212,8 +212,7 @@ async function uploadshape(e) {
              height="20"
            ><use xlink:href="#i_+" /></svg>
             <span>
-              Adicionar arquivo de shapefile ( formatos .KML, GeoJSON ou SHP até
-              2mb) *
+              Adicionar Arquivo .zip contendo os arquivos do shapefile (.shp, .dbf, .shx e .cpg) *
             </span>
             <input
               id="shapefile"
