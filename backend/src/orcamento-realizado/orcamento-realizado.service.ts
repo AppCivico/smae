@@ -3,7 +3,6 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
-import { OrcamentoPlanejado } from '../orcamento-planejado/entities/orcamento-planejado.entity';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto, UpdateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
@@ -58,7 +57,7 @@ export class OrcamentoRealizadoService {
                 const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
-                    mes_utilizado = await this.atualizaNotaEmpenho(prismaTxn, dto, dotacao, processo, nota_empenho, soma_valor_empenho, soma_valor_liquidado);
+                    mes_utilizado = await this.atualizaNotaEmpenho(prismaTxn, dotacao, processo, nota_empenho, soma_valor_empenho, soma_valor_liquidado);
                 } else if (processo) {
                     mes_utilizado = await this.atualizaProcesso(prismaTxn, dto, dotacao, processo, soma_valor_empenho, soma_valor_liquidado);
                 } else if (dotacao) {
@@ -149,7 +148,6 @@ export class OrcamentoRealizadoService {
                 if (orcRealizado.nota_empenho) {
                     await this.atualizaNotaEmpenho(
                         prismaTxn,
-                        { ano_referencia: orcRealizado.ano_referencia },
                         orcRealizado.dotacao,
                         orcRealizado.processo,
                         orcRealizado.nota_empenho,
@@ -266,7 +264,7 @@ export class OrcamentoRealizadoService {
         if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaEmpenho * 100) > Math.round(dotacaoTx.empenho_liquido * 100)) {
             throw new HttpException(
                 `Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para a Dotação ${dotacaoTx.empenho_liquido.toFixed(2)}.` +
-                    FRASE_FIM,
+                FRASE_FIM,
                 400,
             );
         }
@@ -318,7 +316,7 @@ export class OrcamentoRealizadoService {
         if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaEmpenho * 100) > Math.round(processoTx.empenho_liquido * 100)) {
             throw new HttpException(
                 `Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para o Processo (${processoTx.empenho_liquido.toFixed(2)}).` +
-                    FRASE_FIM,
+                FRASE_FIM,
                 400,
             );
         }
@@ -326,7 +324,7 @@ export class OrcamentoRealizadoService {
         if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaLiquido * 100) > Math.round(processoTx.valor_liquidado * 100)) {
             throw new HttpException(
                 `Novo valor de liquidado no SMAE (${novaSomaLiquido.toFixed(2)}) seria maior do que o valor liquidado para o Processo (${processoTx.valor_liquidado.toFixed(2)}).` +
-                    FRASE_FIM,
+                FRASE_FIM,
                 400,
             );
         }
@@ -341,9 +339,12 @@ export class OrcamentoRealizadoService {
         return mes_utilizado;
     }
 
+    private getAnoNota(nota_empenho: string): number {
+        return +(nota_empenho.split('/')[1]);
+    }
+
     private async atualizaNotaEmpenho(
         prismaTxn: Prisma.TransactionClient,
-        dto: PartialOrcamentoRealizadoDto,
         dotacao: string,
         processo: string | null,
         nota_empenho: string,
@@ -355,7 +356,12 @@ export class OrcamentoRealizadoService {
         const notaEmpenhoTx = await prismaTxn.dotacaoProcessoNota.findUnique({
             where: {
                 ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
-                    ano_referencia: dto.ano_referencia,
+                    // no serviço dotacao-processo-nota.service.ts é chamado com o ano da nota e não
+                    // realmente o ano da referencia
+                    // se for pra valores de consumo diferente pra mesma nota, então será necessário
+                    // alterar o frontend e também a validação na função valorRealizadoNotaEmpenho
+                    // vai deixar de existir
+                    ano_referencia: this.getAnoNota(nota_empenho),
                     dotacao: dotacao,
                     dotacao_processo: processo!,
                     dotacao_processo_nota: nota_empenho,
