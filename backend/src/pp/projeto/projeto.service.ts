@@ -75,7 +75,7 @@ export class ProjetoService {
 
             meta_id = ini.meta_id;
         } else if (meta_id !== null) {
-            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
+            await this.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
         }
 
         if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
