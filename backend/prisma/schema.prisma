@@ -178,6 +178,14 @@ model Pessoa {
     ppSelecionado     Projeto[] @relation("ppSelecionado")
     ppEm_planejamento Projeto[] @relation("ppEm_planejamento")
     ppArquivado       Projeto[] @relation("ppArquivado")
+    ppSuspenso        Projeto[] @relation("ppSuspenso")
+    ppRestaurou       Projeto[] @relation("ppRestaurou")
+    ppValidado        Projeto[] @relation("ppValidado")
+    ppFinalizouPlan   Projeto[] @relation("ppFinalizouPlan")
+    ppCancelou        Projeto[] @relation("ppCancelou")
+    ppReiniciou       Projeto[] @relation("ppReiniciou")
+    ppIniciou         Projeto[] @relation("ppIniciou")
+    ppTerminou        Projeto[] @relation("ppTerminou")
 
     @@index([email])
     @@map("pessoa")
@@ -2203,24 +2211,41 @@ model Projeto {
     pessoaQArquivou Pessoa?   @relation("ppArquivado", fields: [arquivado_por], references: [id])
 
     // quem suspendeu (vindo do EmExecucao indo pro EmSuspensao)
-    suspenso_em  DateTime?
-    suspenso_por Int?
+    suspenso_em      DateTime?
+    suspenso_por     Int?
+    pessoaQSuspendeu Pessoa?   @relation("ppSuspenso", fields: [suspenso_por], references: [id])
+
+    restaurado_em    DateTime?
+    restaurado_por   Int?
+    pessoaQRestaurou Pessoa?   @relation("ppRestaurou", fields: [restaurado_por], references: [id])
+
+    validado_em     DateTime?
+    validado_por    Int?
+    pessoaQValidado Pessoa?   @relation("ppValidado", fields: [validado_por], references: [id])
+
+    finalizou_planejamento_em  DateTime?
+    finalizou_planejamento_por Int?
+    pessoaQFinalizouPlan       Pessoa?   @relation("ppFinalizouPlan", fields: [finalizou_planejamento_por], references: [id])
 
     // quem migrou de EmSuspensao indo EmFechamento
-    cancelado_em  DateTime?
-    cancelado_por Int?
+    cancelado_em    DateTime?
+    cancelado_por   Int?
+    pessoaQCancelou Pessoa?   @relation("ppCancelou", fields: [cancelado_por], references: [id])
 
     // quem migrou de EmSuspensao indo EmExecucao
-    reiniciado_em  DateTime?
-    reiniciado_por Int?
+    reiniciado_em    DateTime?
+    reiniciado_por   Int?
+    pessoaQReiniciou Pessoa?   @relation("ppReiniciou", fields: [reiniciado_por], references: [id])
 
     // quem migrou de EmPlanejamento para EmExecucao
-    iniciado_em  DateTime?
-    iniciado_por Int?
+    iniciado_em    DateTime?
+    iniciado_por   Int?
+    pessoaQIniciou Pessoa?   @relation("ppIniciou", fields: [iniciado_por], references: [id])
 
     // quem migrou de EmExecucao para EmFechamento
-    fechado_em  DateTime?
-    fechado_por Int?
+    terminado_em    DateTime?
+    terminado_por   Int?
+    pessoaQTerminou Pessoa?   @relation("ppTerminou", fields: [terminado_por], references: [id])
 
     premissas  ProjetoPremissa[] // depois de selecionado
     restricoes ProjetoRestricao[] // depois de selecionado
