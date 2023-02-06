@@ -27,7 +27,7 @@ export class ProjetoController {
     @Get()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
         return { linhas: await this.projetoService.findAll(filters, user) };
     }
@@ -35,7 +35,7 @@ export class ProjetoController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async findOne(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
         return await this.projetoService.findOne(+id, user, true);
     }
@@ -43,7 +43,7 @@ export class ProjetoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async update(@Param('id') id: string, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.update(+id, updateProjetoDto, user);
     }
@@ -57,22 +57,6 @@ export class ProjetoController {
     async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
         await this.projetoService.remove(+id, user);
         return '';
-    }
-
-    @Post(':id/arquivar')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
-    async archive(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.projetoService.archive(params.id , user);
-    }
-
-    @Post(':id/desarquivar')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
-    async restore(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.projetoService.restore(params.id , user);
     }
 
     @Post(':id/documento')
