@@ -25,10 +25,7 @@ const portfolioStore = usePortfolioStore();
 const { chamadasPendentes, erro, portfoliosPorId } = storeToRefs(portfolioStore);
 
 const ÓrgãosStore = useOrgansStore();
-
-const órgãosOrdenados = computed(() => (Array.isArray(ÓrgãosStore?.organs)
-  ? [...ÓrgãosStore.organs].sort((a, b) => a.sigla?.localeCompare(b.sigla))
-  : []));
+const { órgãosOrdenados } = storeToRefs(ÓrgãosStore);
 
 const itemParaEdição = computed(() => (props?.portfolioId
   && portfoliosPorId.value?.[props.portfolioId]
