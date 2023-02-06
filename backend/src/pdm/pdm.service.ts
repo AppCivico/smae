@@ -463,6 +463,10 @@ export class PdmService {
             if (cf.pdm.ativo) {
                 const faseAtual = cf.CicloFaseAtual;
 
+                // logica ta quebrada
+                // isso ta fazendo fechar o ciclo assim que acaba a fase
+                // é melhor só existir o 'verificaFaseAtual' e lá descobrir as mudanças
+                // no lugar de ter funções de abrir/fechar exclusivas
                 if (
                     (
                         (!faseAtual && Date2YMD.toString(cf.data_ciclo) < mesCorrente) ||
