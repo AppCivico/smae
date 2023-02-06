@@ -1,12 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { Roles } from '../../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { AcaoService } from './acao.service';
 import { CreateAcaoDto } from './dto/acao.dto';
 
-@Controller('acao')
+@ApiTags('Projeto')
+@Controller('projeto/acao')
 export class AcaoController {
     constructor(private readonly acaoService: AcaoService) { }
 
