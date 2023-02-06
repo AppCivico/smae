@@ -62,7 +62,7 @@ export class ProjetoController {
     @Post(':id/documento')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async upload(@Param() params: FindOneParams, @Body() createPdmDocDto: CreateProjetoDocumentDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.append_document(params.id, createPdmDocDto, user);
     }
@@ -70,14 +70,14 @@ export class ProjetoController {
     @Get(':id/documento')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDocumento> {
         return { linhas: await this.projetoService.list_document(params.id, user) };
     }
 
     @Delete(':id/documento/:id2')
     @ApiBearerAuth('access-token')
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     @ApiUnauthorizedResponse()
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
