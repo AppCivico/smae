@@ -506,7 +506,9 @@ export class ProjetoService {
                 && projeto.responsavel_id
                 && projeto.responsavel_id == +user.id
             ) {
-                pessoaPodeEscrever = true;
+                pessoaPodeEscrever = (['Registrado', 'Selecionado'] as ProjetoStatus[]).includes(projeto.status);
+            } else {
+                throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
             }
 
         } else {
@@ -537,6 +539,10 @@ export class ProjetoService {
                 }
 
             }
+        }
+
+        if (readonly == false && pessoaPodeEscrever == false) {
+            throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
         }
 
         return permissoes;
