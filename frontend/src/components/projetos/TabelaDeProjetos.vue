@@ -3,7 +3,6 @@ import {
   useAlertStore, useOrgansStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { defineProps } from 'vue';
 
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
