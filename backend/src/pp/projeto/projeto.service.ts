@@ -230,8 +230,7 @@ export class ProjetoService {
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
 
-        let permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
-        let orgao_id: undefined | number = undefined;
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
         if (!user.hasSomeRoles(['Projeto.administrador'])) {
 
             if (user.hasSomeRoles(['SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto']) === false)
@@ -345,22 +344,6 @@ export class ProjetoService {
 
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
 
-        const permissoes: ProjetoPermissoesDto = {
-            acao_arquivar: false,
-            acao_restaurar: false,
-            acao_selecionar: false,
-            acao_finalizar_planejamento: false,
-            acao_validar: false,
-            acao_iniciar: false,
-            acao_suspender: false,
-            acao_reiniciar: false,
-            acao_cancelar: false,
-            acao_terminar: false,
-            campo_codigo_liberado: false,
-            campo_premissas: false,
-            campo_restricoes: false,
-        };
-
 
         const projeto = await this.prisma.projeto.findFirstOrThrow({
             where: { id: id, removido_em: null },
@@ -394,6 +377,7 @@ export class ProjetoService {
                 nao_escopo: true,
                 principais_etapas: true,
                 responsaveis_no_orgao_gestor: true,
+                responsavel_id: true,
 
                 orgao_gestor: {
                     select: {
@@ -456,7 +440,7 @@ export class ProjetoService {
             },
         });
 
-        await this.calcPermissions(projeto, permissoes, user, readonly);
+        const permissoes = await this.calcPermissions(projeto, user, readonly);
 
         return {
             ...projeto,
@@ -473,11 +457,33 @@ export class ProjetoService {
 
 
     private async calcPermissions(
-        projeto: { arquivado: boolean; status: ProjetoStatus; id: number; },
-        permissoes: ProjetoPermissoesDto,
+        projeto: {
+            arquivado: boolean;
+            status: ProjetoStatus;
+            id: number;
+            responsaveis_no_orgao_gestor: number[],
+            responsavel_id: number | null
+        },
         user: PessoaFromJwt | undefined,
         readonly: boolean
-    ) {
+    ): Promise<ProjetoPermissoesDto> {
+        const permissoes: ProjetoPermissoesDto = {
+            acao_arquivar: false,
+            acao_restaurar: false,
+            acao_selecionar: false,
+            // acao_iniciar_planejamento: não existe, é automático quando insere o código
+            acao_finalizar_planejamento: false,
+            acao_validar: false,
+            acao_iniciar: false,
+            acao_suspender: false,
+            acao_reiniciar: false,
+            acao_cancelar: false,
+            acao_terminar: false,
+            campo_codigo_liberado: false,
+            campo_premissas: false,
+            campo_restricoes: false,
+        };
+
         // se o projeto está arquivado, não podemos arquivar novamente
         // mas podemos restaurar (retornar para o status e fase anterior)
         if (projeto.arquivado == true) {
@@ -486,23 +492,54 @@ export class ProjetoService {
             permissoes.acao_arquivar = true;
         }
 
-        const userCanWrite = true;
-        if (user && !user.hasSomeRoles(['Projeto.administrador'])) {
-            // TODO verificar a permissão do "user",
-            // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
-            // usar campo readonly, pq há chamadas para essa função quando há escritas
+        let pessoaPodeEscrever = false;
+        if (user) {
+            if (user.hasSomeRoles(['Projeto.administrador'])) {
+                pessoaPodeEscrever = true;
+            } else if (
+                user.hasSomeRoles(['SMAE.gestor_de_projeto'])
+                && projeto.responsaveis_no_orgao_gestor.includes(+user.id)
+            ) {
+                pessoaPodeEscrever = true;
+            } else if (
+                user.hasSomeRoles(['SMAE.colaborador_de_projeto'])
+                && projeto.responsavel_id
+                && projeto.responsavel_id == +user.id
+            ) {
+                pessoaPodeEscrever = true;
+            }
+
+        } else {
+            // user null == sistema puxando o relatório, então se precisar só mudar pra pessoaPodeEscrever=true
         }
 
         if (projeto.arquivado == false) {
             // se já saiu da fase de registro, então está liberado preencher o campo
             // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
             // migrar o status para "EmPlanejamento"
-            if (projeto.status !== 'Registrado')
+            if (projeto.status !== 'Registrado') {
                 permissoes.campo_codigo_liberado = true;
+                permissoes.campo_premissas = true;
+                permissoes.campo_restricoes = true;
+            }
 
-            if (userCanWrite) {
+            if (pessoaPodeEscrever) {
+
+                switch (projeto.status) {
+                    case 'Registrado': permissoes.acao_selecionar = true; break;
+                    case 'EmPlanejamento': permissoes.acao_finalizar_planejamento = true; break;
+                    case 'Planejado': permissoes.acao_validar = true; break;
+                    case 'Validado': permissoes.acao_iniciar = true; break;
+                    case 'EmAcompanhamento': permissoes.acao_suspender = permissoes.acao_terminar = true; break;
+                    case 'Suspenso': permissoes.acao_cancelar = permissoes.acao_reiniciar = true; break;
+                    // redundante, pq pode sempre arquivar
+                    case 'Fechado': permissoes.acao_arquivar = true; break;
+                }
+
             }
         }
+
+        return permissoes;
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -556,8 +593,8 @@ export class ProjetoService {
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
             // TODO se entrar o novo status, tbm precisa chamar um export do relatório
-            
-            await prismaTx.projetoOrgaoParticipante.deleteMany({where: {projeto_id: projetoId}});
+
+            await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
