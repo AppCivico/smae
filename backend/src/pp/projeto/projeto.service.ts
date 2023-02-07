@@ -43,7 +43,7 @@ export class ProjetoService {
         let origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
 
         if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
-            await validaPdmSistema();
+            await validaPdmSistema(this);
         } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
             validaPdmAntigo();
 
@@ -53,7 +53,6 @@ export class ProjetoService {
             throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
         }
 
-        const self = this;
 
         return {
             origem_tipo,
@@ -98,7 +97,7 @@ export class ProjetoService {
             meta_id = atividade_id = iniciativa_id = origem_outro = null;
         }
 
-        async function validaPdmSistema() {
+        async function validaPdmSistema(self: ProjetoService) {
             if (!atividade_id && !iniciativa_id && !meta_id)
                 throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
 
