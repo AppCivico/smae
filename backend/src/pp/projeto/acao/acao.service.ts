@@ -14,6 +14,8 @@ export class AcaoService {
     ) { }
 
     async create(dto: CreateAcaoDto, user: PessoaFromJwt) {
+        console.log(dto);
+
         const projeto = await this.projetoService.findOne(dto.projeto_id, user, false);
 
         const acaoDesejada = 'acao_' + dto.acao;
