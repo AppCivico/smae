@@ -2,6 +2,7 @@ import MenuSecundario from '@/components/MenuSecundario.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
+import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
 
 export default {
   path: '/projetos',
@@ -40,6 +41,19 @@ export default {
       meta: {
         presenteNoMenu: true,
         título: 'Novo projeto',
+      },
+    },
+    {
+      path: ':projetoId/resumo',
+      name: 'projetosResumo',
+      component: ProjetosResumo,
+      props: ({ params }) => ({
+        ...params,
+        ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+      }),
+
+      meta: {
+        título: 'Resumo de projeto',
       },
     },
     {

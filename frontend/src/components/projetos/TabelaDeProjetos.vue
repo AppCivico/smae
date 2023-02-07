@@ -1,6 +1,6 @@
 <script setup>
 import {
-  useAlertStore, useOrgansStore, useProjetosStore
+useAlertStore, useOrgansStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 
@@ -72,7 +72,11 @@ async function excluirProjetos(id) {
         v-for="item in props.lista"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
+        <td>
+          <router-link :to="{ name: 'projetosResumo', params: { projetoId: item.id }}">
+            {{ item.nome }}
+          </router-link>
+        </td>
         <td>
           {{
             órgãosPorId[item.orgao_responsavel?.id]?.sigla
@@ -89,8 +93,8 @@ async function excluirProjetos(id) {
         </td>
         <td>
           {{
-  statusesPorId[item.status?.id]?.codigo
-    || item.status?.codigo
+            statusesPorId[item.status?.id]?.codigo
+              || item.status?.codigo
               || item.status
           }}
         </td>
