@@ -7,7 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
+import { CreateProjetoDocumentDto, CreateProjetoDto, WriteReturnProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
@@ -161,7 +161,7 @@ export class ProjetoService {
      * ³: chute total, pode ser totalmente diferente o uso ou a secretaria
      * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
      * */
-    async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<WriteReturnProjetoDto> {
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(user);
@@ -176,7 +176,7 @@ export class ProjetoService {
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const row = await prismaTx.projeto.create({
                 data: {
                     registrado_por: user.id,
@@ -218,7 +218,7 @@ export class ProjetoService {
                     status: 'Registrado',
                     fase: StatusParaFase['Registrado'],
                 },
-                select: { id: true },
+                select: { id: true, portfolio_id: true },
             });
 
             return row;
@@ -550,7 +550,7 @@ export class ProjetoService {
         return permissoes;
     }
 
-    async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<WriteReturnProjetoDto> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
 
@@ -594,7 +594,7 @@ export class ProjetoService {
             meta_codigo = origemVerification.meta_codigo;
         }
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
@@ -605,8 +605,9 @@ export class ProjetoService {
             }
 
             await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
-            await prismaTx.projeto.update({
+            const updated = await prismaTx.projeto.update({
                 where: { id: projetoId },
+                select: { id: true, portfolio_id: true },
                 data: {
                     meta_id,
                     atividade_id,
@@ -643,9 +644,11 @@ export class ProjetoService {
                     },
                 }
             })
+
+            return updated;
         });
 
-        return { id: projetoId };
+        return updated;
     }
 
     private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {

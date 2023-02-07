@@ -206,3 +206,8 @@ export class CreateProjetoDocumentDto {
     @IsString({ message: '$property| upload_token do documento' })
     upload_token: string;
 }
+
+export class WriteReturnProjetoDto {
+    id: number;
+    portfolio_id: number;
+}

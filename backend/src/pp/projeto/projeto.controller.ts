@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, Query } from '@nestjs/common';
 import { ProjetoService } from './projeto.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
+import { CreateProjetoDocumentDto, CreateProjetoDto, WriteReturnProjetoDto } from './dto/create-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
 import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -20,7 +20,7 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
-    async create(@Body() createProjetoDto: CreateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(@Body() createProjetoDto: CreateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<WriteReturnProjetoDto> {
         return await this.projetoService.create(createProjetoDto, user);
     }
 
@@ -44,7 +44,7 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
-    async update(@Param('id') id: string, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(@Param('id') id: string, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<WriteReturnProjetoDto> {
         return await this.projetoService.update(+id, updateProjetoDto, user);
     }
 
