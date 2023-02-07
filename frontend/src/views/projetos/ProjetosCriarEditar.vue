@@ -736,9 +736,9 @@ iniciar();
         />
       </div>
     </div>
-    <!-- condicional temporária -->
+
     <div
-      v-show="0"
+      v-show="props?.projetoId > 0"
       class="flex g2"
     >
       <div class="f1 mb1">
@@ -776,9 +776,9 @@ iniciar();
         />
       </div>
     </div>
-    <!-- condicional temporária -->
+
     <div
-      v-show="0"
+      v-show="props?.projetoId > 0"
       class="flex g2"
     >
       <div class="f1 mb1">
