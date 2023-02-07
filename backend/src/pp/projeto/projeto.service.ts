@@ -345,6 +345,7 @@ export class ProjetoService {
 
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
 
+        console.log({ id, user, readonly });
 
         const projeto = await this.prisma.projeto.findFirstOrThrow({
             where: { id: id, removido_em: null },
