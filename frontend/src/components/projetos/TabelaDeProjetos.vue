@@ -82,15 +82,15 @@ async function excluirProjetos(id) {
         </td>
         <td>
           {{
-            metasPorId[item.meta?.id]?.código
-              || item.meta?.código
+            metasPorId[item.meta?.id]?.codigo
+              || item.meta?.codigo
               || item.meta
           }}
         </td>
         <td>
           {{
-            statusesPorId[item.status?.id]?.código
-              || item.status?.código
+  statusesPorId[item.status?.id]?.codigo
+    || item.status?.codigo
               || item.status
           }}
         </td>
