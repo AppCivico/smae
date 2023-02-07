@@ -15,7 +15,9 @@ const OrgansStore = useOrgansStore();
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
-const { chamadasPendentes, erro, projetosPorId } = storeToRefs(projetosStore);
+const {
+  chamadasPendentes, emFoco, erro, projetosPorId,
+} = storeToRefs(projetosStore);
 const ÓrgãosStore = useOrgansStore();
 const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
 
@@ -32,9 +34,8 @@ const props = defineProps({
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 
 const itemParaEdição = computed(() => (props?.projetoId
-  && projetosPorId.value?.[props.projetoId]
   ? {
-    ...projetosPorId.value[props.projetoId],
+    ...emFoco.value,
     id: undefined,
   }
   : {
@@ -143,11 +144,11 @@ async function onSubmit(valores) {
 function iniciar() {
   projetosStore.$reset();
 
-  if (props.projetoId && !itemParaEdição.value) {
-    projetosStore.buscarTudo();
+  if (props.projetoId) {
+    projetosStore.buscarItem(props.projetoId);
+  } else {
+    portfolioStore.buscarTudo();
   }
-
-  portfolioStore.buscarTudo();
 
   OrgansStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
