@@ -150,7 +150,9 @@ function iniciar() {
 
   if (props.projetoId) {
     projetosStore.buscarItem(props.projetoId);
-  } else {
+  }
+
+  if (!portfolioId || props.projetoId) {
     portfolioStore.buscarTudo();
   }
 
@@ -189,7 +191,7 @@ iniciar();
           name="portfolio_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.portfolio_id }"
+          :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
           :disabled="!!portfolioId"
         >
           <option
@@ -474,7 +476,10 @@ iniciar();
           name="pdm_escolhido"
           as="select"
           class="inputtext light mb1"
-          :class="{ error: errors.origem_tipo, loading: chamadasPendentes.pdmsSimplificados }"
+          :class="{
+            error: errors.origem_tipo,
+            loading: chamadasPendentes.pdmsSimplificados
+          }"
           :disabled="!pdmsSimplificados?.length"
         >
           <option value="">
@@ -562,7 +567,10 @@ iniciar();
           name="iniciativa_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ error: errors.iniciativa_id, loading: chamadasPendentes.metaSimplificada }"
+          :class="{
+            error: errors.iniciativa_id,
+            loading: chamadasPendentes.metaSimplificada
+          }"
           :disabled="!metaSimplificada.iniciativas?.length"
           @change="resetField('atividade_id')"
         >
@@ -593,7 +601,10 @@ iniciar();
           name="atividade_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ error: errors.atividade_id, loading: chamadasPendentes.metaSimplificada }"
+          :class="{
+            error: errors.atividade_id,
+            loading: chamadasPendentes.metaSimplificada
+          }"
           :disabled="iniciativasPorId[values.iniciativa_id]?.atividades.length"
         >
           <option value="">
