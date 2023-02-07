@@ -43,11 +43,12 @@ export class ProjetoService {
         let origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
 
         if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
-            await this.assertOrigemTipoPdmSistema(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
+            await validaPdmSistema();
         } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
-            await this.assertOrigemTipoPdmAntigo(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
+            validaPdmAntigo();
+
         } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
-            await this.assertOrigemTipoOutro(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
+            validaOutro();
         } else {
             throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
         }
@@ -60,105 +61,74 @@ export class ProjetoService {
             origem_outro,
             meta_codigo
         };
-    }
 
-    private async assertOrigemTipoPdmSistema(
-        meta_id: number | null,
-        iniciativa_id: number | null,
-        atividade_id: number | null,
-        origem_outro: string | null,
-        meta_codigo: string | null
-    ) {
-        if (!atividade_id && !iniciativa_id && !meta_id)
-            throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
-        console.log({ atividade_id, iniciativa_id, meta_id });
+        function validaOutro() {
+            if (!origem_outro)
+                throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
 
-        if (atividade_id) {
-            this.logger.log('validando atividade_id');
-            const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
-            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
-            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
+            if (meta_id)
+                throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (iniciativa_id)
+                throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (atividade_id)
+                throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (meta_codigo)
+                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
 
-            iniciativa_id = atv.iniciativa_id;
-            meta_id = ini.meta_id;
-        } else if (iniciativa_id) {
-            this.logger.log('validando iniciativa_id');
-            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
-
-            meta_id = ini.meta_id;
-            atividade_id = null;
-        } else if (meta_id) {
-            this.logger.log('validando meta_id');
-            await this.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
-
-            iniciativa_id = atividade_id = null;
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            meta_id = atividade_id = iniciativa_id = meta_codigo = null;
         }
 
-        if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
-        if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+        function validaPdmAntigo() {
+            if (!meta_codigo)
+                throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
 
-        // força a limpeza no banco, pode ser que tenha vindo como undefined
-        meta_codigo = origem_outro = null;
+            if (meta_id)
+                throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+            if (iniciativa_id)
+                throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+            if (atividade_id)
+                throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+            if (origem_outro)
+                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
 
-        return {
-            meta_id,
-            atividade_id,
-            iniciativa_id,
-            origem_outro,
-            meta_codigo
-        };
-    }
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            meta_id = atividade_id = iniciativa_id = origem_outro = null;
+        }
 
-    private async assertOrigemTipoPdmAntigo(
-        meta_id: number | null,
-        iniciativa_id: number | null,
-        atividade_id: number | null,
-        origem_outro: string | null,
-        meta_codigo: string | null
-    ) {
-        if (!meta_codigo) throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
+        async function validaPdmSistema() {
+            if (!atividade_id && !iniciativa_id && !meta_id)
+                throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
 
-        if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-        if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-        if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-        if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+            if (atividade_id) {
+                this.logger.log('validando atividade_id');
+                const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
+                const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
+                await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
 
-        // força a limpeza no banco, pode ser que tenha vindo como undefined
-        meta_id = atividade_id = iniciativa_id = origem_outro = null;
+                iniciativa_id = atv.iniciativa_id;
+                meta_id = ini.meta_id;
+            } else if (iniciativa_id) {
+                this.logger.log('validando iniciativa_id');
+                const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
 
-        return {
-            meta_id,
-            atividade_id,
-            iniciativa_id,
-            origem_outro,
-            meta_codigo
-        };
-    }
+                meta_id = ini.meta_id;
+                atividade_id = null;
+            } else if (meta_id) {
+                this.logger.log('validando meta_id');
+                await this.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
 
-    private async assertOrigemTipoOutro(
-        meta_id: number | null,
-        iniciativa_id: number | null,
-        atividade_id: number | null,
-        origem_outro: string | null,
-        meta_codigo: string | null
-    ) {
-        if (!origem_outro) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
+                iniciativa_id = atividade_id = null;
+            }
 
-        if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-        if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-        if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-        if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (origem_outro)
+                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+            if (meta_codigo)
+                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
 
-        // força a limpeza no banco, pode ser que tenha vindo como undefined
-        meta_id = atividade_id = iniciativa_id = meta_codigo = null;
-
-        return {
-            meta_id,
-            atividade_id,
-            iniciativa_id,
-            origem_outro,
-            meta_codigo
-        };
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            meta_codigo = origem_outro = null;
+        }
     }
 
     private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
