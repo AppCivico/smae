@@ -1,6 +1,7 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { CategoriaProcessoSei } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsInt, isInt, IsNumber, isNumber, IsOptional, isString, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsInt, isInt, IsNumber, isNumber, IsOptional, isString, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { CreateProjetoDto } from './create-projeto.dto';
 
@@ -57,6 +58,24 @@ export class PPrestricaoDto {
     restricao: string;
 }
 
+export class PSeiDto {
+    /**
+     * id caso já exista e deseja fazer uma atualização
+     */
+    @IsOptional()
+    @IsNumber()
+    id?: number;
+
+    @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
+    @IsEnum(CategoriaProcessoSei, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(CategoriaProcessoSei).join(', '),
+    })
+    categoria: CategoriaProcessoSei
+    
+    @IsString()
+    processo_sei: string    
+}
+
 export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['portfolio_id', 'orgao_gestor_id']) {
     // FONTE-RECURSO 1..N
 
@@ -77,6 +96,12 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @ValidateNested({ each: true })
     @Type(() => PPfonteRecursoDto)
     fonte_recursos?: PPfonteRecursoDto[];
+
+    @IsOptional()
+    @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
+    @ValidateNested({ each: true })
+    @Type(() => PSeiDto)
+    sei?: PSeiDto[];
 
     @IsOptional()
     @IsString()
