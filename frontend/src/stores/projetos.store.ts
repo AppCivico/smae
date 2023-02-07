@@ -37,14 +37,16 @@ async function salvarItem(this: Estado, params = {}, id = 0): Promise<boolean> {
   this.chamadasPendentes.emFoco = true;
 
   try {
+    let resposta;
+
     if (id) {
-      await requestS.patch(`${baseUrl}/projeto/${id}`, params);
+      resposta = await requestS.patch(`${baseUrl}/projeto/${id}`, params);
     } else {
-      await requestS.post(`${baseUrl}/projeto`, params);
+      resposta = await requestS.post(`${baseUrl}/projeto`, params);
     }
 
     this.chamadasPendentes.emFoco = false;
-    return true;
+    return resposta;
   } catch (erro) {
     this.erro = erro;
     this.chamadasPendentes.emFoco = false;

@@ -166,5 +166,12 @@ export const useOrgansStore = defineStore({
     órgãosPorId: ({ organs }) => (Array.isArray(organs)
       ? organs.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
       : {}),
+    órgãosQueTemResponsáveis() {
+      return this.órgãosOrdenados.filter((x) => x.responsible?.length);
+    },
+    órgãosQueTemResponsáveisEPorId() {
+      return this.órgãosQueTemResponsáveis
+        .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
+    },
   },
 });
