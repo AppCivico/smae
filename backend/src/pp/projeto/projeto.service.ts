@@ -64,10 +64,10 @@ export class ProjetoService {
 
         if (atividade_id !== null) {
             const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
-            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true } });
+            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
             await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
 
-            iniciativa_id = ini.meta_id;
+            iniciativa_id = atv.iniciativa_id;
             meta_id = ini.meta_id;
         } else if (iniciativa_id !== null) {
             const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
