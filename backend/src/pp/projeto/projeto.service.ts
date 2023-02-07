@@ -53,6 +53,8 @@ export class ProjetoService {
             throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
         }
 
+        const self = this;
+
         return {
             origem_tipo,
             meta_id,
@@ -101,22 +103,22 @@ export class ProjetoService {
                 throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
 
             if (atividade_id) {
-                this.logger.log('validando atividade_id');
-                const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
-                const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
-                await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
+                self.logger.log('validando atividade_id');
+                const atv = await self.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
+                await self.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
 
                 iniciativa_id = atv.iniciativa_id;
                 meta_id = ini.meta_id;
             } else if (iniciativa_id) {
-                this.logger.log('validando iniciativa_id');
-                const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
+                self.logger.log('validando iniciativa_id');
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
 
                 meta_id = ini.meta_id;
                 atividade_id = null;
             } else if (meta_id) {
-                this.logger.log('validando meta_id');
-                await this.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
+                self.logger.log('validando meta_id');
+                await self.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
 
                 iniciativa_id = atividade_id = null;
             }
