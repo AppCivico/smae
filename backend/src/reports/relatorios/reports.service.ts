@@ -1,6 +1,10 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Cron } from '@nestjs/schedule';
+import { FonteRelatorio, Prisma } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { JOB_LOCK_NUMBER_REPORT } from '../../common/dto/locks';
 import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -8,12 +12,17 @@ import { UploadService } from '../../upload/upload.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
+import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
+const AdmZip = require("adm-zip");
+const XLSX = require('xlsx');
+const { parse } = require('csv-parse');
+const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -34,7 +43,7 @@ export class ReportsService {
         private readonly ppProjetoService: PPProjetoService,
     ) { }
 
-    async runReport(dto: CreateReportDto, user: PessoaFromJwt): Promise<FileOutput[]> {
+    async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
@@ -47,7 +56,51 @@ export class ReportsService {
         return await service.getFiles(result, pdmId, dto.parametros);
     }
 
-    async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt): Promise<RecordWithId> {
+    async zipFiles(files: FileOutput[]) {
+        const zip = new AdmZip();
+
+        for (const file of files) {
+            zip.addFile(file.name, file.buffer);
+
+            if (file.name.endsWith('.csv')) {
+                const readCsv: any[] = await new Promise((resolve, reject) => {
+                    parse(file.buffer, { columns: true }, (err: any, data: any) => {
+                        if (err)
+                            throw reject(err);
+                        resolve(data);
+                    });
+                });
+
+                // converte o que se parece com números automaticamente
+                for (let i = 0; i < readCsv.length; i++) {
+                    const element = readCsv[i];
+                    for (const k in element) {
+                        if (/^\d+(:?\.\d+)?$/.test(element[k])) {
+                            element[k] *= 1;
+                        }
+                    }
+                }
+
+                const csvDataArray = XLSX.utils.json_to_sheet(readCsv);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Folha1');
+
+                zip.addFile(
+                    file.name.replace(/\.csv$/, '.xlsx'),
+                    XLSX.write(workbook, {
+                        type: 'buffer',
+                        bookType: 'xlsx',
+                        numbers: XLSX_ZAHL_PAYLOAD,
+                        compression: true
+                    })
+                );
+            }
+        }
+        const zipBuffer = zip.toBuffer();
+        return zipBuffer;
+    }
+
+    async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt | null): Promise<RecordWithId> {
         const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
@@ -61,7 +114,7 @@ export class ReportsService {
                 fonte: dto.fonte,
                 tipo: tipo && tipo.length ? tipo : null,
                 parametros: parametros,
-                criado_por: user.id,
+                criado_por: user ? user.id : null,
                 criado_em: new Date(),
             },
             select: { id: true },
@@ -159,7 +212,7 @@ export class ReportsService {
         });
     }
 
-    decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
         let tmp: NextPageTokenJwtBody | null = null;
         try {
             if (jwt) tmp = this.jwtService.decode(jwt) as NextPageTokenJwtBody;
@@ -169,7 +222,94 @@ export class ReportsService {
         return tmp;
     }
 
-    encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
         return this.jwtService.sign(opt);
     }
+
+    @Cron('0 * * * * *')
+    async handleCron() {
+        if (Boolean(process.env['DISABLE_REPORT_CRONTAB'])) return;
+
+        await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient) => {
+                this.logger.debug(`Adquirindo lock para verificação de relatórios`);
+                const locked: {
+                    locked: boolean;
+                }[] = await prisma.$queryRaw`SELECT
+                pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER_REPORT}) as locked
+            `;
+                if (!locked[0].locked) {
+                    this.logger.debug(`Já está em processamento...`);
+                    return;
+                }
+
+                await this.verificaRelatorioProjetos();
+
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
+                isolationLevel: 'Serializable',
+            },
+        );
+    }
+
+    private async verificaRelatorioProjetos() {
+
+        const pending = await this.prisma.projetoRelatorioFila.findMany({
+            where: {
+                executado_em: null,
+                AND: [
+                    {
+                        OR: [
+                            { congelado_em: null },
+                            {
+                                congelado_em: {
+                                    lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
+                                }
+                            },
+                        ]
+                    }
+                ]
+            }
+        });
+
+        for (const job of pending) {
+
+            await this.prisma.projetoRelatorioFila.update({
+                where: { id: job.id },
+                data: {
+                    congelado_em: new Date(Date.now())
+                }
+            });
+
+            const contentType = 'application/zip';
+            const filename = [
+                'Projeto',
+                DateTime.local({ zone: 'America/Sao_Paulo' }).toISO() + '.zip',
+            ].filter(r => r).join('-');
+
+
+            const dto: CreateReportDto = {
+                fonte: 'Projeto',
+                parametros: {
+                    projeto_id: job.projeto_id
+                } satisfies CreateRelProjetoDto
+            };
+            const files = await this.runReport(dto);
+            const zipBuffer = await this.zipFiles(files);
+
+            const arquivoId = await this.uploadService.uploadReport(dto.fonte, filename, zipBuffer, contentType, null);
+
+            const report = await this.saveReport(dto, arquivoId, null);
+            await this.prisma.projetoRelatorioFila.update({
+                where: { id: job.id },
+                data: {
+                    executado_em: new Date(Date.now()),
+                    relatorio_id: report.id,
+                }
+            });
+        }
+    }
+
 }
