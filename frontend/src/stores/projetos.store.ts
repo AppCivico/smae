@@ -128,8 +128,8 @@ export const useProjetosStore = defineStore('projetos', {
     chamadasPendentes: {
       lista: true,
       emFoco: true,
-      pdmsSimplificados: true,
-      metaSimplificada: true,
+      pdmsSimplificados: false,
+      metaSimplificada: false,
     },
 
     pdmsSimplificados: [],
