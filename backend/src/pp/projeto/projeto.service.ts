@@ -438,6 +438,15 @@ export class ProjetoService {
                         },
                     },
                 },
+
+                ProjetoRegistroSei: {
+                    select: {
+                        id: true,
+                        categoria: true,
+                        processo_sei: true,
+                        registro_sei_info: true
+                    }
+                }
             },
         });
 
@@ -453,6 +462,15 @@ export class ProjetoService {
                     descricao: o.orgao.descricao,
                 };
             }),
+
+            sei: projeto.ProjetoRegistroSei.map(s => {
+                return {
+                    id: s.id,
+                    categoria: s.categoria,
+                    processo_sei: s.processo_sei,
+                    registro_sei_info: JSON.stringify(s.registro_sei_info)
+                }
+            })
         };
     }
 
@@ -597,6 +615,7 @@ export class ProjetoService {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
+            await this.upsertSei(dto, prismaTx, projetoId, user);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
             // TODO se entrar o novo status, tbm precisa chamar um export do relatório
@@ -688,6 +707,43 @@ export class ProjetoService {
             } else {
                 const row = await prismaTx.projetoRestricao.create({
                     data: { restricao: restricao.restricao, projeto_id: projetoId },
+                });
+                keepIds.push(row.id);
+            }
+        }
+        await prismaTx.projetoRestricao.deleteMany({
+            where: { projeto_id: projetoId, id: { notIn: keepIds } },
+        });
+    }
+
+    private async upsertSei(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number, user: PessoaFromJwt) {
+        if (Array.isArray(dto.restricoes) == false) return;
+
+        const keepIds: number[] = [];
+        for (const sei of dto.sei!) {
+            if ('id' in sei && sei.id) {
+                await prismaTx.projetoRegistroSei.findFirstOrThrow({
+                    where: { projeto_id: projetoId, id: sei.id },
+                });
+                await prismaTx.projetoRegistroSei.update({
+                    where: { id: sei.id },
+                    data: {
+                        processo_sei: sei.processo_sei,
+                        categoria: sei.categoria
+                    },
+                });
+                keepIds.push(sei.id);
+            } else {
+                const row = await prismaTx.projetoRegistroSei.create({
+                    data: {
+                        processo_sei: sei.processo_sei,
+                        categoria: sei.categoria,
+                        registro_sei_info: '{}',
+                        projeto_id: projetoId,
+
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now())
+                    }
                 });
                 keepIds.push(row.id);
             }
