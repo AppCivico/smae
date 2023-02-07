@@ -1,6 +1,7 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
+
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -30,6 +31,7 @@ export class ProjetoOrgaoParticipante {
 
 @Injectable()
 export class ProjetoService {
+    private readonly logger = new Logger(ProjetoService.name);
     constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) { }
 
     private async processaOrigem(dto: CreateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
@@ -64,20 +66,25 @@ export class ProjetoService {
         if (!atividade_id && !iniciativa_id && !meta_id)
             throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
 
-        if (atividade_id !== null) {
+        if (atividade_id) {
+            this.logger.log('validando atividade_id');
             const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
             const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
             await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
 
             iniciativa_id = atv.iniciativa_id;
             meta_id = ini.meta_id;
-        } else if (iniciativa_id !== null) {
+        } else if (iniciativa_id) {
+            this.logger.log('validando iniciativa_id');
             const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
-            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
 
             meta_id = ini.meta_id;
-        } else if (meta_id !== null) {
+            atividade_id = null;
+        } else if (meta_id) {
+            this.logger.log('validando meta_id');
             await this.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
+
+            iniciativa_id = atividade_id = null;
         }
 
         if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
