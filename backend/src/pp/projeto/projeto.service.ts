@@ -601,47 +601,60 @@ export class ProjetoService {
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
-            if (novoStatus) {
+            if (novoStatus)
                 await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
-            }
 
-            await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
+            if (dto.orgaos_participantes !== undefined)
+                await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
+
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
+                    // origem
                     meta_id,
                     atividade_id,
                     iniciativa_id,
                     origem_outro,
                     meta_codigo,
                     origem_tipo,
+
+                    // campos do create
+                    responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
+                    orgao_responsavel_id: dto.orgao_responsavel_id,
+                    responsavel_id: dto.responsavel_id,
+
                     nome: dto.nome,
                     resumo: dto.resumo,
-                    codigo: dto.codigo,
-                    objeto: dto.objeto,
-                    objetivo: dto.objetivo,
-                    publico_alvo: dto.publico_alvo,
                     previsao_inicio: dto.previsao_inicio,
-                    previsao_custo: dto.previsao_custo,
                     previsao_termino: dto.previsao_termino,
+                    previsao_custo: dto.previsao_custo,
                     escopo: dto.escopo,
-                    nao_escopo: dto.nao_escopo,
                     principais_etapas: dto.principais_etapas,
-                    responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
                     versao: dto.versao,
                     data_aprovacao: dto.data_aprovacao,
                     data_revisao: dto.data_revisao,
+
+                    // campos apenas do update
+                    publico_alvo: dto.publico_alvo,
+                    codigo: dto.codigo,
+                    objeto: dto.objeto,
+                    objetivo: dto.objetivo,
+                    nao_escopo: dto.nao_escopo,
+                    secretario_executivo: dto.secretario_executivo,
+                    secretario_responsavel: dto.secretario_responsavel,
+                    coordenador_ue: dto.coordenador_ue,
+
                     // por padrão undefined, não faz nenhuma alteração
                     status: novoStatus,
                     fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
 
-                    orgaos_participantes: {
+                    orgaos_participantes: dto.orgaos_participantes !== undefined ? {
                         createMany: {
                             data: dto.orgaos_participantes!.map(o => {
                                 return { orgao_id: o };
                             }),
                         },
-                    },
+                    } : undefined,
                 }
             })
         });
