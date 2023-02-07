@@ -7,7 +7,7 @@ import { AcaoService } from './acao.service';
 import { CreateAcaoDto } from './dto/acao.dto';
 
 @ApiTags('Projeto')
-@Controller('projeto/acao')
+@Controller('projeto-acao')
 export class AcaoController {
     constructor(private readonly acaoService: AcaoService) { }
 
@@ -18,13 +18,7 @@ export class AcaoController {
     @ApiResponse({ description: 'sucesso ao executar ação', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async create(@Body() dto: CreateAcaoDto, @CurrentUser() user: PessoaFromJwt) {
-
-        console.log('xxx');
-        console.dir(dto, {depth: 33});
-
-        console.log({ dto, user });
-
-        await this.acaoService.createX(dto, user);
+        await this.acaoService.create(dto, user);
 
         return '';
     }
