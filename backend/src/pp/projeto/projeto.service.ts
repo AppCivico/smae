@@ -400,6 +400,7 @@ export class ProjetoService {
                 meta_codigo: true,
                 nome: true,
                 status: true,
+                fase: true,
                 resumo: true,
                 codigo: true,
                 objeto: true,
@@ -479,6 +480,15 @@ export class ProjetoService {
                         },
                     },
                 },
+
+                meta: {
+                    select: {
+                        pdm_id: true,
+                        codigo: true,
+                        titulo: true,
+                        id: true
+                    }
+                }
             },
         });
 
