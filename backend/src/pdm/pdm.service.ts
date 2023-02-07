@@ -1,6 +1,6 @@
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CicloFisico, CicloFisicoFase, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
@@ -461,7 +461,28 @@ export class PdmService {
             }
 
             if (cf.pdm.ativo) {
-                await this.verificaFases(cf, hoje);
+                const faseAtual = cf.CicloFaseAtual;
+
+                // logica ta quebrada
+                // isso ta fazendo fechar o ciclo assim que acaba a fase
+                // é melhor só existir o 'verificaFaseAtual' e lá descobrir as mudanças
+                // no lugar de ter funções de abrir/fechar exclusivas
+                if (
+                    (
+                        (!faseAtual && Date2YMD.toString(cf.data_ciclo) < mesCorrente) ||
+                        (faseAtual && Date2YMD.toString(faseAtual.data_fim) < hoje)
+                    ) && cf.ativo) {
+                    await this.inativarCiclo(cf);
+                } else if (
+                    (
+                        (!faseAtual && Date2YMD.toString(cf.data_ciclo) === mesCorrente)
+                        ||
+                        (faseAtual && Date2YMD.toString(faseAtual.data_inicio).substring(0, 7) === mesCorrente.substring(0, 7))
+                    ) && !cf.ativo) {
+                    await this.ativarCiclo(cf, hoje);
+                } else {
+                    await this.verificaFaseAtual(cf, hoje);
+                }
             } else {
                 this.logger.warn('PDM foi desativado, não há mais ciclos até a proxima ativação');
 
@@ -495,20 +516,17 @@ export class PdmService {
         return true;
     }
 
-    private async verificaFases(
+    private async verificaFaseAtual(
         cf: {
             id: number;
             pdm_id: number;
             data_ciclo: Date;
             ciclo_fase_atual_id: number | null;
-            CicloFaseAtual: CicloFisicoFase
         },
         today: string,
     ) {
-
         const todayAtSp = DateTime.local({ zone: 'America/Sao_Paulo' }).toJSDate();
         this.logger.log(`verificando ciclo atual ${cf.data_ciclo} - Hoje em SP = ${todayAtSp.toISOString()}`);
-        this.logger.log(`No banco, fase atual é %d com inicio em ${cf.CicloFaseAtual.data_inicio.toISOString()} e fim ${cf.CicloFaseAtual.data_fim.toISOString()}`);
         const fase_corrente = await this.prisma.cicloFisicoFase.findFirst({
             where: {
                 ciclo_fisico_id: cf.id,
