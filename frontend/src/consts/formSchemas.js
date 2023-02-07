@@ -159,11 +159,11 @@ const projeto = object().shape({
     .required(),
   data_aprovacao: date()
     .nullable()
-    .min(ref('previsao_inicio'))
+    .min(new Date(2003, 0, 1))
     .required(),
   data_revisao: date()
     .nullable()
-    .min(ref('previsao_inicio'))
+    .min(new Date(2003, 0, 1))
     .required(),
 });
 
