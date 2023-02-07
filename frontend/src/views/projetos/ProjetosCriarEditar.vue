@@ -192,7 +192,7 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
-          :disabled="!!portfolioId"
+          :disabled="!!props.projetoId"
         >
           <option
             v-for="item in portfolioStore.lista"
@@ -308,7 +308,7 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_gestor_id }"
-          :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
+          :disabled="projetoId || !órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
           @change="resetField('responsaveis_no_orgao_gestor')"
         >
           <option value="">
