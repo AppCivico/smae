@@ -42,6 +42,7 @@ export class ProjetoDetailDto {
     nome: string;
     status: ProjetoStatus;
     resumo: string;
+    portfolio_id: number
     codigo: string | null;
     objeto: string;
     objetivo: string;
