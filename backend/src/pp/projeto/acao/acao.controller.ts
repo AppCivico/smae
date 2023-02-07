@@ -18,6 +18,8 @@ export class AcaoController {
     @ApiResponse({ description: 'sucesso ao executar ação', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async create(@Body() dto: CreateAcaoDto, @CurrentUser() user: PessoaFromJwt) {
+        console.log({ dto, user });
+
         await this.acaoService.create(dto, user);
 
         return '';
