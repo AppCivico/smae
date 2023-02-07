@@ -302,7 +302,7 @@ iniciar();
     </label>
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Orgão gestor <span class="tvermelho">*</span></label>
+        <label class="label tc300">Órgão gestor <span class="tvermelho">*</span></label>
         <Field
           name="orgao_gestor_id"
           as="select"
