@@ -1,7 +1,8 @@
-import { ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { CodigoNome } from '../../../common/dto/CodigoNome.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { TipoDocumento } from '../../../tipo-documento/entities/tipo-documento.entity';
 
@@ -34,13 +35,27 @@ export class ProjetoPermissoesDto {
     campo_codigo_liberado: boolean
 }
 
+export class ProjetoMetaDetailDto {
+    id: number
+    codigo: string
+    titulo: string
+    pdm_id: number
+}
+
 export class ProjetoDetailDto {
     id: number;
     meta_id: number | null;
     iniciativa_id: number | null;
     atividade_id: number | null;
     nome: string;
+    /**
+     * @example "EmAcompanhamento"
+    */
     status: ProjetoStatus;
+    /**
+     * @example "Acompanhamento"
+    */
+    fase: ProjetoFase;
     resumo: string;
     portfolio_id: number
     codigo: string | null;
@@ -74,6 +89,8 @@ export class ProjetoDetailDto {
     data_revisao: Date | null
     versao: string | null
 
+
+    meta: ProjetoMetaDetailDto | null
     // responsaveis_no_orgao_gestor:
 
     permissoes: ProjetoPermissoesDto
