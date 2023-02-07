@@ -71,8 +71,10 @@ const possíveisOrigens = [
   },
 ];
 
-async function buscarDadosParaOrigens(e) {
-  switch (e.target?.value) {
+async function buscarDadosParaOrigens(valorOuEvento) {
+  const valor = valorOuEvento.target?.value || valorOuEvento;
+
+  switch (valor) {
     case 'PdmSistema':
       if (!pdmsSimplificados.value.length) {
         await projetosStore.buscarPdms();
@@ -84,8 +86,8 @@ async function buscarDadosParaOrigens(e) {
   }
 }
 
-async function buscarMetaSimplificada(e) {
-  const idDaMeta = e.target?.value;
+async function buscarMetaSimplificada(valorOuEvento) {
+  const idDaMeta = valorOuEvento.target?.value || valorOuEvento;
 
   if (idDaMeta) {
     await projetosStore.buscarMetaSimplificada({ meta_ids: idDaMeta });
@@ -145,11 +147,18 @@ async function onSubmit(valores) {
   }
 }
 
-function iniciar() {
+async function iniciar() {
   projetosStore.$reset();
 
   if (props.projetoId) {
-    projetosStore.buscarItem(props.projetoId);
+    await projetosStore.buscarItem(props.projetoId);
+    if (emFoco.value?.origem_tipo) {
+      buscarDadosParaOrigens(emFoco.value.origem_tipo);
+    }
+
+    if (emFoco.value?.meta_id) {
+      buscarMetaSimplificada(emFoco.value?.meta_id);
+    }
   }
 
   if (!portfolioId || props.projetoId) {
