@@ -108,7 +108,7 @@ async function excluirProjetos(id) {
           </button>
         </td>
         <td>
-          <!--router-link
+          <router-link
             :to="{ name: 'projetosEditar', params: { projetoId: item.id } }"
             class="tprimary"
           >
@@ -116,7 +116,7 @@ async function excluirProjetos(id) {
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link-->
+          </router-link>
         </td>
       </tr>
       <tr v-if="pendente">

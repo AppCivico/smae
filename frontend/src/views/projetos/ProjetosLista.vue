@@ -36,12 +36,12 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Projetos' }}</h1>
     <hr class="ml2 f1">
-      <!--router-link
+    <router-link
       :to="{ name: 'projetosCriar' }"
       class="btn big ml1"
     >
       Novo projeto
-      </router-link-->
+    </router-link>
   </div>
 
   <div class="boards">
