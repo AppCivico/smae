@@ -33,6 +33,18 @@ async function buscarTudo(this: Estado, params = {}): Promise<void> {
   this.chamadasPendentes.emFoco = false;
 }
 
+async function buscarItem(this: Estado, id = 0, params = {}): Promise<void> {
+  this.chamadasPendentes.emFoco = true;
+  try {
+    const resposta = await requestS.get(`${baseUrl}/projeto/${id}`, params);
+    console.debug('resposta', resposta);
+    this.emFoco = resposta;
+  } catch (erro: unknown) {
+    this.erro = erro;
+  }
+  this.chamadasPendentes.emFoco = false;
+}
+
 async function salvarItem(this: Estado, params = {}, id = 0): Promise<boolean> {
   this.chamadasPendentes.emFoco = true;
 
@@ -84,6 +96,7 @@ export const useProjetosStore = defineStore('projetos', {
     erro: null,
   }),
   actions: {
+    buscarItem,
     buscarTudo,
     excluirItem,
     salvarItem,
