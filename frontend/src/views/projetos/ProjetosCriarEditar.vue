@@ -58,7 +58,7 @@ const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.i
 
 const possíveisOrigens = [
   {
-    texto: 'PdM',
+    texto: 'Plano de Metas',
     valor: 'PdmSistema',
   },
   {
@@ -469,7 +469,7 @@ iniciar();
         v-if="values.origem_tipo === 'PdmSistema'"
         class="f1 mb1"
       >
-        <label class="label tc300">PdM
+        <label class="label tc300">Plano de metas
           <span class="tvermelho">*</span>
         </label>
         <Field
