@@ -654,7 +654,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">Previsão de início</label>
+        <label class="label">
+          Previsão de início
+          <span class="tvermelho">*</span>
+        </label>
         <Field
           name="previsao_inicio"
           type="date"
@@ -668,7 +671,10 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label">Previsão de término</label>
+        <label class="label">
+          Previsão de término
+          <span class="tvermelho">*</span>
+        </label>
         <Field
           name="previsao_termino"
           type="date"
