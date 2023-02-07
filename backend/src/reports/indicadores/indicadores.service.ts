@@ -29,6 +29,10 @@ class RetornoDb {
     regiao_pai_descricao?: string;
     regiao_pai_codigo?: number;
     regiao_pai_nivel?: number;
+    regiao_vo_id?: number;
+    regiao_vo_descricao?: string;
+    regiao_vo_codigo?: number;
+    regiao_vo_nivel?: number;
 
     meta_id: number;
     meta_codigo: string;
@@ -213,6 +217,10 @@ export class IndicadoresService implements ReportableService {
         r_parent.codigo as regiao_pai_codigo,
         r_parent.descricao as regiao_pai_descricao,
         r_parent.nivel as regiao_pai_nivel,
+        r_grand_parent.id as regiao_vo_id,
+        r_grand_parent.codigo as regiao_vo_codigo,
+        r_grand_parent.descricao as regiao_vo_descricao,
+        r_grand_parent.nivel as regiao_vo_nivel,
         round(
             valor_variavel_em(
                 v.id,
@@ -229,6 +237,7 @@ export class IndicadoresService implements ReportableService {
         join variavel v ON v.id = iv.variavel_id
         join regiao r ON v.regiao_id = r.id
         join regiao r_parent ON r.parente_id = r_parent.id
+        join regiao r_grand_parent ON r_parent.parente_id = r_grand_parent.id
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
@@ -356,10 +365,14 @@ export class IndicadoresService implements ReportableService {
                     { value: 'regiao.nivel', label: 'Nível da Região' },
 
                     { value: 'regiao.id', label: 'ID da Região' },
-                    { value: 'regiao.parent.codigo', label: 'Código da Região Pai' },
-                    { value: 'regiao.parent.descricao', label: 'Descrição da Região Pai' },
-                    { value: 'regiao.parent.nivel', label: 'Nível da Região Pai' },
-                    { value: 'regiao.parent.id', label: 'ID da Região Pai' },
+                    { value: 'regiao.parente.codigo', label: 'Código da Região Pai' },
+                    { value: 'regiao.parente.descricao', label: 'Descrição da Região Pai' },
+                    { value: 'regiao.parente.nivel', label: 'Nível da Região Pai' },
+                    { value: 'regiao.parente.id', label: 'ID da Região Pai' },
+                    { value: 'regiao.parente.parente.codigo', label: 'Código da Região Vô' },
+                    { value: 'regiao.parente.parente.descricao', label: 'Descrição da Região Vô' },
+                    { value: 'regiao.parente.parente.nivel', label: 'Nível da Região Vô' },
+                    { value: 'regiao.parente.parente.id', label: 'ID da Região Vô' },
                     'serie',
                     'data',
                     'valor',
@@ -416,6 +429,13 @@ export class IndicadoresService implements ReportableService {
                                     codigo: db.regiao_pai_codigo,
                                     descricao: db.regiao_pai_descricao,
                                     nivel: db.regiao_pai_nivel,
+
+                                    parente: db.regiao_vo_id ? {
+                                        id: +db.regiao_vo_id,
+                                        codigo: db.regiao_vo_codigo,
+                                        descricao: db.regiao_vo_descricao,
+                                        nivel: db.regiao_vo_nivel,
+                                    } : undefined
                                 }
                               : undefined,
                       }
