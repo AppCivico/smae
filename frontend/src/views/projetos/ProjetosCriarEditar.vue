@@ -605,7 +605,7 @@ iniciar();
             error: errors.atividade_id,
             loading: chamadasPendentes.metaSimplificada
           }"
-          :disabled="iniciativasPorId[values.iniciativa_id]?.atividades.length"
+          :disabled="!iniciativasPorId[values.iniciativa_id]?.atividades.length"
         >
           <option value="">
             Selecionar
