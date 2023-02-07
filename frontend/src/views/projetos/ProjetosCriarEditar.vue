@@ -31,22 +31,61 @@ const props = defineProps({
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 
-const itemParaEdição = computed(() => (props?.projetoId
-  ? {
-    ...emFoco.value,
-    id: undefined,
+const itemParaEdição = computed(() => {
+  const valores = props?.projetoId
+    ? {
+      ...emFoco.value,
+      id: undefined,
+      permissoes: undefined,
+    }
+    : {
+      meta_codigo: '',
+      origem_outro: '',
+      data_aprovacao: null,
+      data_revisao: null,
+      escopo: '',
+      portfolio_id: portfolioId,
+      previsao_custo: null,
+      principais_etapas: '',
+      resumo: '',
+    };
+
+  if (props?.projetoId) {
+    const propriedadesParaSimplificar = [
+      'orgao_gestor',
+      'orgao_responsavel',
+      'responsavel',
+      'orgaos_participantes',
+    ];
+
+    const datasParaLimpar = [
+      'previsao_inicio',
+      'previsao_termino',
+      'realizado_inicio',
+      'realizado_termino',
+      'data_aprovacao',
+      'data_revisao',
+    ];
+
+    propriedadesParaSimplificar.forEach((x) => {
+      if (Array.isArray(valores[x])) {
+        valores[x] = valores[x].map((y) => y.id || y);
+      } else if (typeof valores[x] === 'object') {
+        valores[`${x}_id`] = valores[x].id;
+      }
+    });
+
+    datasParaLimpar.forEach((x) => {
+      if (valores[x]?.indexOf('T') === 10) {
+        [valores[x]] = valores[x].split('T');
+      }
+    });
+    if (valores.meta?.pdm_id) {
+      valores.pdm_escolhido = valores.meta.pdm_id;
+    }
   }
-  : {
-    meta_codigo: '',
-    origem_outro: '',
-    data_aprovacao: null,
-    data_revisao: null,
-    escopo: '',
-    portfolio_id: portfolioId,
-    previsao_custo: null,
-    principais_etapas: '',
-    resumo: '',
-  }));
+  return valores;
+});
 
 const órgãosDisponíveisNessePortfolio = ((idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
@@ -94,7 +133,7 @@ async function buscarMetaSimplificada(valorOuEvento) {
   }
 }
 
-async function onSubmit(valores) {
+async function onSubmit(_, { controlledValues: valores }) {
   const carga = valores;
 
   switch (true) {
@@ -697,7 +736,66 @@ iniciar();
         />
       </div>
     </div>
-
+    <!-- condicional temporária -->
+    <div
+      v-show="0"
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <label class="label">
+          Data de aprovação
+          <span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="data_aprovacao"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.data_aprovacao }"
+          maxlength="10"
+        />
+        <ErrorMessage
+          name="data_aprovacao"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1 mb1">
+        <label class="label">
+          Data de revisão
+          <span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="data_revisao"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.data_revisao }"
+          maxlength="10"
+        />
+        <ErrorMessage
+          name="data_revisao"
+          class="error-msg"
+        />
+      </div>
+    </div>
+    <!-- condicional temporária -->
+    <div
+      v-show="0"
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <label class="label">
+          Previsão de custo <span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="previsao_custo"
+          type="number"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="previsao_custo"
+        />
+      </div>
+    </div>
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
