@@ -24,7 +24,7 @@ export class AcaoController {
 
         console.log({ dto, user });
 
-        await this.acaoService.create(dto, user);
+        await this.acaoService.createX(dto, user);
 
         return '';
     }
