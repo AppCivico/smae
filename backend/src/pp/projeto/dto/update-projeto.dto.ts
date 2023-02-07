@@ -57,9 +57,28 @@ export class PPrestricaoDto {
     restricao: string;
 }
 
-export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['portfolio_id', 'orgao_gestor_id']) {
-    // FONTE-RECURSO 1..N
 
+// esses campos serão updated apenas via sistema (pelas tarefas)
+//    @IsOptional()
+//    @IsOnlyDate()
+//    @Type(() => Date)
+//    @ValidateIf((object, value) => value !== null)
+//    realizado_inicio?: Date
+//
+//    @IsOptional()
+//    @IsOnlyDate()
+//    @Type(() => Date)
+//    @ValidateIf((object, value) => value !== null)
+//    realizado_termino?: Date
+//
+//    @IsOptional()
+//    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+//    @Min(0, { message: '$property| Custo precisa ser positivo' })
+//    @Transform((a: any) => (a.value === null ? null : +a.value))
+//    @ValidateIf((object, value) => value !== null)
+//    realizado_custo?: number
+
+export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['portfolio_id', 'orgao_gestor_id']) {
     @IsOptional()
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
@@ -84,10 +103,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
 
     @IsOptional()
     @IsString()
-    descricao?: string
-
-    @IsOptional()
-    @IsString()
     objeto?: string
 
     @IsOptional()
@@ -98,32 +113,19 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsString()
     publico_alvo?: string
 
-
-    // esses campos serão updated apenas via sistema (pelas tarefas)
-    //    @IsOptional()
-    //    @IsOnlyDate()
-    //    @Type(() => Date)
-    //    @ValidateIf((object, value) => value !== null)
-    //    realizado_inicio?: Date
-    //
-    //    @IsOptional()
-    //    @IsOnlyDate()
-    //    @Type(() => Date)
-    //    @ValidateIf((object, value) => value !== null)
-    //    realizado_termino?: Date
-    //
-    //    @IsOptional()
-    //    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
-    //    @Min(0, { message: '$property| Custo precisa ser positivo' })
-    //    @Transform((a: any) => (a.value === null ? null : +a.value))
-    //    @ValidateIf((object, value) => value !== null)
-    //    realizado_custo?: number
-
     @IsOptional()
     @IsString()
     nao_escopo?: string
 
     @IsOptional()
-    @IsBoolean()
-    arquivado?: boolean
+    @IsString()
+    secretario_executivo?: string
+
+    @IsOptional()
+    @IsString()
+    secretario_responsavel?: string
+
+    @IsOptional()
+    @IsString()
+    coordenador_ue?: string
 }
