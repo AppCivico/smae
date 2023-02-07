@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsEnum, IsInt } from "class-validator";
 
 export const ProjetoAcao = {
@@ -24,5 +25,6 @@ export class CreateAcaoDto {
     acao: ProjetoAcao
 
     @IsInt()
+    @Transform(({ value }: any) => +value)
     projeto_id: number
 }
