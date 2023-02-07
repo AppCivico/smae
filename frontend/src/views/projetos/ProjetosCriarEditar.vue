@@ -2,21 +2,19 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import {
-  useAlertStore, useMetasStore, useOrgansStore, usePortfolioStore, useProjetosStore
+  useAlertStore, useOrgansStore, usePortfolioStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const MetasStore = useMetasStore();
-const { singleMeta } = storeToRefs(MetasStore);
 const OrgansStore = useOrgansStore();
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const {
-  chamadasPendentes, emFoco, erro, projetosPorId,
+  chamadasPendentes, emFoco, erro, pdmsSimplificados, pdmsPorId, metaSimplificada,
 } = storeToRefs(projetosStore);
 const ÓrgãosStore = useOrgansStore();
 const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
@@ -54,8 +52,8 @@ const órgãosDisponíveisNessePortfolio = ((idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
   .filter((x) => órgãosQueTemResponsáveisEPorId.value?.[x.id]?.responsible?.length) || []);
 
-const iniciativasPorId = computed(() => (Array.isArray(singleMeta.value?.children?.[0]?.iniciativas)
-  ? singleMeta.value.children[0].iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
+const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
+  ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
   : {}));
 
 const possíveisOrigens = [
@@ -76,7 +74,9 @@ const possíveisOrigens = [
 async function buscarDadosParaOrigens(e) {
   switch (e.target?.value) {
     case 'PdmSistema':
-      await MetasStore.getAll();
+      if (!pdmsSimplificados.value.length) {
+        await projetosStore.buscarPdms();
+      }
       break;
 
     default:
@@ -84,11 +84,11 @@ async function buscarDadosParaOrigens(e) {
   }
 }
 
-async function buscarIniciativasEAtividades(e) {
+async function buscarMetaSimplificada(e) {
   const idDaMeta = e.target?.value;
 
   if (idDaMeta) {
-    await MetasStore.getChildren(idDaMeta);
+    await projetosStore.buscarMetaSimplificada({ meta_ids: idDaMeta });
   }
 }
 
@@ -113,6 +113,10 @@ async function onSubmit(valores) {
 
     default:
       break;
+  }
+
+  if (carga.pdm_escolhido) {
+    carga.pdm_escolhido = undefined;
   }
 
   try {
@@ -463,6 +467,37 @@ iniciar();
         v-if="values.origem_tipo === 'PdmSistema'"
         class="f1 mb1"
       >
+        <label class="label tc300">PdM
+          <span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="pdm_escolhido"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ error: errors.origem_tipo, loading: chamadasPendentes.pdmsSimplificados }"
+          :disabled="!pdmsSimplificados?.length"
+        >
+          <option value="">
+            Selecionar
+          </option>
+          <option
+            v-for="item in pdmsSimplificados"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="origem_tipo"
+          class="error-msg"
+        />
+      </div>
+
+      <div
+        v-if="values.origem_tipo === 'PdmSistema'"
+        class="f1 mb1"
+      >
         <label class="label tc300">
           Meta vinculada <span class="tvermelho">*</span>
         </label>
@@ -472,14 +507,14 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.meta_id }"
-          :disabled="!MetasStore.Metas.length"
-          @change="buscarIniciativasEAtividades($event); resetField('iniciativa_id')"
+          :disabled="!pdmsPorId[values.pdm_escolhido]?.metas?.length"
+          @change="buscarMetaSimplificada($event); resetField('iniciativa_id')"
         >
           <option value="">
             Selecionar
           </option>
           <option
-            v-for="item in MetasStore.Metas"
+            v-for="item in pdmsPorId[values.pdm_escolhido]?.metas"
             :key="item.id"
             :value="item.id"
           >
@@ -527,15 +562,15 @@ iniciar();
           name="iniciativa_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.iniciativa_id }"
-          :disabled="!singleMeta?.children?.[0]?.iniciativas.length"
+          :class="{ error: errors.iniciativa_id, loading: chamadasPendentes.metaSimplificada }"
+          :disabled="!metaSimplificada.iniciativas?.length"
           @change="resetField('atividade_id')"
         >
           <option value="">
             Selecionar
           </option>
           <option
-            v-for="item in singleMeta?.children?.[0]?.iniciativas"
+            v-for="item in metaSimplificada.iniciativas"
             :key="item.id"
             :value="item.id"
           >
@@ -558,7 +593,8 @@ iniciar();
           name="atividade_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.atividade_id }"
+          :class="{ error: errors.atividade_id, loading: chamadasPendentes.metaSimplificada }"
+          :disabled="iniciativasPorId[values.iniciativa_id]?.atividades.length"
         >
           <option value="">
             Selecionar
