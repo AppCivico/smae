@@ -62,7 +62,13 @@ export class ProjetoService {
         };
     }
 
-    private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
+    private async assertOrigemTipoPdmSistema(
+        meta_id: number | null,
+        iniciativa_id: number | null,
+        atividade_id: number | null,
+        origem_outro: string | null,
+        meta_codigo: string | null
+    ) {
         if (!atividade_id && !iniciativa_id && !meta_id)
             throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
         console.log({ atividade_id, iniciativa_id, meta_id });
@@ -103,7 +109,13 @@ export class ProjetoService {
         };
     }
 
-    private async assertOrigemTipoPdmAntigo(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
+    private async assertOrigemTipoPdmAntigo(
+        meta_id: number | null,
+        iniciativa_id: number | null,
+        atividade_id: number | null,
+        origem_outro: string | null,
+        meta_codigo: string | null
+    ) {
         if (!meta_codigo) throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
 
         if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
@@ -123,7 +135,13 @@ export class ProjetoService {
         };
     }
 
-    private async assertOrigemTipoOutro(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
+    private async assertOrigemTipoOutro(
+        meta_id: number | null,
+        iniciativa_id: number | null,
+        atividade_id: number | null,
+        origem_outro: string | null,
+        meta_codigo: string | null
+    ) {
         if (!origem_outro) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
 
         if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
