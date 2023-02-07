@@ -32,20 +32,22 @@ export class ProjetoOrgaoParticipante {
 export class ProjetoService {
     constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) { }
 
-    private async processaOrigem(dto: CreateProjetoDto | UpdateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
+    private async processaOrigem(dto: CreateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
         let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
         let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
         let origem_outro: string | null = dto.origem_outro ? dto.origem_outro : null;
         let meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
-        let origem_tipo: ProjetoOrigemTipo | undefined = dto.origem_tipo ? dto.origem_tipo : undefined;
+        let origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
 
-        if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmSistema) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmSistema)) {
+        if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
             await this.assertOrigemTipoPdmSistema(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmAntigo) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmAntigo)) {
+        } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
             await this.assertOrigemTipoPdmAntigo(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.Outro) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.Outro)) {
+        } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
             await this.assertOrigemTipoOutro(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
+        } else {
+            throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
         }
 
         return {
@@ -59,8 +61,8 @@ export class ProjetoService {
     }
 
     private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
-        if (!(atividade_id || iniciativa_id || meta_id))
-            throw new HttpException('meta| é obrigatório enviar meta|iniciativa|atividade quando origem_tipo for PdmSistema', 400);
+        if (!atividade_id && !iniciativa_id && !meta_id)
+            throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
 
         if (atividade_id !== null) {
             const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
@@ -81,6 +83,9 @@ export class ProjetoService {
         if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
         if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
 
+        // força a limpeza no banco, pode ser que tenha vindo como undefined
+        meta_codigo = origem_outro = null;
+
         return {
             meta_id,
             atividade_id,
@@ -98,6 +103,9 @@ export class ProjetoService {
         if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
         if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
 
+        // força a limpeza no banco, pode ser que tenha vindo como undefined
+        meta_id = atividade_id = iniciativa_id = origem_outro = null;
+
         return {
             meta_id,
             atividade_id,
@@ -108,12 +116,15 @@ export class ProjetoService {
     }
 
     private async assertOrigemTipoOutro(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
-        if (!origem_outro || origem_outro.length < 1) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
+        if (!origem_outro) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
 
         if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
         if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
         if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
         if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
+
+        // força a limpeza no banco, pode ser que tenha vindo como undefined
+        meta_id = atividade_id = iniciativa_id = meta_codigo = null;
 
         return {
             meta_id,
@@ -577,15 +588,15 @@ export class ProjetoService {
             }
         }
 
-        let origem_tipo: ProjetoOrigemTipo | undefined;
-        let meta_id: number | null | undefined;
-        let iniciativa_id: number | null | undefined;
-        let atividade_id: number | null | undefined;
-        let origem_outro: string | null | undefined;
-        let meta_codigo: string | null | undefined;
+        let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
+        let meta_id: number | null | undefined = undefined;
+        let iniciativa_id: number | null | undefined = undefined;
+        let atividade_id: number | null | undefined = undefined;
+        let origem_outro: string | null | undefined = undefined;
+        let meta_codigo: string | null | undefined = undefined;
 
-        if ("origem_tipo" in dto) {
-            const origemVerification = await this.processaOrigem(dto, projeto.origem_tipo);
+        if ("origem_tipo" in dto && dto.origem_tipo) {
+            const origemVerification = await this.processaOrigem(dto as any, projeto.origem_tipo);
 
             origem_tipo = origemVerification.origem_tipo;
             meta_id = origemVerification.meta_id;
