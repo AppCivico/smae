@@ -473,7 +473,7 @@ iniciar();
             :key="item.id"
             :value="item.id"
           >
-            {{ item.titulo }}
+            {{ item.codigo }} - {{ item.titulo }}
           </option>
         </Field>
 
