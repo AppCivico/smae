@@ -357,6 +357,7 @@ export class ProjetoService {
                 iniciativa_id: true,
                 atividade_id: true,
                 origem_outro: true,
+                portfolio_id: true,
                 meta_codigo: true,
                 nome: true,
                 status: true,
