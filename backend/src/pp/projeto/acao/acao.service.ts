@@ -13,14 +13,7 @@ export class AcaoService {
 
     ) { }
 
-    async createX(dto: CreateAcaoDto, user: PessoaFromJwt) {
-        console.log({dto});
-
-        console.log('going to call projetoService.findOne');
-
-
-        console.log(`dto acao ${dto.acao} dto p ${dto.projeto_id}`);
-
+    async create(dto: CreateAcaoDto, user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(dto.projeto_id, user, false);
 
         const acaoDesejada = 'acao_' + dto.acao;
