@@ -65,7 +65,8 @@ export class AcaoService {
                 }
             });
 
-
+            // basta isso para gerar um relatório
+            await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
         });
 
     }

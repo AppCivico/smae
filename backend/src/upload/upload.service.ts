@@ -161,7 +161,7 @@ export class UploadService {
 
     }
 
-    async uploadReport(category: string, filename: string, buffer: Buffer, mimetype: string | undefined, user: PessoaFromJwt) {
+    async uploadReport(category: string, filename: string, buffer: Buffer, mimetype: string | undefined, user: PessoaFromJwt | null) {
         const originalname = filename;
 
         const arquivoId = await this.nextSequence();
@@ -170,7 +170,7 @@ export class UploadService {
             'reports',
             category,
             'by-user',
-            String(user.id),
+            user ? String(user.id) : 'sistema',
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
             originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, ''),
@@ -178,8 +178,8 @@ export class UploadService {
 
         await this.storage.putBlob(key, buffer, {
             'Content-Type': mimetype || 'application/octet-stream',
-            'x-user-id': user.id,
-            'x-orgao-id': user.orgao_id || 'sem-orgao',
+            'x-user-id': (user ? user.id : 'sistema'),
+            'x-orgao-id': (user ? (user.orgao_id || 'sem-orgao') : 'n/a'),
             'x-category': category,
             'x-tipo': 'reports',
         });
@@ -187,7 +187,7 @@ export class UploadService {
         await this.prisma.arquivo.create({
             data: {
                 id: arquivoId,
-                criado_por: user.id,
+                criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
                 caminho: key,
                 nome_original: originalname,

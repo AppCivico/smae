@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { JOB_LOCK_NUMBER } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -15,7 +16,6 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmDocument } from './entities/pdm-document.entity';
-const JOB_LOCK_NUMBER = 65656565;
 
 @Injectable()
 export class PdmService {

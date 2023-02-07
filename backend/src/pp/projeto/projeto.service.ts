@@ -599,7 +599,9 @@ export class ProjetoService {
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
-            // TODO se entrar o novo status, tbm precisa chamar um export do relatório
+            if (novoStatus) {
+                await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
+            }
 
             await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
             await prismaTx.projeto.update({
