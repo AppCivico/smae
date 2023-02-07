@@ -166,7 +166,7 @@ iniciar();
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, resetField, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -301,6 +301,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_gestor_id }"
           :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
+          @change="resetField('responsaveis_no_orgao_gestor')"
         >
           <option value="">
             Selecionar
@@ -371,6 +372,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_responsavel_id }"
           :disabled="!values.orgaos_participantes?.length"
+          @change="resetField('responsavel_id')"
         >
           <option value="">
             Selecionar
@@ -430,7 +432,10 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.origem_tipo }"
-          @change="buscarDadosParaOrigens($event); values.meta_id = undefined"
+          @change="
+            buscarDadosParaOrigens($event);
+            resetField(['meta_id', 'meta_codigo', 'origem_outro'])
+          "
         >
           <option value="">
             Selecionar
@@ -463,7 +468,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.meta_id }"
           :disabled="!MetasStore.Metas.length"
-          @change="buscarIniciativasEAtividades($event)"
+          @change="buscarIniciativasEAtividades($event); resetField('iniciativa_id')"
         >
           <option value="">
             Selecionar
@@ -519,6 +524,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.iniciativa_id }"
           :disabled="!singleMeta?.children?.[0]?.iniciativas.length"
+          @change="resetField('atividade_id')"
         >
           <option value="">
             Selecionar
