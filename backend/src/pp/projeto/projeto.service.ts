@@ -543,7 +543,7 @@ export class ProjetoService {
             }
         }
 
-        if (readonly == false && pessoaPodeEscrever == false) {
+        if (user && (readonly == false && pessoaPodeEscrever == false)) {
             throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
         }
 
