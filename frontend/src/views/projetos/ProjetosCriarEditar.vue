@@ -289,8 +289,10 @@ iniciar();
       </div>
     </div>
 
+    <hr class="mb1 f1">
+
     <label class="label mt2 mb1">
-      Órgãos responsáveis <span class="tvermelho">*</span>
+      Órgãos
     </label>
     <div class="flex g2">
       <div class="f1 mb1">
@@ -345,24 +347,6 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Orgãos participantes
-          <span class="tvermelho">*</span>
-        </label>
-
-        <AutocompleteField
-          :controlador="{busca: '', participantes:
-            values.orgaos_participantes || []}"
-          :grupo="órgãosQueTemResponsáveis"
-          label="sigla"
-          name="orgaos_participantes"
-        />
-        <ErrorMessage
-          name="orgaos_participantes"
-          class="error-msg"
-        />
-      </div>
-
-      <div class="f1 mb1">
         <label class="label tc300">Órgão responsável
           <span class="tvermelho">*</span>
         </label>
@@ -371,19 +355,18 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_responsavel_id }"
-          :disabled="!values.orgaos_participantes?.length"
+          :disabled="!órgãosQueTemResponsáveis?.length"
           @change="resetField('responsavel_id')"
         >
           <option value="">
             Selecionar
           </option>
           <option
-            v-for="item in values.orgaos_participantes"
+            v-for="item in órgãosQueTemResponsáveis"
             :key="item"
-            :value="item"
+            :value="item.id"
           >
-            {{ órgãosQueTemResponsáveisEPorId[item]?.sigla }} -
-            {{ órgãosQueTemResponsáveisEPorId[item]?.descricao }}
+            {{ item.sigla }} - {{ item.descricao }}
           </option>
         </Field>
         <ErrorMessage
@@ -421,6 +404,28 @@ iniciar();
         />
       </div>
     </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <label class="label tc300">Orgãos participantes
+          <span class="tvermelho">*</span>
+        </label>
+
+        <AutocompleteField
+          :controlador="{busca: '', participantes:
+            values.orgaos_participantes || []}"
+          :grupo="órgãosQueTemResponsáveis"
+          label="sigla"
+          name="orgaos_participantes"
+        />
+        <ErrorMessage
+          name="orgaos_participantes"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <hr class="mb1 f1">
 
     <div class="flex g2">
       <div class="f1 mb1">
@@ -597,6 +602,8 @@ iniciar();
         />
       </div>
     </div>
+
+    <hr class="mb1 f1">
 
     <div class="flex g2">
       <div class="f1 mb1">
