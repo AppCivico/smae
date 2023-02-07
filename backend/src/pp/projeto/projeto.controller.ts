@@ -14,7 +14,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 @ApiTags('Projeto')
 @Controller('projeto')
 export class ProjetoController {
-    constructor(private readonly projetoService: ProjetoService) {}
+    constructor(private readonly projetoService: ProjetoService) { }
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -36,16 +36,16 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
-    async findOne(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
-        return await this.projetoService.findOne(+id, user, true);
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
+        return await this.projetoService.findOne(params.id, user, true);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
-    async update(@Param('id') id: string, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.projetoService.update(+id, updateProjetoDto, user);
+    async update(@Param() params: FindOneParams, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.projetoService.update(params.id, updateProjetoDto, user);
     }
 
     @Delete(':id')
@@ -54,8 +54,8 @@ export class ProjetoController {
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param('id') id: string, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.remove(+id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.remove(params.id, user);
         return '';
     }
 
