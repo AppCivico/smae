@@ -65,6 +65,7 @@ export class ProjetoService {
     private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
         if (!atividade_id && !iniciativa_id && !meta_id)
             throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
+        console.log({ atividade_id, iniciativa_id, meta_id });
 
         if (atividade_id) {
             this.logger.log('validando atividade_id');
@@ -180,6 +181,8 @@ export class ProjetoService {
      * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
      * */
     async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        console.log({ dto });
+
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(user);
