@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProjetoStatus } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ProjetoService } from '../projeto.service';
@@ -33,37 +33,36 @@ export class AcaoService {
             { h: 'terminado_em', p: 'terminado_por' },
         ];
 
-        const dePara: Record<ProjetoAcao, typeof DbActions[number]> = {
-            'arquivar': { h: 'arquivado_em', p: 'arquivado_por' },
-            'restaurar': { h: 'restaurado_em', p: 'restaurado_por' },
-            'selecionar': { h: 'selecionado_em', p: 'selecionado_por' },
-            'finalizar_planejamento': { h: 'finalizou_planejamento_em', p: 'finalizou_planejamento_por' },
-            'validar': { h: 'validado_em', p: 'validado_por' },
-            'iniciar': { h: 'iniciado_em', p: 'iniciado_por' },
-            'suspender': { h: 'suspenso_em', p: 'suspenso_por' },
-            'reiniciar': { h: 'reiniciado_em', p: 'reiniciado_por' },
-            'cancelar': { h: 'cancelado_em', p: 'cancelado_por' },
-            'terminar': { h: 'terminado_em', p: 'terminado_por' },
+        const dePara: Record<ProjetoAcao, (typeof DbActions[number]) & { status: ProjetoStatus | undefined }> = {
+            'arquivar': { h: 'arquivado_em', p: 'arquivado_por', status: undefined },
+            'restaurar': { h: 'restaurado_em', p: 'restaurado_por', status: undefined },
+            'selecionar': { h: 'selecionado_em', p: 'selecionado_por', status: 'Planejado' },
+            'finalizar_planejamento': { h: 'finalizou_planejamento_em', p: 'finalizou_planejamento_por', status: 'Planejado' },
+            'validar': { h: 'validado_em', p: 'validado_por', status: 'Validado' },
+            'iniciar': { h: 'iniciado_em', p: 'iniciado_por', status: 'EmAcompanhamento' },
+            'suspender': { h: 'suspenso_em', p: 'suspenso_por', status: 'Suspenso' },
+            'reiniciar': { h: 'reiniciado_em', p: 'reiniciado_por', status: 'EmAcompanhamento' },
+            'cancelar': { h: 'cancelado_em', p: 'cancelado_por', status: 'Fechado' },
+            'terminar': { h: 'terminado_em', p: 'terminado_por', status: 'Fechado' },
         } as const;
 
-        const acao = dePara[dto.acao];
-        if (!acao) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
+        const dbAction = dePara[dto.acao];
+        if (!dbAction) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             let arquivado: boolean | undefined = undefined;
             let eh_prioritario: boolean | undefined = undefined;
+
             if (dto.acao == 'arquivar') arquivado = true;
             if (dto.acao == 'restaurar') arquivado = false;
             if (dto.acao == 'selecionar') eh_prioritario = true;
 
-            const cols: any = {};
-            cols[acao.h] = new Date(Date.now());
-            cols[acao.p] = user.id;
-
             await prismaTx.projeto.update({
                 where: { id: projeto.id },
                 data: {
-                    ...cols,
+                    [dbAction.h]: new Date(Date.now()),
+                    [dbAction.p]: user.id,
+                    status: dbAction.status,
                     arquivado: arquivado,
                     eh_prioritario: eh_prioritario,
                 }
