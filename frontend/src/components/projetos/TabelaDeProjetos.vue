@@ -63,7 +63,7 @@ async function excluirProjetos(id) {
         <th>
           Status
         </th>
-        <th />
+        <!--th /-->
         <th />
       </tr>
     </thead>
@@ -98,7 +98,7 @@ async function excluirProjetos(id) {
               || item.status
           }}
         </td>
-        <td>
+        <!--td>
           <button
             class="like-a__text addlink"
             arial-label="excluir"
@@ -110,7 +110,7 @@ async function excluirProjetos(id) {
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
-        </td>
+        </td-->
         <td>
           <router-link
             :to="{ name: 'projetosEditar', params: { projetoId: item.id } }"
