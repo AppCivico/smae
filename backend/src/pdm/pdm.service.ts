@@ -528,7 +528,6 @@ export class PdmService {
             orderBy: { data_inicio: 'desc' },
             take: 1,
         });
-        this.logger.warn(`Fase corrente (as of ${todayAtSp.toISOString()}): ${JSON.stringify(fase_corrente)}`)
 
         if (!fase_corrente) {
             await this.desativaCicloParaSempre({ id: cf.id, pdm_id: cf.pdm_id });
