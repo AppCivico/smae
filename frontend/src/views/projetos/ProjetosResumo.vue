@@ -40,9 +40,8 @@ iniciar();
       <h1>{{ emFoco?.nome }}</h1>
     </div>
     <hr class="ml2 f1">
-
     <MenuDeMudançaDeStatusDeProjeto />
-
+    <hr class="ml2 f1">
     <router-link
       v-if="emFoco?.id"
       :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
