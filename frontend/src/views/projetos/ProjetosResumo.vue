@@ -28,8 +28,21 @@ iniciar();
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ emFoco.nome }}</h1>
+    <div>
+      <div class="t12 uc w700 tamarelo">
+        Projeto
+      </div>
+
+      <h1>{{ emFoco?.nome }}</h1>
+    </div>
     <hr class="ml2 f1">
+    <router-link
+      v-if="emFoco?.id"
+      :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
   </div>
 
   <div class="boards">
@@ -39,9 +52,7 @@ iniciar();
           Portfolio
         </dt>
         <dd class="t13">
-          {{
-            portfolioStore.portfoliosPorId[emFoco.portfolio_id].titulo
-          }}
+          {{ portfolioStore?.portfoliosPorId[emFoco?.portfolio_id]?.titulo }}
         </dd>
       </dl>
       <div class="f1 mb1">
@@ -49,7 +60,7 @@ iniciar();
           Nome do projeto
         </dt>
         <dd class="t13">
-          {{ emFoco.nome }}
+          {{ emFoco?.nome }}
         </dd>
       </div>
       <dl class="f1 mb1">
@@ -57,7 +68,7 @@ iniciar();
           Versão
         </dt>
         <dd class="t13">
-          {{ emFoco.versao }}
+          {{ emFoco?.versao }}
         </dd>
       </dl>
     </div>
@@ -68,7 +79,7 @@ iniciar();
           Resumo
         </dt>
         <dd class="t13">
-          {{ emFoco.resumo || '-' }}
+          {{ emFoco?.resumo || '-' }}
         </dd>
       </dl>
     </div>
@@ -79,7 +90,7 @@ iniciar();
           Escopo
         </dt>
         <dd class="t13">
-          {{ emFoco.escopo || '-' }}
+          {{ emFoco?.escopo || '-' }}
         </dd>
       </dl>
     </div>
@@ -90,7 +101,7 @@ iniciar();
           Principais etapas
         </dt>
         <dd class="t13">
-          {{ emFoco.principais_etapas || '-' }}
+          {{ emFoco?.principais_etapas || '-' }}
         </dd>
       </dl>
     </div>
@@ -106,7 +117,7 @@ iniciar();
           Órgão gestor
         </dt>
         <dd class="t13">
-          {{ emFoco.orgao_gestor.sigla }} - {{ emFoco.orgao_gestor.descricao }}
+          {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
         </dd>
       </dl>
       <dl class="f1 mb1">
@@ -115,7 +126,7 @@ iniciar();
         </dt>
         <dd class="t13">
           <template
-            v-for="item in emFoco.responsaveis_no_orgao_gestor"
+            v-for="item in emFoco?.responsaveis_no_orgao_gestor"
             :key="item"
           >
             pessoa ID {{ item }},
@@ -129,7 +140,7 @@ iniciar();
           Órgão responsável
         </dt>
         <dd class="t13">
-          {{ emFoco.orgao_responsavel.sigla }} - {{ emFoco.orgao_responsavel.descricao }}
+          {{ emFoco?.orgao_responsavel.sigla }} - {{ emFoco?.orgao_responsavel.descricao }}
         </dd>
       </dl>
       <dl class="f1 mb1">
@@ -137,7 +148,7 @@ iniciar();
           Responsável
         </dt>
         <dd class="t13">
-          pessoa ID {{ emFoco.responsavel_id }}
+          pessoa ID {{ emFoco?.responsavel_id }}
         </dd>
       </dl>
     </div>
@@ -149,7 +160,7 @@ iniciar();
         </dt>
         <dd class="t13">
           <template
-            v-for="item in emFoco.orgaos_participantes"
+            v-for="item in emFoco?.orgaos_participantes"
             :key="item.id"
           >
             {{ item.sigla }} - {{ item.descricao }},
