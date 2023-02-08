@@ -40,9 +40,24 @@ export class ProjetoPermissoesDto {
 }
 
 export class ProjetoMetaDetailDto {
+    /**
+     * @example "0"
+    */
     id: number
+
+    /**
+     * @example "string"
+    */
     codigo: string
+
+    /**
+     * @example "string"
+    */
     titulo: string
+
+    /**
+     * @example "0"
+    */
     pdm_id: number
 }
 
