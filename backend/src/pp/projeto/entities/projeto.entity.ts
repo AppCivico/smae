@@ -1,4 +1,6 @@
-import { ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+
+import { ApiProperty } from '@nestjs/swagger';
+import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
@@ -8,8 +10,11 @@ import { TipoDocumento } from '../../../tipo-documento/entities/tipo-documento.e
 export class ProjetoDto {
     id: number;
     nome: string;
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status: ProjetoStatus;
     orgao_responsavel: IdSiglaDescricao | null;
+    arquivado: boolean
+    eh_prioritario: boolean
     meta: IdCodTituloDto | null;
     portfolio: IdTituloDto
 }
@@ -32,6 +37,38 @@ export class ProjetoPermissoesDto {
     campo_premissas: boolean
     campo_restricoes: boolean
     campo_codigo_liberado: boolean
+    campo_data_aprovacao: boolean
+    campo_data_revisao: boolean
+    campo_versao: boolean
+}
+
+export class ProjetoMetaDetailDto {
+    /**
+     * @example "0"
+    */
+    id: number
+
+    /**
+     * @example "string"
+    */
+    codigo: string
+
+    /**
+     * @example "string"
+    */
+    titulo: string
+
+    /**
+     * @example "0"
+    */
+    pdm_id: number
+}
+
+export class ProjetoSeiDto {
+    id: number
+    categoria: CategoriaProcessoSei
+    processo_sei: String
+    registro_sei_info: String
 }
 
 export class ProjetoDetailDto {
@@ -40,8 +77,18 @@ export class ProjetoDetailDto {
     iniciativa_id: number | null;
     atividade_id: number | null;
     nome: string;
+    /**
+     * @example "EmAcompanhamento"
+    */
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status: ProjetoStatus;
+    /**
+     * @example "Acompanhamento"
+    */
+    @ApiProperty({ enum: ProjetoFase, enumName: 'ProjetoFase' })
+    fase: ProjetoFase;
     resumo: string;
+    portfolio_id: number
     codigo: string | null;
     objeto: string;
     objetivo: string;
@@ -64,7 +111,8 @@ export class ProjetoDetailDto {
     responsavel: IdNomeExibicao | null;
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
-    recursos: ProjetoRecursos[] | null;
+    fonte_recursos: ProjetoRecursos[] | null;
+    sei: ProjetoSeiDto[] | null;
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;
     meta_codigo: string | null
@@ -73,6 +121,14 @@ export class ProjetoDetailDto {
     data_revisao: Date | null
     versao: string | null
 
+    eh_prioritario: boolean
+    arquivado: boolean
+
+    secretario_executivo: string | null
+    secretario_responsavel: string | null
+    coordenador_ue: string | null
+
+    meta: ProjetoMetaDetailDto | null
     // responsaveis_no_orgao_gestor:
 
     permissoes: ProjetoPermissoesDto

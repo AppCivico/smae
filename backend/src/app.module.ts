@@ -37,6 +37,7 @@ import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 import { PdmModule } from './pdm/pdm.module';
 import { PessoaModule } from './pessoa/pessoa.module';
 import { PortfolioModule } from './pp/portfolio/portfolio.module';
+import { AcaoModule } from './pp/projeto/acao/acao.module';
 import { ProjetoModule } from './pp/projeto/projeto.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RegiaoModule } from './regiao/regiao.module';
@@ -116,6 +117,7 @@ import { VariavelModule } from './variavel/variavel.module';
         IndicadoresModule,
         MonitoramentoMensalModule,
         PPProjetoModule,
+        AcaoModule,
     ],
     controllers: [AppController],
     providers: [

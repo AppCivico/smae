@@ -1,6 +1,7 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { CategoriaProcessoSei } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsInt, isInt, IsNumber, isNumber, IsOptional, isString, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { CreateProjetoDto } from './create-projeto.dto';
 
@@ -10,6 +11,7 @@ export class PPfonteRecursoDto {
      */
     @IsOptional()
     @IsNumber()
+    @Transform((a: any) => (a.value === undefined ? undefined : +a.value))
     id?: number;
 
     /**
@@ -22,12 +24,17 @@ export class PPfonteRecursoDto {
     @IsInt()
     @Max(3000)
     @Min(2003)
+    @Transform((a: any) => +a.value)
     fonte_recurso_ano: number;
 
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| até duas casas decimais' })
+    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
     valor_percentual?: number | null;
 
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| até duas casas decimais' })
+    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
     valor_nominal?: number | null;
 }
 
@@ -57,9 +64,46 @@ export class PPrestricaoDto {
     restricao: string;
 }
 
-export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['portfolio_id', 'orgao_gestor_id']) {
-    // FONTE-RECURSO 1..N
 
+export class PSeiDto {
+    /**
+     * id caso já exista e deseja fazer uma atualização
+     */
+    @IsOptional()
+    @IsNumber()
+    id?: number;
+
+    @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
+    @IsEnum(CategoriaProcessoSei, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(CategoriaProcessoSei).join(', '),
+    })
+    categoria: CategoriaProcessoSei
+
+    @IsString()
+    processo_sei: string
+}
+
+// esses campos serão updated apenas via sistema (pelas tarefas)
+//    @IsOptional()
+//    @IsOnlyDate()
+//    @Type(() => Date)
+//    @ValidateIf((object, value) => value !== null)
+//    realizado_inicio?: Date
+//
+//    @IsOptional()
+//    @IsOnlyDate()
+//    @Type(() => Date)
+//    @ValidateIf((object, value) => value !== null)
+//    realizado_termino?: Date
+//
+//    @IsOptional()
+//    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+//    @Min(0, { message: '$property| Custo precisa ser positivo' })
+//    @Transform((a: any) => (a.value === null ? null : +a.value))
+//    @ValidateIf((object, value) => value !== null)
+//    realizado_custo?: number
+
+export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['portfolio_id', 'orgao_gestor_id']) {
     @IsOptional()
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
@@ -79,12 +123,14 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     fonte_recursos?: PPfonteRecursoDto[];
 
     @IsOptional()
-    @IsString()
-    codigo?: string
+    @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
+    @ValidateNested({ each: true })
+    @Type(() => PSeiDto)
+    sei?: PSeiDto[];
 
     @IsOptional()
     @IsString()
-    descricao?: string
+    codigo?: string
 
     @IsOptional()
     @IsString()
@@ -98,32 +144,54 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsString()
     publico_alvo?: string
 
-
-    // esses campos serão updated apenas via sistema (pelas tarefas)
-    //    @IsOptional()
-    //    @IsOnlyDate()
-    //    @Type(() => Date)
-    //    @ValidateIf((object, value) => value !== null)
-    //    realizado_inicio?: Date
-    //
-    //    @IsOptional()
-    //    @IsOnlyDate()
-    //    @Type(() => Date)
-    //    @ValidateIf((object, value) => value !== null)
-    //    realizado_termino?: Date
-    //
-    //    @IsOptional()
-    //    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
-    //    @Min(0, { message: '$property| Custo precisa ser positivo' })
-    //    @Transform((a: any) => (a.value === null ? null : +a.value))
-    //    @ValidateIf((object, value) => value !== null)
-    //    realizado_custo?: number
-
     @IsOptional()
     @IsString()
     nao_escopo?: string
 
     @IsOptional()
-    @IsBoolean()
-    arquivado?: boolean
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    secretario_executivo?: string | null
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    secretario_responsavel?: string | null
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    coordenador_ue?: string | null
+
+    /**
+     * texto que representa a versão
+     * @example "..."
+     */
+    @IsOptional()
+    @IsString()
+    @MaxLength(20)
+    @ValidateIf((object, value) => value !== null)
+    versao: string | null;
+
+    /**
+     * data_aprovacao
+     * @example "2022-01-20"
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data_aprovacao?: Date | null;
+
+
+    /**
+     * data_revisao
+     * @example "2022-01-20"
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data_revisao?: Date | null;
+
 }

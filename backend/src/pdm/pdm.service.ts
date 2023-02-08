@@ -1,9 +1,10 @@
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { CicloFisico, CicloFisicoFase, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { JOB_LOCK_NUMBER } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -15,7 +16,15 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmDocument } from './entities/pdm-document.entity';
-const JOB_LOCK_NUMBER = 65656565;
+
+
+type CicloFisicoResumo = {
+    id: number;
+    pdm_id: number;
+    data_ciclo: Date;
+    ciclo_fase_atual_id: number | null;
+    CicloFaseAtual: CicloFisicoFase | null
+};
 
 @Injectable()
 export class PdmService {
@@ -448,8 +457,7 @@ export class PdmService {
             return false;
         }
 
-        const mesCorrente = hoje.substring(0, 8) + '01';
-        this.logger.log(`Executando ciclo ${JSON.stringify(cf)} mesCorrente=${mesCorrente}, hoje=${hoje}`);
+        this.logger.log(`Executando ciclo ${JSON.stringify(cf)} hoje=${hoje} (data hora pelo banco)`);
 
         try {
             if (cf.acordar_ciclo_errmsg) {
@@ -461,24 +469,7 @@ export class PdmService {
             }
 
             if (cf.pdm.ativo) {
-                const faseAtual = cf.CicloFaseAtual;
-
-                if (
-                    (
-                        (!faseAtual && Date2YMD.toString(cf.data_ciclo) < mesCorrente) ||
-                        (faseAtual && Date2YMD.toString(faseAtual.data_fim) < hoje)
-                    ) && cf.ativo) {
-                    await this.inativarCiclo(cf);
-                } else if (
-                    (
-                        (!faseAtual && Date2YMD.toString(cf.data_ciclo) === mesCorrente)
-                        ||
-                        (faseAtual && Date2YMD.toString(faseAtual.data_inicio).substring(0, 7) === mesCorrente.substring(0, 7))
-                    ) && !cf.ativo) {
-                    await this.ativarCiclo(cf, hoje);
-                } else {
-                    await this.verificaFaseAtual(cf, hoje);
-                }
+                await this.verificaFases(cf);
             } else {
                 this.logger.warn('PDM foi desativado, não há mais ciclos até a proxima ativação');
 
@@ -512,42 +503,90 @@ export class PdmService {
         return true;
     }
 
-    private async verificaFaseAtual(
-        cf: {
-            id: number;
-            pdm_id: number;
-            data_ciclo: Date;
-            ciclo_fase_atual_id: number | null;
-        },
-        today: string,
-    ) {
-        const todayAtSp = DateTime.local({ zone: 'America/Sao_Paulo' }).toJSDate();
-        this.logger.log(`verificando ciclo atual ${cf.data_ciclo} - Hoje em SP = ${todayAtSp.toISOString()}`);
+    private async verificaFases(cf: CicloFisicoResumo) {
+        const hojeEmSp = DateTime.local({ zone: 'America/Sao_Paulo' }).toJSDate();
+        this.logger.log(`Verificando ciclo atual ${cf.data_ciclo} - Hoje em SP = ${Date2YMD.toString(hojeEmSp)}`);
+
+        if (cf.CicloFaseAtual) {
+            this.logger.log('No banco, fase atual é ' +
+                cf.CicloFaseAtual.id +
+                ` com inicio em ${Date2YMD.toString(cf.CicloFaseAtual.data_inicio)} e fim ${Date2YMD.toString(cf.CicloFaseAtual.data_fim)}`);
+        } else {
+            this.logger.log(`Não há nenhuma fase atualmente associada com o Ciclo Fisico`);
+            this.logger.debug(
+                'ciclo_fase_atual_id está null, provavelmente o ciclo não deveria ter sido executado ainda,' +
+                ' ou o PDM acabou de ser re-ativado, ou é a primeira vez do ciclo'
+            );
+        }
+
         const fase_corrente = await this.prisma.cicloFisicoFase.findFirst({
             where: {
-                ciclo_fisico_id: cf.id,
-                data_inicio: {
-                    lte: todayAtSp,
-                },
+                ciclo_fisico: { pdm_id: cf.pdm_id },
+                data_inicio: { lte: hojeEmSp },
+                data_fim: { gte: hojeEmSp }, // termina dentro da data corrente
             },
-            orderBy: {
-                data_inicio: 'desc',
-            },
+            orderBy: { data_inicio: 'desc' },
             take: 1,
         });
         this.logger.warn(`Fase corrente (as of ${todayAtSp.toISOString()}): ${JSON.stringify(fase_corrente)}`)
 
         if (!fase_corrente) {
-            throw new Error(`Faltando próxima fase do ciclo!`);
-        } else if (cf.ciclo_fase_atual_id === null) {
-            this.logger.warn(`ciclo_fase_atual_id está null, provavelmente o ciclo não deveria ter sido executado ainda, ou o PDM acabou de ser re-ativado`);
+            await this.desativaCicloParaSempre({ id: cf.id, pdm_id: cf.pdm_id });
+            return;
         }
 
+        this.logger.log(`Fase corrente: ${JSON.stringify(fase_corrente)}`)
         if (cf.ciclo_fase_atual_id === null || cf.ciclo_fase_atual_id !== fase_corrente.id) {
-            this.logger.log(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id ?? 'null'} para ${fase_corrente.id} (${fase_corrente.ciclo_fase})`);
+            await this.cicloFisicoAtualizaFase(cf, fase_corrente);
+        } else {
+            // aqui não precisa de transaction pois ele tenta primeiro atualizar a função
+            // e se falhar, vai rolar o retry
+            this.logger.log(`Recalculando permissões de acesso ao PDM (nova meta?)`);
+            await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
 
             await this.prisma.cicloFisico.update({
                 where: { id: cf.id },
+                data: {
+                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
+                    acordar_ciclo_executou_em: new Date(Date.now()),
+                    ativo: true,
+                },
+            });
+        }
+    }
+
+
+    private async cicloFisicoAtualizaFase(cf: CicloFisicoResumo, fase_corrente: CicloFisicoFase) {
+        let pdm_id = cf.pdm_id;
+        let ciclo_fisico_id = fase_corrente.ciclo_fisico_id;
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+
+            if (cf.ciclo_fase_atual_id === null)
+                this.logger.log(`Iniciando ciclo id=${cf.id}, data ${cf.data_ciclo}) pela primeira vez!`);
+
+
+            // se mudou de ciclo_fisico, precisa fechar e re-abrir
+            if (fase_corrente.ciclo_fisico_id !== cf.id) {
+                this.logger.log(`Desativando o ciclo id=${cf.id}, data ${cf.data_ciclo})...`);
+                // aqui entraria um código pra fazer o fechamento,
+                // se precisar disparar algum email ou algo do tipo
+                await prismaTxn.cicloFisico.update({
+                    where: { id: cf.id },
+                    data: {
+                        acordar_ciclo_em: null,
+                        acordar_ciclo_executou_em: new Date(Date.now()),
+                        ativo: false,
+                    },
+                });
+
+                ciclo_fisico_id = fase_corrente.ciclo_fisico_id;
+            }
+
+            this.logger.log(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id ?? 'null'} para ${fase_corrente.id} (${fase_corrente.ciclo_fase})`);
+
+            await prismaTxn.cicloFisico.update({
+                where: { id: ciclo_fisico_id },
                 data: {
                     acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
                     acordar_ciclo_executou_em: new Date(Date.now()),
@@ -556,110 +595,28 @@ export class PdmService {
                 },
             });
 
-            this.logger.log(`chamando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
-            await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
-        } else {
-            this.logger.log(`Recalculando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
-            await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
-
-            await this.prisma.cicloFisico.update({
-                where: { id: cf.id },
-                data: {
-                    acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
-                    acordar_ciclo_executou_em: new Date(Date.now()),
-                    ativo: true,
-                },
-            });
-        }
-    }
-
-    private async inativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date }) {
-        this.logger.log(`desativando ciclo ${cf.data_ciclo}`);
-
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            await prismaTxn.cicloFisico.update({
-                where: { id: cf.id },
-                data: {
-                    ativo: false,
-                    acordar_ciclo_em: null,
-                },
-            });
-
-            const proximoCiclo = await this.prisma.cicloFisico.findFirst({
-                where: {
-                    pdm_id: cf.pdm_id,
-                    data_ciclo: {
-                        gt: cf.data_ciclo,
-                    },
-                },
-                select: {
-                    id: true,
-                    data_ciclo: true,
-                },
-                orderBy: {
-                    data_ciclo: 'asc',
-                },
-                take: 1,
-            });
-
-            if (proximoCiclo) {
-                this.logger.log(`Marcando proximo ciclo ${proximoCiclo.data_ciclo} para acordar no proximo tick`);
-                await prismaTxn.cicloFisico.update({
-                    where: { id: proximoCiclo.id },
-                    data: {
-                        acordar_ciclo_em: new Date(Date.now()),
-                        acordar_ciclo_executou_em: new Date(Date.now()),
-                    },
-                });
-            } else {
-                this.logger.log(`não há próximos ciclos`);
-                await prismaTxn.cicloFisico.update({
-                    where: { id: cf.id },
-                    data: {
-                        acordar_ciclo_em: null,
-                        acordar_ciclo_executou_em: new Date(Date.now()),
-                    },
-                });
-            }
+            this.logger.log(`chamando atualiza_fase_meta_pdm(${pdm_id}, ${ciclo_fisico_id})`);
+            await prismaTxn.$queryRaw`select atualiza_fase_meta_pdm(${pdm_id}::int, ${ciclo_fisico_id}::int)`;
         });
     }
 
-    private async ativarCiclo(cf: { id: number; pdm_id: number; data_ciclo: Date }, today: string) {
-        this.logger.log(`ativando ciclo ${cf.data_ciclo}`);
+    private async desativaCicloParaSempre(cf: { id: number; pdm_id: number }) {
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            const count = await prismaTxn.cicloFisico.count({ where: { ativo: true, pdm_id: cf.pdm_id } });
-            if (count) {
-                this.logger.error(`Não é possível ativar o ciclo ${cf.data_ciclo} pois ainda há outros ciclos que não foram fechados`);
-                return;
-            }
+            this.logger.log(`Não há próximos ciclos!`);
+            // aqui entraria um código pra fazer o ultimo fechamento, se precisar disparar algum email ou algo do tipo
 
-            const fase_corrente = await prismaTxn.cicloFisicoFase.findFirst({
-                where: {
-                    ciclo_fisico_id: cf.id,
-                    data_inicio: {
-                        lte: new Date(today),
-                    },
+            await prismaTxn.cicloFisico.update({
+                where: { id: cf.id },
+                data: {
+                    acordar_ciclo_em: null,
+                    acordar_ciclo_executou_em: new Date(Date.now()),
+                    ciclo_fase_atual_id: null,
+                    ativo: false,
                 },
-                orderBy: {
-                    data_inicio: 'desc',
-                },
-                take: 1,
             });
-            if (!fase_corrente) {
-                throw new Error(`Faltando fase corrente, não é possível ativar o ciclo!`);
-            } else {
-                await prismaTxn.cicloFisico.update({
-                    where: { id: cf.id },
-                    data: {
-                        ativo: true,
-                        ciclo_fase_atual_id: fase_corrente.id,
-                        acordar_ciclo_em: Date2YMD.tzSp2UTC(Date2YMD.incDaysFromISO(fase_corrente.data_fim, 1)),
-                    },
-                });
 
-                this.logger.log(`Recalculando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
-                await prismaTxn.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
-            }
+            this.logger.log(`Recalculando atualiza_fase_meta_pdm(${cf.pdm_id}, NULL) para desativar as metas`);
+            await prismaTxn.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, NULL)`;
         });
     }
 

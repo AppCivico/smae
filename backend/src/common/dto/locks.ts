@@ -1,0 +1,2 @@
+export const JOB_LOCK_NUMBER = 65656565;
+export const JOB_LOCK_NUMBER_REPORT = JOB_LOCK_NUMBER + 1;

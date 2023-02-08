@@ -1,7 +1,29 @@
 import regEx from '@/consts/patterns';
 import {
-  array, boolean, number, object, ref, string
+  addMethod,
+  array,
+  boolean,
+  date,
+  mixed,
+  number,
+  object,
+  ref,
+  string
 } from 'yup';
+
+// https://github.com/jquense/yup/issues/384#issuecomment-442958997
+// eslint-disable-next-line no-template-curly-in-string
+addMethod(mixed, 'inArray', function _(arrayValue, message = '${path} not found in ${arrayValue}') {
+  return this.test({
+    message,
+    name: 'inArray',
+    exclusive: true,
+    params: { arrayValue },
+    test(value) {
+      return (this.resolve(arrayValue) || []).includes(value);
+    },
+  });
+});
 
 const autenticação = object().shape({
   username: string().email('E-mail inválido').required('Preencha seu e-mail'),
@@ -69,6 +91,104 @@ const novaSenha = object().shape({
     .min(8, 'Deve conter pelo menos 8 caracteres'),
   passwordConfirmation: string().required('Repita sua senha')
     .oneOf([ref('password'), null], 'Senhas não coincidem'),
+});
+
+const projeto = object().shape({
+  origem_tipo: mixed()
+    .required('O projeto precisa de uma origem de recursos.')
+    .oneOf(['PdmSistema', 'PdmAntigo', 'Outro'], 'A origem escolhida é inválida'),
+  portfolio_id: number()
+    .min(1, 'Selecione ao menos um portfolio')
+    .required('O projeto precisa pertencer a um portfolio'),
+  orgao_gestor_id: number()
+    .min(1, 'Selecione um órgão gestor')
+    .required('O projeto necessita de um órgão gestor'),
+  responsaveis_no_orgao_gestor: array()
+    .min(1, 'Selecione ao menos um gestor')
+    .required('Alguém do órgão gestor precisa gerir o projeto'),
+  orgaos_participantes: array()
+    .min(1, 'Selecione ao menos um órgão')
+    .required('Selecione órgãos participantes'),
+  orgao_responsavel_id: mixed()
+    .inArray(ref('orgaos_participantes'), 'O órgão responsável precisa participar')
+    .required('Escolha um órgão responsável pelo projeto'),
+  responsavel_id: number()
+    .required('O projeto necessita de um responsável'),
+  nome: string()
+    .required('Um projeto requer um nome')
+    .min(1, 'Esse nome é muito curto')
+    .max(500, 'Esse nome é muito longo'),
+  resumo: string()
+    .max(500, 'Esse texto é muito longo')
+    .required(),
+  previsao_inicio: date()
+    .min(new Date(2003, 0, 1))
+    .required(),
+  previsao_termino: date()
+    .min(ref('previsao_inicio'))
+    .required(),
+
+  meta_id: number(),
+  iniciativa_id: number(),
+  atividade_id: number(),
+
+  origem_outro: string()
+    .max(500, 'Esse texto é muito longo')
+    .when('meta_id', (metaId, field) => (!metaId
+      ? field.required('Esse campo é obrigatório caso não se escolha uma meta, iniciativa ou atividade')
+      : field))
+    .when('iniciativa_id', (iniciativaId, field) => (!iniciativaId
+      ? field.required('Esse campo é obrigatório caso não se escolha uma meta, iniciativa ou atividade')
+      : field))
+    .when('atividade_id', (atividadeId, field) => (!atividadeId
+      ? field.required('Esse campo é obrigatório caso não se escolha uma meta, iniciativa ou atividade')
+      : field)),
+  meta_codigo: string(),
+  previsao_custo: number()
+    .nullable()
+    .min(0)
+    .required(),
+  escopo: string()
+    .max(50000, 'Esse texto é muito longo')
+    .required(),
+  principais_etapas: string()
+    .max(50000, 'Esse texto é muito longo')
+    .required(),
+  versao: string()
+    .max(20, 'Esse texto é muito longo')
+    .required(),
+  data_aprovacao: date()
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .required(),
+  data_revisao: date()
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .required(),
+
+  fonte_recursos: array()
+    .nullable()
+    .of(
+      object().shape({
+        id: number()
+          .nullable(),
+        fonte_recurso_cod_sof: string().matches(/\d\d/).required(),
+        fonte_recurso_ano: number()
+          .min(2003, 'A partir de 2003')
+          .max(3000, 'Até o ano 3000')
+          .required('Escolha um ano válido'),
+        valor_percentual: string().when('valor_nominal', {
+          is: (valorNominal) => !valorNominal,
+          then: number().required('Ao menos um tipo de valor é necessário.'),
+          otherwise: number().nullable(),
+        }),
+        valor_nominal: string().when('valor_percentual', {
+          is: (valorPercentual) => !valorPercentual,
+          then: number().required('Ao menos um tipo de valor é necessário.'),
+          otherwise: number().nullable(),
+        }),
+      }, [['valor_percentual', 'valor_nominal']]),
+    ),
 });
 
 const portfolio = object({
@@ -171,6 +291,7 @@ export {
   indicador,
   novaSenha,
   portfolio,
+  projeto,
   região,
   relatórioMensal,
   relatórioOrçamentário,

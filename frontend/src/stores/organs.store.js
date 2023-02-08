@@ -160,8 +160,18 @@ export const useOrgansStore = defineStore({
     },
   },
   getters: {
+    órgãosOrdenados: ({ organs }) => (Array.isArray(organs)
+      ? [...organs].sort((a, b) => a.sigla?.localeCompare(b.sigla))
+      : []),
     órgãosPorId: ({ organs }) => (Array.isArray(organs)
       ? organs.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
       : {}),
+    órgãosQueTemResponsáveis() {
+      return this.órgãosOrdenados.filter((x) => x.responsible?.length);
+    },
+    órgãosQueTemResponsáveisEPorId() {
+      return this.órgãosQueTemResponsáveis
+        .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
+    },
   },
 });

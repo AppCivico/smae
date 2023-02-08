@@ -1,6 +1,7 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
+
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -30,23 +31,28 @@ export class ProjetoOrgaoParticipante {
 
 @Injectable()
 export class ProjetoService {
+    private readonly logger = new Logger(ProjetoService.name);
     constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) { }
 
-    private async processaOrigem(dto: CreateProjetoDto | UpdateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
+    private async processaOrigem(dto: CreateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
         let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
         let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
         let origem_outro: string | null = dto.origem_outro ? dto.origem_outro : null;
         let meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
-        let origem_tipo: ProjetoOrigemTipo | undefined = dto.origem_tipo ? dto.origem_tipo : undefined;
+        let origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
 
-        if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmSistema) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmSistema)) {
-            await this.assertOrigemTipoPdmSistema(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.PdmAntigo) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.PdmAntigo)) {
-            await this.assertOrigemTipoPdmAntigo(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
-        } else if ((origem_tipo && origem_tipo === ProjetoOrigemTipo.Outro) || (!origem_tipo && currentOrigemTipo && currentOrigemTipo === ProjetoOrigemTipo.Outro)) {
-            await this.assertOrigemTipoOutro(meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo);
+        if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
+            await validaPdmSistema(this);
+        } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
+            validaPdmAntigo();
+
+        } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
+            validaOutro();
+        } else {
+            throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
         }
+
 
         return {
             origem_tipo,
@@ -56,72 +62,74 @@ export class ProjetoService {
             origem_outro,
             meta_codigo
         };
-    }
 
-    private async assertOrigemTipoPdmSistema(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
-        if (!(atividade_id || iniciativa_id || meta_id))
-            throw new HttpException('meta| é obrigatório enviar meta|iniciativa|atividade quando origem_tipo for PdmSistema', 400);
+        function validaOutro() {
+            if (!origem_outro)
+                throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
 
-        if (atividade_id !== null) {
-            const atv = await this.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
-            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true } });
-            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
+            if (meta_id)
+                throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (iniciativa_id)
+                throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (atividade_id)
+                throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (meta_codigo)
+                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
 
-            iniciativa_id = ini.meta_id;
-            meta_id = ini.meta_id;
-        } else if (iniciativa_id !== null) {
-            const ini = await this.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
-            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
-
-            meta_id = ini.meta_id;
-        } else if (meta_id !== null) {
-            await this.prisma.iniciativa.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            meta_id = atividade_id = iniciativa_id = meta_codigo = null;
         }
 
-        if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
-        if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+        function validaPdmAntigo() {
+            if (!meta_codigo)
+                throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
 
-        return {
-            meta_id,
-            atividade_id,
-            iniciativa_id,
-            origem_outro,
-            meta_codigo
-        };
-    }
+            if (meta_id)
+                throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+            if (iniciativa_id)
+                throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+            if (atividade_id)
+                throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+            if (origem_outro)
+                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
 
-    private async assertOrigemTipoPdmAntigo(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
-        if (!meta_codigo) throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            meta_id = atividade_id = iniciativa_id = origem_outro = null;
+        }
 
-        if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-        if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-        if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-        if (origem_outro) throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+        async function validaPdmSistema(self: ProjetoService) {
+            if (!atividade_id && !iniciativa_id && !meta_id)
+                throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
 
-        return {
-            meta_id,
-            atividade_id,
-            iniciativa_id,
-            origem_outro,
-            meta_codigo
-        };
-    }
+            if (atividade_id) {
+                self.logger.log('validando atividade_id');
+                const atv = await self.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
+                await self.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
 
-    private async assertOrigemTipoOutro(meta_id: number | null, atividade_id: number | null, iniciativa_id: number | null, origem_outro: string | null, meta_codigo: string | null) {
-        if (!origem_outro || origem_outro.length < 1) throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
+                iniciativa_id = atv.iniciativa_id;
+                meta_id = ini.meta_id;
+            } else if (iniciativa_id) {
+                self.logger.log('validando iniciativa_id');
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
 
-        if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-        if (iniciativa_id) throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-        if (atividade_id) throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
-        if (meta_codigo) throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
+                meta_id = ini.meta_id;
+                atividade_id = null;
+            } else if (meta_id) {
+                self.logger.log('validando meta_id');
+                await self.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
 
-        return {
-            meta_id,
-            atividade_id,
-            iniciativa_id,
-            origem_outro,
-            meta_codigo
-        };
+                iniciativa_id = atividade_id = null;
+            }
+
+            if (origem_outro)
+                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+            if (meta_codigo)
+                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+
+            // força a limpeza no banco, pode ser que tenha vindo como undefined
+            meta_codigo = origem_outro = null;
+        }
     }
 
     private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
@@ -162,6 +170,8 @@ export class ProjetoService {
      * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
      * */
     async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        console.log({ dto });
+
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(user);
@@ -208,9 +218,6 @@ export class ProjetoService {
                     previsao_custo: dto.previsao_custo,
                     escopo: dto.escopo,
                     principais_etapas: dto.principais_etapas,
-                    versao: dto.versao,
-                    data_aprovacao: dto.data_aprovacao,
-                    data_revisao: dto.data_revisao,
 
                     objetivo: '',
                     objeto: '',
@@ -230,8 +237,7 @@ export class ProjetoService {
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
 
-        let permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
-        let orgao_id: undefined | number = undefined;
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
         if (!user.hasSomeRoles(['Projeto.administrador'])) {
 
             if (user.hasSomeRoles(['SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto']) === false)
@@ -257,6 +263,7 @@ export class ProjetoService {
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 arquivado: filters.arquivado,
                 status: filters.status,
+                portfolio: { removido_em: null },
                 AND: permissionsSet.length > 0 ? [
                     {
                         OR: permissionsSet
@@ -267,6 +274,8 @@ export class ProjetoService {
                 id: true,
                 nome: true,
                 status: true,
+                eh_prioritario: true,
+                arquivado: true,
 
                 atividade: {
                     select: {
@@ -336,7 +345,9 @@ export class ProjetoService {
                 status: row.status,
                 meta: meta,
                 orgao_responsavel: row.orgao_responsavel ? { ...row.orgao_responsavel } : null,
-                portfolio: row.portfolio
+                portfolio: row.portfolio,
+                arquivado: row.arquivado,
+                eh_prioritario: row.eh_prioritario,
             });
         }
 
@@ -345,22 +356,7 @@ export class ProjetoService {
 
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
 
-        const permissoes: ProjetoPermissoesDto = {
-            acao_arquivar: false,
-            acao_restaurar: false,
-            acao_selecionar: false,
-            acao_finalizar_planejamento: false,
-            acao_validar: false,
-            acao_iniciar: false,
-            acao_suspender: false,
-            acao_reiniciar: false,
-            acao_cancelar: false,
-            acao_terminar: false,
-            campo_codigo_liberado: false,
-            campo_premissas: false,
-            campo_restricoes: false,
-        };
-
+        console.log({ id, user, readonly });
 
         const projeto = await this.prisma.projeto.findFirstOrThrow({
             where: { id: id, removido_em: null },
@@ -372,9 +368,11 @@ export class ProjetoService {
                 iniciativa_id: true,
                 atividade_id: true,
                 origem_outro: true,
+                portfolio_id: true,
                 meta_codigo: true,
                 nome: true,
                 status: true,
+                fase: true,
                 resumo: true,
                 codigo: true,
                 objeto: true,
@@ -394,6 +392,11 @@ export class ProjetoService {
                 nao_escopo: true,
                 principais_etapas: true,
                 responsaveis_no_orgao_gestor: true,
+                responsavel_id: true,
+                eh_prioritario: true,
+                secretario_executivo: true,
+                secretario_responsavel: true,
+                coordenador_ue: true,
 
                 orgao_gestor: {
                     select: {
@@ -425,7 +428,7 @@ export class ProjetoService {
                     },
                 },
 
-                recursos: {
+                fonte_recursos: {
                     select: {
                         id: true,
                         fonte_recurso_cod_sof: true,
@@ -453,10 +456,28 @@ export class ProjetoService {
                         },
                     },
                 },
+
+                meta: {
+                    select: {
+                        pdm_id: true,
+                        codigo: true,
+                        titulo: true,
+                        id: true
+                    }
+                },
+
+                ProjetoRegistroSei: {
+                    select: {
+                        id: true,
+                        categoria: true,
+                        processo_sei: true,
+                        registro_sei_info: true
+                    }
+                }
             },
         });
 
-        await this.calcPermissions(projeto, permissoes, user, readonly);
+        const permissoes = await this.calcPermissions(projeto, user, readonly);
 
         return {
             ...projeto,
@@ -468,16 +489,51 @@ export class ProjetoService {
                     descricao: o.orgao.descricao,
                 };
             }),
+
+            sei: projeto.ProjetoRegistroSei.map(s => {
+                return {
+                    id: s.id,
+                    categoria: s.categoria,
+                    processo_sei: s.processo_sei,
+                    registro_sei_info: JSON.stringify(s.registro_sei_info)
+                }
+            })
         };
     }
 
 
     private async calcPermissions(
-        projeto: { arquivado: boolean; status: ProjetoStatus; id: number; },
-        permissoes: ProjetoPermissoesDto,
+        projeto: {
+            arquivado: boolean;
+            status: ProjetoStatus;
+            id: number;
+            responsaveis_no_orgao_gestor: number[],
+            responsavel_id: number | null
+        },
         user: PessoaFromJwt | undefined,
         readonly: boolean
-    ) {
+    ): Promise<ProjetoPermissoesDto> {
+        const permissoes: ProjetoPermissoesDto = {
+            acao_arquivar: false,
+            acao_restaurar: false,
+            acao_selecionar: false,
+            // acao_iniciar_planejamento: não existe, é automático quando insere o código
+            acao_finalizar_planejamento: false,
+            acao_validar: false,
+            acao_iniciar: false,
+            acao_suspender: false,
+            acao_reiniciar: false,
+            acao_cancelar: false,
+            acao_terminar: false,
+            campo_codigo_liberado: false,
+            campo_premissas: false,
+            campo_restricoes: false,
+            campo_data_aprovacao: false,
+            campo_data_revisao: false,
+            campo_versao: false
+
+        };
+
         // se o projeto está arquivado, não podemos arquivar novamente
         // mas podemos restaurar (retornar para o status e fase anterior)
         if (projeto.arquivado == true) {
@@ -486,23 +542,65 @@ export class ProjetoService {
             permissoes.acao_arquivar = true;
         }
 
-        const userCanWrite = true;
-        if (user && !user.hasSomeRoles(['Projeto.administrador'])) {
-            // TODO verificar a permissão do "user",
-            // se chegou aqui ele pode ser tanto um SMAE.gestor_de_projeto ou então ser um dos respostáveis
-            // usar campo readonly, pq há chamadas para essa função quando há escritas
+        let pessoaPodeEscrever = false;
+        if (user) {
+            if (user.hasSomeRoles(['Projeto.administrador'])) {
+                pessoaPodeEscrever = true;
+            } else if (
+                user.hasSomeRoles(['SMAE.gestor_de_projeto'])
+                && projeto.responsaveis_no_orgao_gestor.includes(+user.id)
+            ) {
+                pessoaPodeEscrever = true;
+            } else if (
+                user.hasSomeRoles(['SMAE.colaborador_de_projeto'])
+                && projeto.responsavel_id
+                && projeto.responsavel_id == +user.id
+            ) {
+                pessoaPodeEscrever = (['Registrado', 'Selecionado'] as ProjetoStatus[]).includes(projeto.status);
+            } else {
+                throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
+            }
+
+        } else {
+            // user null == sistema puxando o relatório, então se precisar só mudar pra pessoaPodeEscrever=true
         }
 
         if (projeto.arquivado == false) {
             // se já saiu da fase de registro, então está liberado preencher o campo
             // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
             // migrar o status para "EmPlanejamento"
-            if (projeto.status !== 'Registrado')
+            if (projeto.status !== 'Registrado') {
                 permissoes.campo_codigo_liberado = true;
+                permissoes.campo_premissas = true;
+                permissoes.campo_restricoes = true;
 
-            if (userCanWrite) {
+                permissoes.campo_data_aprovacao = true;
+                permissoes.campo_data_revisao = true;
+                permissoes.campo_versao = true;
+            }
+
+            if (pessoaPodeEscrever) {
+
+                switch (projeto.status) {
+                    case 'Registrado': permissoes.acao_selecionar = true; break;
+                    case 'Selecionado': break;// nothing to do
+                    case 'EmPlanejamento': permissoes.acao_finalizar_planejamento = true; break;
+                    case 'Planejado': permissoes.acao_validar = true; break;
+                    case 'Validado': permissoes.acao_iniciar = true; break;
+                    case 'EmAcompanhamento': permissoes.acao_suspender = permissoes.acao_terminar = true; break;
+                    case 'Suspenso': permissoes.acao_cancelar = permissoes.acao_reiniciar = true; break;
+                    // redundante, pq pode sempre arquivar
+                    case 'Fechado': permissoes.acao_arquivar = true; break;
+                }
+
             }
         }
+
+        if (user && (readonly == false && pessoaPodeEscrever == false)) {
+            throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
+        }
+
+        return permissoes;
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -531,15 +629,15 @@ export class ProjetoService {
             }
         }
 
-        let origem_tipo: ProjetoOrigemTipo | undefined;
-        let meta_id: number | null | undefined;
-        let iniciativa_id: number | null | undefined;
-        let atividade_id: number | null | undefined;
-        let origem_outro: string | null | undefined;
-        let meta_codigo: string | null | undefined;
+        let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
+        let meta_id: number | null | undefined = undefined;
+        let iniciativa_id: number | null | undefined = undefined;
+        let atividade_id: number | null | undefined = undefined;
+        let origem_outro: string | null | undefined = undefined;
+        let meta_codigo: string | null | undefined = undefined;
 
-        if ("origem_tipo" in dto) {
-            const origemVerification = await this.processaOrigem(dto, projeto.origem_tipo);
+        if ("origem_tipo" in dto && dto.origem_tipo) {
+            const origemVerification = await this.processaOrigem(dto as any, projeto.origem_tipo);
 
             origem_tipo = origemVerification.origem_tipo;
             meta_id = origemVerification.meta_id;
@@ -553,47 +651,63 @@ export class ProjetoService {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
+            await this.upsertSei(dto, prismaTx, projetoId, user);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
-            // TODO se entrar o novo status, tbm precisa chamar um export do relatório
-            
-            await prismaTx.projetoOrgaoParticipante.deleteMany({where: {projeto_id: projetoId}});
+            if (novoStatus)
+                await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
+
+            if (dto.orgaos_participantes !== undefined)
+                await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
+
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
+                    // origem
                     meta_id,
                     atividade_id,
                     iniciativa_id,
                     origem_outro,
                     meta_codigo,
                     origem_tipo,
+
+                    // campos do create
+                    responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
+                    orgao_responsavel_id: dto.orgao_responsavel_id,
+                    responsavel_id: dto.responsavel_id,
+
                     nome: dto.nome,
                     resumo: dto.resumo,
-                    codigo: dto.codigo,
-                    objeto: dto.objeto,
-                    objetivo: dto.objetivo,
-                    publico_alvo: dto.publico_alvo,
                     previsao_inicio: dto.previsao_inicio,
-                    previsao_custo: dto.previsao_custo,
                     previsao_termino: dto.previsao_termino,
+                    previsao_custo: dto.previsao_custo,
                     escopo: dto.escopo,
-                    nao_escopo: dto.nao_escopo,
                     principais_etapas: dto.principais_etapas,
-                    responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
                     versao: dto.versao,
                     data_aprovacao: dto.data_aprovacao,
                     data_revisao: dto.data_revisao,
+
+                    // campos apenas do update
+                    publico_alvo: dto.publico_alvo,
+                    codigo: dto.codigo,
+                    objeto: dto.objeto,
+                    objetivo: dto.objetivo,
+                    nao_escopo: dto.nao_escopo,
+                    secretario_executivo: dto.secretario_executivo,
+                    secretario_responsavel: dto.secretario_responsavel,
+                    coordenador_ue: dto.coordenador_ue,
+
                     // por padrão undefined, não faz nenhuma alteração
                     status: novoStatus,
                     fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
 
-                    orgaos_participantes: {
+                    orgaos_participantes: dto.orgaos_participantes !== undefined ? {
                         createMany: {
                             data: dto.orgaos_participantes!.map(o => {
                                 return { orgao_id: o };
                             }),
                         },
-                    },
+                    } : undefined,
                 }
             })
         });
@@ -644,6 +758,43 @@ export class ProjetoService {
             } else {
                 const row = await prismaTx.projetoRestricao.create({
                     data: { restricao: restricao.restricao, projeto_id: projetoId },
+                });
+                keepIds.push(row.id);
+            }
+        }
+        await prismaTx.projetoRestricao.deleteMany({
+            where: { projeto_id: projetoId, id: { notIn: keepIds } },
+        });
+    }
+
+    private async upsertSei(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number, user: PessoaFromJwt) {
+        if (Array.isArray(dto.restricoes) == false) return;
+
+        const keepIds: number[] = [];
+        for (const sei of dto.sei!) {
+            if ('id' in sei && sei.id) {
+                await prismaTx.projetoRegistroSei.findFirstOrThrow({
+                    where: { projeto_id: projetoId, id: sei.id },
+                });
+                await prismaTx.projetoRegistroSei.update({
+                    where: { id: sei.id },
+                    data: {
+                        processo_sei: sei.processo_sei,
+                        categoria: sei.categoria
+                    },
+                });
+                keepIds.push(sei.id);
+            } else {
+                const row = await prismaTx.projetoRegistroSei.create({
+                    data: {
+                        processo_sei: sei.processo_sei,
+                        categoria: sei.categoria,
+                        registro_sei_info: '{}',
+                        projeto_id: projetoId,
+
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now())
+                    }
                 });
                 keepIds.push(row.id);
             }
@@ -731,31 +882,6 @@ export class ProjetoService {
             },
         });
         return;
-    }
-
-    async archive(id: number, user: PessoaFromJwt) {
-        await this.prisma.projeto.updateMany({
-            where: { id: id, arquivado_em: null },
-            data: {
-                arquivado: true,
-                arquivado_por: user.id,
-                arquivado_em: new Date(Date.now()),
-            }
-        });
-
-        return { id }
-    }
-
-    async restore(id: number, user: PessoaFromJwt) {
-        await this.prisma.projeto.updateMany({
-            where: { id: id, arquivado: true },
-            data: {
-                arquivado: false,
-                arquivado_por: null,
-                arquivado_em: null,
-            },
-        });
-        return { id };
     }
 
     async append_document(projetoId: number, createPdmDocDto: CreateProjetoDocumentDto, user: PessoaFromJwt) {

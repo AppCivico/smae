@@ -1,9 +1,8 @@
 <script setup>
 import {
-  useAlertStore, useOrgansStore, useProjetosStore
+useAlertStore, useOrgansStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { defineProps } from 'vue';
 
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
@@ -48,7 +47,7 @@ async function excluirProjetos(id) {
     <col>
     <col>
     <col>
-    <col class="col--botão-de-ação">
+    <!--col class="col--botão-de-ação"-->
     <col class="col--botão-de-ação">
     <thead>
       <tr>
@@ -64,7 +63,7 @@ async function excluirProjetos(id) {
         <th>
           Status
         </th>
-        <th />
+        <!--th /-->
         <th />
       </tr>
     </thead>
@@ -73,7 +72,11 @@ async function excluirProjetos(id) {
         v-for="item in props.lista"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
+        <td>
+          <router-link :to="{ name: 'projetosResumo', params: { projetoId: item.id }}">
+            {{ item.nome }}
+          </router-link>
+        </td>
         <td>
           {{
             órgãosPorId[item.orgao_responsavel?.id]?.sigla
@@ -83,19 +86,19 @@ async function excluirProjetos(id) {
         </td>
         <td>
           {{
-            metasPorId[item.meta?.id]?.código
-              || item.meta?.código
+            metasPorId[item.meta?.id]?.codigo
+              || item.meta?.codigo
               || item.meta
           }}
         </td>
         <td>
           {{
-            statusesPorId[item.status?.id]?.código
-              || item.status?.código
+            statusesPorId[item.status?.id]?.codigo
+              || item.status?.codigo
               || item.status
           }}
         </td>
-        <td>
+        <!--td>
           <button
             class="like-a__text addlink"
             arial-label="excluir"
@@ -107,9 +110,9 @@ async function excluirProjetos(id) {
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
-        </td>
+        </td-->
         <td>
-          <!--router-link
+          <router-link
             :to="{ name: 'projetosEditar', params: { projetoId: item.id } }"
             class="tprimary"
           >
@@ -117,21 +120,21 @@ async function excluirProjetos(id) {
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link-->
+          </router-link>
         </td>
       </tr>
       <tr v-if="pendente">
-        <td colspan="6">
+        <td colspan="5">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="6">
+        <td colspan="5">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="6">
+        <td colspan="5">
           Nenhum resultado encontrado.
         </td>
       </tr>
