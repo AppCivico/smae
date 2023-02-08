@@ -510,7 +510,7 @@ export class PdmService {
         if (cf.CicloFaseAtual) {
             this.logger.log('No banco, fase atual é ' +
                 cf.CicloFaseAtual.id +
-                `com inicio em ${Date2YMD.toString(cf.CicloFaseAtual.data_inicio)} e fim ${Date2YMD.toString(cf.CicloFaseAtual.data_fim)}`);
+                ` com inicio em ${Date2YMD.toString(cf.CicloFaseAtual.data_inicio)} e fim ${Date2YMD.toString(cf.CicloFaseAtual.data_fim)}`);
         } else {
             this.logger.log(`Não há nenhuma fase atualmente associada com o Ciclo Fisico`);
             this.logger.debug(
@@ -523,6 +523,7 @@ export class PdmService {
             where: {
                 ciclo_fisico: { pdm_id: cf.pdm_id },
                 data_inicio: { lte: hojeEmSp },
+                data_fim: { gte: hojeEmSp }, // termina dentro da data corrente
             },
             orderBy: { data_inicio: 'desc' },
             take: 1,
@@ -539,7 +540,7 @@ export class PdmService {
         } else {
             // aqui não precisa de transaction pois ele tenta primeiro atualizar a função
             // e se falhar, vai rolar o retry
-            this.logger.log(`Recalculando atualiza_fase_meta_pdm(${cf.pdm_id}, ${cf.id})`);
+            this.logger.log(`Recalculando permissões de acesso ao PDM (nova meta?)`);
             await this.prisma.$queryRaw`select atualiza_fase_meta_pdm(${cf.pdm_id}::int, ${cf.id}::int)`;
 
             await this.prisma.cicloFisico.update({
