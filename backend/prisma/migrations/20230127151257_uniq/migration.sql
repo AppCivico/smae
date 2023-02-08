@@ -1,6 +1,6 @@
 begin;
 
-update pdm me set ativo = (SELECT id from pdm where ativo order by atualizado_por desc limit 1) = me.id;
+update pdm me set ativo = coalesce( (SELECT id from pdm where ativo order by atualizado_por desc limit 1 ) = me.id, false);
 
 update ciclo_fisico set ativo = false where ativo;
 
