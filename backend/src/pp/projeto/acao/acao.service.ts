@@ -20,30 +20,21 @@ export class AcaoService {
         if (!(projeto.permissoes as any)[acaoDesejada])
             throw new HttpException(`Não é possível executar ação ${dto.acao} no momento`, 400);
 
-        const DbActions: { h: keyof Prisma.ProjetoUncheckedCreateInput, p: keyof Prisma.ProjetoUncheckedCreateInput }[] = [
-            { h: 'arquivado_em', p: 'arquivado_por' },
-            { h: 'restaurado_em', p: 'restaurado_por' },
-            { h: 'selecionado_por', p: 'selecionado_por' },
-            { h: 'finalizou_planejamento_em', p: 'finalizou_planejamento_por' },
-            { h: 'validado_em', p: 'validado_por' },
-            { h: 'suspenso_em', p: 'suspenso_por' },
-            { h: 'iniciado_em', p: 'iniciado_por' },
-            { h: 'reiniciado_em', p: 'reiniciado_por' },
-            { h: 'cancelado_em', p: 'cancelado_por' },
-            { h: 'terminado_em', p: 'terminado_por' },
-        ];
-
-        const dePara: Record<ProjetoAcao, (typeof DbActions[number]) & { status: ProjetoStatus | undefined }> = {
-            'arquivar': { h: 'arquivado_em', p: 'arquivado_por', status: undefined },
-            'restaurar': { h: 'restaurado_em', p: 'restaurado_por', status: undefined },
-            'selecionar': { h: 'selecionado_em', p: 'selecionado_por', status: 'Planejado' },
-            'finalizar_planejamento': { h: 'finalizou_planejamento_em', p: 'finalizou_planejamento_por', status: 'Planejado' },
-            'validar': { h: 'validado_em', p: 'validado_por', status: 'Validado' },
-            'iniciar': { h: 'iniciado_em', p: 'iniciado_por', status: 'EmAcompanhamento' },
-            'suspender': { h: 'suspenso_em', p: 'suspenso_por', status: 'Suspenso' },
-            'reiniciar': { h: 'reiniciado_em', p: 'reiniciado_por', status: 'EmAcompanhamento' },
-            'cancelar': { h: 'cancelado_em', p: 'cancelado_por', status: 'Fechado' },
-            'terminar': { h: 'terminado_em', p: 'terminado_por', status: 'Fechado' },
+        const dePara: Record<ProjetoAcao, {
+            date: keyof Prisma.ProjetoUncheckedCreateInput,
+            user: keyof Prisma.ProjetoUncheckedCreateInput,
+            status: ProjetoStatus | undefined
+        }> = {
+            'arquivar': { date: 'arquivado_em', user: 'arquivado_por', status: undefined },
+            'restaurar': { date: 'restaurado_em', user: 'restaurado_por', status: undefined },
+            'selecionar': { date: 'selecionado_em', user: 'selecionado_por', status: 'Planejado' },
+            'finalizar_planejamento': { date: 'finalizou_planejamento_em', user: 'finalizou_planejamento_por', status: 'Planejado' },
+            'validar': { date: 'validado_em', user: 'validado_por', status: 'Validado' },
+            'iniciar': { date: 'iniciado_em', user: 'iniciado_por', status: 'EmAcompanhamento' },
+            'suspender': { date: 'suspenso_em', user: 'suspenso_por', status: 'Suspenso' },
+            'reiniciar': { date: 'reiniciado_em', user: 'reiniciado_por', status: 'EmAcompanhamento' },
+            'cancelar': { date: 'cancelado_em', user: 'cancelado_por', status: 'Fechado' },
+            'terminar': { date: 'terminado_em', user: 'terminado_por', status: 'Fechado' },
         } as const;
 
         const dbAction = dePara[dto.acao];
@@ -60,8 +51,8 @@ export class AcaoService {
             await prismaTx.projeto.update({
                 where: { id: projeto.id },
                 data: {
-                    [dbAction.h]: new Date(Date.now()),
-                    [dbAction.p]: user.id,
+                    [dbAction.date]: new Date(Date.now()),
+                    [dbAction.user]: user.id,
                     status: dbAction.status,
                     arquivado: arquivado,
                     eh_prioritario: eh_prioritario,
