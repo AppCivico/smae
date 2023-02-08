@@ -1,4 +1,4 @@
-import { ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, CategoriaProcessoSei } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
@@ -41,6 +41,12 @@ export class ProjetoMetaDetailDto {
     titulo: string
     pdm_id: number
 }
+export class ProjetoSeiDto {
+    id: number
+    categoria: CategoriaProcessoSei
+    processo_sei: String
+    registro_sei_info: String
+}
 
 export class ProjetoDetailDto {
     id: number;
@@ -81,6 +87,7 @@ export class ProjetoDetailDto {
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
     recursos: ProjetoRecursos[] | null;
+    sei: ProjetoSeiDto[] | null;
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;
     meta_codigo: string | null
