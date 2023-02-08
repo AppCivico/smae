@@ -124,9 +124,9 @@ export class ProjetoDetailDto {
     eh_prioritario: boolean
     arquivado: boolean
 
-    secretario_executivo: string
-    secretario_responsavel: string
-    coordenador_ue: string
+    secretario_executivo: string | null
+    secretario_responsavel: string | null
+    coordenador_ue: string | null
 
     meta: ProjetoMetaDetailDto | null
     // responsaveis_no_orgao_gestor:
