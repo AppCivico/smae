@@ -50,19 +50,20 @@ export class AcaoService {
         if (!acao) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            const [colunaHora, colunaPessoa] = [acao.h, acao.p];
-
             let arquivado: boolean | undefined = undefined;
             let eh_prioritario: boolean | undefined = undefined;
             if (dto.acao == 'arquivar') arquivado = true;
             if (dto.acao == 'restaurar') arquivado = false;
             if (dto.acao == 'selecionar') eh_prioritario = true;
 
+            const cols: any = {};
+            cols[acao.h] = new Date(Date.now());
+            cols[acao.p] = user.id;
+
             await prismaTx.projeto.update({
                 where: { id: projeto.id },
                 data: {
-                    [colunaHora]: new Date(Date.now()),
-                    [colunaPessoa]: user.id,
+                    ...cols,
                     arquivado: arquivado,
                     eh_prioritario: eh_prioritario,
                 }
