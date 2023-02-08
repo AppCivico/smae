@@ -27,7 +27,7 @@ export class AcaoService {
         }> = {
             'arquivar': { date: 'arquivado_em', user: 'arquivado_por', status: undefined },
             'restaurar': { date: 'restaurado_em', user: 'restaurado_por', status: undefined },
-            'selecionar': { date: 'selecionado_em', user: 'selecionado_por', status: 'Planejado' },
+            'selecionar': { date: 'selecionado_em', user: 'selecionado_por', status: 'Selecionado' },
             'finalizar_planejamento': { date: 'finalizou_planejamento_em', user: 'finalizou_planejamento_por', status: 'Planejado' },
             'validar': { date: 'validado_em', user: 'validado_por', status: 'Validado' },
             'iniciar': { date: 'iniciado_em', user: 'iniciado_por', status: 'EmAcompanhamento' },
