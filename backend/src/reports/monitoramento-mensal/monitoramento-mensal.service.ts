@@ -44,7 +44,18 @@ export class MonitoramentoMensalService implements ReportableService {
             for (const r of ret) {
                 if (r.series) {
                     for (const s of r.series) {
+                        if (!s.Previsto || !s.PrevistoAcumulado || !s.Realizado || !s.RealizadoAcumulado) continue
+
                         linhas.push({
+                            meta_id: r.meta_id,
+                            meta_codigo: r.meta_codigo,
+                            meta_titulo: r.meta_titulo,
+                            iniciativa_id: r.iniciativa_id,
+                            iniciativa_codigo: r.iniciativa_codigo,
+                            iniciativa_titulo: r.indicador_titulo,
+                            atividade_id: r.atividade_id,
+                            atividade_codigo: r.atividade_codigo,
+                            atividade_titulo: r.atividade_titulo,
                             indicador_id: r.indicador_id,
                             indicador_titulo: r.indicador_titulo,
                             indicador_codigo: r.indicador_codigo,
@@ -85,13 +96,26 @@ export class MonitoramentoMensalService implements ReportableService {
 
         out.push(...(await this.mmMf.getFiles(dados, pdm)));
 
+        const camposMetaIniAtv = [
+            { value: 'meta_codigo', label: 'Código da Meta' },
+            { value: 'meta_titulo', label: 'Título da Meta' },
+            { value: 'meta_id', label: 'ID da Meta' },
+
+            { value: 'iniciativa_codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa_titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa_id', label: 'ID da ' + pdm.rotulo_iniciativa },
+            { value: 'atividade_codigo', label: 'Código da ' + pdm.rotulo_atividade },
+            { value: 'atividade_titulo', label: 'Título da ' + pdm.rotulo_atividade },
+            { value: 'atividade_id', label: 'ID da ' + pdm.rotulo_atividade },
+        ];
+
         for (const painel of dados.paineis) {
             if (painel.linhas.length == 0) continue;
 
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: undefined,
+                fields: [...camposMetaIniAtv],
             });
 
             const linhas = json2csvParser.parse(painel.linhas);

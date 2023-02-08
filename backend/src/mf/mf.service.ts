@@ -3,10 +3,11 @@ import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CicloAtivoDto } from './metas/dto/mf-meta.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Date2YMD } from '../common/date2ymd';
 
 @Injectable()
 export class MfService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async pessoaAcessoPdm(user: PessoaFromJwt): Promise<PessoaAcessoPdm> {
         const perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
@@ -36,7 +37,26 @@ export class MfService {
                 pdm: { select: { id: true } },
             },
         });
-        if (!cicloAtivo) throw new HttpException('Faltando ciclo ativo', 404);
+        if (!cicloAtivo) {
+            let detail = '';
+            const pdmAtivo = await this.prisma.pdm.findFirst({ where: { ativo: true, } });
+            if (pdmAtivo) {
+                const ultimaFase = await this.prisma.cicloFisicoFase.findFirst({
+                    where: {
+                        ciclo_fisico: { pdm_id: pdmAtivo.id },
+                    },
+                    orderBy: { data_inicio: 'desc' },
+                    take: 1,
+                });
+                if (ultimaFase)
+                    detail += ` Última fase do ciclo acabou em ${Date2YMD.toString(ultimaFase.data_fim)}.`;
+
+            } else {
+                detail += ' Não há Programa de Metas ativo no momento.';
+            }
+
+            throw new HttpException('Não há ciclo ativo no momento.' + detail, 404);
+        }
 
         return cicloAtivo;
     }

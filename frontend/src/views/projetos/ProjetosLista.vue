@@ -16,8 +16,19 @@ const {
 } = storeToRefs(projetosStore);
 const route = useRoute();
 
+const props = defineProps({
+  apenasPrioritários: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 projetosStore.$reset();
-projetosStore.buscarTudo();
+if (props?.apenasPrioritários) {
+  projetosStore.buscarTudo({ eh_prioritario: true });
+} else {
+  projetosStore.buscarTudo();
+}
 
 if (!organs.length) {
   organsStore.getAll();
@@ -36,12 +47,12 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Projetos' }}</h1>
     <hr class="ml2 f1">
-      <!--router-link
+    <router-link
       :to="{ name: 'projetosCriar' }"
       class="btn big ml1"
     >
       Novo projeto
-      </router-link-->
+    </router-link>
   </div>
 
   <div class="boards">

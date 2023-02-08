@@ -3,6 +3,7 @@ import { PainelConteudoTipoDetalhe, Periodicidade, Periodo, Prisma } from '@pris
 import { Decimal } from '@prisma/client/runtime';
 import { DateTime } from 'luxon';
 import * as moment from 'moment';
+import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -1552,6 +1553,24 @@ export class PainelService {
             [key: string]: number | Decimal | '';
         }
 
+        class RetMeta {
+            meta_id: number
+            meta_codigo: string
+            meta_titulo: string
+        }
+
+        class RetIniciativa {
+            iniciativa_id?: number | null 
+            iniciativa_codigo?: string | null
+            iniciativa_titulo?: string | null
+        }
+
+        class RetAtividade {
+            atividade_id?: number | null
+            atividade_codigo?: string | null
+            atividade_titulo?: string | null
+        }
+
         const painel_conteudo_db = await this.prisma.painelConteudo.findMany({
             where: {
                 painel_id: opts.painel_id,
@@ -1569,8 +1588,16 @@ export class PainelService {
 
             const series_order = painel_conteudo_series.ordem_series;
 
+            const painel_conteudo_meta: RetMeta = {
+                meta_id: painel_conteudo_series.meta.id,
+                meta_codigo: painel_conteudo_series.meta.codigo,
+                meta_titulo: painel_conteudo_series.meta.titulo,
+            };
+
             if (painel_conteudo_series.meta.indicador) {
                 ret.push({
+                    ...painel_conteudo_meta,
+
                     indicador_id: painel_conteudo_series.meta.indicador.id,
                     indicador_codigo: painel_conteudo_series.meta.indicador.codigo,
                     indicador_titulo: painel_conteudo_series.meta.indicador.titulo,
@@ -1589,8 +1616,18 @@ export class PainelService {
             }
 
             painel_conteudo_series.detalhes?.forEach(d => {
+                const iniciativa: RetIniciativa = {
+                    iniciativa_id: d.iniciativa ? d.iniciativa.id : null,
+                    iniciativa_codigo: d.iniciativa?.codigo ? d.iniciativa.codigo : null,
+                    iniciativa_titulo: d.iniciativa?.titulo ? d.iniciativa.titulo : null
+                };
+
                 if (d.variavel?.series && d.variavel?.series?.length > 0) {
+
                     ret.push({
+                        ...painel_conteudo_meta,
+                        ...iniciativa,
+
                         variavel_id: d.variavel.id,
                         variavel_codigo: d.variavel.codigo,
                         variavel_titulo: d.variavel.titulo,
@@ -1612,6 +1649,8 @@ export class PainelService {
                     d.iniciativa.indicador.forEach(ii => {
                         if (ii.series && ii.series.length > 0) {
                             ret.push({
+                                ...painel_conteudo_meta,
+                                ...iniciativa,
                                 indicador_id: ii.id,
                                 indicador_codigo: ii.codigo,
                                 indicador_titulo: ii.titulo,
@@ -1632,8 +1671,17 @@ export class PainelService {
                 }
 
                 d.filhos?.forEach(f => {
+                    const atividade: RetAtividade = {
+                        atividade_id: f.atividade ? f.atividade.id : null,
+                        atividade_codigo: f.atividade?.codigo ? f.atividade.codigo : null,
+                        atividade_titulo: f.atividade?.titulo ? f.atividade.titulo : null
+                    };
+
                     if (f.variavel?.series && f.variavel?.series?.length > 0) {
                         ret.push({
+                            ...painel_conteudo_meta,
+                            ...iniciativa,
+                            ...atividade,
                             variavel_id: f.variavel.id,
                             variavel_codigo: f.variavel.codigo,
                             variavel_titulo: f.variavel.titulo,
@@ -1655,6 +1703,9 @@ export class PainelService {
                         f.atividade.indicador.forEach(ai => {
                             if (ai.series && ai.series.length > 0) {
                                 ret.push({
+                                    ...painel_conteudo_meta,
+                                    ...iniciativa,
+                                    ...atividade,
                                     indicador_id: ai.id,
                                     indicador_codigo: ai.codigo,
                                     indicador_titulo: ai.titulo,
@@ -1675,8 +1726,17 @@ export class PainelService {
                     }
 
                     d.filhos?.forEach(ff => {
+                        const atividade: RetAtividade = {
+                            atividade_id: ff.atividade ? ff.atividade.id : null,
+                            atividade_codigo: ff.atividade?.codigo ? ff.atividade.codigo : null,
+                            atividade_titulo: ff.atividade?.titulo ? ff.atividade.titulo : null
+                        };
+                        
                         if (ff.variavel?.series && ff.variavel?.series?.length > 0) {
                             ret.push({
+                                ...painel_conteudo_meta,
+                                ...iniciativa,
+                                ...atividade,
                                 variavel_id: ff.variavel.id,
                                 variavel_codigo: ff.variavel.codigo,
                                 variavel_titulo: ff.variavel.titulo,
@@ -1698,6 +1758,9 @@ export class PainelService {
                             ff.atividade.indicador.forEach(ai => {
                                 if (ai.series && ai.series.length > 0) {
                                     ret.push({
+                                        ...painel_conteudo_meta,
+                                        ...iniciativa,
+                                        ...atividade,
                                         indicador_id: ai.id,
                                         indicador_codigo: ai.codigo,
                                         indicador_titulo: ai.titulo,

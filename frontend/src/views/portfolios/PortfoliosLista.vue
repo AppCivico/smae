@@ -9,7 +9,7 @@ const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
 const portfolioStore = usePortfolioStore();
 const {
-  lista, chamadasPendentes, erro, excluirItem,
+  lista, chamadasPendentes, erro,
 } = storeToRefs(portfolioStore);
 const route = useRoute();
 const alertStore = useAlertStore();

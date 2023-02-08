@@ -13,10 +13,6 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { ReportsService } from './reports.service';
-const AdmZip = require("adm-zip");
-const XLSX = require('xlsx');
-const { parse } = require('csv-parse');
-const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 @ApiTags('Relatórios')
 @Controller('relatorios')
@@ -37,48 +33,13 @@ export class ReportsController {
             dto.fonte,
             (dto.parametros as any)['tipo'],
             (dto.parametros as any)['ano'],
-            ,
             (dto.parametros as any)['mes'],
             (dto.parametros as any)['periodo'],
             (dto.parametros as any)['semestre'],
-            DateTime.local({ zone: 'America/Sao_Paulo' }).toISO(),
-            '.zip',
-        ]
-            .filter(r => r !== undefined)
-            .join('-');
-        const files = await this.reportsService.runReport(dto, user);
-
-        const zip = new AdmZip();
-
-        for (const file of files) {
-            zip.addFile(file.name, file.buffer);
-
-            if (file.name.endsWith('.csv')) {
-                const readCsv: any[] = await new Promise((resolve, reject) => {
-                    parse(file.buffer, { columns: true }, (err: any, data: any) => {
-                        if (err) throw reject(err);
-                        resolve(data);
-                    });
-                });
-
-                // converte o que se parece com números automaticamente
-                for (let i = 0; i < readCsv.length; i++) {
-                    const element = readCsv[i];
-                    for (const k in element) {
-                        if (/^\d+(:?\.\d+)?$/.test(element[k])) {
-                            element[k] *= 1;
-                        }
-                    }
-                }
-
-                const csvDataArray = XLSX.utils.json_to_sheet(readCsv);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Sheet1');
-
-                zip.addFile(file.name.replace(/\.csv$/, '.xlsx'), XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx', numbers: XLSX_ZAHL_PAYLOAD, compression: true }));
-            }
-        }
-        const zipBuffer = zip.toBuffer();
+            DateTime.local({ zone: 'America/Sao_Paulo' }).toISO() + '.zip',
+        ].filter(r => r).join('-');
+        const files = await this.reportsService.runReport(dto);
+        const zipBuffer = await this.reportsService.zipFiles(files);
 
         if (dto.salvar_arquivo) {
             const arquivoId = await this.uploadService.uploadReport(dto.fonte, filename, zipBuffer, contentType, user);
