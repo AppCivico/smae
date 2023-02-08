@@ -165,6 +165,30 @@ const projeto = object().shape({
     .nullable()
     .min(new Date(2003, 0, 1))
     .required(),
+
+  fonte_recursos: array()
+    .nullable()
+    .of(
+      object().shape({
+        id: number()
+          .nullable(),
+        fonte_recurso_cod_sof: string().matches(/\d\d/).required(),
+        fonte_recurso_ano: number()
+          .min(2003, 'A partir de 2003')
+          .max(3000, 'Até o ano 3000')
+          .required('Escolha um ano válido'),
+        valor_percentual: string().when('valor_nominal', {
+          is: (valorNominal) => !valorNominal,
+          then: number().required('Ao menos um tipo de valor é necessário.'),
+          otherwise: number().nullable(),
+        }),
+        valor_nominal: string().when('valor_percentual', {
+          is: (valorPercentual) => !valorPercentual,
+          then: number().required('Ao menos um tipo de valor é necessário.'),
+          otherwise: number().nullable(),
+        }),
+      }, [['valor_percentual', 'valor_nominal']]),
+    ),
 });
 
 const portfolio = object({
