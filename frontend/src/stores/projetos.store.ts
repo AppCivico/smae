@@ -3,6 +3,7 @@ import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
 
 import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/dto/create-meta.dto';
+import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
 import { ListProjetoDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 
@@ -17,6 +18,7 @@ interface ChamadasPendentes {
   emFoco: boolean,
   pdmsSimplificados: boolean,
   metaSimplificada: boolean,
+  mudarStatus: boolean,
 }
 
 interface Estado {
@@ -114,6 +116,22 @@ async function excluirItem(this: Estado, id: Number): Promise<boolean> {
   }
 }
 
+async function mudarStatus(this: Estado, id: Number, ação: ProjetoAcao): Promise<boolean> {
+  this.chamadasPendentes.mudarStatus = true;
+
+  try {
+    await requestS.patch(`${baseUrl}/projeto/acao`, { acao: ação, projeto_id: id });
+
+    this.chamadasPendentes.mudarStatus = false;
+
+    return true;
+  } catch (erro) {
+    this.erro = erro;
+    this.chamadasPendentes.mudarStatus = false;
+    return false;
+  }
+}
+
 const projetosPorId = ({ lista }: Estado) => lista
   .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
 
@@ -130,6 +148,7 @@ export const useProjetosStore = defineStore('projetos', {
       emFoco: true,
       pdmsSimplificados: false,
       metaSimplificada: false,
+      mudarStatus: false,
     },
 
     pdmsSimplificados: [],
@@ -142,6 +161,7 @@ export const useProjetosStore = defineStore('projetos', {
     buscarMetaSimplificada,
     buscarTudo,
     excluirItem,
+    mudarStatus,
     salvarItem,
   },
   getters: {

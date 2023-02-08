@@ -1,4 +1,5 @@
 <script setup>
+import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { usePortfolioStore, useProjetosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 
@@ -36,6 +37,9 @@ iniciar();
       <h1>{{ emFoco?.nome }}</h1>
     </div>
     <hr class="ml2 f1">
+
+    <MenuDeMudançaDeStatusDeProjeto />
+
     <router-link
       v-if="emFoco?.id"
       :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
