@@ -1,8 +1,9 @@
-import { ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, CategoriaProcessoSei } from '@prisma/client';
+
+import { ApiProperty } from '@nestjs/swagger';
+import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
-import { CodigoNome } from '../../../common/dto/CodigoNome.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { TipoDocumento } from '../../../tipo-documento/entities/tipo-documento.entity';
 
@@ -33,6 +34,9 @@ export class ProjetoPermissoesDto {
     campo_premissas: boolean
     campo_restricoes: boolean
     campo_codigo_liberado: boolean
+    campo_data_aprovacao: boolean
+    campo_data_revisao: boolean
+    campo_versao: boolean
 }
 
 export class ProjetoMetaDetailDto {
@@ -41,6 +45,7 @@ export class ProjetoMetaDetailDto {
     titulo: string
     pdm_id: number
 }
+
 export class ProjetoSeiDto {
     id: number
     categoria: CategoriaProcessoSei
@@ -57,10 +62,12 @@ export class ProjetoDetailDto {
     /**
      * @example "EmAcompanhamento"
     */
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status: ProjetoStatus;
     /**
      * @example "Acompanhamento"
     */
+    @ApiProperty({ enum: ProjetoFase, enumName: 'ProjetoFase' })
     fase: ProjetoFase;
     resumo: string;
     portfolio_id: number
