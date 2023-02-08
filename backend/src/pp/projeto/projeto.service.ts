@@ -580,6 +580,7 @@ export class ProjetoService {
 
                 switch (projeto.status) {
                     case 'Registrado': permissoes.acao_selecionar = true; break;
+                    case 'Selecionado': break;// nothing to do
                     case 'EmPlanejamento': permissoes.acao_finalizar_planejamento = true; break;
                     case 'Planejado': permissoes.acao_validar = true; break;
                     case 'Validado': permissoes.acao_iniciar = true; break;
