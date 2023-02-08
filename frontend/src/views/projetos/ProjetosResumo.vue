@@ -32,6 +32,9 @@ iniciar();
     <div>
       <div class="t12 uc w700 tamarelo">
         Projeto
+        <template v-if="emFoco?.eh_prioritario">
+          prioritário
+        </template>
       </div>
 
       <h1>{{ emFoco?.nome }}</h1>
