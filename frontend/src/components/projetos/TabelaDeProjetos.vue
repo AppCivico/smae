@@ -47,7 +47,7 @@ async function excluirProjetos(id) {
     <col>
     <col>
     <col>
-    <col class="col--botão-de-ação">
+    <!--col class="col--botão-de-ação"-->
     <col class="col--botão-de-ação">
     <thead>
       <tr>
@@ -124,17 +124,17 @@ async function excluirProjetos(id) {
         </td>
       </tr>
       <tr v-if="pendente">
-        <td colspan="6">
+        <td colspan="5">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="6">
+        <td colspan="5">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="6">
+        <td colspan="5">
           Nenhum resultado encontrado.
         </td>
       </tr>
