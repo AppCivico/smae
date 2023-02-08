@@ -6,7 +6,9 @@ import {
   useAlertStore, useOrgansStore, usePortfolioStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage, Field, FieldArray, Form
+} from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -221,8 +223,8 @@ iniciar();
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, resetField, values }"
     v-if="!projetoId || emFoco"
+    v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -258,6 +260,25 @@ iniciar();
         />
       </div>
 
+      <div
+        v-if="projetoId"
+        class="f1 mb1"
+      >
+        <label class="label">
+          Código
+        </label>
+        <Field
+          name="codigo"
+          type="text"
+          class="inputtext light mb1"
+          maxlength="20"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="codigo"
+        />
+      </div>
+
       <div class="f1 mb1">
         <label class="label">
           Nome do projeto <span class="tvermelho">*</span>
@@ -274,7 +295,7 @@ iniciar();
       </div>
 
       <div
-        v-if="emFoco?.permissoes?.campo_versao"
+        v-show="emFoco?.permissoes?.campo_versao"
         class="f1 mb1"
       >
         <label class="label">
@@ -329,7 +350,86 @@ iniciar();
           class="error-msg"
         />
       </div>
+
+      <div
+        v-if="projetoId"
+        class="f1 mb1"
+      >
+        <label class="label">
+          Não escopo
+          <small class="t13 tc500">(o que <strong>não</strong> será entregue no projeto)</small>
+        </label>
+        <Field
+          name="nao_escopo"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.nao_escopo }"
+        />
+        <ErrorMessage
+          name="nao_escopo"
+          class="error-msg"
+        />
+      </div>
     </div>
+
+    <template v-if="projetoId">
+      <div class="flex g2" />
+      <div class="flex g2">
+        <div class="f1 mb1">
+          <label class="label">
+            Objetivo
+          </label>
+          <Field
+            name="objetivo"
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.objetivo }"
+          />
+          <ErrorMessage
+            name="objetivo"
+            class="error-msg"
+          />
+        </div>
+      </div>
+      <div class="flex g2">
+        <div class="f1 mb1">
+          <label class="label">
+            Objeto
+          </label>
+          <Field
+            name="objeto"
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.objeto }"
+          />
+          <ErrorMessage
+            name="objeto"
+            class="error-msg"
+          />
+        </div>
+      </div>
+      <div class="flex g2">
+        <div class="f1 mb1">
+          <label class="label">
+            Público alvo
+          </label>
+          <Field
+            name="publico_alvo"
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.publico_alvo }"
+          />
+          <ErrorMessage
+            name="publico_alvo"
+            class="error-msg"
+          />
+        </div>
+      </div>
+    </template>
 
     <div class="flex g2">
       <div class="f1 mb1">
@@ -811,6 +911,180 @@ iniciar();
         />
       </div>
     </div>
+
+    <div
+      v-if="props?.projetoId > 0"
+      class="g2 mb2"
+    >
+      <label class="label mt2 mb1">
+        Fontes de recursos
+      </label>
+
+      <FieldArray
+        v-slot="{ fields, push, remove }"
+        name="fonte_recursos"
+      >
+        <div
+          v-for="(field, idx) in fields"
+          :key="`fonteRecursos--${field.key}`"
+          class="flex g2"
+        >
+          <Field
+            :name="`fonte_recursos[${idx}].id`"
+            type="hidden"
+          />
+
+          <div class="f1 mb1">
+            <label class="label tc300">
+              Ano <span class="tvermelho">*</span>
+            </label>
+            <Field
+              :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
+              type="number"
+              class="inputtext light mb1"
+              min="2003"
+              max="3000"
+              step="1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
+            />
+          </div>
+
+          <div class="f1 mb1">
+            <label class="label tc300">
+              Código da fonte de recursos no SOF
+              <span class="tvermelho">*</span>
+            </label>
+            <Field
+              :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+              type="text"
+              maxlength="2"
+              class="inputtext light mb1"
+              inputmode="numeric"
+              patten="\d\d"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+            />
+          </div>
+
+          <div class="f1 mb1">
+            <label class="label tc300">
+              Valor nominal
+            </label>
+            <Field
+              :name="`fonte_recursos[${idx}].valor_nominal`"
+              type="number"
+              class="inputtext light mb1"
+              @input="setFieldValue(`fonte_recursos[${idx}].valor_percentual`, null)"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fonte_recursos[${idx}].valor_nominal`"
+            />
+          </div>
+
+          <div class="f1 mb1">
+            <label class="label tc300">
+              Valor percentual
+            </label>
+            <Field
+              :name="`fonte_recursos[${idx}].valor_percentual`"
+              type="number"
+              class="inputtext light mb1"
+              @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fonte_recursos[${idx}].valor_percentual`"
+            />
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            arial-label="excluir"
+            title="excluir"
+            @click="remove(idx)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </div>
+
+        <button
+          class="like-a__text addlink"
+          type="button"
+          @click="push({
+            fonte_recurso_cod_sof: '',
+            fonte_recurso_ano: null,
+            valor_nominal: null,
+            valor_percentual: null,
+          })"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
+        </button>
+      </FieldArray>
+      <hr class="mt1 f1">
+    </div>
+
+    <div
+      v-if="projetoId"
+      class="flex g2 mb1"
+    >
+      <div class="f1 mb1">
+        <label class="label">
+          Coordenador da Unidade de Entrega
+        </label>
+        <Field
+          name="coordenador_ue"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="coordenador_ue"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <label class="label">
+          Secretário executivo
+        </label>
+        <Field
+          name="secretario_executivo"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="secretario_executivo"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <label class="label">
+          Secretário responsável
+        </label>
+        <Field
+          name="secretario_responsavel"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="secretario_responsavel"
+        />
+      </div>
+    </div>
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
