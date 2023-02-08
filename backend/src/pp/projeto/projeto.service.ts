@@ -650,11 +650,8 @@ export class ProjetoService {
             await this.upsertSei(dto, prismaTx, projetoId, user);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
-            let eh_prioritario: boolean | undefined = undefined;
-            if (novoStatus) {
+            if (novoStatus)
                 await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
-                eh_prioritario = true;
-            }
 
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
@@ -699,7 +696,6 @@ export class ProjetoService {
                     // por padrão undefined, não faz nenhuma alteração
                     status: novoStatus,
                     fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
-                    eh_prioritario: eh_prioritario,
 
                     orgaos_participantes: dto.orgaos_participantes !== undefined ? {
                         createMany: {
