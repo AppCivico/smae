@@ -167,27 +167,31 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
      * texto que representa a versão
      * @example "..."
      */
+    @IsOptional()
     @IsString()
     @MaxLength(20)
-    versao: string;
+    @ValidateIf((object, value) => value !== null)
+    versao: string | null;
 
     /**
      * data_aprovacao
      * @example "2022-01-20"
      */
+    @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    data_aprovacao: Date | null;
+    data_aprovacao?: Date | null;
 
 
     /**
      * data_revisao
      * @example "2022-01-20"
      */
+    @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    data_revisao: Date | null;
+    data_revisao?: Date | null;
 
 }
