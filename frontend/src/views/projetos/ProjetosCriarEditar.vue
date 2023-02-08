@@ -272,7 +272,10 @@ iniciar();
         />
       </div>
 
-      <div class="f1 mb1">
+      <div
+        v-if="emFoco?.permissoes?.campo_versao"
+        class="f1 mb1"
+      >
         <label class="label">
           Versão <span class="tvermelho">*</span>
         </label>
@@ -746,7 +749,10 @@ iniciar();
       v-show="props?.projetoId > 0"
       class="flex g2"
     >
-      <div class="f1 mb1">
+      <div
+        v-show="emFoco?.permissoes?.campo_data_aprovacao"
+        class="f1 mb1"
+      >
         <label class="label">
           Data de aprovação
           <span class="tvermelho">*</span>
@@ -763,7 +769,10 @@ iniciar();
           class="error-msg"
         />
       </div>
-      <div class="f1 mb1">
+      <div
+        v-show="emFoco?.permissoes?.campo_data_revisao"
+        class="f1 mb1"
+      >
         <label class="label">
           Data de revisão
           <span class="tvermelho">*</span>
