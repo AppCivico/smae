@@ -53,15 +53,18 @@ export class AcaoService {
             const [colunaHora, colunaPessoa] = [acao.h, acao.p];
 
             let arquivado: boolean | undefined = undefined;
+            let eh_prioritario: boolean | undefined = undefined;
             if (dto.acao == 'arquivar') arquivado = true;
             if (dto.acao == 'restaurar') arquivado = false;
+            if (dto.acao == 'selecionar') eh_prioritario = true;
 
             await prismaTx.projeto.update({
                 where: { id: projeto.id },
                 data: {
                     [colunaHora]: new Date(Date.now()),
                     [colunaPessoa]: user.id,
-                    arquivado: arquivado
+                    arquivado: arquivado,
+                    eh_prioritario: eh_prioritario,
                 }
             });
 
