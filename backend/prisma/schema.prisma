@@ -2118,8 +2118,8 @@ model ProjetoRegistroSei {
     projeto_id Int
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    categoria           CategoriaProcessoSei
-    processo_sei        String
+    categoria    CategoriaProcessoSei
+    processo_sei String
 
     // Link, descrição, metadados
     registro_sei_info   Json
@@ -2254,7 +2254,7 @@ model Projeto {
     restricoes ProjetoRestricao[] // depois de selecionado
 
     licoes_aprendidas     ProjetoLicaoAprendida[] // só na execucao
-    recursos              ProjetoFonteRecurso[] // sempre
+    fonte_recursos        ProjetoFonteRecurso[] // sempre
     documentos            ProjetoDocumento[] // sempre
     tarefas               Tarefa[] // depois de EmPlanejamento
     ProjetoRisco          ProjetoRisco[] //  depois de EmPlanejamento
