@@ -15,7 +15,7 @@ export const ProjetoAcao = {
     'terminar': 'terminar',
 };
 
-export type ProjetoAcao = (typeof ProjetoAcao)[keyof typeof ProjetoAcao]
+export type ProjetoAcao = (typeof ProjetoAcao)[keyof typeof ProjetoAcao];
 
 export class CreateAcaoDto {
     @ApiProperty({ enum: ProjetoAcao, enumName: 'ProjetoAcao' })
