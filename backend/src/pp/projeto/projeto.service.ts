@@ -394,6 +394,9 @@ export class ProjetoService {
                 responsaveis_no_orgao_gestor: true,
                 responsavel_id: true,
                 eh_prioritario: true,
+                secretario_executivo: true,
+                secretario_responsavel: true,
+                coordenador_ue: true,
 
                 orgao_gestor: {
                     select: {
