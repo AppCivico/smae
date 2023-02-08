@@ -120,7 +120,7 @@ async function mudarStatus(this: Estado, id: Number, ação: ProjetoAcao): Promi
   this.chamadasPendentes.mudarStatus = true;
 
   try {
-    await requestS.patch(`${baseUrl}/projeto/acao`, { acao: ação, projeto_id: id });
+    await requestS.patch(`${baseUrl}/projeto-acao`, { acao: ação, projeto_id: id });
 
     this.chamadasPendentes.mudarStatus = false;
 
