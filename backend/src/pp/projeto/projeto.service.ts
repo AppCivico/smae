@@ -274,6 +274,8 @@ export class ProjetoService {
                 id: true,
                 nome: true,
                 status: true,
+                eh_prioritario: true,
+                arquivado: true,
 
                 atividade: {
                     select: {
@@ -343,7 +345,9 @@ export class ProjetoService {
                 status: row.status,
                 meta: meta,
                 orgao_responsavel: row.orgao_responsavel ? { ...row.orgao_responsavel } : null,
-                portfolio: row.portfolio
+                portfolio: row.portfolio,
+                arquivado: row.arquivado,
+                eh_prioritario: row.eh_prioritario,
             });
         }
 
@@ -389,6 +393,7 @@ export class ProjetoService {
                 principais_etapas: true,
                 responsaveis_no_orgao_gestor: true,
                 responsavel_id: true,
+                eh_prioritario: true,
 
                 orgao_gestor: {
                     select: {
@@ -645,8 +650,11 @@ export class ProjetoService {
             await this.upsertSei(dto, prismaTx, projetoId, user);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
-            if (novoStatus)
+            let eh_prioritario: boolean | undefined = undefined;
+            if (novoStatus) {
                 await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
+                eh_prioritario = true;
+            }
 
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
@@ -691,6 +699,7 @@ export class ProjetoService {
                     // por padrão undefined, não faz nenhuma alteração
                     status: novoStatus,
                     fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
+                    eh_prioritario: eh_prioritario,
 
                     orgaos_participantes: dto.orgaos_participantes !== undefined ? {
                         createMany: {

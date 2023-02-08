@@ -10,8 +10,11 @@ import { TipoDocumento } from '../../../tipo-documento/entities/tipo-documento.e
 export class ProjetoDto {
     id: number;
     nome: string;
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status: ProjetoStatus;
     orgao_responsavel: IdSiglaDescricao | null;
+    arquivado: boolean
+    eh_prioritario: boolean
     meta: IdCodTituloDto | null;
     portfolio: IdTituloDto
 }
@@ -118,6 +121,8 @@ export class ProjetoDetailDto {
     data_revisao: Date | null
     versao: string | null
 
+    eh_prioritario: boolean
+    arquivado: boolean
 
     meta: ProjetoMetaDetailDto | null
     // responsaveis_no_orgao_gestor:
