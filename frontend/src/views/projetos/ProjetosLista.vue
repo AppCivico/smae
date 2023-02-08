@@ -16,8 +16,19 @@ const {
 } = storeToRefs(projetosStore);
 const route = useRoute();
 
+const props = defineProps({
+  apenasPrioritários: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 projetosStore.$reset();
-projetosStore.buscarTudo();
+if (props?.apenasPrioritários) {
+  projetosStore.buscarTudo({ eh_prioritario: true });
+} else {
+  projetosStore.buscarTudo();
+}
 
 if (!organs.length) {
   organsStore.getAll();

@@ -35,6 +35,19 @@ export default {
       },
     },
     {
+      name: 'projetosListarPrioritários',
+      path: 'prioritarios',
+      component: ProjetosLista,
+      meta: {
+        presenteNoMenu: true,
+        título: 'Projetos prioritários',
+      },
+      props: ({ params }) => ({
+        ...params,
+        ...{ apenasPrioritários: true },
+      }),
+    },
+    {
       name: 'projetosCriar',
       path: 'novo',
       component: ProjetosCriarEditar,
