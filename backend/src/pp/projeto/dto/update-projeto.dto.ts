@@ -72,9 +72,9 @@ export class PSeiDto {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(CategoriaProcessoSei).join(', '),
     })
     categoria: CategoriaProcessoSei
-    
+
     @IsString()
-    processo_sei: string    
+    processo_sei: string
 }
 
 // esses campos serão updated apenas via sistema (pelas tarefas)
@@ -144,15 +144,18 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
 
     @IsOptional()
     @IsString()
-    secretario_executivo?: string
+    @ValidateIf((object, value) => value !== null)
+    secretario_executivo?: string | null
 
     @IsOptional()
     @IsString()
-    secretario_responsavel?: string
+    @ValidateIf((object, value) => value !== null)
+    secretario_responsavel?: string | null
 
     @IsOptional()
     @IsString()
-    coordenador_ue?: string
+    @ValidateIf((object, value) => value !== null)
+    coordenador_ue?: string | null
 
     /**
      * texto que representa a versão
