@@ -222,6 +222,7 @@ iniciar();
 
   <Form
     v-slot="{ errors, isSubmitting, resetField, values }"
+    v-if="!projetoId || emFoco"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
