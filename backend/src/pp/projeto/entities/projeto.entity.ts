@@ -111,7 +111,7 @@ export class ProjetoDetailDto {
     responsavel: IdNomeExibicao | null;
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
-    recursos: ProjetoRecursos[] | null;
+    fonte_recursos: ProjetoRecursos[] | null;
     sei: ProjetoSeiDto[] | null;
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;

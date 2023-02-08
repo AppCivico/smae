@@ -425,7 +425,7 @@ export class ProjetoService {
                     },
                 },
 
-                recursos: {
+                fonte_recursos: {
                     select: {
                         id: true,
                         fonte_recurso_cod_sof: true,
