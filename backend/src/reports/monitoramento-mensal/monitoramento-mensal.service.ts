@@ -47,6 +47,15 @@ export class MonitoramentoMensalService implements ReportableService {
                         if (!s.Previsto || !s.PrevistoAcumulado || !s.Realizado || !s.RealizadoAcumulado) continue
 
                         linhas.push({
+                            meta_id: r.meta_id,
+                            meta_codigo: r.meta_codigo,
+                            meta_titulo: r.meta_titulo,
+                            iniciativa_id: r.iniciativa_id,
+                            iniciativa_codigo: r.iniciativa_codigo,
+                            iniciativa_titulo: r.indicador_titulo,
+                            atividade_id: r.atividade_id,
+                            atividade_codigo: r.atividade_codigo,
+                            atividade_titulo: r.atividade_titulo,
                             indicador_id: r.indicador_id,
                             indicador_titulo: r.indicador_titulo,
                             indicador_codigo: r.indicador_codigo,
