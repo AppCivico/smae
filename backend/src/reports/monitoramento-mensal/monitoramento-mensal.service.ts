@@ -96,13 +96,26 @@ export class MonitoramentoMensalService implements ReportableService {
 
         out.push(...(await this.mmMf.getFiles(dados, pdm)));
 
+        const camposMetaIniAtv = [
+            { value: 'meta_codigo', label: 'Código da Meta' },
+            { value: 'meta_titulo', label: 'Título da Meta' },
+            { value: 'meta_id', label: 'ID da Meta' },
+
+            { value: 'iniciativa_codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa_titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa_id', label: 'ID da ' + pdm.rotulo_iniciativa },
+            { value: 'atividade_codigo', label: 'Código da ' + pdm.rotulo_atividade },
+            { value: 'atividade_titulo', label: 'Título da ' + pdm.rotulo_atividade },
+            { value: 'atividade_id', label: 'ID da ' + pdm.rotulo_atividade },
+        ];
+
         for (const painel of dados.paineis) {
             if (painel.linhas.length == 0) continue;
 
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: undefined,
+                fields: [...camposMetaIniAtv],
             });
 
             const linhas = json2csvParser.parse(painel.linhas);
