@@ -1,6 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
+import truncate from '@/helpers/truncate';
 import {
   useAlertStore, useOrgansStore, usePortfolioStore, useProjetosStore
 } from '@/stores';
@@ -367,8 +368,9 @@ iniciar();
               órgãosDisponíveisNessePortfolio(values.portfolio_id) || []"
             :key="item.id"
             :value="item.id"
+            :title="item.descricao"
           >
-            {{ item.sigla }} - {{ item.descricao }}
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
 
@@ -570,8 +572,9 @@ iniciar();
             v-for="item in pdmsPorId[values.pdm_escolhido]?.metas"
             :key="item.id"
             :value="item.id"
+            :title="item.titulo"
           >
-            {{ item.codigo }} - {{ item.titulo }}
+            {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
           </option>
         </Field>
 
@@ -629,8 +632,9 @@ iniciar();
             v-for="item in metaSimplificada.iniciativas"
             :key="item.id"
             :value="item.id"
+            :title="item.titulo"
           >
-            {{ item.codigo }} - {{ item.titulo }}
+            {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
           </option>
         </Field>
 
@@ -662,8 +666,9 @@ iniciar();
             v-for="item in iniciativasPorId[values.iniciativa_id]?.atividades"
             :key="item.id"
             :value="item.id"
+            :title="item.titulo"
           >
-            {{ item.codigo }} - {{ item.titulo }}
+            {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
           </option>
         </Field>
 
