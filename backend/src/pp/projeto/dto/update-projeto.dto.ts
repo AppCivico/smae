@@ -121,6 +121,13 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @ValidateNested({ each: true })
     @Type(() => PSeiDto)
     sei?: PSeiDto[];
+<<<<<<< HEAD
+=======
+
+    @IsOptional()
+    @IsString()
+    codigo?: string
+>>>>>>> projeto-sei
 
     @IsOptional()
     @IsString()
