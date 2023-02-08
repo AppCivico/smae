@@ -218,9 +218,6 @@ export class ProjetoService {
                     previsao_custo: dto.previsao_custo,
                     escopo: dto.escopo,
                     principais_etapas: dto.principais_etapas,
-                    versao: dto.versao,
-                    data_aprovacao: dto.data_aprovacao,
-                    data_revisao: dto.data_revisao,
 
                     objetivo: '',
                     objeto: '',
@@ -523,6 +520,10 @@ export class ProjetoService {
             campo_codigo_liberado: false,
             campo_premissas: false,
             campo_restricoes: false,
+            campo_data_aprovacao: false,
+            campo_data_revisao: false,
+            campo_versao: false
+
         };
 
         // se o projeto está arquivado, não podemos arquivar novamente
@@ -564,6 +565,10 @@ export class ProjetoService {
                 permissoes.campo_codigo_liberado = true;
                 permissoes.campo_premissas = true;
                 permissoes.campo_restricoes = true;
+
+                permissoes.campo_data_aprovacao = true;
+                permissoes.campo_data_revisao = true;
+                permissoes.campo_versao = true;
             }
 
             if (pessoaPodeEscrever) {
