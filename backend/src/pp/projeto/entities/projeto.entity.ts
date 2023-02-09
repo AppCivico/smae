@@ -36,7 +36,7 @@ export class ProjetoPermissoesDto {
     acao_terminar: boolean
     campo_premissas: boolean
     campo_restricoes: boolean
-    campo_codigo_liberado: boolean
+    campo_codigo: boolean
     campo_data_aprovacao: boolean
     campo_data_revisao: boolean
     campo_versao: boolean

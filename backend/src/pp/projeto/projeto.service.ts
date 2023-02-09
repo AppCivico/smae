@@ -538,7 +538,7 @@ export class ProjetoService {
             campo_restricoes: false,
             campo_data_aprovacao: false,
             campo_data_revisao: false,
-            campo_codigo_liberado: false,
+            campo_codigo: false,
             campo_versao: false,
             campo_objeto: false,
             campo_objetivo: false,
@@ -585,7 +585,7 @@ export class ProjetoService {
             // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
             // migrar o status para "EmPlanejamento"
             if (projeto.status !== 'Registrado') {
-                permissoes.campo_codigo_liberado = true;
+                permissoes.campo_codigo = true;
                 permissoes.campo_premissas = true;
                 permissoes.campo_restricoes = true;
 
@@ -634,7 +634,7 @@ export class ProjetoService {
 
         let moverStatusParaPlanejamento: boolean = false;
         if (dto.codigo) {
-            if (projeto.permissoes.campo_codigo_liberado == false)
+            if (projeto.permissoes.campo_codigo == false)
                 throw new HttpException('Campo "Código" não pode ser preenchido ou alterado no momento', 400);
 
             if (projeto.status == 'Selecionado') {
