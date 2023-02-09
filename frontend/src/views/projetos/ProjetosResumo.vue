@@ -71,10 +71,10 @@ iniciar();
       </div>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Versão
+          Status
         </dt>
         <dd class="t13">
-          {{ emFoco?.versao }}
+          {{ emFoco?.status }}
         </dd>
       </dl>
     </div>
