@@ -1095,7 +1095,7 @@ iniciar();
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || emFoco.arquivado"
+        :disabled="isSubmitting || emFoco?.arquivado"
       >
         Salvar
       </button>
