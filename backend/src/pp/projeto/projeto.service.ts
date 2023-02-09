@@ -81,17 +81,19 @@ export class ProjetoService {
         }
 
         function validaPdmAntigo() {
+            const errMsg = 'caso origem seja outro sistema de meta';
             if (!meta_codigo)
-                throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
+                throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
+            if (!origem_outro)
+                throw new HttpException(`origem_outro| Descrição da origem deve ser enviado ${errMsg}`, 400);
 
             if (meta_id)
-                throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+                throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
             if (iniciativa_id)
-                throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+                throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
             if (atividade_id)
-                throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-            if (origem_outro)
-                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+                throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
+
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_id = atividade_id = iniciativa_id = origem_outro = null;
@@ -133,8 +135,11 @@ export class ProjetoService {
     }
 
     private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
+        if (!dto.orgao_gestor_id)
+            return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined }
+
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
-        const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor;
+        const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor ? dto.responsaveis_no_orgao_gestor : [];
 
         if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false) throw new HttpException('orgao_gestor_id| não faz parte do Portfolio', 400);
 
@@ -192,7 +197,7 @@ export class ProjetoService {
                     registrado_por: user.id,
                     registrado_em: new Date(Date.now()),
                     portfolio_id: dto.portfolio_id,
-                    orgao_gestor_id: orgao_gestor_id,
+                    orgao_gestor_id: orgao_gestor_id!,
                     responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
 
                     orgaos_participantes: {
@@ -479,8 +484,17 @@ export class ProjetoService {
 
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
+        const responsaveis_no_orgao_gestor = await this.prisma.pessoa.findMany({
+            where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
+            select: {
+                id: true,
+                nome_exibicao: true
+            }
+        });
+
         return {
             ...projeto,
+            responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
             orgaos_participantes: projeto.orgaos_participantes.map(o => {
                 return {
@@ -525,13 +539,19 @@ export class ProjetoService {
             acao_reiniciar: false,
             acao_cancelar: false,
             acao_terminar: false,
-            campo_codigo_liberado: false,
             campo_premissas: false,
             campo_restricoes: false,
             campo_data_aprovacao: false,
             campo_data_revisao: false,
-            campo_versao: false
-
+            campo_codigo: false,
+            campo_versao: false,
+            campo_objeto: false,
+            campo_objetivo: false,
+            campo_publico_alvo: false,
+            campo_secretario_executivo: false,
+            campo_secretario_responsavel: false,
+            campo_coordenador_ue: false,
+            campo_nao_escopo: false,
         };
 
         // se o projeto está arquivado, não podemos arquivar novamente
@@ -570,13 +590,21 @@ export class ProjetoService {
             // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
             // migrar o status para "EmPlanejamento"
             if (projeto.status !== 'Registrado') {
-                permissoes.campo_codigo_liberado = true;
+                permissoes.campo_codigo = true;
                 permissoes.campo_premissas = true;
                 permissoes.campo_restricoes = true;
 
                 permissoes.campo_data_aprovacao = true;
                 permissoes.campo_data_revisao = true;
                 permissoes.campo_versao = true;
+
+                permissoes.campo_objeto = true;
+                permissoes.campo_objetivo = true;
+                permissoes.campo_nao_escopo = true;
+                permissoes.campo_publico_alvo = true;
+                permissoes.campo_secretario_executivo = true;
+                permissoes.campo_secretario_responsavel = true;
+                permissoes.campo_coordenador_ue = true;
             }
 
             if (pessoaPodeEscrever) {
@@ -607,9 +635,11 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
 
+        // se estiver arquivado, retorna 400
+
         let moverStatusParaPlanejamento: boolean = false;
         if (dto.codigo) {
-            if (projeto.permissoes.campo_codigo_liberado == false)
+            if (projeto.permissoes.campo_codigo == false)
                 throw new HttpException('Campo "Código" não pode ser preenchido ou alterado no momento', 400);
 
             if (projeto.status == 'Selecionado') {
@@ -647,6 +677,15 @@ export class ProjetoService {
             meta_codigo = origemVerification.meta_codigo;
         }
 
+        const portfolios = await this.portfolioService.findAll(user);
+
+        const portfolio = portfolios.filter(r => r.id == projeto.portfolio_id)[0];
+        if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
+
+
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto as any, portfolio);
+
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
@@ -660,6 +699,8 @@ export class ProjetoService {
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
 
+
+
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
@@ -672,8 +713,9 @@ export class ProjetoService {
                     origem_tipo,
 
                     // campos do create
-                    responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
-                    orgao_responsavel_id: dto.orgao_responsavel_id,
+                    orgao_gestor_id,
+                    responsaveis_no_orgao_gestor,
+
                     responsavel_id: dto.responsavel_id,
 
                     nome: dto.nome,
