@@ -36,19 +36,10 @@ export class ProjetoPermissoesDto {
     acao_terminar: boolean
     campo_premissas: boolean
     campo_restricoes: boolean
-    campo_codigo: boolean
+    campo_codigo_liberado: boolean
     campo_data_aprovacao: boolean
     campo_data_revisao: boolean
     campo_versao: boolean
-
-    campo_nao_escopo: boolean
-    campo_objeto: boolean
-    campo_objetivo: boolean
-    campo_publico_alvo: boolean
-    campo_secretario_executivo: boolean
-    campo_secretario_responsavel: boolean
-    campo_coordenador_ue: boolean
-
 }
 
 export class ProjetoMetaDetailDto {
@@ -140,7 +131,6 @@ export class ProjetoDetailDto {
     meta: ProjetoMetaDetailDto | null
     // responsaveis_no_orgao_gestor:
 
-    responsaveis_no_orgao_gestor: IdNomeExibicao[]
     permissoes: ProjetoPermissoesDto
 }
 

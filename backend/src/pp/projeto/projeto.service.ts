@@ -479,17 +479,8 @@ export class ProjetoService {
 
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
-        const responsaveis_no_orgao_gestor = await this.prisma.pessoa.findMany({
-            where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
-            select: {
-                id: true,
-                nome_exibicao: true
-            }
-        });
-
         return {
             ...projeto,
-            responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
             orgaos_participantes: projeto.orgaos_participantes.map(o => {
                 return {
@@ -534,19 +525,13 @@ export class ProjetoService {
             acao_reiniciar: false,
             acao_cancelar: false,
             acao_terminar: false,
+            campo_codigo_liberado: false,
             campo_premissas: false,
             campo_restricoes: false,
             campo_data_aprovacao: false,
             campo_data_revisao: false,
-            campo_codigo: false,
-            campo_versao: false,
-            campo_objeto: false,
-            campo_objetivo: false,
-            campo_publico_alvo: false,
-            campo_secretario_executivo: false,
-            campo_secretario_responsavel: false,
-            campo_coordenador_ue: false,
-            campo_nao_escopo: false,
+            campo_versao: false
+
         };
 
         // se o projeto está arquivado, não podemos arquivar novamente
@@ -585,21 +570,13 @@ export class ProjetoService {
             // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
             // migrar o status para "EmPlanejamento"
             if (projeto.status !== 'Registrado') {
-                permissoes.campo_codigo = true;
+                permissoes.campo_codigo_liberado = true;
                 permissoes.campo_premissas = true;
                 permissoes.campo_restricoes = true;
 
                 permissoes.campo_data_aprovacao = true;
                 permissoes.campo_data_revisao = true;
                 permissoes.campo_versao = true;
-
-                permissoes.campo_objeto = true;
-                permissoes.campo_objetivo = true;
-                permissoes.campo_nao_escopo = true;
-                permissoes.campo_publico_alvo = true;
-                permissoes.campo_secretario_executivo = true;
-                permissoes.campo_secretario_responsavel = true;
-                permissoes.campo_coordenador_ue = true;
             }
 
             if (pessoaPodeEscrever) {
@@ -630,11 +607,9 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
 
-        // se estiver arquivado, retorna 400
-
         let moverStatusParaPlanejamento: boolean = false;
         if (dto.codigo) {
-            if (projeto.permissoes.campo_codigo == false)
+            if (projeto.permissoes.campo_codigo_liberado == false)
                 throw new HttpException('Campo "Código" não pode ser preenchido ou alterado no momento', 400);
 
             if (projeto.status == 'Selecionado') {

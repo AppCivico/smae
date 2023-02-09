@@ -46,8 +46,8 @@ const ações = [
     nome: 'Cancelar',
   },
   {
-    ação: 'terminar',
-    nome: 'Terminar',
+    ação: 'termina',
+    nome: 'Termina',
   },
 ];
 

@@ -315,10 +315,6 @@ export class MetaService {
                     });
 
                     if (cp) {
-                        // TODO tem um bug aqui:
-                        //na hora que edita removendo um orgão da meta, ele confere se há algum filho (iniciativa, atividade) com aquele orgão, se tem, ele mantem o orgão salvo
-                        //e ai toda vez que vai salvando, ele vai dando mais um insert no orgão
-                        // acho que o mais facil é trocar o createMany pra um create que verifica o count de cada orgao
                         const responsaveis_to_be_kept = await this.checkHasResponsaveisChildren(meta.id, cp);
 
                         await prisma.metaResponsavel.deleteMany({
