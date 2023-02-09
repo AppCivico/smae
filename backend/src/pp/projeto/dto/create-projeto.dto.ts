@@ -55,7 +55,8 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsString()
     @MaxLength(500)
-    origem_outro?: string;
+    @ValidateIf((object, value) => value !== null)
+    origem_outro?: string | null;
 
     /**
      * meta_id, se for por meta
@@ -63,7 +64,8 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Transform((a: any) => (a.value === null ? null : +a.value))
-    meta_id?: number;
+    @ValidateIf((object, value) => value !== null)
+    meta_id?: number | null;
 
     /**
      * iniciativa_id, se for por iniciativa
@@ -71,7 +73,8 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
     @Transform((a: any) => (a.value === null ? null : +a.value))
-    iniciativa_id?: number;
+    @ValidateIf((object, value) => value !== null)
+    iniciativa_id?: number | null;
 
     /**
      * atividade_id, se for por atividade
@@ -79,11 +82,13 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsInt({ message: '$property| atividade_id precisa ser positivo' })
     @Transform((a: any) => (a.value === null ? null : +a.value))
-    atividade_id?: number;
+    @ValidateIf((object, value) => value !== null)
+    atividade_id?: number | null;
 
     @IsOptional()
     @IsString()
-    meta_codigo?: string
+    @ValidateIf((object, value) => value !== null)
+    meta_codigo?: string | null
 
     /**
      * ID dos órgãos participantes do projeto
