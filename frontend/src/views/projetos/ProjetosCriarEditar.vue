@@ -996,6 +996,8 @@ iniciar();
               :name="`fonte_recursos[${idx}].valor_percentual`"
               type="number"
               class="inputtext light mb1"
+              max="100"
+              min="0.01"
               @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
             />
             <ErrorMessage
