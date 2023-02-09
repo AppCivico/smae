@@ -41,16 +41,14 @@ iniciar();
     </div>
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeProjeto />
-
-    <template v-if="emFoco?.id && !emFoco.arquivado">
-      <hr class="ml2 f1">
-      <router-link
-        :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
-        class="btn big ml2"
-      >
-        Editar
-      </router-link>
-    </template>
+    <hr class="ml2 f1">
+    <router-link
+      v-if="emFoco?.id"
+      :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
   </div>
 
   <div class="boards">
@@ -73,10 +71,10 @@ iniciar();
       </div>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Status
+          Versão
         </dt>
         <dd class="t13">
-          {{ emFoco?.status }}
+          {{ emFoco?.versao }}
         </dd>
       </dl>
     </div>
@@ -117,7 +115,7 @@ iniciar();
     <hr class="mb1 f1">
 
     <h2>
-      Órgãos
+      Órgãos <small>teste, teste...</small>
     </h2>
     <div class="flex g2">
       <dl class="f1 mb1">
@@ -137,7 +135,7 @@ iniciar();
             v-for="item in emFoco?.responsaveis_no_orgao_gestor"
             :key="item"
           >
-            {{ item.nome_exibicao || item }},
+            pessoa ID {{ item }},
           </template>
         </dd>
       </dl>
@@ -156,7 +154,7 @@ iniciar();
           Responsável
         </dt>
         <dd class="t13">
-          {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id }}
+          pessoa ID {{ emFoco?.responsavel_id }}
         </dd>
       </dl>
     </div>

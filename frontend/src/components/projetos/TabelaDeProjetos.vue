@@ -113,7 +113,6 @@ async function excluirProjetos(id) {
         </td-->
         <td>
           <router-link
-            v-if="!item.arquivado"
             :to="{ name: 'projetosEditar', params: { projetoId: item.id } }"
             class="tprimary"
           >
