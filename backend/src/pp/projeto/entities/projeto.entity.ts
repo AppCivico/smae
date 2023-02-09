@@ -40,6 +40,15 @@ export class ProjetoPermissoesDto {
     campo_data_aprovacao: boolean
     campo_data_revisao: boolean
     campo_versao: boolean
+
+    campo_nao_escopo: boolean
+    campo_objeto: boolean
+    campo_objetivo: boolean
+    campo_publico_alvo: boolean
+    campo_secretario_executivo: boolean
+    campo_secretario_responsavel: boolean
+    campo_coordenador_ue: boolean
+
 }
 
 export class ProjetoMetaDetailDto {
