@@ -293,25 +293,6 @@ iniciar();
           name="nome"
         />
       </div>
-
-      <div
-        v-show="emFoco?.permissoes?.campo_versao"
-        class="f1 mb1"
-      >
-        <label class="label">
-          Versão <span class="tvermelho">*</span>
-        </label>
-        <Field
-          name="versao"
-          type="text"
-          class="inputtext light mb1"
-          maxlength="20"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="versao"
-        />
-      </div>
     </div>
 
     <div class="flex g2">
@@ -851,52 +832,6 @@ iniciar();
       v-show="props?.projetoId > 0"
       class="flex g2"
     >
-      <div
-        v-show="emFoco?.permissoes?.campo_data_aprovacao"
-        class="f1 mb1"
-      >
-        <label class="label">
-          Data de aprovação
-          <span class="tvermelho">*</span>
-        </label>
-        <Field
-          name="data_aprovacao"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.data_aprovacao }"
-          maxlength="10"
-        />
-        <ErrorMessage
-          name="data_aprovacao"
-          class="error-msg"
-        />
-      </div>
-      <div
-        v-show="emFoco?.permissoes?.campo_data_revisao"
-        class="f1 mb1"
-      >
-        <label class="label">
-          Data de revisão
-          <span class="tvermelho">*</span>
-        </label>
-        <Field
-          name="data_revisao"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.data_revisao }"
-          maxlength="10"
-        />
-        <ErrorMessage
-          name="data_revisao"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div
-      v-show="props?.projetoId > 0"
-      class="flex g2"
-    >
       <div class="f1 mb1">
         <label class="label">
           Previsão de custo <span class="tvermelho">*</span>
@@ -912,6 +847,8 @@ iniciar();
         />
       </div>
     </div>
+
+    <hr class="mb1 f1">
 
     <div
       v-if="props?.projetoId > 0"
@@ -1084,6 +1021,71 @@ iniciar();
         <ErrorMessage
           class="error-msg mb1"
           name="secretario_responsavel"
+        />
+      </div>
+    </div>
+
+    <div
+      v-show="props?.projetoId > 0"
+      class="flex g2"
+    >
+      <div
+        v-show="emFoco?.permissoes?.campo_versao"
+        class="f1 mb1"
+      >
+        <label class="label">
+          Versão <span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="versao"
+          type="text"
+          class="inputtext light mb1"
+          maxlength="20"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="versao"
+        />
+      </div>
+
+      <div
+        v-show="emFoco?.permissoes?.campo_data_aprovacao"
+        class="f1 mb1"
+      >
+        <label class="label">
+          Data de aprovação
+          <span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="data_aprovacao"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.data_aprovacao }"
+          maxlength="10"
+        />
+        <ErrorMessage
+          name="data_aprovacao"
+          class="error-msg"
+        />
+      </div>
+      <div
+        v-show="emFoco?.permissoes?.campo_data_revisao"
+        class="f1 mb1"
+      >
+        <label class="label">
+          Data de revisão
+          <span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="data_revisao"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.data_revisao }"
+          maxlength="10"
+        />
+        <ErrorMessage
+          name="data_revisao"
+          class="error-msg"
         />
       </div>
     </div>
