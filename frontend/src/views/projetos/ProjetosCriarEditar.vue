@@ -1079,7 +1079,6 @@ iniciar();
       >
         <label class="label">
           Data de aprovação
-          <span class="tvermelho">*</span>
         </label>
         <Field
           name="data_aprovacao"
@@ -1099,7 +1098,6 @@ iniciar();
       >
         <label class="label">
           Data de revisão
-          <span class="tvermelho">*</span>
         </label>
         <Field
           name="data_revisao"
