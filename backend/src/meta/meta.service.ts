@@ -19,7 +19,7 @@ type DadosMetaIniciativaAtividadesDto = {
 
 @Injectable()
 export class MetaService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(createMetaDto: CreateMetaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -233,13 +233,19 @@ export class MetaService {
 
             for (const responsavel of dbMeta.meta_responsavel) {
                 if (responsavel.coordenador_responsavel_cp) {
-                    coordenadores_cp.push({
-                        id: responsavel.pessoa.id,
-                        nome_exibicao: responsavel.pessoa.nome_exibicao,
-                    });
+
+                    // só coloca a pessoa 1x
+                    if (coordenadores_cp.filter(r => r.id == responsavel.pessoa.id).length == 0)
+                        coordenadores_cp.push({
+                            id: responsavel.pessoa.id,
+                            nome_exibicao: responsavel.pessoa.nome_exibicao,
+                        });
+
                 } else {
                     const orgao = orgaos[responsavel.orgao.id];
-                    orgao.participantes.push(responsavel.pessoa);
+
+                    if (orgao.participantes.filter(r => r.id == responsavel.pessoa.id).length == 0)
+                        orgao.participantes.push(responsavel.pessoa);
                 }
             }
 
