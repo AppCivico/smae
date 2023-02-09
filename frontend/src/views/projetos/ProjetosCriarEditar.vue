@@ -225,7 +225,7 @@ iniciar();
 
   <Form
     v-if="!projetoId || emFoco"
-    v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -449,7 +449,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_gestor_id }"
           :disabled="projetoId || !órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
-          @change="resetField('responsaveis_no_orgao_gestor')"
+          @change="setFieldValue('responsaveis_no_orgao_gestor', null)"
         >
           <option value="">
             Selecionar
@@ -503,7 +503,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_responsavel_id }"
           :disabled="!órgãosQueTemResponsáveis?.length"
-          @change="resetField('responsavel_id')"
+          @change="setFieldValue('responsavel_id', null)"
         >
           <option value="">
             Selecionar
@@ -586,7 +586,9 @@ iniciar();
           :class="{ 'error': errors.origem_tipo }"
           @change="
             buscarDadosParaOrigens($event);
-            resetField(['meta_id', 'meta_codigo', 'origem_outro'])
+            setFieldValue('meta_id',null);
+            setFieldValue('meta_codigo', null);
+            setFieldValue('origem_outro', null);
           "
         >
           <option value="">
@@ -655,7 +657,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.meta_id }"
           :disabled="!pdmsPorId[values.pdm_escolhido]?.metas?.length"
-          @change="buscarMetaSimplificada($event); resetField('iniciativa_id')"
+          @change="buscarMetaSimplificada($event); setFieldValue('iniciativa_id', null)"
         >
           <option value="">
             Selecionar
@@ -715,7 +717,7 @@ iniciar();
             loading: chamadasPendentes.metaSimplificada
           }"
           :disabled="!metaSimplificada.iniciativas?.length"
-          @change="resetField('atividade_id')"
+          @change="setFieldValue('atividade_id', null)"
         >
           <option value="">
             Selecionar
