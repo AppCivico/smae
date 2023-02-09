@@ -1,6 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import truncate from '@/helpers/truncate';
 import {
   useAlertStore, useOrgansStore, usePortfolioStore, useProjetosStore
@@ -857,9 +858,9 @@ iniciar();
         <label class="label">
           Previsão de custo <span class="tvermelho">*</span>
         </label>
-        <Field
+        <MaskedFloatInput
           name="previsao_custo"
-          type="number"
+          :value="values.previsao_custo"
           class="inputtext light mb1"
         />
         <ErrorMessage
@@ -932,10 +933,9 @@ iniciar();
               <label class="label tc300">
                 Valor nominal
               </label>
-              <Field
+              <MaskedFloatInput
                 :name="`fonte_recursos[${idx}].valor_nominal`"
-                type="number"
-                step="0.01"
+                :value="fields[idx].value.valor_nominal"
                 class="inputtext light mb1"
                 @input="setFieldValue(`fonte_recursos[${idx}].valor_percentual`, null)"
               />
@@ -949,13 +949,10 @@ iniciar();
               <label class="label tc300">
                 Valor percentual
               </label>
-              <Field
+              <MaskedFloatInput
                 :name="`fonte_recursos[${idx}].valor_percentual`"
-                type="number"
+                :value="fields[idx].value.valor_percentual"
                 class="inputtext light mb1"
-                max="100"
-                step="0.01"
-                min="0.01"
                 @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
               />
               <ErrorMessage
