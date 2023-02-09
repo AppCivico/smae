@@ -61,7 +61,7 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
         <div
           v-for="item in Object.keys(listasAgrupadas)"
           :key="item"
-          class="board"
+          class="board board--flex"
         >
           <h2>{{ listasAgrupadas[item].titulo }}</h2>
           <div class="t11 tc300 mb2">
@@ -81,7 +81,7 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
           />
 
           <hr class="mt1 mb1">
-          <router-link
+          <router-link v-if="1==2"
             :to="{ name: 'projetosCriar', query: { portfolio_id: listasAgrupadas[item].id } }"
             class="addlink"
           >
