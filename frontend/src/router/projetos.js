@@ -31,6 +31,7 @@ export default {
       path: '',
       component: ProjetosLista,
       meta: {
+        presenteNoMenu: true,
         título: 'Projetos',
       },
     },
