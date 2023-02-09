@@ -81,17 +81,19 @@ export class ProjetoService {
         }
 
         function validaPdmAntigo() {
+            const errMsg = 'caso origem seja outro sistema de meta';
             if (!meta_codigo)
-                throw new HttpException('meta_codigo| Deve ser enviado quando origem_tipo for PdmAntigo', 400);
+                throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
+            if (!origem_outro)
+                throw new HttpException(`origem_outro| Descrição da origem deve ser enviado ${errMsg}`, 400);
 
             if (meta_id)
-                throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+                throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
             if (iniciativa_id)
-                throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+                throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
             if (atividade_id)
-                throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
-            if (origem_outro)
-                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmAntigo', 400);
+                throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
+
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_id = atividade_id = iniciativa_id = origem_outro = null;
