@@ -159,12 +159,10 @@ const projeto = object().shape({
     .required(),
   data_aprovacao: date()
     .nullable()
-    .min(new Date(2003, 0, 1))
-    .required(),
+    .min(new Date(2003, 0, 1)),
   data_revisao: date()
     .nullable()
-    .min(new Date(2003, 0, 1))
-    .required(),
+    .min(new Date(2003, 0, 1)),
 
   fonte_recursos: array()
     .nullable()

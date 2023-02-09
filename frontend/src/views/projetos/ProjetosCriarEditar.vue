@@ -53,6 +53,13 @@ const itemParaEdição = computed(() => {
       resumo: '',
     };
 
+  if (valores.meta_codigo == null) {
+    valores.meta_codigo = '';
+  }
+  if (valores.origem_outro == null) {
+    valores.origem_outro = '';
+  }
+
   if (props?.projetoId) {
     const propriedadesParaSimplificar = [
       'orgao_gestor',
