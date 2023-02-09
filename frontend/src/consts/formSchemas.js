@@ -191,6 +191,30 @@ const projeto = object().shape({
         }),
       }, [['valor_percentual', 'valor_nominal']]),
     ),
+
+  premissas: array()
+    .of(
+      object().shape({
+        id: number()
+          .nullable(),
+        premissa: string()
+          .required('A premissa não pode estar em branco')
+          .max(2048, 'Premissa muito longa. use menos de 2048 caracteres'),
+      }),
+    )
+    .strict(),
+  restricoes: array()
+    .of(
+      object().shape({
+        id: number()
+          .nullable(),
+        restricao: string()
+          .required('A restrição não pode estar em branco')
+          .max(2048, 'Restrição muito longa. use menos de 2048 caracteres'),
+      }),
+    )
+    .strict(),
+
 });
 
 const portfolio = object({

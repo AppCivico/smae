@@ -991,9 +991,138 @@ iniciar();
             ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
           </button>
         </FieldArray>
-        <hr class="mt1 f1">
       </div>
     </template>
+
+    <template v-if="projetoId">
+      <hr class="mb1 f1">
+
+      <div class="g2 mb2">
+        <legend class="label mt2 mb1">
+          Premissas
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="premissas"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`premissas--${field.key}`"
+            class="flex g2"
+          >
+            <Field
+              :name="`premissas[${idx}].id`"
+              type="hidden"
+            />
+
+            <div class="f1 mb1">
+              <Field
+                arial-label="Código da fonte de recursos no SOF"
+                :name="`premissas[${idx}].premissa`"
+                type="text"
+                class="inputtext light mb1"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`premissas[${idx}].premissa`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              premissa: '',
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar premissa
+          </button>
+        </FieldArray>
+      </div>
+    </template>
+
+    <template v-if="projetoId">
+      <hr class="mb1 f1">
+
+      <div class="g2 mb2">
+        <legend class="label mt2 mb1">
+          Restrições
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="restricoes"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`restricoes--${field.key}`"
+            class="flex g2"
+          >
+            <Field
+              :name="`restricoes[${idx}].id`"
+              type="hidden"
+            />
+
+            <div class="f1 mb1">
+              <Field
+                arial-label="Código da fonte de recursos no SOF"
+                :name="`restricoes[${idx}].restricao`"
+                type="text"
+                class="inputtext light mb1"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`restricoes[${idx}].restricao`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              restricao: '',
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar restrição
+          </button>
+        </FieldArray>
+      </div>
+    </template>
+
+    <hr class="mt1 f1 mb1">
 
     <div
       v-if="projetoId"
