@@ -59,6 +59,7 @@ const itemParaEdição = computed(() => {
       'orgao_responsavel',
       'responsavel',
       'orgaos_participantes',
+      'responsaveis_no_orgao_gestor',
     ];
 
     const datasParaLimpar = [
