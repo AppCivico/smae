@@ -854,132 +854,132 @@ iniciar();
       </div>
     </div>
 
-    <hr class="mb1 f1">
+    <template v-if="projetoId">
+      <hr class="mb1 f1">
 
-    <div
-      v-if="projetoId"
-      class="g2 mb2"
-    >
-      <label class="label mt2 mb1">
-        Fontes de recursos
-      </label>
+      <div class="g2 mb2">
+        <label class="label mt2 mb1">
+          Fontes de recursos
+        </label>
 
-      <FieldArray
-        v-slot="{ fields, push, remove }"
-        name="fonte_recursos"
-      >
-        <div
-          v-for="(field, idx) in fields"
-          :key="`fonteRecursos--${field.key}`"
-          class="flex g2"
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="fonte_recursos"
         >
-          <Field
-            :name="`fonte_recursos[${idx}].id`"
-            type="hidden"
-          />
-
-          <div class="f1 mb1">
-            <label class="label tc300">
-              Ano <span class="tvermelho">*</span>
-            </label>
+          <div
+            v-for="(field, idx) in fields"
+            :key="`fonteRecursos--${field.key}`"
+            class="flex g2"
+          >
             <Field
-              :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
-              type="number"
-              class="inputtext light mb1"
-              min="2003"
-              max="3000"
-              step="1"
+              :name="`fonte_recursos[${idx}].id`"
+              type="hidden"
             />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
-            />
-          </div>
 
-          <div class="f1 mb1">
-            <label class="label tc300">
-              Código da fonte de recursos no SOF
-              <span class="tvermelho">*</span>
-            </label>
-            <Field
-              :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
-              type="text"
-              maxlength="2"
-              class="inputtext light mb1"
-              inputmode="numeric"
-              patten="\d\d"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
-            />
-          </div>
+            <div class="f1 mb1">
+              <label class="label tc300">
+                Ano <span class="tvermelho">*</span>
+              </label>
+              <Field
+                :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
+                type="number"
+                class="inputtext light mb1"
+                min="2003"
+                max="3000"
+                step="1"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
+              />
+            </div>
 
-          <div class="f1 mb1">
-            <label class="label tc300">
-              Valor nominal
-            </label>
-            <Field
-              :name="`fonte_recursos[${idx}].valor_nominal`"
-              type="number"
-              class="inputtext light mb1"
-              @input="setFieldValue(`fonte_recursos[${idx}].valor_percentual`, null)"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`fonte_recursos[${idx}].valor_nominal`"
-            />
-          </div>
+            <div class="f1 mb1">
+              <label class="label tc300">
+                Código da fonte de recursos no SOF
+                <span class="tvermelho">*</span>
+              </label>
+              <Field
+                :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+                type="text"
+                maxlength="2"
+                class="inputtext light mb1"
+                inputmode="numeric"
+                patten="\d\d"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+              />
+            </div>
 
-          <div class="f1 mb1">
-            <label class="label tc300">
-              Valor percentual
-            </label>
-            <Field
-              :name="`fonte_recursos[${idx}].valor_percentual`"
-              type="number"
-              class="inputtext light mb1"
-              max="100"
-              min="0.01"
-              @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`fonte_recursos[${idx}].valor_percentual`"
-            />
+            <div class="f1 mb1">
+              <label class="label tc300">
+                Valor nominal
+              </label>
+              <Field
+                :name="`fonte_recursos[${idx}].valor_nominal`"
+                type="number"
+                class="inputtext light mb1"
+                @input="setFieldValue(`fonte_recursos[${idx}].valor_percentual`, null)"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`fonte_recursos[${idx}].valor_nominal`"
+              />
+            </div>
+
+            <div class="f1 mb1">
+              <label class="label tc300">
+                Valor percentual
+              </label>
+              <Field
+                :name="`fonte_recursos[${idx}].valor_percentual`"
+                type="number"
+                class="inputtext light mb1"
+                max="100"
+                step="1"
+                min="0.01"
+                @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`fonte_recursos[${idx}].valor_percentual`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
           </div>
 
           <button
             class="like-a__text addlink"
-            arial-label="excluir"
-            title="excluir"
-            @click="remove(idx)"
+            type="button"
+            @click="push({
+              fonte_recurso_cod_sof: '',
+              fonte_recurso_ano: null,
+              valor_nominal: null,
+              valor_percentual: null,
+            })"
           >
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
           </button>
-        </div>
-
-        <button
-          class="like-a__text addlink"
-          type="button"
-          @click="push({
-            fonte_recurso_cod_sof: '',
-            fonte_recurso_ano: null,
-            valor_nominal: null,
-            valor_percentual: null,
-          })"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
-        </button>
-      </FieldArray>
-      <hr class="mt1 f1">
-    </div>
+        </FieldArray>
+        <hr class="mt1 f1">
+      </div>
+    </template>
 
     <div
       v-if="projetoId"
