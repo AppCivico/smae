@@ -41,14 +41,16 @@ iniciar();
     </div>
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeProjeto />
-    <hr class="ml2 f1">
-    <router-link
-      v-if="emFoco?.id"
-      :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
-      class="btn big ml2"
-    >
-      Editar
-    </router-link>
+
+    <template v-if="emFoco?.id && !emFoco.arquivado">
+      <hr class="ml2 f1">
+      <router-link
+        :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
+        class="btn big ml2"
+      >
+        Editar
+      </router-link>
+    </template>
   </div>
 
   <div class="boards">
