@@ -2,6 +2,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { projeto as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import {
   useAlertStore, useOrgansStore, usePortfolioStore, useProjetosStore

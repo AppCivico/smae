@@ -175,14 +175,18 @@ const projeto = object().shape({
           .min(2003, 'A partir de 2003')
           .max(3000, 'Até o ano 3000')
           .required('Escolha um ano válido'),
-        valor_percentual: string().when('valor_nominal', {
+        valor_percentual: number().when('valor_nominal', {
           is: (valorNominal) => !valorNominal,
-          then: number().required('Ao menos um tipo de valor é necessário.').min(0.01).max(100),
+          then: number()
+            .required('Ao menos um tipo de valor é necessário.')
+            .min(0.01, 'Não se pode investir menos de 0.01%')
+            .max(100, 'Não se pode investir mais de 100%'),
           otherwise: number().nullable(),
         }),
-        valor_nominal: string().when('valor_percentual', {
+        valor_nominal: number().when('valor_percentual', {
           is: (valorPercentual) => !valorPercentual,
-          then: number().required('Ao menos um tipo de valor é necessário.'),
+          then: number()
+            .required('Ao menos um tipo de valor é necessário.'),
           otherwise: number().nullable(),
         }),
       }, [['valor_percentual', 'valor_nominal']]),
