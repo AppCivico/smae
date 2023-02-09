@@ -231,7 +231,7 @@ iniciar();
 
   <Form
     v-if="!projetoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -455,7 +455,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.orgao_gestor_id }"
           :disabled="projetoId || !órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
-          @change="setFieldValue('responsaveis_no_orgao_gestor', null)"
+          @change="resetField('responsaveis_no_orgao_gestor')"
         >
           <option value="">
             Selecionar
