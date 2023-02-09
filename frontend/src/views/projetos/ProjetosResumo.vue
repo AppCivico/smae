@@ -117,7 +117,7 @@ iniciar();
     <hr class="mb1 f1">
 
     <h2>
-      Órgãos <small>teste, teste...</small>
+      Órgãos
     </h2>
     <div class="flex g2">
       <dl class="f1 mb1">
@@ -137,7 +137,7 @@ iniciar();
             v-for="item in emFoco?.responsaveis_no_orgao_gestor"
             :key="item"
           >
-            pessoa ID {{ item }},
+            {{ item.nome_exibicao || item }},
           </template>
         </dd>
       </dl>
@@ -156,7 +156,7 @@ iniciar();
           Responsável
         </dt>
         <dd class="t13">
-          pessoa ID {{ emFoco?.responsavel_id }}
+          {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id }}
         </dd>
       </dl>
     </div>
