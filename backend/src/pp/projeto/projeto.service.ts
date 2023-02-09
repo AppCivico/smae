@@ -525,13 +525,19 @@ export class ProjetoService {
             acao_reiniciar: false,
             acao_cancelar: false,
             acao_terminar: false,
-            campo_codigo_liberado: false,
             campo_premissas: false,
             campo_restricoes: false,
             campo_data_aprovacao: false,
             campo_data_revisao: false,
-            campo_versao: false
-
+            campo_codigo_liberado: false,
+            campo_versao: false,
+            campo_objeto: false,
+            campo_objetivo: false,
+            campo_publico_alvo: false,
+            campo_secretario_executivo: false,
+            campo_secretario_responsavel: false,
+            campo_coordenador_ue: false,
+            campo_nao_escopo: false,
         };
 
         // se o projeto está arquivado, não podemos arquivar novamente
@@ -577,6 +583,14 @@ export class ProjetoService {
                 permissoes.campo_data_aprovacao = true;
                 permissoes.campo_data_revisao = true;
                 permissoes.campo_versao = true;
+
+                permissoes.campo_objeto = true;
+                permissoes.campo_objetivo = true;
+                permissoes.campo_nao_escopo = true;
+                permissoes.campo_publico_alvo = true;
+                permissoes.campo_secretario_executivo = true;
+                permissoes.campo_secretario_responsavel = true;
+                permissoes.campo_coordenador_ue = true;
             }
 
             if (pessoaPodeEscrever) {
@@ -606,6 +620,8 @@ export class ProjetoService {
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
+
+        // se estiver arquivado, retorna 400
 
         let moverStatusParaPlanejamento: boolean = false;
         if (dto.codigo) {
