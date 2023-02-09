@@ -928,6 +928,7 @@ iniciar();
               <Field
                 :name="`fonte_recursos[${idx}].valor_nominal`"
                 type="number"
+                step="0.01"
                 class="inputtext light mb1"
                 @input="setFieldValue(`fonte_recursos[${idx}].valor_percentual`, null)"
               />
@@ -946,7 +947,7 @@ iniciar();
                 type="number"
                 class="inputtext light mb1"
                 max="100"
-                step="1"
+                step="0.01"
                 min="0.01"
                 @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
               />
