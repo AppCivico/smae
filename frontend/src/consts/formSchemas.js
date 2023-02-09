@@ -179,7 +179,7 @@ const projeto = object().shape({
           .required('Escolha um ano válido'),
         valor_percentual: string().when('valor_nominal', {
           is: (valorNominal) => !valorNominal,
-          then: number().required('Ao menos um tipo de valor é necessário.'),
+          then: number().required('Ao menos um tipo de valor é necessário.').min(0.01).max(100),
           otherwise: number().nullable(),
         }),
         valor_nominal: string().when('valor_percentual', {
