@@ -140,6 +140,7 @@ export class ProjetoDetailDto {
     meta: ProjetoMetaDetailDto | null
     // responsaveis_no_orgao_gestor:
 
+    responsaveis_no_orgao_gestor: IdNomeExibicao[]
     permissoes: ProjetoPermissoesDto
 }
 
