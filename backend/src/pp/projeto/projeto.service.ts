@@ -479,8 +479,17 @@ export class ProjetoService {
 
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
+        const responsaveis_no_orgao_gestor = await this.prisma.pessoa.findMany({
+            where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
+            select: {
+                id: true,
+                nome_exibicao: true
+            }
+        });
+
         return {
             ...projeto,
+            responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
             orgaos_participantes: projeto.orgaos_participantes.map(o => {
                 return {
