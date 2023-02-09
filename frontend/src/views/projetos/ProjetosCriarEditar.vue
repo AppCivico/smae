@@ -273,6 +273,7 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           maxlength="20"
+          :disabled="!emFoco?.permissoes?.campo_codigo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -347,6 +348,7 @@ iniciar();
           rows="5"
           class="inputtext light mb1"
           :class="{ 'error': errors.nao_escopo }"
+          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
         />
         <ErrorMessage
           name="nao_escopo"
@@ -368,6 +370,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objetivo }"
+            :disabled="!emFoco?.permissoes?.campo_objetivo"
           />
           <ErrorMessage
             name="objetivo"
@@ -386,6 +389,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objeto }"
+            :disabled="!emFoco?.permissoes?.campo_objeto"
           />
           <ErrorMessage
             name="objeto"
@@ -404,6 +408,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.publico_alvo }"
+            :disabled="!emFoco?.permissoes?.campo_publico_alvo"
           />
           <ErrorMessage
             name="publico_alvo"
@@ -830,7 +835,7 @@ iniciar();
     </div>
 
     <div
-      v-show="props?.projetoId > 0"
+      v-show="projetoId"
       class="flex g2"
     >
       <div class="f1 mb1">
@@ -852,7 +857,7 @@ iniciar();
     <hr class="mb1 f1">
 
     <div
-      v-if="props?.projetoId > 0"
+      v-if="projetoId"
       class="g2 mb2"
     >
       <label class="label mt2 mb1">
@@ -988,6 +993,7 @@ iniciar();
           name="coordenador_ue"
           type="text"
           class="inputtext light mb1"
+          :disabled="!emFoco?.permissoes?.campo_coordenador_ue"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1003,6 +1009,7 @@ iniciar();
           name="secretario_executivo"
           type="text"
           class="inputtext light mb1"
+          :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1018,6 +1025,7 @@ iniciar();
           name="secretario_responsavel"
           type="text"
           class="inputtext light mb1"
+          :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1027,11 +1035,11 @@ iniciar();
     </div>
 
     <div
-      v-show="props?.projetoId > 0"
+      v-show="projetoId"
       class="flex g2"
     >
       <div
-        v-show="emFoco?.permissoes?.campo_versao"
+        :disabled="!emFoco?.permissoes?.campo_versao"
         class="f1 mb1"
       >
         <label class="label">
@@ -1050,7 +1058,7 @@ iniciar();
       </div>
 
       <div
-        v-show="emFoco?.permissoes?.campo_data_aprovacao"
+        :disabled="!emFoco?.permissoes?.campo_data_aprovacao"
         class="f1 mb1"
       >
         <label class="label">
@@ -1070,7 +1078,7 @@ iniciar();
         />
       </div>
       <div
-        v-show="emFoco?.permissoes?.campo_data_revisao"
+        :disabled="!emFoco?.permissoes?.campo_data_revisao"
         class="f1 mb1"
       >
         <label class="label">
