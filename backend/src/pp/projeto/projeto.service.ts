@@ -133,8 +133,11 @@ export class ProjetoService {
     }
 
     private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
+        if (!dto.orgao_gestor_id)
+            return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined }
+
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
-        const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor;
+        const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor ? dto.responsaveis_no_orgao_gestor : [];
 
         if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false) throw new HttpException('orgao_gestor_id| não faz parte do Portfolio', 400);
 
@@ -192,7 +195,7 @@ export class ProjetoService {
                     registrado_por: user.id,
                     registrado_em: new Date(Date.now()),
                     portfolio_id: dto.portfolio_id,
-                    orgao_gestor_id: orgao_gestor_id,
+                    orgao_gestor_id: orgao_gestor_id!,
                     responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
 
                     orgaos_participantes: {
@@ -672,6 +675,15 @@ export class ProjetoService {
             meta_codigo = origemVerification.meta_codigo;
         }
 
+        const portfolios = await this.portfolioService.findAll(user);
+
+        const portfolio = portfolios.filter(r => r.id == projeto.portfolio_id)[0];
+        if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
+
+
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto as any, portfolio);
+
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
@@ -685,6 +697,8 @@ export class ProjetoService {
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
 
+
+
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
@@ -697,8 +711,9 @@ export class ProjetoService {
                     origem_tipo,
 
                     // campos do create
-                    responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
-                    orgao_responsavel_id: dto.orgao_responsavel_id,
+                    orgao_gestor_id,
+                    responsaveis_no_orgao_gestor,
+
                     responsavel_id: dto.responsavel_id,
 
                     nome: dto.nome,

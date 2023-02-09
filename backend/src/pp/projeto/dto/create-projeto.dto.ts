@@ -29,7 +29,8 @@ export class CreateProjetoDto {
     @ArrayMinSize(0, { message: '$property| precisa ter um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    responsaveis_no_orgao_gestor: number[];
+    @ValidateIf((object, value) => value !== null)
+    responsaveis_no_orgao_gestor: number[] | null;
 
 
     /**
