@@ -219,6 +219,12 @@ iniciar();
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Editar projeto' }}</h1>
+
+    <template v-if="projetoId">
+      <hr class="ml2 f1">
+      <MenuDeMudançaDeStatusDeProjeto />
+    </template>
+
     <hr class="ml2 f1">
     <CheckClose />
   </div>
