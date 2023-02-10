@@ -271,7 +271,7 @@ iniciar();
         class="f1 mb1"
       >
         <label class="label">
-          Portfolio <span class="tvermelho">*</span>
+          Portfolio&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <Field
@@ -317,7 +317,7 @@ iniciar();
 
       <div class="f1 mb1">
         <label class="label">
-          Nome do projeto <span class="tvermelho">*</span>
+          Nome do projeto&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="nome"
@@ -476,7 +476,7 @@ iniciar();
     </label>
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Órgão gestor <span class="tvermelho">*</span></label>
+        <label class="label tc300">Órgão gestor&nbsp;<span class="tvermelho">*</span></label>
         <Field
           name="orgao_gestor_id"
           as="select"
@@ -505,11 +505,10 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">Responsáveis
-          <span
-            v-show="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible?.length"
-            class="tvermelho"
-          >*</span>
+        <label class="label tc300">Responsáveis&nbsp;<span
+          v-show="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible?.length"
+          class="tvermelho"
+        >*</span>
         </label>
 
         <AutocompleteField
@@ -528,8 +527,7 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Órgão responsável
-          <span class="tvermelho">*</span>
+        <label class="label tc300">Órgão responsável&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="orgao_responsavel_id"
@@ -557,7 +555,7 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">Responsável <span class="tvermelho">*</span></label>
+        <label class="label tc300">Responsável&nbsp;<span class="tvermelho">*</span></label>
         <Field
           name="responsavel_id"
           as="select"
@@ -588,8 +586,7 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Orgãos participantes
-          <span class="tvermelho">*</span>
+        <label class="label tc300">Orgãos participantes&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <AutocompleteField
@@ -610,8 +607,7 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Origem
-          <span class="tvermelho">*</span>
+        <label class="label tc300">Origem&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="origem_tipo"
@@ -647,8 +643,7 @@ iniciar();
         class="f1 mb1"
       >
         <label class="label tc300">
-          Programa de metas
-          <span class="tvermelho">*</span>
+          Programa de metas&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="pdm_escolhido"
@@ -682,7 +677,7 @@ iniciar();
         class="f1 mb1"
       >
         <label class="label tc300">
-          Meta vinculada <span class="tvermelho">*</span>
+          Meta vinculada&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <Field
@@ -836,8 +831,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Previsão de início
-          <span class="tvermelho">*</span>
+          Previsão de início&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="previsao_inicio"
@@ -853,8 +847,7 @@ iniciar();
       </div>
       <div class="f1 mb1">
         <label class="label">
-          Previsão de término
-          <span class="tvermelho">*</span>
+          Previsão de término&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="previsao_termino"
@@ -876,7 +869,7 @@ iniciar();
     >
       <div class="f1 mb1">
         <label class="label">
-          Previsão de custo <span class="tvermelho">*</span>
+          Previsão de custo&nbsp;<span class="tvermelho">*</span>
         </label>
         <MaskedFloatInput
           name="previsao_custo"
@@ -914,7 +907,7 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Ano <span class="tvermelho">*</span>
+                Ano&nbsp;<span class="tvermelho">*</span>
               </label>
               <Field
                 :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
@@ -933,8 +926,7 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Fonte de recursos
-                <span class="tvermelho">*</span>
+                Fonte de recursos&nbsp;<span class="tvermelho">*</span>
               </label>
               <Field
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
@@ -1218,7 +1210,7 @@ iniciar();
         class="f1 mb1"
       >
         <label class="label">
-          Versão <span class="tvermelho">*</span>
+          Versão&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="versao"
