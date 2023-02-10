@@ -169,7 +169,7 @@ const projeto = object()
       .min(new Date(2003, 0, 1)),
     escopo: string()
       .max(50000, 'Esse texto é muito longo')
-      .required(),
+      .required('O texto do escopo é obrigatório'),
     fonte_recursos: array()
       .nullable()
       .of(
@@ -177,7 +177,7 @@ const projeto = object()
           .shape({
             fonte_recurso_cod_sof: string()
               .matches(/\d\d/)
-              .required(),
+              .required('A fonte é obrigatória'),
             fonte_recurso_ano: number()
               .min(2003, 'A partir de 2003')
               .max(3000, 'Até o ano 3000')
@@ -252,16 +252,16 @@ const projeto = object()
     previsao_custo: number()
       .nullable()
       .min(0)
-      .required(),
+      .required('Previsão de custo é obrigatória'),
     previsao_inicio: date()
       .min(new Date(2003, 0, 1))
-      .required(),
+      .required('Previsao de início é obrigatória'),
     previsao_termino: date()
       .min(ref('previsao_inicio'))
-      .required(),
+      .required('Previsao de término é obrigatória'),
     principais_etapas: string()
       .max(50000, 'Esse texto é muito longo')
-      .required(),
+      .required('Principais etapas são obrigatórias'),
     responsaveis_no_orgao_gestor: array()
       .min(1, 'Selecione ao menos um gestor')
       .required('Alguém do órgão gestor precisa gerir o projeto'),
@@ -281,10 +281,10 @@ const projeto = object()
       .strict(),
     resumo: string()
       .max(500, 'Esse texto é muito longo')
-      .required(),
+      .required('Resumo é obrigatório'),
     versao: string()
       .max(20, 'Esse texto é muito longo')
-      .required(),
+      .required('A versão é obrigatória'),
   });
 
 const região = object()
