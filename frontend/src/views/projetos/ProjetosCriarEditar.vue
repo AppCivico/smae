@@ -84,7 +84,7 @@ const itemParaEdição = computed(() => {
     propriedadesParaSimplificar.forEach((x) => {
       if (Array.isArray(valores[x])) {
         valores[x] = valores[x].map((y) => y.id || y);
-      } else if (typeof valores[x] === 'object') {
+      } else if (valores[x] && typeof valores[x] === 'object') {
         valores[`${x}_id`] = valores[x].id;
       }
     });
