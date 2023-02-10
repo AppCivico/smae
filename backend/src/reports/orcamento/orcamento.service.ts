@@ -303,7 +303,7 @@ export class OrcamentoService implements ReportableService {
                 AND ( custos.dotacao = drp.dotacao AND custos.ano = drp.ano_referencia AND custos.processo = drp.dotacao_processo)
 
                 left join dotacao_processo_nota dn ON custos.nota_empenho IS NOT NULL
-                AND ( custos.dotacao = dn.dotacao AND custos.ano = dn.ano_referencia AND custos.processo = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
+                AND ( custos.dotacao = dn.dotacao AND cast(split_part(custos.nota_empenho, '/', 2) as bigint) = dn.ano_referencia AND custos.processo = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
             )
             select
                 plan_dotacao_ano_utilizado,
@@ -401,7 +401,7 @@ export class OrcamentoService implements ReportableService {
                 AND ( custos.dotacao = drp.dotacao AND custos.ano = drp.ano_referencia AND custos.processo = drp.dotacao_processo)
 
                 left join dotacao_processo_nota dn ON custos.nota_empenho IS NOT NULL
-                AND ( custos.dotacao = dn.dotacao AND custos.ano = dn.ano_referencia AND custos.processo = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
+                AND ( custos.dotacao = dn.dotacao AND cast(split_part(custos.nota_empenho, '/', 2) as bigint) = dn.ano_referencia AND custos.processo = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
                 order by custos.dotacao, custos.processo, custos.nota_empenho, 1, 2
             `;
     }
