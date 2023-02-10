@@ -148,7 +148,7 @@ iniciar();
           Órgão responsável
         </dt>
         <dd class="t13">
-          {{ emFoco?.orgao_responsavel.sigla }} - {{ emFoco?.orgao_responsavel.descricao }}
+          {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
         </dd>
       </dl>
       <dl class="f1 mb1">
@@ -156,7 +156,7 @@ iniciar();
           Responsável
         </dt>
         <dd class="t13">
-          {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id }}
+          {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-'}}
         </dd>
       </dl>
     </div>
