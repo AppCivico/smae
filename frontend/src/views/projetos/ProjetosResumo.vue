@@ -2,6 +2,7 @@
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { usePortfolioStore, useProjetosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import statuses from '@/consts/statuses';
 
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
@@ -76,7 +77,7 @@ iniciar();
           Status
         </dt>
         <dd class="t13">
-          {{ emFoco?.status }}
+          {{ statuses[emFoco?.status] || emFoco?.status }}
         </dd>
       </dl>
     </div>
