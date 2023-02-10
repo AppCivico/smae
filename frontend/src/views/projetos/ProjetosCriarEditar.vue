@@ -5,7 +5,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import {
-  useAlertStore, useOrgansStore, usePortfolioStore, useProjetosStore
+  useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import {
@@ -15,6 +15,7 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const OrgansStore = useOrgansStore();
+const OrçamentosStore = useOrcamentosStore();
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
@@ -23,6 +24,7 @@ const {
 } = storeToRefs(projetosStore);
 const ÓrgãosStore = useOrgansStore();
 const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
+const { DotacaoSegmentos } = storeToRefs(OrçamentosStore);
 
 const router = useRouter();
 const route = useRoute();
@@ -138,6 +140,17 @@ async function buscarDadosParaOrigens(valorOuEvento) {
   }
 }
 
+function BuscarDotaçãoParaAno(valorOuEvento) {
+  const ano = valorOuEvento.target?.value || valorOuEvento;
+
+  console.debug('DotacaoSegmentos.value', DotacaoSegmentos.value);
+  console.debug('DotacaoSegmentos?.value?.[ano]', DotacaoSegmentos?.value?.[ano]);
+
+  if (!DotacaoSegmentos?.value?.[ano]) {
+    OrçamentosStore.getDotacaoSegmentos(ano);
+  }
+}
+
 async function buscarMetaSimplificada(valorOuEvento) {
   const idDaMeta = valorOuEvento.target?.value || valorOuEvento;
 
@@ -210,6 +223,12 @@ async function iniciar() {
 
     if (emFoco.value?.meta_id) {
       buscarMetaSimplificada(emFoco.value?.meta_id);
+    }
+
+    if (emFoco.value?.fonte_recursos?.length) {
+      emFoco.value.fonte_recursos.forEach((x) => {
+        BuscarDotaçãoParaAno(x.fonte_recurso_ano);
+      });
     }
   }
 
@@ -904,6 +923,7 @@ iniciar();
                 min="2003"
                 max="3000"
                 step="1"
+                @change="BuscarDotaçãoParaAno"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -921,9 +941,21 @@ iniciar();
                 type="text"
                 maxlength="2"
                 class="inputtext light mb1"
-                inputmode="numeric"
-                patten="\d\d"
-              />
+                as="select"
+              >
+                <option value="">
+                  Selecionar
+                </option>
+                <option
+                  v-for="item in
+                    DotacaoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.orgaos || []"
+                  :key="item.codigo"
+                  :value="item.codigo"
+                  :title="item.descricao"
+                >
+                  {{ item.codigo }} - {{ truncate(item.descricao, 36) }}
+                </option>
+              </Field>
               <ErrorMessage
                 class="error-msg mb1"
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
