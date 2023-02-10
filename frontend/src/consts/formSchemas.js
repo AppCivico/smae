@@ -215,7 +215,7 @@ const projeto = object()
       .min(1, 'Selecione um órgão gestor')
       .required('O projeto necessita de um órgão gestor'),
     orgao_responsavel_id: mixed()
-      .inArray(ref('orgaos_participantes'), 'O órgão responsável precisa participar')
+      .inArray(ref('orgaos_participantes'), 'O órgão responsável precisa participar do projeto')
       .required('Escolha um órgão responsável pelo projeto'),
     orgaos_participantes: array()
       .min(1, 'Selecione ao menos um órgão')
@@ -234,7 +234,7 @@ const projeto = object()
     origem_tipo: mixed()
       .required('O projeto precisa de uma origem de recursos.')
       .oneOf(['PdmSistema', 'PdmAntigo', 'Outro'], 'A origem escolhida é inválida'),
-    portfolio_id: number()
+    portfolio_id: number('O projeto precisa pertencer a um portfolio')
       .min(1, 'Selecione ao menos um portfolio')
       .required('O projeto precisa pertencer a um portfolio'),
     premissas: array()
@@ -263,8 +263,9 @@ const projeto = object()
       .max(50000, 'Esse texto é muito longo')
       .required('Principais etapas são obrigatórias'),
     responsaveis_no_orgao_gestor: array()
-      .min(1, 'Selecione ao menos um gestor')
-      .required('Alguém do órgão gestor precisa gerir o projeto'),
+      .nullable()
+      .min(1, 'É necessário ao menos um gestor')
+      .required('Alguém do órgão precisa gerir o projeto'),
     responsavel_id: number()
       .required('O projeto necessita de um responsável'),
     restricoes: array()

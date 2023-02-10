@@ -231,7 +231,7 @@ async function iniciar() {
     }
   }
 
-  if (!portfolioId || props.projetoId) {
+  if (!portfolioStore.lista?.length) {
     portfolioStore.buscarTudo();
   }
 
@@ -258,17 +258,14 @@ iniciar();
 
   <Form
     v-if="!projetoId || emFoco"
-    v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
-      <div
-        v-show="!portfolioId"
-        class="f1 mb1"
-      >
+      <div class="f1 mb1">
         <label class="label">
           Portfolio&nbsp;<span class="tvermelho">*</span>
         </label>
@@ -278,14 +275,21 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
-          :disabled="!!props.projetoId"
+          :disabled="!!portfolioId"
         >
+          <option value="">
+            Selecionar
+          </option>
           <option
             v-for="item in portfolioStore.lista"
             :key="item.id"
             :value="item.id"
+            :disabled="!órgãosDisponíveisNessePortfolio(item.id)?.length"
           >
             {{ item.titulo }}
+            <template v-if="!órgãosDisponíveisNessePortfolio(item.id)?.length">
+              (órgão sem responsáveis cadastrados)
+            </template>
           </option>
         </Field>
         <ErrorMessage
@@ -486,9 +490,12 @@ iniciar();
           name="orgao_gestor_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.orgao_gestor_id }"
-          :disabled="projetoId || !órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
-          @change="resetField('responsaveis_no_orgao_gestor')"
+          :class="{
+            error: errors.orgao_gestor_id ,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
+          @change="setFieldValue('responsaveis_no_orgao_gestor', null)"
         >
           <option value="">
             Selecionar
@@ -516,12 +523,42 @@ iniciar();
         <AutocompleteField
           :controlador="{busca: '', participantes:
             values.responsaveis_no_orgao_gestor || []}"
-          :grupo="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible || []"
+          :grupo="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible
+            || []"
+          :class="{
+            error: errors.responsaveis_no_orgao_gestor,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
           label="nome_exibicao"
           name="responsaveis_no_orgao_gestor"
         />
         <ErrorMessage
           name="responsaveis_no_orgao_gestor"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <label class="label tc300">Orgãos participantes&nbsp;<span class="tvermelho">*</span>
+        </label>
+
+        <AutocompleteField
+          name="orgaos_participantes"
+          :controlador="{
+            busca: '',
+            participantes: values.orgaos_participantes || []
+          }"
+          :class="{
+            error: errors.orgaos_participantes,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          :grupo="órgãosQueTemResponsáveis"
+          label="sigla"
+        />
+        <ErrorMessage
+          name="orgaos_participantes"
           class="error-msg"
         />
       </div>
@@ -535,7 +572,10 @@ iniciar();
           name="orgao_responsavel_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.orgao_responsavel_id }"
+          :class="{
+            error: errors.orgao_responsavel_id,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
           :disabled="!órgãosQueTemResponsáveis?.length"
           @change="setFieldValue('responsavel_id', null)"
         >
@@ -562,7 +602,10 @@ iniciar();
           name="responsavel_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.responsavel_id }"
+          :class="{
+            error: errors.responsavel_id,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
           :disabled="!órgãosQueTemResponsáveisEPorId[values.orgao_responsavel_id]
             ?.responsible?.length"
         >
@@ -581,25 +624,6 @@ iniciar();
 
         <ErrorMessage
           name="responsavel_id"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <label class="label tc300">Orgãos participantes&nbsp;<span class="tvermelho">*</span>
-        </label>
-
-        <AutocompleteField
-          :controlador="{busca: '', participantes:
-            values.orgaos_participantes || []}"
-          :grupo="órgãosQueTemResponsáveis"
-          label="sigla"
-          name="orgaos_participantes"
-        />
-        <ErrorMessage
-          name="orgaos_participantes"
           class="error-msg"
         />
       </div>
