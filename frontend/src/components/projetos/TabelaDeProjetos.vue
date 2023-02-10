@@ -1,4 +1,5 @@
 <script setup>
+import statuses from '@/consts/statuses';
 import {
 useAlertStore, useOrgansStore, useProjetosStore
 } from '@/stores';
@@ -92,11 +93,7 @@ async function excluirProjetos(id) {
           }}
         </td>
         <td>
-          {{
-            statusesPorId[item.status?.id]?.codigo
-              || item.status?.codigo
-              || item.status
-          }}
+          {{ statuses[item.status] || item.status }}
         </td>
         <!--td>
           <button
