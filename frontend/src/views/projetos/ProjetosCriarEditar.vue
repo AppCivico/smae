@@ -20,7 +20,7 @@ const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const {
-  chamadasPendentes, emFoco, erro, pdmsSimplificados, pdmsPorId, metaSimplificada,
+  chamadasPendentes, emFoco, erro, permissões, pdmsSimplificados, pdmsPorId, metaSimplificada,
 } = storeToRefs(projetosStore);
 const ÓrgãosStore = useOrgansStore();
 const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
@@ -43,7 +43,6 @@ const itemParaEdição = computed(() => {
     ? {
       ...emFoco.value,
       id: undefined,
-      permissoes: undefined,
     }
     : {
       meta_codigo: '',
@@ -307,7 +306,7 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           maxlength="20"
-          :disabled="!emFoco?.permissoes?.campo_codigo"
+          :disabled="!permissões?.campo_codigo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -384,7 +383,7 @@ iniciar();
           rows="5"
           class="inputtext light mb1"
           :class="{ 'error': errors.nao_escopo }"
-          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
+          :disabled="!permissões?.campo_nao_escopo"
         />
         <ErrorMessage
           name="nao_escopo"
@@ -406,7 +405,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objetivo }"
-            :disabled="!emFoco?.permissoes?.campo_objetivo"
+            :disabled="!permissões?.campo_objetivo"
           />
           <ErrorMessage
             name="objetivo"
@@ -425,7 +424,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objeto }"
-            :disabled="!emFoco?.permissoes?.campo_objeto"
+            :disabled="!permissões?.campo_objeto"
           />
           <ErrorMessage
             name="objeto"
@@ -444,7 +443,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.publico_alvo }"
-            :disabled="!emFoco?.permissoes?.campo_publico_alvo"
+            :disabled="!permissões?.campo_publico_alvo"
           />
           <ErrorMessage
             name="publico_alvo"
@@ -1169,7 +1168,7 @@ iniciar();
           name="coordenador_ue"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_coordenador_ue"
+          :disabled="!permissões?.campo_coordenador_ue"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1185,7 +1184,7 @@ iniciar();
           name="secretario_executivo"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
+          :disabled="!permissões?.campo_secretario_executivo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1201,7 +1200,7 @@ iniciar();
           name="secretario_responsavel"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
+          :disabled="!permissões?.campo_secretario_responsavel"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1215,7 +1214,7 @@ iniciar();
       class="flex g2"
     >
       <div
-        :disabled="!emFoco?.permissoes?.campo_versao"
+        :disabled="!permissões?.campo_versao"
         class="f1 mb1"
       >
         <label class="label">
@@ -1234,7 +1233,7 @@ iniciar();
       </div>
 
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_aprovacao"
+        :disabled="!permissões?.campo_data_aprovacao"
         class="f1 mb1"
       >
         <label class="label">
@@ -1253,7 +1252,7 @@ iniciar();
         />
       </div>
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_revisao"
+        :disabled="!permissões?.campo_data_revisao"
         class="f1 mb1"
       >
         <label class="label">

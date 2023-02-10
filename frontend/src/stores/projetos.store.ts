@@ -2,6 +2,7 @@
 import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
 
+import { ProjetoPermissoesDto } from '@../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/dto/create-meta.dto';
 import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
 import { ListProjetoDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
@@ -25,6 +26,8 @@ interface Estado {
   lista: Lista;
   emFoco: ProjetoDetailDto | null;
   chamadasPendentes: ChamadasPendentes;
+
+  permissões: ProjetoPermissoesDto | null;
   pdmsSimplificados: PdmsSimplificados;
   metaSimplificada: MetaSimplificada;
   erro: null | unknown,
@@ -47,7 +50,11 @@ async function buscarItem(this: Estado, id = 0, params = {}): Promise<void> {
   this.chamadasPendentes.emFoco = true;
   try {
     const resposta = await requestS.get(`${baseUrl}/projeto/${id}`, params);
-    this.emFoco = resposta;
+    this.emFoco = {
+      ...resposta,
+      permissoes: undefined,
+    };
+    this.permissões = resposta.permissoes;
   } catch (erro: unknown) {
     this.erro = erro;
   }
@@ -150,6 +157,8 @@ export const useProjetosStore = defineStore('projetos', {
       metaSimplificada: false,
       mudarStatus: false,
     },
+
+    permissões: null,
 
     pdmsSimplificados: [],
     metaSimplificada: [],
