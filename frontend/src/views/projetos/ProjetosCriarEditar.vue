@@ -956,7 +956,10 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Valor nominal
+                Valor nominal&nbsp;<span
+                  v-if="!fields[idx].value.valor_percentual"
+                  class="tvermelho"
+                >*</span>
               </label>
               <MaskedFloatInput
                 :name="`fonte_recursos[${idx}].valor_nominal`"
@@ -972,7 +975,10 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Valor percentual
+                Valor percentual&nbsp;<span
+                  v-if="!fields[idx].value.valor_nominal"
+                  class="tvermelho"
+                >*</span>
               </label>
               <MaskedFloatInput
                 :name="`fonte_recursos[${idx}].valor_percentual`"
