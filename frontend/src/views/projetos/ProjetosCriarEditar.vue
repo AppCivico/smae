@@ -142,9 +142,6 @@ async function buscarDadosParaOrigens(valorOuEvento) {
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
 
-  console.debug('DotacaoSegmentos.value', DotacaoSegmentos.value);
-  console.debug('DotacaoSegmentos?.value?.[ano]', DotacaoSegmentos?.value?.[ano]);
-
   if (!DotacaoSegmentos?.value?.[ano]) {
     OrçamentosStore.getDotacaoSegmentos(ano);
   }
