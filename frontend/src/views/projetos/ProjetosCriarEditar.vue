@@ -894,9 +894,9 @@ iniciar();
       <hr class="mb1 f1">
 
       <div class="g2 mb2">
-        <label class="label mt2 mb1">
+        <legend class="label mt2 mb1">
           Fontes de recursos
-        </label>
+        </legend>
 
         <FieldArray
           v-slot="{ fields, push, remove }"
@@ -933,7 +933,7 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Código da fonte de recursos no SOF
+                Fonte de recursos
                 <span class="tvermelho">*</span>
               </label>
               <Field
