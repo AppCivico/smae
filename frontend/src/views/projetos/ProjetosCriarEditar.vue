@@ -333,7 +333,9 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">Resumo</label>
+        <label class="label">
+          Resumo&nbsp;<span class="tvermelho">*</span>
+        </label>
         <Field
           name="resumo"
           as="textarea"
@@ -352,7 +354,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Escopo
+          Escopo&nbsp;<span class="tvermelho">*</span>
           <small class="t13 tc500">(o que será entregue no projeto)</small>
         </label>
         <Field
@@ -454,7 +456,9 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">Principais etapas</label>
+        <label class="label">
+          Principais etapas&nbsp;<span class="tvermelho">*</span>
+        </label>
         <Field
           name="principais_etapas"
           as="textarea"
@@ -476,7 +480,9 @@ iniciar();
     </label>
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Órgão gestor&nbsp;<span class="tvermelho">*</span></label>
+        <label class="label tc300">
+          Órgão gestor&nbsp;<span class="tvermelho">*</span>
+        </label>
         <Field
           name="orgao_gestor_id"
           as="select"
@@ -505,10 +511,7 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">Responsáveis&nbsp;<span
-          v-show="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible?.length"
-          class="tvermelho"
-        >*</span>
+        <label class="label tc300">Responsáveis&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <AutocompleteField
@@ -808,7 +811,7 @@ iniciar();
     >
       <div class="f1 mb1">
         <label class="label tc300">
-          Descrição
+          Descrição&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <Field
