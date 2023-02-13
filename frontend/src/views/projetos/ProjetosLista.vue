@@ -178,7 +178,8 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg> <span>Adicionar projeto</span>
+            ><use xlink:href="#i_+" /></svg>
+            <span>Adicionar projeto a esse portfolio</span>
           </router-link>
         </div>
       </div>
