@@ -34,6 +34,10 @@ export default {
         presenteNoMenu: true,
         título: 'Projetos',
       },
+      props: ({ params, query }) => ({
+        ...params,
+        status: query.status?.replace('_', '').toLowerCase(),
+      }),
     },
     {
       name: 'projetosListarPrioritários',
@@ -43,9 +47,24 @@ export default {
         presenteNoMenu: true,
         título: 'Projetos prioritários',
       },
-      props: ({ params }) => ({
+      props: ({ params, query }) => ({
         ...params,
+        status: query.status?.replace('_', '').toLowerCase(),
         ...{ apenasPrioritários: true },
+      }),
+    },
+    {
+      name: 'projetosListarArquivados',
+      path: 'arquivados',
+      component: ProjetosLista,
+      meta: {
+        presenteNoMenu: true,
+        título: 'Projetos arquivados',
+      },
+      props: ({ params, query }) => ({
+        ...params,
+        status: query.status?.replace('_', '').toLowerCase(),
+        ...{ apenasArquivados: true },
       }),
     },
     {
