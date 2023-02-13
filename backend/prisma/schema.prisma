@@ -2089,6 +2089,8 @@ model Portfolio {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
+    nivel_maximo_tarefa Int @default(5) @db.SmallInt
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
@@ -2393,6 +2395,10 @@ model Tarefa {
     tarefa_filha Tarefa[] @relation("tarefa_pai")
     orgao        Orgao    @relation(fields: [orgao_id], references: [id])
 
+    tarefa    String // 60 chars
+    descricao String
+    recursos  String /// pessoas que executam a task, não necessariamente dentro do SMAE
+
     numero            Int
     nivel             Int       @db.SmallInt
     inicio_planejado  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
@@ -2414,20 +2420,7 @@ model Tarefa {
     tarefas_precedida   TarefaPredecessora[] @relation("tarefa_precedida")
     tarefa_predecessora TarefaPredecessora[] @relation("tarefa_predecessora")
 
-    TarefaRecurso TarefaRecurso[]
-    RiscoTarefa   RiscoTarefa[]
-}
-
-/// pessoas que executam a task, não necessariamente dentro do SMAE
-model TarefaRecurso {
-    id Int @id @default(autoincrement())
-
-    tarefa_id Int
-    recurso   String
-
-    tarefa Tarefa @relation(fields: [tarefa_id], references: [id])
-
-    @@map("tarefa_recurso")
+    RiscoTarefa RiscoTarefa[]
 }
 
 model TarefaPredecessora {

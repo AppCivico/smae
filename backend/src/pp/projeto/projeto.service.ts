@@ -359,6 +359,8 @@ export class ProjetoService {
         return ret;
     }
 
+    // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
+    // o órgão gestor continua podendo preencher os dados realizado
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
 
         console.log({ id, user, readonly });
