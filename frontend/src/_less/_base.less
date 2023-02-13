@@ -774,3 +774,14 @@ dt {
   margin: 0;
   padding: 0;
 }
+
+div[aria-busy="true"] {
+  text-align: center;
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
