@@ -46,7 +46,17 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
     </router-link>
   </div>
 
-  <div class="boards">
+  <div
+    v-if="chamadasPendentes.lista"
+    aria-busy="true"
+  >
+    Carregando
+  </div>
+
+  <div
+    v-else
+    class="boards"
+  >
     <template v-if="Object.keys(listasAgrupadas).length">
       <div class="flex flexwrap g2">
         <div
