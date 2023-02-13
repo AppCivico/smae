@@ -1,29 +1,59 @@
 <script setup>
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
+import statuses from '@/consts/statuses';
 import { useProjetosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const projetosStore = useProjetosStore();
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(projetosStore);
 const route = useRoute();
+const router = useRouter();
+
+const listaDeStatuses = Object.keys(statuses).map((x) => ({
+  etiqueta: statuses[x],
+  valor: x.toLowerCase(),
+}));
+
+const statusesPorChaveCaixaBaixa = Object.keys(statuses).reduce((acc, cur) => ({
+  ...acc, [cur.toLowerCase()]: { valor: cur, etiqueta: statuses[cur] },
+}), {});
 
 const props = defineProps({
   apenasPrioritários: {
     type: Boolean,
     default: false,
   },
+  apenasArquivados: {
+    type: Boolean,
+    default: false,
+  },
+  status: {
+    type: String,
+    default: '',
+    validator: (value) => !value || !!statuses[value.toLowerCase()],
+  },
 });
 
-projetosStore.$reset();
-if (props?.apenasPrioritários) {
-  projetosStore.buscarTudo({ eh_prioritario: true });
-} else {
-  projetosStore.buscarTudo();
+const parâmetros = ref({});
+
+const status = statusesPorChaveCaixaBaixa[props.status]?.valor || '';
+
+if (status) {
+  parâmetros.value.status = status;
 }
+
+if (props.apenasPrioritários) {
+  parâmetros.value.eh_prioritario = true;
+} else if (props.apenasArquivados) {
+  parâmetros.value.arquivado = true;
+}
+
+projetosStore.$reset();
+projetosStore.buscarTudo(parâmetros.value);
 
 const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
   if (!acc[cur.portfolio.id]) {
@@ -43,6 +73,65 @@ const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {
       class="btn big ml1"
     >
       Novo projeto
+    </router-link>
+  </div>
+
+  <div class="flex center mb2 spacebetween">
+    <div class="f1 mr1">
+      <label class="label tc300">Filtrar por status</label>
+      <select
+        class="inputtext"
+        @change="($event) => router.push({
+          name: route.name,
+          query: { status: $event.target.value || undefined }
+        })"
+      >
+        <option
+          value=""
+          :selected="!!status"
+        >
+          qualquer
+        </option>
+        <option
+          v-for="item in listaDeStatuses"
+          :key="item.valor"
+          :value="item.valor"
+          :selected="props.status === item.valor"
+        >
+          {{ item.etiqueta }}
+        </option>
+      </select>
+    </div>
+    <hr class="ml2 f1">
+    <router-link
+      v-show="route.name !== 'projetosListarArquivados'"
+      :to="{
+        name: 'projetosListarArquivados',
+        query: route.query,
+      }"
+      class="btn bgnone outline ml1"
+    >
+      Arquivados
+    </router-link>
+    <router-link
+      v-show="route.name !== 'projetosListarPrioritários'"
+      :to="{
+        name: 'projetosListarPrioritários',
+        query: route.query,
+      }"
+      class="btn bgnone outline ml1"
+    >
+      Prioritários
+    </router-link>
+    <router-link
+      v-show="route.name !== 'projetosListar'"
+      :to="{
+        name: 'projetosListar',
+        query: route.query,
+      }"
+      class="btn bgnone outline ml1"
+    >
+      Todos
     </router-link>
   </div>
 
