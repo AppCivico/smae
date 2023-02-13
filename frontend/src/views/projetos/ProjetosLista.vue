@@ -1,15 +1,10 @@
 <script setup>
-import {
-  useOrgansStore, useProjetosStore
-} from '@/stores';
-
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
+import { useProjetosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-const organsStore = useOrgansStore();
-const { organs } = storeToRefs(organsStore);
 const projetosStore = useProjetosStore();
 const {
   lista, chamadasPendentes, erro,
@@ -28,10 +23,6 @@ if (props?.apenasPrioritários) {
   projetosStore.buscarTudo({ eh_prioritario: true });
 } else {
   projetosStore.buscarTudo();
-}
-
-if (!organs.length) {
-  organsStore.getAll();
 }
 
 const listasAgrupadas = computed(() => lista.value?.reduce((acc, cur) => {

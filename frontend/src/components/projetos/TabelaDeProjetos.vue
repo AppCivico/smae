@@ -1,14 +1,11 @@
 <script setup>
 import statuses from '@/consts/statuses';
 import {
-useAlertStore, useOrgansStore, useProjetosStore
+  useAlertStore, useProjetosStore
 } from '@/stores';
-import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
-const organsStore = useOrgansStore();
-const { órgãosPorId } = storeToRefs(organsStore);
 
 const props = defineProps({
   erro: {
@@ -30,7 +27,6 @@ const props = defineProps({
 });
 
 const metasPorId = {};
-const statusesPorId = {};
 
 async function excluirProjetos(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -78,12 +74,10 @@ async function excluirProjetos(id) {
             {{ item.nome }}
           </router-link>
         </td>
-        <td>
-          {{
-            órgãosPorId[item.orgao_responsavel?.id]?.sigla
-              || item.orgao_responsavel?.sigla
-              || item.orgao_responsavel
-          }}
+        <td
+          :title="item.orgao_responsavel?.descricao"
+        >
+          {{ item.orgao_responsavel?.sigla }}
         </td>
         <td>
           {{
