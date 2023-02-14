@@ -225,15 +225,10 @@ const projeto = object()
       .min(1, 'Selecione ao menos um órgão')
       .required('Selecione órgãos participantes'),
     origem_outro: string()
+      .nullable()
       .max(500, 'Esse texto é muito longo')
-      .when('meta_id', (metaId, field) => (!metaId
-        ? field.required('Esse campo é obrigatório caso não se escolha uma meta, iniciativa ou atividade')
-        : field))
-      .when('iniciativa_id', (iniciativaId, field) => (!iniciativaId
-        ? field.required('Esse campo é obrigatório caso não se escolha uma meta, iniciativa ou atividade')
-        : field))
-      .when('atividade_id', (atividadeId, field) => (!atividadeId
-        ? field.required('Esse campo é obrigatório caso não se escolha uma meta, iniciativa ou atividade')
+      .when('origem_tipo', (origemTipo, field) => (origemTipo !== 'PdmSistema'
+        ? field.required('Esse campo é obrigatório caso não se escolha um Programa de Metas corrente')
         : field)),
     origem_tipo: mixed()
       .required('O projeto precisa de uma origem de recursos.')
