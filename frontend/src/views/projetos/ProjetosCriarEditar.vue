@@ -1239,7 +1239,7 @@ iniciar();
         class="f1 mb1"
       >
         <label class="label">
-          Versão&nbsp;<span class="tvermelho">*</span>
+          Versão
         </label>
         <Field
           name="versao"

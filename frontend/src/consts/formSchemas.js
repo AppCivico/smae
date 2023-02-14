@@ -284,8 +284,8 @@ const projeto = object()
       .max(500, 'Esse texto é muito longo')
       .required('Resumo é obrigatório'),
     versao: string()
-      .max(20, 'Esse texto é muito longo')
-      .required('A versão é obrigatória'),
+      .nullable()
+      .max(20, 'Esse texto é muito longo'),
   });
 
 const região = object()
