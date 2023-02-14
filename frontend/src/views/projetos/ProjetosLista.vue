@@ -181,10 +181,9 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
             :erro="erro"
           />
 
-          <hr class="mt1 mb1">
           <router-link
             :to="{ name: 'projetosCriar', query: { portfolio_id: listasAgrupadas[item].id } }"
-            class="addlink"
+            class="addlink mt1"
           >
             <svg
               width="20"
