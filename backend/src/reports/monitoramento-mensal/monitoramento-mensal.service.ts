@@ -43,6 +43,7 @@ export class MonitoramentoMensalService implements ReportableService {
 
             for (const r of ret) {
                 if (r.series) {
+                    console.log(r);
                     for (const s of r.series) {
                         if (!s.Previsto && !s.PrevistoAcumulado && !s.Realizado && !s.RealizadoAcumulado) continue
 
