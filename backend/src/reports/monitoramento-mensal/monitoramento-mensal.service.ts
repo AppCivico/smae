@@ -96,7 +96,7 @@ export class MonitoramentoMensalService implements ReportableService {
 
         out.push(...(await this.mmMf.getFiles(dados, pdm)));
 
-        const camposMetaIniAtv = [
+        const fieldsCSV = [
             { value: 'meta_codigo', label: 'Código da Meta' },
             { value: 'meta_titulo', label: 'Título da Meta' },
             { value: 'meta_id', label: 'ID da Meta' },
@@ -107,6 +107,14 @@ export class MonitoramentoMensalService implements ReportableService {
             { value: 'atividade_codigo', label: 'Código da ' + pdm.rotulo_atividade },
             { value: 'atividade_titulo', label: 'Título da ' + pdm.rotulo_atividade },
             { value: 'atividade_id', label: 'ID da ' + pdm.rotulo_atividade },
+            { value: 'variavel_id', label: 'ID da Variável'},
+            { value: 'variavel_codigo', label: 'Código da Variável'},
+            { value: 'variavel_titulo', label: 'Título da Variável'},
+            { value: 'data', label: 'Data'},
+            { value: 'Previsto', label: 'Previsto'},
+            { value: 'PrevistoAcumulado', label: 'PrevistoAcumulado'},
+            { value: 'Realizado', label: 'Realizado'},
+            { value: 'RealizadoAcumulado', label: 'RealizadoAcumulado'},
         ];
 
         for (const painel of dados.paineis) {
@@ -115,7 +123,7 @@ export class MonitoramentoMensalService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: [...camposMetaIniAtv],
+                fields: [...fieldsCSV],
             });
 
             const linhas = json2csvParser.parse(painel.linhas);
