@@ -611,6 +611,9 @@ export class PainelService {
                 where: {
                     removido_em: null,
                     meta_id: painel_conteudo.meta_id,
+                    meta: {
+                        removido_em: null
+                    }
                 },
                 select: { id: true },
             });
