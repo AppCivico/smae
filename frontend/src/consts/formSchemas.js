@@ -218,8 +218,8 @@ const projeto = object()
     orgao_gestor_id: number()
       .min(1, 'Selecione um órgão gestor')
       .required('O projeto necessita de um órgão gestor'),
-    orgao_responsavel_id: mixed()
-      .inArray(ref('orgaos_participantes'), 'O órgão responsável precisa participar do projeto')
+    orgao_responsavel_id: number()
+      .min(1, 'Selecione um órgão responsável')
       .required('Escolha um órgão responsável pelo projeto'),
     orgaos_participantes: array()
       .min(1, 'Selecione ao menos um órgão')
