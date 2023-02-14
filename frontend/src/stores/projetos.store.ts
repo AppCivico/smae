@@ -1,12 +1,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { requestS } from '@/helpers';
-import { defineStore } from 'pinia';
-
 import { ProjetoPermissoesDto } from '@../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/dto/create-meta.dto';
 import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
 import { ListProjetoDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
+import { requestS } from '@/helpers';
+import filtrarObjetos from '@/helpers/filtrarObjetos';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -145,6 +145,9 @@ const projetosPorId = ({ lista }: Estado) => lista
 const pdmsPorId = ({ pdmsSimplificados }: Estado) => pdmsSimplificados
   .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
 
+// eslint-disable-next-line max-len
+const listaFiltradaPor = ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo);
+
 export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
     lista: [],
@@ -176,5 +179,6 @@ export const useProjetosStore = defineStore('projetos', {
   getters: {
     pdmsPorId,
     projetosPorId,
+    listaFiltradaPor,
   },
 });
