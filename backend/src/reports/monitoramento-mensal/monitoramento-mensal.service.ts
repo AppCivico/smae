@@ -44,7 +44,7 @@ export class MonitoramentoMensalService implements ReportableService {
             for (const r of ret) {
                 if (r.series) {
                     for (const s of r.series) {
-                        if (!s.Previsto || !s.PrevistoAcumulado || !s.Realizado || !s.RealizadoAcumulado) continue
+                        if (!s.Previsto && !s.PrevistoAcumulado && !s.Realizado && !s.RealizadoAcumulado) continue
 
                         linhas.push({
                             meta_id: r.meta_id,
