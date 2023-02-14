@@ -22,10 +22,11 @@ const value = computed({
 </script>
 
 <template>
-  <div class="f1 mr1">
+  <div class="f1 mr1 search">
     <label class="label tc300">Busca livre</label>
     <input
       :value="value"
+      type="search"
       class="inputtext"
       @input="$emit('update:modelValue', $event.target.value)"
     >
