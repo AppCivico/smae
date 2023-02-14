@@ -771,7 +771,7 @@ iniciar();
           :disabled="!metaSimplificada.iniciativas?.length"
           @change="setFieldValue('atividade_id', null)"
         >
-          <option value="">
+          <option :value="null">
             Selecionar
           </option>
           <option
@@ -805,7 +805,7 @@ iniciar();
           }"
           :disabled="!iniciativasPorId[values.iniciativa_id]?.atividades.length"
         >
-          <option value="">
+          <option :value="null">
             Selecionar
           </option>
           <option
