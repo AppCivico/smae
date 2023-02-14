@@ -1651,8 +1651,8 @@ export class PainelService {
             painel_conteudo_series.detalhes?.forEach(d => {
                 const iniciativa: RetIniciativa = {
                     iniciativa_id: d.iniciativa ? d.iniciativa.id : null,
-                    iniciativa_codigo: d.iniciativa?.codigo ? d.iniciativa.codigo : null,
-                    iniciativa_titulo: d.iniciativa?.titulo ? d.iniciativa.titulo : null
+                    iniciativa_codigo: d.iniciativa ? d.iniciativa.codigo : null,
+                    iniciativa_titulo: d.iniciativa ? d.iniciativa.titulo : null
                 };
 
                 if (d.variavel?.series && d.variavel?.series?.length > 0) {
@@ -1706,8 +1706,8 @@ export class PainelService {
                 d.filhos?.forEach(f => {
                     const atividade: RetAtividade = {
                         atividade_id: f.atividade ? f.atividade.id : null,
-                        atividade_codigo: f.atividade?.codigo ? f.atividade.codigo : null,
-                        atividade_titulo: f.atividade?.titulo ? f.atividade.titulo : null
+                        atividade_codigo: f.atividade ? f.atividade.codigo : null,
+                        atividade_titulo: f.atividade ? f.atividade.titulo : null
                     };
 
                     if (f.variavel?.series && f.variavel?.series?.length > 0) {
@@ -1761,8 +1761,8 @@ export class PainelService {
                     d.filhos?.forEach(ff => {
                         const atividade: RetAtividade = {
                             atividade_id: ff.atividade ? ff.atividade.id : null,
-                            atividade_codigo: ff.atividade?.codigo ? ff.atividade.codigo : null,
-                            atividade_titulo: ff.atividade?.titulo ? ff.atividade.titulo : null
+                            atividade_codigo: ff.atividade ? ff.atividade.codigo : null,
+                            atividade_titulo: ff.atividade ? ff.atividade.titulo : null
                         };
                         
                         if (ff.variavel?.series && ff.variavel?.series?.length > 0) {
