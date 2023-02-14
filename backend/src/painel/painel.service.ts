@@ -609,6 +609,7 @@ export class PainelService {
 
             const meta_indicador = await prisma.indicador.findMany({
                 where: {
+                    removido_em: null,
                     meta_id: painel_conteudo.meta_id,
                 },
                 select: { id: true },
@@ -626,7 +627,7 @@ export class PainelService {
 
                 for (const row of indicador_variaveis) {
                     const already_exists = existent_painel_conteudo_detalhes.find(i => i.variavel_id === row.variavel_id);
-                    console.log(already_exists);
+
                     if (already_exists) {
                         unchanged.push(already_exists);
                         continue;
@@ -651,6 +652,7 @@ export class PainelService {
 
             const meta_iniciativas = await prisma.iniciativa.findMany({
                 where: {
+                    removido_em: null,
                     meta_id: painel_conteudo.meta_id,
                 },
                 select: { id: true },
@@ -661,7 +663,6 @@ export class PainelService {
                 let parent_iniciativa;
 
                 const already_exists = existent_painel_conteudo_detalhes.find(i => i.iniciativa_id === iniciativa.id);
-                console.log(already_exists);
 
                 if (already_exists) {
                     parent_iniciativa = already_exists;
@@ -686,6 +687,7 @@ export class PainelService {
                 const iniciativa_variaveis = await prisma.indicadorVariavel.findMany({
                     where: {
                         indicador: {
+                            removido_em: null,
                             iniciativa_id: iniciativa.id,
                         },
                         desativado: false,
@@ -721,6 +723,7 @@ export class PainelService {
                 // Terceiro nível
                 const atividades = await prisma.atividade.findMany({
                     where: {
+                        removido_em: null,
                         iniciativa_id: iniciativa.id,
                     },
                     select: { id: true },
@@ -754,6 +757,7 @@ export class PainelService {
                     const atividade_variaveis = await prisma.indicadorVariavel.findMany({
                         where: {
                             indicador: {
+                                removido_em: null,
                                 atividade_id: atividade.id,
                             },
                             desativado: false,
