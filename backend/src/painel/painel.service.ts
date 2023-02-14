@@ -240,6 +240,7 @@ export class PainelService {
                             detalhes: {
                                 where: {
                                     pai_id: null,
+                                    iniciativa: { removido_em: null }
                                 },
                                 orderBy: [{ ordem: 'asc' }],
                                 select: {
@@ -262,6 +263,9 @@ export class PainelService {
                                         },
                                     },
                                     filhos: {
+                                        where: {
+                                            atividade: { removido_em: null }
+                                        },
                                         select: {
                                             id: true,
                                             tipo: true,
