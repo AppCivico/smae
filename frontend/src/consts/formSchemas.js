@@ -185,22 +185,22 @@ const projeto = object()
               .required('Escolha um ano válido'),
             id: number()
               .nullable(),
-            valor_nominal: number()
+            valor_nominal: mixed()
               .when('valor_percentual', {
                 is: (valorPercentual) => !valorPercentual,
                 then: number()
                   .required('Ao menos um tipo de valor é necessário.'),
-                otherwise: number()
+                otherwise: mixed()
                   .nullable(),
               }),
-            valor_percentual: number()
+            valor_percentual: mixed()
               .when('valor_nominal', {
                 is: (valorNominal) => !valorNominal,
                 then: number()
                   .required('Ao menos um tipo de valor é necessário.')
                   .min(0.01, 'Não se pode investir menos de 0.01%')
                   .max(100, 'Não se pode investir mais de 100%'),
-                otherwise: number()
+                otherwise: mixed()
                   .nullable(),
               }),
           }, [['valor_percentual', 'valor_nominal']]),
