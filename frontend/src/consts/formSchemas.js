@@ -160,7 +160,8 @@ const portfolio = object({
 
 const projeto = object()
   .shape({
-    atividade_id: number(),
+    atividade_id: number()
+      .nullable(),
     data_aprovacao: date()
       .nullable()
       .min(new Date(2003, 0, 1)),
@@ -204,9 +205,12 @@ const projeto = object()
               }),
           }, [['valor_percentual', 'valor_nominal']]),
       ),
-    iniciativa_id: number(),
-    meta_codigo: string(),
-    meta_id: number(),
+    iniciativa_id: number()
+      .nullable(),
+    meta_codigo: string()
+      .nullable(),
+    meta_id: number()
+      .nullable(),
     nome: string()
       .required('Um projeto requer um nome')
       .min(1, 'Esse nome é muito curto')
