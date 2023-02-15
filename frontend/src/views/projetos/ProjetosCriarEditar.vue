@@ -2,14 +2,15 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import {
-  useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore
+useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, FieldArray, Form
+ErrorMessage, Field, FieldArray, Form
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
