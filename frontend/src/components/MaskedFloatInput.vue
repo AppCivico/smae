@@ -2,7 +2,7 @@
 import dinheiro from '@/helpers/dinheiro';
 import { useField } from 'vee-validate';
 import {
-  defineProps, ref, toRef, watch
+  computed, defineProps, toRef
 } from 'vue';
 
 const props = defineProps({
@@ -21,12 +21,15 @@ const name = toRef(props, 'name');
 const { handleChange } = useField(name, undefined, {
   initialValue: props.value,
 });
-const typedValue = ref(dinheiro(props.value));
 
-watch(typedValue, (newValue) => {
-  const cleanValue = Number(newValue.replace(/[\D]/g, '')) / 100;
-  handleChange(cleanValue);
-  typedValue.value = dinheiro(cleanValue);
+const typedValue = computed({
+  get() {
+    return dinheiro(props.value);
+  },
+  set: (newValue) => {
+    const cleanValue = Number(newValue.replace(/[\D]/g, '')) / 100;
+    handleChange(cleanValue);
+  },
 });
 </script>
 
