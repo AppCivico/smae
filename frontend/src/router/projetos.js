@@ -1,4 +1,4 @@
-import MenuSecundario from '@/components/MenuSecundario.vue';
+import MenuSecundário from '@/components/MenuSecundario.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
@@ -8,7 +8,7 @@ export default {
   path: '/projetos',
   component: ProjetosRaiz,
   props: {
-    submenu: MenuSecundario,
+    submenu: MenuSecundário,
   },
 
   meta: {
@@ -24,6 +24,12 @@ export default {
       'SMAE.gestor_de_projeto',
       'SMAE.colaborador_de_projeto',
     ],
+    rotasParaMenuSecundário: [
+      'projetosListar',
+      'projetosListarPrioritários',
+      'projetosListarArquivados',
+      'projetosCriar',
+    ],
   },
   children: [
     {
@@ -31,7 +37,6 @@ export default {
       path: '',
       component: ProjetosLista,
       meta: {
-        presenteNoMenu: true,
         título: 'Projetos',
       },
       props: ({ params, query }) => ({
@@ -39,12 +44,12 @@ export default {
         status: query.status?.replace('_', '').toLowerCase(),
       }),
     },
+
     {
       name: 'projetosListarPrioritários',
       path: 'prioritarios',
       component: ProjetosLista,
       meta: {
-        presenteNoMenu: true,
         título: 'Projetos prioritários',
       },
       props: ({ params, query }) => ({
@@ -53,12 +58,12 @@ export default {
         ...{ apenasPrioritários: true },
       }),
     },
+
     {
       name: 'projetosListarArquivados',
       path: 'arquivados',
       component: ProjetosLista,
       meta: {
-        presenteNoMenu: true,
         título: 'Projetos arquivados',
       },
       props: ({ params, query }) => ({
@@ -67,12 +72,12 @@ export default {
         ...{ apenasArquivados: true },
       }),
     },
+
     {
       name: 'projetosCriar',
       path: 'novo',
       component: ProjetosCriarEditar,
       meta: {
-        presenteNoMenu: true,
         título: 'Novo projeto',
       },
     },
