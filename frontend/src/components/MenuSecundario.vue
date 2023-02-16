@@ -23,11 +23,11 @@ const limparRotas = (listaDeRotas) => (Array.isArray(listaDeRotas)
       }
     }
 
-    return router.resolve({ ...rotaParaResolver, params: route.params }, '/projetos/8/resumo')
-    // eslint-disable-next-line max-len
-      .filter((y) => (!y.meta?.restringirÀsPermissões || temPermissãoPara(y.meta.restringirÀsPermissões)))
-        || [];
-  });
+    return router.resolve({ ...rotaParaResolver, params: route.params });
+  })
+  // eslint-disable-next-line max-len
+  /* .filter((y) => (!y.meta?.restringirÀsPermissões || temPermissãoPara(y.meta.restringirÀsPermissões)))
+  || [] */;
 
 const rotasParaMenu = route.meta?.rotasParaMenuSecundário
   ? limparRotas(route.meta?.rotasParaMenuSecundário)
