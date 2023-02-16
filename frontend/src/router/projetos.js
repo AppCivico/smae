@@ -89,8 +89,6 @@ export default {
 
     {
       path: ':projetoId',
-      name: 'projetosFubá',
-
       meta: {
         rotasParaMenuSecundário: [
           'projetosEditar',
