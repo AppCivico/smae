@@ -964,7 +964,7 @@ iniciar();
                 </option>
                 <option
                   v-for="item in
-                    DotacaoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.orgaos || []"
+                    DotacaoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.fonte_recursos || []"
                   :key="item.codigo"
                   :value="item.codigo"
                   :title="item.descricao"
