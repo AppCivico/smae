@@ -43,6 +43,7 @@ export default {
       component: ProjetosLista,
       meta: {
         título: 'Projetos',
+        títuloParaMenu: 'Projetos',
       },
       props: ({ params, query }) => ({
         ...params,
@@ -56,6 +57,7 @@ export default {
       component: ProjetosLista,
       meta: {
         título: 'Projetos prioritários',
+        títuloParaMenu: 'Projetos prioritários',
       },
       props: ({ params, query }) => ({
         ...params,
@@ -70,6 +72,7 @@ export default {
       component: ProjetosLista,
       meta: {
         título: 'Projetos arquivados',
+        títuloParaMenu: 'Projetos arquivados',
       },
       props: ({ params, query }) => ({
         ...params,
@@ -84,6 +87,7 @@ export default {
       component: ProjetosCriarEditar,
       meta: {
         título: 'Novo projeto',
+        títuloParaMenu: 'Novo projeto',
       },
     },
 
