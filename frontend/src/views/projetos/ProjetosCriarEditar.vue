@@ -1072,7 +1072,7 @@ iniciar();
 
             <div class="f1 mb1">
               <Field
-                arial-label="Código da fonte de recursos no SOF"
+                arial-label="Texto da premissa"
                 :name="`premissas[${idx}].premissa`"
                 type="text"
                 class="inputtext light mb1"
@@ -1136,7 +1136,7 @@ iniciar();
 
             <div class="f1 mb1">
               <Field
-                arial-label="Código da fonte de recursos no SOF"
+                arial-label="Texto da restrição"
                 :name="`restricoes[${idx}].restricao`"
                 type="text"
                 class="inputtext light mb1"
