@@ -103,6 +103,11 @@ export default {
           'projetosDocumentos',
           'projetosProcessos',
         ],
+
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+        ],
       },
 
       children: [
