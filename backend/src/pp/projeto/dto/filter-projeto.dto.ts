@@ -26,6 +26,14 @@ export class FilterProjetoDto {
      **/
     @IsOptional()
     @IsNumber()
-    @Type(() => Number)
+    @Transform((a: any) => (a.value === null ? null : +a.value))
     orgao_responsavel_id?: number;
+
+    /**
+     * portfolio_id
+     **/
+    @IsOptional()
+    @IsNumber()
+    @Transform((a: any) => (a.value === null ? null : +a.value))
+    portfolio_id?: number;
 }

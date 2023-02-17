@@ -269,6 +269,7 @@ export class ProjetoService {
                 arquivado: filters.arquivado,
                 status: filters.status,
                 portfolio: { removido_em: null },
+                portfolio_id: filters.portfolio_id,
                 AND: permissionsSet.length > 0 ? [
                     {
                         OR: permissionsSet
