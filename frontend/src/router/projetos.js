@@ -95,7 +95,6 @@ export default {
       path: ':projetoId',
       meta: {
         rotasParaMenuSecundário: [
-          'projetosEditar',
           'projetosResumo',
           'projetosCronograma',
           'projetosAcompanhamento',
@@ -135,7 +134,7 @@ export default {
           }),
           meta: {
             título: 'Resumo de projeto',
-            títuloParaMenu: 'Resumo de projeto',
+            títuloParaMenu: 'Resumo',
           },
         },
 
@@ -149,7 +148,7 @@ export default {
           }),
           meta: {
             título: 'Cronograma de projeto',
-            títuloParaMenu: 'Cronograma de projeto',
+            títuloParaMenu: 'Cronograma',
           },
         },
 
@@ -163,7 +162,7 @@ export default {
           }),
           meta: {
             título: 'Acompanhamento de projeto',
-            títuloParaMenu: 'Acompanhamento de projeto',
+            títuloParaMenu: 'Acompanhamento',
           },
         },
 
@@ -177,7 +176,7 @@ export default {
           }),
           meta: {
             título: 'Lições aprendidas no projeto',
-            títuloParaMenu: 'Lições aprendidas no projeto',
+            títuloParaMenu: 'Lições aprendidas',
           },
         },
 
@@ -191,7 +190,7 @@ export default {
           }),
           meta: {
             título: 'Documentos do projeto',
-            títuloParaMenu: 'Documentos do projeto',
+            títuloParaMenu: 'Documentos',
           },
         },
 
@@ -205,7 +204,7 @@ export default {
           }),
           meta: {
             título: 'Processos SEI do projeto',
-            títuloParaMenu: 'Processos SEI do projeto',
+            títuloParaMenu: 'Processos SEI',
           },
         },
       ],
