@@ -2401,6 +2401,9 @@ model Tarefa {
 
     numero            Int
     nivel             Int       @db.SmallInt
+    // pode calcular se o termino estiver null,
+    // mas o inicio sempre precisa existir pra fazer as contas, ou seja, se estiver null, é ignorado na
+    // parte de buscar o minimo
     inicio_planejado  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
     termino_planejado DateTime?
     duracao_planejado Int?
