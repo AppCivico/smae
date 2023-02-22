@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjetoOrigemTipo } from '@prisma/client';
+import { CategoriaProcessoSei, ProjetoOrigemTipo } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
@@ -162,7 +162,7 @@ export class CreateProjetoDto {
 
     /**
      * escopo
-     * @example "..."
+     * @'ex'ample "..."
      */
     @IsString()
     @MaxLength(50000)
@@ -184,4 +184,15 @@ export class CreateProjetoDocumentDto {
      */
     @IsString({ message: '$property| upload_token do documento' })
     upload_token: string;
+}
+
+export class CreateProjetoSeiDto {
+    @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
+    @IsEnum(CategoriaProcessoSei, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(CategoriaProcessoSei).join(', '),
+    })
+    categoria: CategoriaProcessoSei
+
+    @IsString()
+    processo_sei: string
 }
