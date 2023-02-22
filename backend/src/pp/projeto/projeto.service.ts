@@ -966,6 +966,8 @@ export class ProjetoService {
             select: {id: true}
         });
 
+        // TODO adicionar verificação de registro_sei e preenchimento de registro_sei_info
+    
         return {id: projetoSei.id}
     }
 
@@ -997,6 +999,8 @@ export class ProjetoService {
 
     async update_sei(projetoId: number, seiID: number, updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, user: PessoaFromJwt) {
         await this.findOne(projetoId, user, false);
+
+        // TODO adicionar verificação de registro_sei e preenchimento de registro_sei_info
 
         await this.prisma.projetoRegistroSei.updateMany({
             where: {
