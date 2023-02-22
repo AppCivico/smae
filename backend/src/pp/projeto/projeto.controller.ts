@@ -109,4 +109,15 @@ export class ProjetoController {
     async updateSEI(@Param() params: FindTwoParams, @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.update_sei(params.id, params.id2, updateProjetoRegistroSeiDto, user);
     }
+
+    @Delete(':id/sei/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @ApiUnauthorizedResponse()
+    @ApiResponse({ description: 'sucesso ao remover', status: 204 })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async removeSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.remove_sei(params.id, params.id2, user);
+        return null;
+    }
 }
