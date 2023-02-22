@@ -21,8 +21,11 @@ export class TarefaService {
         await this.utils.verifica_nivel_maximo(projetoId, dto.nivel);
         await this.utils.verifica_orgao(dto.orgao_id);
 
-        if (dto.nivel != 1) {
-            if (dto.tarefa_pai_id == null) throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
+        if (
+            dto.tarefa_pai_id === null && dto.nivel > 1
+        ) {
+            throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
+        } else if (dto.tarefa_pai_id !== null) {
             const pai = await this.prisma.tarefa.findFirst({ where: { removido_em: null, id: dto.tarefa_pai_id, projeto_id: projetoId }, select: { nivel: true } });
             if (!pai) throw new HttpException(`Tarefa pai (${dto.tarefa_pai_id}) não foi encontrada no projeto.`, 400);
             if (pai.nivel != dto.nivel - 1) throw new HttpException(`Nível (${dto.nivel}) inválido para ser filho imediato da tarefa pai enviada (nível ${pai.nivel}).`, 400);
