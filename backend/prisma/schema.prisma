@@ -2268,6 +2268,8 @@ model Projeto {
     ProjetoRegistroSei   ProjetoRegistroSei[]
     ProjetoRelatorioFila ProjetoRelatorioFila[]
 
+    tarefa_lock_seq Int @default(0)
+
     @@map("projeto")
 }
 
@@ -2390,10 +2392,10 @@ model Tarefa {
     orgao_id      Int
     tarefa_pai_id Int?
 
-    projeto      Projeto  @relation(fields: [projeto_id], references: [id])
-    tarefa_pai   Tarefa?  @relation("tarefa_pai", fields: [tarefa_pai_id], references: [id])
-    tarefa_filha Tarefa[] @relation("tarefa_pai")
-    orgao        Orgao    @relation(fields: [orgao_id], references: [id])
+    projeto    Projeto  @relation(fields: [projeto_id], references: [id])
+    tarefa_pai Tarefa?  @relation("tarefa_pai", fields: [tarefa_pai_id], references: [id])
+    filhos     Tarefa[] @relation("tarefa_pai")
+    orgao      Orgao    @relation(fields: [orgao_id], references: [id])
 
     tarefa    String // 60 chars
     descricao String
@@ -2412,6 +2414,16 @@ model Tarefa {
     termino_real DateTime?
     duracao_real Int?
 
+    inicio_planejado_calculado  Boolean @default(false)
+    termino_planejado_calculado Boolean @default(false)
+    duracao_planejado_calculado Boolean @default(false)
+
+    inicio_real_calculado  Boolean @default(false)
+    termino_real_calculado Boolean @default(false)
+    duracao_real_calculado Boolean @default(false)
+
+    n_filhos_imediatos Int @default(0)
+
     custo_estimado       Float?
     custo_real           Float?
     // calculado
@@ -2420,22 +2432,41 @@ model Tarefa {
     removido_em  DateTime?
     removido_por Int?
 
-    tarefas_precedida   TarefaPredecessora[] @relation("tarefa_precedida")
-    tarefa_predecessora TarefaPredecessora[] @relation("tarefa_predecessora")
+
+    atualizado_em  DateTime?
+
+    dependencias    TarefaDependente[] @relation("dependencias")
+    ref_dependentes TarefaDependente[] @relation("ref_dependentes")
 
     RiscoTarefa RiscoTarefa[]
+
+    @@map("tarefa")
 }
 
-model TarefaPredecessora {
+// end2start  -- > start_time is preceding task max(end_time) + latency (in days)
+// start2start  --> start_time is preceding task max(start_time) +  + latency (in days)
+// start2end -- > end_time is preceding task preceding task max(start_time) + latencia
+// end2end --> end_time is preceding task preceding task max(end_time) + latencia
+enum TarefaDependenteTipo {
+    termina_pro_inicio
+    inicia_pro_inicio
+    inicia_pro_termino
+    termina_pro_termino
+}
+
+model TarefaDependente {
     id Int @id @default(autoincrement())
 
-    tarefa_id              Int
-    tarefa_predecessora_id Int
+    tarefa_id             Int
+    dependencia_tarefa_id Int
 
-    tarefa              Tarefa @relation("tarefa_precedida", fields: [tarefa_id], references: [id])
-    tarefa_predecessora Tarefa @relation("tarefa_predecessora", fields: [tarefa_predecessora_id], references: [id])
+    tipo     TarefaDependenteTipo
+    latencia Int
 
-    @@map("tarefa_predecessora")
+    tarefa             Tarefa @relation("dependencias", fields: [tarefa_id], references: [id])
+    tarefas_dependente Tarefa @relation("ref_dependentes", fields: [dependencia_tarefa_id], references: [id])
+
+    @@map("tarefa_dependente")
 }
 
 model ProjetoRisco {
