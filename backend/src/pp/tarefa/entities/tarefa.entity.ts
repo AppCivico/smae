@@ -18,6 +18,8 @@ export class TarefaItemDto {
     custo_estimado: number | null
     custo_real: number | null
 
+    n_filhos_imediatos: number
+
 }
 
 export class TarefaDetailDto extends TarefaItemDto {

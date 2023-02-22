@@ -101,6 +101,7 @@ export class TarefaService {
                 duracao_real: true,
                 custo_estimado: true,
                 custo_real: true,
+                n_filhos_imediatos: true,
             }
         });
 
@@ -140,6 +141,7 @@ export class TarefaService {
                 duracao_real_calculado: true,
                 descricao: true,
                 recursos: true,
+                n_filhos_imediatos: true,
             }
         });
 
