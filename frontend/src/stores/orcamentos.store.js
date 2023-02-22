@@ -153,7 +153,11 @@ export const useOrcamentosStore = defineStore({
     },
 
     totaisDosItens() {
-      const { itens = [], smae_soma_valor_empenho = '0', smae_soma_valor_liquidado = '0' } = this.orcamentoEmFoco || {};
+      const {
+        itens = [],
+        smae_soma_valor_empenho = '0',
+        smae_soma_valor_liquidado = '0',
+      } = this.orcamentoEmFoco || {};
 
       const empenho = toFloat(smae_soma_valor_empenho)
         + itens.reduce((r, x) => r + toFloat(x.valor_empenho), 0)
