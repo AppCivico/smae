@@ -1,6 +1,7 @@
 import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
 
 export class TarefaItemDto {
+    id: number
     orgao: IdSiglaDescricao
     nivel: number
     numero: number
