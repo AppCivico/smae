@@ -91,6 +91,7 @@ export class TarefaService {
                 { tarefa_pai_id: 'asc' }
             ],
             select: {
+                id: true,
                 orgao: { select: { id: true, sigla: true, descricao: true } },
                 nivel: true,
                 numero: true,
@@ -122,6 +123,7 @@ export class TarefaService {
                 { tarefa_pai_id: 'asc' }
             ],
             select: {
+                id: true,
                 orgao: { select: { id: true, sigla: true, descricao: true } },
                 nivel: true,
                 numero: true,
