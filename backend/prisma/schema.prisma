@@ -2129,6 +2129,8 @@ model ProjetoRegistroSei {
 
     criado_em  DateTime
     criado_por Int
+
+    @@map("projeto_registro_sei")
 }
 
 model Projeto {

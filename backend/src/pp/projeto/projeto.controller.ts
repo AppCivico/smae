@@ -1,13 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, Query } from '@nestjs/common';
 import { ProjetoService } from './projeto.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
-import { UpdateProjetoDto } from './dto/update-projeto.dto';
+import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
+import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ListProjetoDocumento, ListProjetoDto, ProjetoDetailDto } from './entities/projeto.entity';
+import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto } from './entities/projeto.entity';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 
@@ -84,5 +84,29 @@ export class ProjetoController {
     async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.projetoService.remove_document(params.id, params.id2, user);
         return null;
+    }
+
+    @Post(':id/sei')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    async createSEI(@Param() params: FindOneParams, @Body() createProjetoRegistroSei: CreateProjetoSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.projetoService.append_sei(params.id, createProjetoRegistroSei, user);
+    }
+
+    @Get(':id/sei')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
+        return { linhas: await this.projetoService.list_sei(params.id, user) };
+    }
+
+    @Patch(':id/sei/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    async updateSEI(@Param() params: FindTwoParams, @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.projetoService.update_sei(params.id, params.id2, updateProjetoRegistroSeiDto, user);
     }
 }

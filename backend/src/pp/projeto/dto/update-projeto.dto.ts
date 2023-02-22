@@ -3,7 +3,7 @@ import { CategoriaProcessoSei } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
-import { CreateProjetoDto } from './create-projeto.dto';
+import { CreateProjetoDto, CreateProjetoSeiDto } from './create-projeto.dto';
 
 export class PPfonteRecursoDto {
     /**
@@ -64,24 +64,7 @@ export class PPrestricaoDto {
     restricao: string;
 }
 
-
-export class PSeiDto {
-    /**
-     * id caso já exista e deseja fazer uma atualização
-     */
-    @IsOptional()
-    @IsNumber()
-    id?: number;
-
-    @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
-    @IsEnum(CategoriaProcessoSei, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(CategoriaProcessoSei).join(', '),
-    })
-    categoria: CategoriaProcessoSei
-
-    @IsString()
-    processo_sei: string
-}
+export class UpdateProjetoRegistroSeiDto extends OmitType(PartialType(CreateProjetoSeiDto), []) { }
 
 // esses campos serão updated apenas via sistema (pelas tarefas)
 //    @IsOptional()
@@ -121,12 +104,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @ValidateNested({ each: true })
     @Type(() => PPfonteRecursoDto)
     fonte_recursos?: PPfonteRecursoDto[];
-
-    @IsOptional()
-    @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
-    @ValidateNested({ each: true })
-    @Type(() => PSeiDto)
-    sei?: PSeiDto[];
 
     @IsOptional()
     @IsString()
