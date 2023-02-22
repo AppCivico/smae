@@ -348,7 +348,21 @@ export class AtividadeService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const self = await this.prisma.atividade.findFirstOrThrow({ where: { id }, select: { iniciativa_id: true } });
+        const self = await this.prisma.atividade.findFirstOrThrow({
+            where: { id },
+            select: {
+                iniciativa_id: true,
+                compoe_indicador_iniciativa: true,
+                Indicador: {
+                    select: {
+                        IndicadorVariavel: {
+                            where: {desativado: false},
+                            select: {id: true}
+                        }
+                    }
+                }
+            }
+        });
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const metas = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
@@ -359,6 +373,19 @@ export class AtividadeService {
             ).map(r => r.id);
             if (filterIdIn.includes(self.iniciativa_id) === false)
                 throw new HttpException('Sem permissão para remover atividade nesta iniciativa (por não ter também permissão da meta)', 400);
+        }
+
+        // Antes de remover a Atividade, deve ser verificada a Iniciativa para garantir de que não há variaveis em uso
+        if (self.compoe_indicador_iniciativa) {
+            let has_vars_in_use: boolean = false;
+
+            for (const indicador of self.Indicador) {
+                if (indicador.IndicadorVariavel.length > 0)
+                    has_vars_in_use = true;
+
+                if (has_vars_in_use == true)
+                    throw new HttpException('Atividade possui variáveis em uso pela Iniciativa e Meta, desative o campo de "Compõe indicador da Iniciativa" para remover a Atividade', 400);
+            }
         }
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
