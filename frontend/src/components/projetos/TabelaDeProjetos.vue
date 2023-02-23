@@ -40,12 +40,14 @@ async function excluirProjetos(id) {
 </script>
 <template>
   <table class="tablemain">
-    <col>
-    <col>
-    <col>
-    <col>
-    <!--col class="col--botão-de-ação"-->
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col>
+      <!--col class="col--botão-de-ação"-->
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>
@@ -70,7 +72,15 @@ async function excluirProjetos(id) {
         :key="item.id"
       >
         <td>
-          <router-link :to="{ name: 'projetosResumo', params: { projetoId: item.id }}">
+          <router-link
+            :to="{
+              name: 'projetosResumo',
+              params: {
+                projetoId: item.id,
+                portfolioId: item.portfolio.id || item.portfolio,
+              }
+            }"
+          >
             {{ item.nome }}
           </router-link>
         </td>
@@ -105,7 +115,13 @@ async function excluirProjetos(id) {
         <td>
           <router-link
             v-if="!item.arquivado"
-            :to="{ name: 'projetosEditar', params: { projetoId: item.id } }"
+            :to="{
+              name: 'projetosEditar',
+              params: {
+                projetoId: item.id,
+                portfolioId: item.portfolio.id || item.portfolio,
+              }
+            }"
             class="tprimary"
           >
             <svg
