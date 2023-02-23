@@ -1,3 +1,4 @@
+import requestS from '@/helpers/requestS.ts';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import { useRoute } from 'vue-router';
@@ -11,6 +12,11 @@ pinia.use(({ store }) => {
   // eslint-disable-next-line no-param-reassign
   store.route = useRoute();
 });
+
+// give the plugin to pinia
+pinia.use(() => ({ requestS }));
+
+app.config.globalProperties.requestS = requestS;
 
 app.use(pinia);
 app.use(router);
