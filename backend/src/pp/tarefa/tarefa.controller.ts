@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
 import { TarefaService } from './tarefa.service';
-import { CreateTarefaDto } from './dto/create-tarefa.dto';
+import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -8,7 +8,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ListTarefaDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
+import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
 import { ProjetoService } from '../projeto/projeto.service';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 
@@ -70,6 +70,14 @@ export class TarefaController {
 
         await this.tarefaService.remove(projeto.id, params.id2, user);
         return '';
+    }
+
+    @Post(':id/dependencias')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    async getDates(@Param() params: FindOneParams, @Body() dto: CheckDependenciasDto, @CurrentUser() user: PessoaFromJwt): Promise<DependenciasDatasDto> {
+        throw 'not implemented'
     }
 
 }

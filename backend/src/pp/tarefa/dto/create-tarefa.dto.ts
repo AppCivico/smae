@@ -1,6 +1,36 @@
+import { ApiProperty } from "@nestjs/swagger"
+import { TarefaDependenteTipo } from "@prisma/client"
 import { Type } from "class-transformer"
-import { IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf } from "class-validator"
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
+
+export class TarefaDependenciaDto {
+
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    dependencia_tarefa_id: number
+
+    @ApiProperty({ enum: TarefaDependenteTipo, enumName: 'TarefaDependenteTipo' })
+    @IsEnum(TarefaDependenteTipo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TarefaDependenteTipo).join(', '),
+    })
+    tipo: TarefaDependenteTipo
+
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    latencia: number
+}
+
+export class CheckDependenciasDto {
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    tarefa_corrente_id: number | null
+
+
+    @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
+    @ValidateNested({ each: true })
+    @Type(() => TarefaDependenciaDto)
+    @MinLength(1)
+    dependencias?: TarefaDependenciaDto[];
+}
 
 export class CreateTarefaDto {
 
@@ -108,4 +138,8 @@ export class CreateTarefaDto {
     @ValidateIf((object, value) => value !== null)
     custo_real?: number | null
 
+    @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
+    @ValidateNested({ each: true })
+    @Type(() => TarefaDependenciaDto)
+    dependencias?: TarefaDependenciaDto[];
 }

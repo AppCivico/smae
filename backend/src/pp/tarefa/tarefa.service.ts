@@ -248,13 +248,13 @@ export class TarefaService {
                 delete dto.tarefa_pai_id;
             }
 
-
             await prismaTx.tarefa.update({
                 where: {
                     id: tarefa.id
                 },
                 data: {
                     ...dto,
+                    dependencias: undefined,
                     atualizado_em: now,
                 }
             });

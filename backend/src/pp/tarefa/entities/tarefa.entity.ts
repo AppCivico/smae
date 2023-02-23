@@ -39,3 +39,13 @@ export class TarefaDetailDto extends TarefaItemDto {
 export class ListTarefaDto {
     linhas: TarefaItemDto[]
 }
+
+export class DependenciasDatasDto {
+    inicio_planejado_calculado: boolean
+    termino_planejado_calculado: boolean
+    duracao_planejado_calculado: boolean
+
+    inicio_planejado: Date | null
+    termino_planejado: Date | null
+    duracao_planejado: Date | null
+}
