@@ -4,9 +4,9 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateTarefaDto } from './dto/create-tarefa.dto';
+import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
-import { TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
+import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
 
 @Injectable()
@@ -311,6 +311,13 @@ export class TarefaService {
         });
     }
 
+    async calcula_dependencias_tarefas(projetoId: number, dto: CheckDependenciasDto, user: PessoaFromJwt): Promise<DependenciasDatasDto> {
+        const json = JSON.stringify(dto.dependencias);
+        const res = await this.prisma.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)` as any;
+
+
+        return (res[0]['calcula_dependencias_tarefas']) as DependenciasDatasDto;
+    }
 
 
 }

@@ -76,8 +76,10 @@ export class TarefaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async getDates(@Param() params: FindOneParams, @Body() dto: CheckDependenciasDto, @CurrentUser() user: PessoaFromJwt): Promise<DependenciasDatasDto> {
-        throw 'not implemented'
+    async calcula_dependencias_tarefas(@Param() params: FindOneParams, @Body() dto: CheckDependenciasDto, @CurrentUser() user: PessoaFromJwt): Promise<DependenciasDatasDto> {
+        const projeto = await this.projetoService.findOne(params.id, user, false);
+
+        return await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
     }
 
 }
