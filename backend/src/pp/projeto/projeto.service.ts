@@ -473,15 +473,6 @@ export class ProjetoService {
                         id: true
                     }
                 },
-
-                ProjetoRegistroSei: {
-                    select: {
-                        id: true,
-                        categoria: true,
-                        processo_sei: true,
-                        registro_sei_info: true
-                    }
-                }
             },
         });
 
@@ -967,7 +958,7 @@ export class ProjetoService {
         });
 
         // TODO adicionar verificação de registro_sei e preenchimento de registro_sei_info
-    
+
         return {id: projetoSei.id}
     }
 
@@ -1012,7 +1003,7 @@ export class ProjetoService {
             }
         });
 
-        return {id: seiID} 
+        return {id: seiID}
     }
 
 }
