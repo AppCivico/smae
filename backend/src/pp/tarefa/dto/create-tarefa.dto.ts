@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { TarefaDependenteTipo } from "@prisma/client"
 import { Type } from "class-transformer"
-import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator"
+import { ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 
 export class TarefaDependenciaDto {
@@ -28,7 +28,7 @@ export class CheckDependenciasDto {
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
     @ValidateNested({ each: true })
     @Type(() => TarefaDependenciaDto)
-    @MinLength(1)
+    @ArrayMinSize(1)
     dependencias?: TarefaDependenciaDto[];
 }
 

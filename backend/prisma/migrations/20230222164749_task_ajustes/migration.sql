@@ -408,3 +408,73 @@ CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_insert AFTER INSERT ON tarefa
     FOR EACH ROW
     EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
 
+
+CREATE OR REPLACE FUNCTION calcula_dependencias_tarefas(config jsonb)
+    RETURNS jsonb
+    AS $$
+DECLARE
+    ret jsonb;
+BEGIN
+
+    with conf as (
+        select
+            ((x->>'latencia')::int::varchar || ' days')::interval as latencia,
+            (x->>'tipo')::varchar as tipo,
+            t.inicio_planejado, -- sera que aqui tbm usar o inicio real, se existir?
+            coalesce(t.termino_real, t.termino_planejado) as termino,
+            t.id as dependencia_tarefa_id
+        from jsonb_array_elements(config) x
+        join tarefa t on t.id = (x->>'dependencia_tarefa_id')::int and t.removido_em is null
+    ),
+    compute as (
+        select
+        case
+            when tipo = 'termina_pro_inicio' then termino + latencia
+            when tipo = 'inicia_pro_inicio' then inicio_planejado + latencia
+            when tipo = 'inicia_pro_termino' then inicio_planejado + latencia
+            when tipo = 'termina_pro_termino' then termino + latencia
+        end as date,
+        tipo
+        from conf
+    ),
+    cols as (
+        select
+            case when tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 'inicio_planejado' else 'termino_planejado' end as col,
+            max(date) as date -- to em duvida se nao é pra usar o min() em alguma ocasião, no dia eu pensei em usar o max em ambos os casos
+        from compute
+        group by 1
+    ),
+    proc as (
+        select
+            termino_planejado::date - inicio_planejado::date as duracao_planejado,
+            inicio_planejado,
+            termino_planejado
+        from (
+            select
+                (select date from cols where col = 'inicio_planejado') as inicio_planejado,
+                (select date from cols where col = 'termino_planejado') as termino_planejado
+        ) subq
+    )
+    select
+        jsonb_build_object(
+            'duracao_planejado_calculado',
+            (select count(1) from cols) != 2,
+            'inicio_planejado_calculado',
+            (select count(1) from cols where col = 'inicio_planejado') = 1,
+            'termino_planejado_calculado',
+            (select count(1) from cols where col = 'termino_planejado') = 1,
+
+            'duracao_planejado',
+            duracao_planejado::int,
+            'inicio_planejado',
+            inicio_planejado::date,
+            'termino_planejado',
+            termino_planejado::date
+        ) as res
+        into ret
+    from proc;
+
+    return ret;
+END
+$$
+LANGUAGE plpgsql;
