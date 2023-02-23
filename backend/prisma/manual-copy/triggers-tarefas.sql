@@ -26,7 +26,7 @@ CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_insert AFTER INSERT ON tarefa
 
 --
 
-
+-- tratar os casos de intervalos negativos
 CREATE OR REPLACE FUNCTION calcula_dependencias_tarefas(config jsonb)
     RETURNS jsonb
     AS $$
@@ -38,7 +38,7 @@ BEGIN
         select
             ((x->>'latencia')::int::varchar || ' days')::interval as latencia,
             (x->>'tipo')::varchar as tipo,
-            t.inicio_planejado, -- sera que aqui tbm usar o inicio real, se existir?
+            coalesce(t.inicio_real, t.inicio_planejado) as inicio,
             coalesce(t.termino_real, t.termino_planejado) as termino,
             t.id as dependencia_tarefa_id
         from jsonb_array_elements(config) x
@@ -48,8 +48,8 @@ BEGIN
         select
         case
             when tipo = 'termina_pro_inicio' then termino + latencia
-            when tipo = 'inicia_pro_inicio' then inicio_planejado + latencia
-            when tipo = 'inicia_pro_termino' then inicio_planejado + latencia
+            when tipo = 'inicia_pro_inicio' then inicio + latencia
+            when tipo = 'inicia_pro_termino' then inicio + latencia
             when tipo = 'termina_pro_termino' then termino + latencia
         end as date,
         tipo
