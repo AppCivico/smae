@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { TarefaDependenteTipo } from "@prisma/client"
 import { Type } from "class-transformer"
-import { ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator"
+import { ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 
 export class TarefaDependenciaDto {
@@ -100,7 +100,7 @@ export class CreateTarefaDto {
     * @example 0
     */
     @IsInt()
-    @IsPositive()
+    @Min(0)
     @ValidateIf((object, value) => value !== null)
     duracao_planejado: number | null
 
@@ -124,7 +124,7 @@ export class CreateTarefaDto {
 
     @IsOptional()
     @IsInt()
-    @IsPositive()
+    @Min(0)
     @ValidateIf((object, value) => value !== null)
     duracao_real?: number | null
 
