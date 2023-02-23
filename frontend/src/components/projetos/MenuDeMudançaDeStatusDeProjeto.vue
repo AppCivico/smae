@@ -5,7 +5,7 @@ import { computed } from 'vue';
 
 const projetosStore = useProjetosStore();
 const {
-  chamadasPendentes, emFoco,
+  chamadasPendentes, emFoco, permissões,
 } = storeToRefs(projetosStore);
 
 const ações = [
@@ -51,7 +51,7 @@ const ações = [
   },
 ];
 
-const açõesPermitidas = computed(() => ações.filter((x) => !!emFoco?.value?.permissoes?.[`acao_${x.ação}`]));
+const açõesPermitidas = computed(() => ações.filter((x) => !!permissões?.value?.[`acao_${x.ação}`]));
 
 async function mudarStatus(id, ação) {
   const resposta = await projetosStore.mudarStatus(id, ação);
