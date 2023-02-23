@@ -210,10 +210,7 @@ async function onSubmit(_, { controlledValues: valores }) {
 }
 
 async function iniciar() {
-  projetosStore.$reset();
-
   if (props.projetoId) {
-    await projetosStore.buscarItem(props.projetoId);
     if (emFoco.value?.origem_tipo) {
       buscarDadosParaOrigens(emFoco.value.origem_tipo);
     }

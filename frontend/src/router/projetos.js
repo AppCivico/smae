@@ -3,6 +3,7 @@ import ProjetosAcompanhamento from '@/views/projetos/ProjetosAcompanhamento.vue'
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosCronograma from '@/views/projetos/ProjetosCronograma.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
+import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
 import ProjetosLiçõesAprendidas from '@/views/projetos/ProjetosLicoesAprendidas.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosProcessos from '@/views/projetos/ProjetosProcessos.vue';
@@ -93,6 +94,11 @@ export default {
 
     {
       path: ':projetoId',
+      component: ProjetosItem,
+      props: ({ params }) => ({
+        ...params,
+        ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+      }),
       meta: {
         rotasParaMenuSecundário: [
           'projetosResumo',

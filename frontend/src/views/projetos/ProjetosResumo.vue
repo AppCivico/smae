@@ -1,8 +1,8 @@
 <script setup>
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
+import statuses from '@/consts/statuses';
 import { usePortfolioStore, useProjetosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import statuses from '@/consts/statuses';
 
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
@@ -10,7 +10,7 @@ const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
 
-const props = defineProps({
+defineProps({
   projetoId: {
     type: Number,
     default: 0,
@@ -18,10 +18,6 @@ const props = defineProps({
 });
 
 async function iniciar() {
-  projetosStore.$reset();
-
-  await projetosStore.buscarItem(props.projetoId);
-
   portfolioStore.buscarTudo();
 }
 
@@ -157,7 +153,7 @@ iniciar();
           Responsável
         </dt>
         <dd class="t13">
-          {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-'}}
+          {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
         </dd>
       </dl>
     </div>
