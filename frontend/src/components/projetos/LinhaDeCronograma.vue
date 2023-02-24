@@ -98,7 +98,7 @@ export default {
         type="button"
         class="like-a__text"
         title="Excluir"
-        :disabled="linha.children?.length"
+        :hidden="linha.children?.length"
         @click="excluirTarefa(linha.id)"
       >
         <svg
