@@ -272,7 +272,7 @@ iniciar();
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
           :disabled="!!portfolioId"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -490,9 +490,9 @@ iniciar();
             loading: portfolioStore.chamadasPendentes.lista
           }"
           :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
-          @change="setFieldValue('responsaveis_no_orgao_gestor', null)"
+          @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -574,9 +574,9 @@ iniciar();
             loading: portfolioStore.chamadasPendentes.lista
           }"
           :disabled="!órgãosQueTemResponsáveis?.length"
-          @change="setFieldValue('responsavel_id', null)"
+          @change="setFieldValue('responsavel_id', 0)"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -606,7 +606,7 @@ iniciar();
           :disabled="!órgãosQueTemResponsáveisEPorId[values.orgao_responsavel_id]
             ?.responsible?.length"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -673,12 +673,12 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{
-            error: errors.origem_tipo,
+            error: errors.pdm_escolhido,
             loading: chamadasPendentes.pdmsSimplificados
           }"
           :disabled="!pdmsSimplificados?.length"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -690,7 +690,7 @@ iniciar();
           </option>
         </Field>
         <ErrorMessage
-          name="origem_tipo"
+          name="pdm_escolhido"
           class="error-msg"
         />
       </div>
