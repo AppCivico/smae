@@ -52,7 +52,7 @@ const itemParaEdição = computed(() => {
       data_revisao: null,
       escopo: '',
       portfolio_id: portfolioId,
-      previsao_custo: null,
+      previsao_custo: 0,
       principais_etapas: '',
       resumo: '',
     };
