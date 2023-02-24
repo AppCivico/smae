@@ -37,7 +37,7 @@ const props = defineProps({
 const control = ref(props.controlador);
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
-// É aqui que deixamos o componente retrocompatível
+// É aqui que deixamos o componente retro-compatível
 if (props.name) {
   const name = toRef(props, 'name');
   const { handleChange } = useField(name, undefined, {
