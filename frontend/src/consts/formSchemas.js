@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 import regEx from '@/consts/patterns';
 import {
   addMethod,
@@ -8,11 +9,30 @@ import {
   number,
   object,
   ref,
+  setLocale,
   string
 } from 'yup';
 
+setLocale({
+  date: {
+    max: 'Essa data é muito no futuro',
+    min: 'Essa data é muito no passado',
+    required: 'Data obrigatória',
+  },
+  mixed: {
+    default: 'Não é válido',
+    required: 'Campo obrigatório',
+  },
+  number: {
+    max: 'Deve ser menor que ${max}',
+    min: 'Deve ser maior que ${min}',
+  },
+  string: {
+    max: 'Esse texto é muito longo',
+  },
+});
+
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
-// eslint-disable-next-line no-template-curly-in-string
 addMethod(mixed, 'inArray', function _(arrayValue, message = '${path} not found in ${arrayValue}') {
   return this.test({
     message,
@@ -164,13 +184,15 @@ const projeto = object()
       .nullable(),
     data_aprovacao: date()
       .nullable()
-      .min(new Date(2003, 0, 1)),
+      .min(new Date(2003, 0, 1))
+      .typeError('Data inválida'),
     data_revisao: date()
       .nullable()
-      .min(new Date(2003, 0, 1)),
+      .min(new Date(2003, 0, 1))
+      .typeError('Data inválida'),
     escopo: string()
-      .max(50000, 'Esse texto é muito longo')
-      .required('O texto do escopo é obrigatório'),
+      .max(50000)
+      .required(),
     fonte_recursos: array()
       .nullable()
       .of(
@@ -226,7 +248,7 @@ const projeto = object()
       .required('Selecione órgãos participantes'),
     origem_outro: string()
       .nullable()
-      .max(500, 'Esse texto é muito longo')
+      .max(500)
       .when('origem_tipo', (origemTipo, field) => (origemTipo !== 'PdmSistema'
         ? field.required('Esse campo é obrigatório caso não se escolha um Programa de Metas corrente')
         : field)),
@@ -253,13 +275,14 @@ const projeto = object()
       .min(0)
       .required('Previsão de custo é obrigatória'),
     previsao_inicio: date()
-      .min(new Date(2003, 0, 1))
-      .required('Previsao de início é obrigatória'),
+      .required('Previsão de início é obrigatória')
+      .typeError('Data inválida'),
     previsao_termino: date()
-      .min(ref('previsao_inicio'))
-      .required('Previsao de término é obrigatória'),
+      .min(ref('previsao_inicio'), 'Precisa ser posterior à Previsão de início')
+      .required('Previsão de término é obrigatória')
+      .typeError('Data inválida'),
     principais_etapas: string()
-      .max(50000, 'Esse texto é muito longo')
+      .max(50000)
       .required('Principais etapas são obrigatórias'),
     responsaveis_no_orgao_gestor: array()
       .min(1, 'É necessário ao menos um gestor')
@@ -279,11 +302,11 @@ const projeto = object()
       )
       .strict(),
     resumo: string()
-      .max(500, 'Esse texto é muito longo')
+      .max(500)
       .required('Resumo é obrigatório'),
     versao: string()
       .nullable()
-      .max(20, 'Esse texto é muito longo'),
+      .max(20),
   });
 
 const região = object()
