@@ -516,8 +516,11 @@ iniciar();
         </label>
 
         <AutocompleteField
-          :controlador="{busca: '', participantes:
-            values.responsaveis_no_orgao_gestor || []}"
+          name="responsaveis_no_orgao_gestor"
+          :controlador="{
+            busca: '',
+            participantes: values.responsaveis_no_orgao_gestor || []
+          }"
           :grupo="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible
             || []"
           :class="{
@@ -525,7 +528,6 @@ iniciar();
             loading: portfolioStore.chamadasPendentes.lista
           }"
           label="nome_exibicao"
-          name="responsaveis_no_orgao_gestor"
         />
         <ErrorMessage
           name="responsaveis_no_orgao_gestor"
