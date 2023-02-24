@@ -63,7 +63,7 @@ export default {
       props: ({ params, query }) => ({
         ...params,
         status: query.status?.replace('_', '').toLowerCase(),
-        ...{ apenasPrioritários: true },
+        apenasPrioritários: true,
       }),
     },
 
@@ -78,7 +78,7 @@ export default {
       props: ({ params, query }) => ({
         ...params,
         status: query.status?.replace('_', '').toLowerCase(),
-        ...{ apenasArquivados: true },
+        apenasArquivados: true,
       }),
     },
 
@@ -97,7 +97,7 @@ export default {
       component: ProjetosItem,
       props: ({ params }) => ({
         ...params,
-        ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+        projetoId: Number.parseInt(params.projetoId, 10) || undefined,
       }),
       meta: {
         rotasParaMenuSecundário: [
@@ -122,7 +122,7 @@ export default {
           component: ProjetosCriarEditar,
           props: ({ params }) => ({
             ...params,
-            ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
             título: 'Editar projeto',
@@ -136,7 +136,7 @@ export default {
           component: ProjetosResumo,
           props: ({ params }) => ({
             ...params,
-            ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
             título: 'Resumo de projeto',
@@ -164,7 +164,7 @@ export default {
           component: ProjetosAcompanhamento,
           props: ({ params }) => ({
             ...params,
-            ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
             título: 'Acompanhamento de projeto',
@@ -178,7 +178,7 @@ export default {
           component: ProjetosLiçõesAprendidas,
           props: ({ params }) => ({
             ...params,
-            ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
             título: 'Lições aprendidas no projeto',
@@ -192,7 +192,7 @@ export default {
           component: ProjetosDocumentos,
           props: ({ params }) => ({
             ...params,
-            ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
             título: 'Documentos do projeto',
@@ -206,7 +206,7 @@ export default {
           component: ProjetosProcessos,
           props: ({ params }) => ({
             ...params,
-            ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
             título: 'Processos SEI do projeto',
