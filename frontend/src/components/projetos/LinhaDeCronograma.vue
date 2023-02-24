@@ -2,6 +2,7 @@
 import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useRoute } from 'vue-router';
 
 export default {
   name: 'LinhaDeCronograma',
@@ -22,6 +23,11 @@ export default {
       type: Object,
       required: true,
     },
+  },
+  data() {
+    return {
+      projetoId: useRoute()?.params?.projetoId,
+    };
   },
   methods: {
     dateToField,
@@ -112,7 +118,15 @@ export default {
       class="pl1 center mr05"
       style="height: calc(20px + 1rem);"
     >
-      <router-link to="/">
+      <router-link
+        :to="{
+          name: 'tarefasEditar',
+          params: {
+            projetoId: projetoId,
+            tarefaId: linha.id,
+          }
+        }"
+      >
         <svg
           width="20"
           height="20"
