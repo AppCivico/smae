@@ -45,11 +45,12 @@ export default {
   >
     <td
       class="genealogia"
-      :class="{ 'genealogia--origem': linha.nivel === 1 }"
+      :class="{
+        'genealogia--origem': linha.nivel === 1,
+        'genealogia--fora-do-EAP': linha.nivel > 2
+      }"
     >
-      <span
-        class="valor"
-      >
+      <span class="valor">
         <small
           v-if="genealogia"
           class="niveis-pais"
@@ -57,7 +58,10 @@ export default {
       </span>
     </td>
     <th
-      class="pl1 left"
+      class="tabela-de-etapas__titulo-da-tarefa pl1 left"
+      :class="{
+        'tabela-de-etapas__titulo-da-tarefa--fora-do-EAP': linha.nivel > 2
+      }"
     >
       <router-link to="/">
         {{ linha.tarefa }}

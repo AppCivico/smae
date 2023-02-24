@@ -141,7 +141,6 @@ iniciar();
         :key="r.id"
         :linha="r"
         :índice="i"
-        class="tabela-de-etapas__item--primeiro-nivel"
       />
     </tbody>
   </table>
