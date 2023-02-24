@@ -1,7 +1,6 @@
 import MenuSecundário from '@/components/MenuSecundario.vue';
 import ProjetosAcompanhamento from '@/views/projetos/ProjetosAcompanhamento.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
-import ProjetosCronograma from '@/views/projetos/ProjetosCronograma.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
 import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
 import ProjetosLiçõesAprendidas from '@/views/projetos/ProjetosLicoesAprendidas.vue';
@@ -9,6 +8,8 @@ import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosProcessos from '@/views/projetos/ProjetosProcessos.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
+
+import tarefas from './tarefas';
 
 export default {
   path: '/projetos',
@@ -102,7 +103,7 @@ export default {
       meta: {
         rotasParaMenuSecundário: [
           'projetosResumo',
-          'projetosCronograma',
+          'tarefasListar',
           'projetosAcompanhamento',
           'projetosLiçõesAprendidas',
           'projetosDocumentos',
@@ -144,19 +145,7 @@ export default {
           },
         },
 
-        {
-          path: 'cronograma',
-          name: 'projetosCronograma',
-          component: ProjetosCronograma,
-          props: ({ params }) => ({
-            ...params,
-            ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
-          }),
-          meta: {
-            título: 'Cronograma de projeto',
-            títuloParaMenu: 'Cronograma',
-          },
-        },
+        tarefas,
 
         {
           path: 'acompanhamento',
