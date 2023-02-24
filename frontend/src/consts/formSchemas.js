@@ -262,7 +262,6 @@ const projeto = object()
       .max(50000, 'Esse texto é muito longo')
       .required('Principais etapas são obrigatórias'),
     responsaveis_no_orgao_gestor: array()
-      .nullable()
       .min(1, 'É necessário ao menos um gestor')
       .required('Alguém do órgão precisa gerir o projeto'),
     responsavel_id: number()
