@@ -9,13 +9,11 @@ const props = defineProps({
   },
 });
 
-async function iniciar() {
+if (projetosStore.emFoco?.id !== props.projetoId) {
   projetosStore.$reset();
 
-  await projetosStore.buscarItem(props.projetoId);
+  projetosStore.buscarItem(props.projetoId);
 }
-
-iniciar();
 </script>
 <template>
   <router-view />
