@@ -2,6 +2,7 @@
 import { ListTarefaDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
 import createDataTree from '@/helpers/createDataTree';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
+import sortNodesAndChildren from '@/helpers/sortNodesAndChildren.ts';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -90,7 +91,11 @@ async function excluirItem(this: Estado, id: Number, projetoId = 0): Promise<boo
 const tarefasPorId = ({ lista }: Estado) => lista
   .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
 
-const árvoreDeTarefas = ({ lista }: Estado) => createDataTree(lista, 'tarefa_pai_id');
+const árvoreDeTarefas = ({ lista }: Estado) => sortNodesAndChildren(createDataTree(
+  lista,
+  'tarefa_pai_id',
+  // eslint-disable-next-line max-len
+), (a: { nivel: number; numero: number; }, b: { nivel: number; numero: number; }) => a.nivel - b.nivel || a.numero - b.numero) || [];
 
 // eslint-disable-next-line max-len
 const listaFiltradaPor = ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo);
