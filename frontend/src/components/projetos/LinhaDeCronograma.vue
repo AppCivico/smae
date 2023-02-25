@@ -75,7 +75,7 @@ export default {
     </th>
 
     <td class="cell--number">
-      XYZ
+        {{ linha.percentual_concluido ?? '-' }}
     </td>
     <td class="cell--number">
       {{ linha.duracao_planejado ?? '-' }}
