@@ -60,7 +60,7 @@ export default {
         <small
           v-if="genealogia"
           class="niveis-pais"
-        >{{ genealogia }}.</small>{{ índice + 1 }}
+        >{{ genealogia }}.</small>{{ linha.numero }}
       </span>
     </td>
     <th
@@ -138,7 +138,7 @@ export default {
   <LinhaDeCronograma
     v-for="(linhaFilha, i) in linha.children"
     :key="linhaFilha.id"
-    :genealogia="genealogia ? `${genealogia}.${índice + 1}` : `${índice + 1}`"
+    :genealogia="genealogia ? `${genealogia}.${linha.numero}` : `${linha.numero}`"
     :índice="i"
     :linha="linhaFilha"
     class="tabela-de-etapas__item--sub"
