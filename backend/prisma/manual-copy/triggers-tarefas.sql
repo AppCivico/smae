@@ -64,10 +64,16 @@ BEGIN
     ),
     cols as (
         select
-            case when tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 'inicio_planejado' else 'termino_planejado' end as col,
-            max(date) as date -- to em duvida se nao é pra usar o min() em alguma ocasião, no dia eu pensei em usar o max em ambos os casos
-        from compute
-        group by 1
+            col,
+            case when col = 'inicio_planejado' then date_min else date_max end as date
+        from (
+            select
+                case when tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 'inicio_planejado' else 'termino_planejado' end as col,
+                min(date) as date_min,
+                max(date) as date_max
+            from compute
+            group by 1
+        ) subq
     ),
     proc as (
         select
@@ -83,7 +89,7 @@ BEGIN
     select
         jsonb_build_object(
             'duracao_planejado_calculado',
-            (select count(1) from cols) != 2,
+            (select count(1) from cols) = 2,
             'inicio_planejado_calculado',
             (select count(1) from cols where col = 'inicio_planejado') = 1,
             'termino_planejado_calculado',
