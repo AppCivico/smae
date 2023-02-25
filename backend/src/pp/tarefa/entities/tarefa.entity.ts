@@ -21,6 +21,9 @@ export class TarefaItemDto {
 
     n_filhos_imediatos: number
 
+    percentual_concluido: number | null
+
+    atraso: number | null
 }
 
 export class TarefaDetailDto extends TarefaItemDto {
