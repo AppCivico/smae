@@ -281,10 +281,10 @@ export class TarefaService {
                     projeto_id: projetoId,
                     id: id
                 },
-                select: { id: true, tarefa_pai_id: true, nivel: true, numero: true }
+                select: { id: true, tarefa_pai_id: true, nivel: true, numero: true, n_filhos_imediatos: true }
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
-
+            if (tarefa.n_filhos_imediatos > 0) throw new HttpException("Apague primeiro as tarefas filhas.", 404);
 
             const dto = {
                 numero: tarefa.numero,
