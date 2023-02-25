@@ -1,3 +1,4 @@
+-- drop trigger trg_pp_tarefa_esticar_datas_do_pai_update on tarefa;
 CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update AFTER UPDATE ON tarefa
     FOR EACH ROW
     WHEN (
@@ -5,17 +6,23 @@ CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update AFTER UPDATE ON tarefa
         OR
         (OLD.termino_planejado IS DISTINCT FROM NEW.termino_planejado)
         OR
-        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
-        OR
-        (OLD.tarefa_pai_id IS DISTINCT FROM NEW.tarefa_pai_id)
-        OR
-        (OLD.duracao_real IS DISTINCT FROM NEW.duracao_real)
-        OR
         (OLD.duracao_planejado IS DISTINCT FROM NEW.duracao_planejado)
+        OR
+        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
         OR
         (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
         OR
+        (OLD.duracao_real IS DISTINCT FROM NEW.duracao_real)
+        OR
+        (OLD.tarefa_pai_id IS DISTINCT FROM NEW.tarefa_pai_id)
+        OR
         (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
+        OR
+        (OLD.percentual_concluido IS DISTINCT FROM NEW.percentual_concluido)
+        OR
+        (OLD.custo_estimado IS DISTINCT FROM NEW.custo_estimado)
+        OR
+        (OLD.custo_real IS DISTINCT FROM NEW.custo_real)
     )
     EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
 
@@ -200,6 +207,7 @@ DECLARE
     v_count INTEGER;
     v_custo_estimado numeric;
     v_custo_real numeric;
+    v_percentual_concluido numeric;
 
 BEGIN
 
@@ -217,6 +225,34 @@ BEGIN
         -- sempre recalcula cada campo pois pode ter tido uma remoção, e precisa propagar até mesmo o caso dos campos
         -- ganharem o valor de volta de null
 
+        with subtarefas as (
+            -- pega cada subtarefa
+            select t.duracao_planejado, t.percentual_concluido
+            from tarefa t
+            where t.tarefa_pai_id = OLD.tarefa_pai_id
+            and t.removido_em is null
+        ),
+        t1 as (
+            -- pega o total de horas planejadas, pode ser 0 se faltar preenchimento nos filhos, ou
+            -- se tudo começar e acabar no mesmo dia
+            select sum( t.duracao_planejado ) as total_duracao
+            from subtarefas t
+            where t.duracao_planejado is not null
+        ),
+        t2 as (
+            -- divide cada subtarefa pelo total usando a conta que foi passada:
+            -- (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
+            select (
+                coalesce(t.duracao_planejado, 0)
+                    *
+                coalesce(t.percentual_concluido, 0.0)
+            )::numeric / 100.0 as prog_perc
+            from subtarefas t
+        )
+        -- e entao aplica a soma
+        select sum(prog_perc)::numeric / nullif((select total_duracao from t1), 0)::numeric into v_percentual_concluido
+        from t2;
+
         SELECT
             (
              select min(inicio_planejado)
@@ -235,12 +271,24 @@ BEGIN
              from tarefa t
              where t.tarefa_pai_id = OLD.tarefa_pai_id
              and t.removido_em is null
+             and (
+                select count(1) from tarefa t
+                where t.tarefa_pai_id = OLD.tarefa_pai_id
+                and t.removido_em is null
+                and termino_planejado is null
+             ) = 0
             ),
             (
              select max(termino_real)
              from tarefa t
              where t.tarefa_pai_id = OLD.tarefa_pai_id
              and t.removido_em is null
+             and (
+                select count(1) from tarefa t
+                where t.tarefa_pai_id = OLD.tarefa_pai_id
+                and t.removido_em is null
+                and termino_real is null
+             ) = 0
             ),
             (
              select count(1)
@@ -280,6 +328,7 @@ BEGIN
             n_filhos_imediatos = v_count,
             custo_estimado = v_custo_estimado,
             custo_real = v_custo_real,
+            percentual_concluido = v_percentual_concluido * 100,
             atualizado_em = now()
         WHERE t.id = OLD.tarefa_pai_id
         AND (
@@ -289,13 +338,42 @@ BEGIN
             (termino_real IS DISTINCT FROM v_termino_real) OR
             (n_filhos_imediatos IS DISTINCT FROM v_count) OR
             (custo_estimado IS DISTINCT FROM v_custo_estimado) OR
-            (custo_real IS DISTINCT FROM v_custo_real)
+            (custo_real IS DISTINCT FROM v_custo_real) OR
+            (percentual_concluido IS DISTINCT FROM v_percentual_concluido)
         );
     END IF;
 
     IF NEW.tarefa_pai_id IS NOT NULL THEN
         -- sempre recalcula cada campo pois pode ter tido uma remoção, e precisa propagar até mesmo o caso dos campos
         -- ganharem o valor de volta de null
+
+        with subtarefas as (
+            -- pega cada subtarefa
+            select t.duracao_planejado, t.percentual_concluido
+            from tarefa t
+            where t.tarefa_pai_id = NEW.tarefa_pai_id
+            and t.removido_em is null
+        ),
+        t1 as (
+            -- pega o total de horas planejadas, pode ser 0 se faltar preenchimento nos filhos, ou
+            -- se tudo começar e acabar no mesmo dia
+            select sum( t.duracao_planejado ) as total_duracao
+            from subtarefas t
+            where t.duracao_planejado is not null
+        ),
+        t2 as (
+            -- divide cada subtarefa pelo total usando a conta que foi passada:
+            -- (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
+            select (
+                coalesce(t.duracao_planejado, 0)
+                    *
+                coalesce(t.percentual_concluido, 0.0)
+            )::numeric / 100.0 as prog_perc
+            from subtarefas t
+        )
+        -- e entao aplica a soma
+        select sum(prog_perc)::numeric / nullif((select total_duracao from t1), 0)::numeric into v_percentual_concluido
+        from t2;
 
         SELECT
             (
@@ -315,12 +393,24 @@ BEGIN
              from tarefa t
              where t.tarefa_pai_id = NEW.tarefa_pai_id
              and t.removido_em is null
+             and (
+                select count(1) from tarefa t
+                where t.tarefa_pai_id = NEW.tarefa_pai_id
+                and t.removido_em is null
+                and termino_planejado is null
+             ) = 0
             ),
             (
              select max(termino_real)
              from tarefa t
              where t.tarefa_pai_id = NEW.tarefa_pai_id
              and t.removido_em is null
+             and (
+                select count(1) from tarefa t
+                where t.tarefa_pai_id = NEW.tarefa_pai_id
+                and t.removido_em is null
+                and termino_real is null
+             ) = 0
             ),
             (
              select count(1)
@@ -360,6 +450,7 @@ BEGIN
             n_filhos_imediatos = v_count,
             custo_estimado = v_custo_estimado,
             custo_real = v_custo_real,
+            percentual_concluido = v_percentual_concluido * 100.0,
             atualizado_em = now()
         WHERE t.id = NEW.tarefa_pai_id
         AND (
@@ -369,7 +460,8 @@ BEGIN
             (termino_real IS DISTINCT FROM v_termino_real) OR
             (n_filhos_imediatos IS DISTINCT FROM v_count) OR
             (custo_estimado IS DISTINCT FROM v_custo_estimado) OR
-            (custo_real IS DISTINCT FROM v_custo_real)
+            (custo_real IS DISTINCT FROM v_custo_real) OR
+            (percentual_concluido IS DISTINCT FROM v_percentual_concluido)
         );
 
     END IF;
