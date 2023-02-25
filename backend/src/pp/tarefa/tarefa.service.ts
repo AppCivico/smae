@@ -176,10 +176,34 @@ export class TarefaService {
                     id: id
                 },
                 select: {
-                    id: true, tarefa_pai_id: true, nivel: true, numero: true
+                    id: true, tarefa_pai_id: true, nivel: true, numero: true,
+                    n_filhos_imediatos: true,
                 }
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
+
+            if (tarefa.n_filhos_imediatos !== 0) {
+                if (dto.percentual_concluido !== undefined)
+                    throw new HttpException("Percentual Concluído não pode ser alterado diretamente nesta tarefa.", 400);
+                if (dto.inicio_real !== undefined)
+                    throw new HttpException("Início Real não pode ser alterado diretamente nesta tarefa.", 400);
+                if (dto.termino_real !== undefined)
+                    throw new HttpException("Término Real não pode ser alterado diretamente nesta tarefa.", 400);
+                if (dto.duracao_real !== undefined)
+                    throw new HttpException("Duração Real não pode ser alterada diretamente nesta tarefa.", 400);
+                if (dto.inicio_planejado !== undefined)
+                    throw new HttpException("Início Planejado não pode ser alterado diretamente nesta tarefa.", 400);
+                if (dto.termino_planejado !== undefined)
+                    throw new HttpException("Término Planejado não pode ser alterado diretamente nesta tarefa.", 400);
+                if (dto.duracao_planejado !== undefined)
+                    throw new HttpException("Duração Planejada não pode ser alterada diretamente nesta tarefa.", 400);
+                if (dto.custo_estimado !== undefined)
+                    throw new HttpException("Custo Estimado não pode ser alterado diretamente nesta tarefa.", 400);
+                if (dto.custo_real !== undefined)
+                    throw new HttpException("Custo Real não pode ser alterado diretamente nesta tarefa.", 400);
+                if (dto.dependencias !== undefined)
+                    throw new HttpException("Não pode existir dependencias nesta tarefa.", 400);
+            }
 
             if (
                 (dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id)
