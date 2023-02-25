@@ -106,10 +106,16 @@ export class TarefaService {
                 custo_estimado: true,
                 custo_real: true,
                 n_filhos_imediatos: true,
+                percentual_concluido: true
             }
         });
 
-        return rows;
+        return rows.map((r) => {
+            return {
+                ...r,
+                atraso: null,
+            }
+        });
     }
 
     async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
@@ -147,10 +153,14 @@ export class TarefaService {
                 descricao: true,
                 recursos: true,
                 n_filhos_imediatos: true,
+                percentual_concluido: true,
             }
         });
 
-        return row;
+        return {
+            ...row,
+            atraso: null,
+        };
     }
 
     async update(projetoId: number, id: number, dto: UpdateTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {

@@ -2428,7 +2428,9 @@ model Tarefa {
 
     custo_estimado       Float?
     custo_real           Float?
-    // calculado
+
+    // calculado no caso dos nós, mas é o % realizado de fato, no caso das folhas
+    // formula: soma (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
     percentual_concluido Float?
 
     removido_em  DateTime?

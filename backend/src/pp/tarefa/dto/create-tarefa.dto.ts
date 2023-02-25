@@ -142,4 +142,10 @@ export class CreateTarefaDto {
     @ValidateNested({ each: true })
     @Type(() => TarefaDependenciaDto)
     dependencias?: TarefaDependenciaDto[];
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    @ValidateIf((object, value) => value !== null)
+    percentual_concluido?: number | null
 }
