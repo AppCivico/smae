@@ -284,7 +284,7 @@ export class TarefaService {
                 select: { id: true, tarefa_pai_id: true, nivel: true, numero: true, n_filhos_imediatos: true }
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
-            if (tarefa.n_filhos_imediatos > 0) throw new HttpException("Apague primeiro as tarefas filhas.", 404);
+            if (tarefa.n_filhos_imediatos > 0) throw new HttpException("Apague primeiro as tarefas filhas.", 400);
 
             const dto = {
                 numero: tarefa.numero,
@@ -320,7 +320,7 @@ export class TarefaService {
         if (resp.duracao_planejado != null && resp.duracao_planejado < 0) {
             // fica de TODO melhorar essa msg de erro, pra tentar ir refazendo as regras até descobrir qual foi a depedencia que fez isso
             // embora seja dificil descobrir, pois pode ser que uma estica o fim, enquanto outra puxa o inicio...
-            throw new HttpException("Não é possivel utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 404);
+            throw new HttpException("Não é possivel utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 400);
         }
 
         return resp;
