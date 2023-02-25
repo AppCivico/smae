@@ -47,5 +47,8 @@ export class DependenciasDatasDto {
 
     inicio_planejado: Date | null
     termino_planejado: Date | null
-    duracao_planejado: Date | null
+    /**
+     * Duração em dias da tarefa
+     **/
+    duracao_planejado: number | null
 }
