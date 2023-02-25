@@ -15,7 +15,7 @@ ErrorMessage, Field, FieldArray, Form
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const OrgansStore = useOrgansStore();
+const ÓrgãosStore = useOrgansStore();
 const OrçamentosStore = useOrcamentosStore();
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
@@ -23,7 +23,6 @@ const projetosStore = useProjetosStore();
 const {
   chamadasPendentes, emFoco, erro, permissões, pdmsSimplificados, pdmsPorId, metaSimplificada,
 } = storeToRefs(projetosStore);
-const ÓrgãosStore = useOrgansStore();
 const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
 const { DotacaoSegmentos } = storeToRefs(OrçamentosStore);
 
@@ -230,7 +229,7 @@ async function iniciar() {
     portfolioStore.buscarTudo();
   }
 
-  OrgansStore.getAllOrganResponsibles().finally(() => {
+  ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
   });
 }
@@ -487,7 +486,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{
             error: errors.orgao_gestor_id ,
-            loading: portfolioStore.chamadasPendentes.lista
+            loading: ÓrgãosStore.organs.loading,
           }"
           :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
           @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
