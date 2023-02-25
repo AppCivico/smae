@@ -138,10 +138,12 @@ export class CreateTarefaDto {
     @ValidateIf((object, value) => value !== null)
     custo_real?: number | null
 
-    @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
+    @IsOptional()
+    @IsArray({ message: 'dependencias precisa ser do tipo array ou null' })
     @ValidateNested({ each: true })
     @Type(() => TarefaDependenciaDto)
-    dependencias?: TarefaDependenciaDto[];
+    @ValidateIf((object, value) => value !== null)
+    dependencias?: TarefaDependenciaDto[] | null;
 
     @IsOptional()
     @IsInt()
