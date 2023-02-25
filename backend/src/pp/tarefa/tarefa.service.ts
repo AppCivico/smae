@@ -155,7 +155,6 @@ export class TarefaService {
 
     async update(projetoId: number, id: number, dto: UpdateTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
-
         const tarefa = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const now = new Date(Date.now());
 
@@ -172,9 +171,6 @@ export class TarefaService {
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
 
-
-            console.log({ dto });
-
             if (
                 (dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id)
                 ||
@@ -186,12 +182,8 @@ export class TarefaService {
                 if (dto.nivel === undefined) dto.nivel = tarefa.nivel;
                 if (dto.numero === undefined) dto.numero = tarefa.numero;
 
-                // se mudou de pai
-                console.log({ novoPaiDesejado: dto.tarefa_pai_id, antigoPai: tarefa.tarefa_pai_id });
                 if (dto.tarefa_pai_id !== tarefa.tarefa_pai_id) {
-                    console.log('entrou pra mudar o pai');
-
-
+                    this.logger.debug(`Mudança da tarefa pai detectada: ${JSON.stringify({ novoPaiDesejado: dto.tarefa_pai_id, antigoPai: tarefa.tarefa_pai_id })}`);
 
                     if (dto.tarefa_pai_id === null
                         && dto.nivel > 1
@@ -223,6 +215,7 @@ export class TarefaService {
                     }, prismaTx, projetoId);
                 } else {
                     // mudou apenas o numero
+                    this.logger.debug('Apenas mudança de número foi detectada');
 
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero({
@@ -238,10 +231,10 @@ export class TarefaService {
 
                 }
 
-
             } else {
                 // nao deixar nem o nivel sem passar o pai
                 // pq as validações estão apenas acima
+                this.logger.warn('removendo campos numero, nivel e tarefa_pai_id da atualização');
 
                 delete dto.numero;
                 delete dto.nivel;
