@@ -26,6 +26,7 @@ export class PortfolioService {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     titulo: dto.titulo,
+                    nivel_maximo_tarefa: dto.nivel_maximo_tarefa || 1,
                 },
                 select: { id: true },
             });
@@ -73,6 +74,7 @@ export class PortfolioService {
             select: {
                 id: true,
                 titulo: true,
+                nivel_maximo_tarefa: true,
                 orgaos: {
                     select: {
                         orgao_id: true
@@ -109,6 +111,7 @@ export class PortfolioService {
             select: {
                 id: true,
                 titulo: true,
+                nivel_maximo_tarefa: true,
                 orgaos: {
                     select: {
                         orgao: {
@@ -150,6 +153,7 @@ export class PortfolioService {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                     titulo: dto.titulo,
+                    nivel_maximo_tarefa: dto.nivel_maximo_tarefa,
                 },
                 select: { id: true },
             });
