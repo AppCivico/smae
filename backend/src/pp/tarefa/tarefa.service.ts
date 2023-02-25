@@ -315,8 +315,15 @@ export class TarefaService {
         const json = JSON.stringify(dto.dependencias);
         const res = await this.prisma.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)` as any;
 
+        const resp = (res[0]['calcula_dependencias_tarefas']) as DependenciasDatasDto;
 
-        return (res[0]['calcula_dependencias_tarefas']) as DependenciasDatasDto;
+        if (resp.duracao_planejado != null && resp.duracao_planejado < 0) {
+            // fica de TODO melhorar essa msg de erro, pra tentar ir refazendo as regras até descobrir qual foi a depedencia que fez isso
+            // embora seja dificil descobrir, pois pode ser que uma estica o fim, enquanto outra puxa o inicio...
+            throw new HttpException("Não é possivel utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 404);
+        }
+
+        return resp;
     }
 
 
