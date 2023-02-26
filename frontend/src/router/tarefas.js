@@ -54,8 +54,6 @@ export default {
         projetoId: Number.parseInt(params.projetoId, 10) || undefined,
         tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
       }),
-      meta: {
-      },
 
       children: [
         {
@@ -67,6 +65,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
             tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
           }),
+
           meta: {
             título: 'Editar tarefa',
             títuloParaMenu: 'Editar tarefa',
