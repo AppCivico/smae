@@ -46,19 +46,19 @@ export class TarefaService {
                 inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
                 termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
 
-                if (duracao_planejado_calculado && dto.duracao_planejado !== undefined) {
+                if (duracao_planejado_calculado && dto.duracao_planejado !== null) {
                     throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
                 } else if (duracao_planejado_calculado) {
                     dto.duracao_planejado = dataDependencias.duracao_planejado;
                 }
 
-                if (inicio_planejado_calculado && dto.inicio_planejado !== undefined) {
+                if (inicio_planejado_calculado && dto.inicio_planejado !== null) {
                     throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
                 } else if (inicio_planejado_calculado) {
                     dto.inicio_planejado = dataDependencias.inicio_planejado;
                 }
 
-                if (termino_planejado_calculado && dto.termino_planejado !== undefined) {
+                if (termino_planejado_calculado && dto.termino_planejado !== null) {
                     throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
                 } else if (termino_planejado_calculado) {
                     dto.termino_planejado = dataDependencias.termino_planejado;
