@@ -135,12 +135,14 @@ export default {
     </td>
   </tr>
 
-  <LinhaDeCronograma
-    v-for="(linhaFilha, i) in linha.children"
-    :key="linhaFilha.id"
-    :genealogia="genealogia ? `${genealogia}.${linha.numero}` : `${linha.numero}`"
-    :índice="i"
-    :linha="linhaFilha"
-    class="tabela-de-etapas__item--sub"
-  />
+  <template v-if="Array.isArray(linha.children)">
+    <LinhaDeCronograma
+      v-for="(linhaFilha, i) in linha.children"
+      :key="linhaFilha.id"
+      :genealogia="genealogia ? `${genealogia}.${linha.numero}` : `${linha.numero}`"
+      :índice="i"
+      :linha="linhaFilha"
+      class="tabela-de-etapas__item--sub"
+    />
+  </template>
 </template>
