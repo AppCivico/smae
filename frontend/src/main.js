@@ -11,10 +11,9 @@ const pinia = createPinia();
 pinia.use(({ store }) => {
   // eslint-disable-next-line no-param-reassign
   store.route = useRoute();
+  // give the plugin to pinia
+  return { requestS };
 });
-
-// give the plugin to pinia
-pinia.use(() => ({ requestS }));
 
 app.config.globalProperties.requestS = requestS;
 
