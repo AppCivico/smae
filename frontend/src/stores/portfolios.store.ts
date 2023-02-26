@@ -9,15 +9,15 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 type Lista = ListPortfolioDto['linhas'];
 
 interface ChamadasPendentes {
-  lista: boolean,
-  emFoco: boolean,
+  lista: boolean;
+  emFoco: boolean;
 }
 
 interface Estado {
   lista: Lista;
   emFoco: PortfolioDto;
   chamadasPendentes: ChamadasPendentes;
-  erro: null | unknown,
+  erro: null | unknown;
 }
 
 async function buscarTudo(this: Estado, params = {}): Promise<void> {

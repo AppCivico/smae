@@ -15,11 +15,11 @@ type PdmsSimplificados = ListProjetoProxyPdmMetaDto['linhas'];
 type MetaSimplificada = ListDadosMetaIniciativaAtividadesDto['linhas'];
 
 interface ChamadasPendentes {
-  lista: boolean,
-  emFoco: boolean,
-  pdmsSimplificados: boolean,
-  metaSimplificada: boolean,
-  mudarStatus: boolean,
+  lista: boolean;
+  emFoco: boolean;
+  pdmsSimplificados: boolean;
+  metaSimplificada: boolean;
+  mudarStatus: boolean;
 }
 
 interface Estado {
@@ -30,7 +30,7 @@ interface Estado {
   permissões: ProjetoPermissoesDto | null;
   pdmsSimplificados: PdmsSimplificados;
   metaSimplificada: MetaSimplificada;
-  erro: null | unknown,
+  erro: null | unknown;
 }
 
 async function buscarTudo(this: Estado, params = {}): Promise<void> {
