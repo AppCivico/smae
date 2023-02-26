@@ -427,6 +427,17 @@ export class TarefaService {
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
             if (tarefa.n_filhos_imediatos > 0) throw new HttpException("Apague primeiro as tarefas filhas.", 400);
 
+            const tenhoDependencia = await prismaTx.tarefaDependente.findFirst({
+                where: {
+                    dependencia_tarefa_id: id,
+                },
+                select: {
+                    tarefa: { select: { nivel: true, numero: true, tarefa: true } }
+                }
+            });
+            if (tenhoDependencia)
+                throw new HttpException(`Tarefa não pode ser removida, remova primeiro a dependência na tarefa "${tenhoDependencia.tarefa.tarefa}", no nível ${tenhoDependencia.tarefa.nivel} número ${tenhoDependencia.tarefa.numero}.`, 400);
+
             const dto = {
                 numero: tarefa.numero,
                 tarefa_pai_id: tarefa.tarefa_pai_id
