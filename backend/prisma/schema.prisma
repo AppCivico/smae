@@ -2408,26 +2408,22 @@ model Tarefa {
     // pode calcular se o termino estiver null,
     // mas o inicio sempre precisa existir pra fazer as contas, ou seja, se estiver null, é ignorado na
     // parte de buscar o minimo
-    inicio_planejado  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
-    termino_planejado DateTime?
+    inicio_planejado  DateTime? @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
+    termino_planejado DateTime? @db.Date()
     duracao_planejado Int?
 
-    inicio_real  DateTime?
-    termino_real DateTime?
+    inicio_real  DateTime? @db.Date()
+    termino_real DateTime? @db.Date()
     duracao_real Int?
 
     inicio_planejado_calculado  Boolean @default(false)
     termino_planejado_calculado Boolean @default(false)
     duracao_planejado_calculado Boolean @default(false)
 
-    inicio_real_calculado  Boolean @default(false)
-    termino_real_calculado Boolean @default(false)
-    duracao_real_calculado Boolean @default(false)
-
     n_filhos_imediatos Int @default(0)
 
-    custo_estimado       Float?
-    custo_real           Float?
+    custo_estimado Float?
+    custo_real     Float?
 
     // calculado no caso dos nós, mas é o % realizado de fato, no caso das folhas
     // formula: soma (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
@@ -2436,8 +2432,7 @@ model Tarefa {
     removido_em  DateTime?
     removido_por Int?
 
-
-    atualizado_em  DateTime?
+    atualizado_em DateTime?
 
     dependencias    TarefaDependente[] @relation("dependencias")
     ref_dependentes TarefaDependente[] @relation("ref_dependentes")
