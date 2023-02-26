@@ -40,6 +40,9 @@ module.exports = {
         parser: '@typescript-eslint/parser',
         project: './frontend/tsconfig.json',
       },
+      rules: {
+        '@typescript-eslint/member-delimiter-style': 'warn',
+      },
     },
   ],
 };

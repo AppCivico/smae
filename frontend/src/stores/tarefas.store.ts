@@ -10,8 +10,8 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 type Lista = ListTarefaDto['linhas'];
 
 interface ChamadasPendentes {
-  lista: boolean,
-  emFoco: boolean,
+  lista: boolean;
+  emFoco: boolean;
 }
 
 interface Estado {
@@ -19,9 +19,9 @@ interface Estado {
   emFoco: TarefaItemDto | null;
   chamadasPendentes: ChamadasPendentes;
 
-  erro: null | unknown,
-  requestS?: any,
-  route?: any,
+  erro: null | unknown;
+  requestS?: any;
+  route?: any;
 }
 
 async function buscarTudo(this: Estado, params = {}, projetoId = 0): Promise<void> {
