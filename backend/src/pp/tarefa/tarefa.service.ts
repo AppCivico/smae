@@ -100,7 +100,7 @@ export class TarefaService {
             });
 
             if (dto.dependencias) {
-                prismaTx.tarefaDependente.createMany({
+                await prismaTx.tarefaDependente.createMany({
                     data: dto.dependencias.map(d => {
                         return {
                             tarefa_id: tarefa.id,
