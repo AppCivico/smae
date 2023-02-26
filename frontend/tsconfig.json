@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitThis": true,
     "paths": {
