@@ -99,7 +99,7 @@ export class TarefaService {
                 }
             });
 
-            if (dto.dependencias) {
+            if (dto.dependencias && dto.dependencias.length > 0) {
                 await prismaTx.tarefaDependente.createMany({
                     data: dto.dependencias.map(d => {
                         return {
@@ -245,6 +245,56 @@ export class TarefaService {
                 }
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
+
+            if (dto.dependencias !== undefined) {
+                const dataDependencias = await this.calcDataDependencias(prismaTx, dto.dependencias);
+
+                let duracao_planejado_calculado = false;
+                let inicio_planejado_calculado = false;
+                let termino_planejado_calculado = false;
+
+                if (dataDependencias != null) {
+                    duracao_planejado_calculado = dataDependencias.duracao_planejado_calculado;
+                    inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
+                    termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
+
+                    // aqui talvez seja melhor mudar pra undefined, pro front só deixar disabled
+                    // mas ai no create ficaria diferente, ou tbm teria que deixar opicional e criar mais checks
+                    if (duracao_planejado_calculado && dto.duracao_planejado !== null) {
+                        throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
+                    } else if (duracao_planejado_calculado) {
+                        dto.duracao_planejado = dataDependencias.duracao_planejado;
+                    }
+
+                    if (inicio_planejado_calculado && dto.inicio_planejado !== null) {
+                        throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                    } else if (inicio_planejado_calculado) {
+                        dto.inicio_planejado = dataDependencias.inicio_planejado;
+                    }
+
+                    if (termino_planejado_calculado && dto.termino_planejado !== null) {
+                        throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                    } else if (termino_planejado_calculado) {
+                        dto.termino_planejado = dataDependencias.termino_planejado;
+                    }
+                }
+
+                await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: tarefa.id } });
+
+                if (dto.dependencias && dto.dependencias.length) {
+                    await prismaTx.tarefaDependente.createMany({
+                        data: dto.dependencias.map(d => {
+                            return {
+                                tarefa_id: tarefa.id,
+                                dependencia_tarefa_id: d.dependencia_tarefa_id,
+                                latencia: d.latencia,
+                                tipo: d.tipo,
+                            }
+                        })
+                    });
+                }
+
+            }
 
             if (tarefa.n_filhos_imediatos !== 0) {
                 if (dto.percentual_concluido !== undefined)
