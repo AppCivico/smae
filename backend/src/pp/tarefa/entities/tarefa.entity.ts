@@ -32,10 +32,6 @@ export class TarefaDetailDto extends TarefaItemDto {
     termino_planejado_calculado: boolean
     duracao_planejado_calculado: boolean
 
-    inicio_real_calculado: boolean
-    termino_real_calculado: boolean
-    duracao_real_calculado: boolean
-
     descricao: string
     recursos: string
 

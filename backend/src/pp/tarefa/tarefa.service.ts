@@ -90,12 +90,9 @@ export class TarefaService {
 
                     numero: numero,
 
-                    duracao_planejado_calculado: duracao_planejado_calculado,
-                    inicio_planejado_calculado: inicio_planejado_calculado,
-                    termino_planejado_calculado: termino_planejado_calculado,
-                    duracao_real_calculado: false,
-                    inicio_real_calculado: false,
-                    termino_real_calculado: false,
+                    duracao_planejado_calculado,
+                    inicio_planejado_calculado,
+                    termino_planejado_calculado,
                 }
             });
 
@@ -204,9 +201,7 @@ export class TarefaService {
                 inicio_planejado_calculado: true,
                 termino_planejado_calculado: true,
                 duracao_planejado_calculado: true,
-                inicio_real_calculado: true,
-                termino_real_calculado: true,
-                duracao_real_calculado: true,
+
                 descricao: true,
                 recursos: true,
                 n_filhos_imediatos: true,
