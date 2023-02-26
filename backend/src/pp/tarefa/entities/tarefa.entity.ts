@@ -1,4 +1,5 @@
 import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
+import { TarefaDependenciaDto } from "../dto/create-tarefa.dto"
 
 export class TarefaItemDto {
     id: number
@@ -37,6 +38,8 @@ export class TarefaDetailDto extends TarefaItemDto {
 
     descricao: string
     recursos: string
+
+    dependencias: TarefaDependenciaDto[]
 }
 
 export class ListTarefaDto {

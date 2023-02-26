@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
+import { CheckDependenciasDto, CreateTarefaDto, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
@@ -35,6 +35,36 @@ export class TarefaService {
 
             await this.utils.lockProjeto(prismaTx, projetoId);
 
+            const dataDependencias = await this.calcDataDependencias(prismaTx, dto.dependencias);
+
+            let duracao_planejado_calculado = false;
+            let inicio_planejado_calculado = false;
+            let termino_planejado_calculado = false;
+
+            if (dataDependencias != null) {
+                duracao_planejado_calculado = dataDependencias.duracao_planejado_calculado;
+                inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
+                termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
+
+                if (duracao_planejado_calculado && dto.duracao_planejado !== undefined) {
+                    throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
+                } else if (duracao_planejado_calculado) {
+                    dto.duracao_planejado = dataDependencias.duracao_planejado;
+                }
+
+                if (inicio_planejado_calculado && dto.inicio_planejado !== undefined) {
+                    throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                } else if (inicio_planejado_calculado) {
+                    dto.inicio_planejado = dataDependencias.inicio_planejado;
+                }
+
+                if (termino_planejado_calculado && dto.termino_planejado !== undefined) {
+                    throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                } else if (termino_planejado_calculado) {
+                    dto.termino_planejado = dataDependencias.termino_planejado;
+                }
+            }
+
             const numero = await this.utils.incrementaNumero(dto, prismaTx, projetoId);
 
             const tarefa = await prismaTx.tarefa.create({
@@ -60,15 +90,27 @@ export class TarefaService {
 
                     numero: numero,
 
-                    duracao_planejado_calculado: false,
+                    duracao_planejado_calculado: duracao_planejado_calculado,
+                    inicio_planejado_calculado: inicio_planejado_calculado,
+                    termino_planejado_calculado: termino_planejado_calculado,
                     duracao_real_calculado: false,
                     inicio_real_calculado: false,
                     termino_real_calculado: false,
-                    inicio_planejado_calculado: false,
-                    termino_planejado_calculado: false,
                 }
             });
 
+            if (dto.dependencias) {
+                prismaTx.tarefaDependente.createMany({
+                    data: dto.dependencias.map(d => {
+                        return {
+                            tarefa_id: tarefa.id,
+                            dependencia_tarefa_id: d.dependencia_tarefa_id,
+                            latencia: d.latencia,
+                            tipo: d.tipo,
+                        }
+                    })
+                });
+            }
 
             return { id: tarefa.id }
         }, {
@@ -78,6 +120,21 @@ export class TarefaService {
         });
 
         return { id: created.id }
+    }
+
+    async calcDataDependencias(prismaTx: Prisma.TransactionClient, deps: TarefaDependenciaDto[] | null | undefined): Promise<DependenciasDatasDto | null> {
+        if (!deps) return null;
+
+        const json = JSON.stringify(deps);
+        const res = await prismaTx.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)` as any;
+
+        const resp = (res[0]['calcula_dependencias_tarefas']) as DependenciasDatasDto;
+
+        if (resp.duracao_planejado != null && resp.duracao_planejado < 0) {
+            throw new HttpException("Não é possivel utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 400);
+        }
+
+        return resp
     }
 
     async findAll(projetoId: number, user: PessoaFromJwt): Promise<TarefaItemDto[]> {
@@ -154,6 +211,13 @@ export class TarefaService {
                 recursos: true,
                 n_filhos_imediatos: true,
                 percentual_concluido: true,
+                dependencias: {
+                    select: {
+                        dependencia_tarefa_id: true,
+                        tipo: true,
+                        latencia: true,
+                    }
+                }
             }
         });
 
