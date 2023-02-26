@@ -33,121 +33,6 @@ interface Estado {
   erro: null | unknown;
 }
 
-async function buscarTudo(this: Estado, params = {}): Promise<void> {
-  this.chamadasPendentes.lista = true;
-  this.chamadasPendentes.emFoco = true;
-  try {
-    const { linhas } = await requestS.get(`${baseUrl}/projeto`, params);
-    this.lista = linhas;
-  } catch (erro: unknown) {
-    this.erro = erro;
-  }
-  this.chamadasPendentes.lista = false;
-  this.chamadasPendentes.emFoco = false;
-}
-
-async function buscarItem(this: Estado, id = 0, params = {}): Promise<void> {
-  this.chamadasPendentes.emFoco = true;
-  try {
-    const resposta = await requestS.get(`${baseUrl}/projeto/${id}`, params);
-    this.emFoco = {
-      ...resposta,
-      permissoes: undefined,
-    };
-    this.permissões = resposta.permissoes;
-  } catch (erro: unknown) {
-    this.erro = erro;
-  }
-  this.chamadasPendentes.emFoco = false;
-}
-
-async function buscarPdms(this: Estado, params = {}): Promise<void> {
-  this.chamadasPendentes.pdmsSimplificados = true;
-  this.pdmsSimplificados = [];
-
-  try {
-    const { linhas } = await requestS.get(`${baseUrl}/projeto/proxy/pdm-e-metas`, params);
-    this.pdmsSimplificados = linhas;
-  } catch (erro: unknown) {
-    this.erro = erro;
-  }
-  this.chamadasPendentes.pdmsSimplificados = false;
-}
-
-async function buscarMetaSimplificada(this: Estado, params = {}): Promise<void> {
-  this.chamadasPendentes.metaSimplificada = true;
-  this.metaSimplificada = [];
-
-  try {
-    const { linhas } = await requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
-    [this.metaSimplificada] = linhas;
-  } catch (erro: unknown) {
-    this.erro = erro;
-  }
-  this.chamadasPendentes.metaSimplificada = false;
-}
-
-async function salvarItem(this: Estado, params = {}, id = 0): Promise<boolean> {
-  this.chamadasPendentes.emFoco = true;
-
-  try {
-    let resposta;
-
-    if (id) {
-      resposta = await requestS.patch(`${baseUrl}/projeto/${id}`, params);
-    } else {
-      resposta = await requestS.post(`${baseUrl}/projeto`, params);
-    }
-
-    this.chamadasPendentes.emFoco = false;
-    return resposta;
-  } catch (erro) {
-    this.erro = erro;
-    this.chamadasPendentes.emFoco = false;
-    return false;
-  }
-}
-
-async function excluirItem(this: Estado, id: Number): Promise<boolean> {
-  this.chamadasPendentes.lista = true;
-
-  try {
-    await requestS.delete(`${baseUrl}/projeto/${id}`);
-
-    this.chamadasPendentes.lista = false;
-    return true;
-  } catch (erro) {
-    this.erro = erro;
-    this.chamadasPendentes.lista = false;
-    return false;
-  }
-}
-
-async function mudarStatus(this: Estado, id: Number, ação: ProjetoAcao): Promise<boolean> {
-  this.chamadasPendentes.mudarStatus = true;
-
-  try {
-    await requestS.patch(`${baseUrl}/projeto-acao`, { acao: ação, projeto_id: id });
-
-    this.chamadasPendentes.mudarStatus = false;
-
-    return true;
-  } catch (erro) {
-    this.erro = erro;
-    this.chamadasPendentes.mudarStatus = false;
-    return false;
-  }
-}
-
-const projetosPorId = ({ lista }: Estado) => lista
-  .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
-
-const pdmsPorId = ({ pdmsSimplificados }: Estado) => pdmsSimplificados
-  .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
-
-// eslint-disable-next-line max-len
-const listaFiltradaPor = ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo);
-
 export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
     lista: [],
@@ -168,17 +53,113 @@ export const useProjetosStore = defineStore('projetos', {
     erro: null,
   }),
   actions: {
-    buscarItem,
-    buscarPdms,
-    buscarMetaSimplificada,
-    buscarTudo,
-    excluirItem,
-    mudarStatus,
-    salvarItem,
+    async buscarItem(id = 0, params = {}): Promise<void> {
+      this.chamadasPendentes.emFoco = true;
+      try {
+        const resposta = await requestS.get(`${baseUrl}/projeto/${id}`, params);
+        this.emFoco = {
+          ...resposta,
+          permissoes: undefined,
+        };
+        this.permissões = resposta.permissoes;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.emFoco = false;
+    },
+    async buscarPdms(params = {}): Promise<void> {
+      this.chamadasPendentes.pdmsSimplificados = true;
+      this.pdmsSimplificados = [];
+
+      try {
+        const { linhas } = await requestS.get(`${baseUrl}/projeto/proxy/pdm-e-metas`, params);
+        this.pdmsSimplificados = linhas;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.pdmsSimplificados = false;
+    },
+    async buscarMetaSimplificada(params = {}): Promise<void> {
+      this.chamadasPendentes.metaSimplificada = true;
+      this.metaSimplificada = [];
+
+      try {
+        const { linhas } = await requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
+        [this.metaSimplificada] = linhas;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.metaSimplificada = false;
+    },
+    async buscarTudo(params = {}): Promise<void> {
+      this.chamadasPendentes.lista = true;
+      this.chamadasPendentes.emFoco = true;
+      try {
+        const { linhas } = await requestS.get(`${baseUrl}/projeto`, params);
+
+        this.lista = linhas;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.lista = false;
+      this.chamadasPendentes.emFoco = false;
+    },
+    async excluirItem(id: Number): Promise<boolean> {
+      this.chamadasPendentes.lista = true;
+
+      try {
+        await requestS.delete(`${baseUrl}/projeto/${id}`);
+
+        this.chamadasPendentes.lista = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.lista = false;
+        return false;
+      }
+    },
+    async mudarStatus(id: Number, ação: ProjetoAcao): Promise<boolean> {
+      this.chamadasPendentes.mudarStatus = true;
+
+      try {
+        await requestS.patch(`${baseUrl}/projeto-acao`, { acao: ação, projeto_id: id });
+
+        this.chamadasPendentes.mudarStatus = false;
+
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.mudarStatus = false;
+        return false;
+      }
+    },
+    async salvarItem(params = {}, id = 0): Promise<boolean> {
+      this.chamadasPendentes.emFoco = true;
+
+      try {
+        let resposta;
+
+        if (id) {
+          resposta = await requestS.patch(`${baseUrl}/projeto/${id}`, params);
+        } else {
+          resposta = await requestS.post(`${baseUrl}/projeto`, params);
+        }
+
+        this.chamadasPendentes.emFoco = false;
+        return resposta;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.emFoco = false;
+        return false;
+      }
+    },
   },
   getters: {
-    pdmsPorId,
-    projetosPorId,
-    listaFiltradaPor,
+    // eslint-disable-next-line max-len
+    listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
+    pdmsPorId: ({ pdmsSimplificados }: Estado) => pdmsSimplificados
+      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    projetosPorId: ({ lista }: Estado) => lista
+      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
