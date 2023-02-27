@@ -92,7 +92,15 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route?.meta?.título || 'Tarefa' }}</h1>
+    <h1>
+      <div
+        v-if="tarefaId"
+        class="t12 uc w700 tamarelo"
+      >
+        {{ $route?.meta?.título || 'Editar tarefa' }}
+      </div>
+      {{ emFoco?.tarefa || (tarefaId ? 'Tarefa' : 'Nova tarefa') }}
+    </h1>
     <hr class="ml2 f1">
 
     <CheckClose :rota-de-escape="`/projetos/${props.projetoId}/tarefas/`" />
@@ -166,7 +174,7 @@ iniciar();
 
       <div class="f1 mb1">
         <label class="label tc300">
-          Ordem
+          Ordem&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="numero"
@@ -248,7 +256,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label tc300">
-          Descrição&nbsp;<span class="tvermelho">*</span>
+          Descrição
         </label>
         <Field
           name="descricao"
@@ -340,7 +348,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label tc300">
-          Recursos&nbsp;<span class="tvermelho">*</span>
+          Recursos
         </label>
         <Field
           name="recursos"
@@ -361,7 +369,10 @@ iniciar();
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || emFoco?.arquivado"
+        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
       >
         Salvar
       </button>

@@ -70,7 +70,13 @@ export default {
       }"
     >
       <router-link
-        to="/"
+        :to="{
+          name: 'tarefasProgresso',
+          params: {
+            projetoId: projetoId,
+            tarefaId: linha.id,
+          },
+        }"
         :title="`Registrar progresso na tarefa ${linha.hierarquia}`"
       >
         {{ linha.tarefa }}
