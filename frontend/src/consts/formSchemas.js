@@ -416,12 +416,12 @@ const tarefa = object()
       .nullable(),
     duracao_planejado: number()
       .min(0)
-      .required(),
+      .nullable(),
     duracao_real: number()
       .min(0)
       .nullable(),
     inicio_planejado: date()
-      .required()
+      .nullable()
       .typeError('Data inválida'),
     inicio_real: date()
       .nullable()
@@ -450,7 +450,7 @@ const tarefa = object()
       .min(0)
       .nullable(),
     termino_planejado: date()
-      .required()
+      .nullable()
       .typeError('Data inválida'),
     termino_real: date()
       .nullable()

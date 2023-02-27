@@ -89,8 +89,15 @@ export default {
             tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
           }),
           meta: {
-            título: 'Progresso de tarefa',
+            título: 'Registrar progresso',
             títuloParaMenu: 'Progresso',
+
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'tarefasListar',
+              'tarefasProgresso',
+            ],
           },
         },
       ],
