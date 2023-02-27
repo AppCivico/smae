@@ -278,7 +278,7 @@ const projeto = object()
       .required('Previsão de início é obrigatória')
       .typeError('Data inválida'),
     previsao_termino: date()
-      .min(ref('previsao_inicio'), 'Precisa ser posterior à Previsão de início')
+      .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
       .required('Previsão de término é obrigatória')
       .typeError('Data inválida'),
     principais_etapas: string()
@@ -450,9 +450,11 @@ const tarefa = object()
       .min(0)
       .nullable(),
     termino_planejado: date()
+      .min(ref('inicio_planejado'), 'Precisa ser posterior à data de início')
       .nullable()
       .typeError('Data inválida'),
     termino_real: date()
+      .min(ref('inicio_real'), 'Precisa ser posterior à data de início')
       .nullable()
       .typeError('Data inválida'),
   });

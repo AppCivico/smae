@@ -2,7 +2,9 @@
 import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { tarefa as schema } from '@/consts/formSchemas';
+import addToDates from '@/helpers/addToDates';
 import dateToField from '@/helpers/dateToField';
+import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
@@ -129,6 +131,12 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.inicio_real }"
           maxlength="10"
+          @change="values.duracao_real
+            ? setFieldValue(
+              'termino_real',
+              addToDates(values.inicio_real, values.duracao_real + 1)
+            )
+            : null"
         />
         <ErrorMessage
           name="inicio_real"
@@ -145,6 +153,12 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.duracao_real }"
           @update:model-value="values.duracao_real = Number(values.duracao_real)"
+          @change="values.inicio_real
+            ? setFieldValue(
+              'termino_real',
+              addToDates(values.inicio_real, values.duracao_real + 1)
+            )
+            : null"
         />
         <ErrorMessage
           name="duracao_real"
@@ -161,6 +175,12 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.termino_real }"
           maxlength="10"
+          @change="values.termino_real
+            ? setFieldValue(
+              'duracao_real',
+              subtractDates(values.termino_real, values.inicio_real) + 1
+            )
+            : null"
         />
         <ErrorMessage
           name="termino_real"

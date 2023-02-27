@@ -2,6 +2,8 @@
 import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { tarefa as schema } from '@/consts/formSchemas';
+import addToDates from '@/helpers/addToDates';
+import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -287,6 +289,12 @@ iniciar();
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_planejado }"
             maxlength="10"
+            @change="values.duracao_planejado
+              ? setFieldValue(
+                'termino_planejado',
+                addToDates(values.inicio_planejado, values.duracao_planejado + 1)
+              )
+              : null"
           />
           <ErrorMessage
             name="inicio_planejado"
@@ -303,6 +311,12 @@ iniciar();
             class="inputtext light mb1"
             :class="{ 'error': errors.duracao_planejado }"
             @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)"
+            @change="values.inicio_planejado
+              ? setFieldValue(
+                'termino_planejado',
+                addToDates(values.inicio_planejado, values.duracao_planejado + 1)
+              )
+              : null"
           />
           <ErrorMessage
             name="duracao_planejado"
@@ -319,6 +333,12 @@ iniciar();
             class="inputtext light mb1"
             :class="{ 'error': errors.termino_planejado }"
             maxlength="10"
+            @change="values.termino_planejado
+              ? setFieldValue(
+                'duracao_planejado',
+                subtractDates(values.termino_planejado, values.inicio_planejado) + 1
+              )
+              : null"
           />
           <ErrorMessage
             name="termino_planejado"
