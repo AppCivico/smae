@@ -104,107 +104,6 @@ iniciar();
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <label class="label tc300">
-          Nível
-        </label>
-        <Field
-          name="nivel"
-          type="number"
-          min="1"
-          :max="máximoDeNíveisPermitido"
-          step="1"
-          class="inputtext light mb1"
-          @change="setFieldValue('tarefa_pai_id', null)"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="nivel"
-        />
-      </div>
-
-      <div class="f1 mb1">
-        <label class="label tc300">
-          Hierarquia
-        </label>
-
-        <Field
-          name="tarefa_pai_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.tarefa_pai_id,
-            loading: chamadasPendentes.lista,
-          }"
-          :disabled="values.nivel < 2 || chamadasPendentes.lista"
-        >
-          <option :value="null">
-            Selecionar
-          </option>
-          <option
-            v-for="item in tarefasAgrupadasPorNível[values.nivel - 1] || []"
-            :key="item.id"
-            :value="item.id"
-          >
-            {{ item.tarefa }}
-          </option>
-        </Field>
-        <ErrorMessage
-          class="error-msg mb1"
-          name="tarefa_pai_id"
-        />
-      </div>
-
-      <div class="f1 mb1">
-        <label class="label tc300">
-          Número
-        </label>
-        <Field
-          name="numero"
-          type="text"
-          class="inputtext light mb1"
-          maxlength="20"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="numero"
-        />
-      </div>
-
-      <div class="f1 mb1">
-        <label class="label tc300">Órgão responsável&nbsp;<span class="tvermelho">*</span>
-        </label>
-        <Field
-          name="orgao_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.orgao_id,
-            loading: órgãos.loading,
-          }"
-          :disabled="!Array.isArray(órgãos) || !órgãos?.length"
-        >
-          <option :value="0">
-            Selecionar
-          </option>
-          <template v-if="Array.isArray(órgãos)">
-            <option
-              v-for="item in órgãos"
-              :key="item"
-              :value="item.id"
-            >
-              {{ item.sigla }} - {{ item.descricao }}
-            </option>
-          </template>
-        </Field>
-        <ErrorMessage
-          name="orgao_id"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="f1 mb1">
-        <label class="label tc300">
           Nome da tarefa&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
@@ -221,10 +120,6 @@ iniciar();
     <hr class="mb1 f1">
 
     <div class="flex g2 mb1 flexwrap">
-      <legend class="f100">
-        sugestão do sobral
-      </legend>
-
       <div class="f1 mb1">
         <label class="label tc300">
           Tarefa-mãe
