@@ -12,7 +12,7 @@ import { storeToRefs } from 'pinia';
 import {
 ErrorMessage, Field, FieldArray, Form
 } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const ÓrgãosStore = useOrgansStore();
@@ -21,7 +21,14 @@ const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const {
-  chamadasPendentes, emFoco, erro, permissões, pdmsSimplificados, pdmsPorId, metaSimplificada,
+  chamadasPendentes,
+  emFoco,
+  erro,
+  itemParaEdição,
+  permissões,
+  pdmsSimplificados,
+  pdmsPorId,
+  metaSimplificada,
 } = storeToRefs(projetosStore);
 const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
 const { DotacaoSegmentos } = storeToRefs(OrçamentosStore);
@@ -37,69 +44,6 @@ const props = defineProps({
 });
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
-
-const itemParaEdição = computed(() => {
-  const valores = props?.projetoId
-    ? {
-      ...emFoco.value,
-      id: undefined,
-    }
-    : {
-      meta_codigo: '',
-      origem_outro: '',
-      data_aprovacao: null,
-      data_revisao: null,
-      escopo: '',
-      portfolio_id: portfolioId,
-      previsao_custo: 0,
-      principais_etapas: '',
-      resumo: '',
-    };
-
-  if (valores.meta_codigo == null) {
-    valores.meta_codigo = '';
-  }
-  if (valores.origem_outro == null) {
-    valores.origem_outro = '';
-  }
-
-  if (props?.projetoId) {
-    const propriedadesParaSimplificar = [
-      'orgao_gestor',
-      'orgao_responsavel',
-      'responsavel',
-      'orgaos_participantes',
-      'responsaveis_no_orgao_gestor',
-    ];
-
-    const datasParaLimpar = [
-      'previsao_inicio',
-      'previsao_termino',
-      'realizado_inicio',
-      'realizado_termino',
-      'data_aprovacao',
-      'data_revisao',
-    ];
-
-    propriedadesParaSimplificar.forEach((x) => {
-      if (Array.isArray(valores[x])) {
-        valores[x] = valores[x].map((y) => y.id || y);
-      } else if (valores[x] && typeof valores[x] === 'object') {
-        valores[`${x}_id`] = valores[x].id;
-      }
-    });
-
-    datasParaLimpar.forEach((x) => {
-      if (valores[x]?.indexOf('T') === 10) {
-        [valores[x]] = valores[x].split('T');
-      }
-    });
-    if (valores.meta?.pdm_id) {
-      valores.pdm_escolhido = valores.meta.pdm_id;
-    }
-  }
-  return valores;
-});
 
 const órgãosDisponíveisNessePortfolio = ((idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
@@ -208,23 +152,24 @@ async function onSubmit(_, { controlledValues: valores }) {
   }
 }
 
-async function iniciar() {
-  if (props.projetoId) {
-    if (emFoco.value?.origem_tipo) {
-      buscarDadosParaOrigens(emFoco.value.origem_tipo);
-    }
-
-    if (emFoco.value?.meta_id) {
-      buscarMetaSimplificada(emFoco.value?.meta_id);
-    }
-
-    if (emFoco.value?.fonte_recursos?.length) {
-      emFoco.value.fonte_recursos.forEach((x) => {
-        BuscarDotaçãoParaAno(x.fonte_recurso_ano);
-      });
-    }
+watch(emFoco, () => {
+  console.debug('rodou!');
+  if (emFoco.value?.origem_tipo) {
+    buscarDadosParaOrigens(emFoco.value.origem_tipo);
   }
 
+  if (emFoco.value?.meta_id) {
+    buscarMetaSimplificada(emFoco.value?.meta_id);
+  }
+
+  if (emFoco.value?.fonte_recursos?.length) {
+    emFoco.value.fonte_recursos.forEach((x) => {
+      BuscarDotaçãoParaAno(x.fonte_recurso_ano);
+    });
+  }
+});
+
+async function iniciar() {
   if (!portfolioStore.lista?.length) {
     portfolioStore.buscarTudo();
   }
