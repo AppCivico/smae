@@ -15,7 +15,7 @@ module.exports = {
         map: [
           ['@', './frontend/src'],
         ],
-        extensions: ['.js', '.vue'],
+        extensions: ['.js', '.ts', '.vue'],
       },
     },
     'import/core-modules': [
