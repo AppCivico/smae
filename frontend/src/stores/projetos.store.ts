@@ -4,7 +4,6 @@ import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/d
 import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
 import { ListProjetoDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
-import { requestS } from '@/helpers';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
@@ -56,7 +55,7 @@ export const useProjetosStore = defineStore('projetos', {
     async buscarItem(id = 0, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await requestS.get(`${baseUrl}/projeto/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/projeto/${id}`, params);
         this.emFoco = {
           ...resposta,
           permissoes: undefined,
@@ -72,7 +71,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.pdmsSimplificados = [];
 
       try {
-        const { linhas } = await requestS.get(`${baseUrl}/projeto/proxy/pdm-e-metas`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/pdm-e-metas`, params);
         this.pdmsSimplificados = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -84,7 +83,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.metaSimplificada = [];
 
       try {
-        const { linhas } = await requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
         [this.metaSimplificada] = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -95,7 +94,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
       try {
-        const { linhas } = await requestS.get(`${baseUrl}/projeto`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto`, params);
 
         this.lista = linhas;
       } catch (erro: unknown) {
@@ -108,7 +107,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await requestS.delete(`${baseUrl}/projeto/${id}`);
+        await this.requestS.delete(`${baseUrl}/projeto/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -122,7 +121,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.mudarStatus = true;
 
       try {
-        await requestS.patch(`${baseUrl}/projeto-acao`, { acao: ação, projeto_id: id });
+        await this.requestS.patch(`${baseUrl}/projeto-acao`, { acao: ação, projeto_id: id });
 
         this.chamadasPendentes.mudarStatus = false;
 
@@ -140,9 +139,9 @@ export const useProjetosStore = defineStore('projetos', {
         let resposta;
 
         if (id) {
-          resposta = await requestS.patch(`${baseUrl}/projeto/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/projeto/${id}`, params);
         } else {
-          resposta = await requestS.post(`${baseUrl}/projeto`, params);
+          resposta = await this.requestS.post(`${baseUrl}/projeto`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

@@ -1,4 +1,3 @@
-import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -40,7 +39,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
       try {
-        const { linhas } = await requestS.get(`${baseUrl}/portfolio`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/portfolio`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -52,7 +51,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await requestS.delete(`${baseUrl}/portfolio/${id}`);
+        await this.requestS.delete(`${baseUrl}/portfolio/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -67,9 +66,9 @@ export const usePortfolioStore = defineStore('portfolios', {
 
       try {
         if (id) {
-          await requestS.patch(`${baseUrl}/portfolio/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/portfolio/${id}`, params);
         } else {
-          await requestS.post(`${baseUrl}/portfolio`, params);
+          await this.requestS.post(`${baseUrl}/portfolio`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
