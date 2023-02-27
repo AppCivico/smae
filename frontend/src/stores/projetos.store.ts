@@ -4,6 +4,7 @@ import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/d
 import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
 import { ListProjetoDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
@@ -154,10 +155,37 @@ export const useProjetosStore = defineStore('projetos', {
     },
   },
   getters: {
+    itemParaEdição: ({ emFoco, route }) => ({
+      ...emFoco,
+      portfolio_id: emFoco?.portfolio_id || route.params.portfolioId,
+
+      data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
+      data_revisao: dateTimeToDate(emFoco?.data_revisao),
+      escopo: emFoco?.escopo || '',
+      meta_codigo: emFoco?.meta_codigo || '',
+      orgao_gestor_id: emFoco?.orgao_gestor?.id || 0,
+      origem_outro: emFoco?.origem_outro || '',
+      pdm_escolhido: emFoco?.meta?.pdm_id || null,
+      previsao_custo: emFoco?.previsao_custo || 0,
+      previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio),
+      previsao_termino: dateTimeToDate(emFoco?.previsao_termino),
+      principais_etapas: emFoco?.principais_etapas || '',
+      realizado_inicio: dateTimeToDate(emFoco?.realizado_inicio),
+      realizado_termino: dateTimeToDate(emFoco?.realizado_termino),
+      responsavel_id: emFoco?.responsavel?.id || 0,
+      resumo: emFoco?.resumo || '',
+      orgaos_participantes: emFoco?.orgaos_participantes?.map((x) => x.id) || null,
+      orgao_responsavel_id: emFoco?.orgao_responsavel?.id || 0,
+      // eslint-disable-next-line max-len
+      responsaveis_no_orgao_gestor: emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.id) || null,
+    }),
+
     // eslint-disable-next-line max-len
     listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
+
     pdmsPorId: ({ pdmsSimplificados }: Estado) => pdmsSimplificados
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
     projetosPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
