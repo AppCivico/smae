@@ -387,6 +387,76 @@ const relatórioSemestralOuAnual = object({
   salvar_arquivo: boolean(),
 });
 
+const tarefa = object()
+  .shape({
+    custo_estimado: number()
+      .min(0)
+      .nullable(),
+    custo_real: number()
+      .min(0)
+      .nullable(),
+    dependencias: array()
+      .of(
+        object()
+          .shape({
+            dependencia_tarefa_id: number()
+              .min(0)
+              .required(),
+            latencia: number()
+              .min(0),
+            tipo: mixed()
+              .required()
+              .oneOf(['termina_pro_inicio', 'inicia_pro_inicio', 'inicia_pro_termino', 'termina_pro_termino']),
+          }),
+      )
+      .strict(),
+    descricao: string()
+      .min(0)
+      .max(2048)
+      .required(),
+    duracao_planejado: number()
+      .min(0)
+      .required(),
+    duracao_real: number()
+      .min(0)
+      .nullable(),
+    inicio_planejado: date()
+      .required()
+      .typeError('Data inválida'),
+    inicio_real: date()
+      .nullable()
+      .typeError('Data inválida'),
+    nivel: number()
+      .min(1)
+      .required(),
+    numero: number()
+      .min(1)
+      .required(),
+    orgao_id: number()
+      .min(1, 'Selecione um órgão responsável')
+      .required('Escolha um órgão responsável pela tarefa'),
+    percentual_concluido: number()
+      .min(0)
+      .max(100)
+      .nullable(),
+    recursos: string()
+      .min(0)
+      .max(2048),
+    tarefa: string()
+      .min(1)
+      .max(60)
+      .required(),
+    tarefa_pai_id: number()
+      .min(0)
+      .nullable(),
+    termino_planejado: date()
+      .required()
+      .typeError('Data inválida'),
+    termino_real: date()
+      .nullable()
+      .typeError('Data inválida'),
+  });
+
 const usuário = object()
   .shape({
     desativado: string()
@@ -470,6 +540,7 @@ export {
   relatórioMensal,
   relatórioOrçamentário,
   relatórioSemestralOuAnual,
+  tarefa,
   usuário,
   variável,
 };
