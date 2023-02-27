@@ -25,7 +25,7 @@ export class CheckDependenciasDto {
     tarefa_corrente_id: number | null
 
 
-    @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
+    @IsArray({ message: '$property| precisa ser uma array, campo obrigatório' })
     @ValidateNested({ each: true })
     @Type(() => TarefaDependenciaDto)
     @ArrayMinSize(1)
@@ -99,8 +99,8 @@ export class CreateTarefaDto {
     /**
     * @example 0
     */
-    @IsInt()
-    @Min(0)
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(1)
     @ValidateIf((object, value) => value !== null)
     duracao_planejado: number | null
 
@@ -123,31 +123,31 @@ export class CreateTarefaDto {
     termino_real?: Date | null
 
     @IsOptional()
-    @IsInt()
-    @Min(0)
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(1)
     @ValidateIf((object, value) => value !== null)
     duracao_real?: number | null
 
     @IsOptional()
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false })
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| máximo 2 casas decimais' })
     @ValidateIf((object, value) => value !== null)
     custo_estimado?: number | null
 
     @IsOptional()
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false })
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| máximo 2 casas decimais' })
     @ValidateIf((object, value) => value !== null)
     custo_real?: number | null
 
     @IsOptional()
-    @IsArray({ message: 'dependencias precisa ser do tipo array ou null' })
+    @IsArray({ message: '$property| precisa ser do tipo array ou null' })
     @ValidateNested({ each: true })
     @Type(() => TarefaDependenciaDto)
     @ValidateIf((object, value) => value !== null)
     dependencias?: TarefaDependenciaDto[] | null;
 
     @IsOptional()
-    @IsInt()
-    @Min(0)
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(0, { message: '$property| Mínimo 0' })
     @ValidateIf((object, value) => value !== null)
     percentual_concluido?: number | null
 }
