@@ -46,23 +46,34 @@ export class TarefaService {
                 inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
                 termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
 
-                if (duracao_planejado_calculado && dto.duracao_planejado !== null) {
-                    throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
+                if (duracao_planejado_calculado && dto.duracao_planejado) {
+                    throw new HttpException("Duração não é aceita, pois será calculada automaticamente pelas dependências.", 400);
                 } else if (duracao_planejado_calculado) {
                     dto.duracao_planejado = dataDependencias.duracao_planejado;
                 }
 
-                if (inicio_planejado_calculado && dto.inicio_planejado !== null) {
-                    throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                if (inicio_planejado_calculado && dto.inicio_planejado) {
+                    throw new HttpException("Início planejado não é aceita, pois será calculado automaticamente pelas dependências.", 400);
                 } else if (inicio_planejado_calculado) {
                     dto.inicio_planejado = dataDependencias.inicio_planejado;
                 }
 
-                if (termino_planejado_calculado && dto.termino_planejado !== null) {
-                    throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                if (termino_planejado_calculado && dto.termino_planejado) {
+                    throw new HttpException("Término planejado não é aceita, pois será calculado automaticamente pelas dependências.", 400);
                 } else if (termino_planejado_calculado) {
                     dto.termino_planejado = dataDependencias.termino_planejado;
                 }
+            } else {
+                // não tem dependencias, e como é create, tbm não há filhos
+
+                if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
+                    throw new HttpException("Se há Início e Término planejado, deve existir uma duração.", 400);
+
+                if (dto.duracao_planejado && dto.inicio_planejado && !dto.termino_planejado)
+                    throw new HttpException("Se há Início e Duração planejado, deve existir um Término.", 400);
+
+                if (dto.duracao_planejado && dto.termino_planejado && !dto.inicio_planejado)
+                    throw new HttpException("Se há Término e Duração planejado, deve existir um Início.", 400);
             }
 
             const numero = await this.utils.incrementaNumero(dto, prismaTx, projetoId);

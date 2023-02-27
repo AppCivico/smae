@@ -59,7 +59,7 @@ export class CreateTarefaDto {
     * @example "task"
     */
     @IsString({ message: '$property| precisa ser um texto' })
-    @MinLength(1)
+    @MinLength(1, { message: '$property| Tamanho Mínimo 1' })
     @MaxLength(60)
     tarefa: string
 
@@ -83,26 +83,29 @@ export class CreateTarefaDto {
     /**
      * @example 2020-01-01
      */
+    @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    inicio_planejado: Date | null
+    inicio_planejado?: Date | null
 
     /**
     * @example 2020-01-01
     */
+    @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    termino_planejado: Date | null
+    termino_planejado?: Date | null
 
     /**
     * @example 0
     */
+    @IsOptional()
     @IsInt({ message: '$property| precisa ser inteiro' })
-    @Min(1)
+    @Min(1, { message: '$property| Mínimo 1' })
     @ValidateIf((object, value) => value !== null)
-    duracao_planejado: number | null
+    duracao_planejado?: number | null
 
     /**
     * @example 2020-01-01
