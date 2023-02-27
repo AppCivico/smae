@@ -112,12 +112,17 @@ export const useTarefasStore = defineStore('tarefas', {
     árvoreDeTarefas(): any {
       return createDataTree(this.tarefasComHierarquia as any, 'tarefa_pai_id') || [];
     },
-    itemParaEdição: ({ emFoco }) => ({
+    itemParaEdição: ({ emFoco, route }) => ({
       ...emFoco,
       inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
       inicio_real: dateTimeToDate(emFoco?.inicio_real),
       termino_planejado: dateTimeToDate(emFoco?.termino_planejado),
       termino_real: dateTimeToDate(emFoco?.termino_real),
+
+      nivel: emFoco?.nivel || Number(route.query.nivel) || 0,
+      tarefa_pai_id: emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || 0,
+      numero: emFoco?.numero || Number(route.query.numero) || 0,
+
       orgao_id: emFoco?.orgao?.id || 0,
     }),
     // eslint-disable-next-line max-len
