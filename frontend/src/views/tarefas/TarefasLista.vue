@@ -100,6 +100,7 @@ iniciar();
 
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
     </colgroup>
 
     <thead>
@@ -127,8 +128,20 @@ iniciar();
         <th class="cell--number">
           Atraso
         </th>
-        <th class="" />
-        <th class="" />
+        <th />
+        <th class="center">
+          <router-link
+            class="addlink mb1"
+            :to="{ name: 'tarefasCriar' }"
+            title="Criar tarefa-mãe"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>
+          </router-link>
+        </th>
+        <th />
       </tr>
     </thead>
 

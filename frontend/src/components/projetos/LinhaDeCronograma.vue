@@ -69,13 +69,16 @@ export default {
         'tabela-de-etapas__titulo-da-tarefa--fora-do-EAP': linha.nivel > 2
       }"
     >
-      <router-link to="/">
+      <router-link
+        to="/"
+        :title="`Registrar progresso na tarefa ${linha.hierarquia}`"
+      >
         {{ linha.tarefa }}
       </router-link>
     </th>
 
     <td class="cell--number">
-        {{ linha.percentual_concluido !== null ? linha.percentual_concluido + ' %' : '-' }}
+      {{ linha.percentual_concluido !== null ? linha.percentual_concluido + ' %' : '-' }}
     </td>
     <td class="cell--number">
       {{ linha.duracao_planejado !== null ? linha.duracao_planejado + ' d' : '-' }}
@@ -97,8 +100,7 @@ export default {
     </td>
 
     <td
-      class="pl1 center mr05"
-      style="height: calc(20px + 1rem);"
+      class="center"
     >
       <button
         type="button"
@@ -115,8 +117,31 @@ export default {
     </td>
 
     <td
-      class="pl1 center mr05"
-      style="height: calc(20px + 1rem);"
+      class="center"
+    >
+      <router-link
+        :title="`Criar tarefa filha de ${linha.hierarquia}`"
+        :to="{
+          name: 'tarefasCriar',
+          params: {
+            projetoId: projetoId,
+            tarefaId: linha.id,
+          },
+          query: {
+            nivel: linha.nivel + 1,
+            numero: linha.numero + 1,
+            tarefa_pai_id: linha.id,
+          }
+        }"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg>
+      </router-link>
+    </td>
+    <td
+      class="center"
     >
       <router-link
         :to="{
@@ -126,6 +151,7 @@ export default {
             tarefaId: linha.id,
           }
         }"
+        title="Editar tarefa"
       >
         <svg
           width="20"
