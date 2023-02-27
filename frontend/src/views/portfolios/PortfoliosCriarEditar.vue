@@ -124,7 +124,10 @@ if (props.portfolioId && !itemParaEdição.value) {
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting"
+        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
       >
         Salvar
       </button>
