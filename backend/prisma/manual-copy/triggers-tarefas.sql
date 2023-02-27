@@ -45,8 +45,10 @@ BEGIN
         select
             ((x->>'latencia')::int::varchar || ' days')::interval as latencia,
             (x->>'tipo')::varchar as tipo,
-            coalesce(t.inicio_real, t.inicio_planejado) as inicio,
-            coalesce(t.termino_real, t.termino_planejado) as termino,
+            --coalesce(t.inicio_real, t.inicio_planejado) as inicio,
+            --coalesce(t.termino_real, t.termino_planejado) as termino,
+            t.inicio_planejado as inicio,
+            t.termino_planejado as termino,
             t.id as dependencia_tarefa_id
         from jsonb_array_elements(config) x
         join tarefa t on t.id = (x->>'dependencia_tarefa_id')::int and t.removido_em is null
@@ -77,7 +79,7 @@ BEGIN
     ),
     proc as (
         select
-            termino_planejado::date - inicio_planejado::date as duracao_planejado,
+            termino_planejado::date - inicio_planejado::date + 1 as duracao_planejado,
             inicio_planejado,
             termino_planejado
         from (
@@ -225,6 +227,7 @@ BEGIN
     -- se tem dependentes, agora depois de atualizado o valor, precisa propagar essa informação para as tarefas
     -- dependentes
 
+
     -- tarefa tem pai, entao vamos atualizar a mudança pra ele tbm
 
     IF OLD.tarefa_pai_id IS NOT NULL AND OLD.tarefa_pai_id IS DISTINCT FROM NEW.tarefa_pai_id THEN
@@ -243,7 +246,9 @@ BEGIN
             -- se tudo começar e acabar no mesmo dia
             select sum( t.duracao_planejado ) as total_duracao
             from subtarefas t
-            where t.duracao_planejado is not null
+            where
+                -- só calcular quando todos os filhos tiverem duracao
+                (select count(1) from subtarefas st where st.duracao_planejado is null) = 0
         ),
         t2 as (
             -- divide cada subtarefa pelo total usando a conta que foi passada:
@@ -365,7 +370,9 @@ BEGIN
             -- se tudo começar e acabar no mesmo dia
             select sum( t.duracao_planejado ) as total_duracao
             from subtarefas t
-            where t.duracao_planejado is not null
+            where
+                -- só calcular quando todos os filhos tiverem duracao
+                (select count(1) from subtarefas st where st.duracao_planejado is null) = 0
         ),
         t2 as (
             -- divide cada subtarefa pelo total usando a conta que foi passada:
