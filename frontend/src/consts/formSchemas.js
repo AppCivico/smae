@@ -413,7 +413,7 @@ const tarefa = object()
     descricao: string()
       .min(0)
       .max(2048)
-      .required(),
+      .nullable(),
     duracao_planejado: number()
       .min(0)
       .required(),
