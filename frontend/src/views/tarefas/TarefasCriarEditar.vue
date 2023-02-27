@@ -259,7 +259,7 @@ iniciar();
       </div>
     </div>
 
-    <template v-if="!tarefasAgrupadasPorMãe[tarefaId]?.length">
+    <template v-if="!tarefaId || !tarefasAgrupadasPorMãe[tarefaId]?.length">
       <hr class="mb1 f1">
 
       <div class="flex g2">
