@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { ListTarefaDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
+import { ListTarefaDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
@@ -24,7 +24,7 @@ interface ChamadasPendentes {
 
 interface Estado {
   lista: Lista;
-  emFoco: TarefaItemDto | null;
+  emFoco: TarefaDetailDto | null;
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
@@ -116,6 +116,7 @@ export const useTarefasStore = defineStore('tarefas', {
       ...emFoco,
       inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
       inicio_real: dateTimeToDate(emFoco?.inicio_real),
+      recursos: emFoco?.recursos || '',
       termino_planejado: dateTimeToDate(emFoco?.termino_planejado),
       termino_real: dateTimeToDate(emFoco?.termino_real),
 
