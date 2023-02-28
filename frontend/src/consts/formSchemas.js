@@ -449,7 +449,8 @@ const tarefa = object()
       .required(),
     tarefa_pai_id: number()
       .min(0)
-      .nullable(),
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     termino_planejado: date()
       .min(ref('inicio_planejado'), 'Precisa ser posterior à data de início')
       .nullable()
