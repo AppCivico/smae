@@ -292,7 +292,7 @@ iniciar();
             @change="values.duracao_planejado
               ? setFieldValue(
                 'termino_planejado',
-                addToDates(values.inicio_planejado, values.duracao_planejado + 1)
+                addToDates(values.inicio_planejado, values.duracao_planejado - 1)
               )
               : null"
           />
@@ -314,7 +314,7 @@ iniciar();
             @change="values.inicio_planejado
               ? setFieldValue(
                 'termino_planejado',
-                addToDates(values.inicio_planejado, values.duracao_planejado + 1)
+                addToDates(values.inicio_planejado, values.duracao_planejado - 1)
               )
               : null"
           />
