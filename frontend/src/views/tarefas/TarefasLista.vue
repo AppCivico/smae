@@ -33,7 +33,7 @@ iniciar();
         title="Criar tarefa-mãe"
         class="btn"
       >
-        Nova tarefa-mãe
+        Nova tarefa
       </router-link>
     </div>
   </div>
