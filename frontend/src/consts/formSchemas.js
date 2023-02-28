@@ -429,10 +429,10 @@ const tarefa = object()
       .typeError('Data inválida'),
     nivel: number()
       .min(1)
-      .required(),
+      .nullable(),
     numero: number()
       .min(1)
-      .required(),
+      .nullable(),
     orgao_id: number()
       .min(1, 'Selecione um órgão responsável')
       .required('Escolha um órgão responsável pela tarefa'),
