@@ -123,7 +123,7 @@ export const useTarefasStore = defineStore('tarefas', {
 
       nivel: emFoco?.nivel || Number(route.query.nivel) || 1,
       tarefa_pai_id: emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null,
-      numero: emFoco?.numero || Number(route.query.numero) || 1,
+      numero: emFoco?.numero || Number(route.query.numero) || 0,
 
       orgao_id: emFoco?.orgao?.id || 0,
     }),
