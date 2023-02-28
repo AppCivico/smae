@@ -5,8 +5,7 @@
     "baseUrl": ".",
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
+    "moduleResolution": "node",
     "paths": {
       "@/*": [
         "src/*"

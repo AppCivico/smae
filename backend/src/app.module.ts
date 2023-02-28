@@ -57,6 +57,7 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
+import { TarefaModule } from './pp/tarefa/tarefa.module';
 
 @Module({
     imports: [
@@ -118,6 +119,7 @@ import { VariavelModule } from './variavel/variavel.module';
         MonitoramentoMensalModule,
         PPProjetoModule,
         AcaoModule,
+        TarefaModule,
     ],
     controllers: [AppController],
     providers: [

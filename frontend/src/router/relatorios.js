@@ -1,11 +1,11 @@
-import { default as MenuSecundario } from '@/components/MenuSecundario.vue';
+import MenuSecundario from '@/components/MenuSecundario.vue';
 
 import {
   RelatoriosMensais,
   RelatoriosOrcamentarios,
   RelatoriosRaiz,
   RelatoriosSemestraisOuAnuais,
-  RelatórioCriarOuEditar,
+  RelatórioCriarOuEditar
 } from '@/views/relatorios';
 
 export default {
@@ -27,6 +27,11 @@ export default {
       'Reports.executar',
       'Reports.remover',
     ],
+    rotasParaMenuSecundário: [
+      'RelatóriosMensais',
+      'RelatóriosSemestraisOuAnuais',
+      'RelatóriosOrçamentários',
+    ],
   },
 
   children: [
@@ -35,9 +40,9 @@ export default {
       redirect: '/relatorios/mensal',
     },
     {
+      name: 'RelatóriosMensais',
       path: 'mensal',
       meta: {
-        presenteNoMenu: true,
         título: 'Relatórios Mensais',
         títuloParaMenu: 'Relatório Mensal',
       },
@@ -57,9 +62,9 @@ export default {
       ],
     },
     {
+      name: 'RelatóriosSemestraisOuAnuais',
       path: 'semestral-ou-anual',
       meta: {
-        presenteNoMenu: true,
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
       },
@@ -79,9 +84,9 @@ export default {
       ],
     },
     {
+      name: 'RelatóriosOrçamentários',
       path: 'orcamentarios',
       meta: {
-        presenteNoMenu: true,
         título: 'Relatórios orçamentários',
         títuloParaMenu: 'Relatório Orçamento',
       },

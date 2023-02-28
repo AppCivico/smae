@@ -12,17 +12,15 @@ function toggleMenu() {
 const props = defineProps(['activate']);
 
 const authStore = useAuthStore();
-// buscando temPermissãoPara() sem forçar reatividade porque é uma função que
-// recebe parâmetros, não um objeto
-const { temPermissãoPara } = authStore;
-const { user, permissions } = storeToRefs(authStore);
+
+const { permissions, temPermissãoPara, user } = storeToRefs(authStore);
 const perm = permissions.value;
 const route = useRoute();
 const primeiroSegmento = route.matched?.[0]?.path;
 
 const menuFiltrado = router.options.routes
   .filter((x) => x.meta?.presenteNoMenu
-    && (!x.meta?.restringirÀsPermissões || temPermissãoPara(x.meta?.restringirÀsPermissões)));
+    && (!x.meta?.restringirÀsPermissões || temPermissãoPara.value(x.meta?.restringirÀsPermissões)));
 
 authStore.getDados();
 </script>

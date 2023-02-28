@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class CreatePortfolioDto {
     /**
@@ -17,4 +17,10 @@ export class CreatePortfolioDto {
     @ArrayMaxSize(100, { message: '$property| órgãos: precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     orgaos: number[];
+
+    @IsOptional()
+    @IsInt({ message: '$property| Precisa ser um número inteiro' })
+    @Min(1)
+    @Max(32)
+    nivel_maximo_tarefa?: number
 }
