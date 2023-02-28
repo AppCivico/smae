@@ -135,7 +135,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           @change="values.duracao_real
             ? setFieldValue(
               'termino_real',
-              addToDates(values.inicio_real, values.duracao_real + 1)
+              addToDates(values.inicio_real, values.duracao_real - 1)
             )
             : null"
         />
@@ -158,7 +158,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           @change="values.inicio_real
             ? setFieldValue(
               'termino_real',
-              addToDates(values.inicio_real, values.duracao_real + 1)
+              addToDates(values.inicio_real, values.duracao_real - 1)
             )
             : null"
         />
