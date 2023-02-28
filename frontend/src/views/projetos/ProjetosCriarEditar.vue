@@ -153,7 +153,6 @@ async function onSubmit(_, { controlledValues: valores }) {
 }
 
 watch(emFoco, () => {
-  console.debug('rodou!');
   if (emFoco.value?.origem_tipo) {
     buscarDadosParaOrigens(emFoco.value.origem_tipo);
   }
