@@ -962,6 +962,7 @@ iniciar();
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
+              type="button"
               @click="remove(idx)"
             >
               <svg
