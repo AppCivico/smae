@@ -29,6 +29,9 @@ export default {
       projetoId: useRoute()?.params?.projetoId,
     };
   },
+  computed: {
+    nivelMaximoTarefa: () => useTarefasStore()?.extra?.portfolio?.nivel_maximo_tarefa || -1,
+  },
   methods: {
     dateToField,
     excluirTarefa(id) {
@@ -126,6 +129,7 @@ export default {
       class="center"
     >
       <router-link
+        v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1"
         :title="`Criar tarefa filha de ${linha.hierarquia}`"
         :to="{
           name: 'tarefasCriar',
