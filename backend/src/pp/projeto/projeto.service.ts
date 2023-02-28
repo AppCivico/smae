@@ -688,8 +688,8 @@ export class ProjetoService {
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
 
-            if (dto.codigo)
-                await this.checkProjetoCodigo(dto, prismaTx, projetoId);
+            // if (dto.codigo)
+                // await this.checkProjetoCodigo(dto, prismaTx, projetoId);
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
