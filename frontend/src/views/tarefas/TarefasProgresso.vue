@@ -146,7 +146,7 @@ async function onSubmit(_, { controlledValues: carga }) {
       </div>
       <div class="f1 mb1">
         <label class="label tc300">
-          Duração real&nbsp;<span class="tvermelho">*</span>
+          Duração real
         </label>
         <Field
           name="duracao_real"
@@ -169,7 +169,7 @@ async function onSubmit(_, { controlledValues: carga }) {
       </div>
       <div class="f1 mb1">
         <label class="label tc300">
-          Data de término real&nbsp;<span class="tvermelho">*</span>
+          Data de término real
         </label>
         <Field
           name="termino_real"
@@ -206,6 +206,28 @@ async function onSubmit(_, { controlledValues: carga }) {
         <ErrorMessage
           class="error-msg mb1"
           name="custo_estimado"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Porcentual concluído&nbsp;<span class="tvermelho">*</span>
+        </label>
+
+        <Field
+          name="percentual_concluido"
+          type="number"
+          min="0"
+          max="100"
+          class="inputtext light mb1"
+          :disabled="emFoco.n_filhos_imediatos > 0"
+          :class="{ 'error': errors.percentual_concluido }"
+          @update:model-value="values.percentual_concluido = Number(values.percentual_concluido)"
+        />
+
+        <ErrorMessage
+          class="error-msg mb1"
+          name="percentual_concluido"
         />
       </div>
     </div>
