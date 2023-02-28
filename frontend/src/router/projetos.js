@@ -128,6 +128,7 @@ export default {
           meta: {
             título: 'Editar projeto',
             títuloParaMenu: 'Editar projeto',
+            rotaDeEscape: 'projetosListar',
           },
         },
 
