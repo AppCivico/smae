@@ -112,7 +112,7 @@ export default {
         type="button"
         class="like-a__text"
         title="Excluir"
-        :hidden="linha.children?.length"
+        :hidden="linha.n_filhos_imediatos > 0"
         @click="excluirTarefa(linha.id)"
       >
         <svg
