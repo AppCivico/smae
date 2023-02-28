@@ -37,6 +37,8 @@ export class AcaoService {
             'terminar': { date: 'terminado_em', user: 'terminado_por', status: 'Fechado' },
         } as const;
 
+        // criar ação Planejado => EmPlanejamento
+
         const dbAction = dePara[dto.acao];
         if (!dbAction) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
 

@@ -15,7 +15,7 @@ module.exports = {
         map: [
           ['@', './frontend/src'],
         ],
-        extensions: ['.js', '.vue'],
+        extensions: ['.js', '.ts', '.vue'],
       },
     },
     'import/core-modules': [
@@ -39,6 +39,9 @@ module.exports = {
         ecmaVersion: 'latest',
         parser: '@typescript-eslint/parser',
         project: './frontend/tsconfig.json',
+      },
+      rules: {
+        '@typescript-eslint/member-delimiter-style': 'warn',
       },
     },
   ],

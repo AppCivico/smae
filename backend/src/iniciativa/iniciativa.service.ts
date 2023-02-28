@@ -321,7 +321,21 @@ export class IniciativaService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
+        const self = await this.prisma.iniciativa.findFirstOrThrow({
+            where: { id },
+            select: {
+                meta_id: true,
+                compoe_indicador_meta: true,
+                Indicador: {
+                    select: {
+                        IndicadorVariavel: {
+                            where: {desativado: false},
+                            select: { id: true }
+                        }
+                    }
+                }
+            }
+        });
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
@@ -329,6 +343,19 @@ export class IniciativaService {
         }
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+            // Antes de remover a Iniciativa, deve ser verificada a Meta para garantir de que não há variaveis em uso
+            if (self.compoe_indicador_meta) {
+                let has_vars_in_use: boolean = false;
+
+                for (const indicador of self.Indicador) {
+                    if (indicador.IndicadorVariavel.length > 0)
+                        has_vars_in_use = true;
+
+                    if (has_vars_in_use == true)
+                        throw new HttpException('Iniciativa possui variáveis em uso pela Meta, desative o campo de "Compõe indicador da Meta" para remover a Iniciativa', 400);
+                }
+            }
+            
             const removed = await this.prisma.iniciativa.updateMany({
                 where: { id: id },
                 data: {

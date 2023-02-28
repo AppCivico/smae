@@ -8,9 +8,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
+import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { UpdateProjetoDto } from './dto/update-projeto.dto';
+import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
 
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -269,6 +269,7 @@ export class ProjetoService {
                 arquivado: filters.arquivado,
                 status: filters.status,
                 portfolio: { removido_em: null },
+                portfolio_id: filters.portfolio_id,
                 AND: permissionsSet.length > 0 ? [
                     {
                         OR: permissionsSet
@@ -359,6 +360,8 @@ export class ProjetoService {
         return ret;
     }
 
+    // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
+    // o órgão gestor continua podendo preencher os dados realizado
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
 
         console.log({ id, user, readonly });
@@ -471,14 +474,6 @@ export class ProjetoService {
                     }
                 },
 
-                ProjetoRegistroSei: {
-                    select: {
-                        id: true,
-                        categoria: true,
-                        processo_sei: true,
-                        registro_sei_info: true
-                    }
-                }
             },
         });
 
@@ -503,15 +498,6 @@ export class ProjetoService {
                     descricao: o.orgao.descricao,
                 };
             }),
-
-            sei: projeto.ProjetoRegistroSei.map(s => {
-                return {
-                    id: s.id,
-                    categoria: s.categoria,
-                    processo_sei: s.processo_sei,
-                    registro_sei_info: JSON.stringify(s.registro_sei_info)
-                }
-            })
         };
     }
 
@@ -657,6 +643,7 @@ export class ProjetoService {
                     throw new HttpException('codigo| Código informado já está em uso em outro projeto.', 400);
 
             }
+
         }
 
         let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
@@ -682,15 +669,17 @@ export class ProjetoService {
         const portfolio = portfolios.filter(r => r.id == projeto.portfolio_id)[0];
         if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
 
-
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto as any, portfolio);
+        const edit = dto.responsaveis_no_orgao_gestor ? {
+            orgao_gestor_id: projeto.orgao_gestor.id,
+            responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor
+        } : {};
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio);
 
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
-            await this.upsertSei(dto, prismaTx, projetoId, user);
 
             const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
             if (novoStatus)
@@ -699,7 +688,8 @@ export class ProjetoService {
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
 
-
+            // if (dto.codigo)
+                // await this.checkProjetoCodigo(dto, prismaTx, projetoId);
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
@@ -757,6 +747,59 @@ export class ProjetoService {
         return { id: projetoId };
     }
 
+    private async checkProjetoCodigo(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
+        const codigo = dto.codigo;
+        if (!codigo)
+            throw new Error('Código undefined na func checkProjetoCodigo');
+
+        const codigo_parts = codigo.split('.');
+        if (codigo_parts.length != 4)
+            throw new HttpException('Código| Formatação inválida, seções do código devem ser dividas por ponto e deve ter todas as 4 partes', 400);
+
+        const projeto = await prismaTx.projeto.findFirstOrThrow({
+            where: {id: projetoId},
+            select: {
+                registrado_em: true,
+                orgao_gestor: {
+                    select: {
+                        sigla: true
+                    }
+                },
+                meta: {
+                    select: {
+                        codigo: true
+                    }
+                }
+            }
+        });
+
+        const sigla_orgao_gestor = projeto.orgao_gestor.sigla;
+        const sigla_secretaria   = codigo_parts[0];
+        if (sigla_secretaria.length > 6)
+            throw new HttpException('Código| Sigla da Secretaria deve ter no máximo 6 caracteres', 400);
+
+        if (sigla_secretaria != sigla_orgao_gestor)
+            throw new HttpException('Código| Sigla da Secretaria inválida', 400);
+
+        const ano_projeto = projeto.registrado_em.getFullYear().toString();
+        const ano_codigo  = codigo_parts[1];
+        if (ano_projeto != ano_codigo)
+            throw new HttpException('Código| Ano não deve ser modificado', 400);
+
+        const meta_codigo = codigo_parts[2];
+        if (projeto.meta) {
+            const codigo_plain     = projeto.meta.codigo;
+            const meta_projeto_str = 'M' + codigo_plain;
+            
+            if (meta_codigo != meta_projeto_str) throw new HttpException('Código| Código de meta inválido', 400);
+        } else {
+            if (meta_codigo != 'M000') throw new HttpException('Código| Projeto não possui Meta atrelada', 400);
+        }
+
+        const codigo_number = codigo_parts[3];
+        if (codigo_number.length != 3) throw new HttpException('Código| Numeração inválida', 400);
+    }
+
     private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
         if (Array.isArray(dto.premissas) == false) return;
 
@@ -800,43 +843,6 @@ export class ProjetoService {
             } else {
                 const row = await prismaTx.projetoRestricao.create({
                     data: { restricao: restricao.restricao, projeto_id: projetoId },
-                });
-                keepIds.push(row.id);
-            }
-        }
-        await prismaTx.projetoRestricao.deleteMany({
-            where: { projeto_id: projetoId, id: { notIn: keepIds } },
-        });
-    }
-
-    private async upsertSei(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number, user: PessoaFromJwt) {
-        if (Array.isArray(dto.restricoes) == false) return;
-
-        const keepIds: number[] = [];
-        for (const sei of dto.sei!) {
-            if ('id' in sei && sei.id) {
-                await prismaTx.projetoRegistroSei.findFirstOrThrow({
-                    where: { projeto_id: projetoId, id: sei.id },
-                });
-                await prismaTx.projetoRegistroSei.update({
-                    where: { id: sei.id },
-                    data: {
-                        processo_sei: sei.processo_sei,
-                        categoria: sei.categoria
-                    },
-                });
-                keepIds.push(sei.id);
-            } else {
-                const row = await prismaTx.projetoRegistroSei.create({
-                    data: {
-                        processo_sei: sei.processo_sei,
-                        categoria: sei.categoria,
-                        registro_sei_info: '{}',
-                        projeto_id: projetoId,
-
-                        criado_por: user.id,
-                        criado_em: new Date(Date.now())
-                    }
                 });
                 keepIds.push(row.id);
             }
@@ -984,6 +990,79 @@ export class ProjetoService {
                 removido_em: new Date(Date.now()),
             },
         });
+    }
+
+    async append_sei(projetoId: number, createProjetoSeiDto: CreateProjetoSeiDto, user: PessoaFromJwt) {
+        await this.findOne(projetoId, user, false);
+
+        const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
+            where: {
+                projeto_id: projetoId,
+                processo_sei: createProjetoSeiDto.processo_sei
+            }
+        });
+
+        if (existenteProjetoSei > 0)
+            throw new HttpException('processo_sei| Já existe um registro de processo SEI para este projeto', 400);
+
+        const projetoSei = await this.prisma.projetoRegistroSei.create({
+            data: {
+                projeto_id: projetoId,
+                ...createProjetoSeiDto,
+                registro_sei_info: '{}',
+                criado_em: new Date(Date.now()),
+                criado_por: user.id,
+            },
+            select: { id: true }
+        });
+
+        // TODO adicionar verificação de registro_sei e preenchimento de registro_sei_info
+
+        return { id: projetoSei.id }
+    }
+
+    async list_sei(projetoId: number, user: PessoaFromJwt) {
+        await this.findOne(projetoId, user, false);
+
+        const projetosSei = await this.prisma.projetoRegistroSei.findMany({
+            where: { projeto_id: projetoId },
+            select: {
+                id: true,
+                categoria: true,
+                processo_sei: true,
+            }
+        })
+
+        return projetosSei
+    }
+
+    async remove_sei(projetoId: number, seiID: number, user: PessoaFromJwt) {
+        await this.findOne(projetoId, user, false);
+
+        await this.prisma.projetoRegistroSei.deleteMany({
+            where: {
+                id: seiID,
+                projeto_id: projetoId
+            }
+        });
+    }
+
+    async update_sei(projetoId: number, seiID: number, updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, user: PessoaFromJwt) {
+        await this.findOne(projetoId, user, false);
+
+        // TODO adicionar verificação de registro_sei e preenchimento de registro_sei_info
+
+        await this.prisma.projetoRegistroSei.updateMany({
+            where: {
+                projeto_id: projetoId,
+                id: seiID
+            },
+            data: {
+                ...updateProjetoRegistroSeiDto
+            }
+        });
+
+        return { id: seiID }
     }
 
 }

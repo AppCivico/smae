@@ -240,6 +240,18 @@ export class PainelService {
                             detalhes: {
                                 where: {
                                     pai_id: null,
+                                    OR: [
+                                        {
+                                            variavel: {
+                                                indicador_variavel: {
+                                                    some: {
+                                                        desativado: false
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {iniciativa: { removido_em: null }}
+                                    ]
                                 },
                                 orderBy: [{ ordem: 'asc' }],
                                 select: {
@@ -262,6 +274,20 @@ export class PainelService {
                                         },
                                     },
                                     filhos: {
+                                        where: {
+                                            OR: [
+                                                {
+                                                    variavel: {
+                                                        indicador_variavel: {
+                                                            some: {
+                                                                desativado: false
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {atividade: { removido_em: null }}
+                                            ]
+                                        },
                                         select: {
                                             id: true,
                                             tipo: true,
@@ -583,7 +609,11 @@ export class PainelService {
 
             const meta_indicador = await prisma.indicador.findMany({
                 where: {
+                    removido_em: null,
                     meta_id: painel_conteudo.meta_id,
+                    meta: {
+                        removido_em: null
+                    }
                 },
                 select: { id: true },
             });
@@ -600,7 +630,7 @@ export class PainelService {
 
                 for (const row of indicador_variaveis) {
                     const already_exists = existent_painel_conteudo_detalhes.find(i => i.variavel_id === row.variavel_id);
-                    console.log(already_exists);
+
                     if (already_exists) {
                         unchanged.push(already_exists);
                         continue;
@@ -625,6 +655,7 @@ export class PainelService {
 
             const meta_iniciativas = await prisma.iniciativa.findMany({
                 where: {
+                    removido_em: null,
                     meta_id: painel_conteudo.meta_id,
                 },
                 select: { id: true },
@@ -635,7 +666,6 @@ export class PainelService {
                 let parent_iniciativa;
 
                 const already_exists = existent_painel_conteudo_detalhes.find(i => i.iniciativa_id === iniciativa.id);
-                console.log(already_exists);
 
                 if (already_exists) {
                     parent_iniciativa = already_exists;
@@ -660,6 +690,7 @@ export class PainelService {
                 const iniciativa_variaveis = await prisma.indicadorVariavel.findMany({
                     where: {
                         indicador: {
+                            removido_em: null,
                             iniciativa_id: iniciativa.id,
                         },
                         desativado: false,
@@ -695,6 +726,7 @@ export class PainelService {
                 // Terceiro nível
                 const atividades = await prisma.atividade.findMany({
                     where: {
+                        removido_em: null,
                         iniciativa_id: iniciativa.id,
                     },
                     select: { id: true },
@@ -728,6 +760,7 @@ export class PainelService {
                     const atividade_variaveis = await prisma.indicadorVariavel.findMany({
                         where: {
                             indicador: {
+                                removido_em: null,
                                 atividade_id: atividade.id,
                             },
                             desativado: false,
@@ -1618,8 +1651,8 @@ export class PainelService {
             painel_conteudo_series.detalhes?.forEach(d => {
                 const iniciativa: RetIniciativa = {
                     iniciativa_id: d.iniciativa ? d.iniciativa.id : null,
-                    iniciativa_codigo: d.iniciativa?.codigo ? d.iniciativa.codigo : null,
-                    iniciativa_titulo: d.iniciativa?.titulo ? d.iniciativa.titulo : null
+                    iniciativa_codigo: d.iniciativa ? d.iniciativa.codigo : null,
+                    iniciativa_titulo: d.iniciativa ? d.iniciativa.titulo : null
                 };
 
                 if (d.variavel?.series && d.variavel?.series?.length > 0) {
@@ -1673,8 +1706,8 @@ export class PainelService {
                 d.filhos?.forEach(f => {
                     const atividade: RetAtividade = {
                         atividade_id: f.atividade ? f.atividade.id : null,
-                        atividade_codigo: f.atividade?.codigo ? f.atividade.codigo : null,
-                        atividade_titulo: f.atividade?.titulo ? f.atividade.titulo : null
+                        atividade_codigo: f.atividade ? f.atividade.codigo : null,
+                        atividade_titulo: f.atividade ? f.atividade.titulo : null
                     };
 
                     if (f.variavel?.series && f.variavel?.series?.length > 0) {
@@ -1728,8 +1761,8 @@ export class PainelService {
                     d.filhos?.forEach(ff => {
                         const atividade: RetAtividade = {
                             atividade_id: ff.atividade ? ff.atividade.id : null,
-                            atividade_codigo: ff.atividade?.codigo ? ff.atividade.codigo : null,
-                            atividade_titulo: ff.atividade?.titulo ? ff.atividade.titulo : null
+                            atividade_codigo: ff.atividade ? ff.atividade.codigo : null,
+                            atividade_titulo: ff.atividade ? ff.atividade.titulo : null
                         };
                         
                         if (ff.variavel?.series && ff.variavel?.series?.length > 0) {

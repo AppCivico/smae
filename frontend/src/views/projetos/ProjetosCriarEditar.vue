@@ -1,26 +1,37 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
+import { projeto as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import {
-  useAlertStore, useOrgansStore, usePortfolioStore, useProjetosStore
+useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, FieldArray, Form
+ErrorMessage, Field, FieldArray, Form
 } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const OrgansStore = useOrgansStore();
+const ÓrgãosStore = useOrgansStore();
+const OrçamentosStore = useOrcamentosStore();
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const {
-  chamadasPendentes, emFoco, erro, pdmsSimplificados, pdmsPorId, metaSimplificada,
+  chamadasPendentes,
+  emFoco,
+  erro,
+  itemParaEdição,
+  permissões,
+  pdmsSimplificados,
+  pdmsPorId,
+  metaSimplificada,
 } = storeToRefs(projetosStore);
-const ÓrgãosStore = useOrgansStore();
 const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
+const { DotacaoSegmentos } = storeToRefs(OrçamentosStore);
 
 const router = useRouter();
 const route = useRoute();
@@ -33,63 +44,6 @@ const props = defineProps({
 });
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
-
-const itemParaEdição = computed(() => {
-  const valores = props?.projetoId
-    ? {
-      ...emFoco.value,
-      id: undefined,
-      permissoes: undefined,
-    }
-    : {
-      meta_codigo: '',
-      origem_outro: '',
-      data_aprovacao: null,
-      data_revisao: null,
-      escopo: '',
-      portfolio_id: portfolioId,
-      previsao_custo: null,
-      principais_etapas: '',
-      resumo: '',
-    };
-
-  if (props?.projetoId) {
-    const propriedadesParaSimplificar = [
-      'orgao_gestor',
-      'orgao_responsavel',
-      'responsavel',
-      'orgaos_participantes',
-      'responsaveis_no_orgao_gestor',
-    ];
-
-    const datasParaLimpar = [
-      'previsao_inicio',
-      'previsao_termino',
-      'realizado_inicio',
-      'realizado_termino',
-      'data_aprovacao',
-      'data_revisao',
-    ];
-
-    propriedadesParaSimplificar.forEach((x) => {
-      if (Array.isArray(valores[x])) {
-        valores[x] = valores[x].map((y) => y.id || y);
-      } else if (typeof valores[x] === 'object') {
-        valores[`${x}_id`] = valores[x].id;
-      }
-    });
-
-    datasParaLimpar.forEach((x) => {
-      if (valores[x]?.indexOf('T') === 10) {
-        [valores[x]] = valores[x].split('T');
-      }
-    });
-    if (valores.meta?.pdm_id) {
-      valores.pdm_escolhido = valores.meta.pdm_id;
-    }
-  }
-  return valores;
-});
 
 const órgãosDisponíveisNessePortfolio = ((idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
@@ -126,6 +80,14 @@ async function buscarDadosParaOrigens(valorOuEvento) {
 
     default:
       break;
+  }
+}
+
+function BuscarDotaçãoParaAno(valorOuEvento) {
+  const ano = valorOuEvento.target?.value || valorOuEvento;
+
+  if (!DotacaoSegmentos?.value?.[ano]) {
+    OrçamentosStore.getDotacaoSegmentos(ano);
   }
 }
 
@@ -190,25 +152,28 @@ async function onSubmit(_, { controlledValues: valores }) {
   }
 }
 
-async function iniciar() {
-  projetosStore.$reset();
-
-  if (props.projetoId) {
-    await projetosStore.buscarItem(props.projetoId);
-    if (emFoco.value?.origem_tipo) {
-      buscarDadosParaOrigens(emFoco.value.origem_tipo);
-    }
-
-    if (emFoco.value?.meta_id) {
-      buscarMetaSimplificada(emFoco.value?.meta_id);
-    }
+watch(emFoco, () => {
+  if (emFoco.value?.origem_tipo) {
+    buscarDadosParaOrigens(emFoco.value.origem_tipo);
   }
 
-  if (!portfolioId || props.projetoId) {
+  if (emFoco.value?.meta_id) {
+    buscarMetaSimplificada(emFoco.value?.meta_id);
+  }
+
+  if (emFoco.value?.fonte_recursos?.length) {
+    emFoco.value.fonte_recursos.forEach((x) => {
+      BuscarDotaçãoParaAno(x.fonte_recurso_ano);
+    });
+  }
+});
+
+async function iniciar() {
+  if (!portfolioStore.lista?.length) {
     portfolioStore.buscarTudo();
   }
 
-  OrgansStore.getAllOrganResponsibles().finally(() => {
+  ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
   });
 }
@@ -231,19 +196,16 @@ iniciar();
 
   <Form
     v-if="!projetoId || emFoco"
-    v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
-      <div
-        v-show="!portfolioId"
-        class="f1 mb1"
-      >
+      <div class="f1 mb1">
         <label class="label">
-          Portfolio <span class="tvermelho">*</span>
+          Portfolio&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <Field
@@ -251,14 +213,21 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
-          :disabled="!!props.projetoId"
+          :disabled="!!portfolioId"
         >
+          <option :value="0">
+            Selecionar
+          </option>
           <option
             v-for="item in portfolioStore.lista"
             :key="item.id"
             :value="item.id"
+            :disabled="!órgãosDisponíveisNessePortfolio(item.id)?.length"
           >
             {{ item.titulo }}
+            <template v-if="!órgãosDisponíveisNessePortfolio(item.id)?.length">
+              (órgão sem responsáveis cadastrados)
+            </template>
           </option>
         </Field>
         <ErrorMessage
@@ -279,7 +248,7 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           maxlength="20"
-          :disabled="!emFoco?.permissoes?.campo_codigo"
+          :disabled="!permissões?.campo_codigo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -289,7 +258,7 @@ iniciar();
 
       <div class="f1 mb1">
         <label class="label">
-          Nome do projeto <span class="tvermelho">*</span>
+          Nome do projeto&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="nome"
@@ -305,7 +274,9 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">Resumo</label>
+        <label class="label">
+          Resumo&nbsp;<span class="tvermelho">*</span>
+        </label>
         <Field
           name="resumo"
           as="textarea"
@@ -324,7 +295,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Escopo
+          Escopo&nbsp;<span class="tvermelho">*</span>
           <small class="t13 tc500">(o que será entregue no projeto)</small>
         </label>
         <Field
@@ -354,7 +325,7 @@ iniciar();
           rows="5"
           class="inputtext light mb1"
           :class="{ 'error': errors.nao_escopo }"
-          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
+          :disabled="!permissões?.campo_nao_escopo"
         />
         <ErrorMessage
           name="nao_escopo"
@@ -376,7 +347,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objetivo }"
-            :disabled="!emFoco?.permissoes?.campo_objetivo"
+            :disabled="!permissões?.campo_objetivo"
           />
           <ErrorMessage
             name="objetivo"
@@ -395,7 +366,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objeto }"
-            :disabled="!emFoco?.permissoes?.campo_objeto"
+            :disabled="!permissões?.campo_objeto"
           />
           <ErrorMessage
             name="objeto"
@@ -414,7 +385,7 @@ iniciar();
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.publico_alvo }"
-            :disabled="!emFoco?.permissoes?.campo_publico_alvo"
+            :disabled="!permissões?.campo_publico_alvo"
           />
           <ErrorMessage
             name="publico_alvo"
@@ -426,7 +397,9 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">Principais etapas</label>
+        <label class="label">
+          Principais etapas&nbsp;<span class="tvermelho">*</span>
+        </label>
         <Field
           name="principais_etapas"
           as="textarea"
@@ -448,16 +421,21 @@ iniciar();
     </label>
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Órgão gestor <span class="tvermelho">*</span></label>
+        <label class="label tc300">
+          Órgão gestor&nbsp;<span class="tvermelho">*</span>
+        </label>
         <Field
           name="orgao_gestor_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.orgao_gestor_id }"
-          :disabled="projetoId || !órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
-          @change="resetField('responsaveis_no_orgao_gestor')"
+          :class="{
+            error: errors.orgao_gestor_id ,
+            loading: ÓrgãosStore.organs.loading,
+          }"
+          :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
+          @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -477,19 +455,22 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">Responsáveis
-          <span
-            v-show="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible?.length"
-            class="tvermelho"
-          >*</span>
+        <label class="label tc300">Responsáveis&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <AutocompleteField
-          :controlador="{busca: '', participantes:
-            values.responsaveis_no_orgao_gestor || []}"
-          :grupo="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible || []"
-          label="nome_exibicao"
           name="responsaveis_no_orgao_gestor"
+          :controlador="{
+            busca: '',
+            participantes: values.responsaveis_no_orgao_gestor || []
+          }"
+          :grupo="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible
+            || []"
+          :class="{
+            error: errors.responsaveis_no_orgao_gestor,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          label="nome_exibicao"
         />
         <ErrorMessage
           name="responsaveis_no_orgao_gestor"
@@ -500,18 +481,45 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Órgão responsável
-          <span class="tvermelho">*</span>
+        <label class="label tc300">Orgãos participantes&nbsp;<span class="tvermelho">*</span>
+        </label>
+
+        <AutocompleteField
+          name="orgaos_participantes"
+          :controlador="{
+            busca: '',
+            participantes: values.orgaos_participantes || []
+          }"
+          :class="{
+            error: errors.orgaos_participantes,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          :grupo="órgãosQueTemResponsáveis"
+          label="sigla"
+        />
+        <ErrorMessage
+          name="orgaos_participantes"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <label class="label tc300">Órgão responsável&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="orgao_responsavel_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.orgao_responsavel_id }"
+          :class="{
+            error: errors.orgao_responsavel_id,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
           :disabled="!órgãosQueTemResponsáveis?.length"
-          @change="setFieldValue('responsavel_id', null)"
+          @change="setFieldValue('responsavel_id', 0)"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -529,16 +537,19 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">Responsável <span class="tvermelho">*</span></label>
+        <label class="label tc300">Responsável&nbsp;<span class="tvermelho">*</span></label>
         <Field
           name="responsavel_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.responsavel_id }"
+          :class="{
+            error: errors.responsavel_id,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
           :disabled="!órgãosQueTemResponsáveisEPorId[values.orgao_responsavel_id]
             ?.responsible?.length"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -558,32 +569,11 @@ iniciar();
       </div>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <label class="label tc300">Orgãos participantes
-          <span class="tvermelho">*</span>
-        </label>
-
-        <AutocompleteField
-          :controlador="{busca: '', participantes:
-            values.orgaos_participantes || []}"
-          :grupo="órgãosQueTemResponsáveis"
-          label="sigla"
-          name="orgaos_participantes"
-        />
-        <ErrorMessage
-          name="orgaos_participantes"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
     <hr class="mb1 f1">
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Origem
-          <span class="tvermelho">*</span>
+        <label class="label tc300">Origem&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="origem_tipo"
@@ -619,20 +609,19 @@ iniciar();
         class="f1 mb1"
       >
         <label class="label tc300">
-          Programa de metas
-          <span class="tvermelho">*</span>
+          Programa de metas&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="pdm_escolhido"
           as="select"
           class="inputtext light mb1"
           :class="{
-            error: errors.origem_tipo,
+            error: errors.pdm_escolhido,
             loading: chamadasPendentes.pdmsSimplificados
           }"
           :disabled="!pdmsSimplificados?.length"
         >
-          <option value="">
+          <option :value="0">
             Selecionar
           </option>
           <option
@@ -644,7 +633,7 @@ iniciar();
           </option>
         </Field>
         <ErrorMessage
-          name="origem_tipo"
+          name="pdm_escolhido"
           class="error-msg"
         />
       </div>
@@ -654,7 +643,7 @@ iniciar();
         class="f1 mb1"
       >
         <label class="label tc300">
-          Meta vinculada <span class="tvermelho">*</span>
+          Meta vinculada&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <Field
@@ -725,7 +714,7 @@ iniciar();
           :disabled="!metaSimplificada.iniciativas?.length"
           @change="setFieldValue('atividade_id', null)"
         >
-          <option value="">
+          <option :value="null">
             Selecionar
           </option>
           <option
@@ -759,7 +748,7 @@ iniciar();
           }"
           :disabled="!iniciativasPorId[values.iniciativa_id]?.atividades.length"
         >
-          <option value="">
+          <option :value="null">
             Selecionar
           </option>
           <option
@@ -785,7 +774,7 @@ iniciar();
     >
       <div class="f1 mb1">
         <label class="label tc300">
-          Descrição
+          Descrição&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <Field
@@ -808,8 +797,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Previsão de início
-          <span class="tvermelho">*</span>
+          Previsão de início&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="previsao_inicio"
@@ -825,8 +813,7 @@ iniciar();
       </div>
       <div class="f1 mb1">
         <label class="label">
-          Previsão de término
-          <span class="tvermelho">*</span>
+          Previsão de término&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="previsao_termino"
@@ -848,11 +835,11 @@ iniciar();
     >
       <div class="f1 mb1">
         <label class="label">
-          Previsão de custo <span class="tvermelho">*</span>
+          Previsão de custo&nbsp;<span class="tvermelho">*</span>
         </label>
-        <Field
+        <MaskedFloatInput
           name="previsao_custo"
-          type="number"
+          :value="values.previsao_custo"
           class="inputtext light mb1"
         />
         <ErrorMessage
@@ -866,9 +853,9 @@ iniciar();
       <hr class="mb1 f1">
 
       <div class="g2 mb2">
-        <label class="label mt2 mb1">
+        <legend class="label mt2 mb1">
           Fontes de recursos
-        </label>
+        </legend>
 
         <FieldArray
           v-slot="{ fields, push, remove }"
@@ -886,7 +873,7 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Ano <span class="tvermelho">*</span>
+                Ano&nbsp;<span class="tvermelho">*</span>
               </label>
               <Field
                 :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
@@ -895,6 +882,7 @@ iniciar();
                 min="2003"
                 max="3000"
                 step="1"
+                @change="BuscarDotaçãoParaAno"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -904,17 +892,28 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Código da fonte de recursos no SOF
-                <span class="tvermelho">*</span>
+                Fonte de recursos&nbsp;<span class="tvermelho">*</span>
               </label>
               <Field
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
                 type="text"
                 maxlength="2"
                 class="inputtext light mb1"
-                inputmode="numeric"
-                patten="\d\d"
-              />
+                as="select"
+              >
+                <option value="">
+                  Selecionar
+                </option>
+                <option
+                  v-for="item in
+                    DotacaoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.fonte_recursos || []"
+                  :key="item.codigo"
+                  :value="item.codigo"
+                  :title="item.descricao"
+                >
+                  {{ item.codigo }} - {{ truncate(item.descricao, 36) }}
+                </option>
+              </Field>
               <ErrorMessage
                 class="error-msg mb1"
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
@@ -923,12 +922,14 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Valor nominal
+                Valor nominal&nbsp;<span
+                  v-if="!fields[idx].value.valor_percentual"
+                  class="tvermelho"
+                >*</span>
               </label>
-              <Field
+              <MaskedFloatInput
                 :name="`fonte_recursos[${idx}].valor_nominal`"
-                type="number"
-                step="0.01"
+                :value="fields[idx].value.valor_nominal"
                 class="inputtext light mb1"
                 @input="setFieldValue(`fonte_recursos[${idx}].valor_percentual`, null)"
               />
@@ -940,15 +941,15 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Valor percentual
+                Valor percentual&nbsp;<span
+                  v-if="!fields[idx].value.valor_nominal"
+                  class="tvermelho"
+                >*</span>
               </label>
-              <Field
+              <MaskedFloatInput
                 :name="`fonte_recursos[${idx}].valor_percentual`"
-                type="number"
+                :value="fields[idx].value.valor_percentual"
                 class="inputtext light mb1"
-                max="100"
-                step="0.01"
-                min="0.01"
                 @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
               />
               <ErrorMessage
@@ -961,6 +962,7 @@ iniciar();
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
+              type="button"
               @click="remove(idx)"
             >
               <svg
@@ -986,9 +988,138 @@ iniciar();
             ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
           </button>
         </FieldArray>
-        <hr class="mt1 f1">
       </div>
     </template>
+
+    <template v-if="projetoId">
+      <hr class="mb1 f1">
+
+      <div class="g2 mb2">
+        <legend class="label mt2 mb1">
+          Premissas
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="premissas"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`premissas--${field.key}`"
+            class="flex g2"
+          >
+            <Field
+              :name="`premissas[${idx}].id`"
+              type="hidden"
+            />
+
+            <div class="f1 mb1">
+              <Field
+                arial-label="Texto da premissa"
+                :name="`premissas[${idx}].premissa`"
+                type="text"
+                class="inputtext light mb1"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`premissas[${idx}].premissa`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              premissa: '',
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar premissa
+          </button>
+        </FieldArray>
+      </div>
+    </template>
+
+    <template v-if="projetoId">
+      <hr class="mb1 f1">
+
+      <div class="g2 mb2">
+        <legend class="label mt2 mb1">
+          Restrições
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="restricoes"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`restricoes--${field.key}`"
+            class="flex g2"
+          >
+            <Field
+              :name="`restricoes[${idx}].id`"
+              type="hidden"
+            />
+
+            <div class="f1 mb1">
+              <Field
+                arial-label="Texto da restrição"
+                :name="`restricoes[${idx}].restricao`"
+                type="text"
+                class="inputtext light mb1"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`restricoes[${idx}].restricao`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              restricao: '',
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar restrição
+          </button>
+        </FieldArray>
+      </div>
+    </template>
+
+    <hr class="mt1 f1 mb1">
 
     <div
       v-if="projetoId"
@@ -1002,7 +1133,7 @@ iniciar();
           name="coordenador_ue"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_coordenador_ue"
+          :disabled="!permissões?.campo_coordenador_ue"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1018,7 +1149,7 @@ iniciar();
           name="secretario_executivo"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
+          :disabled="!permissões?.campo_secretario_executivo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1034,7 +1165,7 @@ iniciar();
           name="secretario_responsavel"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
+          :disabled="!permissões?.campo_secretario_responsavel"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1048,11 +1179,11 @@ iniciar();
       class="flex g2"
     >
       <div
-        :disabled="!emFoco?.permissoes?.campo_versao"
+        :disabled="!permissões?.campo_versao"
         class="f1 mb1"
       >
         <label class="label">
-          Versão <span class="tvermelho">*</span>
+          Versão
         </label>
         <Field
           name="versao"
@@ -1067,12 +1198,11 @@ iniciar();
       </div>
 
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_aprovacao"
+        :disabled="!permissões?.campo_data_aprovacao"
         class="f1 mb1"
       >
         <label class="label">
           Data de aprovação
-          <span class="tvermelho">*</span>
         </label>
         <Field
           name="data_aprovacao"
@@ -1087,12 +1217,11 @@ iniciar();
         />
       </div>
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_revisao"
+        :disabled="!permissões?.campo_data_revisao"
         class="f1 mb1"
       >
         <label class="label">
           Data de revisão
-          <span class="tvermelho">*</span>
         </label>
         <Field
           name="data_revisao"
@@ -1112,7 +1241,10 @@ iniciar();
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || emFoco?.arquivado"
+        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
       >
         Salvar
       </button>

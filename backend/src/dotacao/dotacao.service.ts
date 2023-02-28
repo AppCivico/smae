@@ -1,6 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DotacaoRealizado, Prisma } from '@prisma/client';
-import { DateTime } from 'luxon';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
 import { AnoDotacaoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
@@ -199,7 +198,8 @@ export class DotacaoService {
         for (let i = 0; i < srcDestList.length; i++) {
             const r = srcDestList[i];
 
-            const ano: string = 'plan_dotacao_ano_utilizado' in r && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
+            const ano: string = ('plan_dotacao_ano_utilizado' in r) && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
+            console.log({r, ano, x: (r as any).plan_dotacao_ano_utilizado});
 
             if (!ano) continue;
 

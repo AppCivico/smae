@@ -77,7 +77,10 @@ export class ProjetoSeiDto {
     id: number
     categoria: CategoriaProcessoSei
     processo_sei: String
-    registro_sei_info: String
+}
+
+export class ListProjetoSeiDto {
+    linhas: ProjetoSeiDto[]
 }
 
 export class ProjetoDetailDto {
@@ -121,7 +124,6 @@ export class ProjetoDetailDto {
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
     fonte_recursos: ProjetoRecursos[] | null;
-    sei: ProjetoSeiDto[] | null;
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;
     meta_codigo: string | null

@@ -1,13 +1,11 @@
 <script setup>
+import statuses from '@/consts/statuses';
 import {
-useAlertStore, useOrgansStore, useProjetosStore
+  useAlertStore, useProjetosStore
 } from '@/stores';
-import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
-const organsStore = useOrgansStore();
-const { órgãosPorId } = storeToRefs(organsStore);
 
 const props = defineProps({
   erro: {
@@ -29,7 +27,6 @@ const props = defineProps({
 });
 
 const metasPorId = {};
-const statusesPorId = {};
 
 async function excluirProjetos(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -43,12 +40,14 @@ async function excluirProjetos(id) {
 </script>
 <template>
   <table class="tablemain">
-    <col>
-    <col>
-    <col>
-    <col>
-    <!--col class="col--botão-de-ação"-->
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col>
+      <!--col class="col--botão-de-ação"-->
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>
@@ -73,16 +72,22 @@ async function excluirProjetos(id) {
         :key="item.id"
       >
         <td>
-          <router-link :to="{ name: 'projetosResumo', params: { projetoId: item.id }}">
+          <router-link
+            :to="{
+              name: 'projetosResumo',
+              params: {
+                projetoId: item.id,
+                portfolioId: item.portfolio.id || item.portfolio,
+              }
+            }"
+          >
             {{ item.nome }}
           </router-link>
         </td>
-        <td>
-          {{
-            órgãosPorId[item.orgao_responsavel?.id]?.sigla
-              || item.orgao_responsavel?.sigla
-              || item.orgao_responsavel
-          }}
+        <td
+          :title="item.orgao_responsavel?.descricao"
+        >
+          {{ item.orgao_responsavel?.sigla }}
         </td>
         <td>
           {{
@@ -92,11 +97,7 @@ async function excluirProjetos(id) {
           }}
         </td>
         <td>
-          {{
-            statusesPorId[item.status?.id]?.codigo
-              || item.status?.codigo
-              || item.status
-          }}
+          {{ statuses[item.status] || item.status }}
         </td>
         <!--td>
           <button
@@ -114,7 +115,13 @@ async function excluirProjetos(id) {
         <td>
           <router-link
             v-if="!item.arquivado"
-            :to="{ name: 'projetosEditar', params: { projetoId: item.id } }"
+            :to="{
+              name: 'projetosEditar',
+              params: {
+                projetoId: item.id,
+                portfolioId: item.portfolio.id || item.portfolio,
+              }
+            }"
             class="tprimary"
           >
             <svg

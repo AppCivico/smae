@@ -5,10 +5,6 @@ import {
 } from 'vue';
 
 const props = defineProps({
-  //  {
-  //    busca: '', // termo de busca
-  //    participantes: [], // lista de valores já preenchidos
-  //  }
   controlador: {
     type: Object,
     required: true,
@@ -41,7 +37,7 @@ const props = defineProps({
 const control = ref(props.controlador);
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
-// É aqui que deixamos o componente retrocompatível
+// É aqui que deixamos o componente retro-compatível
 if (props.name) {
   const name = toRef(props, 'name');
   const { handleChange } = useField(name, undefined, {
@@ -68,7 +64,7 @@ function pushId(e, id) {
   e.push(id);
   e = [...new Set(e)];
 }
-function busca(e, item, g, label) {
+function buscar(e, item, g, label) {
   e.preventDefault();
   e.stopPropagation();
   if (e.keyCode === 13) {
@@ -88,7 +84,7 @@ function busca(e, item, g, label) {
         v-model="control.busca"
         type="text"
         class="inputtext light mb05"
-        @keyup.enter.stop.prevent="busca($event,control,grupo,label)"
+        @keyup.enter.stop.prevent="buscar($event,control,grupo,label)"
       >
       <ul>
         <li
@@ -101,7 +97,7 @@ function busca(e, item, g, label) {
             class="like-a__text"
             tabindex="1"
             :title="r.nome || r.titulo || r.descricao || r.nome_completo || null"
-            @click="pushId(control.participantes,r.id)"
+            @click="pushId(control.participantes, r.id)"
           >
             {{ r[label] }}
           </button>

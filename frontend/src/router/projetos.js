@@ -1,14 +1,21 @@
-import MenuSecundario from '@/components/MenuSecundario.vue';
+import MenuSecundário from '@/components/MenuSecundario.vue';
+import ProjetosAcompanhamento from '@/views/projetos/ProjetosAcompanhamento.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
+import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
+import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
+import ProjetosLiçõesAprendidas from '@/views/projetos/ProjetosLicoesAprendidas.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
+import ProjetosProcessos from '@/views/projetos/ProjetosProcessos.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
+
+import tarefas from './tarefas';
 
 export default {
   path: '/projetos',
   component: ProjetosRaiz,
   props: {
-    submenu: MenuSecundario,
+    submenu: MenuSecundário,
   },
 
   meta: {
@@ -24,6 +31,12 @@ export default {
       'SMAE.gestor_de_projeto',
       'SMAE.colaborador_de_projeto',
     ],
+    rotasParaMenuSecundário: [
+      'projetosListar',
+      'projetosListarPrioritários',
+      'projetosListarArquivados',
+      'projetosCriar',
+    ],
   },
   children: [
     {
@@ -31,57 +44,166 @@ export default {
       path: '',
       component: ProjetosLista,
       meta: {
-        presenteNoMenu: true,
         título: 'Projetos',
+        títuloParaMenu: 'Projetos',
       },
+      props: ({ params, query }) => ({
+        ...params,
+        status: query.status?.replace('_', '').toLowerCase(),
+      }),
     },
+
     {
       name: 'projetosListarPrioritários',
       path: 'prioritarios',
       component: ProjetosLista,
       meta: {
-        presenteNoMenu: true,
         título: 'Projetos prioritários',
+        títuloParaMenu: 'Projetos prioritários',
       },
-      props: ({ params }) => ({
+      props: ({ params, query }) => ({
         ...params,
-        ...{ apenasPrioritários: true },
+        status: query.status?.replace('_', '').toLowerCase(),
+        apenasPrioritários: true,
       }),
     },
+
+    {
+      name: 'projetosListarArquivados',
+      path: 'arquivados',
+      component: ProjetosLista,
+      meta: {
+        título: 'Projetos arquivados',
+        títuloParaMenu: 'Projetos arquivados',
+      },
+      props: ({ params, query }) => ({
+        ...params,
+        status: query.status?.replace('_', '').toLowerCase(),
+        apenasArquivados: true,
+      }),
+    },
+
     {
       name: 'projetosCriar',
       path: 'novo',
       component: ProjetosCriarEditar,
       meta: {
-        presenteNoMenu: true,
         título: 'Novo projeto',
+        títuloParaMenu: 'Novo projeto',
       },
     },
-    {
-      path: ':projetoId/resumo',
-      name: 'projetosResumo',
-      component: ProjetosResumo,
-      props: ({ params }) => ({
-        ...params,
-        ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
-      }),
 
-      meta: {
-        título: 'Resumo de projeto',
-      },
-    },
     {
       path: ':projetoId',
-      name: 'projetosEditar',
-      component: ProjetosCriarEditar,
+      component: ProjetosItem,
       props: ({ params }) => ({
         ...params,
-        ...{ projetoId: Number.parseInt(params.projetoId, 10) || undefined },
+        projetoId: Number.parseInt(params.projetoId, 10) || undefined,
       }),
-
       meta: {
-        título: 'Editar projeto',
+        rotasParaMenuSecundário: [
+          'projetosResumo',
+          'tarefasListar',
+          'projetosAcompanhamento',
+          'projetosLiçõesAprendidas',
+          'projetosDocumentos',
+          'projetosProcessos',
+        ],
+
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+        ],
       },
+
+      children: [
+        {
+          path: '',
+          name: 'projetosEditar',
+          component: ProjetosCriarEditar,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Editar projeto',
+            títuloParaMenu: 'Editar projeto',
+            rotaDeEscape: 'projetosListar',
+          },
+        },
+
+        {
+          path: 'resumo',
+          name: 'projetosResumo',
+          component: ProjetosResumo,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Resumo de projeto',
+            títuloParaMenu: 'Resumo',
+          },
+        },
+
+        tarefas,
+
+        {
+          path: 'acompanhamento',
+          name: 'projetosAcompanhamento',
+          component: ProjetosAcompanhamento,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Acompanhamento de projeto',
+            títuloParaMenu: 'Acompanhamento',
+          },
+        },
+
+        {
+          path: 'licoes-aprendidas',
+          name: 'projetosLiçõesAprendidas',
+          component: ProjetosLiçõesAprendidas,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Lições aprendidas no projeto',
+            títuloParaMenu: 'Lições aprendidas',
+          },
+        },
+
+        {
+          path: 'documentos',
+          name: 'projetosDocumentos',
+          component: ProjetosDocumentos,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Documentos do projeto',
+            títuloParaMenu: 'Documentos',
+          },
+        },
+
+        {
+          path: 'processos',
+          name: 'projetosProcessos',
+          component: ProjetosProcessos,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Processos SEI do projeto',
+            títuloParaMenu: 'Processos SEI',
+          },
+        },
+      ],
     },
   ],
 };
