@@ -668,8 +668,11 @@ export class ProjetoService {
         const portfolio = portfolios.filter(r => r.id == projeto.portfolio_id)[0];
         if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
 
-
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto as any, portfolio);
+        const edit = dto.responsaveis_no_orgao_gestor ? {
+            orgao_gestor_id: projeto.orgao_gestor.id,
+            responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor
+        } : {};
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio);
 
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -955,12 +958,12 @@ export class ProjetoService {
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
             },
-            select: {id: true}
+            select: { id: true }
         });
 
         // TODO adicionar verificação de registro_sei e preenchimento de registro_sei_info
 
-        return {id: projetoSei.id}
+        return { id: projetoSei.id }
     }
 
     async list_sei(projetoId: number, user: PessoaFromJwt) {
@@ -1004,7 +1007,7 @@ export class ProjetoService {
             }
         });
 
-        return {id: seiID}
+        return { id: seiID }
     }
 
 }
