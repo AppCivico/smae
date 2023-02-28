@@ -1237,11 +1237,6 @@ iniciar();
       </div>
     </div>
 
-    <pre>
-debugger para a Josi:
-{{ errors }}
-</pre>
-
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button

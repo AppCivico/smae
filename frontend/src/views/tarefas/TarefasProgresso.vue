@@ -232,15 +232,6 @@ async function onSubmit(_, { controlledValues: carga }) {
       </div>
     </div>
 
-    <pre>
-values:
-{{ values }}
-</pre>
-    <pre>
-errors:
-{{ errors }}
-</pre>
-
     <div
       v-if="emFoco.n_filhos_imediatos === 0"
       class="flex spacebetween center mb2"
