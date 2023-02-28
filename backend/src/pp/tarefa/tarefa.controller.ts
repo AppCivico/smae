@@ -11,6 +11,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
 import { ProjetoService } from '../projeto/projeto.service';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
+import { PortfolioService } from '../portfolio/portfolio.service';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
@@ -19,7 +20,9 @@ const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_pr
 export class TarefaController {
     constructor(
         private readonly tarefaService: TarefaService,
-        private readonly projetoService: ProjetoService
+        private readonly projetoService: ProjetoService,
+        private readonly portfolioService: PortfolioService,
+
     ) { }
 
     @Post(':id/tarefa')
@@ -38,7 +41,11 @@ export class TarefaController {
     @Roles(...roles)
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListTarefaDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
-        return { linhas: await this.tarefaService.findAll(projeto.id, user) };
+        return {
+            linhas: await this.tarefaService.findAll(projeto.id, user),
+            projeto: projeto,
+            portfolio: await this.portfolioService.findOne(projeto.portfolio_id, null),
+        };
     }
 
     @Get(':id/tarefa/:id2')
