@@ -75,7 +75,7 @@ if (props.portfolioId && !itemParaEdição.value) {
 
   <Form
     v-if="!erro && órgãosOrdenados?.length"
-    v-slot="{ isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
