@@ -1,4 +1,6 @@
 import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
+import { PortfolioOneDto } from "../../portfolio/entities/portfolio.entity"
+import { ProjetoDetailDto } from "../../projeto/entities/projeto.entity"
 import { TarefaDependenciaDto } from "../dto/create-tarefa.dto"
 
 export class TarefaItemDto {
@@ -40,6 +42,8 @@ export class TarefaDetailDto extends TarefaItemDto {
 
 export class ListTarefaDto {
     linhas: TarefaItemDto[]
+    projeto: ProjetoDetailDto
+    portfolio: PortfolioOneDto
 }
 
 export class DependenciasDatasDto {

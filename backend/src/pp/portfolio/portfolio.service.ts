@@ -48,9 +48,9 @@ export class PortfolioService {
         return created;
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<PortfolioOneDto> {
+    async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
         let orgao_id: undefined | number = undefined;
-        if (!user.hasSomeRoles(['Projeto.administrador'])) {
+        if (user != null && !user.hasSomeRoles(['Projeto.administrador'])) {
             // provavelmente há outras situações para criar aqui, por exemplo, se a pessoa fizer
             // parte dos responsáveis, ela pode visualizar mas não pode criar
             if (user.hasSomeRoles(['SMAE.gestor_de_projeto']) === false) throw new HttpException('Necessário SMAE.gestor_de_projeto se não for Projeto.administrador', 400);
