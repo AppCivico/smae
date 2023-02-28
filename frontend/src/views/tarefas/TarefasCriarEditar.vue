@@ -429,16 +429,6 @@ iniciar();
       </div>
     </div>
 
-    <pre>
-Valores:
-{{ values }}
-</pre>
-
-    <pre>
-Erros de preenchimento:
-{{ errors }}
-</pre>
-
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
