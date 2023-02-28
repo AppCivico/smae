@@ -131,6 +131,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.inicio_real }"
           maxlength="10"
+          :disabled="emFoco.n_filhos_imediatos > 0"
           @change="values.duracao_real
             ? setFieldValue(
               'termino_real',
@@ -152,6 +153,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           type="number"
           class="inputtext light mb1"
           :class="{ 'error': errors.duracao_real }"
+          :disabled="emFoco.n_filhos_imediatos > 0"
           @update:model-value="values.duracao_real = Number(values.duracao_real)"
           @change="values.inicio_real
             ? setFieldValue(
@@ -175,6 +177,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.termino_real }"
           maxlength="10"
+          :disabled="emFoco.n_filhos_imediatos > 0"
           @change="values.termino_real
             ? setFieldValue(
               'duracao_real',
@@ -197,6 +200,7 @@ async function onSubmit(_, { controlledValues: carga }) {
         <MaskedFloatInput
           name="custo_estimado"
           :value="values.custo_estimado"
+          :disabled="emFoco.n_filhos_imediatos > 0"
           class="inputtext light mb1"
         />
         <ErrorMessage
@@ -215,7 +219,10 @@ errors:
 {{ errors }}
 </pre>
 
-    <div class="flex spacebetween center mb2">
+    <div
+      v-if="emFoco.n_filhos_imediatos === 0"
+      class="flex spacebetween center mb2"
+    >
       <hr class="mr2 f1">
       <button
         class="btn big"
