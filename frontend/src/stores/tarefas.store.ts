@@ -62,6 +62,7 @@ export const useTarefasStore = defineStore('tarefas', {
       }
       this.chamadasPendentes.emFoco = false;
     },
+
     async buscarTudo(params = {}, projetoId = 0): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
@@ -77,6 +78,7 @@ export const useTarefasStore = defineStore('tarefas', {
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
     },
+
     async excluirItem(id: Number, projetoId = 0): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
@@ -90,6 +92,7 @@ export const useTarefasStore = defineStore('tarefas', {
         return false;
       }
     },
+
     async salvarItem(params = {}, id = 0, projetoId = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 
@@ -110,11 +113,28 @@ export const useTarefasStore = defineStore('tarefas', {
         return false;
       }
     },
+
+    async validarDependências(params: { tarefa_corrente_id: number; dependencias: [] }) {
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/projeto/${this.route.params.projetoId}/dependencias`, params);
+
+        this.$patch({
+          emFoco: { ...this.emFoco, ...r },
+        });
+
+        return resposta;
+      } catch (erro) {
+        this.erro = erro;
+        return false;
+      }
+    },
+
   },
   getters: {
     árvoreDeTarefas(): any {
       return createDataTree(this.tarefasComHierarquia as any, 'tarefa_pai_id') || [];
     },
+
     itemParaEdição: ({ emFoco, route }) => ({
       ...emFoco,
       descricao: emFoco?.descricao || '',
@@ -132,8 +152,10 @@ export const useTarefasStore = defineStore('tarefas', {
     }),
     // eslint-disable-next-line max-len
     listaFiltradaPor: ({ lista }) => (termo: string | number) => filtrarObjetos(lista, termo),
+
     tarefasPorId: ({ lista }): { [x: number | string]: TarefaComHierarquia } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
     tarefasAgrupadasPorMãe() {
       return (this.tarefasComHierarquia as unknown as [])
         .reduce((acc: TarefasPorNível, cur: TarefaItemDto) => ({
@@ -141,13 +163,7 @@ export const useTarefasStore = defineStore('tarefas', {
           [cur.tarefa_pai_id || 0]: [...(acc[cur.tarefa_pai_id || 0] || []), cur],
         }), {});
     },
-    tarefasAgrupadasPorNível() {
-      return (this.tarefasComHierarquia as unknown as [])
-        .reduce((acc: TarefasPorNível, cur: TarefaItemDto) => ({
-          ...acc,
-          [cur.nivel]: [...(acc[cur.nivel] || []), cur],
-        }), {});
-    },
+
     tarefasComHierarquia(): TarefaComHierarquia[] {
       return this.lista
         .map((x: TarefaItemDto) => ({ ...x, hierarquia: resolverHierarquia(x, this.tarefasPorId) }))
