@@ -201,8 +201,10 @@ CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai() RETURNS trigge
 DECLARE
     v_inicio_planejado date;
     v_termino_planejado date;
+    v_duracao_planejado INTEGER;
     v_inicio_real date;
     v_termino_real date;
+    v_duracao_real INTEGER;
     v_count INTEGER;
     v_custo_estimado numeric;
     v_custo_real numeric;
@@ -321,6 +323,9 @@ BEGIN
                 v_custo_estimado,
                 v_custo_real;
 
+        v_duracao_planejado := v_termino_planejado - v_inicio_planejado + 1;
+        v_duracao_real := v_termino_real - v_inicio_real + 1;
+
         UPDATE tarefa t
         SET
             inicio_planejado = v_inicio_planejado,
@@ -330,7 +335,9 @@ BEGIN
             n_filhos_imediatos = v_count,
             custo_estimado = v_custo_estimado,
             custo_real = v_custo_real,
-            percentual_concluido = v_percentual_concluido * 100,
+            percentual_concluido = round(v_percentual_concluido * 100),
+            duracao_planejado = v_duracao_planejado,
+            duracao_real = v_duracao_real,
             atualizado_em = now()
         WHERE t.id = OLD.tarefa_pai_id
         AND (
@@ -341,6 +348,8 @@ BEGIN
             (n_filhos_imediatos IS DISTINCT FROM v_count) OR
             (custo_estimado IS DISTINCT FROM v_custo_estimado) OR
             (custo_real IS DISTINCT FROM v_custo_real) OR
+            (duracao_real IS DISTINCT FROM v_duracao_real) OR
+            (duracao_planejado IS DISTINCT FROM v_duracao_planejado) OR
             (percentual_concluido IS DISTINCT FROM v_percentual_concluido)
         );
     END IF;
@@ -445,6 +454,9 @@ BEGIN
                 v_custo_estimado,
                 v_custo_real;
 
+        v_duracao_planejado := v_termino_planejado - v_inicio_planejado + 1;
+        v_duracao_real := v_termino_real - v_inicio_real + 1;
+
         UPDATE tarefa t
         SET
             inicio_planejado = v_inicio_planejado,
@@ -454,7 +466,9 @@ BEGIN
             n_filhos_imediatos = v_count,
             custo_estimado = v_custo_estimado,
             custo_real = v_custo_real,
-            percentual_concluido = v_percentual_concluido * 100.0,
+            percentual_concluido = round(v_percentual_concluido * 100.0),
+            duracao_planejado = v_duracao_planejado,
+            duracao_real = v_duracao_real,
             atualizado_em = now()
         WHERE t.id = NEW.tarefa_pai_id
         AND (
@@ -465,6 +479,8 @@ BEGIN
             (n_filhos_imediatos IS DISTINCT FROM v_count) OR
             (custo_estimado IS DISTINCT FROM v_custo_estimado) OR
             (custo_real IS DISTINCT FROM v_custo_real) OR
+            (duracao_real IS DISTINCT FROM v_duracao_real) OR
+            (duracao_planejado IS DISTINCT FROM v_duracao_planejado) OR
             (percentual_concluido IS DISTINCT FROM v_percentual_concluido)
         );
 
