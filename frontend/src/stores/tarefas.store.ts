@@ -28,6 +28,7 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
+  extra: any;
 }
 
 // eslint-disable-next-line max-len
@@ -48,6 +49,7 @@ export const useTarefasStore = defineStore('tarefas', {
     },
 
     erro: null,
+    extra: null,
   }),
   actions: {
     async buscarItem(id = 0, params = {}, projetoId = 0): Promise<void> {
@@ -65,9 +67,10 @@ export const useTarefasStore = defineStore('tarefas', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/tarefa`, params);
+        const { linhas, portfolio, projeto } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/tarefa`, params);
 
         this.lista = linhas;
+        this.extra = { portfolio, projeto };
       } catch (erro: unknown) {
         this.erro = erro;
       }
