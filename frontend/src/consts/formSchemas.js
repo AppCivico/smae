@@ -22,6 +22,7 @@ setLocale({
   mixed: {
     default: 'Não é válido',
     required: 'Campo obrigatório',
+    oneOf: 'Opção inválida',
   },
   number: {
     max: 'Deve ser menor que ${max}',
@@ -400,7 +401,7 @@ const tarefa = object()
         object()
           .shape({
             dependencia_tarefa_id: number()
-              .min(0)
+              .min(1, 'Campo obrigatório')
               .required(),
             latencia: number()
               .min(0),
