@@ -643,6 +643,7 @@ export class ProjetoService {
                     throw new HttpException('codigo| Código informado já está em uso em outro projeto.', 400);
 
             }
+
         }
 
         let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
@@ -687,7 +688,8 @@ export class ProjetoService {
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
 
-
+            if (dto.codigo)
+                await this.checkProjetoCodigo(dto, prismaTx, projetoId);
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
@@ -743,6 +745,59 @@ export class ProjetoService {
         });
 
         return { id: projetoId };
+    }
+
+    private async checkProjetoCodigo(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
+        const codigo = dto.codigo;
+        if (!codigo)
+            throw new Error('Código undefined na func checkProjetoCodigo');
+
+        const codigo_parts = codigo.split('.');
+        if (codigo_parts.length != 4)
+            throw new HttpException('Código| Formatação inválida, seções do código devem ser dividas por ponto e deve ter todas as 4 partes', 400);
+
+        const projeto = await prismaTx.projeto.findFirstOrThrow({
+            where: {id: projetoId},
+            select: {
+                registrado_em: true,
+                orgao_gestor: {
+                    select: {
+                        sigla: true
+                    }
+                },
+                meta: {
+                    select: {
+                        codigo: true
+                    }
+                }
+            }
+        });
+
+        const sigla_orgao_gestor = projeto.orgao_gestor.sigla;
+        const sigla_secretaria   = codigo_parts[0];
+        if (sigla_secretaria.length > 6)
+            throw new HttpException('Código| Sigla da Secretaria deve ter no máximo 6 caracteres', 400);
+
+        if (sigla_secretaria != sigla_orgao_gestor)
+            throw new HttpException('Código| Sigla da Secretaria inválida', 400);
+
+        const ano_projeto = projeto.registrado_em.getFullYear().toString();
+        const ano_codigo  = codigo_parts[1];
+        if (ano_projeto != ano_codigo)
+            throw new HttpException('Código| Ano não deve ser modificado', 400);
+
+        const meta_codigo = codigo_parts[2];
+        if (projeto.meta) {
+            const codigo_plain     = projeto.meta.codigo;
+            const meta_projeto_str = 'M' + codigo_plain;
+            
+            if (meta_codigo != meta_projeto_str) throw new HttpException('Código| Código de meta inválido', 400);
+        } else {
+            if (meta_codigo != 'M000') throw new HttpException('Código| Projeto não possui Meta atrelada', 400);
+        }
+
+        const codigo_number = codigo_parts[3];
+        if (codigo_number.length != 3) throw new HttpException('Código| Numeração inválida', 400);
     }
 
     private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
