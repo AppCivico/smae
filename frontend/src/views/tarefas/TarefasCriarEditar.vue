@@ -54,9 +54,7 @@ const máximoDeNíveisPermitido = computed(() => {
 // eslint-disable-next-line max-len
 const filtrarIrmãs = (listagem = [], id = props.tarefaId) => listagem.filter((x) => x.id !== id);
 
-async function onSubmit(_, { controlledValues: valores }) {
-  const carga = valores;
-
+async function onSubmit(_, { controlledValues: carga }) {
   try {
     const msg = props.tarefaId
       ? 'Dados salvos com sucesso!'
@@ -275,95 +273,141 @@ iniciar();
       </div>
     </div>
 
-    <template v-if="!tarefaId || !tarefasAgrupadasPorMãe[tarefaId]?.length">
-      <hr class="mb1 f1">
+    <hr class="mb1 f1">
 
-      <div class="flex g2">
-        <div class="f1 mb1">
-          <label class="label tc300">
-            Previsão de início&nbsp;<span class="tvermelho">*</span>
-          </label>
-          <Field
-            name="inicio_planejado"
-            type="date"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.inicio_planejado }"
-            maxlength="10"
-            @change="values.duracao_planejado
-              ? setFieldValue(
-                'termino_planejado',
-                addToDates(values.inicio_planejado, values.duracao_planejado - 1)
-              )
-              : null"
-          />
-          <ErrorMessage
-            name="inicio_planejado"
-            class="error-msg"
-          />
-        </div>
-        <div class="f1 mb1">
-          <label class="label tc300">
-            Duração prevista&nbsp;<span class="tvermelho">*</span>
-          </label>
-          <Field
-            name="duracao_planejado"
-            type="number"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.duracao_planejado }"
-            @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)"
-            @change="values.inicio_planejado
-              ? setFieldValue(
-                'termino_planejado',
-                addToDates(values.inicio_planejado, values.duracao_planejado - 1)
-              )
-              : null"
-          />
-          <ErrorMessage
-            name="duracao_planejado"
-            class="error-msg"
-          />
-        </div>
-        <div class="f1 mb1">
-          <label class="label tc300">
-            Previsão de término&nbsp;<span class="tvermelho">*</span>
-          </label>
-          <Field
-            name="termino_planejado"
-            type="date"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.termino_planejado }"
-            maxlength="10"
-            @change="values.termino_planejado
-              ? setFieldValue(
-                'duracao_planejado',
-                subtractDates(values.termino_planejado, values.inicio_planejado) + 1
-              )
-              : null"
-          />
-          <ErrorMessage
-            name="termino_planejado"
-            class="error-msg"
-          />
-        </div>
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Previsão de início
+        </label>
+        <Field
+          v-if="
+            !emFoco?.inicio_planejado_calculado
+              && !values.dependencias?.length
+              && !emFoco?.n_filhos_imediatos
+          "
+          name="inicio_planejado"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.inicio_planejado }"
+          maxlength="10"
+          @change="values.duracao_planejado
+            ? setFieldValue(
+              'termino_planejado',
+              addToDates(values.inicio_planejado, values.duracao_planejado - 1)
+            )
+            : null"
+        />
+        <input
+          v-else
+          type="date"
+          name="inicio_planejado"
+          :value="itemParaEdição.inicio_planejado"
+          class="inputtext light mb1"
+          disabled
+        >
+        <ErrorMessage
+          name="inicio_planejado"
+          class="error-msg"
+        />
       </div>
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Duração prevista
+        </label>
+        <Field
+          v-if="
+            !emFoco?.termino_planejado_calculado
+              && !values.dependencias?.length
+              && !emFoco?.n_filhos_imediatos
+          "
+          name="duracao_planejado"
+          type="number"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.duracao_planejado }"
+          @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)"
+          @change="values.inicio_planejado
+            ? setFieldValue(
+              'termino_planejado',
+              addToDates(values.inicio_planejado, values.duracao_planejado - 1)
+            )
+            : null"
+        />
+        <input
+          v-else
+          type="text"
+          name="duracao_planejado"
+          :value="itemParaEdição.duracao_planejado"
+          class="inputtext light mb1"
+          disabled
+        >
+        <ErrorMessage
+          name="duracao_planejado"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Previsão de término
+        </label>
+        <Field
+          v-if="
+            !emFoco?.duracao_planejado_calculado
+              && !values.dependencias?.length
+              && !emFoco?.n_filhos_imediatos
+          "
+          name="termino_planejado"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.termino_planejado }"
+          maxlength="10"
+          @change="values.termino_planejado
+            ? setFieldValue(
+              'duracao_planejado',
+              subtractDates(values.termino_planejado, values.inicio_planejado) + 1
+            )
+            : null"
+        />
+        <input
+          v-else
+          type="date"
+          name="termino_planejado"
+          :value="itemParaEdição.termino_planejado"
+          class="inputtext light mb1"
+          disabled
+        >
+        <ErrorMessage
+          name="termino_planejado"
+          class="error-msg"
+        />
+      </div>
+    </div>
 
-      <div class="flex g2">
-        <div class="f1 mb1">
-          <label class="label tc300">
-            Previsão de custo&nbsp;<span class="tvermelho">*</span>
-          </label>
-          <MaskedFloatInput
-            name="custo_estimado"
-            :value="values.custo_estimado"
-            class="inputtext light mb1"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="custo_estimado"
-          />
-        </div>
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Previsão de custo
+        </label>
+        <MaskedFloatInput
+          v-if="!values.dependencias?.length && !emFoco?.n_filhos_imediatos"
+          name="custo_estimado"
+          :value="values.custo_estimado"
+          class="inputtext light mb1"
+        />
+        <input
+          v-else
+          type="text"
+          name="custo_estimado"
+          :value="dinheiro(itemParaEdição.custo_estimado)"
+          class="inputtext light mb1"
+          disabled
+        >
+        <ErrorMessage
+          class="error-msg mb1"
+          name="custo_estimado"
+        />
       </div>
-    </template>
+    </div>
 
     <div class="flex g2">
       <div class="f1 mb1">

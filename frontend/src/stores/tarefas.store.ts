@@ -114,15 +114,16 @@ export const useTarefasStore = defineStore('tarefas', {
     },
     itemParaEdição: ({ emFoco, route }) => ({
       ...emFoco,
+      descricao: emFoco?.descricao || '',
       inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
       inicio_real: dateTimeToDate(emFoco?.inicio_real),
       recursos: emFoco?.recursos || '',
       termino_planejado: dateTimeToDate(emFoco?.termino_planejado),
       termino_real: dateTimeToDate(emFoco?.termino_real),
 
-      nivel: emFoco?.nivel || Number(route.query.nivel) || 0,
-      tarefa_pai_id: emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || 0,
-      numero: emFoco?.numero || Number(route.query.numero) || 0,
+      nivel: emFoco?.nivel || Number(route.query.nivel) || 1,
+      tarefa_pai_id: emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null,
+      numero: emFoco?.numero || Number(route.query.numero) || 1,
 
       orgao_id: emFoco?.orgao?.id || 0,
     }),
