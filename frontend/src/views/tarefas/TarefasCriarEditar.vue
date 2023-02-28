@@ -181,7 +181,7 @@ iniciar();
           type="number"
           class="inputtext light mb1"
           min="1"
-          :max="(tarefasAgrupadasPorMãe[values.tarefa_pai_id]?.length || 0) + 1"
+          :max="tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0]?.length + 1"
           step="1"
           @update:model-value="values.numero = Number(values.numero)"
         />
@@ -225,7 +225,7 @@ iniciar();
     </div>
 
     <div
-      v-if="(irmãs = filtrarIrmãs(tarefasAgrupadasPorMãe[values.tarefa_pai_id], tarefaId))?.length"
+      v-if="(irmãs = filtrarIrmãs(tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0], tarefaId))?.length"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
