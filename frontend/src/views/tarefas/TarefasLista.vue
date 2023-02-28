@@ -139,18 +139,7 @@ iniciar();
           Atraso
         </th>
         <th />
-        <th class="center">
-          <router-link
-            class="addlink mb1"
-            :to="{ name: 'tarefasCriar' }"
-            title="Criar tarefa-mãe"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_+" /></svg>
-          </router-link>
-        </th>
+        <th />
         <th />
       </tr>
     </thead>
