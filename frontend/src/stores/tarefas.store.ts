@@ -119,7 +119,7 @@ export const useTarefasStore = defineStore('tarefas', {
         const resposta = await this.requestS.post(`${baseUrl}/projeto/${this.route.params.projetoId}/dependencias`, params);
 
         this.$patch({
-          emFoco: { ...this.emFoco, ...r },
+          emFoco: { ...this.emFoco, ...resposta },
         });
 
         return resposta;
