@@ -7,7 +7,7 @@ import addToDates from '@/helpers/addToDates';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
@@ -18,11 +18,13 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
-const ÓrgãosStore = useOrgansStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
 
-const { organs: órgãos } = storeToRefs(ÓrgãosStore);
+const projetosStore = useProjetosStore();
+const {
+  órgãosEnvolvidosNoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const {
   chamadasPendentes,
@@ -99,10 +101,6 @@ async function iniciar() {
       // buscar dependencias
     }
   }
-
-  ÓrgãosStore.getAll().finally(() => {
-    chamadasPendentes.value.emFoco = false;
-  });
 }
 
 iniciar();
@@ -218,22 +216,21 @@ iniciar();
           class="inputtext light mb1"
           :class="{
             error: errors.orgao_id,
-            loading: órgãos.loading,
+            loading: projetosStore.chamadasPendentes?.emFoco,
           }"
-          :disabled="!Array.isArray(órgãos) || !órgãos?.length"
+          :disabled="!órgãosEnvolvidosNoProjetoEmFoco?.length"
         >
           <option :value="0">
             Selecionar
           </option>
-          <template v-if="Array.isArray(órgãos)">
-            <option
-              v-for="item in órgãos"
-              :key="item"
-              :value="item.id"
-            >
-              {{ item.sigla }} - {{ item.descricao }}
-            </option>
-          </template>
+
+          <option
+            v-for="item in órgãosEnvolvidosNoProjetoEmFoco"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.sigla }} - {{ item.descricao }}
+          </option>
         </Field>
         <ErrorMessage
           name="orgao_id"
