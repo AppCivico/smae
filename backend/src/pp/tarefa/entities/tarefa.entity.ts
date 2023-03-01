@@ -23,6 +23,8 @@ export class TarefaItemDto {
     custo_real: number | null
 
     n_filhos_imediatos: number
+    n_dep_inicio_planejado: number
+    n_dep_termino_planejado: number
 
     percentual_concluido: number | null
 
@@ -38,6 +40,7 @@ export class TarefaDetailDto extends TarefaItemDto {
     recursos: string
 
     dependencias: TarefaDependenciaDto[]
+    projeto: ProjetoDetailDto
 }
 
 export class ListTarefaDto {

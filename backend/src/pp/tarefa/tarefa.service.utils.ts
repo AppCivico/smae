@@ -91,7 +91,7 @@ export class TarefaUtilsService {
             select: { portfolio: { select: { nivel_maximo_tarefa: true } } }
         });
         if (nivel > portConfig.portfolio.nivel_maximo_tarefa)
-            throw new HttpException(`Nível da tarefa não pode ser maior que o configurado no portfolio ${portConfig.portfolio.nivel_maximo_tarefa}`, 400);
+            throw new HttpException(`Nível da tarefa não pode ser maior que o configurado no portfólio (${portConfig.portfolio.nivel_maximo_tarefa})`, 400);
     }
 
     async verifica_orgao(orgao_id: number) {

@@ -62,6 +62,7 @@ export const useTarefasStore = defineStore('tarefas', {
       }
       this.chamadasPendentes.emFoco = false;
     },
+
     async buscarTudo(params = {}, projetoId = 0): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
@@ -77,6 +78,7 @@ export const useTarefasStore = defineStore('tarefas', {
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
     },
+
     async excluirItem(id: Number, projetoId = 0): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
@@ -90,6 +92,7 @@ export const useTarefasStore = defineStore('tarefas', {
         return false;
       }
     },
+
     async salvarItem(params = {}, id = 0, projetoId = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 
@@ -110,56 +113,75 @@ export const useTarefasStore = defineStore('tarefas', {
         return false;
       }
     },
+
+    async validarDependências(params: { tarefa_corrente_id: number; dependencias: [] }) {
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/projeto/${this.route.params.projetoId}/dependencias`, params);
+
+        this.$patch({
+          emFoco: { ...this.emFoco, ...r },
+        });
+
+        return resposta;
+      } catch (erro) {
+        this.erro = erro;
+        return false;
+      }
+    },
+
   },
   getters: {
     árvoreDeTarefas(): any {
       return createDataTree(this.tarefasComHierarquia as any, 'tarefa_pai_id') || [];
     },
-    itemParaEdição: ({ emFoco, route }) => ({
-      ...emFoco,
-      descricao: emFoco?.descricao || '',
-      inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
-      inicio_real: dateTimeToDate(emFoco?.inicio_real),
-      recursos: emFoco?.recursos || '',
-      termino_planejado: dateTimeToDate(emFoco?.termino_planejado),
-      termino_real: dateTimeToDate(emFoco?.termino_real),
 
-      nivel: emFoco?.nivel || Number(route.query.nivel) || 1,
-      tarefa_pai_id: emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null,
-      numero: emFoco?.numero || Number(route.query.numero) || 0,
+    itemParaEdição(): {} {
+      const { emFoco, route, tarefasAgrupadasPorMãe } = this;
+      const idDaTarefaMãe = emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null;
+      const posiçõesEmUso = !idDaTarefaMãe
+        ? 1
+        : tarefasAgrupadasPorMãe[idDaTarefaMãe]?.length || 0;
 
-      orgao_id: emFoco?.orgao?.id || 0,
-    }),
+      return {
+        ...emFoco,
+        descricao: emFoco?.descricao || '',
+        inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
+        inicio_real: dateTimeToDate(emFoco?.inicio_real),
+        recursos: emFoco?.recursos || '',
+        termino_planejado: dateTimeToDate(emFoco?.termino_planejado),
+        termino_real: dateTimeToDate(emFoco?.termino_real),
+
+        nivel: emFoco?.nivel || Number(route.query.nivel) || 1,
+        tarefa_pai_id: idDaTarefaMãe,
+        numero: emFoco?.numero || (posiçõesEmUso + 1),
+
+        orgao_id: emFoco?.orgao?.id || 0,
+      };
+    },
+
     // eslint-disable-next-line max-len
     listaFiltradaPor: ({ lista }) => (termo: string | number) => filtrarObjetos(lista, termo),
+
     tarefasPorId: ({ lista }): { [x: number | string]: TarefaComHierarquia } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
-    tarefasAgrupadasPorMãe() {
+
+    tarefasAgrupadasPorMãe(): { [x: number | string]: TarefaComHierarquia[] } {
       return (this.tarefasComHierarquia as unknown as [])
         .reduce((acc: TarefasPorNível, cur: TarefaItemDto) => ({
           ...acc,
           [cur.tarefa_pai_id || 0]: [...(acc[cur.tarefa_pai_id || 0] || []), cur],
         }), {});
     },
-    tarefasAgrupadasPorNível() {
-      return (this.tarefasComHierarquia as unknown as [])
-        .reduce((acc: TarefasPorNível, cur: TarefaItemDto) => ({
-          ...acc,
-          [cur.nivel]: [...(acc[cur.nivel] || []), cur],
-        }), {});
-    },
+
+    // eslint-disable-next-line max-len
+    tarefasOrdenadas: ({ lista }) => lista.sort((a, b) => (a.tarefa_pai_id || 0) - (b.tarefa_pai_id || 0)
+      || a.nivel - b.nivel
+      || a.numero - b.numero),
+
     tarefasComHierarquia(): TarefaComHierarquia[] {
-      return this.lista
-        .map((x: TarefaItemDto) => ({ ...x, hierarquia: resolverHierarquia(x, this.tarefasPorId) }))
-        .sort((a: TarefaComHierarquia, b: TarefaComHierarquia) => {
-          if (a.hierarquia < b.hierarquia) {
-            return -1;
-          }
-          if (a.hierarquia > b.hierarquia) {
-            return 1;
-          }
-          return 0;
-        });
+      return this.tarefasOrdenadas
+        // eslint-disable-next-line max-len
+        .map((x: TarefaItemDto) => ({ ...x, hierarquia: resolverHierarquia(x, this.tarefasPorId) }));
     },
   },
 });

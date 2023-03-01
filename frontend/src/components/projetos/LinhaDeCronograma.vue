@@ -87,10 +87,10 @@ export default {
     </th>
 
     <td class="cell--number">
-      {{ linha.percentual_concluido !== null ? linha.percentual_concluido + ' %' : '-' }}
+      {{ linha.percentual_concluido !== null ? linha.percentual_concluido + '%' : '-' }}
     </td>
     <td class="cell--number">
-      {{ linha.duracao_planejado !== null ? linha.duracao_planejado + ' d' : '-' }}
+      {{ linha.duracao_planejado !== null ? linha.duracao_planejado + 'd' : '-' }}
     </td>
     <td class="cell--data">
       {{ dateToField(linha.inicio_planejado) }}
@@ -139,7 +139,6 @@ export default {
           },
           query: {
             nivel: linha.nivel + 1,
-            numero: linha.numero + 1,
             tarefa_pai_id: linha.id,
           }
         }"

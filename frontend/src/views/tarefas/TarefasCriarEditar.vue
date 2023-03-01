@@ -1,35 +1,37 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import dependencyTypes from '@/consts/dependencyTypes';
 import { tarefa as schema } from '@/consts/formSchemas';
 import addToDates from '@/helpers/addToDates';
+import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form
+  ErrorMessage, Field, FieldArray, Form
 } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
-const ÓrgãosStore = useOrgansStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
 
-const { organs: órgãos } = storeToRefs(ÓrgãosStore);
+const projetosStore = useProjetosStore();
+const {
+  órgãosEnvolvidosNoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const {
-  árvoreDeTarefas,
   chamadasPendentes,
   emFoco,
   erro,
   itemParaEdição,
-  lista,
   tarefasAgrupadasPorMãe,
-  tarefasAgrupadasPorNível,
   tarefasComHierarquia,
   tarefasPorId,
 } = storeToRefs(tarefasStore);
@@ -45,11 +47,13 @@ const props = defineProps({
   },
 });
 
-const máximoDeNíveisPermitido = computed(() => {
-  const níveis = Object.keys(tarefasAgrupadasPorNível.value);
+const dependênciasValidadas = ref([]);
 
-  return níveis.length ? Number(níveis[níveis.length - 1]) + 1 : 1;
-});
+const tiposDeDependências = Object.keys(dependencyTypes)
+  .map((x) => ({ valor: x, nome: dependencyTypes[x] }));
+
+const todasAsOutrasTarefas = computed(() => tarefasComHierarquia.value
+  .filter((x) => x.id !== props.tarefaId));
 
 // eslint-disable-next-line max-len
 const filtrarIrmãs = (listagem = [], id = props.tarefaId) => listagem.filter((x) => x.id !== id);
@@ -74,6 +78,21 @@ async function onSubmit(_, { controlledValues: carga }) {
   }
 }
 
+async function validarDependências(dependências) {
+  const params = {
+    tarefa_corrente_id: props.tarefaId,
+    dependencias: dependências,
+  };
+  try {
+    await tarefasStore.validarDependências(params);
+
+    dependênciasValidadas.value = dependências;
+  } catch (error) {
+    dependênciasValidadas.value = [];
+    alertStore.error(error);
+  }
+}
+
 async function iniciar() {
   tarefasStore.buscarTudo();
 
@@ -82,10 +101,6 @@ async function iniciar() {
       // buscar dependencias
     }
   }
-
-  ÓrgãosStore.getAll().finally(() => {
-    chamadasPendentes.value.emFoco = false;
-  });
 }
 
 iniciar();
@@ -123,6 +138,7 @@ iniciar();
           name="tarefa"
           type="text"
           class="inputtext light mb1"
+          maxlength="60"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -200,22 +216,21 @@ iniciar();
           class="inputtext light mb1"
           :class="{
             error: errors.orgao_id,
-            loading: órgãos.loading,
+            loading: projetosStore.chamadasPendentes?.emFoco,
           }"
-          :disabled="!Array.isArray(órgãos) || !órgãos?.length"
+          :disabled="!órgãosEnvolvidosNoProjetoEmFoco?.length"
         >
           <option :value="0">
             Selecionar
           </option>
-          <template v-if="Array.isArray(órgãos)">
-            <option
-              v-for="item in órgãos"
-              :key="item"
-              :value="item.id"
-            >
-              {{ item.sigla }} - {{ item.descricao }}
-            </option>
-          </template>
+
+          <option
+            v-for="item in órgãosEnvolvidosNoProjetoEmFoco"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.sigla }} - {{ item.descricao }}
+          </option>
         </Field>
         <ErrorMessage
           name="orgao_id"
@@ -273,6 +288,151 @@ iniciar();
       </div>
     </div>
 
+    <template v-if="!emFoco?.n_filhos_imediatos && 0 === 1">
+      <hr class="mb1 f1">
+
+      <div class="g2 mb2">
+        <legend class="label mt2 mb1">
+          Dependências
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="dependencias"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`dependência--${field.key}`"
+            class="flex g2"
+          >
+            <div class="f1 mb1">
+              <label class="label tc300">
+                Tarefa&nbsp;<span class="tvermelho">*</span>
+              </label>
+              <Field
+                :name="`dependencias[${idx}].dependencia_tarefa_id`"
+                type="text"
+                maxlength="2"
+                class="inputtext light mb1"
+                as="select"
+              >
+                <option value="">
+                  Selecionar
+                </option>
+                <option
+                  v-for="item in todasAsOutrasTarefas"
+                  :key="item.id"
+                  :value="item.id"
+                >
+                  {{ item.hierarquia }} - {{ item.tarefa }}
+                </option>
+              </Field>
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`dependencias[${idx}].dependencia_tarefa_id`"
+              />
+            </div>
+
+            <div class="f1 mb1">
+              <label class="label tc300">
+                Tipo de relação&nbsp;<span class="tvermelho">*</span>
+              </label>
+              <Field
+                :name="`dependencias[${idx}].tipo`"
+                type="text"
+                maxlength="2"
+                class="inputtext light mb1"
+                as="select"
+              >
+                <option value="">
+                  Selecionar
+                </option>
+                <option
+                  v-for="item in tiposDeDependências"
+                  :key="item.valor"
+                  :value="item.valor"
+                >
+                  {{ item.nome }}
+                </option>
+              </Field>
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`dependencias[${idx}].tipo`"
+              />
+            </div>
+
+            <div class="f1 mb1">
+              <label class="label tc300">
+                Dias de latência&nbsp;<span class="tvermelho">*</span>
+              </label>
+              <Field
+                :name="`dependencias[${idx}].latencia`"
+                type="number"
+                class="inputtext light mb1"
+                min="0"
+                step="1"
+                @update:model-value="
+                  fields[idx]?.value?.latencia
+                    ? (fields[idx].value.latencia = Number(fields[idx].value.latencia))
+                    : null
+                "
+              />
+
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`dependencias[${idx}].latencia`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              type="button"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              dependencia_tarefa_id: 0,
+              tipo: '',
+              latencia: 0,
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar dependência
+          </button>
+        </FieldArray>
+      </div>
+
+      <div
+        v-if="values.dependencias?.length"
+        class="flex spacebetween center mb2"
+      >
+        <hr class="mr2 f1">
+        <button
+          class="btn outline bgnone tcprimary mr2"
+          type="button"
+          :disabled="isEqual(values.dependencias, dependênciasValidadas)
+          "
+          @click="validarDependências(values.dependencias)"
+        >
+          Validar dependências
+        </button>
+        <hr class="mr2 f1">
+      </div>
+    </template>
+
     <hr class="mb1 f1">
 
     <div class="flex g2">
@@ -283,7 +443,6 @@ iniciar();
         <Field
           v-if="
             !emFoco?.inicio_planejado_calculado
-              && !values.dependencias?.length
               && !emFoco?.n_filhos_imediatos
           "
           name="inicio_planejado"
@@ -301,7 +460,6 @@ iniciar();
         <input
           v-else
           type="date"
-          name="inicio_planejado"
           :value="itemParaEdição.inicio_planejado"
           class="inputtext light mb1"
           disabled
@@ -318,7 +476,6 @@ iniciar();
         <Field
           v-if="
             !emFoco?.termino_planejado_calculado
-              && !values.dependencias?.length
               && !emFoco?.n_filhos_imediatos
           "
           name="duracao_planejado"
@@ -336,7 +493,6 @@ iniciar();
         <input
           v-else
           type="text"
-          name="duracao_planejado"
           :value="itemParaEdição.duracao_planejado"
           class="inputtext light mb1"
           disabled
@@ -352,8 +508,7 @@ iniciar();
         </label>
         <Field
           v-if="
-            !emFoco?.duracao_planejado_calculado
-              && !values.dependencias?.length
+            !emFoco?.termino_planejado_calculado
               && !emFoco?.n_filhos_imediatos
           "
           name="termino_planejado"
@@ -371,7 +526,6 @@ iniciar();
         <input
           v-else
           type="date"
-          name="termino_planejado"
           :value="itemParaEdição.termino_planejado"
           class="inputtext light mb1"
           disabled
@@ -389,7 +543,7 @@ iniciar();
           Previsão de custo
         </label>
         <MaskedFloatInput
-          v-if="!values.dependencias?.length && !emFoco?.n_filhos_imediatos"
+          v-if="!emFoco?.n_filhos_imediatos"
           name="custo_estimado"
           :value="values.custo_estimado"
           class="inputtext light mb1"
@@ -429,11 +583,30 @@ iniciar();
       </div>
     </div>
 
+    <div
+      v-if="values.dependencias?.length && !isEqual(values.dependencias, dependênciasValidadas)"
+      class="error-msg mb1"
+    >
+      <p>
+        <a
+          href="#validar-dependencias"
+          class="link"
+        >
+          Valide
+        </a>
+        a relação entre essa tarefa e suas dependências antes de salvar
+        suas modificações.
+      </p>
+    </div>
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :disabled="isSubmitting
+          || Object.keys(errors)?.length
+          || (values.dependencias?.length && !isEqual(values.dependencias, dependênciasValidadas))
+        "
         :title="Object.keys(errors)?.length
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"

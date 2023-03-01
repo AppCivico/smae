@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { TarefaDependenteTipo } from "@prisma/client"
-import { Type } from "class-transformer"
+import { Transform, Type } from "class-transformer"
 import { ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 
@@ -53,6 +53,7 @@ export class CreateTarefaDto {
 
     @IsInt({ message: '$property| precisa ser inteiro' })
     @ValidateIf((object, value) => value !== null)
+    @Transform(({ value }: any) => value === '' || value === null ? null : +value)
     tarefa_pai_id: number | null
 
     /**

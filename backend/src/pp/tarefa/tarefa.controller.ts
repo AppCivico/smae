@@ -54,7 +54,7 @@ export class TarefaController {
     @Roles(...roles)
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TarefaDetailDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
-        return await this.tarefaService.findOne(projeto.id, params.id2, user);
+        return await this.tarefaService.findOne(projeto, params.id2, user);
     }
 
     @Patch(':id/tarefa/:id2')

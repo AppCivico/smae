@@ -51,6 +51,7 @@
     "csv-parse": "^5.3.3",
     "express-winston": "^4.2.0",
     "got": "^11.8.5",
+    "graphlib": "^2.1.8",
     "json2csv": "^5.0.7",
     "luxon": "^3.2.1",
     "minio": "^7.0.32",
