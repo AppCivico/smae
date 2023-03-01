@@ -135,21 +135,30 @@ export const useTarefasStore = defineStore('tarefas', {
       return createDataTree(this.tarefasComHierarquia as any, 'tarefa_pai_id') || [];
     },
 
-    itemParaEdição: ({ emFoco, route }) => ({
-      ...emFoco,
-      descricao: emFoco?.descricao || '',
-      inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
-      inicio_real: dateTimeToDate(emFoco?.inicio_real),
-      recursos: emFoco?.recursos || '',
-      termino_planejado: dateTimeToDate(emFoco?.termino_planejado),
-      termino_real: dateTimeToDate(emFoco?.termino_real),
+    itemParaEdição(): {} {
+      const { emFoco, route, tarefasAgrupadasPorMãe } = this;
+      const idDaTarefaMãe = emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null;
+      const posiçõesEmUso = !idDaTarefaMãe
+        ? 1
+        : tarefasAgrupadasPorMãe[idDaTarefaMãe]?.length || 0;
 
-      nivel: emFoco?.nivel || Number(route.query.nivel) || 1,
-      tarefa_pai_id: emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null,
-      numero: emFoco?.numero || Number(route.query.numero) || 0,
+      return {
+        ...emFoco,
+        descricao: emFoco?.descricao || '',
+        inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
+        inicio_real: dateTimeToDate(emFoco?.inicio_real),
+        recursos: emFoco?.recursos || '',
+        termino_planejado: dateTimeToDate(emFoco?.termino_planejado),
+        termino_real: dateTimeToDate(emFoco?.termino_real),
 
-      orgao_id: emFoco?.orgao?.id || 0,
-    }),
+        nivel: emFoco?.nivel || Number(route.query.nivel) || 1,
+        tarefa_pai_id: idDaTarefaMãe,
+        numero: emFoco?.numero || (posiçõesEmUso + 1),
+
+        orgao_id: emFoco?.orgao?.id || 0,
+      };
+    },
+
     // eslint-disable-next-line max-len
     listaFiltradaPor: ({ lista }) => (termo: string | number) => filtrarObjetos(lista, termo),
 
