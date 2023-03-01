@@ -436,22 +436,6 @@ iniciar();
       </div>
     </template>
 
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-    >itemParaEdição:
-{{ itemParaEdição }}
-</textarea>
-
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-    >values:
-{{ values }}
-</textarea>
-
     <hr class="mb1 f1">
 
     <div class="flex g2">
