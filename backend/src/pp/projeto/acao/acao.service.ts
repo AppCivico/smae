@@ -60,6 +60,7 @@ export class AcaoService {
                     status: dbAction.status,
                     arquivado: arquivado,
                     eh_prioritario: eh_prioritario,
+                    codigo
                 }
             });
 
