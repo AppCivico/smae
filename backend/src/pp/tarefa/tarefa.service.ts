@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
 import { CheckDependenciasDto, CreateTarefaDto, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
@@ -171,6 +172,8 @@ export class TarefaService {
                 custo_estimado: true,
                 custo_real: true,
                 n_filhos_imediatos: true,
+                n_dep_inicio_planejado: true,
+                n_dep_termino_planejado: true,
                 percentual_concluido: true
             }
         });
@@ -183,10 +186,10 @@ export class TarefaService {
         });
     }
 
-    async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
+    async findOne(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
         const row = await this.prisma.tarefa.findFirstOrThrow({
             where: {
-                projeto_id: projetoId,
+                projeto_id: projeto.id,
                 id: id,
                 removido_em: null,
             },
@@ -213,6 +216,9 @@ export class TarefaService {
                 termino_planejado_calculado: true,
                 duracao_planejado_calculado: true,
 
+                n_dep_inicio_planejado: true,
+                n_dep_termino_planejado: true,
+
                 descricao: true,
                 recursos: true,
                 n_filhos_imediatos: true,
@@ -230,6 +236,7 @@ export class TarefaService {
         return {
             ...row,
             atraso: null,
+            projeto: projeto,
         };
     }
 
