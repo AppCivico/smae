@@ -450,6 +450,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.inicio_planejado }"
           maxlength="10"
+          @update:model-value="values.inicio_planejado === ''
+            ? values.inicio_planejado = null
+            : null"
           @change="values.duracao_planejado
             ? setFieldValue(
               'termino_planejado',
@@ -516,6 +519,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.termino_planejado }"
           maxlength="10"
+          @update:model-value="values.termino_planejado === ''
+            ? values.termino_planejado = null
+            : null"
           @change="values.termino_planejado
             ? setFieldValue(
               'duracao_planejado',

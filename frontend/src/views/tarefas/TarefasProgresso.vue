@@ -148,6 +148,9 @@ async function onSubmit(_, { controlledValues: carga }) {
           :class="{ 'error': errors.inicio_real }"
           maxlength="10"
           :disabled="emFoco.n_filhos_imediatos > 0"
+          @update:model-value="values.inicio_real === ''
+            ? values.inicio_real = null
+            : null"
           @change="values.duracao_real
             ? setFieldValue(
               'termino_real',
@@ -194,6 +197,9 @@ async function onSubmit(_, { controlledValues: carga }) {
           :class="{ 'error': errors.termino_real }"
           maxlength="10"
           :disabled="emFoco.n_filhos_imediatos > 0"
+          @update:model-value="values.termino_real === ''
+            ? values.termino_real = null
+            : null"
           @change="values.termino_real
             ? setFieldValue(
               'duracao_real',
