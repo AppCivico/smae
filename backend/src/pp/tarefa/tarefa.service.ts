@@ -523,9 +523,9 @@ export class TarefaService {
         const resp = (res[0]['calcula_dependencias_tarefas']) as DependenciasDatasDto;
 
         if (resp.duracao_planejado != null && resp.duracao_planejado < 0) {
-            // fica de TODO melhorar essa msg de erro, pra tentar ir refazendo as regras até descobrir qual foi a depedencia que fez isso
-            // embora seja dificil descobrir, pois pode ser que uma estica o fim, enquanto outra puxa o inicio...
-            throw new HttpException("Não é possivel utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 400);
+            // fica de TODO melhorar essa msg de erro, pra tentar ir refazendo as regras até descobrir qual foi a dependência que fez isso
+            // embora seja difícil descobrir, pois pode ser que uma estica o fim, enquanto outra puxa o inicio...
+            throw new HttpException("Não é possível utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 400);
         }
 
         return resp;
