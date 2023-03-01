@@ -156,7 +156,7 @@ export const useTarefasStore = defineStore('tarefas', {
     tarefasPorId: ({ lista }): { [x: number | string]: TarefaComHierarquia } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-    tarefasAgrupadasPorMãe() {
+    tarefasAgrupadasPorMãe(): { [x: number | string]: TarefaComHierarquia[] } {
       return (this.tarefasComHierarquia as unknown as [])
         .reduce((acc: TarefasPorNível, cur: TarefaItemDto) => ({
           ...acc,
