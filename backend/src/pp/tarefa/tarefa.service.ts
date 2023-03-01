@@ -426,31 +426,27 @@ export class TarefaService {
 
     private async verifica_nivel_maximo_e_filhos(tarefa: { id: number; nivel: number; tarefa_pai_id: number | null; numero: number; n_filhos_imediatos: number; }, prismaTx: Prisma.TransactionClient, projetoId: number, novoPai: { nivel: number; id: number }) {
 
-        let numero_de_niveis = 0;
-        if (tarefa.n_filhos_imediatos > 0) {
-            // conta quantos numeros de niveis que existem abaixo dessa tarefa atualmente
-            const buscaFilhos: { numero_de_niveis: number; filhas: number[] }[] = await prismaTx.$queryRaw`
-                WITH RECURSIVE tarefa_path AS (
-                    SELECT id, tarefa_pai_id, nivel::int
-                    FROM tarefa m
-                    WHERE m.id = ${tarefa.id}
-                    and m.removido_em is null
-                UNION ALL
-                    SELECT t.id, t.tarefa_pai_id, t.nivel
-                    FROM tarefa t
-                    JOIN tarefa_path tp ON tp.id = t.tarefa_pai_id
-                    and t.removido_em is null
-              )
-              SELECT
-                max(nivel) - min(nivel) as numero_de_niveis,
-                array_remove(array_agg(id), ${tarefa.id}) as filhas
-              FROM tarefa_path;`;
-            numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
+        // conta quantos números de níveis que existem abaixo dessa tarefa atualmente
+        const buscaFilhos: { numero_de_niveis: number; filhas: number[] }[] = await prismaTx.$queryRaw`
+            WITH RECURSIVE tarefa_path AS (
+                SELECT id, tarefa_pai_id, nivel::int
+                FROM tarefa m
+                WHERE m.id = ${tarefa.id}
+                and m.removido_em is null
+            UNION ALL
+                SELECT t.id, t.tarefa_pai_id, t.nivel
+                FROM tarefa t
+                JOIN tarefa_path tp ON tp.id = t.tarefa_pai_id
+                and t.removido_em is null
+          )
+          SELECT
+            max(nivel) - min(nivel) as numero_de_niveis,
+            array_agg(id) as filhas
+          FROM tarefa_path;`;
+        const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
 
-            if (buscaFilhos[0].filhas.includes(novoPai.id))
-                throw new HttpException(`A nova tarefa mãe do nivel não pode ser uma filha da tarefa corrente.`, 400);
-
-        }
+        if (buscaFilhos[0].filhas.includes(novoPai.id))
+            throw new HttpException(`A nova tarefa mãe não pode ser uma filha da tarefa corrente (e nem a própria tarefa).`, 400);
 
         const portConfig = await prismaTx.projeto.findFirstOrThrow({
             where: { id: projetoId },
