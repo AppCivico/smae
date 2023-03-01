@@ -329,7 +329,7 @@ export class TarefaService {
                 if (dto.custo_real !== undefined)
                     throw new HttpException("Custo Real não pode ser alterado diretamente nesta tarefa.", 400);
                 if (dto.dependencias !== undefined)
-                    throw new HttpException("Não pode existir dependencias nesta tarefa.", 400);
+                    throw new HttpException("Não pode existir dependencias nesta tarefa, pois há filhos.", 400);
             }
 
             if (
