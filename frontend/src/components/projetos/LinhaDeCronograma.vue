@@ -139,7 +139,6 @@ export default {
           },
           query: {
             nivel: linha.nivel + 1,
-            numero: linha.numero + 1,
             tarefa_pai_id: linha.id,
           }
         }"
