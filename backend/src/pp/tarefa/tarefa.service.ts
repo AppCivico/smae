@@ -502,6 +502,12 @@ export class TarefaService {
                 }
             });
 
+            await prismaTx.tarefaDependente.deleteMany({
+                where: {
+                    tarefa_id: tarefa.id
+                }
+            });
+
             return { id: tarefa.id }
         }, {
             isolationLevel: 'Serializable',
