@@ -157,7 +157,7 @@ export const useProjetosStore = defineStore('projetos', {
   getters: {
     itemParaEdição: ({ emFoco, route }) => ({
       ...emFoco,
-      portfolio_id: emFoco?.portfolio_id || route.params.portfolioId,
+      portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id,
 
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
