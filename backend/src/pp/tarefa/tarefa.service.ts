@@ -446,7 +446,7 @@ export class TarefaService {
         const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
 
         if (buscaFilhos[0].filhas.includes(novoPai.id))
-            throw new HttpException(`A nova tarefa mãe não pode ser uma filha da tarefa corrente (e nem a própria tarefa).`, 400);
+            throw new HttpException(`A nova tarefa-mãe não pode ser uma subordinada da tarefa atual (e nem a própria tarefa)`, 400);
 
         const portConfig = await prismaTx.projeto.findFirstOrThrow({
             where: { id: projetoId },
@@ -454,7 +454,7 @@ export class TarefaService {
         });
 
         if (novoPai.nivel + numero_de_niveis > portConfig.portfolio.nivel_maximo_tarefa)
-            throw new HttpException(`A nova tarefa mãe do nivel (${novoPai.nivel}) não pode ser usada no momento, pois o número de subníveis da tarefa atual (${numero_de_niveis}) ultrapassa o configurado no portfolio.`, 400);
+            throw new HttpException(`A nova tarefa-mãe não pode ser usada no momento, pois o número de subníveis da tarefa (tarefa-mãe tem nível ${novoPai.nivel} + ${numero_de_niveis}) ultrapassa o configurado no portfólio (${portConfig.portfolio.nivel_maximo_tarefa}).`, 400);
     }
 
     async remove(projetoId: number, id: number, user: PessoaFromJwt) {
