@@ -288,7 +288,7 @@ iniciar();
       </div>
     </div>
 
-    <template v-if="!emFoco?.n_filhos_imediatos && 0 === 1">
+    <template v-if="!emFoco?.n_filhos_imediatos">
       <hr class="mb1 f1">
 
       <div class="g2 mb2">
