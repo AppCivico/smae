@@ -330,8 +330,6 @@ export class TarefaService {
                 ||
                 (dto.numero !== undefined && dto.numero !== tarefa.numero)
             ) {
-                // TODO: ao mudar de nível, buscar o nível mais altos dos filhos, o novo nível n pode passar do configurado no port
-
                 if (dto.tarefa_pai_id === undefined) dto.tarefa_pai_id = tarefa.tarefa_pai_id;
                 if (dto.nivel === undefined) dto.nivel = tarefa.nivel;
                 if (dto.numero === undefined) dto.numero = tarefa.numero;
@@ -356,6 +354,9 @@ export class TarefaService {
                     if (novoPai && novoPai.nivel != dto.nivel - 1)
                         throw new HttpException(`Nível (${dto.nivel}) inválido para ser filho imediato da tarefa pai enviada (nível ${novoPai.nivel}).`, 400);
 
+                    if (novoPai) {
+                        await this.verifica_nivel_maximo_e_filhos(tarefa, prismaTx, projetoId, novoPai);
+                    }
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero({
                         numero: tarefa.numero,
@@ -414,6 +415,36 @@ export class TarefaService {
         });
 
         return { id: tarefa.id }
+    }
+
+    private async verifica_nivel_maximo_e_filhos(tarefa: { id: number; nivel: number; tarefa_pai_id: number | null; numero: number; n_filhos_imediatos: number; }, prismaTx: Prisma.TransactionClient, projetoId: number, novoPai: { nivel: number; }) {
+        // TODO verificar se o novo pai não tbm não faz parte de nenhum filho direto ou indireto
+
+        let numero_de_niveis = 0;
+        if (tarefa.n_filhos_imediatos > 0) {
+            // conta quantos numeros de niveis que existem abaixo dessa tarefa atualmente
+            const buscaFilhos: { numero_de_niveis: number; }[] = await prismaTx.$queryRaw`
+                WITH RECURSIVE tarefa_path AS (
+                    SELECT id, tarefa_pai_id, nivel::int
+                    FROM tarefa m
+                    WHERE m.id = ${tarefa.id}
+                    and m.removido_em is null
+                UNION ALL
+                    SELECT t.id, t.tarefa_pai_id, t.nivel
+                    FROM tarefa t
+                    JOIN tarefa_path tp ON tp.id = t.tarefa_pai_id
+                    and t.removido_em is null
+              ) SELECT max(nivel) - min(nivel) as numero_de_niveis FROM tarefa_path;`;
+            numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
+        }
+
+        const portConfig = await prismaTx.projeto.findFirstOrThrow({
+            where: { id: projetoId },
+            select: { portfolio: { select: { nivel_maximo_tarefa: true } } }
+        });
+
+        if (novoPai.nivel + numero_de_niveis > portConfig.portfolio.nivel_maximo_tarefa)
+            throw new HttpException(`A nova tarefa mãe do nivel (${novoPai.nivel}) não pode ser usada no momento, pois o número de subníveis da tarefa atual (${numero_de_niveis}) ultrapassa o configurado no portfolio.`, 400);
     }
 
     async remove(projetoId: number, id: number, user: PessoaFromJwt) {
