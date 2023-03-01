@@ -51,7 +51,7 @@ BEGIN
             where dependencia_tarefa_id = NEW.id
             and tipo in ('termina_pro_inicio', 'inicia_pro_inicio')
         ) td join tarefa t on td.tarefa_id = t.id
-        order by td.ordem_topologica_inicio_planejado desc
+        order by t.ordem_topologica_inicio_planejado desc
     LOOP
         SELECT
             calcula_dependencias_tarefas(
@@ -90,7 +90,7 @@ BEGIN
             where dependencia_tarefa_id = NEW.id
             and tipo not in ('termina_pro_inicio', 'inicia_pro_inicio')
         ) td join tarefa t on td.tarefa_id = t.id
-        order by td.ordem_topologica_termino_planejado desc
+        order by t.ordem_topologica_termino_planejado desc
     LOOP
         SELECT
             calcula_dependencias_tarefas(
