@@ -140,6 +140,7 @@ iniciar();
           name="tarefa"
           type="text"
           class="inputtext light mb1"
+          maxlength="60"
         />
         <ErrorMessage
           class="error-msg mb1"
