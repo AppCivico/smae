@@ -58,7 +58,7 @@ async function onSubmit(values) {
       alertStore.success(msg);
 
       if (values.salvar_arquivo && route.meta?.rotaDeEscape) {
-        await router.push(route.meta.rotaDeEscape);
+        await router.push({ name: route.meta.rotaDeEscape });
       }
     }
   } catch (error) {
