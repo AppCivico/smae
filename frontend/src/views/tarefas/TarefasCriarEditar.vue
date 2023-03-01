@@ -443,7 +443,6 @@ iniciar();
         <Field
           v-if="
             !emFoco?.inicio_planejado_calculado
-              && !values.dependencias?.length
               && !emFoco?.n_filhos_imediatos
           "
           name="inicio_planejado"
@@ -461,7 +460,6 @@ iniciar();
         <input
           v-else
           type="date"
-          name="inicio_planejado"
           :value="itemParaEdição.inicio_planejado"
           class="inputtext light mb1"
           disabled
@@ -478,7 +476,6 @@ iniciar();
         <Field
           v-if="
             !emFoco?.termino_planejado_calculado
-              && !values.dependencias?.length
               && !emFoco?.n_filhos_imediatos
           "
           name="duracao_planejado"
@@ -496,7 +493,6 @@ iniciar();
         <input
           v-else
           type="text"
-          name="duracao_planejado"
           :value="itemParaEdição.duracao_planejado"
           class="inputtext light mb1"
           disabled
@@ -512,8 +508,7 @@ iniciar();
         </label>
         <Field
           v-if="
-            !emFoco?.duracao_planejado_calculado
-              && !values.dependencias?.length
+            !emFoco?.termino_planejado_calculado
               && !emFoco?.n_filhos_imediatos
           "
           name="termino_planejado"
@@ -531,7 +526,6 @@ iniciar();
         <input
           v-else
           type="date"
-          name="termino_planejado"
           :value="itemParaEdição.termino_planejado"
           class="inputtext light mb1"
           disabled
@@ -549,7 +543,7 @@ iniciar();
           Previsão de custo
         </label>
         <MaskedFloatInput
-          v-if="!values.dependencias?.length && !emFoco?.n_filhos_imediatos"
+          v-if="!emFoco?.n_filhos_imediatos"
           name="custo_estimado"
           :value="values.custo_estimado"
           class="inputtext light mb1"
