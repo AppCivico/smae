@@ -173,18 +173,15 @@ export const useTarefasStore = defineStore('tarefas', {
         }), {});
     },
 
+    // eslint-disable-next-line max-len
+    tarefasOrdenadas: ({ lista }) => lista.sort((a, b) => (a.tarefa_pai_id || 0) - (b.tarefa_pai_id || 0)
+      || a.nivel - b.nivel
+      || a.numero - b.numero),
+
     tarefasComHierarquia(): TarefaComHierarquia[] {
-      return this.lista
-        .map((x: TarefaItemDto) => ({ ...x, hierarquia: resolverHierarquia(x, this.tarefasPorId) }))
-        .sort((a: TarefaComHierarquia, b: TarefaComHierarquia) => {
-          if (a.hierarquia < b.hierarquia) {
-            return -1;
-          }
-          if (a.hierarquia > b.hierarquia) {
-            return 1;
-          }
-          return 0;
-        });
+      return this.tarefasOrdenadas
+        // eslint-disable-next-line max-len
+        .map((x: TarefaItemDto) => ({ ...x, hierarquia: resolverHierarquia(x, this.tarefasPorId) }));
     },
   },
 });
