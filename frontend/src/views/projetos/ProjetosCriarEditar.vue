@@ -30,7 +30,7 @@ const {
   pdmsPorId,
   metaSimplificada,
 } = storeToRefs(projetosStore);
-const { órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
+const { órgãosOrdenados, órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
 const { DotacaoSegmentos } = storeToRefs(OrçamentosStore);
 
 const router = useRouter();
@@ -494,7 +494,7 @@ iniciar();
             error: errors.orgaos_participantes,
             loading: portfolioStore.chamadasPendentes.lista
           }"
-          :grupo="órgãosQueTemResponsáveis"
+          :grupo="órgãosOrdenados"
           label="sigla"
         />
         <ErrorMessage
