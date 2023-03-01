@@ -188,5 +188,18 @@ export const useProjetosStore = defineStore('projetos', {
 
     projetosPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
+      const órgãos = emFoco?.orgaos_participantes && Array.isArray(emFoco?.orgaos_participantes)
+        ? emFoco.orgaos_participantes
+        : [];
+
+      if (emFoco?.orgao_gestor?.id) {
+        if (órgãos.findIndex((x) => x.id === emFoco?.orgao_gestor?.id) === -1) {
+          órgãos?.push(emFoco?.orgao_gestor);
+        }
+      }
+      return órgãos;
+    },
   },
 });
