@@ -67,6 +67,22 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     <hr class="ml2 f1">
 
+    <div class="ml2">
+      <router-link
+        :to="{
+          name: 'tarefasEditar',
+          params: {
+            projetoId: projetoId,
+            tarefaId: tarefaId,
+          }
+        }"
+        title="Editar tarefa"
+        class="btn"
+      >
+        Editar tarefa
+      </router-link>
+    </div>
+
     <CheckClose :rota-de-escape="`/projetos/${props.projetoId}/tarefas/`" />
   </div>
 
