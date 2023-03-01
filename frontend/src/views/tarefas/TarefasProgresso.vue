@@ -212,6 +212,21 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="error-msg"
         />
       </div>
+      <button
+        class="like-a__text addlink"
+        arial-label="limpar datas"
+        title="limpar datas"
+        type="button"
+        @click="
+          values.inicio_real = values.duracao_real =
+          values.termino_real = null
+        "
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
     </div>
 
     <div class="flex g2">
