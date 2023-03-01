@@ -28,6 +28,7 @@ export class AcaoService {
             'arquivar': { date: 'arquivado_em', user: 'arquivado_por', status: undefined },
             'restaurar': { date: 'restaurado_em', user: 'restaurado_por', status: undefined },
             'selecionar': { date: 'selecionado_em', user: 'selecionado_por', status: 'Selecionado' },
+            'iniciar_planejamento': { date: 'em_planejamento_em', user: 'em_planejamento_por', status: 'EmPlanejamento' },
             'finalizar_planejamento': { date: 'finalizou_planejamento_em', user: 'finalizou_planejamento_por', status: 'Planejado' },
             'validar': { date: 'validado_em', user: 'validado_por', status: 'Validado' },
             'iniciar': { date: 'iniciado_em', user: 'iniciado_por', status: 'EmAcompanhamento' },
@@ -37,18 +38,19 @@ export class AcaoService {
             'terminar': { date: 'terminado_em', user: 'terminado_por', status: 'Fechado' },
         } as const;
 
-        // criar ação Planejado => EmPlanejamento
-
         const dbAction = dePara[dto.acao];
         if (!dbAction) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             let arquivado: boolean | undefined = undefined;
             let eh_prioritario: boolean | undefined = undefined;
+            let codigo: string | undefined = undefined;
 
             if (dto.acao == 'arquivar') arquivado = true;
             if (dto.acao == 'restaurar') arquivado = false;
             if (dto.acao == 'selecionar') eh_prioritario = true;
+
+            if (dto.acao == 'iniciar_planejamento') codigo = await this.projetoService.getProjetoCodigo(projeto.id, prismaTx);
 
             await prismaTx.projeto.update({
                 where: { id: projeto.id },

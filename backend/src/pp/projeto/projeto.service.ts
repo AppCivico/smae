@@ -747,7 +747,48 @@ export class ProjetoService {
         return { id: projetoId };
     }
 
-    private async checkProjetoCodigo(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
+    async getProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string> {
+        const codigo: string = "";
+
+        const projeto = await prismaTx.projeto.findFirstOrThrow({
+            where: {id},
+            select: {
+                registrado_em: true,
+                portfolio_id: true,
+                orgao_gestor: {
+                    select: {
+                        sigla: true
+                    }
+                },
+                meta: {
+                    select: {
+                        codigo: true,
+                    }
+                }
+            }
+        });
+
+        const portfolioProjects = await prismaTx.projeto.findMany({
+            where: { portfolio_id: projeto.portfolio_id },
+            select: { id: true },
+            orderBy: [{ registrado_em: 'asc' }]
+        });
+
+        const projetoIndexRefPortfolio = portfolioProjects.map(e => e.id).indexOf(id);
+
+        codigo
+          .concat(projeto.orgao_gestor.sigla)
+          .concat('.')
+          .concat(projeto.registrado_em.getFullYear().toString())
+          .concat('.')
+          .concat(projeto.meta ? ('M' + projeto.meta.codigo) : ('M000'))
+          .concat('.')
+          .concat(projetoIndexRefPortfolio.toString());
+        
+        return codigo;
+    }
+
+    private async assertProjetoCodigoRules(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
         const codigo = dto.codigo;
         if (!codigo)
             throw new Error('Código undefined na func checkProjetoCodigo');
