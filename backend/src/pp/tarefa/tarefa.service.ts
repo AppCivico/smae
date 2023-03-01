@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
 import { CheckDependenciasDto, CreateTarefaDto, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
@@ -171,6 +172,8 @@ export class TarefaService {
                 custo_estimado: true,
                 custo_real: true,
                 n_filhos_imediatos: true,
+                n_dep_inicio_planejado: true,
+                n_dep_termino_planejado: true,
                 percentual_concluido: true
             }
         });
@@ -183,10 +186,10 @@ export class TarefaService {
         });
     }
 
-    async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
+    async findOne(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
         const row = await this.prisma.tarefa.findFirstOrThrow({
             where: {
-                projeto_id: projetoId,
+                projeto_id: projeto.id,
                 id: id,
                 removido_em: null,
             },
@@ -213,6 +216,9 @@ export class TarefaService {
                 termino_planejado_calculado: true,
                 duracao_planejado_calculado: true,
 
+                n_dep_inicio_planejado: true,
+                n_dep_termino_planejado: true,
+
                 descricao: true,
                 recursos: true,
                 n_filhos_imediatos: true,
@@ -230,6 +236,7 @@ export class TarefaService {
         return {
             ...row,
             atraso: null,
+            projeto: projeto,
         };
     }
 
@@ -322,7 +329,7 @@ export class TarefaService {
                 if (dto.custo_real !== undefined)
                     throw new HttpException("Custo Real não pode ser alterado diretamente nesta tarefa.", 400);
                 if (dto.dependencias !== undefined)
-                    throw new HttpException("Não pode existir dependencias nesta tarefa.", 400);
+                    throw new HttpException("Não pode existir dependencias nesta tarefa, pois há filhos.", 400);
             }
 
             if (
@@ -330,8 +337,6 @@ export class TarefaService {
                 ||
                 (dto.numero !== undefined && dto.numero !== tarefa.numero)
             ) {
-                // TODO: ao mudar de nível, buscar o nível mais altos dos filhos, o novo nível n pode passar do configurado no port
-
                 if (dto.tarefa_pai_id === undefined) dto.tarefa_pai_id = tarefa.tarefa_pai_id;
                 if (dto.nivel === undefined) dto.nivel = tarefa.nivel;
                 if (dto.numero === undefined) dto.numero = tarefa.numero;
@@ -347,7 +352,7 @@ export class TarefaService {
                         where: {
                             removido_em: null, id: dto.tarefa_pai_id,
                             projeto_id: projetoId
-                        }, select: { nivel: true }
+                        }, select: { nivel: true, id: true }
                     }) : null;
 
                     if (dto.tarefa_pai_id && novoPai == null)
@@ -356,6 +361,9 @@ export class TarefaService {
                     if (novoPai && novoPai.nivel != dto.nivel - 1)
                         throw new HttpException(`Nível (${dto.nivel}) inválido para ser filho imediato da tarefa pai enviada (nível ${novoPai.nivel}).`, 400);
 
+                    if (novoPai) {
+                        await this.verifica_nivel_maximo_e_filhos(tarefa, prismaTx, projetoId, novoPai);
+                    }
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero({
                         numero: tarefa.numero,
@@ -416,6 +424,39 @@ export class TarefaService {
         return { id: tarefa.id }
     }
 
+    private async verifica_nivel_maximo_e_filhos(tarefa: { id: number; nivel: number; tarefa_pai_id: number | null; numero: number; n_filhos_imediatos: number; }, prismaTx: Prisma.TransactionClient, projetoId: number, novoPai: { nivel: number; id: number }) {
+
+        // conta quantos números de níveis que existem abaixo dessa tarefa atualmente
+        const buscaFilhos: { numero_de_niveis: number; filhas: number[] }[] = await prismaTx.$queryRaw`
+            WITH RECURSIVE tarefa_path AS (
+                SELECT id, tarefa_pai_id, nivel::int
+                FROM tarefa m
+                WHERE m.id = ${tarefa.id}
+                and m.removido_em is null
+            UNION ALL
+                SELECT t.id, t.tarefa_pai_id, t.nivel
+                FROM tarefa t
+                JOIN tarefa_path tp ON tp.id = t.tarefa_pai_id
+                and t.removido_em is null
+          )
+          SELECT
+            max(nivel) - min(nivel) as numero_de_niveis,
+            array_agg(id) as filhas
+          FROM tarefa_path;`;
+        const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
+
+        if (buscaFilhos[0].filhas.includes(novoPai.id))
+            throw new HttpException(`A nova tarefa-mãe não pode ser uma subordinada da tarefa atual (e nem a própria tarefa)`, 400);
+
+        const portConfig = await prismaTx.projeto.findFirstOrThrow({
+            where: { id: projetoId },
+            select: { portfolio: { select: { nivel_maximo_tarefa: true } } }
+        });
+
+        if (novoPai.nivel + numero_de_niveis > portConfig.portfolio.nivel_maximo_tarefa)
+            throw new HttpException(`A nova tarefa-mãe não pode ser usada no momento, pois o número de subníveis da tarefa (tarefa-mãe tem nível ${novoPai.nivel} + ${numero_de_niveis}) ultrapassa o configurado no portfólio (${portConfig.portfolio.nivel_maximo_tarefa}).`, 400);
+    }
+
     async remove(projetoId: number, id: number, user: PessoaFromJwt) {
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -458,6 +499,12 @@ export class TarefaService {
                 data: {
                     removido_em: now,
                     removido_por: user.id
+                }
+            });
+
+            await prismaTx.tarefaDependente.deleteMany({
+                where: {
+                    tarefa_id: tarefa.id
                 }
             });
 

@@ -2412,6 +2412,11 @@ model Tarefa {
     termino_planejado DateTime? @db.Date()
     duracao_planejado Int?
 
+    n_dep_inicio_planejado             Int @default(0) @db.SmallInt
+    n_dep_termino_planejado            Int @default(0) @db.SmallInt
+    ordem_topologica_inicio_planejado  Int @default(0) @db.SmallInt
+    ordem_topologica_termino_planejado Int @default(0) @db.SmallInt
+
     inicio_real  DateTime? @db.Date()
     termino_real DateTime? @db.Date()
     duracao_real Int?
@@ -2439,6 +2444,9 @@ model Tarefa {
 
     RiscoTarefa RiscoTarefa[]
 
+    @@index([tarefa_pai_id])
+    @@index([projeto_id, removido_em])
+    @@index([tarefa_pai_id, removido_em])
     @@map("tarefa")
 }
 

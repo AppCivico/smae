@@ -157,7 +157,7 @@ export const useProjetosStore = defineStore('projetos', {
   getters: {
     itemParaEdição: ({ emFoco, route }) => ({
       ...emFoco,
-      portfolio_id: emFoco?.portfolio_id || route.params.portfolioId,
+      portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id,
 
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
@@ -188,5 +188,18 @@ export const useProjetosStore = defineStore('projetos', {
 
     projetosPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
+      const órgãos = emFoco?.orgaos_participantes && Array.isArray(emFoco?.orgaos_participantes)
+        ? emFoco.orgaos_participantes
+        : [];
+
+      if (emFoco?.orgao_gestor?.id) {
+        if (órgãos.findIndex((x) => x.id === emFoco?.orgao_gestor?.id) === -1) {
+          órgãos?.push(emFoco?.orgao_gestor);
+        }
+      }
+      return órgãos;
+    },
   },
 });

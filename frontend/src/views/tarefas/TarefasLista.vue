@@ -30,7 +30,6 @@ iniciar();
     <div class="ml2">
       <router-link
         :to="{ name: 'tarefasCriar' }"
-        title="Criar tarefa-mãe"
         class="btn"
       >
         Nova tarefa
