@@ -1,6 +1,6 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const props = defineProps({
   rotaDeEscape: {
@@ -10,6 +10,7 @@ const props = defineProps({
 });
 
 const route = useRoute();
+const router = useRouter();
 const alertStore = useAlertStore();
 
 async function checkClose() {
@@ -18,12 +19,24 @@ async function checkClose() {
     ? routesMatchedLength - 2
     : routesMatchedLength - 1;
 
-  alertStore.confirm(
-    'Deseja sair sem salvar as alterações?',
-    props?.rotaDeEscape
-    || route.meta?.rotaDeEscape
-    || route.matched?.[parentRoutePosition].path,
-  );
+  let caminhoParaSaída = '';
+
+  const rotaDeEscape = props?.rotaDeEscape || route.meta?.rotaDeEscape;
+
+  if (rotaDeEscape) {
+    const propriedadesDaRota = {
+      ...(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape),
+      params: route.params,
+      query: route.query,
+    };
+
+    caminhoParaSaída = router.resolve(propriedadesDaRota)?.path
+      || route.matched[parentRoutePosition].path;
+  } else {
+    caminhoParaSaída = route.matched[parentRoutePosition].path;
+  }
+
+  alertStore.confirm('Deseja sair sem salvar as alterações?', caminhoParaSaída);
 }
 </script>
 <template>

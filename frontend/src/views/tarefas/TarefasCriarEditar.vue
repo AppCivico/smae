@@ -118,7 +118,7 @@ iniciar();
     </h1>
     <hr class="ml2 f1">
 
-    <CheckClose :rota-de-escape="`/projetos/${props.projetoId}/tarefas/`" />
+    <CheckClose />
   </div>
 
   <Form

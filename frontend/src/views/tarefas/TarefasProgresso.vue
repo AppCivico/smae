@@ -83,7 +83,7 @@ async function onSubmit(_, { controlledValues: carga }) {
       </router-link>
     </div>
 
-    <CheckClose :rota-de-escape="`/projetos/${props.projetoId}/tarefas/`" />
+    <CheckClose />
   </div>
 
   <div class="boards mb4">
