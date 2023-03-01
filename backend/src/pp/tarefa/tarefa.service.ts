@@ -1,5 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -9,6 +10,13 @@ import { CheckDependenciasDto, CreateTarefaDto, TarefaDependenciaDto } from './d
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
+
+
+export class InferenciaDatasDto {
+    inicio_planejado: Date | null
+    termino_planejado: Date | null
+    duracao_planejado: number | null
+}
 
 @Injectable()
 export class TarefaService {
@@ -64,6 +72,17 @@ export class TarefaService {
                 } else if (termino_planejado_calculado) {
                     dto.termino_planejado = dataDependencias.termino_planejado;
                 }
+
+
+                // WIP
+//                const patched = await this.calcInfereDataPeloPeriodo(prismaTx, dto, dataDependencias);
+//                if (patched.inicio_planejado)
+//                    dto.inicio_planejado = patched.inicio_planejado;
+//                if (patched.termino_planejado)
+//                    dto.termino_planejado = patched.termino_planejado;
+//                if (patched.duracao_planejado)
+//                    dto.duracao_planejado = patched.duracao_planejado;
+
             } else {
                 // não tem dependencias, e como é create, tbm não há filhos
 
@@ -131,17 +150,37 @@ export class TarefaService {
         return { id: created.id }
     }
 
+    async calcInfereDataPeloPeriodo(prismaTx: Prisma.TransactionClient, dto: CreateTarefaDto, dataDependencias: DependenciasDatasDto): Promise<InferenciaDatasDto> {
+
+        const json = JSON.stringify({
+            inicio_planejado_corrente: dto.inicio_planejado,
+            termino_planejado_corrente: dto.termino_planejado,
+            duracao_planejado_corrente: dto.duracao_planejado,
+
+            inicio_planejado_calculado: dataDependencias.inicio_planejado,
+            termino_planejado_calculado: dataDependencias.termino_planejado,
+            duracao_planejado_calculado: dataDependencias.duracao_planejado,
+        });
+
+        const res = await prismaTx.$queryRaw`select infere_data_inicio_ou_termino(${json}::jsonb)` as any;
+
+        const resp = (res[0]['infere_data_inicio_ou_termino']) as InferenciaDatasDto;
+        return resp;
+    }
+
     async calcDataDependencias(prismaTx: Prisma.TransactionClient, deps: TarefaDependenciaDto[] | null | undefined): Promise<DependenciasDatasDto | null> {
         if (!deps) return null;
 
         const json = JSON.stringify(deps);
         const res = await prismaTx.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)` as any;
 
-        const resp = (res[0]['calcula_dependencias_tarefas']) as DependenciasDatasDto;
+        const resp = plainToInstance(DependenciasDatasDto, res[0]['calcula_dependencias_tarefas']);
 
         if (resp.duracao_planejado != null && resp.duracao_planejado < 0) {
             throw new HttpException("Não é possivel utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 400);
         }
+
+        resp.duracao_planejado
 
         return resp
     }
