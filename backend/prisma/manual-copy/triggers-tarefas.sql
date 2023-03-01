@@ -576,3 +576,94 @@ BEGIN
     RETURN NEW;
 END;
 $emp_stamp$ LANGUAGE plpgsql;
+
+
+/*
+input:
+    inicio_planejado_corrente: dto.inicio_planejado,
+    termino_planejado_corrente: dto.termino_planejado,
+    duracao_planejado_corrente: dto.duracao_planejado,
+
+    inicio_planejado_calculado: dataDependencias.inicio_planejado,
+    termino_planejado_calculado: dataDependencias.termino_planejado,
+    duracao_planejado_calculado: dataDependencias.duracao_planejado,
+output:
+    inicio_planejado
+    termino_planejado
+    duracao_planejado
+
+deve receber os dados existentes de tarefa, e retornar os novos dados, se existir alguma forma de fazer o complemento.
+
+Se eu tenho numa tarefa X, uma duração 5, data de inicio = 1, e coloco uma dependencia no fim da tarefa Y
+
+nesse caso, que tem a data de duração preenchida, devo mudar a duração
+E se fosse o caso do registro ter apenas a duração preenchida,
+ai sim eu calculo a uma data de inicio, e então se por ventura um proximo
+update mudar a data, começaria a mudar a duração e não mais a data de inicio
+*/
+CREATE OR REPLACE FUNCTION infere_data_inicio_ou_termino(config jsonb)
+    RETURNS jsonb
+    AS $$
+DECLARE
+    ret jsonb;
+BEGIN
+
+    with conf as (
+        select
+            ((x->>'duracao_planejado_corrente')::int::varchar || ' days')::interval as duracao_planejado_corrente,
+            ((x->>'duracao_planejado_calculado')::int::varchar || ' days')::interval as duracao_planejado_calculado,
+            (x->>'inicio_planejado_corrente')::date as inicio_planejado_corrente,
+            (x->>'termino_planejado_corrente')::date as termino_planejado_corrente,
+            (x->>'inicio_planejado_calculado')::date as inicio_planejado_calculado,
+            (x->>'termino_planejado_calculado')::date as termino_planejado_calculado
+        from jsonb_array_elements(config) x
+    ),
+    compute as (
+        select
+            -- se já tem valor, ele sempre vence
+            case when inicio_planejado_corrente is not null then inicio_planejado_corrente else
+                -- cenario onde é possível calcular a data de inicio pela duracao sugerida da tarefa
+                case when termino_planejado_calculado is not null and duracao_planejado_corrente is not null then
+                    termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval -- adiciona um dia, pra se a task ter o valor de 1, ela deve começar e acabar no mesmo dia
+                end
+            end as inicio_planejado,
+
+            -- se já tem valor, ele sempre vence
+            case when termino_planejado_corrente is not null then termino_planejado_corrente else
+                -- cenario onde é possível calcular a data de termino pela duracao sugerida da tarefa
+                case when inicio_planejado_calculado is not null and duracao_planejado_corrente is not null then
+                    inicio_planejado_calculado + duracao_planejado_corrente
+                end
+            end as termino_planejado
+
+        from conf
+    ),
+    proc as (
+        select
+            inicio_planejado,
+            termino_planejado,
+
+            case when duracao_planejado_corrente is not null then duracao_planejado_corrente else
+
+                case when termino_planejado is not null and inicio_planejado is not null then
+                    termino_planejado - inicio_planejado + 1
+                end
+            end as duracao_planejado
+
+    )
+    select
+        jsonb_build_object(
+            'duracao_planejado',
+            duracao_planejado::int,
+            'inicio_planejado',
+            inicio_planejado::date,
+            'termino_planejado',
+            termino_planejado::date
+        ) as res
+        into ret
+    from proc;
+
+    return ret;
+END
+$$
+LANGUAGE plpgsql;
