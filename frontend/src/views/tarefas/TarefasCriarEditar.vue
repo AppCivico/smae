@@ -608,6 +608,22 @@ iniciar();
       </div>
     </div>
 
+    <div
+      v-if="values.dependencias?.length && !isEqual(values.dependencias, dependênciasValidadas)"
+      class="error-msg mb1"
+    >
+      <p>
+        <a
+          href="#validar-dependencias"
+          class="link"
+        >
+          Valide
+        </a>
+        a relação entre essa tarefa e suas dependências antes de salvar
+        suas modificações.
+      </p>
+    </div>
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
