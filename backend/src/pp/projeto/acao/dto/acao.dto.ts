@@ -6,6 +6,7 @@ export const ProjetoAcao = {
     'arquivar': 'arquivar',
     'restaurar': 'restaurar',
     'selecionar': 'selecionar',
+    'iniciar_planejamento': 'iniciar_planejamento',
     'finalizar_planejamento': 'finalizar_planejamento',
     'validar': 'validar',
     'iniciar': 'iniciar',
