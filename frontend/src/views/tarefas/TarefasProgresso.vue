@@ -173,7 +173,8 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.duracao_real }"
           :disabled="emFoco.n_filhos_imediatos > 0"
-          @update:model-value="values.duracao_real = Number(values.duracao_real)"
+          @update:model-value="values.duracao_real = Number(values.duracao_real)
+            || null"
           @change="values.inicio_real
             ? setFieldValue(
               'termino_real',

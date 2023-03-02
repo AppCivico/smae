@@ -484,14 +484,14 @@ iniciar();
         </label>
         <Field
           v-if="
-            !emFoco?.termino_planejado_calculado
-            && !emFoco?.n_filhos_imediatos
+            !emFoco?.termino_planejado_calculado && !emFoco?.n_filhos_imediatos
           "
           name="duracao_planejado"
           type="number"
           class="inputtext light mb1"
           :class="{ 'error': errors.duracao_planejado }"
-          @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)"
+          @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)
+            || null"
           @change="values.inicio_planejado
             ? setFieldValue(
               'termino_planejado',
