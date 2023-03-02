@@ -383,7 +383,6 @@ iniciar();
                 :name="`dependencias[${idx}].latencia`"
                 type="number"
                 class="inputtext light mb1"
-                min="0"
                 step="1"
                 :class="{
                   error: errors[`dependencias[${idx}].latencia`],

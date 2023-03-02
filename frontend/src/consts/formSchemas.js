@@ -404,7 +404,7 @@ const tarefa = object()
               .min(1, 'Campo obrigatório')
               .required(),
             latencia: number()
-              .min(0),
+              .integer(),
             tipo: mixed()
               .required()
               .oneOf(['termina_pro_inicio', 'inicia_pro_inicio', 'inicia_pro_termino', 'termina_pro_termino']),
