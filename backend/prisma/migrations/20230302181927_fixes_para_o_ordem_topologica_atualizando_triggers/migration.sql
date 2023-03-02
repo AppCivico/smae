@@ -1,74 +1,17 @@
--- drop trigger trg_pp_tarefa_esticar_datas_do_pai_update on tarefa;
-CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update AFTER UPDATE ON tarefa
-    FOR EACH ROW
-    WHEN (
-        (OLD.inicio_planejado IS DISTINCT FROM NEW.inicio_planejado)
-        OR
-        (OLD.termino_planejado IS DISTINCT FROM NEW.termino_planejado)
-        OR
-        (OLD.duracao_planejado IS DISTINCT FROM NEW.duracao_planejado)
-        OR
-        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
-        OR
-        (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
-        OR
-        (OLD.duracao_real IS DISTINCT FROM NEW.duracao_real)
-        OR
-        (OLD.tarefa_pai_id IS DISTINCT FROM NEW.tarefa_pai_id)
-        OR
-        (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
-        OR
-        (OLD.percentual_concluido IS DISTINCT FROM NEW.percentual_concluido)
-        OR
-        (OLD.custo_estimado IS DISTINCT FROM NEW.custo_estimado)
-        OR
-        (OLD.custo_real IS DISTINCT FROM NEW.custo_real)
-    )
-    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
+/*
+  Warnings:
 
-CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_insert AFTER INSERT ON tarefa
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
+  - The `ordem_topologica_inicio_planejado` column on the `tarefa` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+  - The `ordem_topologica_termino_planejado` column on the `tarefa` table would be dropped and recreated. This will lead to data loss if there is data in the column.
 
+*/
+-- AlterTable
+ALTER TABLE "tarefa" DROP COLUMN "ordem_topologica_inicio_planejado",
+ADD COLUMN     "ordem_topologica_inicio_planejado" INTEGER[],
+DROP COLUMN "ordem_topologica_termino_planejado",
+ADD COLUMN     "ordem_topologica_termino_planejado" INTEGER[];
 
-CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_inc_counter() RETURNS trigger AS $emp_stamp$
-BEGIN
-    UPDATE tarefa t
-    SET
-        n_dep_inicio_planejado =  n_dep_inicio_planejado + case when new.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 1 else 0 end,
-        n_dep_termino_planejado = n_dep_termino_planejado + case when new.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 0 else 1 end
-    WHERE t.id = NEW.tarefa_id;
-
-    RETURN NEW;
-END;
-$emp_stamp$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_dec_counter() RETURNS trigger AS $emp_stamp$
-BEGIN
-    UPDATE tarefa t
-    SET
-        n_dep_inicio_planejado =  n_dep_inicio_planejado - case when OLD.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 1 else 0 end,
-        n_dep_termino_planejado = n_dep_termino_planejado - case when OLD.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 0 else 1 end
-    WHERE t.id = OLD.tarefa_id;
-
-    RETURN null;
-END;
-$emp_stamp$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_pp_tarefa_dependente_insert AFTER INSERT ON tarefa_dependente
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_inc_counter();
-
-CREATE TRIGGER trg_pp_tarefa_dependente_delete AFTER DELETE ON tarefa_dependente
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_dec_counter();
-
-
-
---
-
--- tratar os casos de intervalos negativos
-CREATE OR REPLACE FUNCTION calcula_dependencias_tarefas(config jsonb)
+CREATE OR REPLACE FUNCTION infere_data_inicio_ou_termino(config jsonb)
     RETURNS jsonb
     AS $$
 DECLARE
@@ -77,60 +20,71 @@ BEGIN
 
     with conf as (
         select
-            ((x->>'latencia')::int::varchar || ' days')::interval as latencia,
-            (x->>'tipo')::varchar as tipo,
-            --coalesce(t.inicio_real, t.inicio_planejado) as inicio,
-            --coalesce(t.termino_real, t.termino_planejado) as termino,
-            t.inicio_planejado as inicio,
-            t.termino_planejado as termino,
-            t.id as dependencia_tarefa_id
-        from jsonb_array_elements(config) x
-        join tarefa t on t.id = (x->>'dependencia_tarefa_id')::int and t.removido_em is null
+            ((x->>'duracao_planejado_corrente')::int::varchar || ' days')::interval as duracao_planejado_corrente,
+            ((x->>'duracao_planejado_corrente_dias')::int )  as duracao_planejado_corrente_dias,
+            ((x->>'duracao_planejado_calculado')::int::varchar || ' days')::interval as duracao_planejado_calculado,
+            (x->>'inicio_planejado_corrente')::date as inicio_planejado_corrente,
+            (x->>'termino_planejado_corrente')::date as termino_planejado_corrente,
+            (x->>'inicio_planejado_calculado')::date as inicio_planejado_calculado,
+            (x->>'termino_planejado_calculado')::date as termino_planejado_calculado
+        from jsonb_array_elements(('[' || config::text || ']')::jsonb) x
     ),
-    compute as (
+    compute0 as (
         select
-        case
-            when tipo = 'termina_pro_inicio' then termino + latencia
-            when tipo = 'inicia_pro_inicio' then inicio + latencia
-            when tipo = 'inicia_pro_termino' then inicio + latencia
-            when tipo = 'termina_pro_termino' then termino + latencia
-        end as date,
-        tipo
+            -- se já tem valor, ele sempre vence
+            case when inicio_planejado_corrente is not null then inicio_planejado_corrente else
+                -- cenario onde é possível calcular a data de inicio pela duracao sugerida da tarefa
+                case when termino_planejado_calculado is not null and duracao_planejado_corrente is not null then
+                    termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval -- adiciona um dia, pra se a task ter o valor de 1, ela deve começar e acabar no mesmo dia
+                end
+            end as inicio_planejado,
+            duracao_planejado_corrente_dias,
+            termino_planejado_calculado,
+            inicio_planejado_calculado,
+            termino_planejado_corrente,
+            duracao_planejado_corrente
+
         from conf
     ),
-    cols as (
-        select
-            col,
-            case when col = 'inicio_planejado' then date_min else date_max end as date
-        from (
-            select
-                case when tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 'inicio_planejado' else 'termino_planejado' end as col,
-                min(date) as date_min,
-                max(date) as date_max
-            from compute
-            group by 1
-        ) subq
+    compute as (
+            select inicio_planejado,
+
+            case
+            -- se tem começo e fim calculado, então retorna o termino calculado, passando na frente
+            -- de qualquer valor que possa existir no corrente
+            when termino_planejado_calculado is not null and inicio_planejado_calculado is not null then
+                termino_planejado_calculado
+                -- se tem inicio e duração, retorna sempre a soma do inicio + duração
+            when inicio_planejado is not null and duracao_planejado_corrente is not null then
+                inicio_planejado + duracao_planejado_corrente - '1 day'::interval
+            when
+                termino_planejado_corrente is not null
+            then
+                termino_planejado_corrente
+            end as termino_planejado,
+            duracao_planejado_corrente,
+            duracao_planejado_corrente_dias
+
+        from compute0
     ),
     proc as (
         select
-            termino_planejado::date - inicio_planejado::date + 1 as duracao_planejado,
             inicio_planejado,
-            termino_planejado
-        from (
-            select
-                (select date from cols where col = 'inicio_planejado') as inicio_planejado,
-                (select date from cols where col = 'termino_planejado') as termino_planejado
-        ) subq
+            termino_planejado,
+
+            -- se tem inicio/fim, calcula o real inicio/fim
+            case when termino_planejado is not null and inicio_planejado is not null then
+                termino_planejado::date - inicio_planejado::date + 1
+
+            -- se não, usa o valor anterior do banco
+            when duracao_planejado_corrente is not null then duracao_planejado_corrente_dias
+
+            end as duracao_planejado
+        from compute
+
     )
     select
         jsonb_build_object(
-            'duracao_planejado_calculado',
-            (select count(1) from cols) = 2,
-            'inicio_planejado_calculado',
-            (select count(1) from cols where col = 'inicio_planejado') = 1,
-            'termino_planejado_calculado',
-            (select count(1) from cols where col = 'termino_planejado') = 1,
-
             'duracao_planejado',
             duracao_planejado::int,
             'inicio_planejado',
@@ -146,98 +100,7 @@ END
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION atualiza_calendario_projeto(pProjetoId int)
-    RETURNS varchar
-    AS $$
-DECLARE
 
-v_previsao_inicio  date;
-v_realizado_inicio  date;
-v_previsao_termino date;
-v_realizado_termino date;
-v_previsao_custo  numeric;
-v_realizado_custo  numeric;
-v_previsao_duracao int;
-
-BEGIN
-
-    SELECT
-        (
-         select min(inicio_planejado)
-         from tarefa t
-         where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
-         and inicio_planejado is not null
-        ),
-        (
-         select min(inicio_real)
-         from tarefa t
-         where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
-         and inicio_real is not null
-        ),
-        (
-         select max(termino_planejado)
-         from tarefa t
-         where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
-         and termino_planejado is not null
-        ),
-        (
-         select max(termino_real)
-         from tarefa t
-         where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
-         and termino_real is not null
-        ),
-        (
-         select sum(custo_estimado)
-         from tarefa t
-         where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
-         and custo_estimado is not null
-        ),
-        (
-         select sum(custo_real)
-         from tarefa t
-         where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
-         and custo_real is not null
-        )
-        into
-            v_previsao_inicio,
-            v_realizado_inicio,
-            v_previsao_termino,
-            v_realizado_termino,
-            v_previsao_custo,
-            v_realizado_custo;
-
-    v_previsao_duracao := case when v_previsao_inicio is not null and v_previsao_termino is not null
-        then
-            v_previsao_termino - v_previsao_inicio
-        else
-            null
-        end;
-
-    UPDATE projeto p
-    SET
-        previsao_inicio = v_previsao_inicio,
-        realizado_inicio = v_realizado_inicio,
-        previsao_termino = v_previsao_termino,
-        realizado_termino = v_realizado_termino,
-        previsao_custo = v_previsao_custo,
-        realizado_custo = v_realizado_custo,
-        previsao_duracao = v_previsao_duracao
-
-    WHERE p.id = pProjetoId
-    AND (
-        (v_previsao_inicio is DISTINCT from previsao_inicio) OR
-        (v_realizado_inicio is DISTINCT from realizado_inicio) OR
-        (v_previsao_termino is DISTINCT from previsao_termino) OR
-        (v_realizado_termino is DISTINCT from realizado_termino) OR
-        (v_previsao_custo is DISTINCT from previsao_custo) OR
-        (v_realizado_custo is DISTINCT from realizado_custo) OR
-        (v_previsao_duracao is DISTINCT from previsao_duracao)
-    );
-
-    return '';
-END
-$$
-LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai() RETURNS trigger AS $emp_stamp$
@@ -282,7 +145,8 @@ BEGIN
             where dependencia_tarefa_id = NEW.id
             and tipo in ('termina_pro_inicio', 'inicia_pro_inicio')
         ) td join tarefa t on td.tarefa_id = t.id
-        --order by t.ordem_topologica_inicio_planejado desc
+        --order by t.ordem_topologica_inicio_planejado desc -- comentando por enquanto, mas nessa array vai ter a lista
+        -- de cada task pra ser visitada
     LOOP
         SELECT
             calcula_dependencias_tarefas(
@@ -654,115 +518,36 @@ BEGIN
 END;
 $emp_stamp$ LANGUAGE plpgsql;
 
-
-/*
-input:
-    inicio_planejado_corrente: dto.inicio_planejado,
-    termino_planejado_corrente: dto.termino_planejado,
-    duracao_planejado_corrente: dto.duracao_planejado,
-
-    inicio_planejado_calculado: dataDependencias.inicio_planejado,
-    termino_planejado_calculado: dataDependencias.termino_planejado,
-    duracao_planejado_calculado: dataDependencias.duracao_planejado,
-output:
-    inicio_planejado
-    termino_planejado
-    duracao_planejado
-
-deve receber os dados existentes de tarefa, e retornar os novos dados, se existir alguma forma de fazer o complemento.
-
-Se eu tenho numa tarefa X, uma duração 5, data de inicio = 1, e coloco uma dependencia no fim da tarefa Y
-
-nesse caso, que tem a data de duração preenchida, devo mudar a duração
-E se fosse o caso do registro ter apenas a duração preenchida,
-ai sim eu calculo a uma data de inicio, e então se por ventura um proximo
-update mudar a data, começaria a mudar a duração e não mais a data de inicio
-*/
-CREATE OR REPLACE FUNCTION infere_data_inicio_ou_termino(config jsonb)
-    RETURNS jsonb
-    AS $$
-DECLARE
-    ret jsonb;
+CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_inc_counter() RETURNS trigger AS $emp_stamp$
 BEGIN
+    UPDATE tarefa t
+    SET
+        n_dep_inicio_planejado =  n_dep_inicio_planejado + case when new.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 1 else 0 end,
+        n_dep_termino_planejado = n_dep_termino_planejado + case when new.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 0 else 1 end
+    WHERE t.id = NEW.tarefa_id;
 
-    with conf as (
-        select
-            ((x->>'duracao_planejado_corrente')::int::varchar || ' days')::interval as duracao_planejado_corrente,
-            ((x->>'duracao_planejado_corrente_dias')::int )  as duracao_planejado_corrente_dias,
-            ((x->>'duracao_planejado_calculado')::int::varchar || ' days')::interval as duracao_planejado_calculado,
-            (x->>'inicio_planejado_corrente')::date as inicio_planejado_corrente,
-            (x->>'termino_planejado_corrente')::date as termino_planejado_corrente,
-            (x->>'inicio_planejado_calculado')::date as inicio_planejado_calculado,
-            (x->>'termino_planejado_calculado')::date as termino_planejado_calculado
-        from jsonb_array_elements(('[' || config::text || ']')::jsonb) x
-    ),
-    compute0 as (
-        select
-            -- se já tem valor, ele sempre vence
-            case when inicio_planejado_corrente is not null then inicio_planejado_corrente else
-                -- cenario onde é possível calcular a data de inicio pela duracao sugerida da tarefa
-                case when termino_planejado_calculado is not null and duracao_planejado_corrente is not null then
-                    termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval -- adiciona um dia, pra se a task ter o valor de 1, ela deve começar e acabar no mesmo dia
-                end
-            end as inicio_planejado,
-            duracao_planejado_corrente_dias,
-            termino_planejado_calculado,
-            inicio_planejado_calculado,
-            termino_planejado_corrente,
-            duracao_planejado_corrente
+    RETURN NEW;
+END;
+$emp_stamp$ LANGUAGE plpgsql;
 
-        from conf
-    ),
-    compute as (
-            select inicio_planejado,
+CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_dec_counter() RETURNS trigger AS $emp_stamp$
+BEGIN
+    UPDATE tarefa t
+    SET
+        n_dep_inicio_planejado =  n_dep_inicio_planejado - case when OLD.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 1 else 0 end,
+        n_dep_termino_planejado = n_dep_termino_planejado - case when OLD.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 0 else 1 end
+    WHERE t.id = OLD.tarefa_id;
 
-            case
-            -- se tem começo e fim calculado, então retorna o termino calculado, passando na frente
-            -- de qualquer valor que possa existir no corrente
-            when termino_planejado_calculado is not null and inicio_planejado_calculado is not null then
-                termino_planejado_calculado
-                -- se tem inicio e duração, retorna sempre a soma do inicio + duração
-            when inicio_planejado is not null and duracao_planejado_corrente is not null then
-                inicio_planejado + duracao_planejado_corrente - '1 day'::interval
-            when
-                termino_planejado_corrente is not null
-            then
-                termino_planejado_corrente
-            end as termino_planejado,
-            duracao_planejado_corrente,
-            duracao_planejado_corrente_dias
+    RETURN null;
+END;
+$emp_stamp$ LANGUAGE plpgsql;
 
-        from compute0
-    ),
-    proc as (
-        select
-            inicio_planejado,
-            termino_planejado,
+CREATE TRIGGER trg_pp_tarefa_dependente_insert AFTER INSERT ON tarefa_dependente
+    FOR EACH ROW
+    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_inc_counter();
 
-            -- se tem inicio/fim, calcula o real inicio/fim
-            case when termino_planejado is not null and inicio_planejado is not null then
-                termino_planejado::date - inicio_planejado::date + 1
+CREATE TRIGGER trg_pp_tarefa_dependente_delete AFTER DELETE ON tarefa_dependente
+    FOR EACH ROW
+    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_dec_counter();
 
-            -- se não, usa o valor anterior do banco
-            when duracao_planejado_corrente is not null then duracao_planejado_corrente_dias
 
-            end as duracao_planejado
-        from compute
-
-    )
-    select
-        jsonb_build_object(
-            'duracao_planejado',
-            duracao_planejado::int,
-            'inicio_planejado',
-            inicio_planejado::date,
-            'termino_planejado',
-            termino_planejado::date
-        ) as res
-        into ret
-    from proc;
-
-    return ret;
-END
-$$
-LANGUAGE plpgsql;

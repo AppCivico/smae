@@ -2412,10 +2412,11 @@ model Tarefa {
     termino_planejado DateTime? @db.Date()
     duracao_planejado Int?
 
-    n_dep_inicio_planejado             Int @default(0) @db.SmallInt
-    n_dep_termino_planejado            Int @default(0) @db.SmallInt
-    ordem_topologica_inicio_planejado  Int @default(0) @db.SmallInt
-    ordem_topologica_termino_planejado Int @default(0) @db.SmallInt
+    n_dep_inicio_planejado             Int   @default(0) @db.SmallInt
+    n_dep_termino_planejado            Int   @default(0) @db.SmallInt
+
+    ordem_topologica_inicio_planejado  Int[]
+    ordem_topologica_termino_planejado Int[]
 
     inicio_real  DateTime? @db.Date()
     termino_real DateTime? @db.Date()

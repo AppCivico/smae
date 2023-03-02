@@ -73,18 +73,14 @@ export class TarefaService {
                     dto.termino_planejado = dataDependencias.termino_planejado;
                 }
 
-
-                // WIP
-                //                const patched = await this.calcInfereDataPeloPeriodo(prismaTx, dto, dataDependencias);
-                //                if (patched.inicio_planejado)
-                //                    dto.inicio_planejado = patched.inicio_planejado;
-                //                if (patched.termino_planejado)
-                //                    dto.termino_planejado = patched.termino_planejado;
-                //                if (patched.duracao_planejado)
-                //                    dto.duracao_planejado = patched.duracao_planejado;
+                // usa a função do banco, que sabe fazer conta muito melhor que duplicar o código aqui no JS
+                const patched = await this.calcInfereDataPeloPeriodo(prismaTx, dto, dataDependencias);
+                dto.inicio_planejado = patched.inicio_planejado;
+                dto.termino_planejado = patched.termino_planejado;
+                dto.duracao_planejado = patched.duracao_planejado;
 
             } else {
-                // não tem dependencias, e como é create, tbm não há filhos
+                // não tem dependências, e como é create, tbm não há filhos
 
                 if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
                     throw new HttpException("Se há Início e Término planejado, deve existir uma duração.", 400);
@@ -150,7 +146,13 @@ export class TarefaService {
         return { id: created.id }
     }
 
-    async calcInfereDataPeloPeriodo(prismaTx: Prisma.TransactionClient, dto: CreateTarefaDto, dataDependencias: DependenciasDatasDto): Promise<InferenciaDatasDto> {
+    async calcInfereDataPeloPeriodo(prismaTx: Prisma.TransactionClient,
+        dto: {
+            inicio_planejado?: Date | null,
+            termino_planejado?: Date | null,
+            duracao_planejado?: number | null
+        },
+        dataDependencias: DependenciasDatasDto): Promise<InferenciaDatasDto> {
 
         const json = JSON.stringify({
             inicio_planejado_corrente: dto.inicio_planejado,
@@ -294,6 +296,9 @@ export class TarefaService {
                 select: {
                     id: true, tarefa_pai_id: true, nivel: true, numero: true,
                     n_filhos_imediatos: true,
+                    inicio_planejado: true,
+                    termino_planejado: true,
+                    duracao_planejado: true
                 }
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
@@ -337,6 +342,16 @@ export class TarefaService {
                     (dto as any).duracao_planejado_calculado = duracao_planejado_calculado;
                     (dto as any).inicio_planejado_calculado = inicio_planejado_calculado;
                     (dto as any).termino_planejado_calculado = termino_planejado_calculado;
+
+                    // usa a função do banco, que sabe fazer conta muito melhor que duplicar o código aqui no JS
+                    const patched = await this.calcInfereDataPeloPeriodo(prismaTx, {
+                        inicio_planejado: dto.inicio_planejado === undefined ? tarefa.inicio_planejado : dto.inicio_planejado,
+                        termino_planejado: dto.termino_planejado === undefined ? tarefa.termino_planejado : dto.termino_planejado,
+                        duracao_planejado: dto.duracao_planejado === undefined ? tarefa.duracao_planejado : dto.duracao_planejado,
+                    }, dataDependencias);
+                    dto.inicio_planejado = patched.inicio_planejado;
+                    dto.termino_planejado = patched.termino_planejado;
+                    dto.duracao_planejado = patched.duracao_planejado;
                 }
 
                 await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: tarefa.id } });
