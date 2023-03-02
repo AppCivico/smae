@@ -3,8 +3,8 @@
 import requestS from '@/helpers/requestS.ts';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 import { createPinia } from 'pinia';
-import { createApp } from 'vue';
-import type { Router } from 'vue-router';
+import { createApp, markRaw } from 'vue';
+import type { RouteLocationNormalized, Router } from 'vue-router';
 import { useRoute } from 'vue-router';
 import App from './App.vue';
 import { router } from './router';
@@ -25,16 +25,26 @@ declare module 'pinia' {
   export interface PiniaCustomProperties {
     requestS: RequestS;
     router: Router;
+    route: RouteLocationNormalized;
+  }
+  export interface PiniaCustomStateProperties {
+    route: RouteLocationNormalized;
   }
 }
 
 pinia.use(({ store }) => {
   // eslint-disable-next-line no-param-reassign
   store.route = useRoute();
-  return { requestS };
+  return { requestS: markRaw(requestS) };
 });
 
-app.config.globalProperties.requestS = requestS;
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $requestS: RequestS;
+  }
+}
+
+app.config.globalProperties.$requestS = markRaw(requestS);
 
 app.use(pinia);
 app.use(router);
