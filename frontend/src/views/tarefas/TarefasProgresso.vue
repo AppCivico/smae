@@ -201,7 +201,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           @update:model-value="values.termino_real === ''
             ? values.termino_real = null
             : null"
-          @change="values.termino_real
+          @change="values.termino_real && values.inicio_real
             ? setFieldValue(
               'duracao_real',
               subtractDates(values.termino_real, values.inicio_real) + 1

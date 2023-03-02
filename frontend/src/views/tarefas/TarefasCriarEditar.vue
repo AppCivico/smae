@@ -552,7 +552,7 @@ iniciar();
           @update:model-value="values.termino_planejado === ''
             ? values.termino_planejado = null
             : null"
-          @change="values.termino_planejado
+          @change="values.termino_planejado && values.inicio_planejado
             ? setFieldValue(
               'duracao_planejado',
               subtractDates(values.termino_planejado, values.inicio_planejado) + 1
