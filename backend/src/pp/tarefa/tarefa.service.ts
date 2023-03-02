@@ -313,19 +313,22 @@ export class TarefaService {
                     // aqui talvez seja melhor mudar pra undefined, pro front só deixar disabled
                     // mas ai no create ficaria diferente, ou tbm teria que deixar opicional e criar mais checks
                     if (duracao_planejado_calculado && dto.duracao_planejado !== null) {
-                        throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
+                        //throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
+                        dto.duracao_planejado = dataDependencias.duracao_planejado;
                     } else if (duracao_planejado_calculado) {
                         dto.duracao_planejado = dataDependencias.duracao_planejado;
                     }
 
                     if (inicio_planejado_calculado && dto.inicio_planejado !== null) {
-                        throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                        //throw new HttpException("Início planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                        dto.inicio_planejado = dataDependencias.inicio_planejado;
                     } else if (inicio_planejado_calculado) {
                         dto.inicio_planejado = dataDependencias.inicio_planejado;
                     }
 
                     if (termino_planejado_calculado && dto.termino_planejado !== null) {
-                        throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                        //throw new HttpException("Término planejado não pode ser enviado, pois será calculado automaticamente pelas dependências.", 400);
+                        dto.termino_planejado = dataDependencias.termino_planejado;
                     } else if (termino_planejado_calculado) {
                         dto.termino_planejado = dataDependencias.termino_planejado;
                     }
