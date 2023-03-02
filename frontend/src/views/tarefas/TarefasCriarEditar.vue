@@ -58,7 +58,13 @@ const todasAsOutrasTarefas = computed(() => tarefasComHierarquia.value
 // eslint-disable-next-line max-len
 const filtrarIrmãs = (listagem = [], id = props.tarefaId) => listagem.filter((x) => x.id !== id);
 
-async function onSubmit(_, { controlledValues: carga }) {
+async function onSubmit(_, { controlledValues: valores }) {
+  const carga = valores;
+
+  if (!carga.dependencias) {
+    carga.dependencias = [];
+  }
+
   try {
     const msg = props.tarefaId
       ? 'Dados salvos com sucesso!'
@@ -443,7 +449,7 @@ iniciar();
         <Field
           v-if="
             !emFoco?.inicio_planejado_calculado
-              && !emFoco?.n_filhos_imediatos
+            && !emFoco?.n_filhos_imediatos
           "
           name="inicio_planejado"
           type="date"
@@ -479,7 +485,7 @@ iniciar();
         <Field
           v-if="
             !emFoco?.termino_planejado_calculado
-              && !emFoco?.n_filhos_imediatos
+            && !emFoco?.n_filhos_imediatos
           "
           name="duracao_planejado"
           type="number"
@@ -512,7 +518,7 @@ iniciar();
         <Field
           v-if="
             !emFoco?.termino_planejado_calculado
-              && !emFoco?.n_filhos_imediatos
+            && !emFoco?.n_filhos_imediatos
           "
           name="termino_planejado"
           type="date"
