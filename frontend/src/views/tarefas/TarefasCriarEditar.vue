@@ -14,7 +14,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, Form
 } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -58,6 +58,12 @@ const todasAsOutrasTarefas = computed(() => tarefasComHierarquia.value
 // eslint-disable-next-line max-len
 const filtrarIrmãs = (listagem = [], id = props.tarefaId) => listagem.filter((x) => x.id !== id);
 
+watch(emFoco, () => {
+  if (emFoco.value?.dependencias?.length) {
+    dependênciasValidadas.value = emFoco.value?.dependencias;
+  }
+});
+
 async function onSubmit(_, { controlledValues: valores }) {
   const carga = valores;
 
@@ -100,13 +106,8 @@ async function validarDependências(dependências) {
 }
 
 async function iniciar() {
+  // apenas porque alguma tarefa nova pode ter sido criada por outra pessoa
   tarefasStore.buscarTudo();
-
-  if (props.tarefaId) {
-    if (emFoco.value?.dependencias?.length) {
-      // buscar dependencias
-    }
-  }
 }
 
 iniciar();
