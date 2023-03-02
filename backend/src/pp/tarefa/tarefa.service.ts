@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, Type } from 'class-transformer';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -13,8 +13,11 @@ import { TarefaUtilsService } from './tarefa.service.utils';
 
 
 export class InferenciaDatasDto {
+    @Type(() => Date)
     inicio_planejado: Date | null
+    @Type(() => Date)
     termino_planejado: Date | null
+    @Type(() => Number)
     duracao_planejado: number | null
 }
 
@@ -166,8 +169,7 @@ export class TarefaService {
 
         const res = await prismaTx.$queryRaw`select infere_data_inicio_ou_termino(${json}::jsonb)` as any;
 
-        const resp = (res[0]['infere_data_inicio_ou_termino']) as InferenciaDatasDto;
-        return resp;
+        return plainToInstance(InferenciaDatasDto, res[0]['infere_data_inicio_ou_termino']);
     }
 
     async calcDataDependencias(prismaTx: Prisma.TransactionClient, deps: TarefaDependenciaDto[] | null | undefined): Promise<DependenciasDatasDto | null> {
