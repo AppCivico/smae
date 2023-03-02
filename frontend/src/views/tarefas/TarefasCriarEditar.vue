@@ -500,7 +500,7 @@ iniciar();
         <Field
           v-if="!emFoco?.n_filhos_imediatos"
           :disabled="
-            emFoco?.termino_planejado_calculado
+            emFoco?.duracao_planejado_calculado
             || chamadasPendentes.validaçãoDeDependências
           "
           name="duracao_planejado"
