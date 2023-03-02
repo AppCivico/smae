@@ -429,8 +429,6 @@ iniciar();
         <button
           class="btn outline bgnone tcprimary mr2"
           type="button"
-          :disabled="isEqual(values.dependencias, dependênciasValidadas)
-          "
           @click="validarDependências(values.dependencias)"
         >
           Validar dependências
