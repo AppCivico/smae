@@ -75,13 +75,13 @@ export class TarefaService {
 
 
                 // WIP
-//                const patched = await this.calcInfereDataPeloPeriodo(prismaTx, dto, dataDependencias);
-//                if (patched.inicio_planejado)
-//                    dto.inicio_planejado = patched.inicio_planejado;
-//                if (patched.termino_planejado)
-//                    dto.termino_planejado = patched.termino_planejado;
-//                if (patched.duracao_planejado)
-//                    dto.duracao_planejado = patched.duracao_planejado;
+                //                const patched = await this.calcInfereDataPeloPeriodo(prismaTx, dto, dataDependencias);
+                //                if (patched.inicio_planejado)
+                //                    dto.inicio_planejado = patched.inicio_planejado;
+                //                if (patched.termino_planejado)
+                //                    dto.termino_planejado = patched.termino_planejado;
+                //                if (patched.duracao_planejado)
+                //                    dto.duracao_planejado = patched.duracao_planejado;
 
             } else {
                 // não tem dependencias, e como é create, tbm não há filhos
@@ -332,6 +332,11 @@ export class TarefaService {
                     } else if (termino_planejado_calculado) {
                         dto.termino_planejado = dataDependencias.termino_planejado;
                     }
+
+                    // achei melhor do que colocar os campos lá no DTO e botar pra esconder no swagger
+                    (dto as any).duracao_planejado_calculado = duracao_planejado_calculado;
+                    (dto as any).inicio_planejado_calculado = inicio_planejado_calculado;
+                    (dto as any).termino_planejado_calculado = termino_planejado_calculado;
                 }
 
                 await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: tarefa.id } });
