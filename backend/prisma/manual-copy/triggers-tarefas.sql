@@ -220,6 +220,11 @@ DECLARE
     v_percentual_concluido numeric;
 
     v_tmp jsonb;
+
+    v_tmp_inicio_calc boolean;
+    v_tmp_termino_calc boolean;
+    v_tmp_duracao_calc boolean;
+
     r record;
 BEGIN
 
@@ -255,17 +260,36 @@ BEGIN
         where tarefa_id = r.tarefa_id
         and tipo in ('termina_pro_inicio', 'inicia_pro_inicio');
 
+        RAISE NOTICE '->> calcula_dependencias_tarefas %', v_tmp::text || ' ' || ROW_TO_JSON(r)::text;
+
+        v_tmp_inicio_calc := (v_tmp->>'inicio_planejado_calculado')::boolean;
+        v_tmp_termino_calc := (v_tmp->>'termino_planejado_calculado')::boolean;
+        v_tmp_duracao_calc := (v_tmp->>'duracao_planejado_calculado')::boolean;
+
+        select infere_data_inicio_ou_termino(
+            jsonb_build_object(
+                'duracao_planejado_corrente', case when v_tmp_duracao_calc then (v_tmp->>'v_tmp_duracao_calc')::int else r.duracao_planejado end,
+                'duracao_planejado_calculado', (v_tmp->>'v_tmp_duracao_calc')::int,
+                'inicio_planejado_corrente', case when v_tmp_inicio_calc then (v_tmp->>'inicio_planejado')::date else r.inicio_planejado end,
+                'termino_planejado_corrente', case when v_tmp_termino_calc then (v_tmp->>'termino_planejado')::date else r.termino_planejado end,
+                'inicio_planejado_calculado', (v_tmp->>'inicio_planejado')::date,
+                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date
+            )
+        ) into v_tmp;
+
+        RAISE NOTICE '->> infere_data_inicio_ou_termino %', v_tmp::text;
+
         update tarefa me
         set
-            duracao_planejado = coalesce(v_tmp.duracao_planejado, r.duracao_planejado),
-            inicio_planejado = coalesce(v_tmp.inicio_planejado, r.inicio_planejado),
-            termino_planejado = coalesce(v_tmp.termino_planejado, r.termino_planejado),
+            duracao_planejado = (v_tmp->>'duracao_planejado')::int,
+            inicio_planejado = (v_tmp->>'inicio_planejado')::date,
+            termino_planejado = (v_tmp->>'termino_planejado')::date,
             atualizado_em = now()
         where me.id = r.tarefa_id
         and (
-            (duracao_planejado IS DISTINCT FROM coalesce(v_tmp.duracao_planejado, r.duracao_planejado)) OR
-            (inicio_planejado IS DISTINCT FROM coalesce(v_tmp.inicio_planejado, r.inicio_planejado)) OR
-            (termino_planejado IS DISTINCT FROM coalesce(v_tmp.termino_planejado, r.termino_planejado))
+            (duracao_planejado IS DISTINCT FROM (v_tmp->>'duracao_planejado')::int) OR
+            (inicio_planejado IS DISTINCT FROM (v_tmp->>'inicio_planejado')::date) OR
+            (termino_planejado IS DISTINCT FROM (v_tmp->>'termino_planejado')::date)
         );
 
     END LOOP;
@@ -294,17 +318,36 @@ BEGIN
         where tarefa_id = r.tarefa_id
         and tipo not in ('termina_pro_inicio', 'inicia_pro_inicio');
 
+        RAISE NOTICE '->> calcula_dependencias_tarefas %', v_tmp::text || ' ' || ROW_TO_JSON(r)::text;
+
+        v_tmp_inicio_calc := (v_tmp->>'inicio_planejado_calculado')::boolean;
+        v_tmp_termino_calc := (v_tmp->>'termino_planejado_calculado')::boolean;
+        v_tmp_duracao_calc := (v_tmp->>'duracao_planejado_calculado')::boolean;
+
+        select infere_data_inicio_ou_termino(
+            jsonb_build_object(
+                'duracao_planejado_corrente', case when v_tmp_duracao_calc then (v_tmp->>'v_tmp_duracao_calc')::int else r.duracao_planejado end,
+                'duracao_planejado_calculado', (v_tmp->>'v_tmp_duracao_calc')::int,
+                'inicio_planejado_corrente', case when v_tmp_inicio_calc then (v_tmp->>'inicio_planejado')::date else r.inicio_planejado end,
+                'termino_planejado_corrente', case when v_tmp_termino_calc then (v_tmp->>'termino_planejado')::date else r.termino_planejado end,
+                'inicio_planejado_calculado', (v_tmp->>'inicio_planejado')::date,
+                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date
+            )
+        ) into v_tmp;
+
+        RAISE NOTICE '->> infere_data_inicio_ou_termino %', v_tmp::text;
+
         update tarefa me
         set
-            duracao_planejado = coalesce(v_tmp.duracao_planejado, r.duracao_planejado),
-            inicio_planejado = coalesce(v_tmp.inicio_planejado, r.inicio_planejado),
-            termino_planejado = coalesce(v_tmp.termino_planejado, r.termino_planejado),
+            duracao_planejado = (v_tmp->>'duracao_planejado')::int,
+            inicio_planejado = (v_tmp->>'inicio_planejado')::date,
+            termino_planejado = (v_tmp->>'termino_planejado')::date,
             atualizado_em = now()
         where me.id = r.tarefa_id
         and (
-            (duracao_planejado IS DISTINCT FROM coalesce(v_tmp.duracao_planejado, r.duracao_planejado)) OR
-            (inicio_planejado IS DISTINCT FROM coalesce(v_tmp.inicio_planejado, r.inicio_planejado)) OR
-            (termino_planejado IS DISTINCT FROM coalesce(v_tmp.termino_planejado, r.termino_planejado))
+            (duracao_planejado IS DISTINCT FROM (v_tmp->>'duracao_planejado')::int) OR
+            (inicio_planejado IS DISTINCT FROM (v_tmp->>'inicio_planejado')::date) OR
+            (termino_planejado IS DISTINCT FROM (v_tmp->>'termino_planejado')::date)
         );
 
     END LOOP;
@@ -611,12 +654,13 @@ BEGIN
     with conf as (
         select
             ((x->>'duracao_planejado_corrente')::int::varchar || ' days')::interval as duracao_planejado_corrente,
+            ((x->>'duracao_planejado_corrente_dias')::int )  as duracao_planejado_corrente_dias,
             ((x->>'duracao_planejado_calculado')::int::varchar || ' days')::interval as duracao_planejado_calculado,
             (x->>'inicio_planejado_corrente')::date as inicio_planejado_corrente,
             (x->>'termino_planejado_corrente')::date as termino_planejado_corrente,
             (x->>'inicio_planejado_calculado')::date as inicio_planejado_calculado,
             (x->>'termino_planejado_calculado')::date as termino_planejado_calculado
-        from jsonb_array_elements(config) x
+        from jsonb_array_elements(('[' || config::text || ']')::jsonb) x
     ),
     compute as (
         select
@@ -632,9 +676,11 @@ BEGIN
             case when termino_planejado_corrente is not null then termino_planejado_corrente else
                 -- cenario onde é possível calcular a data de termino pela duracao sugerida da tarefa
                 case when inicio_planejado_calculado is not null and duracao_planejado_corrente is not null then
-                    inicio_planejado_calculado + duracao_planejado_corrente
+                    inicio_planejado_calculado + duracao_planejado_corrente - '1 day'::interval
                 end
-            end as termino_planejado
+            end as termino_planejado,
+            duracao_planejado_corrente,
+            duracao_planejado_corrente_dias
 
         from conf
     ),
@@ -643,12 +689,15 @@ BEGIN
             inicio_planejado,
             termino_planejado,
 
-            case when duracao_planejado_corrente is not null then duracao_planejado_corrente else
+            -- se tem inicio/fim, calcula o real inicio/fim
+            case when termino_planejado is not null and inicio_planejado is not null then
+                termino_planejado::date - inicio_planejado::date + 1
 
-                case when termino_planejado is not null and inicio_planejado is not null then
-                    termino_planejado - inicio_planejado + 1
-                end
+            -- se não, usa o valor anterior do banco
+            when duracao_planejado_corrente is not null then duracao_planejado_corrente_dias
+
             end as duracao_planejado
+        from compute
 
     )
     select

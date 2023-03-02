@@ -62,6 +62,9 @@ export class TarefaController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async update(@Param() params: FindTwoParams, @Body() dto: UpdateTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        // verificar como fazer o check pro responsavel poder editar o realizado, mesmo depois de não poder
+        // mais fazer escritas no projeto em si
+
         const projeto = await this.projetoService.findOne(params.id, user, false);
         return await this.tarefaService.update(projeto.id, params.id2, dto, user);
     }
