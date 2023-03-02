@@ -562,7 +562,7 @@ export class ProjetoService {
                 && projeto.responsavel_id
                 && projeto.responsavel_id == +user.id
             ) {
-                pessoaPodeEscrever = (['Registrado', 'Selecionado'] as ProjetoStatus[]).includes(projeto.status);
+                pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(projeto.status);
             } else {
                 throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
             }
@@ -792,6 +792,7 @@ export class ProjetoService {
     async getProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string> {
         const codigo: string = "";
 
+        // buscar o ano baseado em 'selecionado_em'
         const projeto = await prismaTx.projeto.findFirstOrThrow({
             where: {id},
             select: {
@@ -826,7 +827,7 @@ export class ProjetoService {
           .concat(projeto.meta ? ('M' + projeto.meta.codigo) : ('M000'))
           .concat('.')
           .concat(projetoIndexRefPortfolio.toString());
-        
+
         return codigo;
     }
 
