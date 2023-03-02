@@ -20,6 +20,7 @@ interface TarefasPorNível {
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
+  validaçãoDeDependências: boolean
 }
 
 interface Estado {
@@ -46,6 +47,7 @@ export const useTarefasStore = defineStore('tarefas', {
     chamadasPendentes: {
       lista: true,
       emFoco: true,
+      validaçãoDeDependências: false,
     },
 
     erro: null,
@@ -106,6 +108,7 @@ export const useTarefasStore = defineStore('tarefas', {
         }
 
         this.chamadasPendentes.emFoco = false;
+        this.erro = null;
         return resposta;
       } catch (erro) {
         this.erro = erro;
@@ -115,6 +118,8 @@ export const useTarefasStore = defineStore('tarefas', {
     },
 
     async validarDependências(params: { tarefa_corrente_id: number; dependencias: [] }) {
+      this.chamadasPendentes.validaçãoDeDependências = true;
+
       try {
         type Atualização = {
           inicio_planejado_calculado: boolean;
@@ -135,21 +140,33 @@ export const useTarefasStore = defineStore('tarefas', {
 
         if (resposta.inicio_planejado_calculado) {
           atualização.inicio_planejado = resposta.inicio_planejado;
+
+          if (!resposta.inicio_planejado) {
+            atualização.termino_planejado = null;
+          }
         }
         if (resposta.duracao_planejado_calculado) {
           atualização.duracao_planejado = resposta.duracao_planejado;
         }
         if (resposta.termino_planejado_calculado) {
           atualização.termino_planejado = resposta.termino_planejado;
+
+          if (!resposta.termino_planejado) {
+            atualização.inicio_planejado = null;
+          }
         }
 
         this.$patch({
           emFoco: { ...this.emFoco, ...atualização },
         });
 
+        this.chamadasPendentes.validaçãoDeDependências = false;
+        this.erro = null;
+
         return resposta;
       } catch (erro) {
         this.erro = erro;
+        this.chamadasPendentes.validaçãoDeDependências = false;
         return false;
       }
     },

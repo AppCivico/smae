@@ -321,6 +321,10 @@ iniciar();
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
+                :class="{
+                  error: errors[`dependencias[${idx}].dependencia_tarefa_id`],
+                  loading: chamadasPendentes.validaçãoDeDependências
+                }"
               >
                 <option value="">
                   Selecionar
@@ -349,6 +353,10 @@ iniciar();
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
+                :class="{
+                  error: errors[`dependencias[${idx}].tipo`],
+                  loading: chamadasPendentes.validaçãoDeDependências
+                }"
               >
                 <option value="">
                   Selecionar
@@ -377,10 +385,12 @@ iniciar();
                 class="inputtext light mb1"
                 min="0"
                 step="1"
-                @update:model-value="
-                  fields[idx]?.value?.latencia
-                    ? (fields[idx].value.latencia = Number(fields[idx].value.latencia))
-                    : null
+                :class="{
+                  error: errors[`dependencias[${idx}].latencia`],
+                  loading: chamadasPendentes.validaçãoDeDependências
+                }"
+                @update:model-value="fields[idx].value.latencia = Number(fields[idx].value.latencia)
+                  || 0
                 "
               />
 
@@ -395,6 +405,7 @@ iniciar();
               arial-label="excluir"
               title="excluir"
               type="button"
+              :disabled="chamadasPendentes.validaçãoDeDependências"
               @click="remove(idx)"
             >
               <svg
@@ -407,6 +418,7 @@ iniciar();
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="chamadasPendentes.validaçãoDeDependências"
             @click="push({
               dependencia_tarefa_id: 0,
               tipo: '',
@@ -429,6 +441,7 @@ iniciar();
         <button
           class="btn outline bgnone tcprimary mr2"
           type="button"
+          :disabled="chamadasPendentes.validaçãoDeDependências"
           @click="validarDependências(values.dependencias)"
         >
           Validar dependências
@@ -446,11 +459,17 @@ iniciar();
         </label>
         <Field
           v-if="!emFoco?.n_filhos_imediatos"
-          :disabled="emFoco?.inicio_planejado_calculado"
+          :disabled="
+            emFoco?.inicio_planejado_calculado
+            || chamadasPendentes.validaçãoDeDependências
+          "
           name="inicio_planejado"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.inicio_planejado }"
+          :class="{
+            error: errors.inicio_planejado,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
           maxlength="10"
           @update:model-value="values.inicio_planejado === ''
             ? values.inicio_planejado = null
@@ -480,11 +499,17 @@ iniciar();
         </label>
         <Field
           v-if="!emFoco?.n_filhos_imediatos"
-          :disabled="emFoco?.termino_planejado_calculado"
+          :disabled="
+            emFoco?.termino_planejado_calculado
+            || chamadasPendentes.validaçãoDeDependências
+          "
           name="duracao_planejado"
           type="number"
           class="inputtext light mb1"
-          :class="{ 'error': errors.duracao_planejado }"
+          :class="{
+            error: errors.duracao_planejado,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
           @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)
             || null"
           @change="values.inicio_planejado
@@ -512,12 +537,17 @@ iniciar();
         </label>
         <Field
           v-if="!emFoco?.n_filhos_imediatos"
-          :disabled="emFoco?.termino_planejado_calculado ||
-            (emFoco?.inicio_planejado_calculado && !emFoco?.inicio_planejado)"
+          :disabled="
+            emFoco?.termino_planejado_calculado
+            || chamadasPendentes.validaçãoDeDependências
+            || (emFoco?.inicio_planejado_calculado && !emFoco?.inicio_planejado)"
           name="termino_planejado"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.termino_planejado }"
+          :class="{
+            error: errors.termino_planejado,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
           maxlength="10"
           @update:model-value="values.termino_planejado === ''
             ? values.termino_planejado = null
@@ -626,6 +656,7 @@ iniciar();
         class="btn big"
         :disabled="isSubmitting
           || Object.keys(errors)?.length
+          || chamadasPendentes.validaçãoDeDependências
           || (values.dependencias?.length && !isEqual(values.dependencias, dependênciasValidadas))
         "
         :title="Object.keys(errors)?.length
