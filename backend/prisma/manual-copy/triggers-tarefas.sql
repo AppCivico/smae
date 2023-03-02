@@ -662,7 +662,7 @@ BEGIN
             (x->>'termino_planejado_calculado')::date as termino_planejado_calculado
         from jsonb_array_elements(('[' || config::text || ']')::jsonb) x
     ),
-    compute as (
+    compute0 as (
         select
             -- se já tem valor, ele sempre vence
             case when inicio_planejado_corrente is not null then inicio_planejado_corrente else
@@ -671,18 +671,34 @@ BEGIN
                     termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval -- adiciona um dia, pra se a task ter o valor de 1, ela deve começar e acabar no mesmo dia
                 end
             end as inicio_planejado,
+            duracao_planejado_corrente_dias,
+            termino_planejado_calculado,
+            inicio_planejado_calculado,
+            termino_planejado_corrente,
+            duracao_planejado_corrente
 
-            -- se já tem valor, ele sempre vence
-            case when termino_planejado_corrente is not null then termino_planejado_corrente else
-                -- cenario onde é possível calcular a data de termino pela duracao sugerida da tarefa
-                case when inicio_planejado_calculado is not null and duracao_planejado_corrente is not null then
-                    inicio_planejado_calculado + duracao_planejado_corrente - '1 day'::interval
-                end
+        from conf
+    ),
+    compute as (
+            select inicio_planejado,
+
+            case
+            -- se tem começo e fim calculado, então retorna o termino calculado, passando na frente
+            -- de qualquer valor que possa existir no corrente
+            when termino_planejado_calculado is not null and inicio_planejado_calculado is not null then
+                termino_planejado_calculado
+                -- se tem inicio e duração, retorna sempre a soma do inicio + duração
+            when inicio_planejado is not null and duracao_planejado_corrente is not null then
+                inicio_planejado + duracao_planejado_corrente - '1 day'::interval
+            when
+                termino_planejado_corrente is not null
+            then
+                termino_planejado_corrente
             end as termino_planejado,
             duracao_planejado_corrente,
             duracao_planejado_corrente_dias
 
-        from conf
+        from compute0
     ),
     proc as (
         select
