@@ -445,10 +445,8 @@ iniciar();
           Previsão de início
         </label>
         <Field
-          v-if="
-            !emFoco?.inicio_planejado_calculado
-            && !emFoco?.n_filhos_imediatos
-          "
+          v-if="!emFoco?.n_filhos_imediatos"
+          :disabled="emFoco?.inicio_planejado_calculado"
           name="inicio_planejado"
           type="date"
           class="inputtext light mb1"
@@ -481,9 +479,8 @@ iniciar();
           Duração prevista
         </label>
         <Field
-          v-if="
-            !emFoco?.termino_planejado_calculado && !emFoco?.n_filhos_imediatos
-          "
+          v-if="!emFoco?.n_filhos_imediatos"
+          :disabled="emFoco?.termino_planejado_calculado"
           name="duracao_planejado"
           type="number"
           class="inputtext light mb1"
@@ -514,10 +511,9 @@ iniciar();
           Previsão de término
         </label>
         <Field
-          v-if="
-            !emFoco?.termino_planejado_calculado
-            && !emFoco?.n_filhos_imediatos
-          "
+          v-if="!emFoco?.n_filhos_imediatos"
+          :disabled="emFoco?.termino_planejado_calculado ||
+            (emFoco?.inicio_planejado_calculado && !emFoco?.inicio_planejado)"
           name="termino_planejado"
           type="date"
           class="inputtext light mb1"
