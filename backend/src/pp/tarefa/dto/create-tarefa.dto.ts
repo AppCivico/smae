@@ -106,6 +106,7 @@ export class CreateTarefaDto {
     @IsInt({ message: '$property| precisa ser inteiro' })
     @Min(1, { message: '$property| Mínimo 1' })
     @ValidateIf((object, value) => value !== null)
+    @Transform(({ value }: any) => String(value) === '0' || value === null ? null : +value)
     duracao_planejado?: number | null
 
     /**
