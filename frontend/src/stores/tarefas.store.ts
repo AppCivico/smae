@@ -116,10 +116,35 @@ export const useTarefasStore = defineStore('tarefas', {
 
     async validarDependências(params: { tarefa_corrente_id: number; dependencias: [] }) {
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/projeto/${this.route.params.projetoId}/dependencias`, params);
+        type Atualização = {
+          inicio_planejado_calculado: boolean;
+          duracao_planejado_calculado: boolean;
+          termino_planejado_calculado: boolean;
+          inicio_planejado?: string | null;
+          duracao_planejado?: number | null | undefined;
+          termino_planejado?: string | null;
+        };
+
+        const resposta: Atualização = await this.requestS.post(`${baseUrl}/projeto/${this.route.params.projetoId}/dependencias`, params);
+
+        const atualização: Atualização = {
+          inicio_planejado_calculado: resposta.inicio_planejado_calculado,
+          duracao_planejado_calculado: resposta.duracao_planejado_calculado,
+          termino_planejado_calculado: resposta.termino_planejado_calculado,
+        };
+
+        if (resposta.inicio_planejado_calculado) {
+          atualização.inicio_planejado = resposta.inicio_planejado;
+        }
+        if (resposta.duracao_planejado_calculado) {
+          atualização.duracao_planejado = resposta.duracao_planejado;
+        }
+        if (resposta.termino_planejado_calculado) {
+          atualização.termino_planejado = resposta.termino_planejado;
+        }
 
         this.$patch({
-          emFoco: { ...this.emFoco, ...resposta },
+          emFoco: { ...this.emFoco, ...atualização },
         });
 
         return resposta;
