@@ -23,6 +23,10 @@ export default {
       type: Object,
       required: true,
     },
+    nívelMáximoVisível: {
+      type: Number,
+      default: 0,
+    },
   },
   data() {
     return {
@@ -170,7 +174,12 @@ export default {
     </td>
   </tr>
 
-  <template v-if="Array.isArray(linha.children)">
+  <template
+    v-if="
+      Array.isArray(linha.children)
+      && (!nívelMáximoVisível || nívelMáximoVisível > linha.nivel)
+    "
+  >
     <LinhaDeCronograma
       v-for="(linhaFilha, i) in linha.children"
       :key="linhaFilha.id"
@@ -178,6 +187,7 @@ export default {
       :índice="i"
       :linha="linhaFilha"
       class="tabela-de-etapas__item--sub"
+      :nível-máximo-visível="nívelMáximoVisível"
     />
   </template>
 </template>
