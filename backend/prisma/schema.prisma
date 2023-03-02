@@ -2502,6 +2502,7 @@ model ProjetoRisco {
     @@map("projeto_risco")
 }
 
+// de 0 até N tarefas
 model RiscoTarefa {
     id Int @id @default(autoincrement())
 
