@@ -311,7 +311,7 @@ export class TarefaService {
                     termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
 
                     // aqui talvez seja melhor mudar pra undefined, pro front só deixar disabled
-                    // mas ai no create ficaria diferente, ou tbm teria que deixar opicional e criar mais checks
+                    // mas ai no create ficaria diferente, ou tbm teria que deixar opcional e criar mais checks
                     if (duracao_planejado_calculado && dto.duracao_planejado !== null) {
                         //throw new HttpException("Duração não pode ser enviada, pois será calculada automaticamente pelas dependências.", 400);
                         dto.duracao_planejado = dataDependencias.duracao_planejado;
