@@ -576,9 +576,17 @@ iniciar();
         arial-label="limpar datas"
         title="limpar datas"
         type="button"
-        @click="
-          values.inicio_planejado = values.duracao_planejado =
-          values.termino_planejado = null
+        @click="() => {
+          if (!emFoco?.inicio_planejado_calculado) {
+            setFieldValue('inicio_planejado', null)
+          }
+          if (!emFoco?.duracao_planejado_calculado) {
+            setFieldValue('duracao_planejado', null)
+          }
+          if (!emFoco?.termino_planejado_calculado) {
+            setFieldValue('termino_planejado', null)
+          }
+        }
         "
       >
         <svg
