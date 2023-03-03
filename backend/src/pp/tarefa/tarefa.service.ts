@@ -85,14 +85,14 @@ export class TarefaService {
             } else {
                 // não tem dependências, e como é create, tbm não há filhos
 
-                if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
-                    throw new HttpException("Se há Início e Término planejado, deve existir uma duração.", 400);
-
-                if (dto.duracao_planejado && dto.inicio_planejado && !dto.termino_planejado)
-                    throw new HttpException("Se há Início e Duração planejado, deve existir um Término.", 400);
-
-                if (dto.duracao_planejado && dto.termino_planejado && !dto.inicio_planejado)
-                    throw new HttpException("Se há Término e Duração planejado, deve existir um Início.", 400);
+//                if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
+//                    throw new HttpException("Se há Início e Término planejado, deve existir uma duração.", 400);
+//
+//                if (dto.duracao_planejado && dto.inicio_planejado && !dto.termino_planejado)
+//                    throw new HttpException("Se há Início e Duração planejado, deve existir um Término.", 400);
+//
+//                if (dto.duracao_planejado && dto.termino_planejado && !dto.inicio_planejado)
+//                    throw new HttpException("Se há Término e Duração planejado, deve existir um Início.", 400);
             }
 
             const numero = await this.utils.incrementaNumero(dto, prismaTx, projetoId);
