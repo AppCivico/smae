@@ -101,7 +101,7 @@ BEGIN
     cols as (
         select
             col,
-            case when col = 'inicio_planejado' then date_min else date_max end as date
+            case when col = 'inicio_planejado' then date_max else date_max end as date
         from (
             select
                 case when tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 'inicio_planejado' else 'termino_planejado' end as col,

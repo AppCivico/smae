@@ -305,7 +305,7 @@ export class TarefaService {
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
 
-            if (dto.dependencias !== undefined) {
+            if (dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
                 const dataDependencias = await this.calcDataDependencias(prismaTx, dto.dependencias);
 
                 let duracao_planejado_calculado = false;
