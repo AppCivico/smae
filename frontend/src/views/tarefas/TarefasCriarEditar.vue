@@ -312,7 +312,7 @@ iniciar();
             :key="`dependência--${field.key}`"
             class="flex g2"
           >
-            <div class="f1 mb1">
+            <div class="f2 mb1">
               <label class="label tc300">
                 Tarefa&nbsp;<span class="tvermelho">*</span>
               </label>
@@ -344,7 +344,7 @@ iniciar();
               />
             </div>
 
-            <div class="f1 mb1">
+            <div class="f2 mb1">
               <label class="label tc300">
                 Tipo de relação&nbsp;<span class="tvermelho">*</span>
               </label>
