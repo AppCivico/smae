@@ -2095,6 +2095,8 @@ model Portfolio {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
+
     @@map("portfolio")
 }
 
@@ -2265,10 +2267,11 @@ model Projeto {
     ProjetoAcompanhamento ProjetoAcompanhamento[] // depois de EmAcompanhamento
     orgaos_participantes  ProjetoOrgaoParticipante[] // sempre
 
-    removido_em          DateTime?
-    removido_por         Int?
-    ProjetoRegistroSei   ProjetoRegistroSei[]
-    ProjetoRelatorioFila ProjetoRelatorioFila[]
+    removido_em               DateTime?
+    removido_por              Int?
+    ProjetoRegistroSei        ProjetoRegistroSei[]
+    ProjetoRelatorioFila      ProjetoRelatorioFila[]
+    ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     tarefa_lock_seq Int @default(0)
 
@@ -2385,6 +2388,20 @@ model ProjetoDocumento {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("projeto_documento")
+}
+
+model ProjetoNumeroSequencial {
+    projeto_id   Int
+    projeto Projeto @relation(fields: [projeto_id], references: [id])
+
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    ano   Int
+    valor Int
+
+    @@unique([projeto_id, portfolio_id])
+    @@map("projeto_numero_sequencial")
 }
 
 model Tarefa {
