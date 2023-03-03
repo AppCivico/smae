@@ -100,16 +100,10 @@ BEGIN
     ),
     cols as (
         select
-            col,
-            case when col = 'inicio_planejado' then date_max else date_max end as date
-        from (
-            select
-                case when tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 'inicio_planejado' else 'termino_planejado' end as col,
-                min(date) as date_min,
-                max(date) as date_max
-            from compute
-            group by 1
-        ) subq
+            case when tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 'inicio_planejado' else 'termino_planejado' end as col,
+            max(date) as date
+        from compute
+        group by 1
     ),
     proc as (
         select
