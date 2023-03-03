@@ -758,10 +758,12 @@ export class ProjetoService {
 
         if (!projeto.em_planejamento_em) return;
 
-        const current_codigo = projeto.codigo;
-        if (!current_codigo) return this.getProjetoCodigo(projeto_id, prismaTx);
+        let current_codigo = projeto.codigo;
+        if (!current_codigo) current_codigo = await this.getProjetoCodigo(projeto_id, prismaTx);
+        if (current_codigo == '') return;
 
         const codigo_parts = current_codigo.split('.');
+        if (codigo_parts.length != 4) throw new Error(`Falha ao atualizar código do Projeto (updateProjetoCodigo). Código deve possuir 4 partes, código=${current_codigo}` );
 
         if (meta_id) {
             const meta = await prismaTx.meta.findFirstOrThrow({
@@ -793,10 +795,13 @@ export class ProjetoService {
         const codigo: string = "";
 
         // buscar o ano baseado em 'selecionado_em'
-        const projeto = await prismaTx.projeto.findFirstOrThrow({
-            where: {id},
+        const projeto = await prismaTx.projeto.findFirst({
+            where: {
+                id,
+                NOT: [{selecionado_em: null}]
+            },
             select: {
-                registrado_em: true,
+                selecionado_em: true,
                 portfolio_id: true,
                 orgao_gestor: {
                     select: {
@@ -811,24 +816,44 @@ export class ProjetoService {
             }
         });
 
-        const portfolioProjects = await prismaTx.projeto.findMany({
-            where: { portfolio_id: projeto.portfolio_id },
-            select: { id: true },
-            orderBy: [{ registrado_em: 'asc' }]
-        });
+        // Este OR foi para lá embaixo no concat, a tipagem não reclamar que pode estar null.
+        // Pois na própria query já é assegurado que o `selecionado_em` não estará null. 
+        if (!projeto || !projeto.selecionado_em) return codigo;
 
-        const projetoIndexRefPortfolio = portfolioProjects.map(e => e.id).indexOf(id);
+        const projetoNumSeq = await prismaTx.projetoNumeroSequencial.findUnique({
+            where: {
+                projeto_id_portfolio_id: {
+                    projeto_id: id,
+                    portfolio_id: projeto.portfolio_id
+                }
+            },
+            select: {
+                valor: true
+            }
+        });
+        if (!projetoNumSeq)
+            throw new Error('Erro ao gerar código para projeto, faltando row na tabela de nro sequencial');
 
         codigo
           .concat(projeto.orgao_gestor.sigla)
           .concat('.')
-          .concat(projeto.registrado_em.getFullYear().toString())
+          .concat(projeto.selecionado_em.getFullYear().toString())
           .concat('.')
           .concat(projeto.meta ? ('M' + projeto.meta.codigo) : ('M000'))
           .concat('.')
-          .concat(projetoIndexRefPortfolio.toString());
+          .concat(projetoNumSeq.valor.toString().padStart(3, '0'));
 
         return codigo;
+    }
+
+    async getNextPortfolioSeq(portfolio_id: number, prismaTx: Prisma.TransactionClient): Promise<number> {
+        const projeto_numero_sequencial = await prismaTx.projetoNumeroSequencial.findFirstOrThrow({
+            where: { portfolio_id: portfolio_id },
+            orderBy: [{ valor: 'desc' }],
+            select: { valor: true }
+        });
+
+        return projeto_numero_sequencial.valor + 1;
     }
 
     private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
