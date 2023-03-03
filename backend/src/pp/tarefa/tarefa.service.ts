@@ -85,14 +85,14 @@ export class TarefaService {
             } else {
                 // não tem dependências, e como é create, tbm não há filhos
 
-//                if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
-//                    throw new HttpException("Se há Início e Término planejado, deve existir uma duração.", 400);
-//
-//                if (dto.duracao_planejado && dto.inicio_planejado && !dto.termino_planejado)
-//                    throw new HttpException("Se há Início e Duração planejado, deve existir um Término.", 400);
-//
-//                if (dto.duracao_planejado && dto.termino_planejado && !dto.inicio_planejado)
-//                    throw new HttpException("Se há Término e Duração planejado, deve existir um Início.", 400);
+                //                if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
+                //                    throw new HttpException("Se há Início e Término planejado, deve existir uma duração.", 400);
+                //
+                //                if (dto.duracao_planejado && dto.inicio_planejado && !dto.termino_planejado)
+                //                    throw new HttpException("Se há Início e Duração planejado, deve existir um Término.", 400);
+                //
+                //                if (dto.duracao_planejado && dto.termino_planejado && !dto.inicio_planejado)
+                //                    throw new HttpException("Se há Término e Duração planejado, deve existir um Início.", 400);
             }
 
             const numero = await this.utils.incrementaNumero(dto, prismaTx, projetoId);
@@ -392,8 +392,8 @@ export class TarefaService {
                     throw new HttpException("Custo Estimado não pode ser alterado diretamente nesta tarefa.", 400);
                 if (dto.custo_real !== undefined)
                     throw new HttpException("Custo Real não pode ser alterado diretamente nesta tarefa.", 400);
-                if (dto.dependencias !== undefined)
-                    throw new HttpException("Não pode existir dependencias nesta tarefa, pois há filhos.", 400);
+                if (dto.dependencias !== undefined && Array.isArray(dto.dependencias) && dto.dependencias.length > 0)
+                    throw new HttpException("Não podem existir dependencias nesta tarefa, pois há filhos.", 400);
             }
 
             if (
