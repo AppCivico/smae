@@ -11,6 +11,7 @@ ADD COLUMN     "ordem_topologica_inicio_planejado" INTEGER[],
 DROP COLUMN "ordem_topologica_termino_planejado",
 ADD COLUMN     "ordem_topologica_termino_planejado" INTEGER[];
 
+
 CREATE OR REPLACE FUNCTION infere_data_inicio_ou_termino(config jsonb)
     RETURNS jsonb
     AS $$
@@ -31,9 +32,13 @@ BEGIN
     ),
     compute0 as (
         select
-            -- se já tem valor, ele sempre vence
-            case when inicio_planejado_corrente is not null then inicio_planejado_corrente else
+            case
+            -- se já tem valor calculado, ele sempre vence
+            when inicio_planejado_calculado is not null then inicio_planejado_calculado
+            -- se o campo tinha um valor, usa ele
+            when inicio_planejado_corrente is not null then inicio_planejado_corrente else
                 -- cenario onde é possível calcular a data de inicio pela duracao sugerida da tarefa
+                -- usando a data de termino e a duração
                 case when termino_planejado_calculado is not null and duracao_planejado_corrente is not null then
                     termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval -- adiciona um dia, pra se a task ter o valor de 1, ela deve começar e acabar no mesmo dia
                 end
