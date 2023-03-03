@@ -67,7 +67,7 @@ watch(emFoco, () => {
 async function onSubmit(_, { controlledValues: valores }) {
   const carga = valores;
 
-  if (!carga.dependencias) {
+  if (!carga.dependencias && !emFoco?.n_filhos_imediatos) {
     carga.dependencias = [];
   }
 
