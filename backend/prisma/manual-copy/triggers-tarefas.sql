@@ -673,10 +673,10 @@ deve receber os dados existentes de tarefa, e retornar os novos dados, se existi
 
 Se eu tenho numa tarefa X, uma duração 5, data de inicio = 1, e coloco uma dependencia no fim da tarefa Y
 
-nesse caso, que tem a data de duração preenchida, devo mudar a duração
-E se fosse o caso do registro ter apenas a duração preenchida,
-ai sim eu calculo a uma data de inicio, e então se por ventura um proximo
-update mudar a data, começaria a mudar a duração e não mais a data de inicio
+Nesse caso, que tem a data de duração preenchida, devo manter a duração da tarefa,
+exceto caso a duração seja por motivo maiores (inicio e termino calculados pelo sistema),
+então a data de termino é quem sofre a alteração, e não a duração
+
 */
 CREATE OR REPLACE FUNCTION infere_data_inicio_ou_termino(config jsonb)
     RETURNS jsonb
