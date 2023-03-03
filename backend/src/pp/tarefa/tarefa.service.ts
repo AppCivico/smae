@@ -168,7 +168,7 @@ export class TarefaService {
         });
 
         const res = await prismaTx.$queryRaw`select infere_data_inicio_ou_termino(${json}::jsonb)` as any;
-
+        this.logger.debug(JSON.stringify(res));
         return plainToInstance(InferenciaDatasDto, res[0]['infere_data_inicio_ou_termino']);
     }
 
