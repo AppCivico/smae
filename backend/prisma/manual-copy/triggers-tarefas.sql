@@ -688,7 +688,7 @@ BEGIN
     with conf as (
         select
             ((x->>'duracao_planejado_corrente')::int::varchar || ' days')::interval as duracao_planejado_corrente,
-            ((x->>'duracao_planejado_corrente_dias')::int )  as duracao_planejado_corrente_dias,
+            ((x->>'duracao_planejado_corrente')::int )  as duracao_planejado_corrente_dias,
             ((x->>'duracao_planejado_calculado')::int::varchar || ' days')::interval as duracao_planejado_calculado,
             (x->>'inicio_planejado_corrente')::date as inicio_planejado_corrente,
             (x->>'termino_planejado_corrente')::date as termino_planejado_corrente,
