@@ -712,7 +712,7 @@ export class TarefaService {
                 }
 
                 const depDeps = repositorioDependencias.filter(r => r.tarefa_id === +depId);
-                console.log({ depDeps, cond: `r.tarefa_id === depId (${depId})` });
+                //console.log({ depDeps, cond: `r.tarefa_id === depId (${depId})` });
                 if (depDeps.length > 0) {
                     novaDependencias(depId, depDeps.map(dep => dep.dependencia_tarefa_id.toString()), recursionLevel + 1);
                 } else {
@@ -730,7 +730,7 @@ export class TarefaService {
                 this.logger.debug(`=> Verificando ${dependencia.dependencia_tarefa_id} (${dependencia.tipo} com ${dependencia.latencia} dias)`);
 
                 const depDeps = repositorioDependencias.filter(r => r.tarefa_id === dependencia.dependencia_tarefa_id);
-                console.log({ depDeps, cond: `r.tarefa_id === dependencia.dependencia_tarefa_id (${dependencia.dependencia_tarefa_id})` });
+                //console.log({ depDeps, cond: `r.tarefa_id === dependencia.dependencia_tarefa_id (${dependencia.dependencia_tarefa_id})` });
 
                 if (depDeps.length > 0) {
                     novaDependencias(
@@ -749,6 +749,7 @@ export class TarefaService {
                 // mas essa função, o mais correto seria ser chamada de findSomeCycles,
                 // pois ela pode não encontrar todos os ciclos que podem existir.
                 const cilosDetectados = graphlib.alg.findCycles(grafo) as string[];
+console.log(cilosDetectados);
 
                 const tarefasDb = await this.prisma.tarefa.findMany({
                     where: {
