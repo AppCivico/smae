@@ -135,18 +135,21 @@ export class ProjetoService {
         }
     }
 
-    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
+    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, checkFk: boolean) {
         if (!dto.orgao_gestor_id)
             return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined }
 
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
         const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor ? dto.responsaveis_no_orgao_gestor : [];
 
-        console.dir({ portfolio, orgao_gestor_id, responsaveis_no_orgao_gestor }, { depth: 44 });
+        if (checkFk) {
+            //console.dir({ portfolio, orgao_gestor_id, responsaveis_no_orgao_gestor }, { depth: 44 });
+            // se o banco ficou corrompido, não tem como o usuário arrumar
+            if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false)
+                throw new HttpException(`orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos.map(r => r.sigla).join(', ')})`, 400);
+        }
 
-        if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false)
-            throw new HttpException(`orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos.map(r => r.sigla).join(', ')})`, 400);
-
+        // esse TODO continua existindo
         // TODO verificar se cada [responsaveis_no_orgao_gestor] existe realmente
         // e se tem o privilegio gestor_de_projeto
 
@@ -189,7 +192,7 @@ export class ProjetoService {
         if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário', 400);
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
 
         console.log(dto);
 
@@ -658,7 +661,7 @@ export class ProjetoService {
             orgao_gestor_id: projeto.orgao_gestor.id,
             responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor
         } : {};
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio, false);
 
         // orgao_responsavel_id
 
