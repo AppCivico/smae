@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, HttpException } from '@nestjs/common';
 import { TarefaService } from './tarefa.service';
 import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
@@ -89,7 +89,10 @@ export class TarefaController {
     async calcula_dependencias_tarefas(@Param() params: FindOneParams, @Body() dto: CheckDependenciasDto, @CurrentUser() user: PessoaFromJwt): Promise<DependenciasDatasDto> {
         const projeto = await this.projetoService.findOne(params.id, user, false);
 
-        return await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
+        const result = await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
+        if (!result) throw new HttpException('Faltando dependências', 400);
+
+        return result;
     }
 
 }
