@@ -850,7 +850,8 @@ export class ProjetoService {
         const projeto_numero_sequencial = await prismaTx.projetoNumeroSequencial.findFirst({
             where: { portfolio_id: portfolio_id },
             orderBy: [{ valor: 'desc' }],
-            select: { valor: true }
+            select: { valor: true },
+            take: 1,
         });
         if (!projeto_numero_sequencial) return 1;
 
