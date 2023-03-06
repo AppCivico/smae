@@ -12,10 +12,16 @@ import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, FieldArray, Form
+  ErrorMessage,
+  Field,
+  FieldArray,
+  Form,
+  useForm
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+
+const { setValues } = useForm();
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
@@ -95,8 +101,35 @@ async function validarDependências(dependências) {
     tarefa_corrente_id: props.tarefaId,
     dependencias: dependências,
   };
+
   try {
-    await tarefasStore.validarDependências(params);
+    const resposta = await tarefasStore.validarDependências(params);
+
+    const atualização = {
+      inicio_planejado_calculado: resposta.inicio_planejado_calculado,
+      duracao_planejado_calculado: resposta.duracao_planejado_calculado,
+      termino_planejado_calculado: resposta.termino_planejado_calculado,
+    };
+
+    if (resposta.inicio_planejado_calculado) {
+      atualização.inicio_planejado = resposta.inicio_planejado;
+
+      if (!resposta.inicio_planejado) {
+        atualização.termino_planejado = null;
+      }
+    }
+    if (resposta.duracao_planejado_calculado) {
+      atualização.duracao_planejado = resposta.duracao_planejado;
+    }
+    if (resposta.termino_planejado_calculado) {
+      atualização.termino_planejado = resposta.termino_planejado;
+
+      if (!resposta.termino_planejado) {
+        atualização.inicio_planejado = null;
+      }
+    }
+
+    setValues(atualização);
 
     dependênciasValidadas.value = dependências;
   } catch (error) {
