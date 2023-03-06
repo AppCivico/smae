@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, HttpException } from '@nestjs/common';
 import { TarefaService } from './tarefa.service';
 import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto } from './dto/update-tarefa.dto';
@@ -62,6 +62,9 @@ export class TarefaController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async update(@Param() params: FindTwoParams, @Body() dto: UpdateTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        // verificar como fazer o check pro responsavel poder editar o realizado, mesmo depois de não poder
+        // mais fazer escritas no projeto em si
+
         const projeto = await this.projetoService.findOne(params.id, user, false);
         return await this.tarefaService.update(projeto.id, params.id2, dto, user);
     }
@@ -86,7 +89,10 @@ export class TarefaController {
     async calcula_dependencias_tarefas(@Param() params: FindOneParams, @Body() dto: CheckDependenciasDto, @CurrentUser() user: PessoaFromJwt): Promise<DependenciasDatasDto> {
         const projeto = await this.projetoService.findOne(params.id, user, false);
 
-        return await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
+        const result = await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
+        if (!result) throw new HttpException('Faltando dependências', 400);
+
+        return result;
     }
 
 }

@@ -2095,6 +2095,8 @@ model Portfolio {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
+
     @@map("portfolio")
 }
 
@@ -2106,6 +2108,7 @@ model PortfolioOrgao {
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
 
+    @@index([portfolio_id])
     @@map("portifolio_orgao")
 }
 
@@ -2130,6 +2133,7 @@ model ProjetoRegistroSei {
     criado_em  DateTime
     criado_por Int
 
+    @@index([projeto_id])
     @@map("projeto_registro_sei")
 }
 
@@ -2265,13 +2269,15 @@ model Projeto {
     ProjetoAcompanhamento ProjetoAcompanhamento[] // depois de EmAcompanhamento
     orgaos_participantes  ProjetoOrgaoParticipante[] // sempre
 
-    removido_em          DateTime?
-    removido_por         Int?
-    ProjetoRegistroSei   ProjetoRegistroSei[]
-    ProjetoRelatorioFila ProjetoRelatorioFila[]
+    removido_em               DateTime?
+    removido_por              Int?
+    ProjetoRegistroSei        ProjetoRegistroSei[]
+    ProjetoRelatorioFila      ProjetoRelatorioFila[]
+    ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     tarefa_lock_seq Int @default(0)
 
+    @@index([removido_em])
     @@map("projeto")
 }
 
@@ -2286,6 +2292,7 @@ model ProjetoRelatorioFila {
     relatorio_id Int?
     relatorio    Relatorio? @relation(fields: [relatorio_id], references: [id])
 
+    @@index([projeto_id])
     @@map("projeto_relatorio_fila")
 }
 
@@ -2304,6 +2311,7 @@ model ProjetoOrgaoParticipante {
     orgao_id Int
     orgao    Orgao @relation(fields: [orgao_id], references: [id])
 
+    @@index([projeto_id])
     @@map("projeto_orgao_participante")
 }
 
@@ -2315,6 +2323,7 @@ model ProjetoPremissa {
 
     premissa String
 
+    @@index([projeto_id])
     @@map("projeto_premissa")
 }
 
@@ -2326,6 +2335,7 @@ model ProjetoRestricao {
 
     restricao String
 
+    @@index([projeto_id])
     @@map("projeto_restricao")
 }
 
@@ -2346,6 +2356,7 @@ model ProjetoLicaoAprendida {
     descricao  String
     observacao String?
 
+    @@index([projeto_id])
     @@map("projeto_licao_aprendida")
 }
 
@@ -2361,6 +2372,7 @@ model ProjetoFonteRecurso {
     valor_percentual Float?
     valor_nominal    Float?
 
+    @@index([projeto_id])
     @@map("projeto_fonte_recurso")
 }
 
@@ -2384,7 +2396,23 @@ model ProjetoDocumento {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([projeto_id])
     @@map("projeto_documento")
+}
+
+model ProjetoNumeroSequencial {
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    ano   Int
+    valor Int
+
+    @@unique([projeto_id, portfolio_id])
+    @@unique([projeto_id])
+    @@map("projeto_numero_sequencial")
 }
 
 model Tarefa {
@@ -2412,10 +2440,11 @@ model Tarefa {
     termino_planejado DateTime? @db.Date()
     duracao_planejado Int?
 
-    n_dep_inicio_planejado             Int @default(0) @db.SmallInt
-    n_dep_termino_planejado            Int @default(0) @db.SmallInt
-    ordem_topologica_inicio_planejado  Int @default(0) @db.SmallInt
-    ordem_topologica_termino_planejado Int @default(0) @db.SmallInt
+    n_dep_inicio_planejado  Int @default(0) @db.SmallInt
+    n_dep_termino_planejado Int @default(0) @db.SmallInt
+
+    ordem_topologica_inicio_planejado  Int[]
+    ordem_topologica_termino_planejado Int[]
 
     inicio_real  DateTime? @db.Date()
     termino_real DateTime? @db.Date()
@@ -2499,9 +2528,11 @@ model ProjetoRisco {
     RiscoTarefa                RiscoTarefa[]
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
 
+    @@index([projeto_id])
     @@map("projeto_risco")
 }
 
+// de 0 até N tarefas
 model RiscoTarefa {
     id Int @id @default(autoincrement())
 
@@ -2512,6 +2543,8 @@ model RiscoTarefa {
     risco            ProjetoRisco @relation(fields: [projeto_risco_id], references: [id])
     PlanoAcao        PlanoAcao[]
 
+    @@index([tarefa_id])
+    @@index([projeto_risco_id])
     @@map("risco_tarefa")
 }
 
@@ -2533,6 +2566,7 @@ model PlanoAcao {
     responsavel            String
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
 
+    @@index([risco_tarefa_id])
     @@map("plano_acao")
 }
 

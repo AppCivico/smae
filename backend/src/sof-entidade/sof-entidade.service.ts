@@ -1,7 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
-import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService } from '../sof-api/sof-api.service';
 const JOB_LOCK_NUMBER = 65656564;
@@ -51,7 +51,7 @@ export class SofEntidadeService {
                     now_ymd: DateYMD;
                 }[] = await prisma.$queryRaw`SELECT
                 pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked,
-                (now() at time zone 'America/Sao_Paulo')::date::text as now_ymd
+                (now() at time zone ${SYSTEM_TIMEZONE}::varchar)::date::text as now_ymd
             `;
                 if (!locked[0].locked) {
                     return;

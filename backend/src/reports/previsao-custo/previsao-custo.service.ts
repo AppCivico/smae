@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Date2YMD } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -24,7 +24,7 @@ export class PrevisaoCustoService implements ReportableService {
         const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
 
         if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente) {
-            ano = DateTime.local({ zone: "America/Sao_Paulo" }).year;
+            ano = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
         } else {
             if (!dto.ano) throw new HttpException('Ano deve ser enviado', 400);
 

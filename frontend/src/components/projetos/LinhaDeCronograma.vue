@@ -1,6 +1,7 @@
 <script>
 import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { useRoute } from 'vue-router';
 
@@ -23,6 +24,10 @@ export default {
       type: Object,
       required: true,
     },
+    nívelMáximoVisível: {
+      type: Number,
+      default: 0,
+    },
   },
   data() {
     return {
@@ -31,6 +36,7 @@ export default {
   },
   computed: {
     nivelMaximoTarefa: () => useTarefasStore()?.extra?.portfolio?.nivel_maximo_tarefa || -1,
+    oProjetoÉPrioritário: () => useProjetosStore()?.emFoco.eh_prioritario,
   },
   methods: {
     dateToField,
@@ -115,7 +121,7 @@ export default {
         type="button"
         class="like-a__text"
         title="Excluir"
-        :hidden="linha.n_filhos_imediatos > 0"
+        :hidden="linha.n_filhos_imediatos > 0 || !oProjetoÉPrioritário"
         @click="excluirTarefa(linha.id)"
       >
         <svg
@@ -130,6 +136,7 @@ export default {
     >
       <router-link
         v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1"
+        :hidden="!oProjetoÉPrioritário"
         :title="`Criar tarefa filha de ${linha.hierarquia}`"
         :to="{
           name: 'tarefasCriar',
@@ -170,7 +177,12 @@ export default {
     </td>
   </tr>
 
-  <template v-if="Array.isArray(linha.children)">
+  <template
+    v-if="
+      Array.isArray(linha.children)
+      && (!nívelMáximoVisível || nívelMáximoVisível > linha.nivel)
+    "
+  >
     <LinhaDeCronograma
       v-for="(linhaFilha, i) in linha.children"
       :key="linhaFilha.id"
@@ -178,6 +190,7 @@ export default {
       :índice="i"
       :linha="linhaFilha"
       class="tabela-de-etapas__item--sub"
+      :nível-máximo-visível="nívelMáximoVisível"
     />
   </template>
 </template>

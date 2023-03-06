@@ -1,6 +1,11 @@
 import { DateTime } from 'luxon';
 export type DateYMD = string;
 
+// dessa forma pra mudar, mas não depois de iniciado a instancia
+// ainda há hardcoded dentro das funções do banco
+// então não é suportado 100%
+export const SYSTEM_TIMEZONE = 'America/Sao_Paulo';
+
 export class Date2YMD {
     static toString(d: Date): DateYMD {
         if (!(d instanceof Date)) throw 'called toString on non-date object';
@@ -35,7 +40,7 @@ export class Date2YMD {
     // converte uma data, considerando SP (-0300) para date-time UTC
     static tzSp2UTC(data: string | Date): string {
         const str = typeof data == 'string' ? data : Date2YMD.toString(data);
-        return DateTime.fromISO(str, { zone: 'America/Sao_Paulo' }).setZone('UTC').toISO();
+        return DateTime.fromISO(str, { zone: SYSTEM_TIMEZONE }).setZone('UTC').toISO();
     }
 
     static incDaysFromISO(data: Date, days: number): Date {

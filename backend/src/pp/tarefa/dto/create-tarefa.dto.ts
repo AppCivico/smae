@@ -24,12 +24,12 @@ export class CheckDependenciasDto {
     @ValidateIf((object, value) => value !== null)
     tarefa_corrente_id: number | null
 
-
+    @Type(() => TarefaDependenciaDto)
     @IsArray({ message: '$property| precisa ser uma array, campo obrigatório' })
     @ValidateNested({ each: true })
-    @Type(() => TarefaDependenciaDto)
-    @ArrayMinSize(1)
-    dependencias?: TarefaDependenciaDto[];
+    @ValidateIf((object, value) => value !== null)
+    @ApiProperty({ required: true })// é required, só no JS que não é
+    dependencias?: TarefaDependenciaDto[] | null;
 }
 
 export class CreateTarefaDto {
@@ -106,6 +106,7 @@ export class CreateTarefaDto {
     @IsInt({ message: '$property| precisa ser inteiro' })
     @Min(1, { message: '$property| Mínimo 1' })
     @ValidateIf((object, value) => value !== null)
+    @Transform(({ value }: any) => String(value) === '0' || value === null ? null : +value)
     duracao_planejado?: number | null
 
     /**

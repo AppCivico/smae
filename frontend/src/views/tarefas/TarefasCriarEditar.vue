@@ -4,6 +4,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
 import { tarefa as schema } from '@/consts/formSchemas';
 import addToDates from '@/helpers/addToDates';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
@@ -12,9 +13,12 @@ import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, FieldArray, Form
+  ErrorMessage,
+  Field,
+  FieldArray,
+  Form
 } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -58,7 +62,19 @@ const todasAsOutrasTarefas = computed(() => tarefasComHierarquia.value
 // eslint-disable-next-line max-len
 const filtrarIrmãs = (listagem = [], id = props.tarefaId) => listagem.filter((x) => x.id !== id);
 
-async function onSubmit(_, { controlledValues: carga }) {
+watch(emFoco, () => {
+  if (emFoco.value?.dependencias?.length) {
+    dependênciasValidadas.value = emFoco.value?.dependencias;
+  }
+});
+
+async function onSubmit(_, { controlledValues: valores }) {
+  const carga = valores;
+
+  if (!carga.dependencias && !emFoco?.n_filhos_imediatos) {
+    carga.dependencias = [];
+  }
+
   try {
     const msg = props.tarefaId
       ? 'Dados salvos com sucesso!'
@@ -83,24 +99,47 @@ async function validarDependências(dependências) {
     tarefa_corrente_id: props.tarefaId,
     dependencias: dependências,
   };
+
   try {
-    await tarefasStore.validarDependências(params);
+    const resposta = await tarefasStore.validarDependências(params);
+
+    const atualização = {
+      inicio_planejado_calculado: resposta.inicio_planejado_calculado,
+      duracao_planejado_calculado: resposta.duracao_planejado_calculado,
+      termino_planejado_calculado: resposta.termino_planejado_calculado,
+    };
+
+    if (resposta.inicio_planejado_calculado) {
+      atualização.inicio_planejado = dateTimeToDate(resposta.inicio_planejado);
+
+      if (!resposta.inicio_planejado) {
+        atualização.termino_planejado = null;
+      }
+    }
+    if (resposta.duracao_planejado_calculado) {
+      atualização.duracao_planejado = resposta.duracao_planejado;
+    }
+    if (resposta.termino_planejado_calculado) {
+      atualização.termino_planejado = dateTimeToDate(resposta.termino_planejado);
+
+      if (!resposta.termino_planejado) {
+        atualização.inicio_planejado = null;
+      }
+    }
 
     dependênciasValidadas.value = dependências;
+    return atualização;
   } catch (error) {
     dependênciasValidadas.value = [];
     alertStore.error(error);
+
+    return {};
   }
 }
 
 async function iniciar() {
+  // apenas porque alguma tarefa nova pode ter sido criada por outra pessoa
   tarefasStore.buscarTudo();
-
-  if (props.tarefaId) {
-    if (emFoco.value?.dependencias?.length) {
-      // buscar dependencias
-    }
-  }
 }
 
 iniciar();
@@ -118,12 +157,12 @@ iniciar();
     </h1>
     <hr class="ml2 f1">
 
-    <CheckClose :rota-de-escape="`/projetos/${props.projetoId}/tarefas/`" />
+    <CheckClose />
   </div>
 
   <Form
     v-if="!tarefaId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, setValues, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -288,7 +327,7 @@ iniciar();
       </div>
     </div>
 
-    <template v-if="!emFoco?.n_filhos_imediatos && 0 === 1">
+    <template v-if="!values?.n_filhos_imediatos">
       <hr class="mb1 f1">
 
       <div class="g2 mb2">
@@ -305,7 +344,7 @@ iniciar();
             :key="`dependência--${field.key}`"
             class="flex g2"
           >
-            <div class="f1 mb1">
+            <div class="f2 mb1">
               <label class="label tc300">
                 Tarefa&nbsp;<span class="tvermelho">*</span>
               </label>
@@ -315,6 +354,10 @@ iniciar();
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
+                :class="{
+                  error: errors[`dependencias[${idx}].dependencia_tarefa_id`],
+                  loading: chamadasPendentes.validaçãoDeDependências
+                }"
               >
                 <option value="">
                   Selecionar
@@ -333,7 +376,7 @@ iniciar();
               />
             </div>
 
-            <div class="f1 mb1">
+            <div class="f2 mb1">
               <label class="label tc300">
                 Tipo de relação&nbsp;<span class="tvermelho">*</span>
               </label>
@@ -343,6 +386,10 @@ iniciar();
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
+                :class="{
+                  error: errors[`dependencias[${idx}].tipo`],
+                  loading: chamadasPendentes.validaçãoDeDependências
+                }"
               >
                 <option value="">
                   Selecionar
@@ -369,12 +416,13 @@ iniciar();
                 :name="`dependencias[${idx}].latencia`"
                 type="number"
                 class="inputtext light mb1"
-                min="0"
                 step="1"
-                @update:model-value="
-                  fields[idx]?.value?.latencia
-                    ? (fields[idx].value.latencia = Number(fields[idx].value.latencia))
-                    : null
+                :class="{
+                  error: errors[`dependencias[${idx}].latencia`],
+                  loading: chamadasPendentes.validaçãoDeDependências
+                }"
+                @update:model-value="fields[idx].value.latencia = Number(fields[idx].value.latencia)
+                  || 0
                 "
               />
 
@@ -389,6 +437,7 @@ iniciar();
               arial-label="excluir"
               title="excluir"
               type="button"
+              :disabled="chamadasPendentes.validaçãoDeDependências"
               @click="remove(idx)"
             >
               <svg
@@ -401,6 +450,7 @@ iniciar();
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="chamadasPendentes.validaçãoDeDependências"
             @click="push({
               dependencia_tarefa_id: 0,
               tipo: '',
@@ -423,9 +473,11 @@ iniciar();
         <button
           class="btn outline bgnone tcprimary mr2"
           type="button"
-          :disabled="isEqual(values.dependencias, dependênciasValidadas)
-          "
-          @click="validarDependências(values.dependencias)"
+          :disabled="chamadasPendentes.validaçãoDeDependências"
+          @click="async () => {
+            const novosValores = await validarDependências(values.dependencias);
+            setValues({ ...values, ...novosValores });
+          }"
         >
           Validar dependências
         </button>
@@ -441,16 +493,24 @@ iniciar();
           Previsão de início
         </label>
         <Field
-          v-if="
-            !emFoco?.inicio_planejado_calculado
-              && !emFoco?.n_filhos_imediatos
+          v-if="!values?.n_filhos_imediatos"
+          :disabled="
+            values?.inicio_planejado_calculado
+            || chamadasPendentes.validaçãoDeDependências
           "
           name="inicio_planejado"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.inicio_planejado }"
+          :class="{
+            error: errors.inicio_planejado,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
           maxlength="10"
+          @update:model-value="values.inicio_planejado === ''
+            ? values.inicio_planejado = null
+            : null"
           @change="values.duracao_planejado
+            && !values?.termino_planejado_calculado
             ? setFieldValue(
               'termino_planejado',
               addToDates(values.inicio_planejado, values.duracao_planejado - 1)
@@ -474,21 +534,33 @@ iniciar();
           Duração prevista
         </label>
         <Field
-          v-if="
-            !emFoco?.termino_planejado_calculado
-              && !emFoco?.n_filhos_imediatos
+          v-if="!values?.n_filhos_imediatos"
+          :disabled="
+            values?.duracao_planejado_calculado
+            || chamadasPendentes.validaçãoDeDependências
           "
           name="duracao_planejado"
           type="number"
           class="inputtext light mb1"
-          :class="{ 'error': errors.duracao_planejado }"
-          @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)"
-          @change="values.inicio_planejado
-            ? setFieldValue(
-              'termino_planejado',
-              addToDates(values.inicio_planejado, values.duracao_planejado - 1)
-            )
-            : null"
+          :class="{
+            error: errors.duracao_planejado,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
+          @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)
+            || null"
+          @change="() => {
+            if (values.inicio_planejado && !values.termino_planejado_calculado) {
+              setFieldValue(
+                'termino_planejado',
+                addToDates(values.inicio_planejado, values.duracao_planejado - 1)
+              );
+            } else if (values.termino_planejado && !values.inicio_planejado_calculado) {
+              setFieldValue(
+                'inicio_planejado',
+                addToDates(values.termino_planejado, values.duracao_planejado * -1 + 1)
+              );
+            }
+          }"
         />
         <input
           v-else
@@ -507,16 +579,24 @@ iniciar();
           Previsão de término
         </label>
         <Field
-          v-if="
-            !emFoco?.termino_planejado_calculado
-              && !emFoco?.n_filhos_imediatos
-          "
+          v-if="!values?.n_filhos_imediatos"
+          :disabled="
+            values?.termino_planejado_calculado
+            || chamadasPendentes.validaçãoDeDependências
+            || (values?.inicio_planejado_calculado && !values?.inicio_planejado)"
           name="termino_planejado"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.termino_planejado }"
+          :class="{
+            error: errors.termino_planejado,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
           maxlength="10"
-          @change="values.termino_planejado
+          @update:model-value="values.termino_planejado === ''
+            ? values.termino_planejado = null
+            : null"
+          @change="values.termino_planejado && values.inicio_planejado
+            && !values?.duracao_planejado_calculado
             ? setFieldValue(
               'duracao_planejado',
               subtractDates(values.termino_planejado, values.inicio_planejado) + 1
@@ -535,6 +615,29 @@ iniciar();
           class="error-msg"
         />
       </div>
+      <button
+        class="like-a__text addlink"
+        arial-label="limpar datas"
+        title="limpar datas"
+        type="button"
+        @click="() => {
+          if (!values?.inicio_planejado_calculado) {
+            setFieldValue('inicio_planejado', null)
+          }
+          if (!values?.duracao_planejado_calculado) {
+            setFieldValue('duracao_planejado', null)
+          }
+          if (!values?.termino_planejado_calculado) {
+            setFieldValue('termino_planejado', null)
+          }
+        }
+        "
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
     </div>
 
     <div class="flex g2">
@@ -543,7 +646,7 @@ iniciar();
           Previsão de custo
         </label>
         <MaskedFloatInput
-          v-if="!emFoco?.n_filhos_imediatos"
+          v-if="!values?.n_filhos_imediatos"
           name="custo_estimado"
           :value="values.custo_estimado"
           class="inputtext light mb1"
@@ -605,6 +708,7 @@ iniciar();
         class="btn big"
         :disabled="isSubmitting
           || Object.keys(errors)?.length
+          || chamadasPendentes.validaçãoDeDependências
           || (values.dependencias?.length && !isEqual(values.dependencias, dependênciasValidadas))
         "
         :title="Object.keys(errors)?.length

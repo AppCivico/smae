@@ -2,7 +2,7 @@
 import dinheiro from '@/helpers/dinheiro';
 import { useField } from 'vee-validate';
 import {
-computed, defineProps, toRef
+  computed, toRef
 } from 'vue';
 
 const props = defineProps({

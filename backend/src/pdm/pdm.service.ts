@@ -3,7 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { CicloFisico, CicloFisicoFase, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_LOCK_NUMBER } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
@@ -244,7 +244,7 @@ export class PdmService {
                     from ciclo_fisico_fase a
                     join ciclo_fisico b on b.id=a.ciclo_fisico_id
                     where b.pdm_id = ${pdmId}::int
-                    and data_fim <= date_trunc('day', now() at time zone 'America/Sao_Paulo')
+                    and data_fim <= date_trunc('day', now() at time zone ${SYSTEM_TIMEZONE}::varchar)
                     order by data_fim desc
                     limit 1
                 )
@@ -381,7 +381,7 @@ export class PdmService {
                     now_ymd: DateYMD;
                 }[] = await prisma.$queryRaw`SELECT
                 pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked,
-                (now() at time zone 'America/Sao_Paulo')::date::text as now_ymd
+                (now() at time zone ${SYSTEM_TIMEZONE}::varchar)::date::text as now_ymd
             `;
                 if (!locked[0].locked) {
                     this.logger.debug(`Já está em processamento...`);
@@ -504,7 +504,7 @@ export class PdmService {
     }
 
     private async verificaFases(cf: CicloFisicoResumo) {
-        const hojeEmSp = DateTime.local({ zone: 'America/Sao_Paulo' }).toJSDate();
+        const hojeEmSp = DateTime.local({ zone: SYSTEM_TIMEZONE }).toJSDate();
         this.logger.log(`Verificando ciclo atual ${cf.data_ciclo} - Hoje em SP = ${Date2YMD.toString(hojeEmSp)}`);
 
         if (cf.CicloFaseAtual) {
