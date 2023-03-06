@@ -758,7 +758,7 @@ export class TarefaService {
                     const tarefasDb = await this.prisma.tarefa.findMany({
                         where: {
                             id: {
-                                in: cilosDetectados[0].map(n => Number(n))
+                                in: cilosDetectados[0].map(n => parseInt(n, 10))
                             }
                         },
                         select: {
