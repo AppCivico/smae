@@ -96,9 +96,8 @@ export class ProjetoService {
             if (atividade_id)
                 throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
 
-
             // força a limpeza no banco, pode ser que tenha vindo como undefined
-            meta_id = atividade_id = iniciativa_id = origem_outro = null;
+            meta_id = atividade_id = iniciativa_id = null;
         }
 
         async function validaPdmSistema(self: ProjetoService) {
@@ -717,6 +716,20 @@ export class ProjetoService {
 
                 }
             });
+
+            console.log(
+                [
+                    (dto.meta_id && projeto.meta_id != dto.meta_id)
+                    ,
+                    (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
+                    ,
+                    (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
+                    ,
+                    (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
+                    ,
+                    (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
+                ]
+            );
 
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
             // ou atualizar o código
