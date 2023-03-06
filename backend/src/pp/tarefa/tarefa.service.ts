@@ -695,18 +695,19 @@ export class TarefaService {
 
         this.logger.debug(`Iniciando validação do grafo...`);
 
+        const self = this;
         function novaDependencias(tarefaId: string, depsId: string[], recursionLevel: number): void {
             const prefix = '='.repeat(recursionLevel + 1);
 
-            this.logger.debug(`${prefix}> Adicionando ${depsId.length} dependência(s) da tarefa ${tarefaId}`);
+            self.logger.debug(`${prefix}> Adicionando ${depsId.length} dependência(s) da tarefa ${tarefaId}`);
             for (const depId of depsId) {
-                this.logger.debug(`${prefix}: setEdge (${tarefaId}, ${depId})`);
+                self.logger.debug(`${prefix}: setEdge (${tarefaId}, ${depId})`);
 
                 grafo = grafo.setEdge(tarefaId, depId);
 
                 const isAcyclic = graphlib.alg.isAcyclic(grafo);
                 if (isAcyclic === false) {
-                    this.logger.debug(`${prefix}! Loop detectado. Procurando por algum ciclo para ajudar o usuário.`);
+                    self.logger.debug(`${prefix}! Loop detectado. Procurando por algum ciclo para ajudar o usuário.`);
                     throw new LoopError();
                 }
 
@@ -714,7 +715,7 @@ export class TarefaService {
                 if (depDeps.length > 0) {
                     novaDependencias(depId, depDeps.map(dep => dep.dependencia_tarefa_id.toString()), recursionLevel + 1);
                 } else {
-                    this.logger.debug(`${prefix}: Não há dependência na tarefa ${depId}`);
+                    self.logger.debug(`${prefix}: Não há dependência na tarefa ${depId}`);
                 }
             }
         }
