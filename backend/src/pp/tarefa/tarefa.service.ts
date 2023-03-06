@@ -748,32 +748,38 @@ export class TarefaService {
                 // há alguns bugs, que acredito que não ocorrem no nosso caso simples
                 // mas essa função, o mais correto seria ser chamada de findSomeCycles,
                 // pois ela pode não encontrar todos os ciclos que podem existir.
-                const cilosDetectados = graphlib.alg.findCycles(grafo) as string[];
-console.log(cilosDetectados);
-
-                const tarefasDb = await this.prisma.tarefa.findMany({
-                    where: {
-                        id: {
-                            in: cilosDetectados.map(n => +n)
-                        }
-                    },
-                    select: {
-                        nivel: true,
-                        numero: true,
-                        tarefa: true,
-                        id: true,
-                    }
-                });
-
+                const cilosDetectados = graphlib.alg.findCycles(grafo) as string[][];
+                console.log(cilosDetectados);
                 let textoFormatado = '';
-                for (const tarefaId of cilosDetectados) {
-                    const tarefa = tarefasDb.filter(t => t.id == +tarefaId)[0];
-                    // se não encontrou no banco, 99% de chance que é o id 0 e não um delete sem where sem rollback
-                    if (!tarefa) {
-                        textoFormatado += `Nova tarefa corrente => `;
-                    } else {
-                        textoFormatado += `Tarefa "${tarefa.tarefa}" (id ${tarefa.id}) no nível (${tarefa.nivel}) número (${tarefa.numero}) => `;
+
+                if (cilosDetectados.length > 0) {
+
+
+                    const tarefasDb = await this.prisma.tarefa.findMany({
+                        where: {
+                            id: {
+                                in: cilosDetectados[0].map(n => +n)
+                            }
+                        },
+                        select: {
+                            nivel: true,
+                            numero: true,
+                            tarefa: true,
+                            id: true,
+                        }
+                    });
+
+                    for (const tarefaId of cilosDetectados[0]) {
+                        const tarefa = tarefasDb.filter(t => t.id == +tarefaId)[0];
+                        // se não encontrou no banco, 99% de chance que é o id 0 e não um delete sem where sem rollback
+                        if (!tarefa) {
+                            textoFormatado += `Nova tarefa corrente => `;
+                        } else {
+                            textoFormatado += `Tarefa "${tarefa.tarefa}" (id ${tarefa.id}) no nível (${tarefa.nivel}) número (${tarefa.numero}) => `;
+                        }
                     }
+                } else {
+                    textoFormatado = 'Não foi possível encontrar um exemplo do ciclo com a biblioteca utilizada no momento.'
                 }
 
                 throw new HttpException(
