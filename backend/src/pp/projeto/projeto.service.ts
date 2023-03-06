@@ -740,7 +740,8 @@ export class ProjetoService {
                 }
             });
 
-            if (dto.meta_id || orgao_gestor_id)
+            // TODO aqui pode ser o meta_id, mas pode ser tbm meta_codigo, nao?
+            if (dto.meta_id)
                 await this.updateProjetoCodigo(projetoId, dto.meta_id, orgao_gestor_id, prismaTx);
         });
 
@@ -759,8 +760,8 @@ export class ProjetoService {
         if (!projeto.em_planejamento_em) return;
 
         let current_codigo = projeto.codigo;
-        if (!current_codigo) current_codigo = await this.getProjetoCodigo(projeto_id, prismaTx);
-        if (current_codigo == '') return;
+        if (!current_codigo) current_codigo = await this.getProjetoCodigo(projeto_id, prismaTx) ?? null;
+        if (current_codigo == null) return;
 
         const codigo_parts = current_codigo.split('.');
         if (codigo_parts.length != 4) throw new Error(`Falha ao atualizar código do Projeto (updateProjetoCodigo). Código deve possuir 4 partes, código=${current_codigo}`);
@@ -791,8 +792,8 @@ export class ProjetoService {
         })
     }
 
-    async getProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string> {
-        const codigo: string = "";
+    async getProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {
+        const codigo: string | undefined = undefined;
 
         // buscar o ano baseado em 'selecionado_em'
         const projeto = await prismaTx.projeto.findFirst({
@@ -834,16 +835,12 @@ export class ProjetoService {
         if (!projetoNumSeq)
             throw new Error('Erro ao gerar código para projeto, faltando row na tabela de nro sequencial');
 
-        codigo
-            .concat(projeto.orgao_gestor.sigla)
-            .concat('.')
-            .concat(projeto.selecionado_em.getFullYear().toString())
-            .concat('.')
-            .concat(projeto.meta ? ('M' + projeto.meta.codigo) : ('M000'))
-            .concat('.')
-            .concat(projetoNumSeq.valor.toString().padStart(3, '0'));
-
-        return codigo;
+        return [
+            projeto.orgao_gestor.sigla,
+            projeto.selecionado_em.getFullYear().toString(),
+            (projeto.meta ? ('M' + projeto.meta.codigo) : ('M000')),
+            projetoNumSeq.valor.toString().padStart(3, '0'),
+        ].join('.');
     }
 
     async getNextPortfolioSeq(portfolio_id: number, prismaTx: Prisma.TransactionClient): Promise<number> {
