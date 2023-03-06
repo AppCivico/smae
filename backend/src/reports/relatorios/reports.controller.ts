@@ -6,6 +6,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { ApiPaginatedResponse } from '../../auth/decorators/paginated.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { FindOneParams } from '../../common/decorators/find-params';
 import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { UploadService } from '../../upload/upload.service';
@@ -36,7 +37,7 @@ export class ReportsController {
             (dto.parametros as any)['mes'],
             (dto.parametros as any)['periodo'],
             (dto.parametros as any)['semestre'],
-            DateTime.local({ zone: 'America/Sao_Paulo' }).toISO() + '.zip',
+            DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
         ].filter(r => r).join('-');
         const files = await this.reportsService.runReport(dto);
         const zipBuffer = await this.reportsService.zipFiles(files);

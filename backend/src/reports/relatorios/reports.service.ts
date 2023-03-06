@@ -4,6 +4,7 @@ import { Cron } from '@nestjs/schedule';
 import { FonteRelatorio, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_LOCK_NUMBER_REPORT } from '../../common/dto/locks';
 import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -286,7 +287,7 @@ export class ReportsService {
             const contentType = 'application/zip';
             const filename = [
                 'Projeto',
-                DateTime.local({ zone: 'America/Sao_Paulo' }).toISO() + '.zip',
+                DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
             ].filter(r => r).join('-');
 
 

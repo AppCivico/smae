@@ -1,6 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import got, { Got } from 'got';
 import { DateTime } from 'luxon';
+import { SYSTEM_TIMEZONE } from '../common/date2ymd';
 
 export class SofError extends Error {
     constructor(msg: string) {
@@ -111,7 +112,7 @@ export class SofApiService {
      * recebe um ano, retorna o mês mais recente, desde q não esteja no futuro
      **/
     mesMaisRecenteDoAno(ano: number): number {
-        const nowSp = DateTime.local({ zone: 'America/Sao_Paulo' });
+        const nowSp = DateTime.local({ zone: SYSTEM_TIMEZONE });
 
         const anoCorrente = nowSp.year;
         if (anoCorrente == +ano) return nowSp.month;
