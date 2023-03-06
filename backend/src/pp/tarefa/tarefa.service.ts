@@ -774,7 +774,7 @@ export class TarefaService {
                         if (!tarefa) {
                             textoFormatado += `Nova tarefa corrente => `;
                         } else {
-                            textoFormatado += `Tarefa "${tarefa.tarefa}" (id ${tarefa.id}) no nível (${tarefa.nivel}) número (${tarefa.numero}) => `;
+                            textoFormatado += `Tarefa "${tarefa.tarefa}" número (${tarefa.numero}) => `;
                         }
                     }
 

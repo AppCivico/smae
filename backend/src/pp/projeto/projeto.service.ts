@@ -675,6 +675,7 @@ export class ProjetoService {
         } : {};
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio);
 
+        // orgao_responsavel_id
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
