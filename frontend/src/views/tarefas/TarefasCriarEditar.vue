@@ -328,7 +328,7 @@ iniciar();
       </div>
     </div>
 
-    <template v-if="!emFoco?.n_filhos_imediatos">
+    <template v-if="!values?.n_filhos_imediatos">
       <hr class="mb1 f1">
 
       <div class="g2 mb2">
@@ -491,9 +491,9 @@ iniciar();
           Previsão de início
         </label>
         <Field
-          v-if="!emFoco?.n_filhos_imediatos"
+          v-if="!values?.n_filhos_imediatos"
           :disabled="
-            emFoco?.inicio_planejado_calculado
+            values?.inicio_planejado_calculado
             || chamadasPendentes.validaçãoDeDependências
           "
           name="inicio_planejado"
@@ -531,9 +531,9 @@ iniciar();
           Duração prevista
         </label>
         <Field
-          v-if="!emFoco?.n_filhos_imediatos"
+          v-if="!values?.n_filhos_imediatos"
           :disabled="
-            emFoco?.duracao_planejado_calculado
+            values?.duracao_planejado_calculado
             || chamadasPendentes.validaçãoDeDependências
           "
           name="duracao_planejado"
@@ -569,11 +569,11 @@ iniciar();
           Previsão de término
         </label>
         <Field
-          v-if="!emFoco?.n_filhos_imediatos"
+          v-if="!values?.n_filhos_imediatos"
           :disabled="
-            emFoco?.termino_planejado_calculado
+            values?.termino_planejado_calculado
             || chamadasPendentes.validaçãoDeDependências
-            || (emFoco?.inicio_planejado_calculado && !emFoco?.inicio_planejado)"
+            || (values?.inicio_planejado_calculado && !values?.inicio_planejado)"
           name="termino_planejado"
           type="date"
           class="inputtext light mb1"
@@ -610,13 +610,13 @@ iniciar();
         title="limpar datas"
         type="button"
         @click="() => {
-          if (!emFoco?.inicio_planejado_calculado) {
+          if (!values?.inicio_planejado_calculado) {
             setFieldValue('inicio_planejado', null)
           }
-          if (!emFoco?.duracao_planejado_calculado) {
+          if (!values?.duracao_planejado_calculado) {
             setFieldValue('duracao_planejado', null)
           }
-          if (!emFoco?.termino_planejado_calculado) {
+          if (!values?.termino_planejado_calculado) {
             setFieldValue('termino_planejado', null)
           }
         }
@@ -635,7 +635,7 @@ iniciar();
           Previsão de custo
         </label>
         <MaskedFloatInput
-          v-if="!emFoco?.n_filhos_imediatos"
+          v-if="!values?.n_filhos_imediatos"
           name="custo_estimado"
           :value="values.custo_estimado"
           class="inputtext light mb1"
