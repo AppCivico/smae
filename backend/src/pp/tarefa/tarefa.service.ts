@@ -673,7 +673,7 @@ export class TarefaService {
         return resp.dependencias_datas;
     }
 
-    async valida_grafo_dependencias(
+    private async valida_grafo_dependencias(
         grafo: Graph,
         todasTarefaDepsProj: TarefaDependente[],
         tipos: TarefaDependenteTipo[],
