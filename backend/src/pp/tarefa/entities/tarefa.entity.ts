@@ -1,3 +1,4 @@
+import { Type } from "class-transformer"
 import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
 import { PortfolioOneDto } from "../../portfolio/entities/portfolio.entity"
 import { ProjetoDetailDto } from "../../projeto/entities/projeto.entity"
@@ -54,10 +55,14 @@ export class DependenciasDatasDto {
     termino_planejado_calculado: boolean
     duracao_planejado_calculado: boolean
 
+    @Type(() => Date)
     inicio_planejado: Date | null
+
+    @Type(() => Date)
     termino_planejado: Date | null
     /**
      * Duração em dias da tarefa
      **/
+    @Type(() => Number)
     duracao_planejado: number | null
 }

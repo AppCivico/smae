@@ -83,7 +83,7 @@ async function onSubmit(_, { controlledValues: carga }) {
       </router-link>
     </div>
 
-    <CheckClose :rota-de-escape="`/projetos/${props.projetoId}/tarefas/`" />
+    <CheckClose />
   </div>
 
   <div class="boards mb4">
@@ -148,6 +148,9 @@ async function onSubmit(_, { controlledValues: carga }) {
           :class="{ 'error': errors.inicio_real }"
           maxlength="10"
           :disabled="emFoco.n_filhos_imediatos > 0"
+          @update:model-value="values.inicio_real === ''
+            ? values.inicio_real = null
+            : null"
           @change="values.duracao_real
             ? setFieldValue(
               'termino_real',
@@ -170,7 +173,8 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.duracao_real }"
           :disabled="emFoco.n_filhos_imediatos > 0"
-          @update:model-value="values.duracao_real = Number(values.duracao_real)"
+          @update:model-value="values.duracao_real = Number(values.duracao_real)
+            || null"
           @change="values.inicio_real
             ? setFieldValue(
               'termino_real',
@@ -194,7 +198,10 @@ async function onSubmit(_, { controlledValues: carga }) {
           :class="{ 'error': errors.termino_real }"
           maxlength="10"
           :disabled="emFoco.n_filhos_imediatos > 0"
-          @change="values.termino_real
+          @update:model-value="values.termino_real === ''
+            ? values.termino_real = null
+            : null"
+          @change="values.termino_real && values.inicio_real
             ? setFieldValue(
               'duracao_real',
               subtractDates(values.termino_real, values.inicio_real) + 1
@@ -206,6 +213,23 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="error-msg"
         />
       </div>
+      <button
+        class="like-a__text addlink"
+        arial-label="limpar datas"
+        title="limpar datas"
+        type="button"
+        @click="() => {
+          setFieldValue('inicio_real', null);
+          setFieldValue('duracao_real', null);
+          setFieldValue('termino_real', null);
+        }
+        "
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
     </div>
 
     <div class="flex g2">

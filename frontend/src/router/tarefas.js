@@ -43,6 +43,8 @@ export default {
       meta: {
         título: 'Nova tarefa',
         títuloParaMenu: 'Nova tarefa',
+
+        rotaDeEscape: 'tarefasListar',
       },
     },
 
@@ -70,6 +72,8 @@ export default {
             título: 'Editar tarefa',
             títuloParaMenu: 'Editar tarefa',
 
+            rotaDeEscape: 'tarefasListar',
+
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
@@ -91,6 +95,8 @@ export default {
           meta: {
             título: 'Registrar progresso',
             títuloParaMenu: 'Progresso',
+
+            rotaDeEscape: 'tarefasListar',
 
             rotasParaMigalhasDePão: [
               'projetosListar',

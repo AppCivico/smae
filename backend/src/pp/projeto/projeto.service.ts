@@ -1,8 +1,10 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
@@ -94,9 +96,8 @@ export class ProjetoService {
             if (atividade_id)
                 throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
 
-
             // força a limpeza no banco, pode ser que tenha vindo como undefined
-            meta_id = atividade_id = iniciativa_id = origem_outro = null;
+            meta_id = atividade_id = iniciativa_id = null;
         }
 
         async function validaPdmSistema(self: ProjetoService) {
@@ -134,15 +135,21 @@ export class ProjetoService {
         }
     }
 
-    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
+    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, checkFk: boolean) {
         if (!dto.orgao_gestor_id)
             return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined }
 
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
         const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor ? dto.responsaveis_no_orgao_gestor : [];
 
-        if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false) throw new HttpException('orgao_gestor_id| não faz parte do Portfolio', 400);
+        if (checkFk) {
+            //console.dir({ portfolio, orgao_gestor_id, responsaveis_no_orgao_gestor }, { depth: 44 });
+            // se o banco ficou corrompido, não tem como o usuário arrumar
+            if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false)
+                throw new HttpException(`orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos.map(r => r.sigla).join(', ')})`, 400);
+        }
 
+        // esse TODO continua existindo
         // TODO verificar se cada [responsaveis_no_orgao_gestor] existe realmente
         // e se tem o privilegio gestor_de_projeto
 
@@ -185,7 +192,7 @@ export class ProjetoService {
         if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário', 400);
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
 
         console.log(dto);
 
@@ -473,7 +480,8 @@ export class ProjetoService {
                         id: true
                     }
                 },
-
+                selecionado_em: true,
+                em_planejamento_em: true,
             },
         });
 
@@ -517,7 +525,7 @@ export class ProjetoService {
             acao_arquivar: false,
             acao_restaurar: false,
             acao_selecionar: false,
-            // acao_iniciar_planejamento: não existe, é automático quando insere o código
+            acao_iniciar_planejamento: false,
             acao_finalizar_planejamento: false,
             acao_validar: false,
             acao_iniciar: false,
@@ -562,7 +570,7 @@ export class ProjetoService {
                 && projeto.responsavel_id
                 && projeto.responsavel_id == +user.id
             ) {
-                pessoaPodeEscrever = (['Registrado', 'Selecionado'] as ProjetoStatus[]).includes(projeto.status);
+                pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(projeto.status);
             } else {
                 throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
             }
@@ -597,7 +605,7 @@ export class ProjetoService {
 
                 switch (projeto.status) {
                     case 'Registrado': permissoes.acao_selecionar = true; break;
-                    case 'Selecionado': break;// nothing to do
+                    case 'Selecionado': permissoes.acao_iniciar_planejamento = true; break;
                     case 'EmPlanejamento': permissoes.acao_finalizar_planejamento = true; break;
                     case 'Planejado': permissoes.acao_validar = true; break;
                     case 'Validado': permissoes.acao_iniciar = true; break;
@@ -618,33 +626,13 @@ export class ProjetoService {
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+
+        //if (dto.codigo) throw new HttpException('codigo| O campo código não deve ser enviado.', 400);
+
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
 
-        // se estiver arquivado, retorna 400
-
-        let moverStatusParaPlanejamento: boolean = false;
-        if (dto.codigo) {
-            if (projeto.permissoes.campo_codigo == false)
-                throw new HttpException('Campo "Código" não pode ser preenchido ou alterado no momento', 400);
-
-            if (projeto.status == 'Selecionado') {
-                moverStatusParaPlanejamento = true;
-
-                const countInUse = await this.prisma.projeto.count({
-                    where: {
-                        codigo: { equals: dto.codigo, mode: 'insensitive' },
-                        NOT: {
-                            id: projeto.id
-                        },
-                    }
-                });
-                if (countInUse)
-                    throw new HttpException('codigo| Código informado já está em uso em outro projeto.', 400);
-
-            }
-
-        }
+        // TODO? se estiver arquivado, retorna 400 (estava só o comentario, sem o texto de TODO)
 
         let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
         let meta_id: number | null | undefined = undefined;
@@ -673,20 +661,19 @@ export class ProjetoService {
             orgao_gestor_id: projeto.orgao_gestor.id,
             responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor
         } : {};
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio, false);
 
+        // orgao_responsavel_id
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
 
-            const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
-            if (novoStatus)
-                await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
-
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
+
+
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
@@ -718,17 +705,12 @@ export class ProjetoService {
 
                     // campos apenas do update
                     publico_alvo: dto.publico_alvo,
-                    codigo: dto.codigo,
                     objeto: dto.objeto,
                     objetivo: dto.objetivo,
                     nao_escopo: dto.nao_escopo,
                     secretario_executivo: dto.secretario_executivo,
                     secretario_responsavel: dto.secretario_responsavel,
                     coordenador_ue: dto.coordenador_ue,
-
-                    // por padrão undefined, não faz nenhuma alteração
-                    status: novoStatus,
-                    fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
 
                     orgaos_participantes: dto.orgaos_participantes !== undefined ? {
                         createMany: {
@@ -737,67 +719,58 @@ export class ProjetoService {
                             }),
                         },
                     } : undefined,
+
                 }
             });
 
-            if (dto.meta_id || orgao_gestor_id)
-                await this.updateProjetoCodigo(projetoId, dto.meta_id, orgao_gestor_id, prismaTx);
+            console.log(
+                [
+                    (dto.meta_id && projeto.meta_id != dto.meta_id)
+                    ,
+                    (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
+                    ,
+                    (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
+                    ,
+                    (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
+                    ,
+                    (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
+                ]
+            );
+
+            // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
+            // ou atualizar o código
+            if (projeto.em_planejamento_em !== null && (
+                (dto.meta_id && projeto.meta_id != dto.meta_id)
+                ||
+                (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
+                ||
+                (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
+                ||
+                (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
+                ||
+                (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
+            )) {
+                const codigo = await this.geraProjetoCodigo(projeto.id, prismaTx);
+                if (codigo != projeto.codigo)
+                    await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
+            }
+
+
         });
 
         return { id: projetoId };
     }
 
-    private async updateProjetoCodigo(projeto_id: number, meta_id: number | null | undefined, orgao_gestor_id: number | undefined, prismaTx: Prisma.TransactionClient) {
-        const projeto = await prismaTx.projeto.findFirstOrThrow({
-            where: {id: projeto_id},
+
+    async geraProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {
+        // buscar o ano baseado em 'selecionado_em'
+        const projeto = await prismaTx.projeto.findUniqueOrThrow({
+            where: { id },
             select: {
-                codigo: true,
-                em_planejamento_em: true
-            }
-        });
-
-        if (!projeto.em_planejamento_em) return;
-
-        const current_codigo = projeto.codigo;
-        if (!current_codigo) return this.getProjetoCodigo(projeto_id, prismaTx);
-
-        const codigo_parts = current_codigo.split('.');
-
-        if (meta_id) {
-            const meta = await prismaTx.meta.findFirstOrThrow({
-                where: {id: meta_id},
-                select: {codigo: true}
-            });
-
-            codigo_parts[2] = 'M' + meta.codigo;
-        }
-
-        if (orgao_gestor_id) {
-            const orgao = await prismaTx.orgao.findFirstOrThrow({
-                where: {id: orgao_gestor_id},
-                select: {sigla: true}
-            });
-
-            codigo_parts[0] = orgao.sigla;
-        }
-
-        const new_codigo = codigo_parts.join('.');
-
-        await prismaTx.projeto.update({
-            where: {id: projeto_id},
-            data: { codigo: new_codigo }
-        })
-    }
-
-    async getProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string> {
-        const codigo: string = "";
-
-        const projeto = await prismaTx.projeto.findFirstOrThrow({
-            where: {id},
-            select: {
-                registrado_em: true,
+                id: true,
+                selecionado_em: true,
                 portfolio_id: true,
-                orgao_gestor: {
+                orgao_responsavel: {
                     select: {
                         sigla: true
                     }
@@ -806,28 +779,67 @@ export class ProjetoService {
                     select: {
                         codigo: true,
                     }
-                }
+                },
+                meta_codigo: true,
+                origem_tipo: true,
             }
         });
 
-        const portfolioProjects = await prismaTx.projeto.findMany({
-            where: { portfolio_id: projeto.portfolio_id },
-            select: { id: true },
-            orderBy: [{ registrado_em: 'asc' }]
+        if (!projeto.selecionado_em)
+            throw new HttpException('Não é possível gerar o código do projeto sem a data em que foi selecionado.', 400);
+
+        if (!projeto.orgao_responsavel)
+            throw new HttpException('Não é possível gerar o código do projeto sem um órgão responsável.', 400);
+
+        await prismaTx.$queryRaw`SELECT id FROM portfolio WHERE id = ${projeto.portfolio_id}::int FOR UPDATE`;
+        let anoSequencia = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
+        let sequencial = 0;
+
+        const buscaExistente = await prismaTx.projetoNumeroSequencial.findFirst({
+            where: {
+                projeto_id: id
+            }
         });
 
-        const projetoIndexRefPortfolio = portfolioProjects.map(e => e.id).indexOf(id);
+        if (buscaExistente) {
+            anoSequencia = buscaExistente.ano;
+            sequencial = buscaExistente.valor;
+            this.logger.debug(`Projeto não deve mudar de ano, nem portfolio. Mantendo sequencial e ano anteriores. Mantendo sequencial ${sequencial}`);
+        } else {
+            this.logger.debug(`Gerando novo sequencial para o portfolio ${projeto.portfolio_id} em ${anoSequencia}.`);
+            const sequencial = await prismaTx.projetoNumeroSequencial.count({
+                where: {
+                    portfolio_id: projeto.portfolio_id,
+                    ano: anoSequencia
+                },
+            }) + 1;
+            this.logger.debug(`=> Registrando sequencial ${sequencial}.`);
 
-        codigo
-          .concat(projeto.orgao_gestor.sigla)
-          .concat('.')
-          .concat(projeto.registrado_em.getFullYear().toString())
-          .concat('.')
-          .concat(projeto.meta ? ('M' + projeto.meta.codigo) : ('M000'))
-          .concat('.')
-          .concat(projetoIndexRefPortfolio.toString());
-        
-        return codigo;
+            await prismaTx.projetoNumeroSequencial.create({
+                data: {
+                    projeto_id: projeto.id,
+                    portfolio_id: projeto.portfolio_id,
+                    ano: anoSequencia,
+                    valor: sequencial
+                }
+            });
+        }
+
+        // não sei se faz sentido ser M quando é outro, mas blz
+        let cod_meta = 'M000';
+
+        if (projeto.origem_tipo == 'PdmAntigo') {
+            cod_meta = 'M' + (projeto.meta_codigo || '').padStart(3, '0');
+        } else if (projeto.origem_tipo == 'PdmSistema' && projeto.meta) {
+            cod_meta = 'M' + projeto.meta.codigo.padStart(3, '0');
+        }
+
+        return [
+            projeto.orgao_responsavel!.sigla,
+            DateTime.fromJSDate(projeto.selecionado_em).setZone(SYSTEM_TIMEZONE).year,
+            cod_meta,
+            sequencial.toString().padStart(3, '0'),
+        ].join('.');
     }
 
     private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {

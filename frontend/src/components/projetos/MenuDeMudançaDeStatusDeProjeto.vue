@@ -42,6 +42,10 @@ const ações = [
     nome: 'Reiniciar',
   },
   {
+    ação: 'iniciar_planejamento',
+    nome: 'Iniciar Planejamento',
+  },
+  {
     ação: 'cancelar',
     nome: 'Cancelar',
   },

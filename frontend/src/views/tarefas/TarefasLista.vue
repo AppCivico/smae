@@ -4,6 +4,7 @@ import dateToField from '@/helpers/dateToField';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 
 const projetosStore = useProjetosStore();
 const tarefasStore = useTarefasStore();
@@ -15,9 +16,18 @@ const {
   árvoreDeTarefas, chamadasPendentes, erro,
 } = storeToRefs(tarefasStore);
 
-function iniciar() {
+// eslint-disable-next-line max-len
+const nívelMáximoPermitido = computed(() => tarefasStore?.extra?.portfolio?.nivel_maximo_tarefa || 0);
+
+const nívelMáximoVisível = ref(0);
+
+async function iniciar() {
   tarefasStore.$reset();
-  tarefasStore.buscarTudo();
+  await tarefasStore.buscarTudo();
+
+  if (nívelMáximoPermitido.value) {
+    nívelMáximoVisível.value = nívelMáximoPermitido.value;
+  }
 }
 
 iniciar();
@@ -27,7 +37,10 @@ iniciar();
     <h1>{{ route?.meta?.título || 'Cronograma' }}</h1>
     <hr class="ml2 f1">
 
-    <div class="ml2">
+    <div
+      v-if="projetoEmFoco?.eh_prioritario"
+      class="ml2"
+    >
       <router-link
         :to="{ name: 'tarefasCriar' }"
         class="btn"
@@ -88,6 +101,30 @@ iniciar();
         </dd>
       </div>
     </dl>
+  </div>
+
+  <div class="mb2">
+    <div class="">
+      <label class="label tc300">
+        Exibir tarefas até nível
+      </label>
+      <div class="flex center">
+        <input
+          id="nivel"
+          v-model="nívelMáximoVisível"
+          type="range"
+          name="nivel"
+          min="1"
+          :max="nívelMáximoPermitido"
+          class="f1"
+        >
+        <output
+          class="f1 ml1"
+        >
+          {{ nívelMáximoVisível }}
+        </output>
+      </div>
+    </div>
   </div>
 
   <table
@@ -152,6 +189,7 @@ iniciar();
         :key="r.id"
         :linha="r"
         :índice="i"
+        :nível-máximo-visível="nívelMáximoVisível"
       />
     </tbody>
   </table>
