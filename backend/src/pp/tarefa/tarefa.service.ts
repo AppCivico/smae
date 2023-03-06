@@ -712,6 +712,7 @@ export class TarefaService {
                 }
 
                 const depDeps = repositorioDependencias.filter(r => r.tarefa_id === +depId);
+                console.log({ depDeps, cond: `r.tarefa_id === depId (${depId})` });
                 if (depDeps.length > 0) {
                     novaDependencias(depId, depDeps.map(dep => dep.dependencia_tarefa_id.toString()), recursionLevel + 1);
                 } else {
@@ -723,15 +724,18 @@ export class TarefaService {
         try {
             for (const dependencia of dependencias) {
 
+                this.logger.debug(`=: setEdge ( ${tarefa_corrente_id.toString()}, ${dependencia.dependencia_tarefa_id.toString()})`);
                 grafo = grafo.setEdge(tarefa_corrente_id.toString(), dependencia.dependencia_tarefa_id.toString());
 
                 this.logger.debug(`=> Verificando ${dependencia.dependencia_tarefa_id} (${dependencia.tipo} com ${dependencia.latencia} dias)`);
 
                 const depDeps = repositorioDependencias.filter(r => r.tarefa_id === dependencia.dependencia_tarefa_id);
+                console.log({ depDeps, cond: `r.tarefa_id === dependencia.dependencia_tarefa_id (${dependencia.dependencia_tarefa_id})` });
+
                 if (depDeps.length > 0) {
                     novaDependencias(
                         dependencia.dependencia_tarefa_id.toString(),
-                        depDeps.map(dep => dep.tarefa_id.toString()),
+                        depDeps.map(dep => dep.dependencia_tarefa_id.toString()),
                         1
                     );
                 } else {
