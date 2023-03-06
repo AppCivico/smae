@@ -275,7 +275,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Resumo&nbsp;<span class="tvermelho">*</span>
+          Resumo
         </label>
         <Field
           name="resumo"
@@ -295,7 +295,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Escopo&nbsp;<span class="tvermelho">*</span>
+          Escopo
           <small class="t13 tc500">(o que será entregue no projeto)</small>
         </label>
         <Field
@@ -398,7 +398,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Principais etapas&nbsp;<span class="tvermelho">*</span>
+          Principais etapas
         </label>
         <Field
           name="principais_etapas"
@@ -455,7 +455,8 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">Responsáveis&nbsp;<span class="tvermelho">*</span>
+        <label class="label tc300">
+        Responsáveis&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <AutocompleteField
@@ -481,7 +482,8 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Orgãos participantes&nbsp;<span class="tvermelho">*</span>
+        <label class="label tc300">
+          Orgãos participantes
         </label>
 
         <AutocompleteField
@@ -506,7 +508,8 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Órgão responsável&nbsp;<span class="tvermelho">*</span>
+        <label class="label tc300">
+          Órgão responsável
         </label>
         <Field
           name="orgao_responsavel_id"
@@ -518,6 +521,8 @@ iniciar();
           }"
           :disabled="!órgãosQueTemResponsáveis?.length"
           @change="setFieldValue('responsavel_id', 0)"
+          @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
+            || null"
         >
           <option :value="0">
             Selecionar
@@ -537,7 +542,9 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">Responsável&nbsp;<span class="tvermelho">*</span></label>
+        <label class="label tc300">
+          Responsável
+        </label>
         <Field
           name="responsavel_id"
           as="select"
@@ -548,6 +555,8 @@ iniciar();
           }"
           :disabled="!órgãosQueTemResponsáveisEPorId[values.orgao_responsavel_id]
             ?.responsible?.length"
+          @update:model-value="values.responsavel_id = Number(values.responsavel_id)
+            || null"
         >
           <option :value="0">
             Selecionar
@@ -573,7 +582,8 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">Origem&nbsp;<span class="tvermelho">*</span>
+        <label class="label tc300">
+          Origem&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="origem_tipo"
@@ -797,7 +807,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label">
-          Previsão de início&nbsp;<span class="tvermelho">*</span>
+          Previsão de início
         </label>
         <Field
           name="previsao_inicio"
@@ -805,6 +815,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.previsao_inicio }"
           maxlength="10"
+          @update:model-value="values.previsao_inicio === ''
+            ? values.previsao_inicio = null
+            : null"
         />
         <ErrorMessage
           name="previsao_inicio"
@@ -813,7 +826,7 @@ iniciar();
       </div>
       <div class="f1 mb1">
         <label class="label">
-          Previsão de término&nbsp;<span class="tvermelho">*</span>
+          Previsão de término
         </label>
         <Field
           name="previsao_termino"
@@ -821,6 +834,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.previsao_termino }"
           maxlength="10"
+          @update:model-value="values.previsao_termino === ''
+            ? values.previsao_termino = null
+            : null"
         />
         <ErrorMessage
           name="previsao_termino"
