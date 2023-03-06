@@ -749,7 +749,7 @@ export class ProjetoService {
 
     private async updateProjetoCodigo(projeto_id: number, meta_id: number | null | undefined, orgao_gestor_id: number | undefined, prismaTx: Prisma.TransactionClient) {
         const projeto = await prismaTx.projeto.findFirstOrThrow({
-            where: {id: projeto_id},
+            where: { id: projeto_id },
             select: {
                 codigo: true,
                 em_planejamento_em: true
@@ -763,12 +763,12 @@ export class ProjetoService {
         if (current_codigo == '') return;
 
         const codigo_parts = current_codigo.split('.');
-        if (codigo_parts.length != 4) throw new Error(`Falha ao atualizar código do Projeto (updateProjetoCodigo). Código deve possuir 4 partes, código=${current_codigo}` );
+        if (codigo_parts.length != 4) throw new Error(`Falha ao atualizar código do Projeto (updateProjetoCodigo). Código deve possuir 4 partes, código=${current_codigo}`);
 
         if (meta_id) {
             const meta = await prismaTx.meta.findFirstOrThrow({
-                where: {id: meta_id},
-                select: {codigo: true}
+                where: { id: meta_id },
+                select: { codigo: true }
             });
 
             codigo_parts[2] = 'M' + meta.codigo;
@@ -776,8 +776,8 @@ export class ProjetoService {
 
         if (orgao_gestor_id) {
             const orgao = await prismaTx.orgao.findFirstOrThrow({
-                where: {id: orgao_gestor_id},
-                select: {sigla: true}
+                where: { id: orgao_gestor_id },
+                select: { sigla: true }
             });
 
             codigo_parts[0] = orgao.sigla;
@@ -786,7 +786,7 @@ export class ProjetoService {
         const new_codigo = codigo_parts.join('.');
 
         await prismaTx.projeto.update({
-            where: {id: projeto_id},
+            where: { id: projeto_id },
             data: { codigo: new_codigo }
         })
     }
@@ -798,7 +798,7 @@ export class ProjetoService {
         const projeto = await prismaTx.projeto.findFirst({
             where: {
                 id,
-                NOT: [{selecionado_em: null}]
+                NOT: [{ selecionado_em: null }]
             },
             select: {
                 selecionado_em: true,
@@ -835,23 +835,24 @@ export class ProjetoService {
             throw new Error('Erro ao gerar código para projeto, faltando row na tabela de nro sequencial');
 
         codigo
-          .concat(projeto.orgao_gestor.sigla)
-          .concat('.')
-          .concat(projeto.selecionado_em.getFullYear().toString())
-          .concat('.')
-          .concat(projeto.meta ? ('M' + projeto.meta.codigo) : ('M000'))
-          .concat('.')
-          .concat(projetoNumSeq.valor.toString().padStart(3, '0'));
+            .concat(projeto.orgao_gestor.sigla)
+            .concat('.')
+            .concat(projeto.selecionado_em.getFullYear().toString())
+            .concat('.')
+            .concat(projeto.meta ? ('M' + projeto.meta.codigo) : ('M000'))
+            .concat('.')
+            .concat(projetoNumSeq.valor.toString().padStart(3, '0'));
 
         return codigo;
     }
 
     async getNextPortfolioSeq(portfolio_id: number, prismaTx: Prisma.TransactionClient): Promise<number> {
-        const projeto_numero_sequencial = await prismaTx.projetoNumeroSequencial.findFirstOrThrow({
+        const projeto_numero_sequencial = await prismaTx.projetoNumeroSequencial.findFirst({
             where: { portfolio_id: portfolio_id },
             orderBy: [{ valor: 'desc' }],
             select: { valor: true }
         });
+        if (!projeto_numero_sequencial) return 1;
 
         return projeto_numero_sequencial.valor + 1;
     }
