@@ -218,9 +218,11 @@ async function onSubmit(_, { controlledValues: carga }) {
         arial-label="limpar datas"
         title="limpar datas"
         type="button"
-        @click="
-          values.inicio_real = values.duracao_real =
-          values.termino_real = null
+        @click="() => {
+          setFieldValue('inicio_real', null);
+          setFieldValue('duracao_real', null);
+          setFieldValue('termino_real', null);
+        }
         "
       >
         <svg
