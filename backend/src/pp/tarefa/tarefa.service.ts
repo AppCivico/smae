@@ -754,7 +754,6 @@ export class TarefaService {
 
                 if (cilosDetectados.length > 0) {
 
-
                     const tarefasDb = await this.prisma.tarefa.findMany({
                         where: {
                             id: {
@@ -778,6 +777,8 @@ export class TarefaService {
                             textoFormatado += `Tarefa "${tarefa.tarefa}" (id ${tarefa.id}) no nível (${tarefa.nivel}) número (${tarefa.numero}) => `;
                         }
                     }
+
+                    textoFormatado = textoFormatado.slice(0, -4) + '.\n\nDependência circulares não são suportadas.';
                 } else {
                     textoFormatado = 'Não foi possível encontrar um exemplo do ciclo com a biblioteca utilizada no momento.'
                 }
