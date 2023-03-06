@@ -517,7 +517,7 @@ export class ProjetoService {
             acao_arquivar: false,
             acao_restaurar: false,
             acao_selecionar: false,
-            // acao_iniciar_planejamento: não existe, é automático quando insere o código
+            acao_iniciar_planejamento: false,
             acao_finalizar_planejamento: false,
             acao_validar: false,
             acao_iniciar: false,
@@ -597,7 +597,7 @@ export class ProjetoService {
 
                 switch (projeto.status) {
                     case 'Registrado': permissoes.acao_selecionar = true; break;
-                    case 'Selecionado': break;// nothing to do
+                    case 'Selecionado': permissoes.acao_iniciar_planejamento = true; break;
                     case 'EmPlanejamento': permissoes.acao_finalizar_planejamento = true; break;
                     case 'Planejado': permissoes.acao_validar = true; break;
                     case 'Validado': permissoes.acao_iniciar = true; break;
@@ -817,7 +817,7 @@ export class ProjetoService {
         });
 
         // Este OR foi para lá embaixo no concat, a tipagem não reclamar que pode estar null.
-        // Pois na própria query já é assegurado que o `selecionado_em` não estará null. 
+        // Pois na própria query já é assegurado que o `selecionado_em` não estará null.
         if (!projeto || !projeto.selecionado_em) return codigo;
 
         const projetoNumSeq = await prismaTx.projetoNumeroSequencial.findUnique({

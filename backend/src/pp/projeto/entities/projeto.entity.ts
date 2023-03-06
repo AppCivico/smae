@@ -27,6 +27,7 @@ export class ProjetoPermissoesDto {
     acao_arquivar: boolean
     acao_restaurar: boolean
     acao_selecionar: boolean
+    acao_iniciar_planejamento: boolean
     acao_finalizar_planejamento: boolean
     acao_validar: boolean
     acao_iniciar: boolean
