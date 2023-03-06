@@ -142,7 +142,9 @@ export class ProjetoService {
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
         const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor ? dto.responsaveis_no_orgao_gestor : [];
 
-        if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false) throw new HttpException('orgao_gestor_id| não faz parte do Portfolio', 400);
+        console.dir(portfolio, { depth: 44 });
+
+        if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false) throw new HttpException(`orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos.map(r => r.sigla).join(', ')})`, 400);
 
         // TODO verificar se cada [responsaveis_no_orgao_gestor] existe realmente
         // e se tem o privilegio gestor_de_projeto
