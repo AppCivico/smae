@@ -197,8 +197,7 @@ const projeto = object()
       .min(new Date(2003, 0, 1))
       .typeError('Data inválida'),
     escopo: string()
-      .max(50000)
-      .required(),
+      .max(50000),
     fonte_recursos: array()
       .nullable()
       .of(
@@ -247,11 +246,8 @@ const projeto = object()
       .min(1, 'Selecione um órgão gestor')
       .required('O projeto necessita de um órgão gestor'),
     orgao_responsavel_id: number()
-      .min(1, 'Selecione um órgão responsável')
-      .required('Escolha um órgão responsável pelo projeto'),
-    orgaos_participantes: array()
-      .min(1, 'Selecione ao menos um órgão')
-      .required('Selecione órgãos participantes'),
+      .nullable(),
+    orgaos_participantes: array(),
     origem_outro: string()
       .nullable()
       .max(500)
@@ -281,20 +277,19 @@ const projeto = object()
       .min(0)
       .required('Previsão de custo é obrigatória'),
     previsao_inicio: date()
-      .required('Previsão de início é obrigatória')
+      .nullable()
       .typeError('Data inválida'),
     previsao_termino: date()
       .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
-      .required('Previsão de término é obrigatória')
+      .nullable()
       .typeError('Data inválida'),
     principais_etapas: string()
-      .max(50000)
-      .required('Principais etapas são obrigatórias'),
+      .max(50000),
     responsaveis_no_orgao_gestor: array()
       .min(1, 'É necessário ao menos um gestor')
       .required('Alguém do órgão precisa gerir o projeto'),
     responsavel_id: number()
-      .required('O projeto necessita de um responsável'),
+      .nullable(),
     restricoes: array()
       .of(
         object()
@@ -308,8 +303,7 @@ const projeto = object()
       )
       .strict(),
     resumo: string()
-      .max(500)
-      .required('Resumo é obrigatório'),
+      .max(500),
     versao: string()
       .nullable()
       .max(20),
