@@ -130,6 +130,7 @@ export class ProjetoDetailDto {
     meta_codigo: string | null
 
     selecionado_em: Date | null
+    em_planejamento_em: Date | null
 
     data_aprovacao: Date | null
     data_revisao: Date | null
