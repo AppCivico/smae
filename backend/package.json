@@ -32,6 +32,7 @@
     "test:e2e:ci": "jest --config ./test/jest-e2e.json --coverage --forceExit --ci --reporters=default --reporters=jest-junit"
   },
   "dependencies": {
+    "@dagrejs/graphlib": "^2.1.11",
     "@nestjs/common": "^9.3.9",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.3.9",
@@ -44,6 +45,7 @@
     "@nestjs/swagger": "^6.2.1",
     "@prisma/client": "^4.10.1",
     "@types/adm-zip": "^0.5.0",
+    "@types/graphlib": "^2.1.8",
     "adm-zip": "^0.5.10",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
@@ -51,7 +53,6 @@
     "csv-parse": "^5.3.3",
     "express-winston": "^4.2.0",
     "got": "^11.8.5",
-    "graphlib": "^2.1.8",
     "json2csv": "^5.0.7",
     "luxon": "^3.2.1",
     "minio": "^7.0.32",
