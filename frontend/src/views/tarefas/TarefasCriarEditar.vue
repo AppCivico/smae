@@ -4,6 +4,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
 import { tarefa as schema } from '@/consts/formSchemas';
 import addToDates from '@/helpers/addToDates';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
@@ -15,13 +16,10 @@ import {
   ErrorMessage,
   Field,
   FieldArray,
-  Form,
-  useForm
+  Form
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-
-const { setValues } = useForm();
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
@@ -112,7 +110,7 @@ async function validarDependências(dependências) {
     };
 
     if (resposta.inicio_planejado_calculado) {
-      atualização.inicio_planejado = resposta.inicio_planejado;
+      atualização.inicio_planejado = dateTimeToDate(resposta.inicio_planejado);
 
       if (!resposta.inicio_planejado) {
         atualização.termino_planejado = null;
@@ -122,19 +120,20 @@ async function validarDependências(dependências) {
       atualização.duracao_planejado = resposta.duracao_planejado;
     }
     if (resposta.termino_planejado_calculado) {
-      atualização.termino_planejado = resposta.termino_planejado;
+      atualização.termino_planejado = dateTimeToDate(resposta.termino_planejado);
 
       if (!resposta.termino_planejado) {
         atualização.inicio_planejado = null;
       }
     }
 
-    setValues(atualização);
-
     dependênciasValidadas.value = dependências;
+    return atualização;
   } catch (error) {
     dependênciasValidadas.value = [];
     alertStore.error(error);
+
+    return {};
   }
 }
 
@@ -163,7 +162,7 @@ iniciar();
 
   <Form
     v-if="!tarefaId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, setValues, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -475,7 +474,10 @@ iniciar();
           class="btn outline bgnone tcprimary mr2"
           type="button"
           :disabled="chamadasPendentes.validaçãoDeDependências"
-          @click="validarDependências(values.dependencias)"
+          @click="async () => {
+            const novosValores = await validarDependências(values.dependencias);
+            setValues({ ...values, ...novosValores });
+          }"
         >
           Validar dependências
         </button>
