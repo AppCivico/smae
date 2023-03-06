@@ -622,7 +622,7 @@ export class ProjetoService {
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
-        if (dto.codigo) throw new HttpException('codigo| O campo código não deve ser enviado.', 400);
+        //if (dto.codigo) throw new HttpException('codigo| O campo código não deve ser enviado.', 400);
 
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
@@ -668,21 +668,6 @@ export class ProjetoService {
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
 
-            let codigo: string | undefined;
-            // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
-            // ou atualizar o código
-            if (projeto.em_planejamento_em !== null && (
-                (dto.meta_id && projeto.meta_id != dto.meta_id)
-                ||
-                (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
-                ||
-                (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
-                ||
-                (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
-                ||
-                (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
-            ))
-                codigo = await this.geraProjetoCodigo(projeto.id, prismaTx);
 
 
             await prismaTx.projeto.update({
@@ -730,9 +715,26 @@ export class ProjetoService {
                         },
                     } : undefined,
 
-                    codigo: codigo,
                 }
             });
+
+            // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
+            // ou atualizar o código
+            if (projeto.em_planejamento_em !== null && (
+                (dto.meta_id && projeto.meta_id != dto.meta_id)
+                ||
+                (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
+                ||
+                (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
+                ||
+                (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
+                ||
+                (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
+            )) {
+                const codigo = await this.geraProjetoCodigo(projeto.id, prismaTx);
+                if (codigo != projeto.codigo)
+                    await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
+            }
 
 
         });
