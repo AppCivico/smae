@@ -12,7 +12,7 @@ import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities
 import { TarefaUtilsService } from './tarefa.service.utils';
 
 // ta os types de da lib "graphlib" que é por enquanto pure-js
-import { alg, Graph } from 'graphlib';
+import { Graph } from 'graphlib';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
 
