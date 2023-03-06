@@ -30,7 +30,12 @@ const {
   pdmsPorId,
   metaSimplificada,
 } = storeToRefs(projetosStore);
-const { órgãosOrdenados, órgãosQueTemResponsáveis, órgãosQueTemResponsáveisEPorId } = storeToRefs(ÓrgãosStore);
+const {
+  órgãosOrdenados,
+  órgãosQueTemResponsáveis,
+  órgãosQueTemResponsáveisEPorId,
+} = storeToRefs(ÓrgãosStore);
+
 const { DotacaoSegmentos } = storeToRefs(OrçamentosStore);
 
 const router = useRouter();
@@ -45,9 +50,9 @@ const props = defineProps({
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 
-const órgãosDisponíveisNessePortfolio = ((idDoPortfólio) => portfolioStore
+const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
-  .filter((x) => órgãosQueTemResponsáveisEPorId.value?.[x.id]?.responsible?.length) || []);
+  .filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
 
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
@@ -213,7 +218,7 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
-          :disabled="!!portfolioId"
+          :disabled="!!portfolioId || !!projetoId"
         >
           <option :value="0">
             Selecionar
@@ -425,6 +430,7 @@ iniciar();
           Órgão gestor&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
+          v-if="!projetoId"
           name="orgao_gestor_id"
           as="select"
           class="inputtext light mb1"
@@ -448,15 +454,23 @@ iniciar();
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
-
+        <input
+          v-else
+          type="text"
+          :value="emFoco.orgao_gestor.sigla + ' - ' + truncate(emFoco.orgao_gestor.descricao, 36)"
+          class="inputtext light mb1"
+          :title="emFoco.descricao"
+          disabled
+        >
         <ErrorMessage
           name="orgao_gestor_id"
           class="error-msg"
         />
       </div>
+
       <div class="f1 mb1">
         <label class="label tc300">
-        Responsáveis&nbsp;<span class="tvermelho">*</span>
+          Responsáveis&nbsp;<span class="tvermelho">*</span>
         </label>
 
         <AutocompleteField

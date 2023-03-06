@@ -163,7 +163,7 @@ export const useProjetosStore = defineStore('projetos', {
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
       escopo: emFoco?.escopo || '',
       meta_codigo: emFoco?.meta_codigo || '',
-      orgao_gestor_id: emFoco?.orgao_gestor?.id || 0,
+      orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       origem_outro: emFoco?.origem_outro || '',
       pdm_escolhido: emFoco?.meta?.pdm_id || null,
       previsao_custo: emFoco?.previsao_custo || 0,

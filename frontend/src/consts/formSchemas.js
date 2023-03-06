@@ -286,8 +286,7 @@ const projeto = object()
     principais_etapas: string()
       .max(50000),
     responsaveis_no_orgao_gestor: array()
-      .min(1, 'É necessário ao menos um gestor')
-      .required('Alguém do órgão precisa gerir o projeto'),
+      .nullable(),
     responsavel_id: number()
       .nullable(),
     restricoes: array()
