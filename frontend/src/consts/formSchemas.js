@@ -14,6 +14,10 @@ import {
 } from 'yup';
 
 setLocale({
+  array: {
+    min: 'Escolha ao menos ${min}',
+    max: 'Escolha no máximo ${max}',
+  },
   date: {
     max: 'Essa data é muito no futuro',
     min: 'Essa data é muito no passado',
@@ -29,7 +33,8 @@ setLocale({
     min: 'Deve ser maior que ${min}',
   },
   string: {
-    max: 'Esse texto é muito longo',
+    min: 'Esse texto é menor que ${min}',
+    max: 'Esse texto é maior que ${max}',
   },
 });
 
