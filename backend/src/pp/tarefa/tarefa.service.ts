@@ -612,10 +612,30 @@ export class TarefaService {
         };
 
         const tarefa_corrente_id = dto.tarefa_corrente_id ?? 0;
+        for (const dep of deps) {
+            // começando pelo simples, sem query alguma
+            if (dep.dependencia_tarefa_id === tarefa_corrente_id)
+                throw new HttpException('Você não pode ter como dependência a própria tarefa', 400);
 
-        // começando pelo simples, sem query alguma
-        if (deps.filter(d => { return d.dependencia_tarefa_id === tarefa_corrente_id }).length > 0)
-            throw new HttpException('Você não pode ter como dependencia a própria tarefa', 400);
+            // um pouco menos simples, mas ainda que o grafo não pega!
+            const buscaParents: { parents: number[] }[] = await prismaTx.$queryRaw`
+                WITH RECURSIVE tarefa_path AS (
+                    SELECT id, tarefa_pai_id, nivel::int, m.tarefa
+                    FROM tarefa m
+                    WHERE m.id = ${dep.dependencia_tarefa_id}::int
+                    and m.removido_em is null
+                    UNION ALL
+                    SELECT t.id, t.tarefa_pai_id, t.nivel, t.tarefa
+                    FROM tarefa t
+                    JOIN tarefa_path tp ON tp.tarefa_pai_id = t.id
+                    and t.removido_em is null
+                  )
+                  SELECT array_agg(tp.id) as parents
+                  FROM tarefa_path tp;
+                `;
+            if (buscaParents[0].parents.includes(dep.dependencia_tarefa_id))
+                throw new HttpException('Você não pode ter como dependência uma tarefa superior a sua tarefa', 400);
+        }
 
         // carrega todas as dependencias, exceto as da tarefa correte (ou nova tarefa, no caso do zero)
         const tarefaDepsProj = await prismaTx.tarefaDependente.findMany({
