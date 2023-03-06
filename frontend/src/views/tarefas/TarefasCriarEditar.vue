@@ -508,6 +508,7 @@ iniciar();
             ? values.inicio_planejado = null
             : null"
           @change="values.duracao_planejado
+            && !values?.termino_planejado_calculado
             ? setFieldValue(
               'termino_planejado',
               addToDates(values.inicio_planejado, values.duracao_planejado - 1)
@@ -545,12 +546,19 @@ iniciar();
           }"
           @update:model-value="values.duracao_planejado = Number(values.duracao_planejado)
             || null"
-          @change="values.inicio_planejado
-            ? setFieldValue(
-              'termino_planejado',
-              addToDates(values.inicio_planejado, values.duracao_planejado - 1)
-            )
-            : null"
+          @change="() => {
+            if (values.inicio_planejado && !values.termino_planejado_calculado) {
+              setFieldValue(
+                'termino_planejado',
+                addToDates(values.inicio_planejado, values.duracao_planejado - 1)
+              );
+            } else if (values.termino_planejado && !values.inicio_planejado_calculado) {
+              setFieldValue(
+                'inicio_planejado',
+                addToDates(values.termino_planejado, values.duracao_planejado * -1 + 1)
+              );
+            }
+          }"
         />
         <input
           v-else
@@ -586,6 +594,7 @@ iniciar();
             ? values.termino_planejado = null
             : null"
           @change="values.termino_planejado && values.inicio_planejado
+            && !values?.duracao_planejado_calculado
             ? setFieldValue(
               'duracao_planejado',
               subtractDates(values.termino_planejado, values.inicio_planejado) + 1
