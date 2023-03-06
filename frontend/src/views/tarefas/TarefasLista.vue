@@ -37,7 +37,10 @@ iniciar();
     <h1>{{ route?.meta?.título || 'Cronograma' }}</h1>
     <hr class="ml2 f1">
 
-    <div class="ml2">
+    <div
+      v-if="projetoEmFoco?.eh_prioritario"
+      class="ml2"
+    >
       <router-link
         :to="{ name: 'tarefasCriar' }"
         class="btn"

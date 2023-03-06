@@ -1,6 +1,7 @@
 <script>
 import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { useRoute } from 'vue-router';
 
@@ -35,6 +36,7 @@ export default {
   },
   computed: {
     nivelMaximoTarefa: () => useTarefasStore()?.extra?.portfolio?.nivel_maximo_tarefa || -1,
+    oProjetoÉPrioritário: () => useProjetosStore()?.emFoco.eh_prioritario,
   },
   methods: {
     dateToField,
@@ -119,7 +121,7 @@ export default {
         type="button"
         class="like-a__text"
         title="Excluir"
-        :hidden="linha.n_filhos_imediatos > 0"
+        :hidden="linha.n_filhos_imediatos > 0 || !oProjetoÉPrioritário"
         @click="excluirTarefa(linha.id)"
       >
         <svg
@@ -134,6 +136,7 @@ export default {
     >
       <router-link
         v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1"
+        :hidden="!oProjetoÉPrioritário"
         :title="`Criar tarefa filha de ${linha.hierarquia}`"
         :to="{
           name: 'tarefasCriar',
