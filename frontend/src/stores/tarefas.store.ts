@@ -132,34 +132,6 @@ export const useTarefasStore = defineStore('tarefas', {
 
         const resposta: Atualização = await this.requestS.post(`${baseUrl}/projeto/${this.route.params.projetoId}/dependencias`, params);
 
-        const atualização: Atualização = {
-          inicio_planejado_calculado: resposta.inicio_planejado_calculado,
-          duracao_planejado_calculado: resposta.duracao_planejado_calculado,
-          termino_planejado_calculado: resposta.termino_planejado_calculado,
-        };
-
-        if (resposta.inicio_planejado_calculado) {
-          atualização.inicio_planejado = resposta.inicio_planejado;
-
-          if (!resposta.inicio_planejado) {
-            atualização.termino_planejado = null;
-          }
-        }
-        if (resposta.duracao_planejado_calculado) {
-          atualização.duracao_planejado = resposta.duracao_planejado;
-        }
-        if (resposta.termino_planejado_calculado) {
-          atualização.termino_planejado = resposta.termino_planejado;
-
-          if (!resposta.termino_planejado) {
-            atualização.inicio_planejado = null;
-          }
-        }
-
-        this.$patch({
-          emFoco: { ...this.emFoco, ...atualização },
-        });
-
         this.chamadasPendentes.validaçãoDeDependências = false;
         this.erro = null;
 
