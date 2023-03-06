@@ -1,8 +1,10 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
@@ -473,6 +475,7 @@ export class ProjetoService {
                         id: true
                     }
                 },
+                selecionado_em: true,
 
             },
         });
@@ -621,30 +624,7 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
 
-        // se estiver arquivado, retorna 400
-
-        let moverStatusParaPlanejamento: boolean = false;
-        if (dto.codigo) {
-            if (projeto.permissoes.campo_codigo == false)
-                throw new HttpException('Campo "Código" não pode ser preenchido ou alterado no momento', 400);
-
-            if (projeto.status == 'Selecionado') {
-                moverStatusParaPlanejamento = true;
-
-                const countInUse = await this.prisma.projeto.count({
-                    where: {
-                        codigo: { equals: dto.codigo, mode: 'insensitive' },
-                        NOT: {
-                            id: projeto.id
-                        },
-                    }
-                });
-                if (countInUse)
-                    throw new HttpException('codigo| Código informado já está em uso em outro projeto.', 400);
-
-            }
-
-        }
+        // TODO? se estiver arquivado, retorna 400 (estava só o comentario, sem o texto de TODO)
 
         let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
         let meta_id: number | null | undefined = undefined;
@@ -682,12 +662,23 @@ export class ProjetoService {
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
 
-            const novoStatus: ProjetoStatus | undefined = moverStatusParaPlanejamento ? 'EmPlanejamento' : undefined;
-            if (novoStatus)
-                await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
-
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
+
+            let codigo: string | undefined;
+            if (
+                (dto.meta_id && projeto.meta_id != dto.meta_id)
+                ||
+                (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
+                ||
+                (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
+                ||
+                (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
+                ||
+                (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
+            )
+                codigo = await this.geraProjetoCodigo(projeto.id, prismaTx);
+
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
@@ -719,17 +710,12 @@ export class ProjetoService {
 
                     // campos apenas do update
                     publico_alvo: dto.publico_alvo,
-                    codigo: dto.codigo,
                     objeto: dto.objeto,
                     objetivo: dto.objetivo,
                     nao_escopo: dto.nao_escopo,
                     secretario_executivo: dto.secretario_executivo,
                     secretario_responsavel: dto.secretario_responsavel,
                     coordenador_ue: dto.coordenador_ue,
-
-                    // por padrão undefined, não faz nenhuma alteração
-                    status: novoStatus,
-                    fase: novoStatus ? StatusParaFase[novoStatus] : undefined,
 
                     orgaos_participantes: dto.orgaos_participantes !== undefined ? {
                         createMany: {
@@ -738,74 +724,27 @@ export class ProjetoService {
                             }),
                         },
                     } : undefined,
+
+                    codigo: codigo,
                 }
             });
 
-            // TODO aqui pode ser o meta_id, mas pode ser tbm meta_codigo, nao?
-            if (dto.meta_id)
-                await this.updateProjetoCodigo(projetoId, dto.meta_id, orgao_gestor_id, prismaTx);
+
         });
 
         return { id: projetoId };
     }
 
-    private async updateProjetoCodigo(projeto_id: number, meta_id: number | null | undefined, orgao_gestor_id: number | undefined, prismaTx: Prisma.TransactionClient) {
-        const projeto = await prismaTx.projeto.findFirstOrThrow({
-            where: { id: projeto_id },
-            select: {
-                codigo: true,
-                em_planejamento_em: true
-            }
-        });
 
-        if (!projeto.em_planejamento_em) return;
-
-        let current_codigo = projeto.codigo;
-        if (!current_codigo) current_codigo = await this.getProjetoCodigo(projeto_id, prismaTx) ?? null;
-        if (current_codigo == null) return;
-
-        const codigo_parts = current_codigo.split('.');
-        if (codigo_parts.length != 4) throw new Error(`Falha ao atualizar código do Projeto (updateProjetoCodigo). Código deve possuir 4 partes, código=${current_codigo}`);
-
-        if (meta_id) {
-            const meta = await prismaTx.meta.findFirstOrThrow({
-                where: { id: meta_id },
-                select: { codigo: true }
-            });
-
-            codigo_parts[2] = 'M' + meta.codigo;
-        }
-
-        if (orgao_gestor_id) {
-            const orgao = await prismaTx.orgao.findFirstOrThrow({
-                where: { id: orgao_gestor_id },
-                select: { sigla: true }
-            });
-
-            codigo_parts[0] = orgao.sigla;
-        }
-
-        const new_codigo = codigo_parts.join('.');
-
-        await prismaTx.projeto.update({
-            where: { id: projeto_id },
-            data: { codigo: new_codigo }
-        })
-    }
-
-    async getProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {
-        const codigo: string | undefined = undefined;
-
+    async geraProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {
         // buscar o ano baseado em 'selecionado_em'
-        const projeto = await prismaTx.projeto.findFirst({
-            where: {
-                id,
-                NOT: [{ selecionado_em: null }]
-            },
+        const projeto = await prismaTx.projeto.findUniqueOrThrow({
+            where: { id },
             select: {
+                id: true,
                 selecionado_em: true,
                 portfolio_id: true,
-                orgao_gestor: {
+                orgao_responsavel: {
                     select: {
                         sigla: true
                     }
@@ -814,46 +753,67 @@ export class ProjetoService {
                     select: {
                         codigo: true,
                     }
-                }
+                },
+                meta_codigo: true,
+                origem_tipo: true,
             }
         });
 
-        // Este OR foi para lá embaixo no concat, a tipagem não reclamar que pode estar null.
-        // Pois na própria query já é assegurado que o `selecionado_em` não estará null.
-        if (!projeto || !projeto.selecionado_em) return codigo;
+        if (!projeto.selecionado_em)
+            throw new HttpException('Não é possível gerar o código do projeto sem a data em que foi selecionado.', 400);
 
-        const projetoNumSeq = await prismaTx.projetoNumeroSequencial.findUnique({
+        if (!projeto.orgao_responsavel)
+            throw new HttpException('Não é possível gerar o código do projeto sem um órgão responsável.', 400);
+
+        await prismaTx.$queryRaw`SELECT id FROM portfolio WHERE id = ${projeto.portfolio_id}::int FOR UPDATE`;
+        let anoSequencia = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
+        let sequencial = 0;
+
+        const buscaExistente = await prismaTx.projetoNumeroSequencial.findFirst({
             where: {
-                projeto_id_portfolio_id: {
-                    projeto_id: id,
-                    portfolio_id: projeto.portfolio_id
-                }
-            },
-            select: {
-                valor: true
+                projeto_id: id
             }
         });
-        if (!projetoNumSeq)
-            throw new Error('Erro ao gerar código para projeto, faltando row na tabela de nro sequencial');
+
+        if (buscaExistente) {
+            anoSequencia = buscaExistente.ano;
+            sequencial = buscaExistente.valor;
+            this.logger.debug(`Projeto não deve mudar de ano, nem portfolio. Mantendo sequencial e ano anteriores. Mantendo sequencial ${sequencial}`);
+        } else {
+            this.logger.debug(`Gerando novo sequencial para o portfolio ${projeto.portfolio_id} em ${anoSequencia}.`);
+            const sequencial = await prismaTx.projetoNumeroSequencial.count({
+                where: {
+                    portfolio_id: projeto.portfolio_id,
+                    ano: anoSequencia
+                },
+            }) + 1;
+            this.logger.debug(`=> Registrando sequencial ${sequencial}.`);
+
+            await prismaTx.projetoNumeroSequencial.create({
+                data: {
+                    projeto_id: projeto.id,
+                    portfolio_id: projeto.portfolio_id,
+                    ano: anoSequencia,
+                    valor: sequencial
+                }
+            });
+        }
+
+        // não sei se faz sentido ser M quando é outro, mas blz
+        let cod_meta = 'M000';
+
+        if (projeto.origem_tipo == 'PdmAntigo') {
+            cod_meta = 'M' + (projeto.meta_codigo || '').padStart(3, '0');
+        } else if (projeto.origem_tipo == 'PdmSistema' && projeto.meta) {
+            cod_meta = 'M' + projeto.meta.codigo.padStart(3, '0');
+        }
 
         return [
-            projeto.orgao_gestor.sigla,
-            projeto.selecionado_em.getFullYear().toString(),
-            (projeto.meta ? ('M' + projeto.meta.codigo) : ('M000')),
-            projetoNumSeq.valor.toString().padStart(3, '0'),
+            projeto.orgao_responsavel!.sigla,
+            DateTime.fromJSDate(projeto.selecionado_em).setZone(SYSTEM_TIMEZONE).year,
+            cod_meta,
+            sequencial.toString().padStart(3, '0'),
         ].join('.');
-    }
-
-    async getNextPortfolioSeq(portfolio_id: number, prismaTx: Prisma.TransactionClient): Promise<number> {
-        const projeto_numero_sequencial = await prismaTx.projetoNumeroSequencial.findFirst({
-            where: { portfolio_id: portfolio_id },
-            orderBy: [{ valor: 'desc' }],
-            select: { valor: true },
-            take: 1,
-        });
-        if (!projeto_numero_sequencial) return 1;
-
-        return projeto_numero_sequencial.valor + 1;
     }
 
     private async upsertPremissas(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {

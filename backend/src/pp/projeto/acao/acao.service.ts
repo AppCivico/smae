@@ -48,24 +48,8 @@ export class AcaoService {
 
             if (dto.acao == 'arquivar') arquivado = true;
             if (dto.acao == 'restaurar') arquivado = false;
-
-            if (dto.acao == 'selecionar') {
-                eh_prioritario = true;
-
-                // Criando row na table projeto_numero_sequencial
-                // Que será utilizada para gerar o código do projeto quando ele for
-                // para planejamento.
-                await prismaTx.projetoNumeroSequencial.create({
-                    data: {
-                        projeto_id: projeto.id,
-                        portfolio_id: projeto.portfolio_id,
-                        ano: new Date(Date.now()).getFullYear(),
-                        valor: await this.projetoService.getNextPortfolioSeq(projeto.portfolio_id, prismaTx)
-                    }
-                });
-            };
-
-            if (dto.acao == 'iniciar_planejamento') codigo = await this.projetoService.getProjetoCodigo(projeto.id, prismaTx);
+            if (dto.acao == 'selecionar') eh_prioritario = true;
+            if (dto.acao == 'iniciar_planejamento') codigo = await this.projetoService.geraProjetoCodigo(projeto.id, prismaTx);
 
             await prismaTx.projeto.update({
                 where: { id: projeto.id },
@@ -73,14 +57,18 @@ export class AcaoService {
                     [dbAction.date]: new Date(Date.now()),
                     [dbAction.user]: user.id,
                     status: dbAction.status,
-                    arquivado: arquivado,
-                    eh_prioritario: eh_prioritario,
-                    codigo
+                    eh_prioritario,
+                    arquivado,
+                    codigo,
                 }
             });
 
             // basta isso para gerar um relatório
             await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
+        }, {
+            isolationLevel: 'Serializable',
+            maxWait: 60 * 1000,
+            timeout: 15 * 1000,
         });
 
     }
