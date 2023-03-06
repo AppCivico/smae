@@ -47,7 +47,10 @@ export class TarefaService {
 
             await this.utils.lockProjeto(prismaTx, projetoId);
 
-            const dataDependencias = await this.calcDataDependencias(prismaTx, dto.dependencias);
+            const dataDependencias = await this.calcDataDependencias(projetoId, prismaTx, {
+                tarefa_corrente_id: 0,
+                dependencias: dto.dependencias,
+            });
 
             let duracao_planejado_calculado = false;
             let inicio_planejado_calculado = false;
@@ -175,22 +178,6 @@ export class TarefaService {
         return plainToInstance(InferenciaDatasDto, res[0]['infere_data_inicio_ou_termino']);
     }
 
-    async calcDataDependencias(prismaTx: Prisma.TransactionClient, deps: TarefaDependenciaDto[] | null | undefined): Promise<DependenciasDatasDto | null> {
-        if (!deps) return null;
-
-        const json = JSON.stringify(deps);
-        const res = await prismaTx.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)` as any;
-
-        const resp = plainToInstance(DependenciasDatasDto, res[0]['calcula_dependencias_tarefas']);
-
-        if (resp.duracao_planejado != null && resp.duracao_planejado < 0) {
-            throw new HttpException("Não é possivel utilizar a configuração atual de dependencias, pois o intervalo calculado ficou negativo.", 400);
-        }
-
-        resp.duracao_planejado
-
-        return resp
-    }
 
     async findAll(projetoId: number, user: PessoaFromJwt): Promise<TarefaItemDto[]> {
 
@@ -309,7 +296,10 @@ export class TarefaService {
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
 
             if (dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
-                const dataDependencias = await this.calcDataDependencias(prismaTx, dto.dependencias);
+                const dataDependencias = await this.calcDataDependencias(projetoId, prismaTx, {
+                    tarefa_corrente_id: tarefa.id,
+                    dependencias: dto.dependencias,
+                });
 
                 let duracao_planejado_calculado = false;
                 let inicio_planejado_calculado = false;
@@ -583,23 +573,41 @@ export class TarefaService {
         });
     }
 
-    async calcula_dependencias_tarefas(projetoId: number, dto: CheckDependenciasDto, user: PessoaFromJwt): Promise<DependenciasDatasDto> {
-        const json = JSON.stringify(dto.dependencias);
-        const res = await this.prisma.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)` as any;
 
-        const resp = (res[0]['calcula_dependencias_tarefas']) as DependenciasDatasDto;
+    private async calcDataDependencias(
+        projetoId: number,
+        prismaTx: Prisma.TransactionClient,
+        dto: CheckDependenciasDto
+    ): Promise<DependenciasDatasDto | null> {
+        const deps = dto.dependencias;
+        if (!deps) return null;
 
+        const json = JSON.stringify(deps);
+        const res = await prismaTx.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)` as any;
+
+        const resp = plainToInstance(DependenciasDatasDto, res[0]['calcula_dependencias_tarefas']);
+
+        // <= 0 pois 0 dias já é negativo nessa situação do smae
+        // onde 1 dia de duração o inicio e termino são os mesmos
+        // Fica de melhoria pra melhorar essa mensagem, da pra tentar ir refazendo
+        // as regras até descobrir qual foi a dependência que causou a data ficar negativa
+        // embora seja difícil descobrir exatamente, pois pode ser que uma puxa pro fim, enquanto outra puxa o inicio...
         if (resp.duracao_planejado != null && resp.duracao_planejado <= 0) {
-            // fica de TODO melhorar essa msg de erro, pra tentar ir refazendo as regras até descobrir qual foi a dependência que fez isso
-            // embora seja difícil descobrir, pois pode ser que uma estica o fim, enquanto outra puxa o inicio...
             throw new HttpException(
                 {
                     message: "Não é possível utilizar a configuração atual de dependencias, pois o intervalo ficou negativo.",
                     statusCode: 400,
                     extra: resp
-                }, 400);
+                },
+                400
+            );
         }
 
+        return resp
+    }
+
+    async calcula_dependencias_tarefas(projetoId: number, dto: CheckDependenciasDto, user: PessoaFromJwt): Promise<DependenciasDatasDto | null> {
+        const resp = await this.calcDataDependencias(projetoId, this.prisma, dto);
         return resp;
     }
 
