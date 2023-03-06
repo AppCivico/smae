@@ -129,6 +129,8 @@ export class ProjetoDetailDto {
     origem_outro: string | null;
     meta_codigo: string | null
 
+    selecionado_em: Date | null
+
     data_aprovacao: Date | null
     data_revisao: Date | null
     versao: string | null

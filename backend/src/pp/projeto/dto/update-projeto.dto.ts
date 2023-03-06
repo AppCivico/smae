@@ -1,7 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { CategoriaProcessoSei } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { CreateProjetoDto, CreateProjetoSeiDto } from './create-projeto.dto';
 
@@ -106,7 +105,10 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     fonte_recursos?: PPfonteRecursoDto[];
 
     @IsOptional()
-    @IsString()
+    @ApiProperty({
+        deprecated: true,
+        description: 'Não é mais possível escrever o codigo'
+    })
     codigo?: string
 
     @IsOptional()
