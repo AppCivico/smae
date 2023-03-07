@@ -745,6 +745,8 @@ export class ProjetoService {
                 ||
                 (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
                 ||
+                (dto.origem_tipo && projeto.origem_tipo != dto.origem_tipo)
+                ||
                 (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
                 ||
                 (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
@@ -808,7 +810,7 @@ export class ProjetoService {
             this.logger.debug(`Projeto não deve mudar de ano, nem portfolio. Mantendo sequencial e ano anteriores. Mantendo sequencial ${sequencial}`);
         } else {
             this.logger.debug(`Gerando novo sequencial para o portfolio ${projeto.portfolio_id} em ${anoSequencia}.`);
-            const sequencial = await prismaTx.projetoNumeroSequencial.count({
+            sequencial = await prismaTx.projetoNumeroSequencial.count({
                 where: {
                     portfolio_id: projeto.portfolio_id,
                     ano: anoSequencia
