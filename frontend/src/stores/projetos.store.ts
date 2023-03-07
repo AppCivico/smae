@@ -194,11 +194,12 @@ export const useProjetosStore = defineStore('projetos', {
         ? [...emFoco.orgaos_participantes]
         : [];
 
-      if (emFoco?.orgao_gestor?.id) {
-        if (órgãos.findIndex((x) => x.id === emFoco?.orgao_gestor?.id) === -1) {
-          órgãos?.push(emFoco?.orgao_gestor);
+      if (emFoco?.orgao_responsavel?.id) {
+        if (órgãos.findIndex((x) => x.id === emFoco?.orgao_responsavel?.id) === -1) {
+          órgãos?.push(emFoco?.orgao_responsavel);
         }
       }
+
       return órgãos;
     },
   },
