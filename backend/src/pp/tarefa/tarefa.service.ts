@@ -14,6 +14,7 @@ import { TarefaUtilsService } from './tarefa.service.utils';
 // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { Graph } from 'graphlib';
 import { DateTime } from 'luxon';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
 
@@ -234,10 +235,7 @@ export class TarefaService {
             }
         });
 
-        // atraso => se o previsto (termino) já passou (data corrente), dia corrente - termin
-        // se colocar terminom real, nao mostra mais o atraso
-
-        const hoje = DateTime.now();
+        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
         return rows.map((r) => {
             return {
                 ...r,
@@ -302,7 +300,7 @@ export class TarefaService {
             }
         });
 
-        const hoje = DateTime.now();
+        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
         return {
             ...row,
             atraso: this.calculaAtraso(hoje, row.termino_planejado, row.termino_real),
