@@ -127,7 +127,9 @@ export default {
       {{ dateToField(linha.termino_real) }}
     </td>
     <td class="cell--number">
-      {{ linha.atraso || null }}
+      <template v-if="linha.atraso">
+        {{ linha.atraso }}d
+      </template>
       <i
         v-if="linha.atraso === 0"
         class="tooltip tooltip--danger"
