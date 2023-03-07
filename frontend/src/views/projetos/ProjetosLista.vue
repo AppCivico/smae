@@ -50,6 +50,7 @@ if (status) {
 
 if (props.apenasPrioritários) {
   parâmetros.value.eh_prioritario = true;
+  parâmetros.value.arquivado = false;
 } else if (props.apenasArquivados) {
   parâmetros.value.arquivado = true;
 }
