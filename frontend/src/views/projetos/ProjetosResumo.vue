@@ -52,6 +52,17 @@ iniciar();
 
   <div class="boards">
     <div class="flex g2 mb1">
+      <dl
+        v-if="emFoco?.codigo"
+        class="f1 mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Código
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.codigo }}
+        </dd>
+      </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Portfolio
