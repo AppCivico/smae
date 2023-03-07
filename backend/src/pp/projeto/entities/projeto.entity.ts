@@ -16,6 +16,7 @@ export class ProjetoDto {
     arquivado: boolean
     eh_prioritario: boolean
     meta: IdCodTituloDto | null;
+    codigo: string | null
     portfolio: IdTituloDto
 }
 

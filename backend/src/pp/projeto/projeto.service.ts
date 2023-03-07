@@ -289,6 +289,7 @@ export class ProjetoService {
                 status: true,
                 eh_prioritario: true,
                 arquivado: true,
+                codigo: true,
 
                 atividade: {
                     select: {
@@ -361,6 +362,7 @@ export class ProjetoService {
                 portfolio: row.portfolio,
                 arquivado: row.arquivado,
                 eh_prioritario: row.eh_prioritario,
+                codigo: row.codigo,
             });
         }
 
@@ -689,7 +691,7 @@ export class ProjetoService {
                     // campos do create
                     orgao_gestor_id,
                     responsaveis_no_orgao_gestor,
-                    
+
                     orgao_responsavel_id: dto.orgao_responsavel_id,
                     responsavel_id: dto.responsavel_id,
 
