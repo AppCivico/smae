@@ -689,7 +689,8 @@ export class ProjetoService {
                     // campos do create
                     orgao_gestor_id,
                     responsaveis_no_orgao_gestor,
-
+                    
+                    orgao_responsavel_id: dto.orgao_responsavel_id,
                     responsavel_id: dto.responsavel_id,
 
                     nome: dto.nome,
