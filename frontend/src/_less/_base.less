@@ -1910,10 +1910,12 @@ div[aria-busy="true"] {
 
 .cell--data {
   text-align: left;
+  white-space: nowrap;
 }
 
 .cell--number {
   text-align: right;
+  white-space: nowrap;
 }
 
 .tabela-de-etapas {
@@ -1994,14 +1996,14 @@ div[aria-busy="true"] {
     position: absolute;
     .bgc300;
   }
-    
+
   &::before {
     left: -2px;
     top: 1.5rem;
     bottom: -0.375rem;
     width: 4px;
   }
-  
+
   &::after {
     top: auto;
     bottom: calc(-0.375rem - 4px);
