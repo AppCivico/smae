@@ -100,9 +100,25 @@ export default {
     </td>
     <td class="cell--data">
       {{ dateToField(linha.inicio_planejado) }}
+
+      <i
+        v-if="linha.inicio_planejado && linha.n_dep_inicio_planejado"
+        class="tooltip tooltip--info"
+        :title="linha.n_dep_inicio_planejado === 1
+          ? `Calculada com base em ${linha.n_dep_inicio_planejado} dependência`
+          : `Calculada com base em ${linha.n_dep_inicio_planejado} dependências`"
+      >i</i>
     </td>
     <td class="cell--data">
       {{ dateToField(linha.termino_planejado) }}
+
+      <i
+        v-if="linha.termino_planejado && linha.n_dep_termino_planejado"
+        class="tooltip tooltip--info"
+        :title="linha.n_dep_termino_planejado === 1
+          ? `Calculada com base em ${linha.n_dep_termino_planejado} dependência`
+          : `Calculada com base em ${linha.n_dep_termino_planejado} dependências`"
+      >i</i>
     </td>
     <td class="cell--data">
       {{ dateToField(linha.inicio_real) }}
@@ -111,7 +127,12 @@ export default {
       {{ dateToField(linha.termino_real) }}
     </td>
     <td class="cell--number">
-      {{ linha.atraso ?? '-' }}
+      {{ linha.atraso || null }}
+      <i
+        v-if="linha.atraso === 0"
+        class="tooltip tooltip--danger"
+        title="Último dia"
+      >!</i>
     </td>
 
     <td

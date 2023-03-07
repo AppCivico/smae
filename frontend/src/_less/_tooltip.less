@@ -1,0 +1,42 @@
+.tooltip {
+  align-items: center;
+  border-radius: 50%;
+  border-width: 1px;
+  border-style: solid;
+  border-color: currentColor;
+  cursor: help;
+  display: inline-flex;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 0.85em;
+  font-style: normal;
+  font-weight: bold;
+  line-height: 1;
+  height: 1rem;
+  justify-content: center;
+  margin-left: 0.25em;
+  vertical-align: baseline;
+  width: 1rem;
+
+  &:not([title]) {
+    display: none;
+  }
+}
+
+.tooltip--info {
+  background-color: @azul;
+  border: 0;
+  color: white;
+  font-style: italic;
+}
+
+.tooltip--warning {
+  background-color: @laranja;
+  border: 0;
+  color: white;
+}
+
+.tooltip--danger {
+  background-color: @vermelho;
+  border: 0;
+  color: white;
+}
