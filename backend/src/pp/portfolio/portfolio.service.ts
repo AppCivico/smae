@@ -146,6 +146,8 @@ export class PortfolioService {
             if (similarExists > 0) throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
         }
 
+        // conferir se todos os órgãos que estão saindo realmente nao estão em uso em nenhum projeto ativo
+        // como orgao_gestor_id
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const row = await prismaTx.portfolio.update({
                 where: { id: id },
@@ -179,7 +181,13 @@ export class PortfolioService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        // TODO: verificar por exemplo, se todos os projetos estão arquivados?
+
+        const count = await this.prisma.projeto.count({
+            where: {
+                removido_em: null
+            }
+        });
+        if (count > 0) throw new HttpException('Não é possível mais apagar o Portfolio, há projetos dependentes.', 400);
 
         const created = await this.prisma.portfolio.updateMany({
             where: { id: id },
