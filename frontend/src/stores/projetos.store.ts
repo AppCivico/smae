@@ -191,7 +191,7 @@ export const useProjetosStore = defineStore('projetos', {
 
     órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
       const órgãos = emFoco?.orgaos_participantes && Array.isArray(emFoco?.orgaos_participantes)
-        ? emFoco.orgaos_participantes
+        ? [...emFoco.orgaos_participantes]
         : [];
 
       if (emFoco?.orgao_gestor?.id) {
