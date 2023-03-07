@@ -81,6 +81,9 @@ async function excluirProjetos(id) {
               }
             }"
           >
+            <strong v-if="item.codigo">
+              {{ item.codigo }} -
+            </strong>
             {{ item.nome }}
           </router-link>
         </td>
