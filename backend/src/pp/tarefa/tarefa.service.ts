@@ -250,7 +250,9 @@ export class TarefaService {
         // se já acabou, não ta atrasado
         if (termino_real != null) return null;
 
-        return DateTime.fromJSDate(termino_planejado).diff(hoje).as('days');
+        const d = DateTime.fromJSDate(termino_planejado).diff(hoje).as('days');
+        // se ta positivo, ta no futuro, não ta atrasado ainda
+        return d >= 0 ? null : Math.floor(Math.abs(d));
     }
 
     async findOne(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
