@@ -13,6 +13,7 @@ import { TarefaUtilsService } from './tarefa.service.utils';
 
 // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { Graph } from 'graphlib';
+import { DateTime } from 'luxon';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
 
@@ -233,12 +234,25 @@ export class TarefaService {
             }
         });
 
+        // atraso => se o previsto (termino) já passou (data corrente), dia corrente - termin
+        // se colocar terminom real, nao mostra mais o atraso
+
+        const hoje = DateTime.now();
         return rows.map((r) => {
             return {
                 ...r,
-                atraso: null,
+                atraso: this.calculaAtraso(hoje, r.termino_planejado, r.termino_real),
             }
         });
+    }
+
+    private calculaAtraso(hoje: DateTime, termino_planejado: Date | null, termino_real: Date | null): number | null {
+        // se sabe quando começa, não ta atrasado
+        if (termino_planejado == null) return null;
+        // se já acabou, não ta atrasado
+        if (termino_real != null) return null;
+
+        return DateTime.fromJSDate(termino_planejado).diff(hoje).as('days');
     }
 
     async findOne(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
@@ -288,9 +302,10 @@ export class TarefaService {
             }
         });
 
+        const hoje = DateTime.now();
         return {
             ...row,
-            atraso: null,
+            atraso: this.calculaAtraso(hoje, row.termino_planejado, row.termino_real),
             projeto: projeto,
         };
     }
