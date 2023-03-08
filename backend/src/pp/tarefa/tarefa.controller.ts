@@ -71,9 +71,12 @@ export class TarefaController {
         // mais fazer escritas no projeto em si
         if (dto.atualizacao_do_realizado) {
             dto = plainToClass(UpdateTarefaRealizadoDto, dto);
-            // TODO ainda falta passar o parâmetro pro findOne saber que é uma escrita
-            // mas por enquanto, to passando true como 'read only'
             const projeto = await this.projetoService.findOne(params.id, user, true);
+
+            if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
+                throw new HttpException("Não é possível editar o realizado da tarefa, pois o seu acesso é apenas leitura e você não é o responsável do projeto.", 400);
+            }
+
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
         } else {
 
