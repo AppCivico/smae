@@ -1,17 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, HttpException } from '@nestjs/common';
-import { TarefaService } from './tarefa.service';
-import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
-import { UpdateTarefaDto } from './dto/update-tarefa.dto';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import { plainToClass } from 'class-transformer';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
-import { ProjetoService } from '../projeto/projeto.service';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { PortfolioService } from '../portfolio/portfolio.service';
+import { ProjetoService } from '../projeto/projeto.service';
+import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
+import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
+import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto } from './entities/tarefa.entity';
+import { TarefaService } from './tarefa.service';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
@@ -61,12 +62,24 @@ export class TarefaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
+    @ApiExtraModels(UpdateTarefaDto, UpdateTarefaRealizadoDto)
+    @ApiBody({
+        schema: { oneOf: refs(UpdateTarefaDto, UpdateTarefaRealizadoDto) },
+    })
     async update(@Param() params: FindTwoParams, @Body() dto: UpdateTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         // verificar como fazer o check pro responsavel poder editar o realizado, mesmo depois de não poder
         // mais fazer escritas no projeto em si
+        if (dto.atualizacao_do_realizado) {
+            dto = plainToClass(UpdateTarefaRealizadoDto, dto);
+            // TODO ainda falta passar o parâmetro pro findOne saber que é uma escrita
+            // mas por enquanto, to passando true como 'read only'
+            const projeto = await this.projetoService.findOne(params.id, user, true);
+            return await this.tarefaService.update(projeto.id, params.id2, dto, user);
+        } else {
 
-        const projeto = await this.projetoService.findOne(params.id, user, false);
-        return await this.tarefaService.update(projeto.id, params.id2, dto, user);
+            const projeto = await this.projetoService.findOne(params.id, user, false);
+            return await this.tarefaService.update(projeto.id, params.id2, dto, user);
+        }
     }
 
     @Delete(':id/tarefa/:id2')
