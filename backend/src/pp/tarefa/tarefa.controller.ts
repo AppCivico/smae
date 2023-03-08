@@ -70,7 +70,9 @@ export class TarefaController {
         // verificar como fazer o check pro responsavel poder editar o realizado, mesmo depois de não poder
         // mais fazer escritas no projeto em si
         if (dto.atualizacao_do_realizado) {
-            dto = plainToClass(UpdateTarefaRealizadoDto, dto);
+            dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
+            console.log(dto);
+
             const projeto = await this.projetoService.findOne(params.id, user, true);
 
             if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
