@@ -7,7 +7,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
 import { CheckDependenciasDto, CreateTarefaDto, TarefaDependenciaDto } from './dto/create-tarefa.dto';
-import { UpdateTarefaDto } from './dto/update-tarefa.dto';
+import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
 
@@ -310,7 +310,7 @@ export class TarefaService {
         };
     }
 
-    async update(projetoId: number, id: number, dto: UpdateTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(projetoId: number, id: number, dto: UpdateTarefaDto | UpdateTarefaRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
         const tarefa = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const now = new Date(Date.now());
@@ -332,7 +332,7 @@ export class TarefaService {
             });
             if (!tarefa) throw new HttpException("Tarefa não encontrada.", 404);
 
-            if (dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
+            if ("dependencias" in dto && dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
                 const calcDependencias = await this.calcDataDependencias(projetoId, prismaTx, {
                     tarefa_corrente_id: tarefa.id,
                     dependencias: dto.dependencias,
@@ -415,24 +415,30 @@ export class TarefaService {
                     throw new HttpException("Término Real não pode ser alterado diretamente nesta tarefa.", 400);
                 if (dto.duracao_real !== undefined)
                     throw new HttpException("Duração Real não pode ser alterada diretamente nesta tarefa.", 400);
-                if (dto.inicio_planejado !== undefined)
-                    throw new HttpException("Início Planejado não pode ser alterado diretamente nesta tarefa.", 400);
-                if (dto.termino_planejado !== undefined)
-                    throw new HttpException("Término Planejado não pode ser alterado diretamente nesta tarefa.", 400);
-                if (dto.duracao_planejado !== undefined)
-                    throw new HttpException("Duração Planejada não pode ser alterada diretamente nesta tarefa.", 400);
-                if (dto.custo_estimado !== undefined)
-                    throw new HttpException("Custo Estimado não pode ser alterado diretamente nesta tarefa.", 400);
-                if (dto.custo_real !== undefined)
-                    throw new HttpException("Custo Real não pode ser alterado diretamente nesta tarefa.", 400);
-                if (dto.dependencias !== undefined && Array.isArray(dto.dependencias) && dto.dependencias.length > 0)
-                    throw new HttpException("Não podem existir dependencias nesta tarefa, pois há filhos.", 400);
+
+                if ("dependencias" in dto) {
+                    if (dto.inicio_planejado !== undefined)
+                        throw new HttpException("Início Planejado não pode ser alterado diretamente nesta tarefa.", 400);
+                    if (dto.termino_planejado !== undefined)
+                        throw new HttpException("Término Planejado não pode ser alterado diretamente nesta tarefa.", 400);
+                    if (dto.duracao_planejado !== undefined)
+                        throw new HttpException("Duração Planejada não pode ser alterada diretamente nesta tarefa.", 400);
+                    if (dto.custo_estimado !== undefined)
+                        throw new HttpException("Custo Estimado não pode ser alterado diretamente nesta tarefa.", 400);
+                    if (dto.custo_real !== undefined)
+                        throw new HttpException("Custo Real não pode ser alterado diretamente nesta tarefa.", 400);
+                    if (dto.dependencias !== undefined && Array.isArray(dto.dependencias) && dto.dependencias.length > 0)
+                        throw new HttpException("Não podem existir dependencias nesta tarefa, pois há filhos.", 400);
+                }
             }
 
             if (
-                (dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id)
-                ||
-                (dto.numero !== undefined && dto.numero !== tarefa.numero)
+                "dependencias" in dto &&
+                (
+                    (dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id)
+                    ||
+                    (dto.numero !== undefined && dto.numero !== tarefa.numero)
+                )
             ) {
                 if (dto.tarefa_pai_id === undefined) dto.tarefa_pai_id = tarefa.tarefa_pai_id;
                 if (dto.nivel === undefined) dto.nivel = tarefa.nivel;
@@ -490,7 +496,7 @@ export class TarefaService {
 
                 }
 
-            } else {
+            } else if ("dependencias" in dto) {
                 // nao deixar nem o nivel sem passar o pai
                 // pq as validações estão apenas acima
                 this.logger.warn('removendo campos numero, nivel e tarefa_pai_id da atualização');

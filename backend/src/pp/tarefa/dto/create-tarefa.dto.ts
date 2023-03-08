@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { TarefaDependenteTipo } from "@prisma/client"
 import { Transform, Type } from "class-transformer"
-import { ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength, ValidateIf, ValidateNested } from "class-validator"
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 
 export class TarefaDependenciaDto {
