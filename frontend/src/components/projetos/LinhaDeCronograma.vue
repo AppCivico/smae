@@ -36,7 +36,7 @@ export default {
   },
   computed: {
     nivelMaximoTarefa: () => useTarefasStore()?.extra?.portfolio?.nivel_maximo_tarefa || -1,
-    oProjetoÉPrioritário: () => useProjetosStore()?.emFoco.eh_prioritario,
+    oProjetoÉPrioritário: () => useProjetosStore()?.emFoco?.eh_prioritario,
   },
   methods: {
     dateToField,
