@@ -71,7 +71,6 @@ export class TarefaController {
         // mais fazer escritas no projeto em si
         if (dto.atualizacao_do_realizado) {
             dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
-            console.log(dto);
 
             const projeto = await this.projetoService.findOne(params.id, user, true);
 
