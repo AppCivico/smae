@@ -32,12 +32,12 @@ export class ProjetoRiscoDetailDto {
     resposta: string | null
 
     etapas_afetadas?: ProjetoRiscoTarefa[]
+    planos_de_acao?: ProjetoRiscoTarefaPlanoAcao[]
 }
 
 export class ProjetoRiscoTarefa {
     tarefa_id?: number
     tarefa?: string
-    planos_de_acao?: ProjetoRiscoTarefaPlanoAcao[]
 }
 
 export class ProjetoRiscoTarefaPlanoAcao {
