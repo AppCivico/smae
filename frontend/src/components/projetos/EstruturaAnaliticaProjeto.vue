@@ -54,8 +54,7 @@ function renderChart(dataFlattened) {
       const color = '#FFFFFF';
       return `
 <div style="background-color:${color}; position:absolute;margin-top:-1px; margin-left:-1px;width:${d.width}px;height:${d.height}px;border-radius:10px;border: 1px solid HSL(216, 9.8%, 90%)">
-${d.data.numero ? `<div style="background-color:${color};position:absolute;margin-top:-25px;margin-left:${15}px;border-radius:100px;width:50px;height:50px;"></div>
-   <span class="btn" style="position:absolute;margin-top:-20px;margin-left:${20}px;border-radius:100px;width:40px;height:40px;line-height:40px;text-align:center;overflow:hidden;padding: 0;">${d.data.numero}</span>` : `<span class="btn" style="position:absolute;top:-22px;left: 50%;transform: translateX(-50%);border:5px solid ${color};">Projeto</span>`}
+${d.data.hierarquia || d.data.numero ? `<span class="btn" style="box-sizing: content-box;position:absolute;margin-top:-20px;margin-left:${20}px;border-radius:100px;border:5px solid ${color};height:40px;line-height:40px;text-align:center;overflow:hidden;padding: 0 1.35em;">${d.data.hierarquia || d.data.numero}</span>` : `<span class="btn" style="position:absolute;top:-22px;left: 50%;transform: translateX(-50%);border:5px solid ${color};">Projeto</span>`}
   <div class="t10" style="color:#08011E;position:absolute;right:20px;top:17px;"><i class="fas fa-ellipsis-h"></i></div>
   ${d.data.idDoProjeto
           ? `<h3 class="t16 w700 nowrap" style="color:#08011E;margin-left:20px;margin-top:32px">${d.data.nome}</h3>`
