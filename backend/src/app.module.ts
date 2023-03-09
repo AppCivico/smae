@@ -59,6 +59,7 @@ import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { TarefaModule } from './pp/tarefa/tarefa.module';
 import { RiscoModule } from './pp/risco/risco.module';
+import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plano-acao-monitoramento.module';
 
 @Module({
     imports: [
@@ -121,7 +122,8 @@ import { RiscoModule } from './pp/risco/risco.module';
         PPProjetoModule,
         AcaoModule,
         TarefaModule,
-        RiscoModule
+        RiscoModule,
+        PlanoAcaoMonitoramentoModule
     ],
     controllers: [AppController],
     providers: [
