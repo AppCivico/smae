@@ -4,6 +4,7 @@ import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
+import { useProjetosStore } from './projetos.store.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -148,7 +149,22 @@ export const useTarefasStore = defineStore('tarefas', {
     árvoreDeTarefas(): any {
       return createDataTree(this.tarefasComHierarquia as any, 'tarefa_pai_id') || [];
     },
+    estruturaAnalíticaDoProjeto(): {}[] {
+      const projetos = useProjetosStore();
 
+      if (projetos?.emFoco) {
+        const projeto = {
+          ...projetos?.emFoco,
+          idDoProjeto: projetos?.emFoco?.id,
+          id: 0,
+        };
+
+        return this.tarefasComHierarquia
+          .map((x) => ({ ...x, parentId: x.tarefa_pai_id || projeto.id }))
+          .concat([projeto]);
+      }
+      return [];
+    },
     itemParaEdição(): {} {
       const { emFoco, route, tarefasAgrupadasPorMãe } = this;
       const idDaTarefaMãe = emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null;
