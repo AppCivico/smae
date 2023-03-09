@@ -2511,6 +2511,7 @@ model ProjetoRisco {
     projeto_id Int
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
+    codigo    Int
     numero    Int
     criado_em DateTime
 
