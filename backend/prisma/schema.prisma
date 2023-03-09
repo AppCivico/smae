@@ -134,8 +134,9 @@ model Pessoa {
     EtapasQueRemovi    Etapa[] @relation("Removedor")
     EtapasQueAtualizei Etapa[] @relation("Atualizador")
 
-    PlanoAcaoMonitoramentoQueCriei  PlanoAcaoMonitoramento[] @relation("Criador")
-    PlanoAcaoMonitoramentoQueRemovi PlanoAcaoMonitoramento[] @relation("Removedor")
+    PlanoAcaoMonitoramentoQueCriei     PlanoAcaoMonitoramento[] @relation("Criador")
+    PlanoAcaoMonitoramentoQueAtualizei PlanoAcaoMonitoramento[] @relation("Atualizador")
+    PlanoAcaoMonitoramentoQueRemovi    PlanoAcaoMonitoramento[] @relation("Removedor")
 
     PaineisQueCriei     Painel[]          @relation("Criador")
     PaineisQueRemovi    Painel[]          @relation("Removedor")
@@ -2603,8 +2604,12 @@ model PlanoAcaoMonitoramento {
     removido_em  DateTime?
     removido_por Int?
 
-    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
-    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizado_em  DateTime?
+    atualizado_por Int?
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@index([plano_acao_id, data_afericao])
     @@index([plano_acao_id, ultima_revisao])

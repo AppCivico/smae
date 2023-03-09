@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreatePlanoAcaoMonitoramentoDto, FilterPlanoAcaoMonitoramentoDto } from './dto/create-plano-acao-monitoramento.dto';
+import { CreatePlanoAcaoMonitoramentoDto, FilterPlanoAcaoMonitoramentoDto, UpdatePlanoAcaoMonitoramentoDto } from './dto/create-plano-acao-monitoramento.dto';
 import { PlanoAcaoMonitoramentoDto } from './entities/plano-acao-monitoramento.entity';
 
 
@@ -51,6 +51,39 @@ export class PlanoAcaoMonitoramentoService {
         });
 
         return created;
+    }
+
+    async update(projetoId: number, id: number, dto: UpdatePlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+
+        const self = await this.prisma.planoAcaoMonitoramento.findFirst({
+            where: {
+                id: id,
+                removido_em: null,
+                plano_acao: {
+                    risco: {
+                        projeto_id: projetoId,
+                    }
+                }
+            }
+        });
+        if (!self) throw new HttpException("Não foi encontrar o plano de ação.", 404);
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+
+            await prismaTx.planoAcaoMonitoramento.update({
+                where: {
+                    id: id,
+                },
+                data: {
+                    ...dto,
+                    atualizado_em: new Date(Date.now()),
+                    atualizado_por: user.id,
+                }
+            });
+
+        });
+
+        return { id: self.id };
     }
 
 
