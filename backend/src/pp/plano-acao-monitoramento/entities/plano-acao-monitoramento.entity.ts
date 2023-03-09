@@ -1,4 +1,3 @@
-import { StatusRisco } from "@prisma/client"
 import { IdNomeExibicao } from "../../../variavel/entities/variavel.entity"
 
 export class PlanoAcaoMonitoramentoDto {
@@ -9,4 +8,8 @@ export class PlanoAcaoMonitoramentoDto {
     criado_em: Date
     criador: IdNomeExibicao
     ultima_revisao: boolean
+}
+
+export class ListPlanoAcaoMonitoramentoDto {
+    linhas: PlanoAcaoMonitoramentoDto[]
 }

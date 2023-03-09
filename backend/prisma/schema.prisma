@@ -2603,8 +2603,8 @@ model PlanoAcaoMonitoramento {
     removido_em  DateTime?
     removido_por Int?
 
-    pessoaCriador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
-    pessoaRemovedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@index([plano_acao_id, data_afericao])
     @@index([plano_acao_id, ultima_revisao])

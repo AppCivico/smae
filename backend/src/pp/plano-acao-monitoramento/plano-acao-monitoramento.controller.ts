@@ -1,8 +1,13 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
-import { CreatePlanoAcaoMonitoramentoDto } from './dto/create-plano-acao-monitoramento.dto';
+import { CreatePlanoAcaoMonitoramentoDto, FilterPlanoAcaoMonitoramentoDto } from './dto/create-plano-acao-monitoramento.dto';
+import { ListPlanoAcaoMonitoramentoDto } from './entities/plano-acao-monitoramento.entity';
 import { PlanoAcaoMonitoramentoService } from './plano-acao-monitoramento.service';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
@@ -16,23 +21,28 @@ export class PlanoAcaoMonitoramentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async create(@Body() createPlanoAcaoMonitoramentoDto: CreatePlanoAcaoMonitoramentoDto) {
-
+    async create(@Param() params: FindOneParams, @Body() dto: CreatePlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.planoAcaoMonitoramentoService.create(params.id, dto, user);
     }
 
-    @Post(':id/plano-acao-monitoramento')
+    @Get(':id/plano-acao-monitoramento')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll() {
-
+    async findAll(@Param() params: FindOneParams, @Query() filters: FilterPlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<ListPlanoAcaoMonitoramentoDto> {
+        return {
+            linhas: await this.planoAcaoMonitoramentoService.findAll(params.id, filters, user)
+        };
     }
 
-    @Delete(':id/plano-acao-monitoramento')
+    @Delete(':id/plano-acao-monitoramento/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async remove(@Param('id') id: string) {
-
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.planoAcaoMonitoramentoService.remove(params.id, params.id2, user);
+        return ''
     }
 }

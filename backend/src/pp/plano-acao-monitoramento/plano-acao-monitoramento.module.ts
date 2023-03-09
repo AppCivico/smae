@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { PlanoAcaoMonitoramentoService } from './plano-acao-monitoramento.service';
-import { PlanoAcaoMonitoramentoController } from './plano-acao-monitoramento.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { PlanoAcaoMonitoramentoController } from './plano-acao-monitoramento.controller';
+import { PlanoAcaoMonitoramentoService } from './plano-acao-monitoramento.service';
 
 @Module({
     imports: [PrismaModule],
