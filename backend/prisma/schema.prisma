@@ -134,6 +134,9 @@ model Pessoa {
     EtapasQueRemovi    Etapa[] @relation("Removedor")
     EtapasQueAtualizei Etapa[] @relation("Atualizador")
 
+    PlanoAcaoMonitoramentoQueCriei  PlanoAcaoMonitoramento[] @relation("Criador")
+    PlanoAcaoMonitoramentoQueRemovi PlanoAcaoMonitoramento[] @relation("Removedor")
+
     PaineisQueCriei     Painel[]          @relation("Criador")
     PaineisQueRemovi    Painel[]          @relation("Removedor")
     PaineisQueAtualizei Painel[]          @relation("Atualizador")
@@ -2590,9 +2593,19 @@ model PlanoAcaoMonitoramento {
     data_afericao DateTime    @db.Date()
     descricao     String
 
-    criado_em  DateTime
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
 
+    ultima_revisao Boolean
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    pessoaCriador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    pessoaRemovedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([plano_acao_id, data_afericao])
+    @@index([plano_acao_id, ultima_revisao])
     @@map("plano_acao_monitoramento")
 }
 
