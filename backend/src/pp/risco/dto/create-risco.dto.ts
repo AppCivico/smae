@@ -37,7 +37,7 @@ export class CreateProjetoRiscoTarefaDto {
     tarefa_id: number
 }
 
-export class CreateProjetoRiscoTarefaPlanoAcaoDto {
+export class CreateProjetoRiscoPlanoAcaoDto {
     @IsNumber()
     orgao_id: number
 

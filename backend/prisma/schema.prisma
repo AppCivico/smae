@@ -2531,6 +2531,7 @@ model ProjetoRisco {
     resposta                   String?
     RiscoTarefa                RiscoTarefa[]
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
+    planos_de_acao             PlanoAcao[]
 
     @@index([projeto_id])
     @@map("projeto_risco")
@@ -2545,7 +2546,6 @@ model RiscoTarefa {
 
     projeto_risco_id Int
     risco            ProjetoRisco @relation(fields: [projeto_risco_id], references: [id])
-    PlanoAcao        PlanoAcao[]
 
     @@index([tarefa_id])
     @@index([projeto_risco_id])
@@ -2555,8 +2555,8 @@ model RiscoTarefa {
 model PlanoAcao {
     id Int @id @default(autoincrement())
 
-    risco_tarefa_id Int
-    risco_tarefa    RiscoTarefa @relation(fields: [risco_tarefa_id], references: [id])
+    risco_id Int
+    risco    ProjetoRisco @relation(fields: [risco_id], references: [id])
 
     contramedida       String
     prazo_contramedida DateTime @db.Date() // data do termino previsto
@@ -2573,7 +2573,7 @@ model PlanoAcao {
     responsavel            String
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
 
-    @@index([risco_tarefa_id])
+    @@index([risco_id])
     @@map("plano_acao")
 }
 

@@ -7,7 +7,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
-import { CreateProjetoRiscoTarefaDto, CreateProjetoRiscoTarefaPlanoAcaoDto, CreateRiscoDto } from './dto/create-risco.dto';
+import { CreateProjetoRiscoPlanoAcaoDto, CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
 import { ProjetoRisco, ProjetoRiscoDetailDto } from './entities/risco.entity';
 
 @Injectable()
@@ -78,28 +78,28 @@ export class RiscoService {
                                 id: true,
                                 tarefa: true
                             }
-                        },
-
-                        PlanoAcao: {
-                            select: {
-                                id: true,
-                                contramedida: true,
-                                prazo_contramedida: true,
-                                custo: true,
-                                custo_percentual: true,
-                                medidas_contrapartida: true,
-                                responsavel: true,
-
-                                orgao: {
-                                    select: {
-                                        id: true,
-                                        sigla: true
-                                    }
-                                }
-                            }
                         }
                     }
                 },
+
+                planos_de_acao: {
+                    select: {
+                        id: true,
+                        contramedida: true,
+                        prazo_contramedida: true,
+                        custo: true,
+                        custo_percentual: true,
+                        medidas_contrapartida: true,
+                        responsavel: true,
+
+                        orgao: {
+                            select: {
+                                id: true,
+                                sigla: true
+                            }
+                        }
+                    }
+                }
             }
         });
         if (!projetoRisco) throw new HttpException('Não foi possível encontrar o Risco', 400);
@@ -110,18 +110,18 @@ export class RiscoService {
                 return {
                     tarefa_id: r.tarefa.id,
                     tarefa: r.tarefa.tarefa,
+                }
+            }),
 
-                    planos_de_acao: r.PlanoAcao.map(pa => {
-                        return {
-                            ...pa
-                        }
-                    })
+            planos_de_acao: projetoRisco.planos_de_acao.map(pa => {
+                return {
+                    ...pa
                 }
             })
         }
     }
 
-    async createProjetoRiscoTarefa(projeto_id: number, risco_id: number, dto: CreateProjetoRiscoTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async upsertProjetoRiscoTarefa(projeto_id: number, risco_id: number, dto: CreateProjetoRiscoTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto_risco = await this.prisma.projetoRisco.findFirst({
             where: {
                 projeto_id,
@@ -139,7 +139,7 @@ export class RiscoService {
         });
     }
 
-    async createProjetoRiscoTarefaPlanoAcao(projeto_id: number, risco_id: number, projeto_risco_tarefa_id: number, dto: CreateProjetoRiscoTarefaPlanoAcaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async createProjetoRiscoPlanoAcao(projeto_id: number, risco_id: number, dto: CreateProjetoRiscoPlanoAcaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto_risco = await this.prisma.projetoRisco.findFirst({
             where: {
                 projeto_id,
@@ -148,21 +148,13 @@ export class RiscoService {
         });
         if (!projeto_risco) throw new HttpException('Risco| inválido', 400);
 
-        const projeto_risco_tarefa = await this.prisma.riscoTarefa.findFirst({
-            where: {
-                projeto_risco_id: risco_id,
-                id: projeto_risco_tarefa_id
-            }
-        });
-        if (!projeto_risco_tarefa) throw new HttpException('Risco Tarefa| inválida', 400);
-
         return await this.prisma.planoAcao.create({
             data: {
                 ...dto,
                 status_risco: 'SemInformacao',
-                risco_tarefa_id: projeto_risco_tarefa_id
+                risco_id: risco_id
             }
-        })
+        });
 
     }
 }
