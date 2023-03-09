@@ -20,7 +20,7 @@ interface TarefasPorNível {
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
-  validaçãoDeDependências: boolean
+  validaçãoDeDependências: boolean;
 }
 
 interface Estado {
