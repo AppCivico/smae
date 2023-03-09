@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -12,6 +12,16 @@ export class PlanoAcaoMonitoramentoService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(projetoId: number, dto: CreatePlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+
+        const countProj = await this.prisma.planoAcao.count({
+            where: {
+                id: dto.plano_acao_id,
+                risco: {
+                    projeto_id: projetoId,
+                }
+            }
+        });
+        if (countProj == 0) throw new HttpException("Não foi encontrado nenhum plano de ação.", 404);
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
 
@@ -49,7 +59,12 @@ export class PlanoAcaoMonitoramentoService {
             where: {
                 removido_em: null,
                 ultima_revisao: dto.apenas_ultima_revisao ? true : undefined,
-                plano_acao_id: dto.plano_acao_id
+                plano_acao_id: dto.plano_acao_id,
+                plano_acao: {
+                    risco: {
+                        projeto_id: projetoId,
+                    }
+                },
             },
             select: {
                 id: true,
@@ -72,13 +87,23 @@ export class PlanoAcaoMonitoramentoService {
 
     async remove(projetoId: number, id: number, user: PessoaFromJwt) {
 
-        await this.prisma.planoAcaoMonitoramento.updateMany({
-            where: { id: id, removido_em: null },
+        const updated = await this.prisma.planoAcaoMonitoramento.updateMany({
+            where: {
+                id: id,
+                plano_acao: {
+                    risco: {
+                        projeto_id: projetoId,
+                    }
+                },
+                removido_em: null,
+            },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
             },
         });
 
+        if (updated.count == 0)
+            throw new HttpException("Nenhuma linha foi removida. Item pode já ter sido removido anteriormente.", 400);
     }
 }
