@@ -1,14 +1,21 @@
 <script setup>
+import EstruturaAnalíticaProjeto from '@/components/projetos/EstruturaAnaliticaProjeto.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import statuses from '@/consts/statuses';
-import { usePortfolioStore, useProjetosStore } from '@/stores';
+import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
+const tarefasStore = useTarefasStore();
 const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
+const {
+  estruturaAnalíticaDoProjeto,
+} = storeToRefs(tarefasStore);
 
 defineProps({
   projetoId: {
@@ -17,8 +24,12 @@ defineProps({
   },
 });
 
-async function iniciar() {
+function iniciar() {
   portfolioStore.buscarTudo();
+
+  if (!tarefasStore.lista.length) {
+    tarefasStore.buscarTudo();
+  }
 }
 
 iniciar();
@@ -185,6 +196,13 @@ iniciar();
       </dl>
     </div>
   </div>
+
+  <template v-if="estruturaAnalíticaDoProjeto?.length">
+    <hr class="mb1 f1">
+
+    <h2>Estrutura Analítica</h2>
+    <EstruturaAnalíticaProjeto :data="estruturaAnalíticaDoProjeto" />
+  </template>
 
   <span
     v-if="chamadasPendentes?.emFoco"
