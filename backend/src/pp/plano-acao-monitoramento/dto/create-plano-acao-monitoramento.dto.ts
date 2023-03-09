@@ -1,3 +1,4 @@
+import { PartialType } from "@nestjs/mapped-types"
 import { Transform } from "class-transformer"
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
@@ -12,6 +13,10 @@ export class CreatePlanoAcaoMonitoramentoDto {
     @IsString()
     @MaxLength(2048)
     descricao: string
+}
+
+export class UpdatePlanoAcaoMonitoramentoDto extends PartialType(CreatePlanoAcaoMonitoramentoDto) {
+
 }
 
 export class FilterPlanoAcaoMonitoramentoDto {

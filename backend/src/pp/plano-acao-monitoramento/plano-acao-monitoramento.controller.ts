@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -6,7 +6,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
-import { CreatePlanoAcaoMonitoramentoDto, FilterPlanoAcaoMonitoramentoDto } from './dto/create-plano-acao-monitoramento.dto';
+import { CreatePlanoAcaoMonitoramentoDto, FilterPlanoAcaoMonitoramentoDto, UpdatePlanoAcaoMonitoramentoDto } from './dto/create-plano-acao-monitoramento.dto';
 import { ListPlanoAcaoMonitoramentoDto } from './entities/plano-acao-monitoramento.entity';
 import { PlanoAcaoMonitoramentoService } from './plano-acao-monitoramento.service';
 
@@ -33,6 +33,14 @@ export class PlanoAcaoMonitoramentoController {
         return {
             linhas: await this.planoAcaoMonitoramentoService.findAll(params.id, filters, user)
         };
+    }
+
+    @Patch(':id/plano-acao-monitoramento/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    async update(@Param() params: FindTwoParams, @Body() dto: UpdatePlanoAcaoMonitoramentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.planoAcaoMonitoramentoService.update(params.id, params.id2, dto, user)
     }
 
     @Delete(':id/plano-acao-monitoramento/:id2')
