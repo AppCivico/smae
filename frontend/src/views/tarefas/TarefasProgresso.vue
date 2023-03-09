@@ -37,16 +37,16 @@ const props = defineProps({
 
 async function onSubmit(_, { controlledValues: carga }) {
   try {
-    const msg = props.tarefaId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const resposta = props.tarefaId
-      ? await tarefasStore.salvarItem(carga, props.tarefaId)
-      : await tarefasStore.salvarItem(carga);
+    const resposta = await tarefasStore.salvarItem(
+      {
+        ...carga,
+        atualizacao_do_realizado: true,
+      },
+      props.tarefaId,
+    );
 
     if (resposta) {
-      alertStore.success(msg);
+      alertStore.success('Dados salvos com sucesso!');
       await router.push({ name: 'tarefasListar' });
       tarefasStore.$reset();
     }
