@@ -69,6 +69,10 @@ ${d.data.hierarquia || d.data.numero ? `<span class="btn" style="box-sizing: con
   `;
     })
     .render();
+
+  chartReference.value
+    .getChartState()
+    .svg.on('wheel.zoom', null);
 }
 
 watch(() => props.data, async () => {
