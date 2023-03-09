@@ -8,12 +8,4 @@ if [[ $# -ne 1 ]] ; then
   return 1
 fi
 
-downfile=$(mktemp /tmp/prisma.down.sql.XXXXXX)
-schema="prisma/schema.prisma"
-migrations="prisma/migrations"
-
-npx prisma migrate diff --from-schema-datamodel "$schema" --to-schema-datasource "$schema" --script > "$downfile"
 npx prisma migrate dev --create-only --name "$@"
-
-migration_dir="$(ls -d $migrations/*/ | tail -1)"
-mv $downfile "$migration_dir/down.sql"
