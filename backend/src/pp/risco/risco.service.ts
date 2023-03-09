@@ -26,7 +26,7 @@ export class RiscoService {
             },
             select: {id: true}
         })
-        
+
         return {id: risco.id}
     }
 
@@ -129,7 +129,7 @@ export class RiscoService {
             }
         });
         if (!projeto_risco) throw new HttpException('Risco| inválido', 400);
-        
+
         return await this.prisma.riscoTarefa.create({
             data: {
                 projeto_risco_id: risco_id,
@@ -147,7 +147,7 @@ export class RiscoService {
             }
         });
         if (!projeto_risco) throw new HttpException('Risco| inválido', 400);
-        
+
         const projeto_risco_tarefa = await this.prisma.riscoTarefa.findFirst({
             where: {
                 projeto_risco_id: risco_id,
@@ -159,6 +159,7 @@ export class RiscoService {
         return await this.prisma.planoAcao.create({
             data: {
                 ...dto,
+                status_risco: 'SemInformacao',
                 risco_tarefa_id: projeto_risco_tarefa_id
             }
         })
