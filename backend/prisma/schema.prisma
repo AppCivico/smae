@@ -2567,6 +2567,9 @@ model PlanoAcao {
     orgao_id              Int
     orgao                 Orgao  @relation(fields: [orgao_id], references: [id])
 
+    //  isso faz parte dessa tabela aqui, não da PlanoAcaoMonitoramento
+    status_risco StatusRisco
+
     responsavel            String
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
 
@@ -2589,8 +2592,7 @@ model PlanoAcaoMonitoramento {
     plano_acao_id Int
     plano_acao    PlanoAcao @relation(fields: [plano_acao_id], references: [id])
 
-    status_risco  StatusRisco
-    data_afericao DateTime    @db.Date()
+    data_afericao DateTime @db.Date()
     descricao     String
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
