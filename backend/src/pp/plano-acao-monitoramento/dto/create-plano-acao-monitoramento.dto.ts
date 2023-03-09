@@ -1,6 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { StatusRisco } from "@prisma/client"
-import { IsEnum, IsInt, IsString, MaxLength } from "class-validator"
+import { Transform } from "class-transformer"
+import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 
 export class CreatePlanoAcaoMonitoramentoDto {
@@ -13,4 +12,19 @@ export class CreatePlanoAcaoMonitoramentoDto {
     @IsString()
     @MaxLength(2048)
     descricao: string
+}
+
+export class FilterPlanoAcaoMonitoramentoDto {
+    @IsInt()
+    @Transform(({ value }: any) => +value)
+    plano_acao_id: number;
+
+    /**
+     * trazer apenas o monitoramento mais recente? [data de criação, não é a data de aferição)
+     * @example "true"
+     */
+    @IsBoolean()
+    @IsOptional()
+    @Transform(({ value }: any) => value === 'true')
+    apenas_ultima_revisao?: boolean;
 }
