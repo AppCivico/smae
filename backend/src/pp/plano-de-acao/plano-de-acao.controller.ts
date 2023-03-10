@@ -8,57 +8,55 @@ import { FindOneParams, FindThreeParams, FindTwoParams } from '../../common/deco
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { ProjetoService } from '../projeto/projeto.service';
-import { CreateProjetoRiscoPlanoAcaoDto, CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
-import { UpdateRiscoDto } from './dto/update-risco.dto';
-import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from './entities/risco.entity';
-import { RiscoService } from './risco.service';
+import { ListPlanoAcaoDto, PlanoAcaoDetailDto } from '../plano-de-acao/entities/plano-acao.entity';
+import { PlanoAcaoService } from './plano-de-acao.service';
+import { CreatePlanoAcaoDto } from './dto/create-plano-acao.dto';
+import { FilterPlanoAcaoDto } from './dto/filter-plano-acao.dto';
+import { UpdatePlanoAcaoDto } from './dto/update-plano-acao.dto';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Risco')
-export class RiscoController {
+export class PlanoAcaoController {
     constructor(
-        private readonly riscoService: RiscoService,
+        private readonly planoAcaoService: PlanoAcaoService,
         private readonly projetoService: ProjetoService,
 
     ) { }
 
-    @Post(':id/risco')
+    @Post(':id/plano-de-acao')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async create(@Param() params: FindOneParams, @Body() dto: CreateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
-
-        return await this.riscoService.create(projeto.id, dto, user);
+    async create(@Param() params: FindOneParams, @Body() dto: CreatePlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.planoAcaoService.create(params.id, dto, user);
     }
 
-    @Get(':id/risco')
+    @Get(':id/plano-de-acao')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoRiscoDto> {
+    async findAll(@Param() params: FindOneParams, @Body() dto: FilterPlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPlanoAcaoDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
         return {
-            linhas: await this.riscoService.findAll(projeto.id, user),
+            linhas: await this.planoAcaoService.findAll(projeto.id, dto, user),
         };
     }
 
-    @Get(':id/risco/:id2')
+    @Get(':id/plano-de-acao/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoRiscoDetailDto> {
-        return await this.riscoService.findOne(params.id, params.id2, user);
+    async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<PlanoAcaoDetailDto> {
+        return await this.planoAcaoService.findOne(params.id, params.id2, user);
     }
 
-    @Patch(':id/risco/:id2')
+    @Patch(':id/plano-de-acao/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
-    async update(@Param() params: FindTwoParams, @Body() updateRiscoDto: UpdateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.riscoService.update(params.id2, updateRiscoDto, user);
+    async update(@Param() params: FindTwoParams, @Body() updatePlanoAcaoDto: UpdatePlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.planoAcaoService.update(params.id2, updatePlanoAcaoDto, user);
     }
-
 }

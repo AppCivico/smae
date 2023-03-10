@@ -60,6 +60,7 @@ import { VariavelModule } from './variavel/variavel.module';
 import { TarefaModule } from './pp/tarefa/tarefa.module';
 import { RiscoModule } from './pp/risco/risco.module';
 import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plano-acao-monitoramento.module';
+import { PlanoAcaoModule } from './pp/plano-de-acao/plano-de-acao.module';
 
 @Module({
     imports: [
@@ -123,6 +124,7 @@ import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plan
         AcaoModule,
         TarefaModule,
         RiscoModule,
+        PlanoAcaoModule,
         PlanoAcaoMonitoramentoModule
     ],
     controllers: [AppController],
