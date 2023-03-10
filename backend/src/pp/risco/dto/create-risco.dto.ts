@@ -1,5 +1,5 @@
 import { Type } from "class-transformer"
-import { IsNumber, IsOptional, IsString, ValidateIf } from "class-validator"
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, ValidateIf } from "class-validator"
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
 
 export class CreateRiscoDto {
@@ -33,8 +33,9 @@ export class CreateRiscoDto {
 }
 
 export class CreateProjetoRiscoTarefaDto {
-    @IsNumber()
-    tarefa_id: number
+    @IsArray()
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    tarefa_id: number[]
 }
 
 export class CreateProjetoRiscoPlanoAcaoDto {

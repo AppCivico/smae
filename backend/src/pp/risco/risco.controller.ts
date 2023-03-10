@@ -9,6 +9,8 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { ProjetoService } from '../projeto/projeto.service';
 import { CreateProjetoRiscoPlanoAcaoDto, CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
+import { UpdateRiscoDto } from './dto/update-risco.dto';
+import { ListPlanoAcao } from './entities/plano-acao.entity';
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from './entities/risco.entity';
 import { RiscoService } from './risco.service';
 
@@ -52,20 +54,37 @@ export class RiscoController {
         return await this.riscoService.findOne(params.id, params.id2, user);
     }
 
+    @Patch(':id/risco/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    async update(@Param() params: FindTwoParams, @Body() updateRiscoDto: UpdateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.riscoService.update(params.id2, updateRiscoDto, user);
+    }
+
     @Patch(':id/risco/:id2/tarefa')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async upsertProjetoRiscoTarefa(@Param() params: FindTwoParams, @Body() dto: CreateProjetoRiscoTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.riscoService.upsertProjetoRiscoTarefa(params.id, params.id2, dto, user);
+    async upsertProjetoRiscoTarefa(@Param() params: FindTwoParams, @Body() dto: CreateProjetoRiscoTarefaDto, @CurrentUser() user: PessoaFromJwt) {
+        return {created_count: await this.riscoService.upsertProjetoRiscoTarefa(params.id, params.id2, dto, user)};
     }
 
-    @Patch(':id/risco/:id2/tarefa/:id3/plano-de-acao')
+    @Post(':id/risco/:id2/plano-de-acao')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async upsertProjetoRiscoTarefaPlanoAcao(@Param() params: FindTwoParams, @Body() dto: CreateProjetoRiscoPlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createProjetoRiscoTarefaPlanoAcao(@Param() params: FindTwoParams, @Body() dto: CreateProjetoRiscoPlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.riscoService.createProjetoRiscoPlanoAcao(params.id, params.id2, dto, user);
     }
 
+    @Get(':id/risco/:id2/plano-de-acao')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    async findAllPlanoAcao(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPlanoAcao> {
+        return {
+            linhas: await this.riscoService.listProjetoRiscoPlanoAcao(params.id, params.id2, user),
+        };
+    }
 }
