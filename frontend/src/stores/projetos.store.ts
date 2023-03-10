@@ -1,8 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { ProjetoPermissoesDto } from '@../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/dto/create-meta.dto';
 import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
-import { ListProjetoDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
+import { ListProjetoDto, ProjetoDetailDto, ProjetoPermissoesDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
