@@ -67,29 +67,6 @@ iniciar();
 
   <div class="flex center mb2 spacebetween">
     <div class="f1 mr1">
-      <label class="label tc300">Filtrar por status</label>
-      <select
-        v-model.number="statusVisível"
-        class="inputtext"
-        name="status"
-      >
-        <option
-          value=""
-          :selected="!!status"
-        >
-          qualquer
-        </option>
-        <option
-          v-for="item in listaDeStatuses"
-          :key="item.valor"
-          :value="item.valor"
-          :selected="props.status === item.valor"
-        >
-          {{ item.etiqueta }}
-        </option>
-      </select>
-    </div>
-    <div class="f1">
       <label class="label tc300">Filtrar por grau</label>
       <select
         v-model.number="grauVisível"
@@ -109,6 +86,29 @@ iniciar();
           :selected="grauVisível === i"
         >
           {{ i + 1 }} - {{ item }}
+        </option>
+      </select>
+    </div>
+    <div class="f1">
+      <label class="label tc300">Filtrar por status</label>
+      <select
+        v-model.number="statusVisível"
+        class="inputtext"
+        name="status"
+      >
+        <option
+          value=""
+          :selected="!!status"
+        >
+          qualquer
+        </option>
+        <option
+          v-for="item in listaDeStatuses"
+          :key="item.valor"
+          :value="item.valor"
+          :selected="props.status === item.valor"
+        >
+          {{ item.etiqueta }}
         </option>
       </select>
     </div>
