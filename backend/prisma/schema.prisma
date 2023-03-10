@@ -2526,6 +2526,8 @@ model ProjetoRisco {
     probabilidade Float?
     impacto       Float?
 
+    status_risco StatusRisco
+
     // calculados
     nivel                      Float? // probabilidade * impacto
     grau                       Float? // cada nivel vai dar um grau diferente
@@ -2568,9 +2570,6 @@ model PlanoAcao {
     orgao_id              Int
     orgao                 Orgao  @relation(fields: [orgao_id], references: [id])
 
-    //  isso faz parte dessa tabela aqui, não da PlanoAcaoMonitoramento
-    status_risco StatusRisco
-
     responsavel            String
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
 
@@ -2584,6 +2583,7 @@ enum StatusRisco {
     Estatico
     Diminuindo
     SobControle
+    Fechado
 }
 
 // desenhado no MER como Monitoramento_Risco

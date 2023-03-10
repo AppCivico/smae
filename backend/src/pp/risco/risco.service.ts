@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, StatusRisco } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -9,7 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { CreateProjetoRiscoPlanoAcaoDto, CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
 import { UpdateRiscoDto } from './dto/update-risco.dto';
-import { PlanoAcao } from './entities/plano-acao.entity';
+import { PlanoAcao } from '../plano-de-acao/entities/plano-acao.entity';
 import { ProjetoRisco, ProjetoRiscoDetailDto } from './entities/risco.entity';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class RiscoService {
         const risco = await this.prisma.projetoRisco.create({
             data: {
                 projeto_id: projetoId,
-
+                status_risco: StatusRisco.SemInformacao,
                 // TODO: calc do numero
                 numero: 0,
                 ...dto
@@ -124,73 +124,33 @@ export class RiscoService {
         }
     }
 
-    async update(projeto_id: number, dto: UpdateRiscoDto, user: PessoaFromJwt) {
-        return await this.prisma.projetoRisco.update({
-            where: {id: projeto_id},
-            data: {
-                ...dto
-            },
-            select: {id: true}
+    async update(projeto_risco_id: number, dto: UpdateRiscoDto, user: PessoaFromJwt) {
+        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            if (dto.tarefa_id) {
+                const tarefa_id = dto.tarefa_id;
+                delete dto.tarefa_id;
+
+                await prismaTx.riscoTarefa.deleteMany({where: {projeto_risco_id: projeto_risco_id } });
+                await prismaTx.riscoTarefa.createMany({
+                    data: tarefa_id.map(r => {
+                        return {
+                            projeto_risco_id: projeto_risco_id,
+                            tarefa_id: r
+                        }
+                    })
+                });
+            }
+            
+            return await this.prisma.projetoRisco.update({
+                where: {id: projeto_risco_id},
+                data: {
+                    ...dto
+                },
+                select: {id: true}
+            });
         });
+
+        return updated;
     }
 
-    async upsertProjetoRiscoTarefa(projeto_id: number, risco_id: number, dto: CreateProjetoRiscoTarefaDto, user: PessoaFromJwt) {
-        const projeto_risco = await this.prisma.projetoRisco.findFirst({
-            where: {
-                projeto_id,
-                id: risco_id
-            }
-        });
-        if (!projeto_risco) throw new HttpException('Risco| inválido', 400);
-
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            await prismaTx.riscoTarefa.deleteMany({ where: { projeto_risco_id: risco_id } });
-
-            return await prismaTx.riscoTarefa.createMany({
-                data: dto.tarefa_id.map(r => {
-                    return {
-                        projeto_risco_id: risco_id,
-                        tarefa_id: r
-                    }
-                })
-            })
-        });
-
-        return created.count;
-    }
-
-    async createProjetoRiscoPlanoAcao(projeto_id: number, risco_id: number, dto: CreateProjetoRiscoPlanoAcaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const projeto_risco = await this.prisma.projetoRisco.findFirst({
-            where: {
-                projeto_id,
-                id: risco_id
-            }
-        });
-        if (!projeto_risco) throw new HttpException('Risco| inválido', 400);
-
-        return await this.prisma.planoAcao.create({
-            data: {
-                ...dto,
-                status_risco: 'SemInformacao',
-                risco_id: risco_id
-            }
-        });
-    }
-
-    async listProjetoRiscoPlanoAcao(projeto_id: number, risco_id: number, user: PessoaFromJwt): Promise<PlanoAcao[]> {
-        return await this.prisma.planoAcao.findMany({
-            where: {
-                risco_id: risco_id
-            },
-            select: {
-                id: true,
-                contramedida: true,
-                prazo_contramedida: true,
-                custo: true,
-                custo_percentual: true,
-                medidas_contrapartida: true,
-                status_risco: true,
-            }
-        });
-    }
 }
