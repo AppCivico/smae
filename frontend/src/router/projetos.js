@@ -9,6 +9,7 @@ import ProjetosProcessos from '@/views/projetos/ProjetosProcessos.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
 
+import riscos from './riscos';
 import tarefas from './tarefas';
 
 export default {
@@ -104,6 +105,7 @@ export default {
         rotasParaMenuSecundário: [
           'projetosResumo',
           'tarefasListar',
+          'riscosListar',
           'projetosAcompanhamento',
           'projetosLiçõesAprendidas',
           'projetosDocumentos',
@@ -147,6 +149,7 @@ export default {
         },
 
         tarefas,
+        riscos,
 
         {
           path: 'acompanhamento',
