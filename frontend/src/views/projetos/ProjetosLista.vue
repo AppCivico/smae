@@ -143,6 +143,7 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
   <div class="flex center mb2 spacebetween">
     <LocalFilter
       v-model="termoDeBusca"
+      class="mr1"
     />
     <hr class="ml2 f1">
   </div>
