@@ -146,6 +146,35 @@ export class PortfolioService {
             if (similarExists > 0) throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
         }
 
+
+        if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
+
+            const toBeRemoved = await this.prisma.portfolioOrgao.findMany({
+                where: {
+                    portfolio_id: id,
+                    orgao_id: { notIn: dto.orgaos.map(r => r) }
+                },
+                select: {
+                    orgao: true
+                }
+            });
+
+            for (const orgaoRemoved of toBeRemoved) {
+                const findResp = await this.prisma.projeto.count({
+                    where: {
+                        responsavel: {
+                            pessoa_fisica: {
+                                orgao_id: orgaoRemoved.orgao.id
+                            }
+                        }
+                    }
+                });
+
+                if (findResp > 0)
+                    throw new HttpException(`Não é possível remover o órgão ${orgaoRemoved.orgao.sigla} pois há projetos com responsáveis deste órgão.`, 400);
+            }
+        }
+
         // conferir se todos os órgãos que estão saindo realmente nao estão em uso em nenhum projeto ativo
         // como orgao_gestor_id
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -160,11 +189,20 @@ export class PortfolioService {
                 select: { id: true },
             });
 
-            await prismaTx.portfolioOrgao.deleteMany({
-                where: { portfolio_id: row.id },
-            });
 
             if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
+
+                const toBeRemoved = await prismaTx.portfolioOrgao.findMany({
+                    where: {
+                        portfolio_id: row.id,
+                        orgao_id: { notIn: dto.orgaos.map(r => r) }
+                    }
+                });
+
+                await prismaTx.portfolioOrgao.deleteMany({
+                    where: { portfolio_id: row.id },
+                });
+
                 await prismaTx.portfolioOrgao.createMany({
                     data: dto.orgaos.map(r => {
                         return {
@@ -187,7 +225,7 @@ export class PortfolioService {
                 removido_em: null
             }
         });
-        if (count > 0) throw new HttpException('Não é possível mais apagar o Portfolio, há projetos dependentes.', 400);
+        if (count > 0) throw new HttpException('Não é possível mais apagar o portfólio, há projetos dependentes.', 400);
 
         const created = await this.prisma.portfolio.updateMany({
             where: { id: id },
