@@ -386,6 +386,9 @@ const relatórioSemestralOuAnual = object({
   salvar_arquivo: boolean(),
 });
 
+const risco = object()
+  .shape({});
+
 const tarefa = object()
   .shape({
     custo_estimado: number()
@@ -542,6 +545,7 @@ export {
   relatórioMensal,
   relatórioOrçamentário,
   relatórioSemestralOuAnual,
+  risco,
   tarefa,
   usuário,
   variável,
