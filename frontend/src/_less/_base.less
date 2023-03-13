@@ -229,8 +229,15 @@ p {
   line-height: 1.4;
 }
 
+.tl {
+  text-align: left !important;
+}
 .tc {
-  text-align: center;
+  text-align: center !important;
+}
+
+.tr {
+  text-align: right !important;
 }
 
 .lh1 {
@@ -1544,6 +1551,10 @@ p {
     &:not(:last-child) {
       overflow: hidden;
     }
+
+    label {
+      display: block;
+    }
   }
 
   a:hover {
@@ -1912,6 +1923,14 @@ div[aria-busy="true"] {
   width: 5em;
 }
 
+.col--minimum {
+  width: 1em;
+}
+
+.col--number {
+  .col--minimum;
+}
+
 .col--dataHora {
   width: 12em;
 }
@@ -2019,8 +2038,8 @@ div[aria-busy="true"] {
     width: 16px;
     left: -8px;
   }
-  
-  :only-child > & {  
+
+  :only-child > & {
     &::before,
     &::after {
       content: none;
