@@ -1,4 +1,5 @@
 import MenuSecundário from '@/components/MenuSecundario.vue';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosAcompanhamento from '@/views/projetos/ProjetosAcompanhamento.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
@@ -143,7 +144,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: 'Resumo de projeto',
+            título: () => useProjetosStore()?.emFoco?.nome || 'Resumo de projeto',
             títuloParaMenu: 'Resumo',
           },
         },
