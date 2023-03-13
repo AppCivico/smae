@@ -4,18 +4,13 @@ import riskLevels from '@/consts/riskLevels';
 import statuses from '@/consts/riskStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import dateToField from '@/helpers/dateToField';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-const projetosStore = useProjetosStore();
 const riscosStore = useRiscosStore();
 
-const {
-  emFoco: projetoEmFoco,
-} = storeToRefs(projetosStore);
 const {
   chamadasPendentes, erro,
 } = storeToRefs(riscosStore);
@@ -43,13 +38,15 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Risco' }}</h1>
+    <h1>
+      {{ typeof route?.meta?.título === 'function'
+        ? route.meta.título()
+        : route?.meta?.título
+        || 'Riscos' }}
+    </h1>
     <hr class="ml2 f1">
 
-    <div
-      v-if="projetoEmFoco?.eh_prioritario"
-      class="ml2"
-    >
+    <div class="ml2">
       <router-link
         :to="{ name: 'riscosCriar' }"
         class="btn"
