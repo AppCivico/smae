@@ -12,6 +12,7 @@ export class ProjetoRisco {
     nivel: number | null
     grau: number | null
     resposta: string | null
+    risco_tarefa_outros: string | null
 }
 
 export class ListProjetoRiscoDto {
@@ -30,8 +31,9 @@ export class ProjetoRiscoDetailDto {
     nivel: number | null
     grau: number | null
     resposta: string | null
+    risco_tarefa_outros: string | null
 
-    etapas_afetadas?: ProjetoRiscoTarefa[]
+    tarefas_afetadas?: ProjetoRiscoTarefa[]
     planos_de_acao?: PlanoAcao[]
 }
 

@@ -73,6 +73,7 @@ export class RiscoService {
                 nivel: true,
                 grau: true,
                 resposta: true,
+                risco_tarefa_outros: true,
             }
         })
     }
@@ -96,6 +97,7 @@ export class RiscoService {
                 nivel: true,
                 grau: true,
                 resposta: true,
+                risco_tarefa_outros: true,
 
                 RiscoTarefa: {
                     select: {
@@ -132,7 +134,7 @@ export class RiscoService {
 
         return {
             ...projetoRisco,
-            etapas_afetadas: projetoRisco?.RiscoTarefa.map(r => {
+            tarefas_afetadas: projetoRisco?.RiscoTarefa.map(r => {
                 return {
                     tarefa_id: r.tarefa.id,
                     tarefa: r.tarefa.tarefa,
