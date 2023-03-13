@@ -163,7 +163,18 @@ export class RiscoService {
             return await this.prisma.projetoRisco.update({
                 where: {id: projeto_risco_id},
                 data: {
-                    ...dto
+                    codigo: dto.codigo,
+                    registrado_em: dto.registrado_em,
+                    probabilidade: dto.probabilidade,
+                    impacto: dto.impacto,
+                    descricao: dto.descricao,
+                    causa: dto.causa,
+                    consequencia: dto.consequencia,
+                    risco_tarefa_outros: dto.risco_tarefa_outros,
+                    status_risco: dto.status,
+
+                    atualizado_em: new Date(Date.now()),
+                    atualizado_por: user.id
                 },
                 select: {id: true}
             });
