@@ -24,7 +24,16 @@ export class RiscoService {
             data: {
                 projeto_id: projetoId,
                 status_risco: StatusRisco.SemInformacao,
-                ...dto,
+
+                codigo: dto.codigo,
+                registrado_em: dto.registrado_em,
+                probabilidade: dto.probabilidade,
+                impacto: dto.impacto,
+                descricao: dto.descricao,
+                causa: dto.causa,
+                consequencia: dto.consequencia,
+                risco_tarefa_outros: dto.risco_tarefa_outros,
+
                 criado_em: new Date(Date.now()),
                 criado_por: user.id
             },
