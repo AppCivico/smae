@@ -27,5 +27,5 @@ export class CreatePlanoAcaoDto {
     custo_percentual: number
 
     @IsString()
-    medidas_contrapartida: string
+    medidas_de_contingencia: string
 }

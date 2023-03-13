@@ -16,7 +16,7 @@ export class PlanoAcaoMonitoramentoService {
         const countProj = await this.prisma.planoAcao.count({
             where: {
                 id: dto.plano_acao_id,
-                risco: {
+                projeto_risco: {
                     projeto_id: projetoId,
                 }
             }
@@ -60,7 +60,7 @@ export class PlanoAcaoMonitoramentoService {
                 id: id,
                 removido_em: null,
                 plano_acao: {
-                    risco: {
+                    projeto_risco: {
                         projeto_id: projetoId,
                     }
                 }
@@ -94,7 +94,7 @@ export class PlanoAcaoMonitoramentoService {
                 ultima_revisao: dto.apenas_ultima_revisao ? true : undefined,
                 plano_acao_id: dto.plano_acao_id,
                 plano_acao: {
-                    risco: {
+                    projeto_risco: {
                         projeto_id: projetoId,
                     }
                 },
@@ -124,7 +124,7 @@ export class PlanoAcaoMonitoramentoService {
             where: {
                 id: id,
                 plano_acao: {
-                    risco: {
+                    projeto_risco: {
                         projeto_id: projetoId,
                     }
                 },

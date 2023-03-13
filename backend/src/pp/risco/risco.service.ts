@@ -7,7 +7,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
-import { CreateProjetoRiscoPlanoAcaoDto, CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
+import { CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
 import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { PlanoAcao } from '../plano-de-acao/entities/plano-acao.entity';
 import { ProjetoRisco, ProjetoRiscoDetailDto } from './entities/risco.entity';
@@ -23,9 +23,10 @@ export class RiscoService {
             data: {
                 projeto_id: projetoId,
                 status_risco: StatusRisco.SemInformacao,
-                // TODO: calc do numero
-                numero: 0,
-                ...dto
+                ...dto,
+
+                criado_em: new Date(Date.now()),
+                criado_por: user.id
             },
             select: {id: true}
         })
@@ -40,7 +41,6 @@ export class RiscoService {
             select: {
                 id: true,
                 codigo: true,
-                numero: true,
                 criado_em: true,
                 descricao: true,
                 causa: true,
@@ -63,7 +63,6 @@ export class RiscoService {
             select: {
                 id: true,
                 codigo: true,
-                numero: true,
                 criado_em: true,
                 descricao: true,
                 causa: true,
@@ -92,7 +91,7 @@ export class RiscoService {
                         prazo_contramedida: true,
                         custo: true,
                         custo_percentual: true,
-                        medidas_contrapartida: true,
+                        medidas_de_contingencia: true,
                         responsavel: true,
 
                         orgao: {

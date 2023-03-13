@@ -1,7 +1,8 @@
+import { PlanoAcao } from "src/pp/plano-de-acao/entities/plano-acao.entity"
+
 export class ProjetoRisco {
     id: number
     codigo: number
-    numero: number
     criado_em: Date
     descricao: string | null
     causa: string | null
@@ -20,7 +21,6 @@ export class ListProjetoRiscoDto {
 export class ProjetoRiscoDetailDto {
     id: number
     codigo: number
-    numero: number
     criado_em: Date
     descricao: string | null
     causa: string | null
@@ -32,20 +32,10 @@ export class ProjetoRiscoDetailDto {
     resposta: string | null
 
     etapas_afetadas?: ProjetoRiscoTarefa[]
-    planos_de_acao?: ProjetoRiscoTarefaPlanoAcao[]
+    planos_de_acao?: PlanoAcao[]
 }
 
 export class ProjetoRiscoTarefa {
     tarefa_id?: number
     tarefa?: string
-}
-
-export class ProjetoRiscoTarefaPlanoAcao {
-    id: number
-    responsavel: string
-    contramedida: string
-    prazo_contramedida: Date
-    custo: number
-    custo_percentual: number
-    medidas_contrapartida: string
 }
