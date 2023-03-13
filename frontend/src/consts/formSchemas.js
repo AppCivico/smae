@@ -387,7 +387,22 @@ const relatórioSemestralOuAnual = object({
 });
 
 const risco = object()
-  .shape({});
+  .shape({
+    codigo: number()
+      .min(1)
+      .nullable(),
+    impacto: number()
+      .min(1)
+      .max(5)
+      .nullable(),
+    probabilidade: number()
+      .min(1)
+      .max(5)
+      .nullable(),
+    registrado_em: date()
+      .nullable()
+      .typeError('Data inválida'),
+  });
 
 const tarefa = object()
   .shape({

@@ -165,7 +165,7 @@ iniciar();
           {{ linha.codigo }}
         </td>
         <td class="cell--data">
-          {{ dateToField(linha.criado_em) }}
+          {{ dateToField(linha.registrado_em) }}
         </td>
         <th>
           {{ linha.consequencia }}
