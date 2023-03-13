@@ -168,7 +168,16 @@ iniciar();
           {{ dateToField(linha.registrado_em) }}
         </td>
         <th>
-          {{ linha.consequencia }}
+          <router-link
+            :to="{
+              name: 'riscosResumo',
+              params: {
+                riscoId: linha.id
+              }
+            }"
+          >
+            {{ linha.consequencia }}
+          </router-link>
         </th>
         <td class="center">
           <span
