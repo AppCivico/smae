@@ -185,7 +185,7 @@ iniciar();
           {{ linha.resposta }}
         </td>
         <td>
-          {{ linha.status }}
+          {{ statuses[linha.status_risco] }}
         </td>
         <td
           class="center"
