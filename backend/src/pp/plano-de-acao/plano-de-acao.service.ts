@@ -20,14 +20,15 @@ export class PlanoAcaoService {
     async create(projetoId: number, dto: CreatePlanoAcaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.prisma.projeto.findFirst({
             where: { id: projetoId },
-            select: { id: true }
+            select: { id: true },
         });
         if (!projeto) throw new HttpException('Projeto| Inválido', 400);
 
         const projeto_risco = await this.prisma.projetoRisco.findFirst({
             where: {
                 id: dto.projeto_risco_id,
-                projeto_id: projetoId
+                projeto_id: projetoId,
+                removido_em: null
             },
             select: {id: true}
         });
@@ -52,6 +53,7 @@ export class PlanoAcaoService {
                 projeto_risco: {
                     projeto_id: projetoId
                 },
+                removido_em: null,
                 ...filters
             },
             select: {
@@ -71,7 +73,8 @@ export class PlanoAcaoService {
                 id: plano_acao_id,
                 projeto_risco: {
                     projeto_id: projetoId
-                }
+                },
+                removido_em: null
             },
             select: {
                 id: true,
