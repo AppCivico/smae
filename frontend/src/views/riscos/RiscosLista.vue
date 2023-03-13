@@ -131,7 +131,7 @@ iniciar();
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th>
+        <th class="tl">
           Código
         </th>
         <th class="cell--data">
@@ -149,7 +149,6 @@ iniciar();
         <th>
           Status
         </th>
-        <th />
         <th />
       </tr>
     </thead>
@@ -187,24 +186,6 @@ iniciar();
         </td>
         <td>
           {{ linha.status }}
-        </td>
-        <td
-          class="center"
-        >
-          <router-link
-            :to="{
-              name: 'riscosCriar',
-              params: {
-                projetoId: projetoId,
-                riscoId: linha.id,
-              },
-            }"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_+" /></svg>
-          </router-link>
         </td>
         <td
           class="center"
