@@ -59,4 +59,16 @@ export class PlanoAcaoController {
     async update(@Param() params: FindTwoParams, @Body() updatePlanoAcaoDto: UpdatePlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.planoAcaoService.update(params.id2, updatePlanoAcaoDto, user);
     }
+
+    @Delete(':id/plano-de-acao/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        const projeto = await this.projetoService.findOne(params.id, user, true);
+        await this.planoAcaoService.remove(params.id2, user);
+        return '';
+    }
 }

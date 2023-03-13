@@ -56,7 +56,10 @@ export class RiscoService {
 
     async findAll(projetoId: number, user: PessoaFromJwt): Promise<ProjetoRisco[]> {
         return await this.prisma.projetoRisco.findMany({
-            where: {projeto_id: projetoId},
+            where: {
+                projeto_id: projetoId,
+                removido_em: null
+            },
             orderBy: [{codigo: 'asc'}],
             select: {
                 id: true,
@@ -78,7 +81,8 @@ export class RiscoService {
         const projetoRisco = await this.prisma.projetoRisco.findFirst({
             where: {
                 projeto_id: projetoId,
-                id: riscoId
+                id: riscoId,
+                removido_em: null
             },
             select: {
                 id: true,
@@ -181,6 +185,19 @@ export class RiscoService {
         });
 
         return updated;
+    }
+
+    async remove(projeto_id: number, projeto_risco_id: number, user: PessoaFromJwt) {
+        return await this.prisma.projetoRisco.updateMany({
+            where: {
+                id: projeto_risco_id,
+                projeto_id: projeto_id
+            },
+            data: {
+                removido_em: new Date(Date.now()),
+                removido_por: user.id
+            }
+        })
     }
 
 }
