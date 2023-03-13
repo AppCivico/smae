@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from '@/../../backend/src/pp/risco/entities/risco.entity';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
@@ -63,6 +64,7 @@ export const useRiscosStore = defineStore('riscos', {
 
       try {
         await this.requestS.delete(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/risco/${id}`);
+
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -95,9 +97,10 @@ export const useRiscosStore = defineStore('riscos', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco, route }) => ({
+    itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
-      projeto_id: emFoco?.projeto_id || route.params.projetoId,
+      tarefa_id: emFoco?.tarefas_afetadas?.map(x => x.tarefa_id) || null,
+      registrado_em: dateTimeToDate(emFoco?.registrado_em),
     }),
 
     // eslint-disable-next-line max-len
