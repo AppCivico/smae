@@ -3,6 +3,7 @@ import RiscosCriarEditar from '@/views/riscos/RiscosCriarEditar.vue';
 import RiscosItem from '@/views/riscos/RiscosItem.vue';
 import RiscosLista from '@/views/riscos/RiscosLista.vue';
 import RiscosRaiz from '@/views/riscos/RiscosRaiz.vue';
+import RiscosResumo from '@/views/riscos/RiscosResumo.vue';
 // import planosDeAção from './planosDeAcao';
 
 export default {
@@ -81,6 +82,20 @@ export default {
               'riscosListar',
               'riscosEditar',
             ],
+          },
+        },
+
+        {
+          path: 'resumo',
+          name: 'riscosResumo',
+          component: RiscosResumo,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+            riscoId: Number.parseInt(params.riscoId, 10) || undefined,
+          }),
+          meta: {
+            título: () => useRiscosStore()?.emFoco?.consequencia || 'Resumo de risco',
           },
         },
 
