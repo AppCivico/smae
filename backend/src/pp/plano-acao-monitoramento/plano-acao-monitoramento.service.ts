@@ -35,7 +35,7 @@ export class PlanoAcaoMonitoramentoService {
                 }
             });
 
-            console.log(user.id);
+            console.log(user);
 
             const row = await prismaTx.planoAcaoMonitoramento.create({
                 data: {
