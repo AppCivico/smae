@@ -188,7 +188,15 @@ iniciar();
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Editar projeto' }}</h1>
+    <h1>
+      <div
+        v-if="projetoId"
+        class="t12 uc w700 tamarelo"
+      >
+        {{ 'Editar projeto' }}
+      </div>
+      {{ emFoco?.nome || (projetoId ? 'Projeto' : 'Novo projeto') }}
+    </h1>
 
     <hr class="ml2 f1">
 

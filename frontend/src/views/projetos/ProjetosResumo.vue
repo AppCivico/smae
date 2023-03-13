@@ -51,7 +51,6 @@ iniciar();
     <MenuDeMudançaDeStatusDeProjeto />
 
     <template v-if="emFoco?.id && !emFoco.arquivado">
-      <hr class="ml2 f1">
       <router-link
         :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
         class="btn big ml2"
