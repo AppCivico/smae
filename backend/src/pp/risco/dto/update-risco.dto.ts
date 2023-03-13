@@ -1,5 +1,4 @@
-import { OmitType } from "@nestjs/mapped-types";
-import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { StatusRisco } from "@prisma/client";
 import { IsArray, IsEnum, IsInt, IsOptional } from "class-validator";
 import { CreateRiscoDto } from "./create-risco.dto";
