@@ -129,7 +129,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: 'Editar projeto',
+            título: () => useProjetosStore()?.emFoco?.nome || 'Editar projeto',
             títuloParaMenu: 'Editar projeto',
             rotaDeEscape: 'projetosListar',
           },
