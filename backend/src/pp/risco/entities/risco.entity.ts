@@ -3,7 +3,7 @@ import { PlanoAcao } from "src/pp/plano-de-acao/entities/plano-acao.entity"
 export class ProjetoRisco {
     id: number
     codigo: number
-    criado_em: Date
+    registrado_em: Date
     descricao: string | null
     causa: string | null
     consequencia: string | null
@@ -21,7 +21,7 @@ export class ListProjetoRiscoDto {
 export class ProjetoRiscoDetailDto {
     id: number
     codigo: number
-    criado_em: Date
+    registrado_em: Date
     descricao: string | null
     causa: string | null
     consequencia: string | null

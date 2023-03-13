@@ -61,7 +61,7 @@ export class RiscoService {
             select: {
                 id: true,
                 codigo: true,
-                criado_em: true,
+                registrado_em: true,
                 descricao: true,
                 causa: true,
                 consequencia: true,
@@ -83,7 +83,7 @@ export class RiscoService {
             select: {
                 id: true,
                 codigo: true,
-                criado_em: true,
+                registrado_em: true,
                 descricao: true,
                 causa: true,
                 consequencia: true,
