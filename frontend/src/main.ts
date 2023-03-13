@@ -38,13 +38,7 @@ pinia.use(({ store }) => {
   return { requestS: markRaw(requestS) };
 });
 
-declare module 'vue' {
-  interface ComponentCustomProperties {
-    $requestS: RequestS;
-  }
-}
 
-app.config.globalProperties.$requestS = markRaw(requestS);
 
 app.use(pinia);
 app.use(router);
