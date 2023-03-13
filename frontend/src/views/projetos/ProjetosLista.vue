@@ -103,7 +103,7 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
           v-for="item in listaDeStatuses"
           :key="item.valor"
           :value="item.valor"
-          :selected="props.status === item.valor"
+          :selected="props.status === item.valor.toLowerCase()"
         >
           {{ item.etiqueta }}
         </option>
