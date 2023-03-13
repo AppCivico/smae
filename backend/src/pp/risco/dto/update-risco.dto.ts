@@ -14,13 +14,4 @@ export class UpdateRiscoDto extends OmitType(PartialType(CreateRiscoDto), []) {
     })
     @IsOptional()
     status?: StatusRisco
-
-    @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    @IsOptional()
-    tarefa_id?: number[]
-
-    @IsOptional()
-    @IsString()
-    risco_tarefa_outros?: string
 }
