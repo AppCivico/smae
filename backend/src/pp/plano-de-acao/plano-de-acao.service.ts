@@ -96,4 +96,16 @@ export class PlanoAcaoService {
             select: {id: true}
         });
     }
+
+    async remove(plano_acao_id: number, user: PessoaFromJwt) {
+        return await this.prisma.planoAcao.updateMany({
+            where: {
+                id: plano_acao_id,
+            },
+            data: {
+                removido_em: new Date(Date.now()),
+                removido_por: user.id
+            }
+        })
+    }
 }
