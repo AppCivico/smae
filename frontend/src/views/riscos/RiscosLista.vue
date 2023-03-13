@@ -1,6 +1,8 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import riskLevels from '@/consts/riskLevels';
+import statuses from '@/consts/riskStatuses';
+import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import dateToField from '@/helpers/dateToField';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
@@ -18,8 +20,7 @@ const {
   chamadasPendentes, erro,
 } = storeToRefs(riscosStore);
 
-const listaDeStatuses = [];
-const listaDeGraus = [];
+const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const projetoId = useRoute()?.params?.projetoId;
 
@@ -106,7 +107,6 @@ iniciar();
           v-for="item in listaDeStatuses"
           :key="item.valor"
           :value="item.valor"
-          :selected="props.status === item.valor"
         >
           {{ item.etiqueta }}
         </option>

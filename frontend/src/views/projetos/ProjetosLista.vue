@@ -2,6 +2,7 @@
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
 import statuses from '@/consts/taskStatuses';
+import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -14,10 +15,7 @@ const {
 const route = useRoute();
 const router = useRouter();
 
-const listaDeStatuses = Object.keys(statuses).map((x) => ({
-  etiqueta: statuses[x],
-  valor: x.toLowerCase(),
-}));
+const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const statusesPorChaveCaixaBaixa = Object.keys(statuses).reduce((acc, cur) => ({
   ...acc, [cur.toLowerCase()]: { valor: cur, etiqueta: statuses[cur] },
