@@ -1,6 +1,6 @@
 import { PartialType } from "@nestjs/mapped-types"
-import { Transform } from "class-transformer"
-import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from "class-validator"
+import { Transform, Type } from "class-transformer"
+import { IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 
 export class CreatePlanoAcaoMonitoramentoDto {
@@ -8,6 +8,8 @@ export class CreatePlanoAcaoMonitoramentoDto {
     plano_acao_id: number
 
     @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
     data_afericao: Date
 
     @IsString()
