@@ -1,6 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
+import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
@@ -96,7 +97,11 @@ iniciar();
       </div>
       {{ emFoco?.consequencia || (riscoId ? 'Risco' : 'Novo risco') }}
     </h1>
+
     <hr class="ml2 f1">
+    <MenuDeMudançaDeStatusDeRisco
+      v-if="emFoco?.id"
+    />
 
     <CheckClose />
   </div>
