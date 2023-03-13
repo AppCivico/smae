@@ -94,7 +94,10 @@ export class PlanoAcaoService {
         return await this.prisma.planoAcao.update({
             where: {id: plano_acao_id},
             data: {
-                ...dto
+                ...dto,
+
+                atualizado_em: new Date(Date.now()),
+                atualizado_por: user.id
             },
             select: {id: true}
         });
