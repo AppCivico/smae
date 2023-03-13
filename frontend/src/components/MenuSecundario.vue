@@ -72,7 +72,7 @@ const rotasParaMigalhasDePão = route.meta?.rotasParaMigalhasDePão
         >
           {{ item.meta?.títuloParaMenu
             || (typeof item.meta?.título === 'function'
-              ? item.meta?.título()
+              ? item.meta.título()
               : item.meta?.título
               || item.name
             )
