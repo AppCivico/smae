@@ -1,3 +1,4 @@
+import { useRiscosStore } from '@/stores/riscos.store.ts';
 import RiscosCriarEditar from '@/views/riscos/RiscosCriarEditar.vue';
 import RiscosItem from '@/views/riscos/RiscosItem.vue';
 import RiscosLista from '@/views/riscos/RiscosLista.vue';
