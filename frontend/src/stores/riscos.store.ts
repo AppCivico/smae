@@ -50,35 +50,7 @@ export const useRiscosStore = defineStore('riscos', {
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/risco`, params);
 
-        this.lista = linhas.length
-          ? linhas
-          : [{
-            id: 0,
-            codigo: 0,
-            numero: 0,
-            criado_em: "2023-03-10T18:07:45.159Z",
-            descricao: "string",
-            causa: "string",
-            consequencia: "string",
-            probabilidade: 0,
-            impacto: 0,
-            nivel: 0,
-            grau: 0,
-            resposta: "string"
-          }, {
-            id: 1,
-            codigo: 0,
-            numero: 0,
-            criado_em: "2023-03-10T18:07:45.159Z",
-            descricao: "string",
-            causa: "string",
-            consequencia: "string",
-            probabilidade: 0,
-            impacto: 0,
-            nivel: 0,
-            grau: 2,
-            resposta: "string"
-          }];
+        this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
       }
