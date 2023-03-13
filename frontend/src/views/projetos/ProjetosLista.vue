@@ -1,8 +1,8 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
-import { useProjetosStore } from '@/stores';
 import statuses from '@/consts/taskStatuses';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
