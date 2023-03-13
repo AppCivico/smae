@@ -74,6 +74,7 @@ export class RiscoService {
                 grau: true,
                 resposta: true,
                 risco_tarefa_outros: true,
+                status_risco: true,
             }
         })
     }
@@ -98,7 +99,7 @@ export class RiscoService {
                 grau: true,
                 resposta: true,
                 risco_tarefa_outros: true,
-
+                status_risco: true,
                 RiscoTarefa: {
                     select: {
                         tarefa: {

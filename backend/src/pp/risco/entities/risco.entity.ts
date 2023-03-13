@@ -1,3 +1,4 @@
+import { StatusRisco } from "@prisma/client"
 import { PlanoAcao } from "src/pp/plano-de-acao/entities/plano-acao.entity"
 
 export class ProjetoRisco {
@@ -13,6 +14,7 @@ export class ProjetoRisco {
     grau: number | null
     resposta: string | null
     risco_tarefa_outros: string | null
+    status_risco: StatusRisco
 }
 
 export class ListProjetoRiscoDto {
@@ -32,6 +34,7 @@ export class ProjetoRiscoDetailDto {
     grau: number | null
     resposta: string | null
     risco_tarefa_outros: string | null
+    status_risco: StatusRisco
 
     tarefas_afetadas?: ProjetoRiscoTarefa[]
     planos_de_acao?: PlanoAcao[]
