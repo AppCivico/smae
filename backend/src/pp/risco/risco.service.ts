@@ -19,17 +19,28 @@ export class RiscoService {
 
     async create(projetoId: number, dto: CreateRiscoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
+
         const risco = await this.prisma.projetoRisco.create({
             data: {
                 projeto_id: projetoId,
                 status_risco: StatusRisco.SemInformacao,
                 ...dto,
-
                 criado_em: new Date(Date.now()),
                 criado_por: user.id
             },
             select: {id: true}
-        })
+        });
+
+        if (dto.tarefa_id) {
+            await this.prisma.riscoTarefa.createMany({
+                data: dto.tarefa_id.map(t => {
+                    return {
+                        projeto_risco_id: risco.id,
+                        tarefa_id: t
+                    }
+                })
+            })
+        }
 
         return {id: risco.id}
     }

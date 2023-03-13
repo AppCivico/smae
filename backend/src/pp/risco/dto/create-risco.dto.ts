@@ -30,6 +30,15 @@ export class CreateRiscoDto {
     @IsOptional()
     @IsString()
     consequencia: string
+
+    @IsArray()
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsOptional()
+    tarefa_id?: number[]
+
+    @IsOptional()
+    @IsString()
+    risco_tarefa_outros?: string
 }
 
 export class CreateProjetoRiscoTarefaDto {

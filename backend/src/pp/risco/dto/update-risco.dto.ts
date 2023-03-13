@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { StatusRisco } from "@prisma/client";
-import { IsArray, IsEnum, IsInt, IsOptional } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsOptional, IsString } from "class-validator";
 import { CreateRiscoDto } from "./create-risco.dto";
 
 export class UpdateRiscoDto extends OmitType(PartialType(CreateRiscoDto), []) {
@@ -19,4 +19,8 @@ export class UpdateRiscoDto extends OmitType(PartialType(CreateRiscoDto), []) {
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     @IsOptional()
     tarefa_id?: number[]
+
+    @IsOptional()
+    @IsString()
+    risco_tarefa_outros?: string
 }
