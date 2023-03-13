@@ -191,6 +191,14 @@ model Pessoa {
     ppIniciou         Projeto[] @relation("ppIniciou")
     ppTerminou        Projeto[] @relation("ppTerminou")
 
+    RiscosQueCriei ProjetoRisco[] @relation("Criador")
+    RiscosQueRemovi ProjetoRisco[] @relation("Removedor")
+    RiscosQueEditei ProjetoRisco[] @relation("Atualizador")
+
+    PlanosDeAcaoQueCriei PlanoAcao[] @relation("Criador")
+    PlanosDeAcaoQueRemovi PlanoAcao[] @relation("Removedor")
+    PlanosDeAcaoQueEditei PlanoAcao[] @relation("Atualizador")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -2516,25 +2524,39 @@ model ProjetoRisco {
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
     codigo    Int
-    numero    Int
-    criado_em DateTime
+    registrado_em DateTime
 
     descricao    String?
     causa        String?
     consequencia String?
 
-    probabilidade Float?
-    impacto       Float?
+    probabilidade Int?
+    impacto       Int?
 
     status_risco StatusRisco
 
     // calculados
-    nivel                      Float? // probabilidade * impacto
-    grau                       Float? // cada nivel vai dar um grau diferente
+    nivel                      Int? // probabilidade * impacto
+    grau                       Int? // cada nivel vai dar um grau diferente
     resposta                   String?
     RiscoTarefa                RiscoTarefa[]
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
     planos_de_acao             PlanoAcao[]
+
+    risco_tarefa_outros String? // String deve ser preenchida caso o user queira informar um "risco_tarefa" que seja de fora do PDM
+
+    removido_em DateTime?
+    removido_por Int?
+
+    criado_em DateTime
+    criado_por Int
+
+    atualizado_em DateTime?
+    atualizado_por Int?
+
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
 
     @@index([projeto_id])
     @@map("projeto_risco")
@@ -2558,22 +2580,35 @@ model RiscoTarefa {
 model PlanoAcao {
     id Int @id @default(autoincrement())
 
-    risco_id Int
-    risco    ProjetoRisco @relation(fields: [risco_id], references: [id])
+    projeto_risco_id Int
+    projeto_risco    ProjetoRisco @relation(fields: [projeto_risco_id], references: [id])
 
     contramedida       String
-    prazo_contramedida DateTime @db.Date() // data do termino previsto
-    custo              Float
-    custo_percentual   Float // custo em relacao ao projeto todo, coalesce(custo_real, custo_estimado) -- eu acho
+    prazo_contramedida DateTime? @db.Date() // data do termino previsto
+    custo              Float?
+    custo_percentual   Float? // custo em relacao ao projeto todo, coalesce(custo_real, custo_estimado) -- eu acho
 
-    medidas_contrapartida String
+    medidas_de_contingencia String
     orgao_id              Int
     orgao                 Orgao  @relation(fields: [orgao_id], references: [id])
 
     responsavel            String
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
 
-    @@index([risco_id])
+    removido_em DateTime?
+    removido_por Int?
+
+    criado_em DateTime
+    criado_por Int
+
+    atualizado_em DateTime?
+    atualizado_por Int?
+
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+
+    @@index([projeto_risco_id])
     @@map("plano_acao")
 }
 

@@ -35,8 +35,10 @@ export class PlanoAcaoService {
 
         const plano_acao = await this.prisma.planoAcao.create({
             data: {
-                risco_id: dto.projeto_risco_id,
-                ...dto
+                ...dto,
+
+                criado_em: new Date(Date.now()),
+                criado_por: user.id
             },
             select: {id: true}
         })
@@ -47,7 +49,7 @@ export class PlanoAcaoService {
     async findAll(projetoId: number, filters: FilterPlanoAcaoDto, user: PessoaFromJwt): Promise<PlanoAcao[]> {
         return await this.prisma.planoAcao.findMany({
             where: {
-                risco: {
+                projeto_risco: {
                     projeto_id: projetoId
                 },
                 ...filters
@@ -58,7 +60,7 @@ export class PlanoAcaoService {
                 prazo_contramedida: true,
                 custo: true,
                 custo_percentual: true,
-                medidas_contrapartida: true,
+                medidas_de_contingencia: true,
             }
         });
     }
@@ -67,7 +69,7 @@ export class PlanoAcaoService {
         const plano_acao = await this.prisma.planoAcao.findFirst({
             where: {
                 id: plano_acao_id,
-                risco: {
+                projeto_risco: {
                     projeto_id: projetoId
                 }
             },
@@ -77,7 +79,7 @@ export class PlanoAcaoService {
                 prazo_contramedida: true,
                 custo: true,
                 custo_percentual: true,
-                medidas_contrapartida: true,
+                medidas_de_contingencia: true,
             }
         });
         if (!plano_acao) throw new HttpException('plano_acao| inválido', 400);

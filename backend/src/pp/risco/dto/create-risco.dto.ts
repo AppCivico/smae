@@ -9,7 +9,7 @@ export class CreateRiscoDto {
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    criado_em: Date
+    registrado_em: Date
 
     @IsNumber()
     @IsOptional()
@@ -36,29 +36,4 @@ export class CreateProjetoRiscoTarefaDto {
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     tarefa_id: number[]
-}
-
-export class CreateProjetoRiscoPlanoAcaoDto {
-    @IsNumber()
-    orgao_id: number
-
-    @IsString()
-    responsavel: string
-
-    @IsString()
-    contramedida: string
-
-    @IsOnlyDate()
-    @Type(() => Date)
-    @ValidateIf((object, value) => value !== null)
-    prazo_contramedida: Date
-
-    @IsNumber()
-    custo: number
-
-    @IsNumber()
-    custo_percentual: number
-
-    @IsString()
-    medidas_contrapartida: string
 }
