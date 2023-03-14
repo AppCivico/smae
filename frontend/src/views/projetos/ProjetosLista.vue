@@ -1,8 +1,9 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
-import statuses from '@/consts/statuses';
-import { useProjetosStore } from '@/stores';
+import statuses from '@/consts/taskStatuses';
+import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -14,10 +15,7 @@ const {
 const route = useRoute();
 const router = useRouter();
 
-const listaDeStatuses = Object.keys(statuses).map((x) => ({
-  etiqueta: statuses[x],
-  valor: x.toLowerCase(),
-}));
+const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const statusesPorChaveCaixaBaixa = Object.keys(statuses).reduce((acc, cur) => ({
   ...acc, [cur.toLowerCase()]: { valor: cur, etiqueta: statuses[cur] },
@@ -71,7 +69,11 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Projetos' }}</h1>
+    <h1>
+      {{ typeof route?.meta?.título === 'function'
+        ? route.meta.título()
+        : route?.meta?.título || 'Projetos' }}
+    </h1>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'projetosCriar' }"
@@ -101,7 +103,7 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
           v-for="item in listaDeStatuses"
           :key="item.valor"
           :value="item.valor"
-          :selected="props.status === item.valor"
+          :selected="props.status === item.valor.toLowerCase()"
         >
           {{ item.etiqueta }}
         </option>
@@ -143,6 +145,7 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
   <div class="flex center mb2 spacebetween">
     <LocalFilter
       v-model="termoDeBusca"
+      class="mr1"
     />
     <hr class="ml2 f1">
   </div>

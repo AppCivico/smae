@@ -262,8 +262,9 @@ export class VariavelAnaliseQualitativaDto {
     @ValidateIf((object, value) => value !== '')
     valor_realizado_acumulado?: string;
 
+    @IsOptional()
     @IsString()
-    analise_qualitativa: string;
+    analise_qualitativa?: string;
 
     @IsOptional()
     @IsBoolean()

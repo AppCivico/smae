@@ -17,6 +17,7 @@ export class ProjetoProxyPdmMetasService {
                     where: {
                         removido_em: null
                     },
+                    orderBy: [{ codigo: 'asc' }, { atualizado_em: 'desc' }],
                     select: {
                         id: true,
                         codigo: true,

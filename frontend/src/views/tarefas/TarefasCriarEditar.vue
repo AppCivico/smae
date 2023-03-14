@@ -350,7 +350,6 @@ iniciar();
               </label>
               <Field
                 :name="`dependencias[${idx}].dependencia_tarefa_id`"
-                type="text"
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
@@ -382,7 +381,6 @@ iniciar();
               </label>
               <Field
                 :name="`dependencias[${idx}].tipo`"
-                type="text"
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"

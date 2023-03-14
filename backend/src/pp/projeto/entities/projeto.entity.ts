@@ -50,7 +50,13 @@ export class ProjetoPermissoesDto {
     campo_secretario_executivo: boolean
     campo_secretario_responsavel: boolean
     campo_coordenador_ue: boolean
-
+    /**
+     * Campo que fica TRUE quando o usuário já não tem mais o acesso total de edição
+     * por exemplo, após a fase do planejamento,
+     * o usuário responsável pode fazer edição no realizado, mas não pode incluir novas tarefas
+    */
+    apenas_leitura_planejamento: boolean
+    sou_responsavel: boolean
 }
 
 export class ProjetoMetaDetailDto {

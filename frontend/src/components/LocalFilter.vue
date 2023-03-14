@@ -22,7 +22,7 @@ const value = computed({
 </script>
 
 <template>
-  <div class="f1 mr1 search">
+  <div class="f1 search">
     <label class="label tc300">Busca livre</label>
     <input
       :value="value"
