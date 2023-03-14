@@ -6,6 +6,9 @@ export class ProjetoRiscoCalcResults {
     resposta_descricao: string
 }
 
+export const probabilidadeDescricao = ['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta/Fato'];
+export const impactoDescricao       = ['Muito baixo', 'Baixo', 'Médio', 'Alto', 'Muito alto'];
+
 export class RiscoCalc {
     static getResult(probabilidade: number, impacto: number) {
         const nivel: number = probabilidade * impacto;
