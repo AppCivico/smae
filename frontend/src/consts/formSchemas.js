@@ -163,6 +163,15 @@ const indicador = object()
       .required('Preencha o título'),
   });
 
+const monitoramentoDePlanoDeAção = object()
+  .shape({
+    descricao: string()
+      .required(),
+    data_afericao: date()
+      .required()
+      .typeError('Data inválida'),
+  });
+
 const novaSenha = object()
   .shape({
     password: string()
@@ -583,6 +592,7 @@ export {
   etapaDeMonitoramento,
   fase,
   indicador,
+  monitoramentoDePlanoDeAção,
   novaSenha,
   planoDeAção,
   portfolio,
