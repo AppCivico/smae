@@ -192,13 +192,6 @@ export class PortfolioService {
 
             if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
 
-                const toBeRemoved = await prismaTx.portfolioOrgao.findMany({
-                    where: {
-                        portfolio_id: row.id,
-                        orgao_id: { notIn: dto.orgaos.map(r => r) }
-                    }
-                });
-
                 await prismaTx.portfolioOrgao.deleteMany({
                     where: { portfolio_id: row.id },
                 });
