@@ -101,7 +101,7 @@ function dateToDate(d) {
 const virtualUpload = ref({});
 const uploadSchema = Yup.object().shape({
   descricao: Yup.string().required('Preencha a descrição'),
-    	tipo_documento_id: Yup.string().nullable(),
+  tipo_documento_id: Yup.string().nullable(),
   arquivo: Yup.string().required('Selecione um arquivo'),
 });
 async function addArquivo(values) {
@@ -166,7 +166,12 @@ function addFile(e) {
 
   <template v-if="SingleAnalise?.variavel">
     <div class="label tamarelo mb1">
-      {{ props.parent.atividade?`Indicador da atividade ${props.parent.atividade.codigo} ${props.parent.atividade.titulo}`:props.parent.iniciativa?`Indicador da iniciativa ${props.parent.iniciativa.codigo} ${props.parent.iniciativa.titulo}`:'Indicador da Meta' }}
+      {{ props.parent.atividade
+        ? `Indicador da atividade ${props.parent.atividade.codigo} ${props.parent.atividade.titulo}`
+        : props.parent.iniciativa
+          ? `Indicador da iniciativa ${props.parent.iniciativa.codigo} ${props.parent.iniciativa.titulo}`
+          : 'Indicador da Meta'
+      }}
     </div>
 
     <div class="flex center mb2">
@@ -178,7 +183,13 @@ function addFile(e) {
         viewBox="0 0 28 28"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-      ><use :xlink:href="`#i_${props.parent.atividade?'atividade':props.parent.iniciativa?'iniciativa':'indicador'}`" /></svg>
+      ><use
+        :xlink:href="`#i_${props.parent.atividade
+          ? 'atividade'
+          : props.parent.iniciativa
+            ? 'iniciativa'
+            : 'indicador'}`"
+      /></svg>
       <div class="t20">
         <strong>{{ props.parent.indicador.codigo }} {{ props.parent.indicador.titulo }}</strong>
       </div>
@@ -191,14 +202,18 @@ function addFile(e) {
       {{ dateToTitle(props.periodo) }}
     </div>
 
-    <template v-if="SingleAnalise.ultimoPedidoComplementacao&&!SingleAnalise.ultimoPedidoComplementacao.atendido">
+    <template
+      v-if="SingleAnalise.ultimoPedidoComplementacao
+        && !SingleAnalise.ultimoPedidoComplementacao.atendido"
+    >
       <div class="complementacao mb2">
         <div class="w700 t13 mb1">
           Solicitação de complementação
         </div>
         <p>{{ SingleAnalise.ultimoPedidoComplementacao.pedido }}</p>
         <div class="t12 tc600">
-          {{ dateToDate(SingleAnalise.ultimoPedidoComplementacao.criado_em) }}, {{ SingleAnalise.ultimoPedidoComplementacao.criador.nome_exibicao }}
+          {{ dateToDate(SingleAnalise.ultimoPedidoComplementacao.criado_em) }},
+          {{ SingleAnalise.ultimoPedidoComplementacao.criador.nome_exibicao }}
         </div>
       </div>
     </template>
@@ -209,7 +224,8 @@ function addFile(e) {
           Unidade de medida
         </div>
         <div class="t13">
-          {{ SingleAnalise.variavel.unidade_medida.sigla }} ({{ SingleAnalise.variavel.unidade_medida.descricao }})
+          {{ SingleAnalise.variavel.unidade_medida.sigla }}
+          ({{ SingleAnalise.variavel.unidade_medida.descricao }})
         </div>
       </div>
       <div>
@@ -225,7 +241,8 @@ function addFile(e) {
           Projetado
         </div>
         <div class="t13">
-          {{ SingleAnalise.series[SingleAnalise.ordem_series.indexOf('Previsto')].valor_nominal??'-' }}
+          {{ SingleAnalise.series[SingleAnalise.ordem_series.indexOf('Previsto')].valor_nominal
+            ?? '-' }}
         </div>
       </div>
     </div>
@@ -245,7 +262,10 @@ function addFile(e) {
           <Field
             name="valor_realizado"
             type="number"
-            :step="'0'+(SingleAnalise.variavel.casas_decimais? '.'+('0'.repeat(SingleAnalise.variavel.casas_decimais-1))+'1' : '')"
+            :step="'0' + (SingleAnalise.variavel.casas_decimais
+              ? '.' + ('0'.repeat(SingleAnalise.variavel.casas_decimais - 1)) + '1'
+              : '')
+            "
             class="inputtext light mb1"
             :class="{ 'error': errors.valor_realizado }"
           />
