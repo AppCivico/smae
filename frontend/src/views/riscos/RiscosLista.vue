@@ -119,9 +119,9 @@ iniciar();
       <col>
       <col class="col--data">
       <col>
-      <col style="width: 6em">
-      <col>
-      <col>
+      <col style="width: 8em">
+      <col style="width: 8em">
+      <col style="width: 8em">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
     </colgroup>
