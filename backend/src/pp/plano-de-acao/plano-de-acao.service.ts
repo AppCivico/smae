@@ -63,6 +63,13 @@ export class PlanoAcaoService {
                 custo: true,
                 custo_percentual: true,
                 medidas_de_contingencia: true,
+                responsavel: true,
+                orgao: {
+                    select: {
+                        id: true,
+                        sigla: true
+                    }
+                }
             }
         });
     }
@@ -83,6 +90,13 @@ export class PlanoAcaoService {
                 custo: true,
                 custo_percentual: true,
                 medidas_de_contingencia: true,
+                responsavel: true,
+                orgao: {
+                    select: {
+                        id: true,
+                        sigla: true
+                    }
+                }
             }
         });
         if (!plano_acao) throw new HttpException('plano_acao| inválido', 400);

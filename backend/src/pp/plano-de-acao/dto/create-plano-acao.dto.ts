@@ -1,5 +1,5 @@
 import { Type } from "class-transformer"
-import { IsNumber, IsString, ValidateIf } from "class-validator"
+import { IsNumber, IsOptional, IsString, ValidateIf } from "class-validator"
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
 
 export class CreatePlanoAcaoDto {
@@ -7,10 +7,12 @@ export class CreatePlanoAcaoDto {
     projeto_risco_id: number
 
     @IsNumber()
-    orgao_id: number
+    @IsOptional()
+    orgao_id?: number
 
     @IsString()
-    responsavel: string
+    @IsOptional()
+    responsavel?: string
 
     @IsString()
     contramedida: string
