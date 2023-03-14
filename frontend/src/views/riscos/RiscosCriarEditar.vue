@@ -14,7 +14,7 @@ import {
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/../../backend/src/common/RiscoCalc.ts';
+import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/helpers/riscoCalc.ts';
 
 const alertStore = useAlertStore();
 const riscosStore = useRiscosStore();
