@@ -269,25 +269,12 @@ iniciar();
                 <col class="col--data">
                 <col>
                 <col class="col--botão-de-ação">
-
-                <col class="col--botão-de-ação">
               </colgroup>
 
               <tr
                 v-for="monitoramento in linhas[item.id]"
                 :key="monitoramento.id"
               >
-                <td class="center">
-                  <router-link
-                    to="#"
-                    title="Editar plano-de-ação"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    ><use xlink:href="#i_+" /></svg>
-                  </router-link>
-                </td>
                 <td>{{ dateToField(monitoramento.data_afericao) }}</td>
                 <td>{{ monitoramento.descricao }}</td>
                 <td class="center">
