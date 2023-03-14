@@ -253,7 +253,7 @@ iniciar();
       <div class="flex g2">
         <div class="f2 mb1">
           <label class="label tc300">
-            Do <abbr title="Programa de metas">PdM</abbr><template
+            Do cronograma<template
               v-if="!values.risco_tarefa_outros"
             >&nbsp;<span class="tvermelho">*</span></template>
           </label>
