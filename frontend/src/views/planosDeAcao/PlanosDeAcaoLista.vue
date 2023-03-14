@@ -163,7 +163,7 @@ iniciar();
 
     <table
       v-if="emFoco?.planos_de_acao?.length"
-      class="tablemain"
+      class="tablemain mb2"
     >
       <colgroup>
         <col class="col--botão-de-ação">
@@ -229,13 +229,13 @@ iniciar();
             {{ item.contramedida }}
           </th>
           <td>
-            {{ item.responsavel }}
+            {{ item.responsavel || item.orgao.sigla }}
           </td>
           <td>
             {{ dateToField(item.prazo_contramedida) }}
           </td>
           <td class="cell--number">
-            {{ item.custo }}
+            {{ item.custo || '-' }}
           </td>
           <td class="cell--number">
             {{ item.custo_percentual ? item.custo_percentual + '%' : '-' }}
