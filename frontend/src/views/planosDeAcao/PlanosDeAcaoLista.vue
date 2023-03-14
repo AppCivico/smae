@@ -47,47 +47,8 @@ async function buscarMonitoramento(id) {
   );
 
   if (Array.isArray(u.linhas)) {
-    linhas.value[id] = [...linhas];
+    linhas.value[id] = u.linhas;
   }
-
-  linhas.value[id] = [
-    {
-      id: 0,
-      plano_acao_id: 0,
-      data_afericao: '2023-03-13T22:17:44.899Z',
-      descricao: 'string',
-      criado_em: '2023-03-13T22:17:44.899Z',
-      criador: {
-        id: 0,
-        nome_exibicao: 'string',
-      },
-      ultima_revisao: true,
-    },
-    {
-      id: 0,
-      plano_acao_id: 0,
-      data_afericao: '2023-03-13T22:17:44.899Z',
-      descricao: 'string',
-      criado_em: '2023-03-13T22:17:44.899Z',
-      criador: {
-        id: 0,
-        nome_exibicao: 'string',
-      },
-      ultima_revisao: true,
-    },
-    {
-      id: 0,
-      plano_acao_id: 0,
-      data_afericao: '2023-03-13T22:17:44.899Z',
-      descricao: 'string',
-      criado_em: '2023-03-13T22:17:44.899Z',
-      criador: {
-        id: 0,
-        nome_exibicao: 'string',
-      },
-      ultima_revisao: true,
-    },
-  ];
 
   linhasPendentes.value = false;
 }
@@ -300,7 +261,7 @@ iniciar();
               class="tablemain"
             >
               <colgroup>
-                <col>
+                <col class="col--data">
                 <col>
                 <col class="col--botão-de-ação">
 
