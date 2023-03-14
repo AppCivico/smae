@@ -21,7 +21,7 @@ export class PlanoAcaoMonitoramentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async create(@Param() params: FindOneParams, @Body() dto: CreatePlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(@Param() params: FindOneParams, @Body() dto: CreatePlanoAcaoMonitoramentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.planoAcaoMonitoramentoService.create(params.id, dto, user);
     }
 
@@ -29,7 +29,7 @@ export class PlanoAcaoMonitoramentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(@Param() params: FindOneParams, @Query() filters: FilterPlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<ListPlanoAcaoMonitoramentoDto> {
+    async findAll(@Param() params: FindOneParams, @Query() filters: FilterPlanoAcaoMonitoramentoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPlanoAcaoMonitoramentoDto> {
         return {
             linhas: await this.planoAcaoMonitoramentoService.findAll(params.id, filters, user)
         };
