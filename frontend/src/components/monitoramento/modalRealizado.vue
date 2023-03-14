@@ -287,7 +287,7 @@ function addFile(e) {
           </template>
         </div>
         <div class="f1">
-          <label class="label">Análise qualitativa <span class="tvermelho">*</span></label>
+          <label class="label">Análise qualitativa</label>
           <Field
             name="analise_qualitativa"
             as="textarea"
