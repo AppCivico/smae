@@ -1,4 +1,5 @@
 import MenuSecundário from '@/components/MenuSecundario.vue';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosAcompanhamento from '@/views/projetos/ProjetosAcompanhamento.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
@@ -9,6 +10,7 @@ import ProjetosProcessos from '@/views/projetos/ProjetosProcessos.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
 
+import riscos from './riscos';
 import tarefas from './tarefas';
 
 export default {
@@ -104,6 +106,7 @@ export default {
         rotasParaMenuSecundário: [
           'projetosResumo',
           'tarefasListar',
+          'riscosListar',
           'projetosAcompanhamento',
           'projetosLiçõesAprendidas',
           'projetosDocumentos',
@@ -126,7 +129,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: 'Editar projeto',
+            título: () => useProjetosStore()?.emFoco?.nome || 'Editar projeto',
             títuloParaMenu: 'Editar projeto',
             rotaDeEscape: 'projetosListar',
           },
@@ -141,12 +144,13 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: 'Resumo de projeto',
+            título: () => useProjetosStore()?.emFoco?.nome || 'Resumo de projeto',
             títuloParaMenu: 'Resumo',
           },
         },
 
         tarefas,
+        riscos,
 
         {
           path: 'acompanhamento',

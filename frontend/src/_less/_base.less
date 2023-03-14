@@ -168,6 +168,10 @@ strong {
   font-size: 11px;
 }
 
+.t10 {
+  font-size: 10px;
+}
+
 .w400 {
   font-weight: 400;
 }
@@ -225,8 +229,15 @@ p {
   line-height: 1.4;
 }
 
+.tl {
+  text-align: left !important;
+}
 .tc {
-  text-align: center;
+  text-align: center !important;
+}
+
+.tr {
+  text-align: right !important;
 }
 
 .lh1 {
@@ -429,6 +440,10 @@ p {
 
 .pr5 {
   padding-right: 5rem !important;
+}
+
+.pb05 {
+  padding-bottom: 0.5rem !important;
 }
 
 .pb1 {
@@ -1536,6 +1551,10 @@ p {
     &:not(:last-child) {
       overflow: hidden;
     }
+
+    label {
+      display: block;
+    }
   }
 
   a:hover {
@@ -1904,6 +1923,14 @@ div[aria-busy="true"] {
   width: 5em;
 }
 
+.col--minimum {
+  width: 1em;
+}
+
+.col--number {
+  .col--minimum;
+}
+
 .col--dataHora {
   width: 12em;
 }
@@ -2011,8 +2038,8 @@ div[aria-busy="true"] {
     width: 16px;
     left: -8px;
   }
-  
-  :only-child > & {  
+
+  :only-child > & {
     &::before,
     &::after {
       content: none;
@@ -2034,4 +2061,39 @@ div[aria-busy="true"] {
   top: 0;
   width: 3rem;
   padding: 0;
+}
+
+.etiqueta {
+  font-weight: 700;
+  background-color: @c400;
+  text-align: center;
+  padding-right: 1em;
+  padding-left: 1em;
+  border-radius: 999em;
+  white-space: nowrap;
+  line-height: 1.5em;
+
+  &:only-child {
+    display: block;
+  }
+}
+
+.etiqueta--alerta__peso-1 {
+  background-color: @alerta__peso-1;
+}
+
+.etiqueta--alerta__peso-2 {
+  background-color: @alerta__peso-2;
+}
+
+.etiqueta--alerta__peso-3 {
+  background-color: @alerta__peso-3;
+}
+
+.etiqueta--alerta__peso-4 {
+  background-color: @alerta__peso-4;
+}
+
+.etiqueta--alerta__peso-5 {
+  background-color: @alerta__peso-5;
 }

@@ -36,7 +36,7 @@ export default {
   },
   computed: {
     nivelMaximoTarefa: () => useTarefasStore()?.extra?.portfolio?.nivel_maximo_tarefa || -1,
-    oProjetoÉPrioritário: () => useProjetosStore()?.emFoco.eh_prioritario,
+    oProjetoÉPrioritário: () => useProjetosStore()?.emFoco?.eh_prioritario,
   },
   methods: {
     dateToField,
@@ -102,7 +102,7 @@ export default {
       {{ dateToField(linha.inicio_planejado) }}
 
       <i
-        v-if="linha.inicio_planejado && linha.n_dep_inicio_planejado"
+        v-if="linha.n_dep_inicio_planejado"
         class="tooltip tooltip--info"
         :title="linha.n_dep_inicio_planejado === 1
           ? `Calculada com base em ${linha.n_dep_inicio_planejado} dependência`
@@ -113,7 +113,7 @@ export default {
       {{ dateToField(linha.termino_planejado) }}
 
       <i
-        v-if="linha.termino_planejado && linha.n_dep_termino_planejado"
+        v-if="linha.n_dep_termino_planejado"
         class="tooltip tooltip--info"
         :title="linha.n_dep_termino_planejado === 1
           ? `Calculada com base em ${linha.n_dep_termino_planejado} dependência`

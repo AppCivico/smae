@@ -548,6 +548,8 @@ export class ProjetoService {
             campo_secretario_responsavel: false,
             campo_coordenador_ue: false,
             campo_nao_escopo: false,
+            apenas_leitura_planejamento: true,
+            sou_responsavel: false,
         };
 
         // se o projeto está arquivado, não podemos arquivar novamente
@@ -573,6 +575,8 @@ export class ProjetoService {
                 && projeto.responsavel_id == +user.id
             ) {
                 pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(projeto.status);
+                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado)
+                permissoes.sou_responsavel = true;
             } else {
                 throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
             }
@@ -580,6 +584,8 @@ export class ProjetoService {
         } else {
             // user null == sistema puxando o relatório, então se precisar só mudar pra pessoaPodeEscrever=true
         }
+
+        permissoes.apenas_leitura_planejamento = pessoaPodeEscrever == false;
 
         if (projeto.arquivado == false) {
             // se já saiu da fase de registro, então está liberado preencher o campo

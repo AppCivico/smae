@@ -1,0 +1,320 @@
+<script setup>
+import CheckClose from '@/components/CheckClose.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { planoDeAção as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  Form
+} from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
+const alertStore = useAlertStore();
+
+const route = useRoute();
+const router = useRouter();
+
+const projetosStore = useProjetosStore();
+const {
+  órgãosEnvolvidosNoProjetoEmFoco,
+} = storeToRefs(projetosStore);
+
+const planosDeAçãoStore = usePlanosDeAçãoStore();
+const {
+  chamadasPendentes,
+  emFoco,
+  erro,
+  itemParaEdição,
+} = storeToRefs(planosDeAçãoStore);
+
+const props = defineProps({
+  projetoId: {
+    type: Number,
+    default: 0,
+  },
+  planoId: {
+    type: Number,
+    default: 0,
+  },
+  riscoId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+async function onSubmit(_, { controlledValues: carga }) {
+  try {
+    const msg = props.planoId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const resposta = props.planoId
+      ? await planosDeAçãoStore.salvarItem(carga, props.planoId)
+      : await planosDeAçãoStore.salvarItem(carga);
+
+    if (resposta) {
+      alertStore.success(msg);
+      await router.push({ name: 'planosDeAçãoListar' });
+      planosDeAçãoStore.$reset();
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+function excluirPlanoDeAção(id) {
+  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await usePlanosDeAçãoStore().excluirItem(id)) {
+      usePlanosDeAçãoStore().$reset();
+      usePlanosDeAçãoStore().buscarTudo();
+      useAlertStore().success('Risco removido.');
+
+      const rotaDeEscape = route.meta?.rotaDeEscape;
+
+      if (rotaDeEscape) {
+        router.push(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape);
+      }
+    }
+  }, 'Remover');
+}
+
+async function iniciar() {
+  // apenas porque alguma planodeação nova pode ter sido criada por outra pessoa
+  planosDeAçãoStore.buscarTudo();
+}
+
+iniciar();
+</script>
+<template>
+  <div class="flex spacebetween center mb2">
+    <h1>
+      <div
+        v-if="planoId"
+        class="t12 uc w700 tamarelo"
+      >
+        {{ $route?.meta?.título || 'Editar plano de ação' }}
+      </div>
+      {{ emFoco?.planodeação || (planoId ? 'Plano de ação' : 'Novo plano de ação') }}
+    </h1>
+    <hr class="ml2 f1">
+
+    <CheckClose />
+  </div>
+
+  <Form
+    v-if="!planoId || emFoco"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    :disabled="chamadasPendentes.emFoco"
+    :initial-values="itemParaEdição"
+    :validation-schema="schema"
+    @submit="onSubmit"
+  >
+    <Field
+      name="projeto_risco_id"
+      type="hidden"
+    />
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Contra-medidas
+        </label>
+        <Field
+          name="contramedida"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.contramedida }"
+        />
+        <ErrorMessage
+          name="contramedida"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <legend class="label mt2 mb1">
+        Responsável
+      </legend>
+    </div>
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <label class="label tc300">Órgão<template
+          v-if="!values.responsavel"
+        >&nbsp;<span class="tvermelho">*</span></template>
+        </label>
+        <Field
+          name="orgao_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.orgao_id,
+            loading: projetosStore.chamadasPendentes?.emFoco,
+          }"
+          :disabled="!órgãosEnvolvidosNoProjetoEmFoco?.length"
+          @change="setFieldValue('responsavel', null)"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in órgãosEnvolvidosNoProjetoEmFoco"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.sigla }} - {{ item.descricao }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="orgao_id"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Outro<template
+            v-if="!values.orgao_id"
+          >&nbsp;<span class="tvermelho">*</span></template>
+        </label>
+        <Field
+          name="responsavel"
+          type="text"
+          class="inputtext light mb1"
+          maxlength="60"
+          :class="{ 'error': errors.responsavel }"
+          @change="setFieldValue('orgao_id', null)"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="responsavel"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Prazo
+          <small>(Data de término previsto)</small>&nbsp;<span class="tvermelho">*</span>
+        </label>
+        <Field
+          name="prazo_contramedida"
+          required
+          type="date"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.prazo_contramedida,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
+          maxlength="10"
+          @update:model-value="values.prazo_contramedida === ''
+            ? values.prazo_contramedida = null
+            : null"
+        />
+        <ErrorMessage
+          name="prazo_contramedida"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Custo da contra-medida
+        </label>
+        <MaskedFloatInput
+          name="custo"
+          :value="values.custo"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="custo"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <label class="label tc300">
+          % do custo do projeto
+        </label>
+        <MaskedFloatInput
+          name="custo_percentual"
+          :value="values.custo_percentual"
+          max="100"
+          min="0"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="custo_percentual"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <label class="label tc300">
+          Medidas de contingência
+        </label>
+        <Field
+          name="medidas_de_contingencia"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.medidas_de_contingencia }"
+        />
+        <ErrorMessage
+          name="medidas_de_contingencia"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex spacebetween center mb2">
+      <hr class="mr2 f1">
+      <button
+        class="btn big"
+        :disabled="isSubmitting
+          || Object.keys(errors)?.length
+          || chamadasPendentes.validaçãoDeDependências
+        "
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
+      >
+        Salvar
+      </button>
+      <hr class="ml2 f1">
+    </div>
+  </Form>
+
+  <button
+    v-if="emFoco?.id"
+    class="btn amarelo big"
+    @click="excluirPlanoDeAção(emFoco.id)"
+  >
+    Remover item
+  </button>
+
+  <span
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >Carregando</span>
+
+  <div
+    v-if="erro"
+    class="error p1"
+  >
+    <div class="error-msg">
+      {{ erro }}
+    </div>
+  </div>
+</template>

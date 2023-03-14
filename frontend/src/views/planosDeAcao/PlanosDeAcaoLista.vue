@@ -1,0 +1,343 @@
+<script setup>
+import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
+import statuses from '@/consts/riskStatuses';
+import dateToField from '@/helpers/dateToField';
+import requestS from '@/helpers/requestS.ts';
+import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useRiscosStore } from '@/stores/riscos.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
+const portfolioStore = usePortfolioStore();
+const riscosStore = useRiscosStore();
+const tarefasStore = useTarefasStore();
+const {
+  chamadasPendentes, emFoco, erro,
+} = storeToRefs(riscosStore);
+
+const linhasAbertas = ref([]);
+const linhas = ref({});
+const linhasPendentes = ref(false);
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const props = defineProps({
+  projetoId: {
+    type: Number,
+    default: 0,
+  },
+  riscoId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+async function buscarMonitoramento(id) {
+  linhasPendentes.value = true;
+
+  if (linhas.value[id]) {
+    return;
+  }
+  const u = await requestS.get(
+    `${baseUrl}/projeto/${props.projetoId}/plano-acao-monitoramento`,
+    {
+      plano_acao_id: id,
+    },
+  );
+
+  if (Array.isArray(u.linhas)) {
+    linhas.value[id] = u.linhas;
+  }
+
+  linhasPendentes.value = false;
+}
+
+function iniciar() {
+  portfolioStore.buscarTudo();
+
+  if (!tarefasStore.lista.length) {
+    tarefasStore.buscarTudo();
+  }
+}
+
+iniciar();
+</script>
+
+<template>
+  <div class="flex spacebetween center mb2">
+    <div>
+      <div class="t12 uc w700 tamarelo">
+        Risco
+        <template v-if="emFoco?.eh_prioritario">
+          prioritário
+        </template>
+      </div>
+
+      <h1>{{ emFoco?.consequencia }}</h1>
+    </div>
+
+    <hr class="ml2 f1">
+    <MenuDeMudançaDeStatusDeRisco
+      v-if="emFoco?.id"
+    />
+
+    <router-link
+      v-if="emFoco?.id"
+      :to="{ name: 'riscosEditar', params: { riscoId: emFoco?.id } }"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
+  </div>
+
+  <div class="boards">
+    <div class="flex g2 mb1">
+      <dl
+        v-if="emFoco?.descricao"
+        class="f1 mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Descrição
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.descricao }}
+        </dd>
+      </dl>
+      <dl
+        v-if="emFoco?.causa"
+        class="f1 mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Causa
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.causa }}
+        </dd>
+      </dl>
+      <dl
+        v-if="emFoco?.consequencia"
+        class="f1 mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Consequência
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.consequencia }}
+        </dd>
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Grau
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.grau || '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Resposta
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.resposta || '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Status
+        </dt>
+        <dd class="t13">
+          {{ statuses[emFoco?.status_risco] || '-' }}
+        </dd>
+      </dl>
+    </div>
+
+    <hr class="mb1 f1">
+
+    <h2>
+      Planos de ação
+    </h2>
+
+    <table
+      v-if="emFoco?.planos_de_acao?.length"
+      class="tablemain mb2"
+    >
+      <colgroup>
+        <col class="col--botão-de-ação">
+        <col>
+        <col>
+        <col class="col--data">
+        <col class="col--number">
+        <col class="col--number">
+        <col class="col--botão-de-ação">
+      </colgroup>
+
+      <thead>
+        <th />
+        <th class="tl">
+          Contra-medidas
+        </th>
+        <th class="tl">
+          Responsável
+        </th>
+        <th>Prazo</th>
+        <th class="cell--number tr">
+          Custo
+        </th>
+        <th class="cell--number tr">
+          % custo projeto
+        </th>
+        <th />
+      </thead>
+
+      <tbody
+        v-for="item in emFoco?.planos_de_acao"
+        :key="item.id"
+      >
+        <tr>
+          <td class="accordeon">
+            <label
+              class="center like-a__text"
+              aria-label="exibir planos de ação"
+              style="min-width:13px; min-height:13px"
+              @click="() => { if (!linhasAbertas.includes(item.id)) buscarMonitoramento(item.id) }"
+            >
+              <input
+                v-model="linhasAbertas"
+                type="checkbox"
+                :value="item.id"
+                hidden
+              >
+              <svg
+                v-if="linhasAbertas.includes(item.id)"
+                class="arrow"
+                width="8"
+                height="13"
+              ><use xlink:href="#i_right" /></svg>
+              <svg
+                v-else
+                class="arrow"
+                width="13"
+                height="8"
+              ><use xlink:href="#i_down" /></svg>
+            </label>
+          </td>
+          <th>
+            {{ item.contramedida }}
+          </th>
+          <td>
+            {{ item.responsavel || item.orgao.sigla }}
+          </td>
+          <td>
+            {{ dateToField(item.prazo_contramedida) }}
+          </td>
+          <td class="cell--number">
+            {{ item.custo || '-' }}
+          </td>
+          <td class="cell--number">
+            {{ item.custo_percentual ? item.custo_percentual + '%' : '-' }}
+          </td>
+          <td class="center">
+            <router-link
+              :to="{
+                name: 'planosDeAçãoEditar',
+                params: {
+                  planoId: item.id
+                }
+              }"
+              title="Editar plano-de-ação"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </router-link>
+          </td>
+        </tr>
+        <tr
+          v-if="linhasAbertas.includes(item.id)"
+        >
+          <td colspan="7">
+            <table
+              v-if="linhas[item.id]"
+              class="tablemain"
+            >
+              <colgroup>
+                <col class="col--data">
+                <col>
+                <col class="col--botão-de-ação">
+
+                <col class="col--botão-de-ação">
+              </colgroup>
+
+              <tr
+                v-for="planoDeAção in linhas[item.id]"
+                :key="planoDeAção.id"
+              >
+                <td>{{ dateToField(planoDeAção.data_afericao) }}</td>
+                <td>{{ planoDeAção.descricao }}</td>
+                <td class="center">
+                  <router-link
+                    to="#"
+                    title="Editar plano-de-ação"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_+" /></svg>
+                  </router-link>
+                </td>
+                <td class="center">
+                  <router-link
+                    to="#"
+                    title="Editar plano-de-ação"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_edit" /></svg>
+                  </router-link>
+                </td>
+              </tr>
+            </table>
+            <span
+              v-else-if="linhasPendentes"
+              class="spinner"
+            >Carregando</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      <router-link
+        :to="{
+          name: 'planosDeAçãoCriar'
+        }"
+        class="addlink mb1"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg> <span>Adicionar plano de ação</span>
+      </router-link>
+    </p>
+  </div>
+
+  <span
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >Carregando</span>
+
+  <div
+    v-if="erro"
+    class="error p1"
+  >
+    <div class="error-msg">
+      {{ erro }}
+    </div>
+  </div>
+</template>

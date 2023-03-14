@@ -58,6 +58,9 @@ import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { TarefaModule } from './pp/tarefa/tarefa.module';
+import { RiscoModule } from './pp/risco/risco.module';
+import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plano-acao-monitoramento.module';
+import { PlanoAcaoModule } from './pp/plano-de-acao/plano-de-acao.module';
 
 @Module({
     imports: [
@@ -120,6 +123,9 @@ import { TarefaModule } from './pp/tarefa/tarefa.module';
         PPProjetoModule,
         AcaoModule,
         TarefaModule,
+        RiscoModule,
+        PlanoAcaoModule,
+        PlanoAcaoMonitoramentoModule
     ],
     controllers: [AppController],
     providers: [

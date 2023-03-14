@@ -53,7 +53,9 @@ const rotasParaMigalhasDePão = route.meta?.rotasParaMigalhasDePão
         :to="item.href"
       >
         <span>
-          {{ item.meta?.título || item.name }}
+          {{ typeof item.meta?.título === 'function'
+            ? item.meta?.título()
+            : item.meta?.título || item.name }}
         </span>
       </router-link>
     </div>
@@ -68,7 +70,13 @@ const rotasParaMigalhasDePão = route.meta?.rotasParaMigalhasDePão
           :key="k"
           :to="item.href"
         >
-          {{ item.meta?.títuloParaMenu || item.meta?.título || item.name }}
+          {{ item.meta?.títuloParaMenu
+            || (typeof item.meta?.título === 'function'
+              ? item.meta.título()
+              : item.meta?.título
+              || item.name
+            )
+          }}
         </router-link>
       </div>
     </div>
