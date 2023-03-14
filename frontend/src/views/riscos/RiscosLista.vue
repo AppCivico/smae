@@ -173,7 +173,7 @@ iniciar();
               }
             }"
           >
-            {{ linha.consequencia }}
+            {{ linha.descricao }}
           </router-link>
         </th>
         <td class="center">
