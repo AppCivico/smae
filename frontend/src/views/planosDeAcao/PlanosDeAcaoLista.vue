@@ -274,11 +274,9 @@ iniciar();
               </colgroup>
 
               <tr
-                v-for="planoDeAção in linhas[item.id]"
-                :key="planoDeAção.id"
+                v-for="monitoramento in linhas[item.id]"
+                :key="monitoramento.id"
               >
-                <td>{{ dateToField(planoDeAção.data_afericao) }}</td>
-                <td>{{ planoDeAção.descricao }}</td>
                 <td class="center">
                   <router-link
                     to="#"
@@ -290,6 +288,8 @@ iniciar();
                     ><use xlink:href="#i_+" /></svg>
                   </router-link>
                 </td>
+                <td>{{ dateToField(monitoramento.data_afericao) }}</td>
+                <td>{{ monitoramento.descricao }}</td>
                 <td class="center">
                   <router-link
                     to="#"
