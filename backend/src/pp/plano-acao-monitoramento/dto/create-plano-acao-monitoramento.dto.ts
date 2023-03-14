@@ -1,4 +1,4 @@
-import { PartialType } from "@nestjs/mapped-types"
+import { OmitType, PartialType } from "@nestjs/mapped-types"
 import { Transform, Type } from "class-transformer"
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
@@ -17,7 +17,7 @@ export class CreatePlanoAcaoMonitoramentoDto {
     descricao: string
 }
 
-export class UpdatePlanoAcaoMonitoramentoDto extends PartialType(CreatePlanoAcaoMonitoramentoDto) {
+export class UpdatePlanoAcaoMonitoramentoDto extends OmitType(PartialType(CreatePlanoAcaoMonitoramentoDto), ['plano_acao_id'] as const) {
 
 }
 
