@@ -140,10 +140,10 @@ iniciar();
         <th class="center">
           Grau
         </th>
-        <th>
+        <th class="center">
           Resposta indicada
         </th>
-        <th>
+        <th class="center">
           Status
         </th>
         <th />
@@ -187,10 +187,10 @@ iniciar();
             </template>
           </span>
         </td>
-        <td>
+        <td class="center">
           {{ linha.resposta }}
         </td>
-        <td>
+        <td class="center">
           {{ statuses[linha.status_risco] }}
         </td>
         <td
