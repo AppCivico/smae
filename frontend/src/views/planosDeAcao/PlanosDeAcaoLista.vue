@@ -242,7 +242,12 @@ iniciar();
           </td>
           <td class="center">
             <router-link
-              to="#"
+              :to="{
+                name: 'planosDeAçãoEditar',
+                params: {
+                  planoId: item.id
+                }
+              }"
               title="Editar plano-de-ação"
             >
               <svg
@@ -309,7 +314,9 @@ iniciar();
 
     <p>
       <router-link
-        to="#"
+        :to="{
+          name: 'planosDeAçãoCriar'
+        }"
         class="addlink mb1"
       >
         <svg

@@ -176,6 +176,36 @@ const novaSenha = object()
       .oneOf([ref('password'), null], 'Senhas não coincidem'),
   });
 
+const planoDeAção = object()
+  .shape({
+    contramedida: string()
+      .max(50000),
+    custo: number()
+      .min(0)
+      .required(),
+    custo_percentual: number()
+      .max(100)
+      .min(0)
+      .required(),
+    medidas_de_contingencia: string()
+      .max(50000),
+    orgao_id: number()
+      .min(1, 'Selecione um órgão responsável')
+      .nullable()
+      .when('responsavel', (responsavel, field) => (!responsavel
+        ? field.required('Escolha um órgão ou alguém responsável pela tarefa')
+        : field)),
+    prazo_contramedida: date()
+      .required()
+      .typeError('Data inválida'),
+    responsavel: string()
+      .nullable()
+      .max(60)
+      .when('orgao_id', (órgãoId, field) => (!órgãoId
+        ? field.required('Escolha um órgão ou alguém responsável pela tarefa')
+        : field)),
+  }, [['orgao_id', 'responsavel']]);
+
 const portfolio = object({
   orgaos: array()
     .min(1, 'Selecione ao menos um órgão')
@@ -554,6 +584,7 @@ export {
   fase,
   indicador,
   novaSenha,
+  planoDeAção,
   portfolio,
   projeto,
   região,
