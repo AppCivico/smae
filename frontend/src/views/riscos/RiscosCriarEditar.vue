@@ -13,6 +13,8 @@ import {
   Form
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/../../backend/src/common/RiscoCalc.ts';
 
 const alertStore = useAlertStore();
 const riscosStore = useRiscosStore();
@@ -176,45 +178,61 @@ iniciar();
     </div>
 
     <div class="flex g2 mb1 flexwrap">
-      <div class="f1 mb1">
+      <div class="f2 mb1">
         <label class="label tc300">
           Probabilidade
         </label>
 
         <Field
           name="probabilidade"
-          type="number"
+          as="select"
           class="inputtext light mb1"
-          min="1"
-          max="5"
-          step="1"
           :class="{
             error: errors.probabilidade,
           }"
           @update:model-value="values.probabilidade = Number(values.probabilidade)"
-        />
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option
+            v-for="item, k in probabilidadeDescricao"
+            :key="k"
+            :value="k + 1"
+          >
+            {{ k + 1 }} - {{ item }}
+          </option>
+        </Field>
         <ErrorMessage
           class="error-msg mb1"
           name="probabilidade"
         />
       </div>
 
-      <div class="f1 mb1">
+      <div class="f2 mb1">
         <label class="label tc300">
           Impacto&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
           name="impacto"
-          type="number"
+          as="select"
           class="inputtext light mb1"
-          min="1"
-          max="5"
-          step="1"
           :class="{
             error: errors.impacto,
           }"
           @update:model-value="values.impacto = Number(values.impacto)"
-        />
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option
+            v-for="item, k in impactoDescricao"
+            :key="k"
+            :value="k + 1"
+          >
+            {{ k + 1 }} - {{ item }}
+          </option>
+        </Field>
         <ErrorMessage
           class="error-msg mb1"
           name="impacto"
@@ -226,7 +244,12 @@ iniciar();
           Nível
         </dt>
         <dd class="t13">
-          <output>{{ nível }}</output>
+          <output class="inputtext light mb1 no-border">
+            {{ values.probabilidade && values.impacto
+              ? RiscoCalc.getResult(values.probabilidade, values.impacto)?.nivel
+              : null
+            }}
+          </output>
         </dd>
       </dl>
 
@@ -235,17 +258,40 @@ iniciar();
           Grau
         </dt>
         <dd class="t13">
-          <output
-            class="etiqueta"
-          >
-            {{ grau }}
-            <template v-if="grau">
-              - {{ riskLevels[grau] }}
-            </template>
+          <div class="inputtext light mb1 no-border">
+            <output
+              class="etiqueta"
+              :class="`etiqueta--alerta__peso-${values.probabilidade && values.impacto
+                ? RiscoCalc.getResult(values.probabilidade, values.impacto)?.grau_valor
+                : null
+                }`"
+            >
+              <template v-if="values.probabilidade && values.impacto">
+                {{ RiscoCalc.getResult(values.probabilidade, values.impacto)?.grau_valor }}
+                - {{ RiscoCalc.getResult(values.probabilidade, values.impacto)?.grau_descricao }}
+              </template>
+            </output>
+          </div>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="flex g2 mb1">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Resposta indicada
+        </dt>
+        <dd class="t13">
+          <output class="inputtext light mb1 no-border">
+            {{ values.probabilidade && values.impacto
+              ? RiscoCalc.getResult(values.probabilidade, values.impacto)?.resposta_descricao
+              : null
+            }}
           </output>
         </dd>
       </dl>
     </div>
+
     <div class="mb1">
       <legend class="label mt2 mb1">
         Tarefas afetadas&nbsp;<span class="tvermelho">*</span>
