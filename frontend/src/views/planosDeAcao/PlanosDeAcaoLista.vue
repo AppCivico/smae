@@ -173,6 +173,7 @@ iniciar();
         <col class="col--number">
         <col class="col--number">
         <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
       </colgroup>
 
       <thead>
@@ -190,6 +191,7 @@ iniciar();
         <th class="cell--number tr">
           % custo projeto
         </th>
+        <th />
         <th />
       </thead>
 
@@ -243,6 +245,22 @@ iniciar();
           <td class="center">
             <router-link
               :to="{
+                name: 'planosDeAçãoMonitoramento',
+                params: {
+                  planoId: item.id
+                }
+              }"
+              title="Adicionar ponto de monitoramento"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_+" /></svg>
+            </router-link>
+          </td>
+          <td class="center">
+            <router-link
+              :to="{
                 name: 'planosDeAçãoEditar',
                 params: {
                   planoId: item.id
@@ -268,7 +286,6 @@ iniciar();
               <colgroup>
                 <col class="col--data">
                 <col>
-                <col class="col--botão-de-ação">
               </colgroup>
 
               <tr
@@ -277,17 +294,6 @@ iniciar();
               >
                 <td>{{ dateToField(monitoramento.data_afericao) }}</td>
                 <td>{{ monitoramento.descricao }}</td>
-                <td class="center">
-                  <router-link
-                    to="#"
-                    title="Editar plano-de-ação"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    ><use xlink:href="#i_edit" /></svg>
-                  </router-link>
-                </td>
               </tr>
             </table>
             <span
