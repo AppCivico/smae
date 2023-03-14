@@ -6,8 +6,10 @@ export class ProjetoRiscoCalcResults {
     resposta_descricao: string
 }
 
-export const probabilidadeDescricao = ['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta/Fato'];
-export const impactoDescricao       = ['Muito baixo', 'Baixo', 'Médio', 'Alto', 'Muito alto'];
+const probabilidadeDescricao = ['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta/Fato'];
+const impactoDescricao = ['Muito baixo', 'Baixo', 'Médio', 'Alto', 'Muito alto'];
+const grauDescricao = ['Muito baixo', 'Baixo', 'Médio', 'Alto', 'Muito alto'];
+const respostaDescricao = ['Aceitar', 'Mitigar', 'Mitigar', 'Eliminar', 'Transferir'];
 
 export class RiscoCalc {
     static getResult(probabilidade: number, impacto: number) {
@@ -20,34 +22,34 @@ export class RiscoCalc {
 
         if (nivel >= 1 && nivel < 4) {
             grau_valor = 1;
-            grau_descricao = 'Muito baixo';
-            
+            grau_descricao = grauDescricao[0];
+
             resposta_valor = 1;
-            resposta_descricao = 'Aceitar';
+            resposta_descricao = respostaDescricao[0];
         } else if (nivel >= 4 && nivel < 9) {
             grau_valor = 2;
-            grau_descricao = 'Baixo'
-            
+            grau_descricao = grauDescricao[1];
+
             resposta_valor = 2;
-            resposta_descricao = 'Mitigar';
+            resposta_descricao = respostaDescricao[1];
         } else if (nivel >= 9 && nivel < 16) {
             grau_valor = 3;
-            grau_descricao = 'Médio';
-            
+            grau_descricao = grauDescricao[2];
+
             resposta_valor = 2;
-            resposta_descricao = 'Mitigar';
+            resposta_descricao = respostaDescricao[2];
         } else if (nivel >= 16 && nivel < 20) {
             grau_valor = 4;
-            grau_descricao = 'Alto';
-            
+            grau_descricao = grauDescricao[3];
+
             resposta_valor = 4;
-            resposta_descricao = 'Eliminar';
+            resposta_descricao = respostaDescricao[3];
         } else if (nivel >= 20) {
             grau_valor = 5;
-            grau_descricao = 'Muito alto';
-            
+            grau_descricao = grauDescricao[4];
+
             resposta_valor = 5;
-            resposta_descricao = 'Transferir';
+            resposta_descricao = respostaDescricao[4];
         } else {
             throw new Error('Faltando tratamento para valor do nivel');
         }
@@ -60,4 +62,11 @@ export class RiscoCalc {
             resposta_descricao,
         }
     }
+}
+
+export {
+    grauDescricao,
+    probabilidadeDescricao,
+    respostaDescricao,
+    impactoDescricao,
 }
