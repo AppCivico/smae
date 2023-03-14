@@ -2589,10 +2589,10 @@ model PlanoAcao {
     custo_percentual   Float? // custo em relacao ao projeto todo, coalesce(custo_real, custo_estimado) -- eu acho
 
     medidas_de_contingencia String
-    orgao_id              Int
-    orgao                 Orgao  @relation(fields: [orgao_id], references: [id])
+    orgao_id                Int?
+    orgao                   Orgao?  @relation(fields: [orgao_id], references: [id])
 
-    responsavel            String
+    responsavel            String?
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
 
     removido_em DateTime?

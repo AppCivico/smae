@@ -1,5 +1,6 @@
 import { StatusRisco } from "@prisma/client"
 import { IsNumber, IsOptional } from "class-validator"
+import { IdSigla } from "src/common/dto/IdSigla.dto"
 
 export class PlanoAcao {
     id: number
@@ -8,6 +9,8 @@ export class PlanoAcao {
     custo: number | null
     custo_percentual: number | null
     medidas_de_contingencia: string
+    responsavel: string | null
+    orgao: IdSigla | null
 }
 
 export class ListPlanoAcaoDto {
@@ -21,4 +24,6 @@ export class PlanoAcaoDetailDto {
     custo: number | null
     custo_percentual: number | null
     medidas_de_contingencia: string
+    responsavel: string | null
+    orgao: IdSigla | null
 }
