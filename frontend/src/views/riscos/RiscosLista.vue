@@ -168,7 +168,7 @@ iniciar();
         <th>
           <router-link
             :to="{
-              name: 'riscosResumo',
+              name: 'planosDeAçãoListar',
               params: {
                 riscoId: linha.id
               }

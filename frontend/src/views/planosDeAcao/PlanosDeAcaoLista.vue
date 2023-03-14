@@ -18,6 +18,7 @@ const {
 
 const linhasAbertas = ref([]);
 const linhas = ref({});
+const linhasPendentes = ref(false);
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -33,6 +34,8 @@ const props = defineProps({
 });
 
 async function buscarMonitoramento(id) {
+  linhasPendentes.value = true;
+
   if (linhas.value[id]) {
     return;
   }
@@ -46,6 +49,47 @@ async function buscarMonitoramento(id) {
   if (Array.isArray(u.linhas)) {
     linhas.value[id] = [...linhas];
   }
+
+  linhas.value[id] = [
+    {
+      id: 0,
+      plano_acao_id: 0,
+      data_afericao: '2023-03-13T22:17:44.899Z',
+      descricao: 'string',
+      criado_em: '2023-03-13T22:17:44.899Z',
+      criador: {
+        id: 0,
+        nome_exibicao: 'string',
+      },
+      ultima_revisao: true,
+    },
+    {
+      id: 0,
+      plano_acao_id: 0,
+      data_afericao: '2023-03-13T22:17:44.899Z',
+      descricao: 'string',
+      criado_em: '2023-03-13T22:17:44.899Z',
+      criador: {
+        id: 0,
+        nome_exibicao: 'string',
+      },
+      ultima_revisao: true,
+    },
+    {
+      id: 0,
+      plano_acao_id: 0,
+      data_afericao: '2023-03-13T22:17:44.899Z',
+      descricao: 'string',
+      criado_em: '2023-03-13T22:17:44.899Z',
+      criador: {
+        id: 0,
+        nome_exibicao: 'string',
+      },
+      ultima_revisao: true,
+    },
+  ];
+
+  linhasPendentes.value = false;
 }
 
 function iniciar() {
@@ -157,7 +201,7 @@ iniciar();
     </h2>
 
     <table
-      v-if="emFoco?.planos_de_acao"
+      v-if="emFoco?.planos_de_acao?.length"
       class="tablemain"
     >
       <colgroup>
@@ -251,7 +295,10 @@ iniciar();
           v-if="linhasAbertas.includes(item.id)"
         >
           <td colspan="7">
-            <table class="tablemain">
+            <table
+              v-if="linhas[item.id]"
+              class="tablemain"
+            >
               <colgroup>
                 <col>
                 <col>
@@ -290,10 +337,26 @@ iniciar();
                 </td>
               </tr>
             </table>
+            <span
+              v-else-if="linhasPendentes"
+              class="spinner"
+            >Carregando</span>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <p>
+      <router-link
+        to="#"
+        class="addlink mb1"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg> <span>Adicionar plano de ação</span>
+      </router-link>
+    </p>
   </div>
 
   <span
