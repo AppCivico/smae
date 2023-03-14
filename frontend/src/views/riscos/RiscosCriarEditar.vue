@@ -1,4 +1,5 @@
 <script setup>
+import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/../common/RiscoCalc.ts';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
@@ -13,8 +14,6 @@ import {
   Form
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/helpers/riscoCalc.ts';
 
 const alertStore = useAlertStore();
 const riscosStore = useRiscosStore();
