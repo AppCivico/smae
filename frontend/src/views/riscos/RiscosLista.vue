@@ -1,6 +1,7 @@
 <script setup>
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { grauDescricao } from '@/../../backend/src/common/RiscoCalc.ts';
 import LocalFilter from '@/components/LocalFilter.vue';
-import riskLevels from '@/consts/riskLevels';
 import statuses from '@/consts/riskStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import dateToField from '@/helpers/dateToField';
@@ -10,14 +11,14 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const riscosStore = useRiscosStore();
-
 const {
   chamadasPendentes, erro,
 } = storeToRefs(riscosStore);
 
 const listaDeStatuses = arrayToValueAndLabel(statuses);
 
-const projetoId = useRoute()?.params?.projetoId;
+const route = useRoute();
+const projetoId = route?.params?.projetoId;
 
 const termoDeBusca = ref('');
 const grauVisível = ref(0);
@@ -78,7 +79,7 @@ iniciar();
           qualquer
         </option>
         <option
-          v-for="item, i in riskLevels"
+          v-for="item, i in grauDescricao"
           :key="i"
           :value="i + 1"
           :selected="grauVisível === i"
@@ -183,7 +184,7 @@ iniciar();
           >
             {{ linha.grau }}
             <template v-if="linha.grau">
-              - {{ riskLevels[linha.grau] }}
+              - {{ grauDescricao[linha.grau - 1] }}
             </template>
           </span>
         </td>
