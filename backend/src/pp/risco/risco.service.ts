@@ -11,6 +11,7 @@ import { CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.
 import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { PlanoAcao } from '../plano-de-acao/entities/plano-acao.entity';
 import { ProjetoRisco, ProjetoRiscoDetailDto } from './entities/risco.entity';
+import { RiscoCalc } from 'src/common/RiscoCalc';
 
 @Injectable()
 export class RiscoService {
@@ -18,7 +19,7 @@ export class RiscoService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(projetoId: number, dto: CreateRiscoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-
+        const calcResult = RiscoCalc.getResult(dto.probabilidade, dto.impacto);
 
         const risco = await this.prisma.projetoRisco.create({
             data: {
@@ -33,6 +34,10 @@ export class RiscoService {
                 causa: dto.causa,
                 consequencia: dto.consequencia,
                 risco_tarefa_outros: dto.risco_tarefa_outros,
+
+                nivel: calcResult.nivel,
+                grau: calcResult.grau_valor,
+                resposta: calcResult.resposta_descricao,
 
                 criado_em: new Date(Date.now()),
                 criado_por: user.id
@@ -55,7 +60,7 @@ export class RiscoService {
     }
 
     async findAll(projetoId: number, user: PessoaFromJwt): Promise<ProjetoRisco[]> {
-        return await this.prisma.projetoRisco.findMany({
+        const projetoRisco = await this.prisma.projetoRisco.findMany({
             where: {
                 projeto_id: projetoId,
                 removido_em: null
@@ -75,6 +80,20 @@ export class RiscoService {
                 resposta: true,
                 risco_tarefa_outros: true,
                 status_risco: true,
+            }
+        });
+        
+
+        return projetoRisco.map(r => {
+            let calcResult;
+            if (r.probabilidade && r.impacto) calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
+            
+            return {
+                ...r,
+
+                nivel: calcResult ? calcResult.nivel : null,
+                grau: calcResult ? calcResult.grau_valor : null,
+                resposta: calcResult ? calcResult.resposta_descricao : null
             }
         })
     }
@@ -133,8 +152,15 @@ export class RiscoService {
         });
         if (!projetoRisco) throw new HttpException('Não foi possível encontrar o Risco', 400);
 
+        let calcResult;
+        if (projetoRisco.probabilidade && projetoRisco.impacto) calcResult = RiscoCalc.getResult(projetoRisco.probabilidade, projetoRisco.impacto);
+        
         return {
             ...projetoRisco,
+            nivel: calcResult ? calcResult.nivel : null,
+            grau: calcResult ? calcResult.grau_valor : null,
+            resposta: calcResult ? calcResult.resposta_descricao : null,
+
             tarefas_afetadas: projetoRisco?.RiscoTarefa.map(r => {
                 return {
                     tarefa_id: r.tarefa.id,
