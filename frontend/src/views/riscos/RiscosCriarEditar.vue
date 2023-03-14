@@ -135,7 +135,6 @@ iniciar();
           Data de registro
         </label>
         <Field
-          :disabled="!!riscoId"
           name="registrado_em"
           required
           type="date"
