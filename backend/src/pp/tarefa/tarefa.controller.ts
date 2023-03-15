@@ -73,7 +73,7 @@ export class TarefaController {
 
         if (dto.atualizacao_do_realizado) {
             console.log(`dto.atualizacao_do_realizado=true`);
-            dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
+            dto = plainToClass(UpdateTarefaRealizadoDto, JSON.parse(JSON.stringify(dto)), { excludeExtraneousValues: true });
             console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
             console.log(dto);
 
