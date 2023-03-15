@@ -2,6 +2,7 @@
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import statuses from '@/consts/riskStatuses';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
@@ -237,7 +238,7 @@ iniciar();
             {{ dateToField(item.prazo_contramedida) }}
           </td>
           <td class="cell--number">
-            {{ item.custo || '-' }}
+            {{ item.custo ? 'R$' + dinheiro(item.custo) : '-' }}
           </td>
           <td class="cell--number">
             {{ item.custo_percentual ? item.custo_percentual + '%' : '-' }}
