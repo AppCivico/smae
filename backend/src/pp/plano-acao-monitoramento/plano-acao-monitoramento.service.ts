@@ -112,8 +112,13 @@ export class PlanoAcaoMonitoramentoService {
                 plano_acao: {
                     projeto_risco: {
                         projeto_id: projetoId,
+                        id: dto.projeto_risco_id
                     }
                 },
+            },
+            orderBy: {
+                data_afericao: 'desc',
+                criado_em: 'desc',
             },
             select: {
                 id: true,
