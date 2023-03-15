@@ -32,7 +32,7 @@ async function iniciar() {
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
   ? riscosStore.listaFiltradaPor(termoDeBusca.value)
   : riscosStore.listaFiltradaPor(termoDeBusca.value)
-    .filter((x) => x.grau === grauVisível.value || x.status === statusVisível.value)));
+    .filter((x) => x.grau === grauVisível.value || x.status_risco === statusVisível.value)));
 
 iniciar();
 </script>
