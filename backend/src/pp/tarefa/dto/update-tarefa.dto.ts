@@ -1,5 +1,5 @@
 import { PartialType, PickType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
 import { CreateTarefaDto } from './create-tarefa.dto';
 
@@ -16,6 +16,7 @@ export class UpdateTarefaDto extends PartialType(CreateTarefaDto) {
     atualizacao_do_realizado?: boolean
 }
 
+@Expose()
 export class UpdateTarefaRealizadoDto extends PickType(CreateTarefaDto,
     [
         'custo_estimado',
