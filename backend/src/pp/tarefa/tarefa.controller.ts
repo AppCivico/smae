@@ -85,7 +85,6 @@ export class TarefaController {
 
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
         } else {
-            console.log(`dto.atualizacao_do_realizado=false `);
 
             const projeto = await this.projetoService.findOne(params.id, user, false);
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);

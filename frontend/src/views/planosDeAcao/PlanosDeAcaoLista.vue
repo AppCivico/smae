@@ -2,6 +2,7 @@
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import statuses from '@/consts/riskStatuses';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
@@ -74,7 +75,7 @@ iniciar();
         </template>
       </div>
 
-      <h1>{{ emFoco?.consequencia }}</h1>
+      <h1>{{ emFoco?.descricao }}</h1>
     </div>
 
     <hr class="ml2 f1">
@@ -173,6 +174,7 @@ iniciar();
         <col class="col--number">
         <col class="col--number">
         <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
       </colgroup>
 
       <thead>
@@ -190,6 +192,7 @@ iniciar();
         <th class="cell--number tr">
           % custo projeto
         </th>
+        <th />
         <th />
       </thead>
 
@@ -235,10 +238,26 @@ iniciar();
             {{ dateToField(item.prazo_contramedida) }}
           </td>
           <td class="cell--number">
-            {{ item.custo || '-' }}
+            {{ item.custo ? 'R$' + dinheiro(item.custo) : '-' }}
           </td>
           <td class="cell--number">
             {{ item.custo_percentual ? item.custo_percentual + '%' : '-' }}
+          </td>
+          <td class="center">
+            <router-link
+              :to="{
+                name: 'planosDeAçãoMonitoramento',
+                params: {
+                  planoId: item.id
+                }
+              }"
+              title="Adicionar ponto de monitoramento"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_+" /></svg>
+            </router-link>
           </td>
           <td class="center">
             <router-link
@@ -260,7 +279,7 @@ iniciar();
         <tr
           v-if="linhasAbertas.includes(item.id)"
         >
-          <td colspan="7">
+          <td colspan="8">
             <table
               v-if="linhas[item.id]"
               class="tablemain"
@@ -268,39 +287,14 @@ iniciar();
               <colgroup>
                 <col class="col--data">
                 <col>
-                <col class="col--botão-de-ação">
-
-                <col class="col--botão-de-ação">
               </colgroup>
 
               <tr
-                v-for="planoDeAção in linhas[item.id]"
-                :key="planoDeAção.id"
+                v-for="monitoramento in linhas[item.id]"
+                :key="monitoramento.id"
               >
-                <td>{{ dateToField(planoDeAção.data_afericao) }}</td>
-                <td>{{ planoDeAção.descricao }}</td>
-                <td class="center">
-                  <router-link
-                    to="#"
-                    title="Editar plano-de-ação"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    ><use xlink:href="#i_+" /></svg>
-                  </router-link>
-                </td>
-                <td class="center">
-                  <router-link
-                    to="#"
-                    title="Editar plano-de-ação"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    ><use xlink:href="#i_edit" /></svg>
-                  </router-link>
-                </td>
+                <td>{{ dateToField(monitoramento.data_afericao) }}</td>
+                <td>{{ monitoramento.descricao }}</td>
               </tr>
             </table>
             <span

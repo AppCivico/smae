@@ -32,7 +32,9 @@ async function iniciar() {
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
   ? riscosStore.listaFiltradaPor(termoDeBusca.value)
   : riscosStore.listaFiltradaPor(termoDeBusca.value)
-    .filter((x) => x.grau === grauVisível.value || x.status === statusVisível.value)));
+    .filter((x) => (!grauVisível.value || x.grau === grauVisível.value)
+      && (!statusVisível.value || x.status_risco === statusVisível.value))
+));
 
 iniciar();
 </script>
@@ -116,7 +118,7 @@ iniciar();
     class="tabela-de-etapas"
   >
     <colgroup>
-      <col>
+      <col class="col--minimum">
       <col class="col--data">
       <col>
       <col style="width: 8em">
@@ -132,18 +134,18 @@ iniciar();
           Código
         </th>
         <th class="cell--data">
-          Registrado em
+          Registro
         </th>
-        <th>
+        <th class="tl">
           Risco
         </th>
         <th class="center">
           Grau
         </th>
-        <th class="center">
+        <th class="tl">
           Resposta indicada
         </th>
-        <th class="center">
+        <th class="tl">
           Status
         </th>
         <th />
@@ -178,7 +180,7 @@ iniciar();
         </th>
         <td class="center">
           <span
-            class="etiqueta"
+            class="etiqueta mr1"
             :class="`etiqueta--alerta__peso-${linha.grau}`"
           >
             {{ linha.grau }}
