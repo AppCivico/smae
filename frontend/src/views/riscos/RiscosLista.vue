@@ -1,5 +1,6 @@
 <script setup>
-import { grauDescricao } from '@/../common/RiscoCalc.ts';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { grauDescricao } from '@/../../common/RiscoCalc.ts';
 import LocalFilter from '@/components/LocalFilter.vue';
 import statuses from '@/consts/riskStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
@@ -123,14 +124,14 @@ iniciar();
       <col>
       <col style="width: 8em">
       <col style="width: 8em">
-      <col style="width: 8em">
+      <col style="width: 9em">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
     </colgroup>
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th class="tl">
+        <th class="tr">
           Código
         </th>
         <th class="cell--data">
@@ -160,7 +161,7 @@ iniciar();
       <tr
         class="t13"
       >
-        <td>
+        <td class="cell--number">
           {{ linha.codigo }}
         </td>
         <td class="cell--data">
@@ -180,7 +181,7 @@ iniciar();
         </th>
         <td class="center">
           <span
-            class="etiqueta mr1"
+            class="etiqueta"
             :class="`etiqueta--alerta__peso-${linha.grau}`"
           >
             {{ linha.grau }}

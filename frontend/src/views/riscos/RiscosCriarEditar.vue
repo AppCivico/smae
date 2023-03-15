@@ -1,5 +1,6 @@
 <script setup>
-import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/../common/RiscoCalc.ts';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/../../common/RiscoCalc.ts';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
@@ -96,7 +97,7 @@ iniciar();
       >
         {{ 'Editar risco' }}
       </div>
-      {{ emFoco?.consequencia || (riscoId ? 'Risco' : 'Novo risco') }}
+      {{ emFoco?.descricao || (riscoId ? 'Risco' : 'Novo risco') }}
     </h1>
 
     <hr class="ml2 f1">
