@@ -279,7 +279,7 @@ iniciar();
         <tr
           v-if="linhasAbertas.includes(item.id)"
         >
-          <td colspan="7">
+          <td colspan="8">
             <table
               v-if="linhas[item.id]"
               class="tablemain"
