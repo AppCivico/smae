@@ -139,7 +139,7 @@ iniciar();
         <th class="tl">
           Risco
         </th>
-        <th class="center">
+        <th class="center pr1">
           Grau
         </th>
         <th class="tl">
