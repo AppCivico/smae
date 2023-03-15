@@ -2,8 +2,8 @@ import { useRiscosStore } from '@/stores/riscos.store.ts';
 import PlanosDeAçãoCriarEditar from '@/views/planosDeAcao/PlanosDeAcaoCriarEditar.vue';
 import PlanosDeAçãoItem from '@/views/planosDeAcao/PlanosDeAcaoItem.vue';
 import PlanosDeAçãoLista from '@/views/planosDeAcao/PlanosDeAcaoLista.vue';
+import PlanosDeAçãoMonitoramento from '@/views/planosDeAcao/PlanosDeAcaoMonitoramento.vue';
 import PlanosDeAçãoRaiz from '@/views/planosDeAcao/PlanosDeAcaoRaiz.vue';
-// import PlanosDeAçãoMonitoramento from '@/views/planosDeAcao/PlanosDeAcaoMonitoramento.vue';
 
 export default {
   path: 'planos-de-acao',
@@ -30,7 +30,13 @@ export default {
         riscoId: Number.parseInt(params.riscoId, 10) || undefined,
       }),
       meta: {
-        título: () => useRiscosStore()?.emFoco?.consequencia || 'Resumo de risco',
+        título: () => useRiscosStore()?.emFoco?.descricao || 'Resumo de risco',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'riscosListar',
+          'planosDeAçãoListar',
+        ],
       },
     },
 
@@ -41,8 +47,14 @@ export default {
       meta: {
         título: 'Novo plano de ação',
         títuloParaMenu: 'Novo plano de ação',
-
         rotaDeEscape: 'planosDeAçãoListar',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'riscosListar',
+          'planosDeAçãoListar',
+          'planosDeAçãoCriar',
+        ],
       },
     },
 
@@ -69,10 +81,43 @@ export default {
           }),
 
           meta: {
-            título: 'Editar tarefa',
-            títuloParaMenu: 'Editar tarefa',
+            título: 'Editar plano de ação',
+            títuloParaMenu: 'Editar plano de ação',
 
             rotaDeEscape: 'planosDeAçãoListar',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'riscosListar',
+              'planosDeAçãoListar',
+              'planosDeAçãoEditar',
+            ],
+          },
+        },
+
+        {
+          path: 'monitoramento',
+          name: 'planosDeAçãoMonitoramento',
+          component: PlanosDeAçãoMonitoramento,
+          props: ({ params }) => ({
+            ...params,
+            planoId: Number.parseInt(params.planoId, 10) || undefined,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+            riscoId: Number.parseInt(params.riscoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Monitoramento de plano de ação',
+            títuloParaMenu: 'Monitoramento',
+
+            rotaDeEscape: 'planosDeAçãoListar',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'riscosListar',
+              'planosDeAçãoListar',
+              'planosDeAçãoEditar',
+              'planosDeAçãoMonitoramento',
+            ],
           },
         },
       ],

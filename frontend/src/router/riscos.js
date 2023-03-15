@@ -46,6 +46,13 @@ export default {
         títuloParaMenu: 'Novo risco',
 
         rotaDeEscape: 'riscosListar',
+
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'riscosListar',
+          'riscosCriar',
+        ],
       },
     },
 

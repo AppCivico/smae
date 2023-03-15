@@ -98,7 +98,7 @@ iniciar();
       >
         {{ $route?.meta?.título || 'Editar plano de ação' }}
       </div>
-      {{ emFoco?.planodeação || (planoId ? 'Plano de ação' : 'Novo plano de ação') }}
+      {{ planoId ? 'Plano de ação' : 'Novo plano de ação' }}
     </h1>
     <hr class="ml2 f1">
 
