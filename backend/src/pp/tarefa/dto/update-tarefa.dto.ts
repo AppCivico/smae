@@ -18,6 +18,7 @@ export class UpdateTarefaDto extends PartialType(CreateTarefaDto) {
 
 export class UpdateTarefaRealizadoDto extends PickType(CreateTarefaDto,
     [
+        'custo_estimado',
         'custo_real',
         'inicio_real',
         'duracao_real',

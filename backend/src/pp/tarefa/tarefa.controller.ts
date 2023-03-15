@@ -69,8 +69,13 @@ export class TarefaController {
     async update(@Param() params: FindTwoParams, @Body() dto: UpdateTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         // verificar como fazer o check pro responsavel poder editar o realizado, mesmo depois de não poder
         // mais fazer escritas no projeto em si
+        console.log(`before ${JSON.stringify(dto)}`);
+
         if (dto.atualizacao_do_realizado) {
+            console.log(`dto.atualizacao_do_realizado=true`);
             dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
+            console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
+            console.log(dto);
 
             const projeto = await this.projetoService.findOne(params.id, user, true);
 
@@ -80,6 +85,7 @@ export class TarefaController {
 
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
         } else {
+            console.log(`dto.atualizacao_do_realizado=false `);
 
             const projeto = await this.projetoService.findOne(params.id, user, false);
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
