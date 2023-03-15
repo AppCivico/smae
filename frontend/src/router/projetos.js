@@ -103,15 +103,25 @@ export default {
         projetoId: Number.parseInt(params.projetoId, 10) || undefined,
       }),
       meta: {
-        rotasParaMenuSecundário: [
-          'projetosResumo',
-          'tarefasListar',
-          'riscosListar',
-          'projetosAcompanhamento',
-          'projetosLiçõesAprendidas',
-          'projetosDocumentos',
-          'projetosProcessos',
-        ],
+        rotasParaMenuSecundário: () => {
+          const base = [
+            'projetosResumo',
+            'projetosDocumentos',
+            'projetosProcessos',
+          ];
+
+          if (useProjetosStore()?.emFoco?.eh_prioritario) {
+            base.splice(
+              1,
+              0,
+              'tarefasListar',
+              'riscosListar',
+              'projetosAcompanhamento',
+              'projetosLiçõesAprendidas',
+            );
+          }
+          return base;
+        },
 
         rotasParaMigalhasDePão: [
           'projetosListar',
