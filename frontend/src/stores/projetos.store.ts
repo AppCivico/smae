@@ -66,6 +66,7 @@ export const useProjetosStore = defineStore('projetos', {
       }
       this.chamadasPendentes.emFoco = false;
     },
+
     async buscarPdms(params = {}): Promise<void> {
       this.chamadasPendentes.pdmsSimplificados = true;
       this.pdmsSimplificados = [];
@@ -78,6 +79,7 @@ export const useProjetosStore = defineStore('projetos', {
       }
       this.chamadasPendentes.pdmsSimplificados = false;
     },
+
     async buscarMetaSimplificada(params = {}): Promise<void> {
       this.chamadasPendentes.metaSimplificada = true;
       this.metaSimplificada = [];
@@ -90,6 +92,7 @@ export const useProjetosStore = defineStore('projetos', {
       }
       this.chamadasPendentes.metaSimplificada = false;
     },
+
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
@@ -103,6 +106,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
     },
+
     async excluirItem(id: Number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
@@ -117,6 +121,7 @@ export const useProjetosStore = defineStore('projetos', {
         return false;
       }
     },
+
     async mudarStatus(id: Number, ação: ProjetoAcao): Promise<boolean> {
       this.chamadasPendentes.mudarStatus = true;
 
@@ -132,6 +137,7 @@ export const useProjetosStore = defineStore('projetos', {
         return false;
       }
     },
+
     async salvarItem(params = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 

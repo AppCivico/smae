@@ -47,6 +47,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
     },
+
     async excluirItem(id: Number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
@@ -61,6 +62,7 @@ export const usePortfolioStore = defineStore('portfolios', {
         return false;
       }
     },
+
     async salvarItem(params = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 

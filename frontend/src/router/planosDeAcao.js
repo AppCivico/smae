@@ -31,6 +31,12 @@ export default {
       }),
       meta: {
         título: () => useRiscosStore()?.emFoco?.descricao || 'Resumo de risco',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'riscosListar',
+          'planosDeAçãoListar',
+        ],
       },
     },
 
@@ -41,8 +47,14 @@ export default {
       meta: {
         título: 'Novo plano de ação',
         títuloParaMenu: 'Novo plano de ação',
-
         rotaDeEscape: 'planosDeAçãoListar',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'riscosListar',
+          'planosDeAçãoListar',
+          'planosDeAçãoCriar',
+        ],
       },
     },
 
@@ -73,6 +85,13 @@ export default {
             títuloParaMenu: 'Editar plano de ação',
 
             rotaDeEscape: 'planosDeAçãoListar',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'riscosListar',
+              'planosDeAçãoListar',
+              'planosDeAçãoEditar',
+            ],
           },
         },
 
@@ -91,6 +110,14 @@ export default {
             títuloParaMenu: 'Monitoramento',
 
             rotaDeEscape: 'planosDeAçãoListar',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'riscosListar',
+              'planosDeAçãoListar',
+              'planosDeAçãoEditar',
+              'planosDeAçãoMonitoramento',
+            ],
           },
         },
       ],
