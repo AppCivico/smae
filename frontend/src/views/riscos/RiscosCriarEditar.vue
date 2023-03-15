@@ -97,7 +97,7 @@ iniciar();
       >
         {{ 'Editar risco' }}
       </div>
-      {{ emFoco?.consequencia || (riscoId ? 'Risco' : 'Novo risco') }}
+      {{ emFoco?.descricao || (riscoId ? 'Risco' : 'Novo risco') }}
     </h1>
 
     <hr class="ml2 f1">
