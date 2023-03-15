@@ -1,4 +1,6 @@
 <script setup>
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { grauDescricao } from '@/../../common/RiscoCalc.ts';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import statuses from '@/consts/riskStatuses';
 import dateToField from '@/helpers/dateToField';
@@ -95,17 +97,6 @@ iniciar();
   <div class="boards">
     <div class="flex g2 mb1">
       <dl
-        v-if="emFoco?.descricao"
-        class="f1 mb1"
-      >
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Descrição
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.descricao }}
-        </dd>
-      </dl>
-      <dl
         v-if="emFoco?.causa"
         class="f1 mb1"
       >
@@ -135,7 +126,7 @@ iniciar();
           Grau
         </dt>
         <dd class="t13">
-          {{ emFoco?.grau || '-' }}
+          {{ emFoco?.grau }} - {{ grauDescricao[emFoco.grau - 1] }}
         </dd>
       </dl>
       <dl class="f1 mb1">
