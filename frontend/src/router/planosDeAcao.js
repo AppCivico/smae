@@ -30,7 +30,7 @@ export default {
         riscoId: Number.parseInt(params.riscoId, 10) || undefined,
       }),
       meta: {
-        título: () => useRiscosStore()?.emFoco?.consequencia || 'Resumo de risco',
+        título: () => useRiscosStore()?.emFoco?.descricao || 'Resumo de risco',
       },
     },
 
@@ -69,8 +69,8 @@ export default {
           }),
 
           meta: {
-            título: 'Editar tarefa',
-            títuloParaMenu: 'Editar tarefa',
+            título: 'Editar plano de ação',
+            títuloParaMenu: 'Editar plano de ação',
 
             rotaDeEscape: 'planosDeAçãoListar',
           },
