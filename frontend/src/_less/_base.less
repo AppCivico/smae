@@ -30,6 +30,7 @@ body {
   height: 100vh;
   overflow: auto;
   overflow-x: hidden;
+  container-type: inline-size;
 }
 
 /* Gerais */
@@ -1936,7 +1937,7 @@ div[aria-busy="true"] {
 }
 
 .cell--data {
-  text-align: left;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -1965,6 +1966,14 @@ div[aria-busy="true"] {
     padding-right: 0.375rem;
     padding-bottom: 0.375rem;
     padding-left: 0.375rem;
+  }
+}
+
+@container (min-width: 64em) {
+  .tabela-de-etapas th,
+  .tabela-de-etapas td {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 }
 
