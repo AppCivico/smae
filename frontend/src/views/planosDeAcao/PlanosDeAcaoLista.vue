@@ -75,7 +75,7 @@ iniciar();
         </template>
       </div>
 
-      <h1>{{ emFoco?.consequencia }}</h1>
+      <h1>{{ emFoco?.descricao }}</h1>
     </div>
 
     <hr class="ml2 f1">
