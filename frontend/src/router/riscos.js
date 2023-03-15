@@ -77,7 +77,7 @@ export default {
           }),
 
           meta: {
-            título: () => useRiscosStore()?.emFoco?.consequencia || 'Editar risco',
+            título: () => useRiscosStore()?.emFoco?.descricao || 'Editar risco',
             títuloParaMenu: 'Editar risco',
 
             rotaDeEscape: 'riscosListar',
