@@ -1,6 +1,7 @@
 <script setup>
-import { useAuthStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -29,13 +30,25 @@ const limparRotas = (listaDeRotas) => (Array.isArray(listaDeRotas)
   .filter((y) => (!y.meta?.restringirÀsPermissões || temPermissãoPara.value(y.meta.restringirÀsPermissões)))
   || [];
 
-const rotasParaMenu = route.meta?.rotasParaMenuSecundário
-  ? limparRotas(route.meta?.rotasParaMenuSecundário)
-  : [];
+const rotasParaMenu = computed(() => {
+  const listaDeRotas = typeof route.meta?.rotasParaMenuSecundário === 'function'
+    ? route.meta.rotasParaMenuSecundário()
+    : route.meta?.rotasParaMenuSecundário;
 
-const rotasParaMigalhasDePão = route.meta?.rotasParaMigalhasDePão
-  ? limparRotas(route.meta?.rotasParaMigalhasDePão)
-  : [];
+  return listaDeRotas
+    ? limparRotas(listaDeRotas)
+    : [];
+});
+
+const rotasParaMigalhasDePão = computed(() => {
+  const listaDeRotas = typeof route.meta?.rotasParaMigalhasDePão === 'function'
+    ? route.meta.rotasParaMigalhasDePão()
+    : route.meta?.rotasParaMigalhasDePão;
+
+  return listaDeRotas
+    ? limparRotas(listaDeRotas)
+    : [];
+});
 
 </script>
 <template>
