@@ -22,9 +22,15 @@ export class UpdatePlanoAcaoMonitoramentoDto extends OmitType(PartialType(Create
 }
 
 export class FilterPlanoAcaoMonitoramentoDto {
+    @IsOptional()
     @IsInt()
     @Transform(({ value }: any) => +value)
-    plano_acao_id: number;
+    plano_acao_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(({ value }: any) => +value)
+    projeto_risco_id?: number;
 
     /**
      * trazer apenas o monitoramento mais recente? [data de criação, não é a data de aferição)
