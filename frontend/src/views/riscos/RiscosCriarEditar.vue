@@ -349,7 +349,6 @@ iniciar();
           name="causa"
           type="text"
           class="inputtext light mb1"
-          maxlength="60"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -367,7 +366,6 @@ iniciar();
           name="consequencia"
           type="text"
           class="inputtext light mb1"
-          maxlength="60"
         />
         <ErrorMessage
           class="error-msg mb1"
