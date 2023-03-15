@@ -116,10 +116,10 @@ export class PlanoAcaoMonitoramentoService {
                     }
                 },
             },
-            orderBy: {
-                data_afericao: 'desc',
-                criado_em: 'desc',
-            },
+            orderBy: [
+                { data_afericao: 'desc' },
+                { criado_em: 'desc' },
+            ],
             select: {
                 id: true,
                 plano_acao_id: true,
