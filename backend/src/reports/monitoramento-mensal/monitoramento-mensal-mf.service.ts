@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CicloFisico, Pdm } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
 import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service';
 import { MetasRiscoService } from '../../mf/metas/metas-risco.service';
@@ -172,12 +173,12 @@ export class MonitoramentoMensalMfService {
             all_sv.variavel_id,
             all_sv.titulo,
             all_sv.codigo,
-            all_sv.data_valor,
+            TO_CHAR(all_sv.data_valor, 'YYYY-MM-DD') as data_valor,
             sv.valor_nominal,
             sv.atualizado_em,
             f_id_nome_exibicao(sv.atualizado_por) as atualizado_por,
             coalesce(sv.conferida, svcf.conferida, case when sv.id is not null then false else null end) as conferida,
-            conferida_em,
+            TO_CHAR(conferida_em AT TIME ZONE ${SYSTEM_TIMEZONE}, 'YYYY-MM-DD') as conferida_em,
             f_id_nome_exibicao(conferida_por) as conferida_por,
             coalesce(aguarda_cp, false) as aguarda_cp,
             aguarda_complementacao
@@ -288,25 +289,12 @@ export class MonitoramentoMensalMfService {
                 { value: 'serie', label: 'Série' },
                 { value: 'variavel_id', label: 'ID da Variável' },
                 { value: 'titulo', label: 'Título' },
-                {
-                    value: (row: RelSerieVariavelDto) => {
-                        console.log('atualizado_por', { row });
-                        if (!row.atualizado_por) return '';
-                        return row.atualizado_por.nome_exibicao;
-                    }, label: 'Atualizado Por',
-                },
+                { value: 'atualizado_por.nome_exibicao', label: 'Atualizado Por' },
                 { value: 'atualizado_em', label: 'Atualizado em' },
                 { value: 'codigo', label: 'Código' },
                 { value: 'data_valor', label: 'Data de Valor' },
                 { value: 'valor_nominal', label: 'Valor Nominal' },
-                {
-                    value: (row: RelSerieVariavelDto) => {
-                        console.log('conferida_por', { row });
-
-                        if (!row.conferida_por) return '';
-                        return row.conferida_por.nome_exibicao;
-                    }, label: 'Conferida Por'
-                },
+                { value: 'conferida_por.nome_exibicao', label: 'Conferida Por' },
                 { value: 'conferida_em', label: 'Conferida Em' },
                 { value: (row: RelSerieVariavelDto) => { return row.conferida ? 'Sim' : 'Não' }, label: 'Conferida' },
                 { value: (row: RelSerieVariavelDto) => { return row.aguarda_cp ? 'Sim' : 'Não' }, label: 'Aguarda CP' },
