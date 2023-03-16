@@ -1,5 +1,6 @@
 <script setup>
 import * as d3 from 'd3';
+import { niceNumber } from 'nice-number';
 import { onMounted, onUpdated, ref } from 'vue';
 
 const props = defineProps(['single', 'dataserie']);
@@ -91,6 +92,7 @@ class smaeChart {
     /* YAXIS */
     const yAxis = d3.axisLeft(yScale)
       .tickSize(0)
+      .tickFormat((d) => (d > 1000 ? niceNumber(d) : d))
       .tickPadding(10);
 
     /* XAXIS */
