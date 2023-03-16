@@ -9,7 +9,7 @@ export class FormulaVariaveis {
      * @example "_1159"
      */
     @IsString({ message: '$property| precisa ser uma string' })
-    @Matches(/^_[0-9]{1,8}$/, { message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 números' })
+    @Matches(/^_[0-9]{1,8}$/, { message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 dígitos numéricos' })
     referencia: string;
 
     /**
