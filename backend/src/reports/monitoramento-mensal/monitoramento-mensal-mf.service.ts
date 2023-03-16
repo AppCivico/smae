@@ -281,6 +281,53 @@ export class MonitoramentoMensalMfService {
             });
         }
 
+        const seriesVariaveis = myInput.monitoramento_fisico.seriesVariaveis;
+
+        if (seriesVariaveis.length) {
+            const campos = [
+                { value: 'serie', label: 'Série' },
+                { value: 'variavel_id', label: 'ID da Variável' },
+                { value: 'titulo', label: 'Título' },
+                {
+                    value: (row: RelSerieVariavelDto) => {
+                        if (!row.atualizado_por) return '';
+                        return row.atualizado_por.nome_exibicao;
+                    }, label: 'Atualizado Por',
+                },
+                { value: 'atualizado_em', label: 'Atualizado em' },
+                { value: 'codigo', label: 'Código' },
+                { value: 'data_valor', label: 'Data de Valor' },
+                { value: 'valor_nominal', label: 'Valor Nominal' },
+                {
+                    value: (row: RelSerieVariavelDto) => {
+                        if (!row.conferida_por) return '';
+                        return row.conferida_por.nome_exibicao;
+                    }, label: 'Conferida Por'
+                },
+                { value: 'conferida_em', label: 'Conferida Em' },
+                { value: (row: RelSerieVariavelDto) => { row.conferida ? 'Sim' : 'Não' }, label: 'Conferida' },
+                { value: (row: RelSerieVariavelDto) => { row.aguarda_cp ? 'Sim' : 'Não' }, label: 'Aguarda CP' },
+                { value: (row: RelSerieVariavelDto) => { row.aguarda_complementacao ? 'Sim' : 'Não' }, label: 'Aguarda Complementação' }
+            ];
+
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: campos,
+            });
+
+            const linhas = json2csvParser.parse(seriesVariaveis);
+            out.push({
+                name: 'serie-variaveis.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        } else {
+            out.push({
+                name: 'serie-variaveis.txt',
+                buffer: Buffer.from('Não há variáveis no ciclo, serie-variaveis.csv não foi gerado.', 'utf8'),
+            });
+        }
+
         return out;
     }
 }
