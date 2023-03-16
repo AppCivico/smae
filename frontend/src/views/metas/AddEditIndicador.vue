@@ -160,6 +160,10 @@ async function onSubmit(values) {
       : null;
     values.casas_decimais = values.casas_decimais ? Number(values.casas_decimais) : null;
 
+    if (!values.acumulado_usa_formula) {
+      values.acumulado_usa_formula = false;
+    }
+
     // Parent
     if (atividade_id) {
       values.atividade_id = Number(atividade_id);
@@ -801,6 +805,16 @@ if (indicador_id) {
             que deseja inserí-la e digite <kbd>$</kbd>. Um formulário aparecerá
             para te auxiliar.
           </p>
+
+          <label class="block mt2 mb2">
+            <Field
+              name="acumulado_usa_formula"
+              type="checkbox"
+              class="inputcheckbox"
+              :value="true"
+              :class="{ 'error': errors.acumulado_usa_formula }"
+            />
+            <span>Utilizar a fórmula no cálculo da série acumulada</span></label>
         </div>
         <div v-else-if="Variaveis[indicador_id]?.loading">
           <span class="spinner">Carregando</span>
