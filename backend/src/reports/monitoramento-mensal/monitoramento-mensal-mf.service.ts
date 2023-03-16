@@ -290,6 +290,7 @@ export class MonitoramentoMensalMfService {
                 { value: 'titulo', label: 'Título' },
                 {
                     value: (row: RelSerieVariavelDto) => {
+                        console.log('atualizado_por', { row });
                         if (!row.atualizado_por) return '';
                         return row.atualizado_por.nome_exibicao;
                     }, label: 'Atualizado Por',
@@ -300,14 +301,16 @@ export class MonitoramentoMensalMfService {
                 { value: 'valor_nominal', label: 'Valor Nominal' },
                 {
                     value: (row: RelSerieVariavelDto) => {
+                        console.log('conferida_por', { row });
+
                         if (!row.conferida_por) return '';
                         return row.conferida_por.nome_exibicao;
                     }, label: 'Conferida Por'
                 },
                 { value: 'conferida_em', label: 'Conferida Em' },
-                { value: (row: RelSerieVariavelDto) => { row.conferida ? 'Sim' : 'Não' }, label: 'Conferida' },
-                { value: (row: RelSerieVariavelDto) => { row.aguarda_cp ? 'Sim' : 'Não' }, label: 'Aguarda CP' },
-                { value: (row: RelSerieVariavelDto) => { row.aguarda_complementacao ? 'Sim' : 'Não' }, label: 'Aguarda Complementação' }
+                { value: (row: RelSerieVariavelDto) => { return row.conferida ? 'Sim' : 'Não' }, label: 'Conferida' },
+                { value: (row: RelSerieVariavelDto) => { return row.aguarda_cp ? 'Sim' : 'Não' }, label: 'Aguarda CP' },
+                { value: (row: RelSerieVariavelDto) => { return row.aguarda_complementacao ? 'Sim' : 'Não' }, label: 'Aguarda Complementação' }
             ];
 
             const json2csvParser = new Parser({
