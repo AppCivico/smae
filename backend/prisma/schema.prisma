@@ -2180,6 +2180,7 @@ model Projeto {
     realizado_inicio  DateTime?
     realizado_termino DateTime?
     realizado_custo   Float?
+    // percentual concluido
 
     status         ProjetoStatus
     fase           ProjetoFase
