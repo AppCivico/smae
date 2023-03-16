@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, IsString, Matches, ValidateIf, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsBoolean, IsInt, IsOptional, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
 export class FormulaVariaveis {
@@ -92,6 +92,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     @IsOptional()
     @ValidateNested({ each: true })
     @Type(() => FormulaVariaveis)
+    @ArrayMaxSize(100000, { message: 'Váriaveis de expressão precisa ter no máximo 100000 items' })
     formula_variaveis?: FormulaVariaveis[];
 
     /**
