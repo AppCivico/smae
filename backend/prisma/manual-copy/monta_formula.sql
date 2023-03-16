@@ -28,6 +28,8 @@ BEGIN
         RETURN NULL;
     END IF;
 
+    _formula := _formula || ' ';
+
     -- extrai as variaveis (apenas as referencias unicas)
     WITH cte AS (
         SELECT DISTINCT unnest(regexp_matches(_formula, '\$_[0-9]{1,8}\y', 'g')) AS x
@@ -140,7 +142,7 @@ BEGIN
 
             RAISE NOTICE ' <-- valor calculado %', _valor || ' valores usados ' || _valores_debug::text;
 
-            _formula := replace(_formula, '$' || r.referencia , 'round(' || _valor::text || ', ' || r.casas_decimais || ')');
+            _formula := replace(_formula, '$' || r.referencia || ' ', 'round(' || _valor::text || ', ' || r.casas_decimais || ') ');
         ELSEIF r.janela >= 1 THEN
 
              select
@@ -187,7 +189,7 @@ BEGIN
 
             RAISE NOTICE ' <-- valor calculado %', _valor || ' valores usados ' || _valores_debug::text;
 
-            _formula := replace(_formula, '$' || r.referencia , 'round(' || _valor::text || ', ' || r.casas_decimais || ')');
+            _formula := replace(_formula, '$' || r.referencia || ' ' , 'round(' || _valor::text || ', ' || r.casas_decimais || ') ');
 
         ELSEIF r.janela < 1 THEN
 
@@ -223,7 +225,9 @@ BEGIN
 
             _count_conferencia := _count_conferencia + _count_faltando_conferir;
 
-            _formula := regexp_replace(_formula, '\$' || r.referencia || '\y' , 'round(' || _valor::text || '::numeric, ' || r.casas_decimais || ')', 'g');
+            RAISE NOTICE '_formula %',  _formula || ' -- REPLACE '|| r.referencia::text;
+
+            _formula := regexp_replace(_formula, '\$' || r.referencia || ' ' , 'round(' || _valor::text || '::numeric, ' || r.casas_decimais || ') ', 'g');
 
         END IF;
 

@@ -63,6 +63,8 @@ BEGIN
         -- filtra apenas as series do tipo escolhido para recalcular, ou todas se for null
         ((vTipoSerie is null) OR ( s.serie::text like vTipoSerie::text || '%' ))
         LOOP
+            RAISE NOTICE '==> delete serie_indicador (indicador=%', pIndicador_id::text || ', serie=' || serieRecord.serie::text ||', vInicio = '|| coalesce(vInicio::text,'(todos)') || ', fim=' || coalesce(vFim::text,'todos') ||') vAcumuladoUsaFormula ' || vAcumuladoUsaFormula;
+
             -- apaga o periodo escolhido
             DELETE FROM serie_indicador
             WHERE indicador_id = pIndicador_id
