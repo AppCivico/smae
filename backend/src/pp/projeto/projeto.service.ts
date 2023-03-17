@@ -414,6 +414,9 @@ export class ProjetoService {
                 secretario_executivo: true,
                 secretario_responsavel: true,
                 coordenador_ue: true,
+                atraso: true,
+                percentual_concluido: true,
+                realizado_duracao: true,
 
                 orgao_gestor: {
                     select: {

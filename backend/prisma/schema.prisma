@@ -191,11 +191,11 @@ model Pessoa {
     ppIniciou         Projeto[] @relation("ppIniciou")
     ppTerminou        Projeto[] @relation("ppTerminou")
 
-    RiscosQueCriei ProjetoRisco[] @relation("Criador")
+    RiscosQueCriei  ProjetoRisco[] @relation("Criador")
     RiscosQueRemovi ProjetoRisco[] @relation("Removedor")
     RiscosQueEditei ProjetoRisco[] @relation("Atualizador")
 
-    PlanosDeAcaoQueCriei PlanoAcao[] @relation("Criador")
+    PlanosDeAcaoQueCriei  PlanoAcao[] @relation("Criador")
     PlanosDeAcaoQueRemovi PlanoAcao[] @relation("Removedor")
     PlanosDeAcaoQueEditei PlanoAcao[] @relation("Atualizador")
 
@@ -2179,8 +2179,11 @@ model Projeto {
     // calculado pelo cronograma
     realizado_inicio  DateTime?
     realizado_termino DateTime?
+    realizado_duracao Int?
     realizado_custo   Float?
-    // percentual concluido
+
+    percentual_concluido Float @default(0)
+    atraso               Int?
 
     status         ProjetoStatus
     fase           ProjetoFase
@@ -2524,7 +2527,7 @@ model ProjetoRisco {
     projeto_id Int
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    codigo    Int
+    codigo        Int
     registrado_em DateTime
 
     descricao    String?
@@ -2546,13 +2549,13 @@ model ProjetoRisco {
 
     risco_tarefa_outros String? // String deve ser preenchida caso o user queira informar um "risco_tarefa" que seja de fora do PDM
 
-    removido_em DateTime?
+    removido_em  DateTime?
     removido_por Int?
 
-    criado_em DateTime
+    criado_em  DateTime
     criado_por Int
 
-    atualizado_em DateTime?
+    atualizado_em  DateTime?
     atualizado_por Int?
 
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
@@ -2591,18 +2594,18 @@ model PlanoAcao {
 
     medidas_de_contingencia String
     orgao_id                Int?
-    orgao                   Orgao?  @relation(fields: [orgao_id], references: [id])
+    orgao                   Orgao? @relation(fields: [orgao_id], references: [id])
 
     responsavel            String?
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
 
-    removido_em DateTime?
+    removido_em  DateTime?
     removido_por Int?
 
-    criado_em DateTime
+    criado_em  DateTime
     criado_por Int
 
-    atualizado_em DateTime?
+    atualizado_em  DateTime?
     atualizado_por Int?
 
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
