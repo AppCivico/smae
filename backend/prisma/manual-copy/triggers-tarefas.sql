@@ -152,6 +152,7 @@ v_realizado_termino date;
 v_previsao_custo  numeric;
 v_realizado_custo  numeric;
 v_previsao_duracao int;
+v_realizado_duracao int;
 
 BEGIN
 
@@ -207,6 +208,13 @@ BEGIN
             null
         end;
 
+    v_realizado_duracao := case when v_realizado_inicio is not null and v_realizado_termino is not null
+        then
+            v_realizado_termino - v_realizado_inicio
+        else
+            null
+        end;
+
     UPDATE projeto p
     SET
         previsao_inicio = v_previsao_inicio,
@@ -215,7 +223,8 @@ BEGIN
         realizado_termino = v_realizado_termino,
         previsao_custo = v_previsao_custo,
         realizado_custo = v_realizado_custo,
-        previsao_duracao = v_previsao_duracao
+        previsao_duracao = v_previsao_duracao,
+        realizado_duracao = v_realizado_duracao
 
     WHERE p.id = pProjetoId
     AND (
@@ -225,7 +234,8 @@ BEGIN
         (v_realizado_termino is DISTINCT from realizado_termino) OR
         (v_previsao_custo is DISTINCT from previsao_custo) OR
         (v_realizado_custo is DISTINCT from realizado_custo) OR
-        (v_previsao_duracao is DISTINCT from previsao_duracao)
+        (v_previsao_duracao is DISTINCT from previsao_duracao) OR
+        (v_realizado_duracao is DISTINCT from realizado_duracao)
     );
 
     return '';
