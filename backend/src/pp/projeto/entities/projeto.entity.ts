@@ -122,6 +122,10 @@ export class ProjetoDetailDto {
     realizado_termino: Date | null;
     realizado_custo: number | null;
 
+    atraso: number | null;
+    percentual_concluido: number;
+    realizado_duracao: number | null;
+
     escopo: string | null;
     nao_escopo: string | null;
     orgaos_participantes: IdSiglaDescricao[];
