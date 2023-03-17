@@ -61,6 +61,7 @@ import { TarefaModule } from './pp/tarefa/tarefa.module';
 import { RiscoModule } from './pp/risco/risco.module';
 import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plano-acao-monitoramento.module';
 import { PlanoAcaoModule } from './pp/plano-de-acao/plano-de-acao.module';
+import { AcompanhamentoModule } from './pp/acompanhamento/acompanhamento.module';
 
 @Module({
     imports: [
@@ -125,7 +126,8 @@ import { PlanoAcaoModule } from './pp/plano-de-acao/plano-de-acao.module';
         TarefaModule,
         RiscoModule,
         PlanoAcaoModule,
-        PlanoAcaoMonitoramentoModule
+        PlanoAcaoMonitoramentoModule,
+        AcompanhamentoModule
     ],
     controllers: [AppController],
     providers: [
