@@ -6,7 +6,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { AcompanhamentoService } from './acompanhamento.service';
-import { ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
+import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
@@ -34,6 +34,14 @@ export class AcompanhamentoController {
         return {
             linhas: await this.acompanhamentoService.findAll(params.id, user)
         };
+    }
+
+    @Get(':id/acompanhamento/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<DetailProjetoAcompanhamentoDto> {
+        return await this.acompanhamentoService.findOne(params.id, params.id2, user);
     }
 
     @Patch(':id/acompanhamento/:id2')
