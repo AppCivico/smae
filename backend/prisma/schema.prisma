@@ -2664,19 +2664,20 @@ model ProjetoAcompanhamento {
 
     data_registro        DateTime @db.Date()
     participantes        String
-    detalhamento         String
-    encaminhamento       String
-    prazo_encaminhamento DateTime @db.Date()
-    responsavel          String
-    observacao           String
-    detalhamento_status  String
-    pontos_atencao       String
+    detalhamento         String?
+    encaminhamento       String?
+    prazo_encaminhamento DateTime? @db.Date()
+    prazo_realizado      DateTime? @db.Date()
+    responsavel          String?
+    observacao           String?
+    detalhamento_status  String?
+    pontos_atencao       String?
 
     criado_em  DateTime
     criado_por Int
 
-    removido_em                DateTime
-    removido_por               Int
+    removido_em                DateTime?
+    removido_por               Int?
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
 
     @@map("projeto_acompanhamento")
