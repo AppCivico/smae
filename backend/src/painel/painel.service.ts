@@ -91,6 +91,7 @@ export class PainelService {
         return await this.prisma.painel.findMany({
             where: {
                 ativo: ativo,
+                removido_em: null
             },
             select: {
                 id: true,
