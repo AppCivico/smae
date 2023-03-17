@@ -72,7 +72,11 @@ export class TarefaController {
         console.log(`before ${JSON.stringify(dto)}`);
 
         if (dto.atualizacao_do_realizado) {
+            console.log(`dto.atualizacao_do_realizado=true`);
             dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
+            console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
+            console.log(dto);
+
             const projeto = await this.projetoService.findOne(params.id, user, true);
 
             if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
@@ -81,7 +85,6 @@ export class TarefaController {
 
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
         } else {
-            console.log(`dto.atualizacao_do_realizado=false `);
 
             const projeto = await this.projetoService.findOne(params.id, user, false);
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
