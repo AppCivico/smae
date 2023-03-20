@@ -45,7 +45,7 @@ export class CreateVariavelDto {
      * Para não perder precisão no JSON, usar em formato string, mesmo sendo um número
      * @example "0.0"
      */
-    @IsNumberString({ maxDecimalPlaces: 30 }, { message: 'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String' })
+    @IsNumberString({ maxDecimalPlaces: 30 }, { message: '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String' })
     valor_base: number;
 
     @IsInt({ message: '$property| $property inválido' })
@@ -68,7 +68,7 @@ export class CreateVariavelDto {
     @Type(() => Number)
     unidade_medida_id: number;
 
-    @IsBoolean({ message: 'acumulativa| Precisa ser um boolean' })
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
     acumulativa: boolean;
 
     @IsOptional()
