@@ -121,33 +121,29 @@ BEGIN
 
 
         -- sempre recalcula o termino_previsto de acordo com a situacao atual
-        SELECT (
-             select max(termino_previsto) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id and removido_em is null
-        ) into v_termino_previsto
-        FROM etapa e
-        WHERE e.id = NEW.etapa_pai_id
-        AND (
-            select count(1) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id
-            AND ef.termino_previsto IS NULL  and removido_em is null
-        ) = 0
-        AND (e.termino_previsto IS NULL OR e.termino_previsto != (
-             select max(termino_previsto) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id and removido_em is null
-        ));
+        SELECT MAX(ef.termino_previsto) INTO v_termino_previsto
+        FROM etapa ef
+        WHERE ef.etapa_pai_id = NEW.etapa_pai_id
+          AND ef.removido_em IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM etapa ef2
+            WHERE ef2.etapa_pai_id = NEW.etapa_pai_id
+              AND ef2.termino_previsto IS NULL
+              AND ef2.removido_em IS NULL
+          );
 
-
-        -- sempre recalcula o termino_real de acordo com a situacao atual
-        SELECT (
-             select max(termino_real) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id  and removido_em is null
-        ) into v_termino_real
-        FROM etapa e
-        WHERE e.id = NEW.etapa_pai_id
-        AND (
-            select count(1) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id
-            AND ef.termino_real IS NULL  and removido_em is null
-        ) = 0
-        AND (termino_real is null or termino_real != (
-             select max(termino_real) from etapa ef where ef.etapa_pai_id = NEW.etapa_pai_id  and removido_em is null
-        ));
+        SELECT MAX(ef.termino_real) INTO v_termino_real
+        FROM etapa ef
+        WHERE ef.etapa_pai_id = NEW.etapa_pai_id
+          AND ef.removido_em IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM etapa ef2
+            WHERE ef2.etapa_pai_id = NEW.etapa_pai_id
+              AND ef2.termino_real IS NULL
+              AND ef2.removido_em IS NULL
+          );
 
         UPDATE etapa e
         SET termino_previsto = v_termino_previsto,
