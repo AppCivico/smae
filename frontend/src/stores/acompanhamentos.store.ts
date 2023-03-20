@@ -1,12 +1,13 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from '@/../../backend/src/pp/risco/entities/risco.entity';
+import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from '@/../../backend/src/pp/acompanhamento/entities/acompanhamento.entity.ts';
+
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = ListProjetoRiscoDto['linhas'];
+type Lista = ListProjetoAcompanhamentoDto['lista'];
 
 interface ChamadasPendentes {
   lista: boolean;
@@ -15,13 +16,13 @@ interface ChamadasPendentes {
 
 interface Estado {
   lista: Lista;
-  emFoco: ProjetoRiscoDetailDto | null;
+  emFoco: DetailProjetoAcompanhamentoDto | null;
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
 }
 
-export const useRiscosStore = defineStore('riscos', {
+export const useAcompanhamentosStore = defineStore('acompanhamentos', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -36,7 +37,7 @@ export const useRiscosStore = defineStore('riscos', {
     async buscarItem(id = 0, params = {}, projetoId = 0): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/risco/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/acompanhamento/${id}`, params);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -49,7 +50,7 @@ export const useRiscosStore = defineStore('riscos', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/risco`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/acompanhamento`, params);
 
         this.lista = linhas;
       } catch (erro: unknown) {
@@ -63,7 +64,7 @@ export const useRiscosStore = defineStore('riscos', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/risco/${id}`);
+        await this.requestS.delete(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/acompanhamento/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -81,9 +82,9 @@ export const useRiscosStore = defineStore('riscos', {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/risco/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/acompanhamento/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/risco`, params);
+          resposta = await this.requestS.post(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/acompanhamento`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -99,15 +100,12 @@ export const useRiscosStore = defineStore('riscos', {
   getters: {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
-      status: emFoco?.status_risco || null,
-      tarefa_id: emFoco?.tarefas_afetadas?.map(x => x.tarefa_id) || null,
-      registrado_em: dateTimeToDate(emFoco?.registrado_em),
+      data_registro: dateTimeToDate(emFoco?.data_registro) || null,
+      prazo_encaminhamento: dateTimeToDate(emFoco?.prazo_encaminhamento) || null,
+      prazo_realizado: dateTimeToDate(emFoco?.prazo_realizado) || null,
     }),
 
     // eslint-disable-next-line max-len
     listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
-
-    riscosPorId: ({ lista }: Estado) => lista
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
