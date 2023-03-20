@@ -934,7 +934,6 @@ iniciar();
               </label>
               <Field
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
-                type="text"
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
