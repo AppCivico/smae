@@ -18,7 +18,7 @@ const FP = require('../../public/js/formula_parser.js');
 export class IndicadorService {
     private readonly logger = new Logger(IndicadorService.name);
 
-    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) {}
+    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) { }
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         console.log({ createIndicadorDto });
@@ -37,9 +37,15 @@ export class IndicadorService {
                     meta: {
                         select: {
                             iniciativa: {
-                                where: { compoe_indicador_meta: true },
+                                where: {
+                                    compoe_indicador_meta: true,
+                                    removido_em: null,
+                                },
                                 select: {
                                     Indicador: {
+                                        where: {
+                                            removido_em: null,
+                                        },
                                         select: {
                                             id: true,
                                             iniciativa_id: true,
@@ -52,9 +58,15 @@ export class IndicadorService {
                                     },
 
                                     atividade: {
-                                        where: { compoe_indicador_iniciativa: true },
+                                        where: {
+                                            compoe_indicador_iniciativa: true,
+                                            removido_em: null
+                                        },
                                         select: {
                                             Indicador: {
+                                                where: {
+                                                    removido_em: null,
+                                                },
                                                 select: {
                                                     id: true,
                                                     atividade_id: true,
@@ -75,6 +87,9 @@ export class IndicadorService {
                     iniciativa: {
                         select: {
                             Indicador: {
+                                where: {
+                                    removido_em: null,
+                                },
                                 select: {
                                     id: true,
                                     iniciativa_id: true,
@@ -87,9 +102,15 @@ export class IndicadorService {
                             },
 
                             atividade: {
-                                where: { compoe_indicador_iniciativa: true },
+                                where: {
+                                    compoe_indicador_iniciativa: true,
+                                    removido_em: null,
+                                },
                                 select: {
                                     Indicador: {
+                                        where: {
+                                            removido_em: null,
+                                        },
                                         select: {
                                             id: true,
                                             atividade_id: true,
