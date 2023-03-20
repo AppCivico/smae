@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateRelPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao-custo.dto';
+import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
@@ -72,7 +74,12 @@ class RetornoPlanejadoDb {
 
 @Injectable()
 export class OrcamentoService implements ReportableService {
-    constructor(private readonly utils: UtilsService, private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
+    private readonly logger = new Logger(OrcamentoService.name)
+    constructor(
+        private readonly utils: UtilsService, private readonly prisma: PrismaService,
+        private readonly dotacaoService: DotacaoService,
+        private readonly prevCustoService: PrevisaoCustoService,
+    ) { }
 
     async create(dto: CreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
         const anoIni = Date2YMD.toString(dto.inicio).substring(0, 4);
@@ -594,6 +601,24 @@ export class OrcamentoService implements ReportableService {
                 name: 'planejado.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
+        }
+
+        // gambiarra pra puxar o relatorio de previsao-custo aqui dentro do export
+        let anoCorrente = dto.inicio.getFullYear();
+        const anoCorrenteFim = dto.fim.getFullYear();
+        while (anoCorrente < anoCorrenteFim) {
+            this.logger.debug(`Adicionando relatório de previsão de custo para o ano ${anoCorrente}`);
+
+            const p: CreateRelPrevisaoCustoDto = {
+                periodo_ano: 'Anterior',
+                ano: anoCorrente,
+            };
+            const r = await this.prevCustoService.create(p);
+
+            this.logger.debug(`Gerando arquivos relatório de previsão de custo para o ano ${anoCorrente}`);
+            out.push(...await this.prevCustoService.getFiles(r, pdm_id, r));
+
+            anoCorrente++;
         }
 
         return [
