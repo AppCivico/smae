@@ -817,7 +817,7 @@ export class PainelService {
         const deleted: PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(curr => {
             const row_is_saved = saved_rows.find((e) => { e.id === curr.id });
 
-            if (!row_is_saved) return curr
+            if (!row_is_saved?.id) return curr
         }).map((curr) => { return curr });
 
         console.log("lgt existent_painel_conteudo_detalhes=" + existent_painel_conteudo_detalhes.length);
