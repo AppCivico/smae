@@ -223,6 +223,9 @@ const portfolio = object({
     .required('Um portfolio requer um título'),
 });
 
+const processo = object()
+  .shape({});
+
 const projeto = object()
   .shape({
     atividade_id: number()
@@ -596,6 +599,7 @@ export {
   novaSenha,
   planoDeAção,
   portfolio,
+  processo,
   projeto,
   região,
   relatórioMensal,
