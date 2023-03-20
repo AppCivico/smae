@@ -15,6 +15,7 @@ import { TarefaUtilsService } from './tarefa.service.utils';
 import { Graph } from 'graphlib';
 import { DateTime } from 'luxon';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { CalculaAtraso } from '../../common/CalculaAtraso';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
 
@@ -239,21 +240,12 @@ export class TarefaService {
         return rows.map((r) => {
             return {
                 ...r,
-                atraso: this.calculaAtraso(hoje, r.termino_planejado, r.termino_real),
+                atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
             }
         });
     }
 
-    private calculaAtraso(hoje: DateTime, termino_planejado: Date | null, termino_real: Date | null): number | null {
-        // se sabe quando começa, não ta atrasado
-        if (termino_planejado == null) return null;
-        // se já acabou, não ta atrasado
-        if (termino_real != null) return null;
 
-        const d = DateTime.fromJSDate(termino_planejado).diff(hoje).as('days');
-        // se ta positivo, ta no futuro, não ta atrasado ainda
-        return d >= 0 ? null : Math.floor(Math.abs(d));
-    }
 
     async findOne(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
         const row = await this.prisma.tarefa.findFirstOrThrow({
@@ -305,7 +297,7 @@ export class TarefaService {
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
         return {
             ...row,
-            atraso: this.calculaAtraso(hoje, row.termino_planejado, row.termino_real),
+            atraso: CalculaAtraso.emDias(hoje, row.termino_planejado, row.termino_real),
             projeto: projeto,
         };
     }

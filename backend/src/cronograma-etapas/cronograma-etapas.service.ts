@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { create } from 'domain';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
-import { PrismaService } from '../prisma/prisma.service';
 import { DateTime, Duration } from 'luxon';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CalculaAtraso } from '../common/CalculaAtraso';
+import { SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto } from './entities/cronograma-etapa.entity';
 
 @Injectable()
 export class CronogramaEtapaService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async findAll(filters: FilterCronogramaEtapaDto | undefined = undefined) {
         const cronogramaId = filters!.cronograma_id;
@@ -403,33 +404,25 @@ export class CronogramaEtapaService {
         const start: DateTime = DateTime.fromJSDate(inicio_real);
         const end: DateTime = termino_real ? DateTime.fromJSDate(termino_real) : DateTime.now();
 
-        const duration: Duration = end.diff(start, 'days');
+        const duration = end.diff(start).as('days');
 
         return await this.durationInDaysHuman(duration);
     }
 
     async getAtraso(termino_previsto: Date | null, termino_real: Date | null): Promise<string> {
-        if (!termino_real || !termino_previsto) return '';
-
-        const start: DateTime = DateTime.fromJSDate(termino_previsto);
-        const end: DateTime = DateTime.fromJSDate(termino_real);
-
-        const duration: Duration = end.diff(start, 'days');
+        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
+        const duration = CalculaAtraso.emDias(hoje, termino_previsto, termino_real);
 
         return await this.durationInDaysHuman(duration);
     }
 
-    async durationInDaysHuman(duration: Duration): Promise<string> {
-        let string_format: string;
+    async durationInDaysHuman(duration: number | null): Promise<string> {
+        if (duration == null) return '';
 
-        if (duration.days === 1) {
-            string_format = "d 'dia'";
-        } else if (duration.days <= 0) {
-            return '';
-        } else {
-            string_format = "d 'dias'";
+        if (duration === 1 || duration === 0) {
+            return `${duration} dia`;
         }
 
-        return duration.toFormat(string_format);
+        return duration + ' dias';
     }
 }
