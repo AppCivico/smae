@@ -100,6 +100,31 @@ iniciar();
           }}
         </dd>
       </div>
+
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Duração
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.realizado_duracao ? emFoco?.realizado_duracao + ' dias' : '-' }}
+        </dd>
+      </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Conclusão
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.percentual_concluido ? emFoco?.percentual_concluido + '%' : '-' }}
+        </dd>
+      </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Atraso
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.atraso ? emFoco?.atraso + ' dias' : '-' }}
+        </dd>
+      </div>
     </dl>
   </div>
 
