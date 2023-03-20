@@ -6,10 +6,10 @@ import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
 import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
 import ProjetosLiçõesAprendidas from '@/views/projetos/ProjetosLicoesAprendidas.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
-import ProjetosProcessos from '@/views/projetos/ProjetosProcessos.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
 
+import processos from './processos';
 import riscos from './riscos';
 import tarefas from './tarefas';
 
@@ -107,7 +107,7 @@ export default {
           const base = [
             'projetosResumo',
             'projetosDocumentos',
-            'projetosProcessos',
+            'processosListar',
           ];
 
           if (useProjetosStore()?.emFoco?.eh_prioritario) {
@@ -204,19 +204,7 @@ export default {
           },
         },
 
-        {
-          path: 'processos',
-          name: 'projetosProcessos',
-          component: ProjetosProcessos,
-          props: ({ params }) => ({
-            ...params,
-            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
-          }),
-          meta: {
-            título: 'Processos SEI do projeto',
-            títuloParaMenu: 'Processos SEI',
-          },
-        },
+        processos,
       ],
     },
   ],
