@@ -542,8 +542,9 @@ export class PainelService {
 
     private async populatePainelConteudoDetalhe(conteudos: PainelConteudoForSync[], prisma: Prisma.TransactionClient) {
         const created: PainelConteudoDetalheForSync[] = [];
-        const deleted: PainelConteudoDetalheForSync[] = [];
+        // const deleted: PainelConteudoDetalheForSync[] = [];
         const unchanged: PainelConteudoDetalheForSync[] = [];
+        const existent_painel_conteudo_detalhes: PainelConteudoDetalheForSync[] = [];
 
         for (const painel_conteudo of conteudos) {
             const detalhes_db = await prisma.painelConteudoDetalhe.findMany({
@@ -577,7 +578,6 @@ export class PainelService {
                 },
             });
 
-            const existent_painel_conteudo_detalhes: PainelConteudoDetalheForSync[] = [];
             detalhes_db.forEach(i => {
                 existent_painel_conteudo_detalhes.push({
                     id: i.id,
@@ -623,7 +623,10 @@ export class PainelService {
             for (const row of meta_indicador) {
                 const indicador_variaveis = await prisma.indicadorVariavel.findMany({
                     where: {
-                        indicador_id: row.id,
+                        indicador: {
+                            removido_em: null,
+                            id: row.id
+                        },
                         desativado: false,
                     },
                     select: { variavel_id: true },
@@ -657,7 +660,10 @@ export class PainelService {
             const meta_iniciativas = await prisma.iniciativa.findMany({
                 where: {
                     removido_em: null,
-                    meta_id: painel_conteudo.meta_id,
+                    meta: {
+                        removido_em: null,
+                        id: painel_conteudo.meta_id
+                    }
                 },
                 select: { id: true },
             });
@@ -692,7 +698,10 @@ export class PainelService {
                     where: {
                         indicador: {
                             removido_em: null,
-                            iniciativa_id: iniciativa.id,
+                            iniciativa: {
+                                removido_em: null,
+                                id: iniciativa.id
+                            }
                         },
                         desativado: false,
                     },
@@ -728,7 +737,10 @@ export class PainelService {
                 const atividades = await prisma.atividade.findMany({
                     where: {
                         removido_em: null,
-                        iniciativa_id: iniciativa.id,
+                        iniciativa: {
+                            removido_em: null,
+                            id: iniciativa.id
+                        }
                     },
                     select: { id: true },
                 });
@@ -762,7 +774,10 @@ export class PainelService {
                         where: {
                             indicador: {
                                 removido_em: null,
-                                atividade_id: atividade.id,
+                                atividade: {
+                                    id: atividade.id,
+                                    removido_em: null
+                                }
                             },
                             desativado: false,
                         },
@@ -796,6 +811,20 @@ export class PainelService {
                 }
             }
         }
+
+        // Tratando rows que precisam ser deletadas
+        const saved_rows: PainelConteudoDetalheForSync[] = unchanged.concat(created);
+        const deleted: PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(curr => {
+            const row_is_saved = saved_rows.find((e) => { e.id === curr.id });
+
+            if (!row_is_saved) return curr
+        }).map((curr) => { return curr });
+
+        await prisma.painelConteudoDetalhe.deleteMany({
+            where: {
+                id: { in: deleted.map(e => e.id) }
+            }
+        });
 
         return {
             created: created,
