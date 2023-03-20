@@ -814,14 +814,8 @@ export class PainelService {
 
         // Tratando rows que precisam ser deletadas
         const saved_rows: PainelConteudoDetalheForSync[] = unchanged.concat(created);
-        const deleted: PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(curr => {
-            const row_is_saved = saved_rows.find((e) => { e.id === curr.id });
-
-            if (row_is_saved) {
-                return undefined;
-            } else {
-                return curr;
-            }
+        const deleted:    PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(curr => {
+            saved_rows.find((e) => { e.id === curr.id });
         }).map((curr) => { return curr });
 
         console.log("lgt existent_painel_conteudo_detalhes=" + existent_painel_conteudo_detalhes.length);
