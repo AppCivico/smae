@@ -61,7 +61,7 @@ iniciar();
   </div>
 
   <div class="boards">
-    <div class="flex g2 mb1">
+    <div class="flex g2 mb1 flexwrap">
       <dl
         v-if="emFoco?.codigo"
         class="f1 mb1"
@@ -81,14 +81,14 @@ iniciar();
           {{ portfolioStore?.portfoliosPorId[emFoco?.portfolio_id]?.titulo }}
         </dd>
       </dl>
-      <div class="f1 mb1">
+      <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Nome do projeto
         </dt>
         <dd class="t13">
           {{ emFoco?.nome }}
         </dd>
-      </div>
+      </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Status
@@ -98,7 +98,6 @@ iniciar();
         </dd>
       </dl>
     </div>
-
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
