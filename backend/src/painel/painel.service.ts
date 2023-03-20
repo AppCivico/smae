@@ -822,6 +822,8 @@ export class PainelService {
         console.log("lgt saved_rows=" + saved_rows.length);
         console.log("lgt deleted=" + deleted.length);
 
+        console.dir(created, {depth: 2});
+
         await prisma.painelConteudoDetalhe.deleteMany({
             where: {
                 id: { in: deleted.map(e => e.id) }
