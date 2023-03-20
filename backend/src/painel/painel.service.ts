@@ -814,10 +814,6 @@ export class PainelService {
 
         // Tratando rows que precisam ser deletadas
         const saved_rows: PainelConteudoDetalheForSync[] = unchanged.concat(created);
-        // const deleted:    PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(e => {
-        //     saved_rows.find(sr => sr.id === e.id);
-        // });
-
         const deleted:    PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(e => !saved_rows.includes(e));
         
         console.log("lgt existent_painel_conteudo_detalhes=" + existent_painel_conteudo_detalhes.length);
@@ -826,11 +822,11 @@ export class PainelService {
         console.log("lgt saved_rows=" + saved_rows.length);
         console.log("lgt deleted=" + deleted.length);
 
-        // await prisma.painelConteudoDetalhe.deleteMany({
-        //     where: {
-        //         id: { in: deleted.map(e => e.id) }
-        //     }
-        // });
+        await prisma.painelConteudoDetalhe.deleteMany({
+            where: {
+                id: { in: deleted.map(e => e.id) }
+            }
+        });
 
         return {
             created: created,
