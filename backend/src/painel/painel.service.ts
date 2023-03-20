@@ -820,11 +820,17 @@ export class PainelService {
             if (!row_is_saved) return curr
         }).map((curr) => { return curr });
 
-        await prisma.painelConteudoDetalhe.deleteMany({
-            where: {
-                id: { in: deleted.map(e => e.id) }
-            }
-        });
+        console.log("lgt existent_painel_conteudo_detalhes=" + existent_painel_conteudo_detalhes.length);
+        console.log("lgt unchanged=" + unchanged.length);
+        console.log("lgt created=" + created.length);
+        console.log("lgt saved_rows=" + saved_rows.length);
+        console.log("lgt deleted=" + deleted.length);
+
+        // await prisma.painelConteudoDetalhe.deleteMany({
+        //     where: {
+        //         id: { in: deleted.map(e => e.id) }
+        //     }
+        // });
 
         return {
             created: created,
