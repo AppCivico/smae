@@ -97,6 +97,20 @@ export class IndicadoresService implements ReportableService {
     private async queryData(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresDto[]) {
         if (indicadoresOrVar.length == 0) return;
 
+        const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
+        left join meta on meta.id = i.meta_id
+        left join iniciativa on iniciativa.id = i.iniciativa_id
+        left join atividade on atividade.id = i.atividade_id
+        left join iniciativa i2 on i2.id = atividade.iniciativa_id
+        left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id`;
+
+        const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(si.data_valor::date)
+        FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+        JOIN serie_indicador si ON si.serie = series.serie
+        JOIN ${queryFromWhere} and si.indicador_id = i.id`);
+
+        const anoInicio = buscaInicio[0].min.getFullYear();
+
         const sql = `SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
@@ -126,18 +140,13 @@ export class IndicadoresService implements ReportableService {
         )::text as valor
         from generate_series($1::date, $2::date :OFFSET:, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-        join indicador i ON i.id IN (${indicadoresOrVar.join(',')})
-        left join meta on meta.id = i.meta_id
-        left join iniciativa on iniciativa.id = i.iniciativa_id
-        left join atividade on atividade.id = i.atividade_id
-        left join iniciativa i2 on i2.id = atividade.iniciativa_id
-        left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+        join ${queryFromWhere}
         `;
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int").replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
-                dto.ano + '-01-01',
+                anoInicio + '-01-01',
                 dto.ano + 1 + '-01-01',
                 '1 month',
             );
@@ -146,14 +155,14 @@ export class IndicadoresService implements ReportableService {
         } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
-                dto.ano + '-12-01',
+                anoInicio + '-12-01',
                 dto.ano + 1 + '-12-01',
                 '1 year',
             );
 
             out.push(...this.convertRows(data));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
-            const base_ano = dto.semestre == 'Primeiro' ? dto.ano : dto.ano - 1;
+            const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
             const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
             const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
@@ -163,23 +172,12 @@ export class IndicadoresService implements ReportableService {
                 '1 decade',
             );
 
-            const complemento_ano = dto.semestre == 'Primeiro' ? dto.ano : dto.ano + 1;
-            const complemento_mes = dto.semestre == 'Primeiro' ? complemento_ano + '-12-01' : complemento_ano + '-06-01';
-
-            const complemento_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)").replace(':OFFSET:', ''),
-                complemento_mes,
-                complemento_mes,
-                '1 decade',
-            );
-
             out.push(...this.convertRows(base_data));
-            out.push(...this.convertRows(complemento_data));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
             // indo buscar 6 meses, por isso sempre tem valor
             const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text").replace(':OFFSET:', "- '1 month'::interval"),
-                dto.semestre == 'Primeiro' ? dto.ano + '-06-01' : dto.ano + '-12-01',
+                dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
                 '1 month',
             );
