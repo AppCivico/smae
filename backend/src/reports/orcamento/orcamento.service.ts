@@ -603,13 +603,11 @@ export class OrcamentoService implements ReportableService {
             });
         }
 
-        // gambiarra pra puxar o relatorio de previsao-custo aqui dentro do export
+        // o dto foi encoded como json, perdeu os tipos
+        let anoCorrente = new Date(dto.inicio).getFullYear();
+        const anoCorrenteFim = new Date(dto.fim).getFullYear();
 
-        const x = dto.inicio;
-        console.log(x, typeof x);
-
-        let anoCorrente = dto.inicio.getFullYear();
-        const anoCorrenteFim = dto.fim.getFullYear();
+        // gambiarra pra puxar o relatório de previsao-custo aqui dentro do export
         while (anoCorrente <= anoCorrenteFim) {
             this.logger.debug(`Adicionando relatório de previsão de custo para o ano ${anoCorrente}`);
 
