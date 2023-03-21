@@ -72,8 +72,8 @@ class smaeChart {
     // Eval yDomain and yScale for linear
     let Y = [];
     dataMult.forEach((data) => {
-      const Yp = d3.map(data.series.projetadoAcu, (d) => d.value).filter((x) => x);
-      const Yr = d3.map(data.series.realizadoAcu, (d) => d.value).filter((x) => x);
+      const Yp = d3.map(data.series.projetadoAcu, (d) => d.value).filter((x) => x !== '');
+      const Yr = d3.map(data.series.realizadoAcu, (d) => d.value).filter((x) => x !== '');
       Y = Y.concat(Yp);
       Y = Y.concat(Yr);
     });
