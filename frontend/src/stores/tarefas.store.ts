@@ -1,5 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListTarefaDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
+
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
@@ -12,6 +14,16 @@ type Lista = ListTarefaDto['linhas'];
 
 interface TarefaComHierarquia extends TarefaItemDto {
   hierarquia: string;
+}
+
+interface TarefaComMãe extends TarefaComHierarquia {
+  parentId: number;
+}
+
+interface ProjetoParaÁrvore extends ProjetoDetailDto {
+  parentId?: 0;
+  idDoProjeto: number;
+  id: 0;
 }
 
 interface TarefasPorNível {
@@ -146,23 +158,24 @@ export const useTarefasStore = defineStore('tarefas', {
 
   },
   getters: {
-    árvoreDeTarefas(): any {
+    árvoreDeTarefas(): TarefaComHierarquia[] {
       return createDataTree(this.tarefasComHierarquia as any, 'tarefa_pai_id') || [];
     },
 
-    estruturaAnalíticaDoProjeto(): {}[] {
+    estruturaAnalíticaDoProjeto(): (TarefaComMãe | ProjetoParaÁrvore)[] {
       const projetos = useProjetosStore();
 
       if (projetos?.emFoco) {
-        const projeto = {
+        const projeto: ProjetoParaÁrvore = {
           ...projetos?.emFoco,
           idDoProjeto: projetos?.emFoco?.id,
           id: 0,
         };
 
-        return this.tarefasComHierarquia
-          .map((x) => ({ ...x, parentId: x.tarefa_pai_id || projeto.id }))
-          .concat([projeto]);
+        return [
+          ...this.tarefasComHierarquia.map((x) => ({ ...x, parentId: x.tarefa_pai_id || projeto.id })),
+          projeto
+        ]
       }
       return [];
     },
@@ -194,10 +207,10 @@ export const useTarefasStore = defineStore('tarefas', {
     // eslint-disable-next-line max-len
     listaFiltradaPor: ({ lista }) => (termo: string | number) => filtrarObjetos(lista, termo),
 
-    tarefasPorId: ({ lista }): { [x: number | string]: TarefaComHierarquia } => lista
+    tarefasPorId: ({ lista }): { [k: number | string]: TarefaComHierarquia } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-    tarefasAgrupadasPorMãe(): { [x: number | string]: TarefaComHierarquia[] } {
+    tarefasAgrupadasPorMãe(): { [k: number | string]: TarefaComHierarquia[] } {
       return (this.tarefasComHierarquia as unknown as [])
         .reduce((acc: TarefasPorNível, cur: TarefaItemDto) => ({
           ...acc,

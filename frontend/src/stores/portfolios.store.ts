@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ListPortfolioDto, PortfolioDto } from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
+import { ListPortfolioDto, PortfolioDto, PortfolioOneDto } from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -14,7 +14,7 @@ interface ChamadasPendentes {
 
 interface Estado {
   lista: Lista;
-  emFoco: PortfolioDto;
+  emFoco: PortfolioOneDto | null;
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
 }
@@ -22,11 +22,7 @@ interface Estado {
 export const usePortfolioStore = defineStore('portfolios', {
   state: (): Estado => ({
     lista: [],
-    emFoco: {
-      id: 0,
-      titulo: '',
-      orgaos: [],
-    },
+    emFoco: null,
 
     chamadasPendentes: {
       lista: true,
@@ -82,8 +78,9 @@ export const usePortfolioStore = defineStore('portfolios', {
       }
     },
   },
+
   getters: {
-    portfoliosPorId: ({ lista }: Estado) => lista
+    portfoliosPorId: ({ lista }: Estado): { [k: number | string]: PortfolioDto } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
