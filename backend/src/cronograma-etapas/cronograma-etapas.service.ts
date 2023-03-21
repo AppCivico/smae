@@ -402,7 +402,7 @@ export class CronogramaEtapaService {
         if (!inicio_real) return '';
 
         const start: DateTime = DateTime.fromJSDate(inicio_real);
-        const end: DateTime = termino_real ? DateTime.fromJSDate(termino_real) : DateTime.now();
+        const end: DateTime = termino_real ? DateTime.fromJSDate(termino_real) : DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
 
         const duration = end.diff(start).as('days');
 
