@@ -472,10 +472,10 @@ iniciar();
           class="btn outline bgnone tcprimary mr2"
           type="button"
           :disabled="chamadasPendentes.validaçãoDeDependências"
-          @click="async () => {
-            const novosValores = await validarDependências(values.dependencias);
-            setValues({ ...values, ...novosValores });
-          }"
+          @click="async () => setValues({
+            ...values,
+            ...await validarDependências(values.dependencias)
+          })"
         >
           Validar dependências
         </button>
