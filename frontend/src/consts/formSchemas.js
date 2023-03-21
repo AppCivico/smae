@@ -19,22 +19,23 @@ setLocale({
     max: 'Escolha no máximo ${max}',
   },
   date: {
-    max: 'Essa data é muito no futuro',
-    min: 'Essa data é muito no passado',
-    required: 'Data obrigatória',
+    max: ({ label }) => (label ? `${label} está muito no futuro` : 'Essa data é muito no futuro'),
+    min: ({ label }) => (label ? `${label} está muito no passado` : 'Essa data é muito no passado'),
+    required: ({ label }) => (label ? `${label} não é opcional` : 'Data obrigatória'),
   },
   mixed: {
     default: 'Não é válido',
-    required: 'Campo obrigatório',
     oneOf: 'Opção inválida',
+    required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
   number: {
-    max: 'Deve ser menor que ${max}',
-    min: 'Deve ser maior que ${min}',
+    max: ({ label, max }) => (label ? `${label} deve ser menor que ${max}` : 'Deve ser menor que ${max}'),
+    min: ({ label, min }) => (label ? `${label} deve ser maior que ${min}` : 'Deve ser maior que ${min}'),
   },
   string: {
-    min: 'Esse texto é menor que ${min}',
-    max: 'Esse texto é maior que ${max}',
+    min: ({ label, min }) => (label ? `${label} está menor que ${min}` : 'Esse texto é menor que ${min}'),
+    max: ({ label, max }) => (label ? `${label} está maior que ${max}` : 'Esse texto é maior que ${max}'),
+    required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
 });
 
