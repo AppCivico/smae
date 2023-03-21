@@ -62,6 +62,44 @@ const autenticação = object()
       .required('Preencha sua senha'),
   });
 
+const acompanhamento = object()
+  .shape({
+    data_registro: date()
+      .label('Data do registro')
+      .required()
+      .typeError('${label} inválida'),
+    detalhamento_status: string()
+      .label('Detalhamento do status')
+      .nullable(),
+    detalhamento: string()
+      .label('Detalhamento'),
+    encaminhamento: string()
+      .label('Encaminhamento')
+      .nullable(),
+    observacao: string()
+      .label('Observação')
+      .nullable(),
+    participantes: string()
+      .label('Participantes')
+      .required(),
+    pontos_atencao: string()
+      .label('Pontos de atenção')
+      .nullable(),
+    prazo_encaminhamento: date()
+      .label('Prazo para encaminhamento')
+      .nullable()
+      .typeError('${label} inválido'),
+    prazo_realizado: date()
+      .label('Prazo para realização')
+      .nullable()
+      .typeError('${label} inválido'),
+    responsavel: string()
+      .label('Responsável')
+      .nullable(),
+    risco: array()
+      .label('Riscos associados'),
+  });
+
 const custeio = object()
   .shape({
     custo_previsto: string()
@@ -590,6 +628,7 @@ const variável = (singleIndicadores) => object()
   });
 
 export {
+  acompanhamento,
   autenticação,
   custeio,
   etapa,

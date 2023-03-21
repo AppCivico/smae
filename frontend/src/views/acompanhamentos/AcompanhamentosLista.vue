@@ -86,7 +86,7 @@ iniciar();
           {{ schema.fields['participantes'].spec.label }}
         </th>
         <th class="tl">
-          XYZ
+          {{ schema.fields['detalhamento'].spec.label }}
         </th>
         <th class="tl">
           {{ schema.fields['encaminhamento'].spec.label }}
@@ -114,7 +114,7 @@ iniciar();
           {{ linha.participantes }}
         </td>
         <td>
-          {{ linha.descricao }}
+          {{ linha.detalhamento }}
         </td>
         <td>
           {{ linha.encaminhamento }}
@@ -123,14 +123,19 @@ iniciar();
           {{ linha.responsavel }}
         </td>
         <td>
-          <template
+          <router-link
             v-for="item, k in linha.risco"
             :key="k"
+            :to="{
+              name: 'planosDeAçãoListar',
+              params: {
+                riscoId: item.id
+              }
+            }"
           >
-            {{ riscosStore.riscosPorId[item.id]?.codigo }}
-          </template>
+            {{ riscosStore.riscosPorId[item.id]?.codigo }},
+          </router-link>
         </td>
-
         <td
           class="center"
         >
