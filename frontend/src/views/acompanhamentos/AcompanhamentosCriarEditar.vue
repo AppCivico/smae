@@ -1,6 +1,7 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/truncate';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useAlertStore } from '@/stores/alert.store';
@@ -83,7 +84,10 @@ function excluirAcompanhamento(id) {
       >
         {{ 'Editar acompanhamento' }}
       </div>
-      {{ emFoco?.descricao || (acompanhamentoId ? 'Acompanhamento' : 'Novo acompanhamento') }}
+      {{ emFoco?.data_registro
+        ? dateToField(emFoco?.data_registro)
+        : (acompanhamentoId ? 'Acompanhamento' : 'Novo acompanhamento')
+      }}
     </h1>
 
     <hr class="ml2 f1">
@@ -220,6 +224,23 @@ function excluirAcompanhamento(id) {
         <ErrorMessage
           name="responsavel"
           class="error-msg"
+        />
+      </div>
+      <div class="f1 mb1">
+        <label class="label tc300">
+          {{ schema.fields['prazo_realizado'].spec.label }}
+        </label>
+        <Field
+          id="prazo_realizado"
+          name="prazo_realizado"
+          type="date"
+          required
+          class="inputtext light mb1"
+          :class="{ 'error': errors.prazo_realizado }"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="prazo_realizado"
         />
       </div>
     </div>
