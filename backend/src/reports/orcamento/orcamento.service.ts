@@ -604,9 +604,13 @@ export class OrcamentoService implements ReportableService {
         }
 
         // gambiarra pra puxar o relatorio de previsao-custo aqui dentro do export
+
+        const x = dto.inicio;
+        console.log(x, typeof x);
+
         let anoCorrente = dto.inicio.getFullYear();
         const anoCorrenteFim = dto.fim.getFullYear();
-        while (anoCorrente < anoCorrenteFim) {
+        while (anoCorrente <= anoCorrenteFim) {
             this.logger.debug(`Adicionando relatório de previsão de custo para o ano ${anoCorrente}`);
 
             const p: CreateRelPrevisaoCustoDto = {
