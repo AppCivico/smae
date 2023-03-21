@@ -126,7 +126,10 @@ iniciar();
           Grau
         </dt>
         <dd class="t13">
-          {{ emFoco?.grau }} - {{ grauDescricao[emFoco.grau - 1] }}
+          {{ emFoco?.grau }} -
+          <template v-if="emFoco?.grau">
+            {{ grauDescricao[emFoco.grau - 1] }}
+          </template>
         </dd>
       </dl>
       <dl class="f1 mb1">
