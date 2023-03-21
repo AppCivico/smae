@@ -618,7 +618,14 @@ export class OrcamentoService implements ReportableService {
             const r = await this.prevCustoService.create(p);
 
             this.logger.debug(`Gerando arquivos relatório de previsão de custo para o ano ${anoCorrente}`);
-            out.push(...await this.prevCustoService.getFiles(r, pdm_id, r));
+            const reportFiles = await this.prevCustoService.getFiles(r, pdm_id, r);
+
+            for (const file of reportFiles) {
+                out.push({
+                    name: `${anoCorrente}-${file.name}`,
+                    buffer: file.buffer
+                });
+            }
 
             anoCorrente++;
         }
