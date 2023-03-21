@@ -28,8 +28,14 @@ if (meta_id) {
   (async () => {
     await CiclosStore.getMetaById(meta_id);
     CurrentMeta.value = SingleMeta.value;
-    if (iniciativa_id) CurrentIniciativa.value = CurrentMeta.value?.meta?.iniciativas.find((x) => x.iniciativa.id == iniciativa_id);
-    if (atividade_id) CurrentAtividade.value = CurrentIniciativa.value?.atividades.find((x) => x.atividade.id == atividade_id);
+    if (iniciativa_id) {
+      CurrentIniciativa.value = CurrentMeta.value?.meta?.iniciativas
+        .find((x) => x.iniciativa.id == iniciativa_id);
+    }
+    if (atividade_id) {
+      CurrentAtividade.value = CurrentIniciativa.value?.atividades
+        .find((x) => x.atividade.id == atividade_id);
+    }
   })();
 }
 
@@ -49,7 +55,11 @@ function dateToTitle(d) {
       class="breadcrumbmenu"
     >
       <router-link :to="`/monitoramento/${parentPage}`">
-        <span>{{ activePdm?.ciclo_fisico_ativo?.data_ciclo ? dateToTitle(activePdm.ciclo_fisico_ativo.data_ciclo) : 'Ciclo ativo' }}</span>
+        <span>{{
+          activePdm?.ciclo_fisico_ativo?.data_ciclo
+          ? dateToTitle(activePdm.ciclo_fisico_ativo.data_ciclo)
+          : 'Ciclo ativo'
+        }}</span>
       </router-link>
 
       <router-link
@@ -59,7 +69,7 @@ function dateToTitle(d) {
         <span>Meta {{ CurrentMeta.meta?.codigo }} {{ CurrentMeta.meta?.titulo }}</span>
       </router-link>
       <router-link
-        v-if="iniciativa_id&&activePdm.possui_iniciativa&&CurrentIniciativa.iniciativa?.id"
+        v-if="iniciativa_id && activePdm.possui_iniciativa && CurrentIniciativa.iniciativa?.id"
         :to="`/monitoramento/${parentPage}/${meta_id}/${iniciativa_id}`"
       >
         <span>
@@ -69,7 +79,7 @@ function dateToTitle(d) {
         </span>
       </router-link>
       <router-link
-        v-if="atividade_id&&activePdm.possui_atividade&&CurrentAtividade.atividade?.id"
+        v-if="atividade_id && activePdm.possui_atividade && CurrentAtividade.atividade?.id"
         :to="`/monitoramento/${parentPage}/${meta_id}/${iniciativa_id}/${atividade_id}`"
       >
         <span>
