@@ -418,6 +418,7 @@ export class CronogramaEtapaService {
 
     async durationInDaysHuman(duration: number | null): Promise<string> {
         if (duration == null) return '';
+        duration = Math.ceil(duration);
 
         if (duration === 1 || duration === 0) {
             return `${duration} dia`;
