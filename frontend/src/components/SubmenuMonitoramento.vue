@@ -97,9 +97,9 @@ function dateToTitle(d) {
       </div>
       <template
         v-if="perm.CadastroCicloFisico
-          || perm.PDM.admin_cp
-          || perm.CadastroIndicador.inserir
-          || perm.PDM.tecnico_cp
+          || perm.PDM?.admin_cp
+          || perm.CadastroIndicador?.inserir
+          || perm.PDM?.tecnico_cp
         "
       >
         <h2>Configuração</h2>
