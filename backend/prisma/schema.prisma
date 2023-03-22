@@ -54,6 +54,10 @@ model Pessoa {
     SubTemaQueRemovi    SubTema[] @relation("Removedor")
     SubTemaQueAtualizei SubTema[] @relation("Atualizador")
 
+    processoSeiQueCriei     ProjetoRegistroSei[] @relation("Criador")
+    processoSeiQueRemovi    ProjetoRegistroSei[] @relation("Removedor")
+    processoSeiQueAtualizei ProjetoRegistroSei[] @relation("Atualizador")
+
     EixoQueCriei     MacroTema[] @relation("Criador")
     EixoQueRemovi    MacroTema[] @relation("Removedor")
     EixoQueAtualizei MacroTema[] @relation("Atualizador")
@@ -2138,12 +2142,25 @@ model ProjetoRegistroSei {
     categoria    CategoriaProcessoSei
     processo_sei String
 
+    descricao String?
+    link      String?
+
     // Link, descrição, metadados
-    registro_sei_info   Json
+    registro_sei_info   Json    @default("{}")
     registro_sei_errmsg String?
 
-    criado_em  DateTime
-    criado_por Int
+    criado_em  DateTime?
+    criado_por Int?
+
+    atualizado_em  DateTime?
+    atualizado_por Int?
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
 
     @@index([projeto_id])
     @@map("projeto_registro_sei")
@@ -2359,8 +2376,8 @@ model ProjetoLicaoAprendida {
     id Int @id @default(autoincrement())
 
     data_registro DateTime
-    responsavel  String
-    
+    responsavel   String
+
     projeto_id Int
     criado_por Int
     criado_em  DateTime
@@ -2665,7 +2682,7 @@ model ProjetoAcompanhamento {
     projeto_id Int
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    data_registro        DateTime @db.Date()
+    data_registro        DateTime  @db.Date()
     participantes        String
     detalhamento         String?
     encaminhamento       String?

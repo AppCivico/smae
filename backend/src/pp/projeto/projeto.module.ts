@@ -6,12 +6,13 @@ import { PortfolioModule } from '../portfolio/portfolio.module';
 import { ProjetoController } from './projeto.controller';
 import { ProjetoProxyPdmMetasController } from './projeto.proxy-pdm-metas.controller';
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
+import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 
 @Module({
     imports: [PrismaModule, PortfolioModule, UploadModule, MetaModule],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
-    providers: [ProjetoService, ProjetoProxyPdmMetasService],
+    providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService]
 })
 export class ProjetoModule { }

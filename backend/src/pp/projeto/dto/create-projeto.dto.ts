@@ -187,12 +187,15 @@ export class CreateProjetoDocumentDto {
 }
 
 export class CreateProjetoSeiDto {
-    @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
-    @IsEnum(CategoriaProcessoSei, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(CategoriaProcessoSei).join(', '),
-    })
-    categoria: CategoriaProcessoSei
-
     @IsString()
     processo_sei: string
+
+    @IsOptional()
+    @IsString()
+    descricao: string
+
+
+    @IsOptional()
+    @IsString()
+    link: string
 }
