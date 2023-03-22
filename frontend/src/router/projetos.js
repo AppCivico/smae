@@ -1,15 +1,14 @@
 import MenuSecundário from '@/components/MenuSecundario.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import ProjetosAcompanhamento from '@/views/projetos/ProjetosAcompanhamento.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
 import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
-import ProjetosLiçõesAprendidas from '@/views/projetos/ProjetosLicoesAprendidas.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
 import acompanhamentos from './acompanhamentos';
 
+import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
 import riscos from './riscos';
 import tarefas from './tarefas';
@@ -118,7 +117,7 @@ export default {
               'tarefasListar',
               'riscosListar',
               'acompanhamentosListar',
-              'projetosLiçõesAprendidas',
+              'liçõesAprendidasListar',
             );
           }
           return base;
@@ -163,20 +162,7 @@ export default {
         tarefas,
         riscos,
         acompanhamentos,
-
-        {
-          path: 'licoes-aprendidas',
-          name: 'projetosLiçõesAprendidas',
-          component: ProjetosLiçõesAprendidas,
-          props: ({ params }) => ({
-            ...params,
-            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
-          }),
-          meta: {
-            título: 'Lições aprendidas no projeto',
-            títuloParaMenu: 'Lições aprendidas',
-          },
-        },
+        licoesAprendidas,
 
         {
           path: 'documentos',
