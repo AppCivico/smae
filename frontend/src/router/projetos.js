@@ -8,6 +8,7 @@ import ProjetosLiçõesAprendidas from '@/views/projetos/ProjetosLicoesAprendida
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
+import acompanhamentos from './acompanhamentos';
 
 import processos from './processos';
 import riscos from './riscos';
@@ -116,7 +117,7 @@ export default {
               0,
               'tarefasListar',
               'riscosListar',
-              'projetosAcompanhamento',
+              'acompanhamentosListar',
               'projetosLiçõesAprendidas',
             );
           }
@@ -161,20 +162,7 @@ export default {
 
         tarefas,
         riscos,
-
-        {
-          path: 'acompanhamento',
-          name: 'projetosAcompanhamento',
-          component: ProjetosAcompanhamento,
-          props: ({ params }) => ({
-            ...params,
-            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
-          }),
-          meta: {
-            título: 'Acompanhamento de projeto',
-            títuloParaMenu: 'Acompanhamento',
-          },
-        },
+        acompanhamentos,
 
         {
           path: 'licoes-aprendidas',
