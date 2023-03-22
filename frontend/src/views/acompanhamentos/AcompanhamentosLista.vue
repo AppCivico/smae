@@ -38,6 +38,9 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
 iniciar();
 </script>
 <template>
+  <!-- eslint-disable-next-line max-len -->
+  <!-- eslint-disable vue/multiline-html-element-content-newline
+vue/singleline-html-element-content-newline -->
   <div class="flex spacebetween center mb2">
     <h1>
       {{ typeof route?.meta?.título === 'function'
@@ -123,18 +126,21 @@ iniciar();
           {{ linha.responsavel }}
         </td>
         <td>
-          <router-link
+          <template
             v-for="item, k in linha.risco"
             :key="k"
-            :to="{
-              name: 'planosDeAçãoListar',
-              params: {
-                riscoId: item.id
-              }
-            }"
           >
-            {{ riscosStore.riscosPorId[item.id]?.codigo }},
-          </router-link>
+            <router-link
+              :to="{
+                name: 'planosDeAçãoListar',
+                params: {
+                  riscoId: item.id
+                }
+              }"
+            >{{
+              riscosStore.riscosPorId[item.id]?.codigo
+            }}</router-link><template v-if="k < linha.risco.length - 1">, </template>
+          </template>
         </td>
         <td
           class="center"

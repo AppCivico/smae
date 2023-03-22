@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from '@/../../backend/src/pp/acompanhamento/entities/acompanhamento.entity.ts';
+import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto, RiscoIdCod } from '@/../../backend/src/pp/acompanhamento/entities/acompanhamento.entity.ts';
 
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
@@ -103,6 +103,7 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
       data_registro: dateTimeToDate(emFoco?.data_registro) || null,
       prazo_encaminhamento: dateTimeToDate(emFoco?.prazo_encaminhamento) || null,
       prazo_realizado: dateTimeToDate(emFoco?.prazo_realizado) || null,
+      risco: emFoco?.risco?.map((x: RiscoIdCod) => x.id) || null,
     }),
 
     // eslint-disable-next-line max-len
