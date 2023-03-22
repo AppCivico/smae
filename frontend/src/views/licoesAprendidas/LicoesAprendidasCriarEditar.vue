@@ -83,8 +83,6 @@ function iniciar() {
   }
 }
 
-console.debug('schema', schema);
-
 iniciar();
 </script>
 <template>
