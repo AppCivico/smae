@@ -23,9 +23,20 @@ export class IndicadorService {
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         console.log({ createIndicadorDto });
         if (!createIndicadorDto.meta_id && !createIndicadorDto.iniciativa_id && !createIndicadorDto.atividade_id)
-            throw new HttpException('relacionamento| Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
+            throw new HttpException('Indicador deve ter no mínimo 1 relacionamento: Meta, Iniciativa ou Atividade', 400);
+
+        const countExistente = await this.prisma.indicador.count({
+            where: {
+                removido_em: null,
+                meta_id: createIndicadorDto.meta_id,
+                iniciativa_id: createIndicadorDto.iniciativa_id,
+                atividade_id: createIndicadorDto.atividade_id,
+            }
+        });
+        if (countExistente >= 1) throw new HttpException('Já existe um indicador para a Meta, Iniciativa ou Atividade', 400);
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+
             const indicador = await prisma.indicador.create({
                 data: {
                     criado_por: user.id,
@@ -191,7 +202,7 @@ export class IndicadorService {
         return created;
     }
 
-    async #validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined, indicador_id: number, formula: string): Promise<string> {
+    private async validateVariaveis(formula_variaveis: FormulaVariaveis[] | null | undefined, indicador_id: number, formula: string): Promise<string> {
         let formula_compilada = '';
         const neededRefs: Record<string, number> = {};
         if (formula) {
@@ -348,11 +359,13 @@ export class IndicadorService {
             throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
         }
 
-        const formula_compilada: string = await this.#validateVariaveis(formula_variaveis, id, formula);
+        const formula_compilada: string = await this.validateVariaveis(formula_variaveis, id, formula);
         console.log({ formula_variaveis });
 
-        const oldVersion = IndicadorService.getIndicadorHash(indicador);
-        this.logger.debug({ oldVersion });
+        // TODO rever isso aqui, pq não ta usando pra nada
+        // pq ta errado a logica (salvando sempre)
+        //const oldVersion = IndicadorService.getIndicadorHash(indicador);
+        //this.logger.debug({ oldVersion });
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const indicador = await prisma.indicador.update({
@@ -367,8 +380,8 @@ export class IndicadorService {
                 select: indicadorSelectData,
             });
 
-            const newVersion = IndicadorService.getIndicadorHash(indicador);
-            this.logger.debug({ oldVersion, newVersion });
+            //const newVersion = IndicadorService.getIndicadorHash(indicador);
+            //this.logger.debug({ oldVersion, newVersion });
 
             if (formula_variaveis) {
                 await prisma.indicadorFormulaVariavel.deleteMany({
@@ -388,7 +401,8 @@ export class IndicadorService {
             }
 
             //if (!(oldVersion === newVersion)) {
-            this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`);
+            //this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`);
+            this.logger.log(`Indicador recalculando...`);
             await prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
             //}
 
@@ -398,7 +412,7 @@ export class IndicadorService {
         return { id };
     }
 
-    static getIndicadorHash(indicador: {
+    private static getIndicadorHash(indicador: {
         formula_variaveis: {
             variavel_id: number;
             referencia: string;
@@ -446,7 +460,7 @@ export class IndicadorService {
         return created;
     }
 
-    getValorSerieExistentePorPeriodo(valoresExistentes: ValorSerieExistente[]): SerieIndicadorValorPorPeriodo {
+    private getValorSerieExistentePorPeriodo(valoresExistentes: ValorSerieExistente[]): SerieIndicadorValorPorPeriodo {
         const porPeriodo = new SerieIndicadorValorPorPeriodo();
         for (const serieValor of valoresExistentes) {
             if (!porPeriodo[Date2YMD.toString(serieValor.data_valor)]) {
@@ -468,7 +482,7 @@ export class IndicadorService {
         return porPeriodo;
     }
 
-    async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade, filters: FilterIndicadorSerieDto): Promise<DateYMD[]> {
+    private async gerarPeriodosEntreDatas(start: Date, end: Date, periodicidade: Periodicidade, filters: FilterIndicadorSerieDto): Promise<DateYMD[]> {
         const [startStr, endStr] = [Date2YMD.toString(start), Date2YMD.toString(end)];
 
         const filterStart = Date2YMD.toStringOrNull(filters.data_inicio || null);
@@ -503,7 +517,7 @@ export class IndicadorService {
         }
     }
 
-    async getValorSerieExistente(indicadorId: number, series: Serie[]): Promise<ValorSerieExistente[]> {
+    private async getValorSerieExistente(indicadorId: number, series: Serie[]): Promise<ValorSerieExistente[]> {
         return await this.prisma.serieIndicador.findMany({
             where: {
                 indicador_id: +indicadorId,
@@ -592,7 +606,7 @@ export class IndicadorService {
         return result;
     }
 
-    buildNonExistingSerieValor(periodo: DateYMD, serie: Serie): SerieIndicadorValorNominal {
+    private buildNonExistingSerieValor(periodo: DateYMD, serie: Serie): SerieIndicadorValorNominal {
         return {
             data_valor: periodo,
             valor_nominal: '',
