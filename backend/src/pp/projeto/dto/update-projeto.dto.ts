@@ -63,7 +63,7 @@ export class PPrestricaoDto {
     restricao: string;
 }
 
-export class UpdateProjetoRegistroSeiDto extends OmitType(PartialType(CreateProjetoSeiDto), []) { }
+export class UpdateProjetoRegistroSeiDto extends PartialType(CreateProjetoSeiDto) { }
 
 // esses campos serão updated apenas via sistema (pelas tarefas)
 //    @IsOptional()
