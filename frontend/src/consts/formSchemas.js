@@ -202,6 +202,24 @@ const indicador = object()
       .required('Preencha o título'),
   });
 
+const liçãoAprendida = object()
+  .shape({
+    data_registro: date()
+      .label('Data do registro')
+      .required()
+      .typeError('${label} inválida'),
+    descricao: string()
+      .label('Descrição')
+      .required()
+      .nullable(),
+    observacao: string()
+      .label('Observação')
+      .nullable(),
+    responsavel: string()
+      .label('Responsável')
+      .required(),
+  });
+
 const monitoramentoDePlanoDeAção = object()
   .shape({
     descricao: string()
@@ -635,6 +653,7 @@ export {
   etapaDeMonitoramento,
   fase,
   indicador,
+  liçãoAprendida,
   monitoramentoDePlanoDeAção,
   novaSenha,
   planoDeAção,
