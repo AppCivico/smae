@@ -13,6 +13,7 @@ export class OrcamentoExecutadoSaidaDto {
     orgao: CodigoNome;
     unidade: CodigoNome;
     fonte: CodigoNome;
+    acao_orcamentaria: string
 
     /**
      * fonte: SMAE/ horário que o SMAE foi buscar a dotação
@@ -95,6 +96,7 @@ export class OrcamentoPlanejadoSaidaDto {
     atividade: IdCodTituloDto | null;
 
     dotacao: string;
+    acao_orcamentaria: string;
 
     orgao: CodigoNome;
     unidade: CodigoNome;

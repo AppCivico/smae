@@ -428,6 +428,7 @@ export class OrcamentoService implements ReportableService {
             iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
             atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
 
+            acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
             dotacao: db.dotacao,
 
             orgao: { codigo: '', nome: '' },
@@ -462,6 +463,7 @@ export class OrcamentoService implements ReportableService {
             iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
             atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
 
+            acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
             dotacao: db.dotacao,
             processo: db.processo,
             nota_empenho: db.nota_empenho,
@@ -536,6 +538,7 @@ export class OrcamentoService implements ReportableService {
                     ...camposAnoMes,
                     ...camposMetaIniAtv,
                     'dotacao',
+                    'acao_orcamentaria',
                     'processo',
                     'nota_empenho',
                     'orgao.codigo',
@@ -578,6 +581,7 @@ export class OrcamentoService implements ReportableService {
                     ...camposAno,
                     ...camposMetaIniAtv,
                     'dotacao',
+                    'acao_orcamentaria',
                     'orgao.codigo',
                     'orgao.nome',
                     'unidade.codigo',

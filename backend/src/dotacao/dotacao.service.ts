@@ -5,9 +5,32 @@ import { SofApiService, SofError } from '../sof-api/sof-api.service';
 import { AnoDotacaoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
 import { OrcadoProjetoDto, ValorPlanejadoDto, ValorRealizadoDotacaoDto } from './entities/dotacao.entity';
 
+type TipoAcaoOrcamentaria = 'custeio' | 'investimento' | '';
+
 @Injectable()
 export class DotacaoService {
     constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
+
+    /**
+     * Recebe a dotação, extrai o quinto (parte do projeto/atividade)
+     * Se for par, é investimento, se for impar, é custeio
+     * Ex: 30.10.08.605.3016.[4].470.33903900.00 => projeto/atividade = 4.470 -> custeio
+     * Ex: 84.11.10.302.3003.[5].204.44905200.00 => projeto/atividade = 5.204 -> investimento
+     *
+     * @param dotacao
+     * @returns
+     */
+    getAcaoOrcamentaria(dotacao: string | null): TipoAcaoOrcamentaria {
+        let acao_orcamentaria: TipoAcaoOrcamentaria = '';
+        if (dotacao) {
+            let parts = dotacao.split('.');
+            if (parts.length > 6) {
+                const antesDoPonto = +parts[5];
+                acao_orcamentaria = antesDoPonto % 2 == 0 ? 'custeio' : 'investimento';
+            }
+        }
+        return acao_orcamentaria;
+    }
 
     async orcadoProjeto(dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
         try {
