@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoOrigemTipo } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUrl, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsNumberString, IsOptional, IsString, IsUrl, Matches, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateProjetoDto {
@@ -187,16 +187,24 @@ export class CreateProjetoDocumentDto {
 }
 
 export class CreateProjetoSeiDto {
+    /**
+     * Acredito que pode ser apenas numeros, mas talvez tenha alguma mascara no frontend
+     **/
     @IsString()
+    @MaxLength(2000)
+    @Matches(/^[0-9]+$/, {
+        message: '$property| Precisa ser apenas números.',
+    })
     processo_sei: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(2000)
     descricao: string
-
 
     @IsOptional()
     @IsString()
+    @MaxLength(2000)
     @IsUrl({
         protocols: ['http', 'https'],
         require_tld: true,
@@ -210,6 +218,6 @@ export class CreateProjetoSeiDto {
         allow_fragments: true,
         allow_query_components: true,
         validate_length: true
-    })
+    }, { message: '$property| O link um precisa ter o protocolo HTTP ou HTTPS, um TLD válido.' })
     link: string
 }
