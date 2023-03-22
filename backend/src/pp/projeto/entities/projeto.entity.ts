@@ -83,6 +83,7 @@ export class ProjetoMetaDetailDto {
 
 export class ProjetoSeiDto {
     id: number
+    @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
     categoria: CategoriaProcessoSei
     processo_sei: string
     descricao: string | null
