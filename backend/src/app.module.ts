@@ -62,6 +62,7 @@ import { RiscoModule } from './pp/risco/risco.module';
 import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plano-acao-monitoramento.module';
 import { PlanoAcaoModule } from './pp/plano-de-acao/plano-de-acao.module';
 import { AcompanhamentoModule } from './pp/acompanhamento/acompanhamento.module';
+import { LicoesAprendidasModule } from './pp/licoes-aprendidas/licoes-aprendidas.module';
 
 @Module({
     imports: [
@@ -127,7 +128,8 @@ import { AcompanhamentoModule } from './pp/acompanhamento/acompanhamento.module'
         RiscoModule,
         PlanoAcaoModule,
         PlanoAcaoMonitoramentoModule,
-        AcompanhamentoModule
+        AcompanhamentoModule,
+        LicoesAprendidasModule
     ],
     controllers: [AppController],
     providers: [

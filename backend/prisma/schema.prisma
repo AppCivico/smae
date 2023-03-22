@@ -2358,6 +2358,9 @@ model ProjetoRestricao {
 model ProjetoLicaoAprendida {
     id Int @id @default(autoincrement())
 
+    data_registro DateTime
+    responsavel  String
+    
     projeto_id Int
     criado_por Int
     criado_em  DateTime
