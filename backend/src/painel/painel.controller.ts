@@ -35,6 +35,14 @@ export class PainelController {
         return { linhas: await this.painelService.findAll(filters, user) };
     }
 
+//    @Get()
+//    @ApiBearerAuth('access-token')
+//    @Roles('CadastroPainel.visualizar')
+//    async buscaPaineisParaMeta(...) {
+//      TODO: ... filtrar pela meta apenas os que o usuário pode ver, retornar exatamente da mesma forma que o ListPainelDto
+//        return { linhas: await this.painelService.findAll(filters, user) };
+
+
     @ApiBearerAuth('access-token')
     @Get(':id')
     @Roles('CadastroPainel.visualizar')
