@@ -14,7 +14,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
-const licoesaprendidasStore = useLiçõesAprendidasStore();
+const liçõesAprendidasStore = useLiçõesAprendidasStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
 const route = useRoute();
@@ -24,7 +24,7 @@ const {
   emFoco,
   erro,
   itemParaEdição,
-} = storeToRefs(licoesaprendidasStore);
+} = storeToRefs(liçõesAprendidasStore);
 
 const {
   tarefasComHierarquia,
@@ -35,7 +35,7 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  licoesaprendidaId: {
+  licaoAprendidaId: {
     type: Number,
     default: 0,
   },
@@ -43,25 +43,25 @@ const props = defineProps({
 
 async function onSubmit(_, { controlledValues: carga }) {
   try {
-    const msg = props.licoesaprendidaId
+    const msg = props.licaoAprendidaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = props.licoesaprendidaId
-      ? await licoesaprendidasStore.salvarItem(carga, props.licoesaprendidaId)
-      : await licoesaprendidasStore.salvarItem(carga);
+    const resposta = props.licaoAprendidaId
+      ? await liçõesAprendidasStore.salvarItem(carga, props.licaoAprendidaId)
+      : await liçõesAprendidasStore.salvarItem(carga);
 
     if (resposta) {
       alertStore.success(msg);
       await router.push({ name: 'liçõesAprendidasListar' });
-      licoesaprendidasStore.$reset();
+      liçõesAprendidasStore.$reset();
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
 
-function excluirLicoesAprendida(id) {
+function excluirLiçãoAprendida(id) {
   useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await useLiçõesAprendidasStore().excluirItem(id)) {
       useLiçõesAprendidasStore().$reset();
@@ -91,13 +91,13 @@ iniciar();
   <div class="flex spacebetween center mb2">
     <h1>
       <div
-        v-if="licoesaprendidaId"
+        v-if="licaoAprendidaId"
         class="t12 uc w700 tamarelo"
       >
         {{ 'Editar licoesaprendida' }}
       </div>
       {{ emFoco?.descricao
-        || (licoesaprendidaId ? 'LicoesAprendida' : 'Nova lição aprendida') }}
+        || (licaoAprendidaId ? 'LicoesAprendida' : 'Nova lição aprendida') }}
     </h1>
 
     <hr class="ml2 f1">
@@ -109,7 +109,7 @@ iniciar();
   </div>
 
   <Form
-    v-if="!licoesaprendidaId || emFoco"
+    v-if="!licaoAprendidaId || emFoco"
     v-slot="{ errors, isSubmitting }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
@@ -241,7 +241,7 @@ iniciar();
   <button
     v-if="emFoco?.id"
     class="btn amarelo big"
-    @click="excluirLicoesAprendida(emFoco.id)"
+    @click="excluirLiçãoAprendida(emFoco.id)"
   >
     Remover item
   </button>
