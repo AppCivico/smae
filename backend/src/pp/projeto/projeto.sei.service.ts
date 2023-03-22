@@ -4,7 +4,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto } from './entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 
 
 @Injectable()
@@ -39,7 +39,7 @@ export class ProjetoSeiService {
         return { id: projetoSei.id }
     }
 
-    async list_sei(projeto: ProjetoDetailDto, user: PessoaFromJwt) {
+    async list_sei(projeto: ProjetoDetailDto, user: PessoaFromJwt): Promise<ProjetoSeiDto[]> {
 
         const projetosSei = await this.prisma.projetoRegistroSei.findMany({
             where: {

@@ -84,7 +84,10 @@ export class ProjetoMetaDetailDto {
 export class ProjetoSeiDto {
     id: number
     categoria: CategoriaProcessoSei
-    processo_sei: String
+    processo_sei: string
+    descricao: string | null
+    link: string | null
+    criador: IdNomeExibicao | null
 }
 
 export class ListProjetoSeiDto {
