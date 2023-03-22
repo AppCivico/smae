@@ -1,7 +1,7 @@
-/* eslint-disable import/extensions */
+import LabelFromYup from '@/components/LabelFromYup.vue';
+// usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
-// usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 import { createPinia } from 'pinia';
 import { createApp, markRaw } from 'vue';
 import type { RouteLocationNormalized, Router } from 'vue-router';
@@ -38,7 +38,7 @@ pinia.use(({ store }) => {
   return { requestS: markRaw(requestS) };
 });
 
-
+app.component('LabelFromYup', LabelFromYup);
 
 app.use(pinia);
 app.use(router);
