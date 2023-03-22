@@ -10,11 +10,15 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto } from './entities/projeto.entity';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { ProjetoSeiService } from './projeto.sei.service';
 
 @ApiTags('Projeto')
 @Controller('projeto')
 export class ProjetoController {
-    constructor(private readonly projetoService: ProjetoService) { }
+    constructor(
+        private readonly projetoService: ProjetoService,
+        private readonly projetoSeiService: ProjetoSeiService
+    ) { }
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -91,7 +95,8 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async createSEI(@Param() params: FindOneParams, @Body() createProjetoRegistroSei: CreateProjetoSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.projetoService.append_sei(params.id, createProjetoRegistroSei, user);
+        const projeto = await this.projetoService.findOne(params.id, user, false);
+        return await this.projetoSeiService.append_sei(projeto, createProjetoRegistroSei, user);
     }
 
     @Get(':id/sei')
@@ -99,7 +104,8 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
-        return { linhas: await this.projetoService.list_sei(params.id, user) };
+        const projeto = await this.projetoService.findOne(params.id, user, true);
+        return { linhas: await this.projetoSeiService.list_sei(projeto, user) };
     }
 
     @Patch(':id/sei/:id2')
@@ -107,7 +113,8 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async updateSEI(@Param() params: FindTwoParams, @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.projetoService.update_sei(params.id, params.id2, updateProjetoRegistroSeiDto, user);
+        const projeto = await this.projetoService.findOne(params.id, user, false);
+        return await this.projetoSeiService.update_sei(projeto, params.id2, updateProjetoRegistroSeiDto, user);
     }
 
     @Delete(':id/sei/:id2')
@@ -117,7 +124,8 @@ export class ProjetoController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.remove_sei(params.id, params.id2, user);
+        const projeto = await this.projetoService.findOne(params.id, user, false);
+        await this.projetoSeiService.remove_sei(projeto, params.id2, user);
         return null;
     }
 }
