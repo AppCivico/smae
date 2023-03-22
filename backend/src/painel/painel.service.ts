@@ -88,10 +88,25 @@ export class PainelService {
             ativo = true;
         }
 
+        const userGrupos = await this.prisma.pessoaGrupoPainel.findMany({
+            where: { pessoa_id: user.id },
+            select: { grupo_painel_id: true }
+        });
+
         return await this.prisma.painel.findMany({
             where: {
                 ativo: ativo,
-                removido_em: null
+                removido_em: null,
+
+                grupos: {
+                    some: {
+                        grupo_painel: {
+                            id: {
+                                in: userGrupos.map(g => g.grupo_painel_id)
+                            }
+                        }
+                    }
+                }
             },
             select: {
                 id: true,
@@ -103,6 +118,7 @@ export class PainelService {
                 mostrar_indicador_por_padrao: true,
 
                 painel_conteudo: {
+                    where: { meta_id: filters?.meta_id },
                     select: {
                         id: true,
                         meta_id: true,
