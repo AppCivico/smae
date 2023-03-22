@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -35,12 +35,13 @@ export class PainelController {
         return { linhas: await this.painelService.findAll(filters, user) };
     }
 
-//    @Get()
-//    @ApiBearerAuth('access-token')
-//    @Roles('CadastroPainel.visualizar')
-//    async buscaPaineisParaMeta(...) {
-//      TODO: ... filtrar pela meta apenas os que o usuário pode ver, retornar exatamente da mesma forma que o ListPainelDto
-//        return { linhas: await this.painelService.findAll(filters, user) };
+   @Get('/painel-por-meta')
+   @ApiBearerAuth('access-token')
+   @Roles('CadastroPainel.visualizar')
+   async findPaineisPorMeta(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
+        if (!filters.meta_id) throw new HttpException('meta_id| Deve ser enviado', 400);
+        return { linhas: await this.painelService.findAll(filters, user) };
+   }
 
 
     @ApiBearerAuth('access-token')
