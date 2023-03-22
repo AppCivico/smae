@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CategoriaProcessoSei, ProjetoOrigemTipo } from '@prisma/client';
+import { ProjetoOrigemTipo } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUrl, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateProjetoDto {
@@ -197,5 +197,19 @@ export class CreateProjetoSeiDto {
 
     @IsOptional()
     @IsString()
+    @IsUrl({
+        protocols: ['http', 'https'],
+        require_tld: true,
+        require_protocol: true,
+        require_host: true,
+        require_port: false,
+        require_valid_protocol: true,
+        allow_underscores: false,
+        allow_trailing_dot: false,
+        allow_protocol_relative_urls: false,
+        allow_fragments: true,
+        allow_query_components: true,
+        validate_length: true
+    })
     link: string
 }
