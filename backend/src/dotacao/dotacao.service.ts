@@ -9,7 +9,7 @@ type TipoAcaoOrcamentaria = 'custeio' | 'investimento' | '';
 
 @Injectable()
 export class DotacaoService {
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
+    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) { }
 
     /**
      * Recebe a dotação, extrai o quinto (parte do projeto/atividade)
@@ -18,7 +18,6 @@ export class DotacaoService {
      * Ex: 84.11.10.302.3003.[5].204.44905200.00 => projeto/atividade = 5.204 -> investimento
      *
      * @param dotacao
-     * @returns
      */
     getAcaoOrcamentaria(dotacao: string | null): TipoAcaoOrcamentaria {
         let acao_orcamentaria: TipoAcaoOrcamentaria = '';
@@ -222,7 +221,7 @@ export class DotacaoService {
             const r = srcDestList[i];
 
             const ano: string = ('plan_dotacao_ano_utilizado' in r) && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
-            console.log({r, ano, x: (r as any).plan_dotacao_ano_utilizado});
+            console.log({ r, ano, x: (r as any).plan_dotacao_ano_utilizado });
 
             if (!ano) continue;
 
