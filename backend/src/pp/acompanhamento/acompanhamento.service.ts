@@ -16,18 +16,37 @@ export class AcompanhamentoService {
 
     async create(projetoId: number, dto: CreateProjetoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
-        const acompanhamento = await this.prisma.projetoAcompanhamento.create({
-            data: {
-                projeto_id: projetoId,
-                ...dto,
+        //if (!dto.risco_tarefa_outros && Array.isArray(dto.risco) == false || (Array.isArray(dto.risco) && dto.risco.length == 0))
+        //throw new HttpException('Se não for enviado um risco do sistema, é necessário informar um risco externo', 400);
 
-                criado_em: new Date(Date.now()),
-                criado_por: user.id
-            },
-            select: {id: true}
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+
+            const acompanhamento = await prismaTx.projetoAcompanhamento.create({
+                data: {
+                    projeto_id: projetoId,
+                    ...dto,
+
+                    criado_em: new Date(Date.now()),
+                    criado_por: user.id
+                },
+                select: { id: true }
+            });
+
+            if (Array.isArray(dto.risco) && dto.risco.length) {
+                await prismaTx.projetoAcompanhamentoRisco.createMany({
+                    data: dto.risco.map((r) => {
+                        return {
+                            projeto_acompanhamento_id: acompanhamento.id,
+                            projeto_risco_id: r,
+                        }
+                    })
+                });
+            }
+
+            return { id: acompanhamento.id };
         });
 
-        return {id: acompanhamento.id}
+        return { id: created.id }
     }
 
     async findAll(projetoId: number, user: PessoaFromJwt): Promise<ProjetoAcompanhamento[]> {
@@ -36,7 +55,7 @@ export class AcompanhamentoService {
                 projeto_id: projetoId,
                 removido_em: null
             },
-            orderBy: [{criado_em: 'desc'}],
+            orderBy: [{ criado_em: 'desc' }],
             select: {
                 id: true,
                 data_registro: true,
@@ -111,7 +130,7 @@ export class AcompanhamentoService {
         });
         if (!projetoAcompanhamento) throw new HttpException('Não foi possível encontrar o Acompanhamento', 400);
 
-        
+
         return {
             id: projetoAcompanhamento.id,
             data_registro: projetoAcompanhamento.data_registro,
@@ -135,23 +154,59 @@ export class AcompanhamentoService {
     }
 
     async update(projeto_id: number, id: number, dto: UpdateProjetoAcompanhamentoDto, user: PessoaFromJwt) {
+        const self = await this.prisma.projetoAcompanhamento.findFirstOrThrow({
+            where: {
+                id,
+                removido_em: null,
+                projeto_id: projeto_id,
+            },
+            select: { id: true }
+        });
+
         const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-        
-            return await this.prisma.projetoAcompanhamento.update({
+
+            if (dto.risco !== undefined) {
+                await prismaTx.projetoAcompanhamentoRisco.deleteMany({
+                    where: { projeto_acompanhamento_id: self.id }
+                });
+
+                if (Array.isArray(dto.risco) && dto.risco.length > 0)
+                    await prismaTx.projetoAcompanhamentoRisco.createMany({
+                        data: dto.risco.map((r) => {
+                            return {
+                                projeto_acompanhamento_id: self.id,
+                                projeto_risco_id: r,
+                            }
+                        })
+                    });
+            }
+
+            return await prismaTx.projetoAcompanhamento.update({
                 where: {
                     id,
                 },
                 data: {
                     ...dto
                 },
-                select: {id: true}
+                select: { id: true }
             });
+
+
         });
 
         return updated;
     }
 
     async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
+        await this.prisma.projetoAcompanhamento.findFirstOrThrow({
+            where: {
+                id,
+                removido_em: null,
+                projeto_id: projeto_id,
+            },
+            select: { id: true }
+        });
+
         return await this.prisma.projetoAcompanhamento.updateMany({
             where: {
                 id,
