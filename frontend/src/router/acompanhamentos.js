@@ -24,7 +24,7 @@ export default {
       path: '',
       component: AcompanhamentosLista,
       meta: {
-        título: 'Acompanhamento do projeto',
+        título: 'Reuniões de acompanhamento',
         títuloParaMenu: 'Acompanhamento',
 
         rotasParaMigalhasDePão: [
@@ -41,8 +41,8 @@ export default {
       path: 'novo',
       component: AcompanhamentosCriarEditar,
       meta: {
-        título: 'Novo acompanhamento',
-        títuloParaMenu: 'Novo acompanhamento',
+        título: 'Novo registro de acompanhamento',
+        títuloParaMenu: 'Novo registro de acompanhamento',
 
         rotaDeEscape: 'acompanhamentosListar',
 

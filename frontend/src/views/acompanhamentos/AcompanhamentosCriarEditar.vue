@@ -86,7 +86,7 @@ function excluirAcompanhamento(id) {
       </div>
       {{ emFoco?.data_registro
         ? dateToField(emFoco?.data_registro)
-        : (acompanhamentoId ? 'Acompanhamento' : 'Novo acompanhamento')
+        : (acompanhamentoId ? 'Acompanhamento' : 'Novo registro de acompanhamento')
       }}
     </h1>
 

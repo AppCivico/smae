@@ -52,7 +52,7 @@ iniciar();
         :to="{ name: 'acompanhamentosCriar' }"
         class="btn"
       >
-        Novo acompanhamento
+        Novo registro de acompanhamento
       </router-link>
     </div>
   </div>
