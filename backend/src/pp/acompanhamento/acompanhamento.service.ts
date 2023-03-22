@@ -24,7 +24,7 @@ export class AcompanhamentoService {
             const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                 data: {
                     projeto_id: projetoId,
-                    ...dto,
+                    ...{ ...dto, risco: undefined },
 
                     criado_em: new Date(Date.now()),
                     criado_por: user.id
@@ -186,7 +186,7 @@ export class AcompanhamentoService {
                     id,
                 },
                 data: {
-                    ...dto
+                    ...{ ...dto, risco: undefined },
                 },
                 select: { id: true }
             });
