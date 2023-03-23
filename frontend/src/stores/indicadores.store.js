@@ -1,4 +1,5 @@
 import { requestS } from '@/helpers';
+import toFloat from '@/helpers/toFloat';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -59,6 +60,7 @@ export const useIndicadoresStore = defineStore({
           const x = r.linhas[0];
           x.inicio_medicao = this.dateToField(x.inicio_medicao);
           x.fim_medicao = this.dateToField(x.fim_medicao);
+          x.acumulado_valor_base = toFloat(x.acumulado_valor_base) || null;
           x.agregador_id = x.agregador ? x.agregador.id : null;
 
           this.singleIndicadores = x;
