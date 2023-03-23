@@ -190,7 +190,7 @@ export class CreateProjetoSeiDto {
     /**
      * No final, vai virar apenas número.
      *
-     * @example "4444.2222/1231-33"
+     * @example "6068.2021/0004861-3"
      **/
     @IsString()
     @MaxLength(40)
