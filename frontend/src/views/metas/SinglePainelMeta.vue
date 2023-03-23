@@ -51,8 +51,11 @@ async function selectPainel() {
     iPA.value = SingleSerie.value.ordem_series?.indexOf('PrevistoAcumulado');
     iRA.value = SingleSerie.value.ordem_series?.indexOf('RealizadoAcumulado');
 
-    if (SingleSerie.value?.meta?.indicador?.series?.length) ModeloSerie.value = SingleSerie.value.meta.indicador.series;
-    else if (SingleSerie.value?.detalhes[0]?.series?.length) ModeloSerie.value = SingleSerie.value.detalhes[0].series;
+    if (SingleSerie.value?.meta?.indicador?.series?.length) {
+      ModeloSerie.value = SingleSerie.value.meta.indicador.series;
+    } else if (SingleSerie.value?.detalhes[0]?.series?.length) {
+      ModeloSerie.value = SingleSerie.value.detalhes[0].series;
+    }
   }
 }
 
