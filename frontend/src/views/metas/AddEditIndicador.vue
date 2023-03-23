@@ -828,6 +828,7 @@ if (indicador_id) {
             <LabelFromYup
               name="acumulado_valor_base"
               :schema="schema"
+              style="color: inherit"
             />
             <Field
               name="acumulado_valor_base"
