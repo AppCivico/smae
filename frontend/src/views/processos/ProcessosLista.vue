@@ -1,5 +1,6 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
+import { processo as schema } from '@/consts/formSchemas';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -73,16 +74,13 @@ iniciar();
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
         <th class="tl">
-          Processo SEI
+          {{ schema.fields['processo_sei'].spec.label }}
         </th>
         <th class="tl">
-          Descrição
-        </th>
-        <th class="tl">
-          Processo
+          {{ schema.fields['descricao'].spec.label }}
         </th>
         <th class="center">
-          Link
+          {{ schema.fields['link'].spec.label }}
         </th>
         <th />
       </tr>
@@ -95,20 +93,24 @@ iniciar();
     >
       <tr>
         <td class="cell--number">
-          {{ linha.XYZ }}
+          {{ linha.processo_sei }}
         </td>
         <th>
-          {{ linha.XYZ }}
+          {{ linha.descricao }}
         </th>
         <td class="center">
-          <a :href="linha.XYX">
-            {{ linha.XYZ }}
+          <a
+            :href="linha.link"
+            target="_blank"
+          >
+            link processo
           </a>
         </td>
         <td
           class="center"
         >
           <router-link
+            v-if="linha.categoria === 'Manual'"
             :to="{
               name: 'processosEditar',
               params: {
@@ -128,10 +130,10 @@ iniciar();
     </tbody>
   </table>
 
-  <span
+  <div
     v-if="chamadasPendentes?.lista"
     class="spinner"
-  >Carregando</span>
+  >Carregando</div>
 
   <div
     v-if="erro"

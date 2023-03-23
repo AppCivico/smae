@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { CreateProjetoSeiDto } from '@/../../backend/src/pp/projeto/dto/create-projeto.dto.ts';
+import { ListProjetoSeiDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity.ts';
 
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
@@ -7,7 +7,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = CreateProjetoSeiDto[];
+type Lista = ListProjetoSeiDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
@@ -16,7 +16,7 @@ interface ChamadasPendentes {
 
 interface Estado {
   lista: Lista;
-  emFoco: CreateProjetoSeiDto | null;
+  emFoco: ProjetoDetailDto | null;
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
