@@ -118,9 +118,10 @@ iniciar();
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Código&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="codigo"
+          :schema="schema"
+        />
         <Field
           name="codigo"
           type="number"
@@ -133,9 +134,10 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">
-          Data de registro
-        </label>
+        <LabelFromYup
+          name="registrado_em"
+          :schema="schema"
+        />
         <Field
           name="registrado_em"
           required
@@ -159,9 +161,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Descrição
-        </label>
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
         <Field
           name="descricao"
           as="textarea"
@@ -179,9 +182,10 @@ iniciar();
 
     <div class="flex g2 mb1 flexwrap">
       <div class="f2 mb1">
-        <label class="label tc300">
-          Probabilidade
-        </label>
+        <LabelFromYup
+          name="probabilidade"
+          :schema="schema"
+        />
 
         <Field
           name="probabilidade"
@@ -210,9 +214,10 @@ iniciar();
       </div>
 
       <div class="f2 mb1">
-        <label class="label tc300">
-          Impacto&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="impacto"
+          :schema="schema"
+        />
         <Field
           name="impacto"
           as="select"
@@ -298,12 +303,13 @@ iniciar();
       </legend>
       <div class="flex g2">
         <div class="f2 mb1">
-          <label class="label tc300">
+          <LabelFromYup>
             Do cronograma<template
               v-if="!values.risco_tarefa_outros"
-            >&nbsp;<span class="tvermelho">*</span></template>
-          </label>
-
+            >
+              &nbsp;<span class="tvermelho">*</span>
+            </template>
+          </LabelFromYup>
           <AutocompleteField
             name="tarefa_id"
             :controlador="{ busca: '', participantes: values.tarefa_id || [] }"
@@ -323,11 +329,13 @@ iniciar();
         </div>
 
         <div class="f2 mb1">
-          <label class="label tc300">
+          <LabelFromYup>
             Outras<template
               v-if="!values.tarefa_id?.length"
-            >&nbsp;<span class="tvermelho">*</span></template>
-          </label>
+            >
+              &nbsp;<span class="tvermelho">*</span>
+            </template>
+          </LabelFromYup>
           <Field
             name="risco_tarefa_outros"
             class="inputtext light mb1"
@@ -343,9 +351,10 @@ iniciar();
 
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Causa&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="causa"
+          :schema="schema"
+        />
         <Field
           name="causa"
           type="text"
@@ -360,9 +369,10 @@ iniciar();
 
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Consequência&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="consequencia"
+          :schema="schema"
+        />
         <Field
           name="consequencia"
           type="text"

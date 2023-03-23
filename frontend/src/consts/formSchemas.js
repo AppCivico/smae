@@ -508,20 +508,38 @@ const relatórioSemestralOuAnual = object({
 
 const risco = object()
   .shape({
+    causa: string()
+      .label('Causa raiz')
+      .required(),
     codigo: number()
+      .label('Código')
       .min(1)
+      .required(),
+    consequencia: string()
+      .label('Consequências')
+      .required(),
+    descricao: string()
+      .label('Descrição')
       .nullable(),
     impacto: number()
+      .label('Impacto')
       .min(1)
       .max(5)
-      .nullable(),
+      .required(),
     probabilidade: number()
+      .label('Probabilidade')
       .min(1)
       .max(5)
-      .nullable(),
+      .required(),
     registrado_em: date()
+      .label('Data de registro')
       .nullable()
       .typeError('Data inválida'),
+    tarefa_id: number()
+      .label('Tarefas afetadas')
+      .min(1)
+      .max(5)
+      .required(),
   });
 
 const tarefa = object()
