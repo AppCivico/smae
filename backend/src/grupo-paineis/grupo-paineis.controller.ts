@@ -27,7 +27,7 @@ export class GrupoPaineisController {
 
     @ApiBearerAuth('access-token')
     @Get('')
-    @Roles('CadastroPainel.visualizar', 'CadastroGrupoPaineis.inserir', 'CadastroGrupoPaineis.editar', 'CadastroGrupoPaineis.remover')
+    @Roles('CadastroGrupoPaineis.inserir', 'CadastroGrupoPaineis.editar', 'CadastroGrupoPaineis.remover')
     async findAll(@Query() filters: FilterGrupoPaineisDto): Promise<ListGrupoPaineisDto> {
         return { linhas: await this.grupoPaineisService.findAll(filters) };
     }
