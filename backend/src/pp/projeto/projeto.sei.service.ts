@@ -41,12 +41,13 @@ export class ProjetoSeiService {
         return { id: projetoSei.id }
     }
 
-    async list_sei(projeto: ProjetoDetailDto, user: PessoaFromJwt): Promise<ProjetoSeiDto[]> {
+    async list_sei(projeto: ProjetoDetailDto, user: PessoaFromJwt, filterId: number): Promise<ProjetoSeiDto[]> {
 
         const projetosSei = await this.prisma.projetoRegistroSei.findMany({
             where: {
                 projeto_id: projeto.id,
                 removido_em: null,
+                id: filterId
             },
             select: {
                 id: true,
