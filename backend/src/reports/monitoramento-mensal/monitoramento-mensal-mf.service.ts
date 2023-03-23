@@ -181,10 +181,22 @@ export class MonitoramentoMensalMfService {
             TO_CHAR(conferida_em AT TIME ZONE ${SYSTEM_TIMEZONE}, 'YYYY-MM-DD') as conferida_em,
             f_id_nome_exibicao(conferida_por) as conferida_por,
             coalesce(aguarda_cp, false) as aguarda_cp,
-            aguarda_complementacao
+            aguarda_complementacao,
+            coalesce(ii.meta_id, i.meta_id) as meta_id,
+            coalesce(ai.iniciativa_id, i.iniciativa_id) as iniciativa_id,
+            i.atividade_id,
+            mi.codigo as codigo_meta,
+            ii.codigo as codigo_iniciativa,
+            ai.codigo as codigo_atividade,
+            mi.titulo as titulo_meta,
+            ii.titulo as titulo_iniciativa,
+            ai.titulo as titulo_atividade
         from all_sv
         left join serie_variavel sv on sv.variavel_id = all_sv.variavel_id and sv.data_valor = all_sv.data_valor and sv.serie = all_sv.serie
         left join status_variavel_ciclo_fisico svcf on svcf.variavel_id = all_sv.variavel_id and svcf.ciclo_fisico_id = ${cf.id}
+        left join atividade ai on ai.id = i.atividade_id
+        left join iniciativa ii on  ii.id = coalesce(ai.iniciativa_id, i.iniciativa_id)
+        left join meta mi on mi.id = coalesce(ii.meta_id, i.meta_id)
         order by all_sv.serie, all_sv.codigo
         `;
 
@@ -298,7 +310,16 @@ export class MonitoramentoMensalMfService {
                 { value: 'conferida_em', label: 'Conferida Em' },
                 { value: (row: RelSerieVariavelDto) => { return row.conferida ? 'Sim' : 'Não' }, label: 'Conferida' },
                 { value: (row: RelSerieVariavelDto) => { return row.aguarda_cp ? 'Sim' : 'Não' }, label: 'Aguarda CP' },
-                { value: (row: RelSerieVariavelDto) => { return row.aguarda_complementacao ? 'Sim' : 'Não' }, label: 'Aguarda Complementação' }
+                { value: (row: RelSerieVariavelDto) => { return row.aguarda_complementacao ? 'Sim' : 'Não' }, label: 'Aguarda Complementação' },
+                { value: 'meta_id', label: 'ID da meta' },
+                { value: 'iniciativa_id', label: 'ID da ' + pdm.rotulo_iniciativa },
+                { value: 'atividade_id', label: 'ID da ' + pdm.rotulo_atividade },
+                { value: 'codigo_meta', label: 'codigo_meta' },
+                { value: 'codigo_iniciativa_codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+                { value: 'codigo_atividade_codigo', label: 'Código da ' + pdm.rotulo_atividade },
+                { value: 'titulo_meta', label: 'Título da Meta' },
+                { value: 'titulo_iniciativa', label: 'Título da ' + pdm.rotulo_iniciativa },
+                { value: 'titulo_atividade', label: 'Título da ' + pdm.rotulo_atividade },
             ];
 
             const json2csvParser = new Parser({

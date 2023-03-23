@@ -44,6 +44,18 @@ export class RelSerieVariavelDto {
     conferida: boolean
     aguarda_cp: boolean
     aguarda_complementacao: boolean
+
+    meta_id: number
+    iniciativa_id: number | null
+    atividade_id: number | null
+
+    codigo_meta: string
+    codigo_iniciativa: string | null
+    codigo_atividade: string | null
+
+    titulo_meta: string
+    titulo_iniciativa: string | null
+    titulo_atividad: string | null
 }
 
 export class RetMonitoramentoFisico {
