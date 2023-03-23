@@ -37,7 +37,6 @@ export default {
       'projetosListar',
       'projetosListarPrioritários',
       'projetosListarArquivados',
-      'projetosCriar',
     ],
   },
   children: [
