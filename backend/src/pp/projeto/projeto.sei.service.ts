@@ -11,23 +11,25 @@ import { ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 export class ProjetoSeiService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async append_sei(projeto: ProjetoDetailDto, createProjetoSeiDto: CreateProjetoSeiDto, user: PessoaFromJwt) {
+    async append_sei(projeto: ProjetoDetailDto, dto: CreateProjetoSeiDto, user: PessoaFromJwt) {
+
+        dto.processo_sei = dto.processo_sei.replace(/[^0-9]/g, '');
 
         const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
             where: {
                 projeto_id: projeto.id,
-                processo_sei: createProjetoSeiDto.processo_sei,
+                processo_sei: dto.processo_sei,
                 removido_em: null,
             }
         });
 
         if (existenteProjetoSei > 0)
-            throw new HttpException(`processo_sei| Já existe um registro do processo SEI ${createProjetoSeiDto.processo_sei} para este projeto`, 400);
+            throw new HttpException(`processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`, 400);
 
         const projetoSei = await this.prisma.projetoRegistroSei.create({
             data: {
                 projeto_id: projeto.id,
-                ...createProjetoSeiDto,
+                ...dto,
                 registro_sei_info: '{}',
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
@@ -63,20 +65,23 @@ export class ProjetoSeiService {
     }
 
     async update_sei(projeto: ProjetoDetailDto, seiID: number, dto: UpdateProjetoRegistroSeiDto, user: PessoaFromJwt) {
+        if (dto.processo_sei) {
+            dto.processo_sei = dto.processo_sei.replace(/[^0-9]/g, '');
 
-        const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
-            where: {
-                projeto_id: projeto.id,
-                processo_sei: dto.processo_sei,
-                removido_em: null,
-                id: {
-                    not: seiID
+            const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
+                where: {
+                    projeto_id: projeto.id,
+                    processo_sei: dto.processo_sei,
+                    removido_em: null,
+                    id: {
+                        not: seiID
+                    }
                 }
-            }
-        });
+            });
 
-        if (existenteProjetoSei > 0)
-            throw new HttpException(`processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`, 400);
+            if (existenteProjetoSei > 0)
+                throw new HttpException(`processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`, 400);
+        }
 
         const self = await this.prisma.projetoRegistroSei.findFirstOrThrow({
             where: {

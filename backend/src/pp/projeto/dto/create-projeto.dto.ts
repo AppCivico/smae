@@ -188,12 +188,14 @@ export class CreateProjetoDocumentDto {
 
 export class CreateProjetoSeiDto {
     /**
-     * Acredito que pode ser apenas numeros, mas talvez tenha alguma mascara no frontend
+     * No final, vai virar apenas número.
+     *
+     * @example "4444.2222/1231-33"
      **/
     @IsString()
-    @MaxLength(2000)
-    @Matches(/^[0-9]+$/, {
-        message: '$property| Precisa ser apenas números.',
+    @MaxLength(40)
+    @Matches(/^[0-9\-\.\/\\]+$/, {
+        message: '$property| Precisa ser apenas números, pontos, barras ou traços.',
     })
     processo_sei: string
 
