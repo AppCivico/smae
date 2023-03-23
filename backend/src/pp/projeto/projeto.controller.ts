@@ -1,16 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, Query, HttpException } from '@nestjs/common';
-import { ProjetoService } from './projeto.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
-import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
-import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
+import { FilterProjetoDto } from './dto/filter-projeto.dto';
+import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
+import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
+import { ProjetoService } from './projeto.service';
 
 @ApiTags('Projeto')
 @Controller('projeto')
