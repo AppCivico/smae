@@ -41,7 +41,7 @@ export class PainelDateRange {
 
 @Injectable()
 export class PainelService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(createPainelDto: CreatePainelDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -84,6 +84,8 @@ export class PainelService {
 
     async findAll(filters: FilterPainelDto | undefined = undefined, user: PessoaFromJwt) {
         let ativo = filters?.ativo;
+
+        // por padrão filtra apenas os ativos (acho que é pra remover esse padrão)
         if (typeof ativo === undefined) {
             ativo = true;
         }
@@ -106,7 +108,13 @@ export class PainelService {
                             }
                         }
                     }
-                }
+                },
+
+                painel_conteudo: filters?.meta_id ? {
+                    some: {
+                        meta_id: filters.meta_id
+                    }
+                } : undefined
             },
             select: {
                 id: true,
@@ -267,7 +275,7 @@ export class PainelService {
                                                 }
                                             }
                                         },
-                                        {iniciativa: { removido_em: null }}
+                                        { iniciativa: { removido_em: null } }
                                     ]
                                 },
                                 orderBy: [{ ordem: 'asc' }],
@@ -302,7 +310,7 @@ export class PainelService {
                                                         }
                                                     }
                                                 },
-                                                {atividade: { removido_em: null }}
+                                                { atividade: { removido_em: null } }
                                             ]
                                         },
                                         select: {
@@ -830,15 +838,15 @@ export class PainelService {
 
         // Tratando rows que precisam ser deletadas
         const saved_rows: PainelConteudoDetalheForSync[] = unchanged.concat(created);
-        const deleted:    PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(e => !saved_rows.includes(e));
-        
+        const deleted: PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(e => !saved_rows.includes(e));
+
         console.log("lgt existent_painel_conteudo_detalhes=" + existent_painel_conteudo_detalhes.length);
         console.log("lgt unchanged=" + unchanged.length);
         console.log("lgt created=" + created.length);
         console.log("lgt saved_rows=" + saved_rows.length);
         console.log("lgt deleted=" + deleted.length);
 
-        console.dir(created, {depth: 2});
+        console.dir(created, { depth: 2 });
 
         await prisma.painelConteudoDetalhe.deleteMany({
             where: {
@@ -1416,35 +1424,35 @@ export class PainelService {
                 indicador:
                     series.mostrar_indicador && series.meta.indicador.length > 0
                         ? {
-                              id: series.meta.indicador[0].id,
-                              codigo: series.meta.indicador[0].codigo,
-                              titulo: series.meta.indicador[0].titulo,
+                            id: series.meta.indicador[0].id,
+                            codigo: series.meta.indicador[0].codigo,
+                            titulo: series.meta.indicador[0].titulo,
 
-                              series: series_template.map(t => {
-                                  const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
-                                      return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
-                                  });
+                            series: series_template.map(t => {
+                                const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
+                                    return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
+                                });
 
-                                  return {
-                                      titulo: t.titulo,
-                                      periodo_inicio: t.periodo_inicio,
-                                      periodo_fim: t.periodo_fim,
+                                return {
+                                    titulo: t.titulo,
+                                    periodo_inicio: t.periodo_inicio,
+                                    periodo_fim: t.periodo_fim,
 
-                                      valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                          const serie_match_arr = series_for_period.filter(sm => {
-                                              return sm.serie == series_order[ix];
-                                          });
-                                          const serie_match = serie_match_arr[0];
+                                    valores_nominais: t.valores_nominais.map((vn, ix) => {
+                                        const serie_match_arr = series_for_period.filter(sm => {
+                                            return sm.serie == series_order[ix];
+                                        });
+                                        const serie_match = serie_match_arr[0];
 
-                                          if (serie_match) {
-                                              return serie_match.valor_nominal;
-                                          } else {
-                                              return '';
-                                          }
-                                      }),
-                                  };
-                              }),
-                          }
+                                        if (serie_match) {
+                                            return serie_match.valor_nominal;
+                                        } else {
+                                            return '';
+                                        }
+                                    }),
+                                };
+                            }),
+                        }
                         : {},
             },
 
@@ -1643,7 +1651,7 @@ export class PainelService {
         }
 
         class RetIniciativa {
-            iniciativa_id?: number | null 
+            iniciativa_id?: number | null
             iniciativa_codigo?: string | null
             iniciativa_titulo?: string | null
         }
@@ -1814,7 +1822,7 @@ export class PainelService {
                             atividade_codigo: ff.atividade ? ff.atividade.codigo : null,
                             atividade_titulo: ff.atividade ? ff.atividade.titulo : null
                         };
-                        
+
                         if (ff.variavel?.series && ff.variavel?.series?.length > 0) {
                             ret.push({
                                 ...painel_conteudo_meta,
