@@ -75,8 +75,7 @@ iniciar();
         name="grau"
       >
         <option
-          value=""
-          :selected="!grauVisível"
+          :value="0"
         >
           qualquer
         </option>
@@ -84,7 +83,6 @@ iniciar();
           v-for="item, i in grauDescricao"
           :key="i"
           :value="i + 1"
-          :selected="grauVisível === i"
         >
           {{ i + 1 }} - {{ item }}
         </option>
