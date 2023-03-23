@@ -73,7 +73,8 @@ const acompanhamento = object()
       .label('Detalhamento do status')
       .nullable(),
     detalhamento: string()
-      .label('Detalhamento'),
+      .label('Detalhamento')
+      .nullable(),
     encaminhamento: string()
       .label('Encaminhamento')
       .nullable(),
