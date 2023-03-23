@@ -7,7 +7,7 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto } from './entities/projeto.entity';
+import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { ProjetoSeiService } from './projeto.sei.service';
