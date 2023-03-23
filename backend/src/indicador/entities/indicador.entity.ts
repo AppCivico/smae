@@ -1,4 +1,5 @@
 import { Periodicidade, Polaridade } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
 
 export class Indicador {
@@ -18,6 +19,7 @@ export class Indicador {
     complemento: string | null;
     formula: string | null;
     acumulado_usa_formula: boolean | null;
+    acumulado_valor_base: Decimal | null;
     formula_variaveis: FormulaVariaveis[];
     casas_decimais: number | null;
 }

@@ -306,6 +306,7 @@ export class IndicadorService {
                 },
                 formula: true,
                 acumulado_usa_formula: true,
+                acumulado_valor_base: true,
                 casas_decimais: true,
             },
         });
