@@ -11,3 +11,9 @@ export class FilterPainelDto {
     @IsOptional()
     meta_id: number
 }
+
+export class FilterPainelDaMetaDto {
+    @IsNumber()
+    @Transform(({ value }: any) => +value)
+    meta_id: number
+}
