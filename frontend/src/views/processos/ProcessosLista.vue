@@ -101,6 +101,7 @@ iniciar();
         </th>
         <td class="center cell--minimum">
           <a
+            v-if="!!linha.link"
             :href="linha.link"
             target="_blank"
           >
