@@ -66,7 +66,7 @@ async function checkClose() {
   });
 }
 function acumular(períodoAComparar) {
-  let s = 0;
+  let s = Number.parseFloat(singleVariaveis?.value?.valor_base) || 0;
 
   VariaveisStore.valoresEmFoco.every((x) => {
     const v = x.series[Previsto.value]?.valor_nominal ?? '0';
