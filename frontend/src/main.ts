@@ -1,4 +1,5 @@
 import LabelFromYup from '@/components/LabelFromYup.vue';
+import FormErrorsList from '@/components/FormErrorsList.vue';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
@@ -38,6 +39,7 @@ pinia.use(({ store }) => {
   return { requestS: markRaw(requestS) };
 });
 
+app.component('FormErrorsList', FormErrorsList);
 app.component('LabelFromYup', LabelFromYup);
 
 app.use(pinia);
