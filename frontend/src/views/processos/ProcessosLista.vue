@@ -1,6 +1,7 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import { processo as schema } from '@/consts/formSchemas';
+import formatProcesso from '@/helpers/formatProcesso';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -93,12 +94,12 @@ iniciar();
     >
       <tr>
         <td class="cell--number">
-          {{ linha.processo_sei }}
+          {{ formatProcesso(linha.processo_sei) }}
         </td>
         <th>
           {{ linha.descricao }}
         </th>
-        <td class="center">
+        <td class="center cell--minimum">
           <a
             :href="linha.link"
             target="_blank"
@@ -106,9 +107,7 @@ iniciar();
             link processo
           </a>
         </td>
-        <td
-          class="center"
-        >
+        <td class="center">
           <router-link
             v-if="linha.categoria === 'Manual'"
             :to="{
@@ -133,7 +132,9 @@ iniciar();
   <div
     v-if="chamadasPendentes?.lista"
     class="spinner"
-  >Carregando</div>
+  >
+    Carregando
+  </div>
 
   <div
     v-if="erro"
