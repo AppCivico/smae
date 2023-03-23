@@ -115,37 +115,40 @@ iniciar();
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Processo SEI&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="processo_sei"
+          :schema="schema"
+        />
         <Field
-          name="XYZ"
+          name="processo_sei"
           type="text"
           required
           class="inputtext light mb1"
+          :class="{ 'error': errors.processo_sei }"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="XYZ"
+          name="processo_sei"
         />
       </div>
       <div class="f2 mb1">
-        <label class="label tc300">
-          Link
-        </label>
+        <LabelFromYup
+          name="link"
+          :schema="schema"
+        />
         <Field
-          name="XYZ"
+          name="link"
           required
-          type="URL"
+          type="url"
           class="inputtext light mb1"
           :class="{
-            error: errors.XYZ,
+            error: errors.link,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
           placeholder="https://"
         />
         <ErrorMessage
-          name="XYZ"
+          name="link"
           class="error-msg"
         />
       </div>
@@ -153,9 +156,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Descrição
-        </label>
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
         <Field
           name="descricao"
           as="textarea"
@@ -200,6 +204,13 @@ iniciar();
     </div>
   </Form>
 
+  <div
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </div>
+
   <button
     v-if="emFoco?.id"
     class="btn amarelo big"
@@ -207,11 +218,6 @@ iniciar();
   >
     Remover item
   </button>
-
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
 
   <div
     v-if="erro"

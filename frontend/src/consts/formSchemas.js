@@ -283,7 +283,22 @@ const portfolio = object({
 });
 
 const processo = object()
-  .shape({});
+  .shape({
+    descricao: string()
+      .label('Descrição')
+      .max(2000)
+      .nullable(),
+    link: string()
+      .label('Link')
+      .max(2000)
+      .required()
+      .url(),
+    processo_sei: string()
+      .label('Processo SEI')
+      .max(2000)
+      .matches(regEx.sei)
+      .required(),
+  });
 
 const projeto = object()
   .shape({
