@@ -594,6 +594,10 @@ export class ProjetoService {
             // se já saiu da fase de registro, então está liberado preencher o campo
             // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
             // migrar o status para "EmPlanejamento"
+            permissoes.campo_nao_escopo = true;
+            permissoes.campo_objeto = true;
+            permissoes.campo_objetivo = true;
+
             if (projeto.status !== 'Registrado') {
                 permissoes.campo_codigo = true;
                 permissoes.campo_premissas = true;
@@ -603,9 +607,6 @@ export class ProjetoService {
                 permissoes.campo_data_revisao = true;
                 permissoes.campo_versao = true;
 
-                permissoes.campo_objeto = true;
-                permissoes.campo_objetivo = true;
-                permissoes.campo_nao_escopo = true;
                 permissoes.campo_publico_alvo = true;
                 permissoes.campo_secretario_executivo = true;
                 permissoes.campo_secretario_responsavel = true;
