@@ -2,6 +2,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { grauDescricao } from '@/../../common/RiscoCalc.ts';
 import LocalFilter from '@/components/LocalFilter.vue';
+import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import dateToField from '@/helpers/dateToField';
@@ -130,10 +131,10 @@ iniciar();
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
         <th class="tr">
-          Código
+          {{ schema.fields['codigo'].spec.label }}
         </th>
         <th class="cell--data">
-          Registro
+          {{ schema.fields['registrado_em'].spec.label }}
         </th>
         <th class="tl">
           Risco
