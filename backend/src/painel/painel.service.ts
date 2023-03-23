@@ -82,7 +82,7 @@ export class PainelService {
         return created;
     }
 
-    async findAll(filters: FilterPainelDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(filters: FilterPainelDto | undefined = undefined, restringirGrupos: boolean, user: PessoaFromJwt) {
         let ativo = filters?.ativo;
 
         // por padrão filtra apenas os ativos (acho que é pra remover esse padrão)
@@ -90,17 +90,20 @@ export class PainelService {
             ativo = true;
         }
 
-        const userGrupos = await this.prisma.pessoaGrupoPainel.findMany({
-            where: { pessoa_id: user.id },
-            select: { grupo_painel_id: true }
-        });
+        let userGrupos = undefined;
+        if (restringirGrupos) {
+            userGrupos = await this.prisma.pessoaGrupoPainel.findMany({
+                where: { pessoa_id: user.id },
+                select: { grupo_painel_id: true }
+            });
+        }
 
         return await this.prisma.painel.findMany({
             where: {
-                ativo: true,
+                ativo: ativo,
                 removido_em: null,
 
-                grupos: {
+                grupos: userGrupos ? {
                     some: {
                         grupo_painel: {
                             id: {
@@ -108,7 +111,7 @@ export class PainelService {
                             }
                         }
                     }
-                },
+                } : undefined,
 
                 painel_conteudo: filters?.meta_id ? {
                     some: {

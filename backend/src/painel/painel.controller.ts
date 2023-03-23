@@ -32,7 +32,11 @@ export class PainelController {
     @ApiBearerAuth('access-token')
     @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir')
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
-        return { linhas: await this.painelService.findAll(filters, user) };
+        // Este boolean indica que não é para realizar restrição por Grupo de Paineis
+        // Neste endpoint será retornado todos os paineis, independente do grupo do painel e do usuário.
+        const restringirGrupos: boolean = false;
+        
+        return { linhas: await this.painelService.findAll(filters, restringirGrupos, user) };
     }
 
     @Get('/painel-da-meta')
@@ -40,11 +44,13 @@ export class PainelController {
     @Roles('CadastroPainel.visualizar')
     async findPaineisDaMeta(@Query() filters: FilterPainelDaMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
         if (!filters.meta_id) throw new HttpException('meta_id| Deve ser enviado', 400);
+        const restringirGrupos: boolean = true;
+
         return {
             linhas: await this.painelService.findAll({
                 ...filters,
                 ativo: true
-            }, user)
+            }, restringirGrupos, user)
         };
     }
 
