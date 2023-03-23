@@ -1,8 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ListProjetoSeiDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity.ts';
 
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
+import formatProcesso from '@/helpers/formatProcesso';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -100,9 +100,7 @@ export const useProcessosStore = defineStore('processos', {
   getters: {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
-      status: emFoco?.status_processo || null,
-      tarefa_id: emFoco?.tarefas_afetadas?.map(x => x.tarefa_id) || null,
-      registrado_em: dateTimeToDate(emFoco?.registrado_em),
+      processo_sei: formatProcesso(emFoco?.processo_sei) || null,
     }),
 
     // eslint-disable-next-line max-len
