@@ -7,9 +7,10 @@ export class FilterPainelDto {
     @Transform(({ value }: any) => value === 'true')
     ativo?: boolean;
 
-    @IsNumber()
     @IsOptional()
-    meta_id: number
+    @IsNumber()
+    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    meta_id?: number
 }
 
 export class FilterPainelDaMetaDto {
