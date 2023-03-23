@@ -291,7 +291,6 @@ const processo = object()
     link: string()
       .label('Link')
       .max(2000)
-      .required()
       .url(),
     processo_sei: string()
       .label('Processo SEI')
