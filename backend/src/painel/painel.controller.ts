@@ -9,7 +9,7 @@ import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto'
 import { PainelConteudoDetalheUpdateRet, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { DetailPainelVisualizacaoDto, PainelConteudoSerie, PainelConteudoSerieDto } from './dto/detalhe-painel.dto';
-import { FilterPainelDto } from './dto/filter-painel.dto';
+import { FilterPainelDaMetaDto, FilterPainelDto } from './dto/filter-painel.dto';
 import { ListPainelDto } from './dto/list-painel.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { PainelDto } from './entities/painel.entity';
@@ -18,7 +18,7 @@ import { PainelService } from './painel.service';
 @ApiTags('Painel')
 @Controller('painel')
 export class PainelController {
-    constructor(private readonly painelService: PainelService) {}
+    constructor(private readonly painelService: PainelService) { }
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -30,18 +30,23 @@ export class PainelController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles('CadastroPainel.visualizar')
+    @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir')
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
         return { linhas: await this.painelService.findAll(filters, user) };
     }
 
-   @Get('/painel-por-meta')
-   @ApiBearerAuth('access-token')
-   @Roles('CadastroPainel.visualizar')
-   async findPaineisPorMeta(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
+    @Get('/painel-da-meta')
+    @ApiBearerAuth('access-token')
+    @Roles('CadastroPainel.visualizar')
+    async findPaineisDaMeta(@Query() filters: FilterPainelDaMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
         if (!filters.meta_id) throw new HttpException('meta_id| Deve ser enviado', 400);
-        return { linhas: await this.painelService.findAll(filters, user) };
-   }
+        return {
+            linhas: await this.painelService.findAll({
+                ...filters,
+                ativo: true
+            }, user)
+        };
+    }
 
 
     @ApiBearerAuth('access-token')
