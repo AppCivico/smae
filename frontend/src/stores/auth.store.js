@@ -128,10 +128,11 @@ export const useAuthStore = defineStore({
         'CadastroTipoDocumento',
         'CadastroTipoOrgao',
         'CadastroUnidadeMedida',
+        'Projeto',
       ];
 
       for (const c in a) {
-        if (per[a[c]]) {
+        if (per[a[c]] && !per[a[c]]['listar'] && !per[a[c]]['visualizar']) {
           per.algumAdmin = 1;
           break;
         }
