@@ -105,7 +105,18 @@ export class ProjetoController {
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
-        return { linhas: await this.projetoSeiService.list_sei(projeto, user) };
+        return { linhas: await this.projetoSeiService.list_sei(projeto, user, undefined) };
+    }
+
+    @Get(':id/sei/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    async findOneSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoSeiDto> {
+        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const rows = await this.projetoSeiService.list_sei(projeto, user, params.id2);
+        if (!rows[0]) throw new Error("SEI não encontrado", 404);
+        return rows[0];
     }
 
     @Patch(':id/sei/:id2')
