@@ -49,10 +49,8 @@ export const usePaineisStore = defineStore({
     async getByMeta(meta_id) {
       this.tempPaineis = { loading: true };
       try {
-        if (!this.Paineis.length) await this.getAll();
-
-        this.tempPaineis = this.Paineis
-          .filter((x) => x.painel_conteudo.find((c) => c.meta_id == meta_id));
+        const r = await requestS.get(`${baseUrl}/painel/painel-da-meta`, { meta_id });
+        this.tempPaineis = r.linhas;
       } catch (error) {
         this.tempPaineis = { error };
       }
