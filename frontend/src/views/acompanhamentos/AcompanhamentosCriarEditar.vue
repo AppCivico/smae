@@ -108,9 +108,10 @@ function excluirAcompanhamento(id) {
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['data_registro'].spec.label }}&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="data_registro"
+          :schema="schema"
+        />
         <Field
           id="data_registro"
           name="data_registro"
@@ -125,9 +126,10 @@ function excluirAcompanhamento(id) {
         />
       </div>
       <div class="f2 mb1">
-        <label class="label tc300">
-          {{ schema.fields['participantes'].spec.label }}&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="participantes"
+          :schema="schema"
+        />
         <Field
           id="participantes"
           name="participantes"
@@ -148,9 +150,10 @@ function excluirAcompanhamento(id) {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['detalhamento'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="detalhamento"
+          :schema="schema"
+        />
         <Field
           id="detalhamento"
           name="detalhamento"
@@ -169,9 +172,10 @@ function excluirAcompanhamento(id) {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['encaminhamento'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="encaminhamento"
+          :schema="schema"
+        />
         <Field
           id="encaminhamento"
           name="encaminhamento"
@@ -190,9 +194,10 @@ function excluirAcompanhamento(id) {
 
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['prazo_encaminhamento'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="prazo_encaminhamento"
+          :schema="schema"
+        />
         <Field
           id="prazo_encaminhamento"
           name="prazo_encaminhamento"
@@ -207,9 +212,10 @@ function excluirAcompanhamento(id) {
         />
       </div>
       <div class="f2 mb1">
-        <label class="label tc300">
-          {{ schema.fields['responsavel'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="responsavel"
+          :schema="schema"
+        />
         <Field
           id="responsavel"
           name="responsavel"
@@ -227,9 +233,10 @@ function excluirAcompanhamento(id) {
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['prazo_realizado'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="prazo_realizado"
+          :schema="schema"
+        />
         <Field
           id="prazo_realizado"
           name="prazo_realizado"
@@ -247,9 +254,10 @@ function excluirAcompanhamento(id) {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['observacao'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="observacao"
+          :schema="schema"
+        />
         <Field
           id="observacao"
           name="observacao"
@@ -268,9 +276,10 @@ function excluirAcompanhamento(id) {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['detalhamento_status'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="detalhamento_status"
+          :schema="schema"
+        />
         <Field
           id="detalhamento_status"
           name="detalhamento_status"
@@ -289,9 +298,10 @@ function excluirAcompanhamento(id) {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['pontos_atencao'].spec.label }}
-        </label>
+        <LabelFromYup
+          name="pontos_atencao"
+          :schema="schema"
+        />
         <Field
           id="pontos_atencao"
           name="pontos_atencao"
@@ -319,10 +329,10 @@ function excluirAcompanhamento(id) {
           class="flex g2"
         >
           <div class="f1 mb1">
-            <label class="label tc300">
-              Risco associado
-            </label>
-
+            <LabelFromYup
+              name="risco"
+              :schema="schema"
+            />
             <Field
               :id="`risco[${idx}]`"
               :name="`risco[${idx}]`"

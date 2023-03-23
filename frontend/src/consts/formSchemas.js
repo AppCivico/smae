@@ -34,6 +34,7 @@ setLocale({
   },
   string: {
     min: ({ label, min }) => (label ? `${label} está menor que ${min}` : 'Esse texto é menor que ${min}'),
+    matches: ({ label }) => (label ? `${label} está fora do formato` : 'Formato inválido'),
     max: ({ label, max }) => (label ? `${label} está maior que ${max}` : 'Esse texto é maior que ${max}'),
     required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
@@ -97,7 +98,8 @@ const acompanhamento = object()
       .label('Responsável')
       .nullable(),
     risco: array()
-      .label('Riscos associados'),
+      .label('Riscos associados')
+      .nullable(),
   });
 
 const custeio = object()

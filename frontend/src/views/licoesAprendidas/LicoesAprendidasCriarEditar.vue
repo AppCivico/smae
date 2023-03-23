@@ -116,12 +116,10 @@ iniciar();
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['data_registro'].spec.label }}&nbsp;<span
-            v-if="schema.fields['data_registro'].spec.presence === 'required'"
-            class="tvermelho"
-          >*</span>
-        </label>
+        <LabelFromYup
+          name="data_registro"
+          :schema="schema"
+        />
         <Field
           id="data_registro"
           name="data_registro"
@@ -137,12 +135,10 @@ iniciar();
       </div>
 
       <div class="f3 mb1">
-        <label class="label tc300">
-          {{ schema.fields['descricao'].spec.label }}&nbsp;<span
-            v-if="schema.fields['descricao'].spec.presence === 'required'"
-            class="tvermelho"
-          >*</span>
-        </label>
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
         <Field
           id="descricao"
           name="descricao"
@@ -159,12 +155,10 @@ iniciar();
 
     <div class="flex g2 mb1">
       <div class="f2 mb1">
-        <label class="label tc300">
-          {{ schema.fields['responsavel'].spec.label }}&nbsp;<span
-            v-if="schema.fields['responsavel'].spec.presence === 'required'"
-            class="tvermelho"
-          >*</span>
-        </label>
+        <LabelFromYup
+          name="responsavel"
+          :schema="schema"
+        />
         <Field
           id="responsavel"
           name="responsavel"
@@ -185,12 +179,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          {{ schema.fields['observacao'].spec.label }}&nbsp;<span
-            v-if="schema.fields['observacao'].spec.presence === 'required'"
-            class="tvermelho"
-          >*</span>
-        </label>
+        <LabelFromYup
+          name="observacao"
+          :schema="schema"
+        />
         <Field
           id="observacao"
           name="observacao"
