@@ -39,7 +39,13 @@ const props = defineProps({
   },
 });
 
-async function onSubmit(_, { controlledValues: carga }) {
+async function onSubmit(_, { controlledValues }) {
+  const carga = controlledValues;
+
+  if (!carga.risco) {
+    carga.risco = [];
+  }
+
   try {
     const msg = props.acompanhamentoId
       ? 'Dados salvos com sucesso!'
@@ -406,6 +412,13 @@ function excluirAcompanhamento(id) {
     </div>
   </Form>
 
+  <div
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </div>
+
   <button
     v-if="emFoco?.id"
     class="btn amarelo big"
@@ -413,11 +426,6 @@ function excluirAcompanhamento(id) {
   >
     Remover item
   </button>
-
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
 
   <div
     v-if="erro"
