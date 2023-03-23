@@ -199,20 +199,6 @@ iniciar();
       </div>
     </div>
 
-    <template v-if="Object.keys(errors).length">
-      <p>Please correct the following errors</p>
-      <ul>
-        <li
-          v-for="(message, field) in errors"
-          :key="field"
-        >
-          <a :href="'#' + field">
-            {{ message }}
-          </a>
-        </li>
-      </ul>
-    </template>
-
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
