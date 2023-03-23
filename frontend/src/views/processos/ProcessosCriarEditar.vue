@@ -2,6 +2,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import CheckClose from '@/components/CheckClose.vue';
 import { processo as schema } from '@/consts/formSchemas';
+import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -77,6 +78,10 @@ function excluirProcesso(id) {
   }, 'Remover');
 }
 
+function maskProcesso(el) {
+  el.target.value = formatProcesso(el.target.value);
+}
+
 function iniciar() {
   if (!tarefasComHierarquia.value.length) {
     tarefasStore.buscarTudo();
@@ -125,6 +130,8 @@ iniciar();
           required
           class="inputtext light mb1"
           :class="{ 'error': errors.processo_sei }"
+          placeholder="DDDD.DDDD/DDDDDDD-D"
+          @keyup="maskProcesso"
         />
         <ErrorMessage
           class="error-msg mb1"

@@ -295,7 +295,8 @@ const processo = object()
       .url(),
     processo_sei: string()
       .label('Processo SEI')
-      .max(2000)
+      .max(19)
+      .min(19, '${label} está fora do formato')
       .matches(regEx.sei)
       .required(),
   });

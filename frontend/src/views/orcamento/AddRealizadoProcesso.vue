@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
+import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';
 import { router } from '@/router';
 import {
@@ -17,6 +18,7 @@ const route = useRoute();
 const { meta_id } = route.params;
 const { ano } = route.params;
 const { id } = route.params;
+const { seiOuSinproc: regprocesso } = patterns;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
@@ -40,7 +42,6 @@ const respostasof = ref({});
 
 const itens = ref([{ mes: null, valor_empenho: null, valor_liquidado: null }]);
 
-const regprocesso = /^(?:\d{4}\.?\d{4}\/?\d{7}-?\d|\d{4}-?\d\.?\d{3}\.?\d{3}-?\d)$/;
 const schema = Yup.object().shape({
   processo: Yup.string().required('Preencha o processo.').matches(regprocesso, 'Formato inválido'),
   dotacao: Yup.string(),
