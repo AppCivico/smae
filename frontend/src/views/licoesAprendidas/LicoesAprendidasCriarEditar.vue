@@ -115,7 +115,7 @@ iniciar();
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
-      <div class="f1 mb1">
+      <div class="f05 mb1">
         <LabelFromYup
           name="data_registro"
           :schema="schema"
@@ -134,7 +134,7 @@ iniciar();
         />
       </div>
 
-      <div class="f3 mb1">
+      <div class="f2 mb1">
         <LabelFromYup
           name="descricao"
           :schema="schema"
