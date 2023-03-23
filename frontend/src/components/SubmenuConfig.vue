@@ -57,7 +57,7 @@ const perm = permissions.value;
             v-if="perm?.CadastroOrgao"
             to="/orgaos"
           >
-            Orgãos
+            Órgãos
           </router-link>
           <router-link
             v-if="perm?.CadastroFonteRecurso"
@@ -81,13 +81,13 @@ const perm = permissions.value;
       </template>
 
       <template v-if="perm?.CadastroPainel">
-        <h2>Paineis de metas</h2>
+        <h2>Painéis de metas</h2>
         <div class="links-container mb2">
           <router-link
             v-if="perm?.CadastroPainel"
             to="/paineis"
           >
-            Paineis de metas
+            Painéis de metas
           </router-link>
           <router-link
             v-if="perm?.CadastroPainel"
