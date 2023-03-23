@@ -96,8 +96,12 @@ BEGIN
 
                     EXECUTE 'SELECT ' || r.formula INTO resultado;
 
-                    INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
-                        VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente);
+                    IF (resultado IS NOT NULL) THEN
+                        INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
+                            VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente);
+                    ELSE
+                        RAISE NOTICE ' RESULTADO NULO %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
+                    END IF;
                 END IF;
 
                 RAISE NOTICE 'r %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
@@ -126,7 +130,7 @@ BEGIN
                     pIndicador_id,
                     (serieRecord.serie::text || 'Acumulado')::"Serie",
                     gs.gs as data_serie,
-                    coalesce(sum(si.valor_nominal::numeric) OVER (order by gs.gs), case when serieRecord.serie = 'Realizado'::"Serie" then null else vIndicadorBase end) as valor_acc,
+                    vIndicadorBase + coalesce(sum(si.valor_nominal::numeric) OVER (order by gs.gs), 0) as valor_acc,
                     count(1) FILTER (WHERE si.ha_conferencia_pendente) OVER (order by gs.gs) > 0 as ha_conferencia_pendente
                 FROM
                     generate_series(

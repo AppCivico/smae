@@ -63,13 +63,15 @@ WHERE
                 DELETE FROM serie_variavel
                 WHERE variavel_id = pVariavelId
                     AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
+
+                RAISE NOTICE '==> acumulado serie_variavel (variavel=%', pVariavelId::text || ', serie=' || serieRecord.serie::text;
                 INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
                 WITH theData AS (
                     SELECT
                         pVariavelId,
                         (serieRecord.serie::text || 'Acumulado')::"Serie",
                         gs.gs AS data_serie,
-                        coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), case when serieRecord.serie = 'Realizado'::"Serie" then null else vVariavelBase end) AS valor_acc
+                        vVariavelBase + coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), 0) AS valor_acc
                     FROM
                         generate_series(vInicio, vFim, vPeriodicidade) gs
                     LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
