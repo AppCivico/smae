@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, IsBoolean, IsInt, IsOptional, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsBoolean, IsInt, IsNumberString, IsOptional, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
 export class FormulaVariaveis {
@@ -102,4 +102,16 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     @IsBoolean({ message: '$property| precisa ser um boolean' })
     @ValidateIf((object, value) => value !== null)
     acumulado_usa_formula?: boolean | null;
+
+    /**
+     * acumulado_valor_base para ser usado quando o acumulado_usa_formula=false
+     * Para não perder precisão no JSON, usar em formato string, mesmo sendo um número
+     * Se nulo, a séria acumulada não será calculada quando acumulado_usa_formula for false.
+     * @example "0.0"
+     */
+    @IsNumberString({ maxDecimalPlaces: 30 }, { message: '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String' })
+    @ValidateIf((object, value) => value !== null)
+    @IsOptional()
+    acumulado_valor_base?: number | null;
+
 }
