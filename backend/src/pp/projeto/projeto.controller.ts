@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, Query, HttpException } from '@nestjs/common';
 import { ProjetoService } from './projeto.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
@@ -105,7 +105,7 @@ export class ProjetoController {
     @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
-        return { linhas: await this.projetoSeiService.list_sei(projeto, user, undefined) };
+        return { linhas: await this.projetoSeiService.list_sei(projeto, user) };
     }
 
     @Get(':id/sei/:id2')
@@ -115,7 +115,7 @@ export class ProjetoController {
     async findOneSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoSeiDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
         const rows = await this.projetoSeiService.list_sei(projeto, user, params.id2);
-        if (!rows[0]) throw new Error("SEI não encontrado", 404);
+        if (!rows[0]) throw new HttpException("SEI não encontrado", 404);
         return rows[0];
     }
 
