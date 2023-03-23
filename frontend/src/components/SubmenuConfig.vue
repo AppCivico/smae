@@ -1,10 +1,16 @@
 <script setup>
 import { useAuthStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
+
+const podeAcessarPainéis = computed(() => perm?.CadastroPainel?.inserir
+  || perm?.CadastroMeta?.inserir);
+const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
+  || perm?.CadastroGrupoPaineis?.editar || perm?.CadastroGrupoPaineis?.remover);
 </script>
 <template>
   <div id="submenu">
@@ -80,17 +86,17 @@ const perm = permissions.value;
         </div>
       </template>
 
-      <template v-if="perm?.CadastroPainel">
+      <template v-if="podeAcessarPainéis || podeAcessarGrupos">
         <h2>Painéis de metas</h2>
         <div class="links-container mb2">
           <router-link
-            v-if="perm?.CadastroPainel"
+            v-if="podeAcessarPainéis"
             to="/paineis"
           >
             Painéis de metas
           </router-link>
           <router-link
-            v-if="perm?.CadastroPainel"
+            v-if="podeAcessarGrupos"
             to="/paineis-grupos"
           >
             Grupos de paineis
