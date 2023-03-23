@@ -1,8 +1,8 @@
 <script setup>
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { router } from '@/router';
 
 import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 
@@ -66,14 +66,17 @@ async function checkClose() {
     router.go(-1);
   });
 }
-function acumular(a, j) {
-  if (!a.length) return;
-  let s = 0;
-  for (let i = 0; i <= j; i += 1) {
-    const x = a[i].series[Realizado.value]?.valor_nominal ?? '0';
-    const n = !isNaN(parseFloat(x)) ? parseFloat(x.replace(',', '.')) : 0;
+function acumular(períodoAComparar) {
+  let s = Number.parseFloat(singleVariaveis?.value?.valor_base) || 0;
+
+  VariaveisStore.valoresEmFoco.every((x) => {
+    const v = x.series[Realizado.value]?.valor_nominal ?? '0';
+    const n = !isNaN(parseFloat(v)) ? parseFloat(v.replace(',', '.')) : 0;
     if (n) s += n;
-  }
+
+    return períodoAComparar !== x.periodo;
+  });
+
   return s.toFixed(decimais.value);
 }
 function soma(a, j) {
