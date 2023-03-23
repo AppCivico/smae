@@ -637,11 +637,13 @@ export class PainelService {
 
             const meta_indicador = await prisma.indicador.findMany({
                 where: {
-                    removido_em: null,
                     meta: {
                         id: painel_conteudo.meta_id,
                         removido_em: null
-                    }
+                    },
+                    removido_em: null,
+                    iniciativa_id: null,
+                    atividade_id: null
                 },
                 select: { id: true, meta_id: true },
             });
