@@ -12,7 +12,7 @@ defineProps({
 </script>
 <template>
   <label
-    class="label"
+    class="label tc300"
     :for="name || $attrs.for || null"
   >
     <slot>
