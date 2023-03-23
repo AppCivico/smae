@@ -172,6 +172,9 @@ const fase = object()
 
 const indicador = object()
   .shape({
+    acumulado_valor_base: number()
+      .label('Valor base do indicador')
+      .nullable(),
     casas_decimais: number()
       .min(0)
       .max(35)

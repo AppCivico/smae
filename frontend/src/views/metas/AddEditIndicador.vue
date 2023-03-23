@@ -464,7 +464,7 @@ if (indicador_id) {
 
     <template v-if="!(singleIndicadores?.loading || singleIndicadores?.error)">
       <Form
-        v-slot="{ errors, isSubmitting }"
+        v-slot="{ errors, isSubmitting, setFieldValue, values }"
         :validation-schema="schema"
         :initial-values="indicador_id ? singleIndicadores : {}"
         @submit="onSubmit"
@@ -813,8 +813,33 @@ if (indicador_id) {
               class="inputcheckbox"
               :value="true"
               :class="{ 'error': errors.acumulado_usa_formula }"
+              @change="() => {
+                if (values.acumulado_usa_formula) {
+                  setFieldValue('responsavel', null)
+                }
+              }"
             />
-            <span>Utilizar a fórmula no cálculo da série acumulada</span></label>
+            <span>Utilizar a fórmula no cálculo da série
+              acumulada</span>
+          </label>
+          <div
+            v-if="!values.acumulado_usa_formula"
+          >
+            <LabelFromYup
+              name="acumulado_valor_base"
+              :schema="schema"
+            />
+            <Field
+              name="acumulado_valor_base"
+              type="number"
+              :value="values.acumulado_valor_base"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.acumulado_valor_base }"
+            />
+            <div class="error-msg">
+              {{ errors.acumulado_valor_base }}
+            </div>
+          </div>
         </div>
         <div v-else-if="Variaveis[indicador_id]?.loading">
           <span class="spinner">Carregando</span>
