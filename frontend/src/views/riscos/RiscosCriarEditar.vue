@@ -168,6 +168,25 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
+          name="titulo"
+          :schema="schema"
+        />
+        <Field
+          name="titulo"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.titulo }"
+        />
+        <ErrorMessage
+          name="titulo"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
           name="descricao"
           :schema="schema"
         />

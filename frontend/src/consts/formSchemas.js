@@ -596,6 +596,8 @@ const risco = object()
       .when('risco_tarefa_outros', (riscoTarefaOutros, field) => (!riscoTarefaOutros
         ? field.required()
         : field.nullable()))
+    titulo: string()
+      .label('Nome')
       .required(),
   }, [['risco_tarefa_outros', 'tarefa_id']]);
 
