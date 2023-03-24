@@ -26,7 +26,7 @@ authStore.getDados();
 </script>
 
 <template>
-  <!-- eslint-disable vue/no-v-html -->
+  <!-- eslint-disable max-len vue/no-v-html -->
   <nav
     v-if="user"
     id="menu"
@@ -193,15 +193,16 @@ authStore.getDados();
   .transition();
   a {
     font-weight: 700;
-    display: block;
+    display: flex;
     padding: 23px 23px;
     border-bottom: 1px solid fadeOut(@c100, 80%);
     .transition();
     span {
+      flex-grow: 1;
       display: inline-block;
       vertical-align: middle;
       overflow: hidden;
-      width: 0;
+      max-width: 0;
       .opacity(0);
       height: 20px;
       line-height: 20px;
@@ -213,7 +214,10 @@ authStore.getDados();
 
     .menu__envelope-svg {
       display: inline;
+      flex-grow: 0;
       opacity: 1;
+      width: auto;
+      max-width: none;
     }
 
     svg {
@@ -263,8 +267,10 @@ authStore.getDados();
   &:hover {
     .bs(0 0 40px 20px fadeOut(black,80%));
     a {
+      gap: 0 1em;
       span {
-        width: 120px;
+        width: auto;
+        max-width: 8.75rem;
         .opacity(1);
       }
     }
