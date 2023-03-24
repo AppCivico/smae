@@ -822,13 +822,13 @@ if (indicador_id) {
             <span>Utilizar a fórmula no cálculo da série
               acumulada</span>
           </label>
+
           <div
             v-if="!values.acumulado_usa_formula"
           >
             <LabelFromYup
               name="acumulado_valor_base"
               :schema="schema"
-              style="color: inherit"
             />
             <Field
               name="acumulado_valor_base"
