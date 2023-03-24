@@ -3,6 +3,7 @@ import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
@@ -12,6 +13,9 @@ import {
   Form
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+
+const ÓrgãosStore = useOrgansStore();
+const { órgãosOrdenados } = storeToRefs(ÓrgãosStore);
 
 const alertStore = useAlertStore();
 
@@ -83,8 +87,10 @@ function excluirPlanoDeAção(id) {
 }
 
 async function iniciar() {
-  // apenas porque alguma planodeação nova pode ter sido criada por outra pessoa
+  // apenas porque algum plano de ação novo pode ter sido criada por outra pessoa
   planosDeAçãoStore.buscarTudo();
+
+  ÓrgãosStore.getAll();
 }
 
 iniciar();
@@ -157,7 +163,7 @@ iniciar();
             error: errors.orgao_id,
             loading: projetosStore.chamadasPendentes?.emFoco,
           }"
-          :disabled="!órgãosEnvolvidosNoProjetoEmFoco?.length"
+          :disabled="!órgãosOrdenados?.length"
           @change="setFieldValue('responsavel', null)"
         >
           <option :value="0">
@@ -165,7 +171,7 @@ iniciar();
           </option>
 
           <option
-            v-for="item in órgãosEnvolvidosNoProjetoEmFoco"
+            v-for="item in órgãosOrdenados"
             :key="item"
             :value="item.id"
           >
