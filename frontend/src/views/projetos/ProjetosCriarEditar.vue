@@ -253,9 +253,10 @@ iniciar();
         v-if="projetoId"
         class="f1 mb1"
       >
-        <label class="label">
-          Código
-        </label>
+        <LabelFromYup
+          name="codigo"
+          :schema="schema"
+        />
         <Field
           name="codigo"
           type="text"
@@ -270,9 +271,10 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label">
-          Nome do projeto&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="nome"
+          :schema="schema"
+        />
         <Field
           name="nome"
           type="text"
@@ -287,9 +289,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">
-          Resumo
-        </label>
+        <LabelFromYup
+          name="resumo"
+          :schema="schema"
+        />
         <Field
           name="resumo"
           as="textarea"
@@ -307,10 +310,13 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">
+        <LabelFromYup
+          name="escopo"
+          :schema="schema"
+        >
           Escopo
           <small class="t13 tc500">(o que será entregue no projeto)</small>
-        </label>
+        </LabelFromYup>
         <Field
           name="escopo"
           as="textarea"
@@ -328,10 +334,14 @@ iniciar();
         v-if="projetoId"
         class="f1 mb1"
       >
-        <label class="label">
+        <LabelFromYup
+          name="nao_escopo"
+          :schema="schema"
+        >
           Não escopo
           <small class="t13 tc500">(o que <strong>não</strong> será entregue no projeto)</small>
-        </label>
+        </LabelFromYup>
+
         <Field
           name="nao_escopo"
           as="textarea"
@@ -348,12 +358,12 @@ iniciar();
     </div>
 
     <template v-if="projetoId">
-      <div class="flex g2" />
       <div class="flex g2">
         <div class="f1 mb1">
-          <label class="label">
-            Objetivo
-          </label>
+          <LabelFromYup
+            name="objetivo"
+            :schema="schema"
+          />
           <Field
             name="objetivo"
             as="textarea"
@@ -370,9 +380,10 @@ iniciar();
       </div>
       <div class="flex g2">
         <div class="f1 mb1">
-          <label class="label">
-            Objeto
-          </label>
+          <LabelFromYup
+            name="objeto"
+            :schema="schema"
+          />
           <Field
             name="objeto"
             as="textarea"
@@ -389,9 +400,10 @@ iniciar();
       </div>
       <div class="flex g2">
         <div class="f1 mb1">
-          <label class="label">
-            Público alvo
-          </label>
+          <LabelFromYup
+            name="publico_alvo"
+            :schema="schema"
+          />
           <Field
             name="publico_alvo"
             as="textarea"
@@ -410,9 +422,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">
-          Principais etapas
-        </label>
+        <LabelFromYup
+          name="principais_etapas"
+          :schema="schema"
+        />
         <Field
           name="principais_etapas"
           as="textarea"
@@ -429,14 +442,17 @@ iniciar();
 
     <hr class="mb1 f1">
 
-    <label class="label mt2 mb1">
+    <legend class="label mt2 mb1">
       Órgãos
-    </label>
+    </legend>
+
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Órgão gestor&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          class="tc300"
+          name="orgao_gestor_id"
+          :schema="schema"
+        />
         <Field
           v-if="!projetoId"
           name="orgao_gestor_id"
@@ -477,9 +493,17 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">
-          Responsáveis&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="responsaveis_no_orgao_gestor"
+          :schema="schema"
+          class="tc300"
+        >
+          Responsável&nbsp;<span
+            v-if="schema.fields['responsaveis_no_orgao_gestor'].spec.presence ===
+              'required'"
+            class="tvermelho"
+          >*</span>
+        </LabelFromYup>
 
         <AutocompleteField
           name="responsaveis_no_orgao_gestor"
@@ -504,9 +528,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Orgãos participantes
-        </label>
+        <LabelFromYup
+          name="orgaos_participantes"
+          :schema="schema"
+        />
 
         <AutocompleteField
           name="orgaos_participantes"
@@ -530,9 +555,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Órgão responsável
-        </label>
+        <LabelFromYup
+          name="orgao_responsavel_id"
+          :schema="schema"
+        />
         <Field
           name="orgao_responsavel_id"
           as="select"
@@ -564,9 +590,12 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">
+        <LabelFromYup
+          :schema="schema"
+          name="responsavel_id"
+        >
           Responsável
-        </label>
+        </LabelFromYup>
         <Field
           name="responsavel_id"
           as="select"
@@ -604,9 +633,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Origem&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="origem_tipo"
+          :schema="schema"
+        />
         <Field
           name="origem_tipo"
           as="select"
@@ -805,9 +835,13 @@ iniciar();
       class="flex g2"
     >
       <div class="f1 mb1">
-        <label class="label tc300">
+        <LabelFromYup
+          :schema="schema"
+          name="origem_outro"
+          class="tc300"
+        >
           Descrição&nbsp;<span class="tvermelho">*</span>
-        </label>
+        </LabelFromYup>
 
         <Field
           name="origem_outro"
@@ -828,9 +862,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label">
-          Previsão de início
-        </label>
+        <LabelFromYup
+          name="previsao_inicio"
+          :schema="schema"
+        />
         <Field
           name="previsao_inicio"
           type="date"
@@ -847,9 +882,10 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label">
-          Previsão de término
-        </label>
+        <LabelFromYup
+          name="previsao_termino"
+          :schema="schema"
+        />
         <Field
           name="previsao_termino"
           type="date"
@@ -872,9 +908,10 @@ iniciar();
       class="flex g2"
     >
       <div class="f1 mb1">
-        <label class="label">
-          Previsão de custo&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="previsao_custo"
+          :schema="schema"
+        />
         <MaskedFloatInput
           name="previsao_custo"
           :value="values.previsao_custo"
@@ -1032,9 +1069,12 @@ iniciar();
       <hr class="mb1 f1">
 
       <div class="g2 mb2">
-        <legend class="label mt2 mb1">
-          Premissas
-        </legend>
+        <LabelFromYup
+          :schema="schema"
+          name="premissas"
+          as="legend"
+          class="label mt2 mb1"
+        />
 
         <FieldArray
           v-slot="{ fields, push, remove }"
@@ -1096,9 +1136,12 @@ iniciar();
       <hr class="mb1 f1">
 
       <div class="g2 mb2">
-        <legend class="label mt2 mb1">
-          Restrições
-        </legend>
+        <LabelFromYup
+          :schema="schema"
+          name="restricoes"
+          as="legend"
+          class="label mt2 mb1"
+        />
 
         <FieldArray
           v-slot="{ fields, push, remove }"
@@ -1163,9 +1206,11 @@ iniciar();
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
-        <label class="label">
-          Coordenador do órgão gestor do projeto
-        </label>
+        <LabelFromYup
+          :schema="schema"
+          name="coordenador_ue"
+        />
+
         <Field
           name="coordenador_ue"
           type="text"
@@ -1179,9 +1224,10 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label">
-          Secretário executivo
-        </label>
+        <LabelFromYup
+          :schema="schema"
+          name="secretario_executivo"
+        />
         <Field
           name="secretario_executivo"
           type="text"
@@ -1195,9 +1241,10 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label">
-          Secretário responsável
-        </label>
+        <LabelFromYup
+          :schema="schema"
+          name="secretario_responsavel"
+        />
         <Field
           name="secretario_responsavel"
           type="text"
@@ -1219,9 +1266,10 @@ iniciar();
         :disabled="!permissões?.campo_versao"
         class="f1 mb1"
       >
-        <label class="label">
-          Versão
-        </label>
+        <LabelFromYup
+          name="versao"
+          :schema="schema"
+        />
         <Field
           name="versao"
           type="text"
@@ -1238,9 +1286,10 @@ iniciar();
         :disabled="!permissões?.campo_data_aprovacao"
         class="f1 mb1"
       >
-        <label class="label">
-          Data de aprovação
-        </label>
+        <LabelFromYup
+          name="data_aprovacao"
+          :schema="schema"
+        />
         <Field
           name="data_aprovacao"
           type="date"
@@ -1257,9 +1306,10 @@ iniciar();
         :disabled="!permissões?.campo_data_revisao"
         class="f1 mb1"
       >
-        <label class="label">
-          Data de revisão
-        </label>
+        <LabelFromYup
+          name="data_revisao"
+          :schema="schema"
+        />
         <Field
           name="data_revisao"
           type="date"
@@ -1273,6 +1323,8 @@ iniciar();
         />
       </div>
     </div>
+
+    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">

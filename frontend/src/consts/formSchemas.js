@@ -315,15 +315,24 @@ const projeto = object()
   .shape({
     atividade_id: number()
       .nullable(),
+    coordenador_ue: string()
+      .label('Coordenador do órgão gestor do projeto')
+      .nullable(),
+    codigo: string()
+      .label('Código')
+      .nullable(),
     data_aprovacao: date()
+      .label('Data de aprovação')
       .nullable()
       .min(new Date(2003, 0, 1))
       .typeError('Data inválida'),
     data_revisao: date()
+      .label('Data de revisão')
       .nullable()
       .min(new Date(2003, 0, 1))
       .typeError('Data inválida'),
     escopo: string()
+      .label('Escopo')
       .max(50000),
     fonte_recursos: array()
       .nullable()
@@ -365,29 +374,49 @@ const projeto = object()
       .nullable(),
     meta_id: number()
       .nullable(),
+    nao_escopo: string()
+      .label('Não escopo')
+      .nullable()
+      .max(50000),
     nome: string()
+      .label('Nome do projeto')
       .required('Um projeto requer um nome')
       .min(1, 'Esse nome é muito curto')
       .max(500, 'Esse nome é muito longo'),
+    objetivo: string()
+      .label('Objetivo')
+      .nullable(),
+    objeto: string()
+      .label('Objeto')
+      .nullable(),
     orgao_gestor_id: number()
+      .label('Órgão gestor')
       .min(1, 'Selecione um órgão gestor')
       .required('O projeto necessita de um órgão gestor'),
     orgao_responsavel_id: number()
+      .label('Órgão responsável')
       .nullable(),
-    orgaos_participantes: array(),
+    orgaos_participantes: array()
+      .label('Órgãos participantes'),
     origem_outro: string()
-      .nullable()
+      .label('Descrição de origem fora do PdM')
       .max(500)
+      .nullable()
       .when('origem_tipo', (origemTipo, field) => (origemTipo !== 'PdmSistema'
         ? field.required('Esse campo é obrigatório caso não se escolha um Programa de Metas corrente')
         : field)),
     origem_tipo: mixed()
+      .label('Origem')
       .required('O projeto precisa de uma origem de recursos.')
       .oneOf(['PdmSistema', 'PdmAntigo', 'Outro'], 'A origem escolhida é inválida'),
+    publico_alvo: string()
+      .label('Público alvo')
+      .nullable(),
     portfolio_id: number('O projeto precisa pertencer a um portfolio')
       .min(1, 'Selecione ao menos um portfolio')
       .required('O projeto precisa pertencer a um portfolio'),
     premissas: array()
+      .label('Premissas')
       .of(
         object()
           .shape({
@@ -400,21 +429,26 @@ const projeto = object()
       )
       .strict(),
     previsao_custo: number()
-      .nullable()
+      .label('Previsão de custos')
       .min(0)
       .required('Previsão de custo é obrigatória'),
     previsao_inicio: date()
+      .label('Previsão de início')
       .nullable()
       .typeError('Data inválida'),
     previsao_termino: date()
+      .label('Previsão de término')
       .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
       .nullable()
       .typeError('Data inválida'),
     principais_etapas: string()
+      .label('Principais etapas')
       .max(50000),
     responsaveis_no_orgao_gestor: array()
+      .label('Responsáveis no órgão gestor')
       .nullable(),
     responsavel_id: number()
+      .label('Responsável no órgão')
       .nullable(),
     restricoes: array()
       .of(
@@ -429,8 +463,16 @@ const projeto = object()
       )
       .strict(),
     resumo: string()
+      .label('Resumo')
       .max(500),
+    secretario_executivo: string()
+      .label('Secretário executivo')
+      .nullable(),
+    secretario_responsavel: string()
+      .label('Secretário responsável')
+      .nullable(),
     versao: string()
+      .label('Versão')
       .nullable()
       .max(20),
   });
