@@ -126,9 +126,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Contra-medidas
-        </label>
+        <LabelFromYup
+          name="contramedida"
+          :schema="schema"
+        />
         <Field
           name="contramedida"
           as="textarea"
@@ -151,10 +152,10 @@ iniciar();
     </div>
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">Órgão<template
-          v-if="!values.responsavel"
-        >&nbsp;<span class="tvermelho">*</span></template>
-        </label>
+        <LabelFromYup
+          name="orgao_id"
+          :schema="schema"
+        />
         <Field
           name="orgao_id"
           as="select"
@@ -185,11 +186,10 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">
-          Outro<template
-            v-if="!values.orgao_id"
-          >&nbsp;<span class="tvermelho">*</span></template>
-        </label>
+        <LabelFromYup
+          name="responsavel"
+          :schema="schema"
+        />
         <Field
           name="responsavel"
           type="text"
@@ -207,10 +207,10 @@ iniciar();
 
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
+        <LabelFromYup>
           Prazo
           <small>(Data de término previsto)</small>&nbsp;<span class="tvermelho">*</span>
-        </label>
+        </LabelFromYup>
         <Field
           name="prazo_contramedida"
           required
@@ -232,9 +232,10 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">
-          Custo da contra-medida
-        </label>
+        <LabelFromYup
+          name="custo"
+          :schema="schema"
+        />
         <MaskedFloatInput
           name="custo"
           :value="values.custo"
@@ -247,9 +248,10 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">
-          % do custo do projeto
-        </label>
+        <LabelFromYup
+          name="custo_percentual"
+          :schema="schema"
+        />
         <MaskedFloatInput
           name="custo_percentual"
           :value="values.custo_percentual"
@@ -266,9 +268,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Medidas de contingência
-        </label>
+        <LabelFromYup
+          name="medidas_de_contingencia"
+          :schema="schema"
+        />
         <Field
           name="medidas_de_contingencia"
           as="textarea"

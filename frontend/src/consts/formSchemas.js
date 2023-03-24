@@ -251,26 +251,33 @@ const novaSenha = object()
 const planoDeAção = object()
   .shape({
     contramedida: string()
+      .label('Contra-medidas')
       .max(50000),
     custo: number()
+      .label('Custo da contra-medida')
       .min(0)
       .required(),
     custo_percentual: number()
+      .label('% do custo do projeto')
       .max(100)
       .min(0)
       .required(),
     medidas_de_contingencia: string()
+      .label('Medidas de contingência')
       .max(50000),
     orgao_id: number()
+      .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
       .nullable()
-      .when('responsavel', (responsavel, field) => (!responsavel
+      .when('responsavel', (responsável, field) => (!responsável
         ? field.required('Escolha um órgão ou alguém responsável pela tarefa')
         : field)),
     prazo_contramedida: date()
+      .label('Prazo de término')
       .required()
       .typeError('Data inválida'),
     responsavel: string()
+      .label('Responsável')
       .nullable()
       .max(60)
       .when('orgao_id', (órgãoId, field) => (!órgãoId
