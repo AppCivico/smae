@@ -1,17 +1,13 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, StatusRisco } from '@prisma/client';
-import { DateTime } from 'luxon';
-import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
+import { Prisma, StatusRisco } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
+import { RiscoCalc } from 'src/common/RiscoCalc';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UploadService } from '../../upload/upload.service';
-import { CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
+import { CreateRiscoDto } from './dto/create-risco.dto';
 import { UpdateRiscoDto } from './dto/update-risco.dto';
-import { PlanoAcao } from '../plano-de-acao/entities/plano-acao.entity';
 import { ProjetoRisco, ProjetoRiscoDetailDto } from './entities/risco.entity';
-import { RiscoCalc } from 'src/common/RiscoCalc';
 
 @Injectable()
 export class RiscoService {
@@ -32,6 +28,7 @@ export class RiscoService {
                 impacto: dto.impacto,
                 descricao: dto.descricao,
                 causa: dto.causa,
+                titulo: dto.titulo,
                 consequencia: dto.consequencia,
                 risco_tarefa_outros: dto.risco_tarefa_outros,
 
@@ -72,6 +69,7 @@ export class RiscoService {
                 registrado_em: true,
                 descricao: true,
                 causa: true,
+                titulo: true,
                 consequencia: true,
                 probabilidade: true,
                 impacto: true,
@@ -119,6 +117,7 @@ export class RiscoService {
                 nivel: true,
                 grau: true,
                 resposta: true,
+                titulo: true,
                 risco_tarefa_outros: true,
                 status_risco: true,
                 RiscoTarefa: {
@@ -206,6 +205,7 @@ export class RiscoService {
                     impacto: dto.impacto,
                     descricao: dto.descricao,
                     causa: dto.causa,
+                    titulo: dto.titulo,
                     consequencia: dto.consequencia,
                     risco_tarefa_outros: dto.risco_tarefa_outros,
                     status_risco: dto.status,
