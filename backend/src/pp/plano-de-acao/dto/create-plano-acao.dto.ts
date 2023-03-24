@@ -7,8 +7,7 @@ export class CreatePlanoAcaoDto {
     projeto_risco_id: number
 
     @IsNumber()
-    @IsOptional()
-    orgao_id?: number
+    orgao_id: number
 
     @IsString()
     @IsOptional()
