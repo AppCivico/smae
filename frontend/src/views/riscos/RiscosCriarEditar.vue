@@ -411,6 +411,8 @@ iniciar();
       </div>
     </div>
 
+    <FormErrorsList :errors="errors" />
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button

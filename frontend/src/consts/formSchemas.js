@@ -582,20 +582,19 @@ const risco = object()
       .required(),
     registrado_em: date()
       .label('Data de registro')
-      .nullable()
+      .required()
       .typeError('Data inválida'),
     risco_tarefa_outros: string()
       .label('Outras tarefas afetadas')
       .when('tarefa_id', (tarefaId, field) => (!tarefaId
         ? field.required()
         : field.nullable())),
-    tarefa_id: number()
+    tarefa_id: array()
       .label('Tarefas afetadas no cronograma')
-      .min(1)
-      .max(5)
       .when('risco_tarefa_outros', (riscoTarefaOutros, field) => (!riscoTarefaOutros
         ? field.required()
-        : field.nullable()))
+        : field))
+      .nullable(),
     titulo: string()
       .label('Nome')
       .required(),
