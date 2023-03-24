@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError } from '../sof-api/sof-api.service';
@@ -8,9 +8,11 @@ import { ValorRealizadoNotaEmpenhoDto } from './entities/dotacao.entity';
 
 @Injectable()
 export class DotacaoProcessoNotaService {
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService, private readonly dotacaoService: DotacaoService) {}
+    private readonly logger = new Logger(DotacaoProcessoNotaService.name);
+    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService, private readonly dotacaoService: DotacaoService) { }
 
     async valorRealizadoNotaEmpenho(dto: AnoDotacaoNotaEmpenhoDto): Promise<ValorRealizadoNotaEmpenhoDto[]> {
+        this.logger.debug(`valorRealizadoNotaEmpenho: ${JSON.stringify(dto)}`);
         const mes = dto.mes ? dto.mes : this.sof.mesMaisRecenteDoAno(dto.ano);
 
         if (dto.nota_empenho.includes('/' + dto.ano) == false) {
@@ -25,8 +27,11 @@ export class DotacaoProcessoNotaService {
     }
 
     private async sincronizarNotaEmpenhoRealizado(dto: AnoDotacaoNotaEmpenhoDto, mes: number): Promise<ValorRealizadoNotaEmpenhoDto[]> {
+
         const now = new Date(Date.now());
         dto.nota_empenho = dto.nota_empenho.replace(/[^0-9\/]/g, '');
+
+        this.logger.debug(`> sincronizarNotaEmpenhoRealizado: ${JSON.stringify(dto)}`);
 
         try {
             const r = await this.sof.empenhoNotaEmpenho({
@@ -110,6 +115,11 @@ export class DotacaoProcessoNotaService {
             throw error;
         }
 
+        this.logger.debug(`> dotacaoProcessoNota.findMany: ${JSON.stringify({
+            ano_referencia: dto.ano,
+            dotacao_processo_nota: dto.nota_empenho,
+        })}`);
+
         const dbList = await this.prisma.dotacaoProcessoNota.findMany({
             where: {
                 ano_referencia: dto.ano,
@@ -130,6 +140,7 @@ export class DotacaoProcessoNotaService {
             },
         });
 
+        this.logger.debug(`> dbList: ${JSON.stringify(dbList)}`);
         const list = dbList.map(r => {
             return {
                 ...r,
