@@ -244,7 +244,7 @@ iniciar();
         />
       </div>
 
-      <dl class="f1 mb1">
+      <dl class="f05 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Nível
         </dt>
@@ -258,7 +258,7 @@ iniciar();
         </dd>
       </dl>
 
-      <dl class="f1 mb1">
+      <dl class="f05 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Grau
         </dt>
@@ -301,9 +301,10 @@ iniciar();
       <legend class="label mt2 mb1">
         Tarefas afetadas&nbsp;<span class="tvermelho">*</span>
       </legend>
+
       <div class="flex g2">
         <div class="f2 mb1">
-          <LabelFromYup>
+          <LabelFromYup class="tc300">
             Do cronograma<template
               v-if="!values.risco_tarefa_outros"
             >
@@ -329,7 +330,7 @@ iniciar();
         </div>
 
         <div class="f2 mb1">
-          <LabelFromYup>
+          <LabelFromYup class="tc300">
             Outras<template
               v-if="!values.tarefa_id?.length"
             >
