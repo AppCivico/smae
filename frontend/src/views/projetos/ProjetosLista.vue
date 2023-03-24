@@ -163,21 +163,23 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
   >
     <template v-if="Object.keys(listasAgrupadas).length">
       <div class="flex flexwrap g2">
-        <div
+        <details
           v-for="item in Object.keys(listasAgrupadas)"
           :key="item"
           class="board board--flex"
         >
-          <h2>{{ listasAgrupadas[item].titulo }}</h2>
-          <div class="t11 tc300 mb2">
-            {{ listasAgrupadas[item].lista.length }}
-            <template v-if="listasAgrupadas[item].lista.length === 1">
-              projeto
-            </template>
-            <template v-else>
-              projetos
-            </template>
-          </div>
+          <summary>
+            <h2>{{ listasAgrupadas[item].titulo }}</h2>
+            <div class="t11 tc300 mb2">
+              {{ listasAgrupadas[item].lista.length }}
+              <template v-if="listasAgrupadas[item].lista.length === 1">
+                projeto
+              </template>
+              <template v-else>
+                projetos
+              </template>
+            </div>
+          </summary>
 
           <TabelaDeProjetos
             :lista="listasAgrupadas[item].lista"
@@ -195,7 +197,7 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
             ><use xlink:href="#i_+" /></svg>
             <span>Adicionar projeto a esse portfolio</span>
           </router-link>
-        </div>
+        </details>
       </div>
     </template>
   </div>
