@@ -1,5 +1,12 @@
 <script setup>
 defineProps({
+  as: {
+    type: String,
+    default: 'label',
+    validator(value) {
+      return ['label', 'legend'].includes(value);
+    },
+  },
   name: {
     type: String,
     default: '',
@@ -11,7 +18,8 @@ defineProps({
 });
 </script>
 <template>
-  <label
+  <component
+    :is="as"
     class="label"
     :for="name || $attrs.for || null"
   >
@@ -23,5 +31,5 @@ defineProps({
         class="tvermelho"
       >*</span>
     </slot>
-  </label>
+  </component>
 </template>
