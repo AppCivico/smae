@@ -19,6 +19,7 @@ defineProps({
         v-for="(message, field) in errors"
         :key="field"
         class="form-errors-report__item"
+        :class="`form-errors-report__item--${field}`"
       >
         {{ message }}
       </li>
