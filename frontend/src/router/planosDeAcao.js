@@ -30,7 +30,13 @@ export default {
         riscoId: Number.parseInt(params.riscoId, 10) || undefined,
       }),
       meta: {
-        título: () => useRiscosStore()?.emFoco?.descricao || 'Resumo de risco',
+        título: () => {
+          if (useRiscosStore()?.emFoco) {
+            const { codigo, descricao } = useRiscosStore().emFoco;
+            return `${codigo} - ${descricao}`;
+          }
+          return 'Resumo de risco';
+        },
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
