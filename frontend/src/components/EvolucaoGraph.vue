@@ -477,7 +477,7 @@ class smaeChart {
 const chart = new smaeChart();
 
 function start() {
-  if (props.dataserie?.linhas && evolucao.value) {
+  if (props.dataserie?.linhas?.length && evolucao.value) {
     const data = {};
 
     const iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
