@@ -6,7 +6,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
-import { CheckDependenciasDto, CreateTarefaDto, TarefaDependenciaDto } from './dto/create-tarefa.dto';
+import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
@@ -204,7 +204,7 @@ export class TarefaService {
     }
 
 
-    async findAll(projetoId: number, user: PessoaFromJwt): Promise<TarefaItemDto[]> {
+    async findAll(projetoId: number, user: PessoaFromJwt, filter: FilterPPTarefa): Promise<TarefaItemDto[]> {
 
         const rows = await this.prisma.tarefa.findMany({
             where: {
@@ -234,6 +234,14 @@ export class TarefaService {
                 n_dep_termino_planejado: true,
                 percentual_concluido: true,
                 eh_marco: true,
+                dependencias: filter.incluir_dependencias ?
+                    {
+                        select: {
+                            dependencia_tarefa_id: true,
+                            tipo: true,
+                            latencia: true,
+                        }
+                    } : false,
             }
         });
 

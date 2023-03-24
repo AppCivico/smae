@@ -29,9 +29,14 @@ export class TarefaItemDto {
 
     percentual_concluido: number | null
 
-    eh_marco: Boolean
+    eh_marco: boolean
 
     atraso: number | null
+
+    /**
+     * só retorna na listagem se foi pedido
+    */
+    dependencias?: TarefaDependenciaDto[]
 }
 
 export class TarefaDetailDto extends TarefaItemDto {
