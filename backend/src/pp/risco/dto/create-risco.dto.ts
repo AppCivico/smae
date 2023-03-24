@@ -14,19 +14,22 @@ export class CreateRiscoDto {
     @IsNumber()
     @IsOptional()
     probabilidade: number
-    
+
     @IsNumber()
     @IsOptional()
     impacto: number
 
+    @IsString()
+    titulo: string
+
     @IsOptional()
     @IsString()
     descricao: string
-    
+
     @IsOptional()
     @IsString()
     causa: string
-    
+
     @IsOptional()
     @IsString()
     consequencia: string

@@ -821,7 +821,7 @@ model Indicador {
     atividade             Atividade?    @relation(fields: [atividade_id], references: [id])
     formula               String?
     formula_compilada     String?
-    acumulado_valor_base  Decimal?      @db.Decimal(65, 30)
+    acumulado_valor_base  Decimal?      @default(0) @db.Decimal(65, 30)
     acumulado_usa_formula Boolean       @default(false)
     codigo                String
     titulo                String
@@ -2493,6 +2493,7 @@ model Tarefa {
 
     custo_estimado Float?
     custo_real     Float?
+    eh_marco       Boolean @default(false)
 
     // calculado no caso dos nós, mas é o % realizado de fato, no caso das folhas
     // formula: soma (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
@@ -2546,6 +2547,7 @@ model ProjetoRisco {
     projeto_id Int
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
+    titulo        String   @default("(sem título)")
     codigo        Int
     registrado_em DateTime
 
@@ -2617,6 +2619,9 @@ model PlanoAcao {
 
     responsavel            String?
     PlanoAcaoMonitoramento PlanoAcaoMonitoramento[]
+
+    contato_do_responsavel String?
+    data_termino           DateTime? @db.Date()
 
     removido_em  DateTime?
     removido_por Int?
