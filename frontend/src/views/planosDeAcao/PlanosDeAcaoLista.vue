@@ -11,7 +11,9 @@ import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const portfolioStore = usePortfolioStore();
 const riscosStore = useRiscosStore();
 const tarefasStore = useTarefasStore();
@@ -77,7 +79,13 @@ iniciar();
         </template>
       </div>
 
-      <h1>{{ emFoco?.descricao }}</h1>
+      <h1>
+        {{
+          typeof route?.meta?.título === 'function'
+          ? route.meta.título()
+          : route?.meta?.título
+          || (riscoId ? 'Risco' : 'Novo risco') }}
+      </h1>
     </div>
 
     <hr class="ml2 f1">

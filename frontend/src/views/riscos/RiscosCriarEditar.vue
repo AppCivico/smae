@@ -90,15 +90,21 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
+    <div>
       <div
         v-if="riscoId"
         class="t12 uc w700 tamarelo"
       >
         {{ 'Editar risco' }}
       </div>
-      {{ emFoco?.descricao || (riscoId ? 'Risco' : 'Novo risco') }}
-    </h1>
+      <h1>
+        {{
+          typeof route?.meta?.título === 'function'
+          ? route.meta.título()
+          : route?.meta?.título
+          || (riscoId ? 'Risco' : 'Novo risco') }}
+      </h1>
+    </div>
 
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeRisco
