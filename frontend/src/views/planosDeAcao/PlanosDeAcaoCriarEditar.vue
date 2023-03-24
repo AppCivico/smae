@@ -155,6 +155,7 @@ iniciar();
         <LabelFromYup
           name="orgao_id"
           :schema="schema"
+          class="tc300"
         />
         <Field
           name="orgao_id"
@@ -189,6 +190,7 @@ iniciar();
         <LabelFromYup
           name="responsavel"
           :schema="schema"
+          class="tc300"
         />
         <Field
           name="responsavel"
@@ -201,6 +203,27 @@ iniciar();
         <ErrorMessage
           class="error-msg mb1"
           name="responsavel"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="contato_do_responsavel"
+          :schema="schema"
+          class="tc300"
+        >
+          Meio de contato
+        </LabelFromYup>
+        <Field
+          name="contato_do_responsavel"
+          type="text"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.contato_do_responsavel }"
+          @change="setFieldValue('orgao_id', null)"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="contato_do_responsavel"
         />
       </div>
     </div>
@@ -286,6 +309,8 @@ iniciar();
         />
       </div>
     </div>
+
+    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">

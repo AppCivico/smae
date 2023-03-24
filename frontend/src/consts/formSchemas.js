@@ -250,6 +250,8 @@ const novaSenha = object()
 
 const planoDeAção = object()
   .shape({
+    contato_do_responsavel: string()
+      .label('Contato do responsável'),
     contramedida: string()
       .label('Contra-medidas')
       .max(50000),
@@ -262,9 +264,14 @@ const planoDeAção = object()
       .max(100)
       .min(0)
       .required(),
+    data_termino: date()
+      .label('Término efetivo')
+      .nullable()
+      .typeError('Data inválida'),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
-      .max(50000),
+      .max(50000)
+      .required(),
     orgao_id: number()
       .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
@@ -273,16 +280,13 @@ const planoDeAção = object()
         ? field.required('Escolha um órgão ou alguém responsável pela tarefa')
         : field)),
     prazo_contramedida: date()
-      .label('Prazo de término')
+      .label('Término previsto')
       .required()
       .typeError('Data inválida'),
     responsavel: string()
       .label('Responsável')
       .nullable()
-      .max(60)
-      .when('orgao_id', (órgãoId, field) => (!órgãoId
-        ? field.required('Escolha um órgão ou alguém responsável pela tarefa')
-        : field)),
+      .max(60),
   }, [['orgao_id', 'responsavel']]);
 
 const portfolio = object({
