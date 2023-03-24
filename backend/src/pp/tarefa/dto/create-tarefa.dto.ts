@@ -166,3 +166,13 @@ export class CreateTarefaDto {
     @ValidateIf((object, value) => value !== null)
     eh_marco?: boolean
 }
+
+export class FilterPPTarefa {
+    /**
+     * se deve retornar já na listagem as dependências (para desenho do gantt)
+    */
+    @IsBoolean()
+    @IsOptional()
+    @Transform(({ value }: any) => value === 'true')
+    incluir_dependencias?: boolean;
+}

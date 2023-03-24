@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -9,7 +9,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { ProjetoService } from '../projeto/projeto.service';
-import { CheckDependenciasDto, CreateTarefaDto } from './dto/create-tarefa.dto';
+import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto } from './entities/tarefa.entity';
 import { TarefaService } from './tarefa.service';
@@ -40,10 +40,10 @@ export class TarefaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListTarefaDto> {
+    async findAll(@Param() params: FindOneParams, @Query() filter: FilterPPTarefa, @CurrentUser() user: PessoaFromJwt): Promise<ListTarefaDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
         return {
-            linhas: await this.tarefaService.findAll(projeto.id, user),
+            linhas: await this.tarefaService.findAll(projeto.id, user, filter),
             projeto: projeto,
             portfolio: await this.portfolioService.findOne(projeto.portfolio_id, null),
         };
