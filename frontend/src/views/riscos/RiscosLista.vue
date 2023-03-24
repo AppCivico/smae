@@ -175,7 +175,7 @@ iniciar();
               }
             }"
           >
-            {{ linha.descricao }}
+            {{ linha.titulo }}
           </router-link>
         </th>
         <td class="center">
