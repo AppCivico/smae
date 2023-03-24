@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { TarefaDependenteTipo } from "@prisma/client"
 import { Transform, Type } from "class-transformer"
-import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength, ValidateIf, ValidateNested } from "class-validator"
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
 
 export class TarefaDependenciaDto {
@@ -155,4 +155,14 @@ export class CreateTarefaDto {
     @Min(0, { message: '$property| Mínimo 0' })
     @ValidateIf((object, value) => value !== null)
     percentual_concluido?: number | null
+
+    /**
+     * se é a tarefa é um marco ou não no projeto
+    * @example "false"
+    */
+    @IsOptional()
+    @IsBoolean()
+    @Type(() => Boolean)
+    @ValidateIf((object, value) => value !== null)
+    eh_marco?: boolean
 }

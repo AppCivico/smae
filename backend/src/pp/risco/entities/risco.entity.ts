@@ -6,6 +6,7 @@ export class ProjetoRisco {
     codigo: number
     registrado_em: Date
     descricao: string | null
+    titulo: string
     causa: string | null
     consequencia: string | null
     probabilidade: number | null
@@ -24,6 +25,7 @@ export class ListProjetoRiscoDto {
 export class ProjetoRiscoDetailDto {
     id: number
     codigo: number
+    titulo: string
     registrado_em: Date
     descricao: string | null
     causa: string | null

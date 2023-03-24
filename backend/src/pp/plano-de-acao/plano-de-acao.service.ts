@@ -1,12 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
-import { DateTime } from 'luxon';
-import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UploadService } from '../../upload/upload.service';
 import { PlanoAcao, PlanoAcaoDetailDto } from '../plano-de-acao/entities/plano-acao.entity';
 import { CreatePlanoAcaoDto } from './dto/create-plano-acao.dto';
 import { FilterPlanoAcaoDto } from './dto/filter-plano-acao.dto';
@@ -64,6 +59,8 @@ export class PlanoAcaoService {
                 custo_percentual: true,
                 medidas_de_contingencia: true,
                 responsavel: true,
+                contato_do_responsavel: true,
+                data_termino: true,
                 orgao: {
                     select: {
                         id: true,
@@ -91,6 +88,8 @@ export class PlanoAcaoService {
                 custo_percentual: true,
                 medidas_de_contingencia: true,
                 responsavel: true,
+                contato_do_responsavel: true,
+                data_termino: true,
                 orgao: {
                     select: {
                         id: true,

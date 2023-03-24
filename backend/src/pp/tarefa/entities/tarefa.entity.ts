@@ -29,6 +29,8 @@ export class TarefaItemDto {
 
     percentual_concluido: number | null
 
+    eh_marco: Boolean
+
     atraso: number | null
 }
 

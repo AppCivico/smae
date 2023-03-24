@@ -232,7 +232,8 @@ export class TarefaService {
                 n_filhos_imediatos: true,
                 n_dep_inicio_planejado: true,
                 n_dep_termino_planejado: true,
-                percentual_concluido: true
+                percentual_concluido: true,
+                eh_marco: true,
             }
         });
 
@@ -290,7 +291,8 @@ export class TarefaService {
                         tipo: true,
                         latencia: true,
                     }
-                }
+                },
+                eh_marco: true,
             }
         });
 

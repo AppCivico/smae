@@ -20,7 +20,7 @@ export class CreatePlanoAcaoDto {
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    prazo_contramedida: Date
+    prazo_contramedida: Date | null
 
     @IsNumber()
     custo: number
@@ -30,4 +30,15 @@ export class CreatePlanoAcaoDto {
 
     @IsString()
     medidas_de_contingencia: string
+
+    @IsOptional()
+    @IsString()
+    contato_do_responsavel: string
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data_termino: Date | null
+
 }

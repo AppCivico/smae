@@ -42,7 +42,7 @@ export class RiscoService {
                 criado_em: new Date(Date.now()),
                 criado_por: user.id
             },
-            select: {id: true}
+            select: { id: true }
         });
 
         if (dto.tarefa_id) {
@@ -56,7 +56,7 @@ export class RiscoService {
             })
         }
 
-        return {id: risco.id}
+        return { id: risco.id }
     }
 
     async findAll(projetoId: number, user: PessoaFromJwt): Promise<ProjetoRisco[]> {
@@ -65,7 +65,7 @@ export class RiscoService {
                 projeto_id: projetoId,
                 removido_em: null
             },
-            orderBy: [{codigo: 'asc'}],
+            orderBy: [{ codigo: 'asc' }],
             select: {
                 id: true,
                 codigo: true,
@@ -80,14 +80,15 @@ export class RiscoService {
                 resposta: true,
                 risco_tarefa_outros: true,
                 status_risco: true,
+                titulo: true,
             }
         });
-        
+
 
         return projetoRisco.map(r => {
             let calcResult;
             if (r.probabilidade && r.impacto) calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
-            
+
             return {
                 ...r,
 
@@ -113,6 +114,7 @@ export class RiscoService {
                 causa: true,
                 consequencia: true,
                 probabilidade: true,
+                titulo: true,
                 impacto: true,
                 nivel: true,
                 grau: true,
@@ -139,6 +141,8 @@ export class RiscoService {
                         custo_percentual: true,
                         medidas_de_contingencia: true,
                         responsavel: true,
+                        contato_do_responsavel: true,
+                        data_termino: true,
 
                         orgao: {
                             select: {
@@ -154,7 +158,7 @@ export class RiscoService {
 
         let calcResult;
         if (projetoRisco.probabilidade && projetoRisco.impacto) calcResult = RiscoCalc.getResult(projetoRisco.probabilidade, projetoRisco.impacto);
-        
+
         return {
             ...projetoRisco,
             nivel: calcResult ? calcResult.nivel : null,
@@ -182,7 +186,7 @@ export class RiscoService {
                 const tarefa_id = dto.tarefa_id;
                 delete dto.tarefa_id;
 
-                await prismaTx.riscoTarefa.deleteMany({where: {projeto_risco_id: projeto_risco_id } });
+                await prismaTx.riscoTarefa.deleteMany({ where: { projeto_risco_id: projeto_risco_id } });
                 await prismaTx.riscoTarefa.createMany({
                     data: tarefa_id.map(r => {
                         return {
@@ -192,9 +196,9 @@ export class RiscoService {
                     })
                 });
             }
-            
+
             return await this.prisma.projetoRisco.update({
-                where: {id: projeto_risco_id},
+                where: { id: projeto_risco_id },
                 data: {
                     codigo: dto.codigo,
                     registrado_em: dto.registrado_em,
@@ -209,7 +213,7 @@ export class RiscoService {
                     atualizado_em: new Date(Date.now()),
                     atualizado_por: user.id
                 },
-                select: {id: true}
+                select: { id: true }
             });
         });
 
