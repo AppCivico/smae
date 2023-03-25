@@ -318,7 +318,28 @@ BEGIN
         join cronogramas_indiretos x on x.cronograma_id = c.id
         where m.removido_em is null
         and m.ativo = TRUE
-        and c.removido_em is null -- just in case, na teoria as etapas ja seriam removidas?
+        and c.removido_em is null
+            UNION ALL
+        select
+            m.id as meta_id
+        from meta m
+        join iniciativa i on i.meta_id = m.id
+        join cronograma c on  c.iniciativa_id = i.id
+        join cronogramas_indiretos x on x.cronograma_id = c.id
+        where m.removido_em is null
+        and m.ativo = TRUE
+        and c.removido_em is null
+            UNION ALL
+        select
+            m.id as meta_id
+        from meta m
+        join iniciativa i on i.meta_id = m.id
+        join atividade a on a.iniciativa_id = i.id
+        join cronograma c on c.atividade_id = a.id
+        join cronogramas_indiretos x on x.cronograma_id = c.id
+        where m.removido_em is null
+        and m.ativo = TRUE
+        and c.removido_em is null
     )
     select
         pPessoa_id as pessoa_id,
