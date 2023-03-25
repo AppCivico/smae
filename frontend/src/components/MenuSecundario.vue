@@ -77,6 +77,10 @@ const rotasParaMigalhasDePão = computed(() => {
       v-if="rotasParaMenu.length"
       class="subpadding"
     >
+      <h2 v-if="route?.meta?.títuloParaGrupoDeLinksNoMenu">
+        {{ route?.meta?.títuloParaGrupoDeLinksNoMenu }}
+      </h2>
+
       <div class="links-container mb2">
         <router-link
           v-for="item, k in rotasParaMenu"
