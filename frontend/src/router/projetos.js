@@ -126,6 +126,8 @@ export default {
           'projetosListar',
           'projetosResumo',
         ],
+
+        títuloParaGrupoDeLinksNoMenu: 'Plano do projeto',
       },
 
       children: [
@@ -153,8 +155,8 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: () => useProjetosStore()?.emFoco?.nome || 'Plano do projeto',
-            títuloParaMenu: 'Plano do Projeto',
+            título: () => useProjetosStore()?.emFoco?.nome || 'Resumo',
+            títuloParaMenu: 'Resumo',
           },
         },
 

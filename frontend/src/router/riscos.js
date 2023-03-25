@@ -17,7 +17,7 @@ export default {
   meta: {
     requerAutenticação: true,
 
-    títuloParaMenu: 'Riscos',
+    títuloParaMenu: 'Gestão de riscos',
   },
   children: [
     {
@@ -26,7 +26,6 @@ export default {
       component: RiscosLista,
       meta: {
         título: 'Riscos sobre o projeto',
-        títuloParaMenu: 'Riscos',
 
         rotasParaMigalhasDePão: [
           'projetosListar',
