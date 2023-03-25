@@ -25,7 +25,7 @@ export default {
       component: AcompanhamentosLista,
       meta: {
         título: 'Reuniões de acompanhamento',
-        títuloParaMenu: 'Acompanhamento',
+        títuloParaMenu: 'Acompanhamento do projeto',
 
         rotasParaMigalhasDePão: [
           'projetosListar',
