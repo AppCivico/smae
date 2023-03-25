@@ -2568,6 +2568,9 @@ model ProjetoRisco {
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
     planos_de_acao             PlanoAcao[]
 
+    /// lista de planos de ação sem data de terminimo, populado via trigger
+    planos_de_acao_sem_dt_term Int[]
+
     risco_tarefa_outros String? // String deve ser preenchida caso o user queira informar um "risco_tarefa" que seja de fora do PDM
 
     removido_em  DateTime?

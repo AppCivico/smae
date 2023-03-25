@@ -15,6 +15,10 @@ export class ProjetoRisco {
     grau: number | null
     resposta: string | null
     risco_tarefa_outros: string | null
+    /**
+     * ids dos plano de ação que estão sem data de terminimo
+     */
+    planos_de_acao_sem_dt_term: number[] | null
     status_risco: StatusRisco
 }
 
@@ -22,27 +26,12 @@ export class ListProjetoRiscoDto {
     linhas: ProjetoRisco[]
 }
 
-export class ProjetoRiscoDetailDto {
-    id: number
-    codigo: number
-    titulo: string
-    registrado_em: Date
-    descricao: string | null
-    causa: string | null
-    consequencia: string | null
-    probabilidade: number | null
-    impacto: number | null
-    nivel: number | null
-    grau: number | null
-    resposta: string | null
-    risco_tarefa_outros: string | null
-    status_risco: StatusRisco
-
-    tarefas_afetadas?: ProjetoRiscoTarefa[]
-    planos_de_acao?: PlanoAcao[]
+export class ProjetoRiscoDetailDto extends ProjetoRisco {
+    tarefas_afetadas: ProjetoRiscoTarefa[]
+    planos_de_acao: PlanoAcao[]
 }
 
 export class ProjetoRiscoTarefa {
-    tarefa_id?: number
-    tarefa?: string
+    tarefa_id: number
+    tarefa: string
 }
