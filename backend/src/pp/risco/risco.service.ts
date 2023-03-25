@@ -78,6 +78,7 @@ export class RiscoService {
                 risco_tarefa_outros: true,
                 status_risco: true,
                 titulo: true,
+                planos_de_acao_sem_dt_term: true,
             }
         });
 
@@ -118,6 +119,7 @@ export class RiscoService {
                 titulo: true,
                 risco_tarefa_outros: true,
                 status_risco: true,
+                planos_de_acao_sem_dt_term: true,
                 RiscoTarefa: {
                     select: {
                         tarefa: {
