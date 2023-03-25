@@ -214,6 +214,13 @@ iniciar();
     </div>
   </Form>
 
+  <div
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </div>
+
   <button
     v-if="emFoco?.id"
     class="btn amarelo big"
@@ -221,11 +228,6 @@ iniciar();
   >
     Remover item
   </button>
-
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
 
   <div
     v-if="erro"
