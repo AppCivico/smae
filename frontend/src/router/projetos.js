@@ -2,6 +2,7 @@ import MenuSecundário from '@/components/MenuSecundario.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
+import ProjetosEstruturaAnalitica from '@/views/projetos/ProjetosEstruturaAnalitica.vue';
 import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
@@ -113,6 +114,7 @@ export default {
             base.splice(
               1,
               0,
+              'projetosEAP',
               'tarefasListar',
               'riscosListar',
               'acompanhamentosListar',
@@ -157,6 +159,20 @@ export default {
           meta: {
             título: () => useProjetosStore()?.emFoco?.nome || 'Resumo',
             títuloParaMenu: 'Resumo',
+          },
+        },
+
+        {
+          path: 'estrutura-analitica',
+          name: 'projetosEAP',
+          component: ProjetosEstruturaAnalitica,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: () => useProjetosStore()?.emFoco?.nome || 'Estrutura Analítica',
+            títuloParaMenu: 'Estrutura Analítica',
           },
         },
 
