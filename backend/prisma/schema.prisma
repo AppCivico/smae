@@ -954,6 +954,9 @@ model Variavel {
     VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
     PedidoComplementacao           PedidoComplementacao[]
 
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
     @@index([regiao_id])
     @@map("variavel")
 }

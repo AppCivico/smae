@@ -450,15 +450,41 @@ export class IndicadorService {
             if (filterIdIn.includes(meta_id) === false) throw new HttpException('Sem permissão para remover indicador para a meta', 400);
         }
 
-        const created = await this.prisma.indicador.updateMany({
-            where: { id: id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
-        });
+        const removed = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            // Verificando se as variáveis deste indicador estão em uso.
+            const varsInUse = await prismaTx.indicadorVariavel.count({
+                where: {
+                    indicador_origem_id: id,
+                    desativado: false
+                },
+            });
+        
+            if (varsInUse > 0) throw new HttpException('Indicador possui variáveis em uso.', 400);
+        
+            prismaTx.variavel.updateMany({
+                where: {
+                    indicador_variavel: {
+                        some: {
+                            indicador_id: id
+                        }
+                    }
+                },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id
+                }
+            });
+        
+            return await prismaTx.indicador.updateMany({
+                where: { id: id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
+        });        
 
-        return created;
+        return removed;
     }
 
     private getValorSerieExistentePorPeriodo(valoresExistentes: ValorSerieExistente[]): SerieIndicadorValorPorPeriodo {
