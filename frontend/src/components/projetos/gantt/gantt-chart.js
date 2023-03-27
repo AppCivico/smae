@@ -227,7 +227,8 @@ const createChartSVG = (data, placeholder, {
   const xAxis = axisBottom(xScale);
 
   // create container for the data
-  const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+  const g1 = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
 
   // add milestone relationship lines to the SVG
   if (showRelations) {
@@ -315,7 +316,9 @@ const detectConflicts = (data) => {
 
   return data.map((milestone) => {
     const errorousDependencies = milestone.dependsOn
-      .filter((dependencyId) => dataCache[dependencyId].startDate >= milestone.startDate); milestone.errors = (milestone.errors || [])
+      .filter((dependencyId) => dataCache[dependencyId].startDate >= milestone.startDate);
+
+    milestone.errors = (milestone.errors || [])
       .concat(errorousDependencies
         .map((errorId) => `Dependency ${errorId} must end before this milestone`));
     return milestone;
