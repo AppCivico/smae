@@ -2,6 +2,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { grauDescricao } from '@/../../common/RiscoCalc.ts';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
+import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -109,7 +110,7 @@ iniciar();
         class="f1 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
-          Causa
+          {{ schema.fields['causa'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.causa }}
@@ -120,7 +121,7 @@ iniciar();
         class="f1 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
-          Consequência
+          {{ schema.fields['consequencia'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.consequencia }}
