@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ProjetoStatus } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { CreateProjetoDto, CreateProjetoSeiDto } from './create-projeto.dto';
 
@@ -172,5 +173,15 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
     data_revisao?: Date | null;
+
+    /**
+     * Executa uma mudança de status, sem atualizar os campos (pode retroceder)
+    */
+    @IsOptional()
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
+    @IsEnum(ProjetoStatus, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
+    })
+    status?: ProjetoStatus
 
 }

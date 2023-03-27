@@ -57,6 +57,9 @@ export class ProjetoPermissoesDto {
     */
     apenas_leitura_planejamento: boolean
     sou_responsavel: boolean
+
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
+    status_permitidos: ProjetoStatus[]
 }
 
 export class ProjetoMetaDetailDto {

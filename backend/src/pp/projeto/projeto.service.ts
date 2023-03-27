@@ -553,6 +553,7 @@ export class ProjetoService {
             campo_nao_escopo: false,
             apenas_leitura_planejamento: true,
             sou_responsavel: false,
+            status_permitidos: [],
         };
 
         // se o projeto está arquivado, não podemos arquivar novamente
@@ -617,14 +618,49 @@ export class ProjetoService {
 
                 switch (projeto.status) {
                     case 'Registrado': permissoes.acao_selecionar = true; break;
-                    case 'Selecionado': permissoes.acao_iniciar_planejamento = true; break;
-                    case 'EmPlanejamento': permissoes.acao_finalizar_planejamento = true; break;
-                    case 'Planejado': permissoes.acao_validar = true; break;
-                    case 'Validado': permissoes.acao_iniciar = true; break;
-                    case 'EmAcompanhamento': permissoes.acao_suspender = permissoes.acao_terminar = true; break;
-                    case 'Suspenso': permissoes.acao_cancelar = permissoes.acao_reiniciar = true; break;
-                    // redundante, pq pode sempre arquivar
-                    case 'Fechado': permissoes.acao_arquivar = true; break;
+                    case 'Selecionado':
+                        permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_iniciar_planejamento = true; break;
+                    case 'EmPlanejamento':
+                        permissoes.status_permitidos.push('Selecionado');
+                        permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_finalizar_planejamento = true;
+                        break;
+                    case 'Planejado':
+                        permissoes.status_permitidos.push('EmPlanejamento');
+                        permissoes.status_permitidos.push('Selecionado');
+                        permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_validar = true; break;
+                    case 'Validado':
+                        permissoes.status_permitidos.push('Planejado');
+                        permissoes.status_permitidos.push('EmPlanejamento');
+                        permissoes.status_permitidos.push('Selecionado');
+                        permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_iniciar = true; break;
+                    case 'EmAcompanhamento':
+                        permissoes.status_permitidos.push('Validado');
+                        permissoes.status_permitidos.push('Planejado');
+                        permissoes.status_permitidos.push('EmPlanejamento');
+                        permissoes.status_permitidos.push('Selecionado');
+                        permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_suspender = permissoes.acao_terminar = true;
+                        break;
+                    case 'Suspenso':
+                        permissoes.status_permitidos.push('EmAcompanhamento');
+                        permissoes.status_permitidos.push('Validado');
+                        permissoes.status_permitidos.push('Planejado');
+                        permissoes.status_permitidos.push('EmPlanejamento');
+                        permissoes.status_permitidos.push('Selecionado');
+                        permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_cancelar = permissoes.acao_reiniciar = true; break;
+                    case 'Fechado':
+                        permissoes.status_permitidos.push('EmAcompanhamento');
+                        permissoes.status_permitidos.push('Validado');
+                        permissoes.status_permitidos.push('Planejado');
+                        permissoes.status_permitidos.push('EmPlanejamento');
+                        permissoes.status_permitidos.push('Selecionado');
+                        permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_arquivar = true; break;
                 }
 
             }
@@ -643,6 +679,15 @@ export class ProjetoService {
 
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, false);
+
+        // migrou de status, verificar se  realmente poderia mudar
+        if (dto.status && dto.status != projeto.status) {
+            if (projeto.permissoes.status_permitidos.includes(dto.status) === false)
+                throw new HttpException(`Você não é possível mudar o status do projeto para ${dto.status}`, 400);
+        } else {
+            // just to be sure, vai que muda durante a TX
+            dto.status = undefined;
+        }
 
         // TODO? se estiver arquivado, retorna 400 (estava só o comentario, sem o texto de TODO)
 
@@ -685,8 +730,6 @@ export class ProjetoService {
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
 
-
-
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
@@ -715,6 +758,8 @@ export class ProjetoService {
                     versao: dto.versao,
                     data_aprovacao: dto.data_aprovacao,
                     data_revisao: dto.data_revisao,
+
+                    status: dto.status,
 
                     // campos apenas do update
                     publico_alvo: dto.publico_alvo,
