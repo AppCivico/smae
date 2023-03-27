@@ -1,5 +1,5 @@
 <script setup>
-import statuses from '@/consts/taskStatuses';
+import statuses from '@/consts/projectStatuses';
 import {
   useAlertStore, useProjetosStore
 } from '@/stores';

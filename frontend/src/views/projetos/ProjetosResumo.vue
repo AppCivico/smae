@@ -1,7 +1,7 @@
 <script setup>
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
-import statuses from '@/consts/taskStatuses';
+import statuses from '@/consts/projectStatuses';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
