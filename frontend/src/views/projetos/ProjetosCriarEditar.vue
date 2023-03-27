@@ -4,6 +4,8 @@ import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
+import statuses from '@/consts/taskStatuses';
+import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import truncate from '@/helpers/truncate';
 import {
 useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore
@@ -14,6 +16,8 @@ ErrorMessage, Field, FieldArray, Form
 } from 'vee-validate';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const ÓrgãosStore = useOrgansStore();
 const OrçamentosStore = useOrcamentosStore();
@@ -283,6 +287,41 @@ iniciar();
         <ErrorMessage
           class="error-msg mb1"
           name="nome"
+        />
+      </div>
+
+      <div
+        v-if="projetoId"
+        class="f05 mb1"
+      >
+        <LabelFromYup
+          name="status"
+          :schema="schema"
+        />
+        <Field
+          name="status"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ error: errors.status }"
+          :disabled="!permissões.status_permitidos?.length"
+        >
+          <option
+            :value="null"
+          >
+            Selecionar
+          </option>
+          <option
+            v-for="item in listaDeStatuses"
+            :key="item.valor"
+            :value="item.valor"
+            :disabled="permissões.status_permitidos?.indexOf(item.valor) === -1"
+          >
+            {{ item.etiqueta }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb1"
+          name="status"
         />
       </div>
     </div>
