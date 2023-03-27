@@ -3,6 +3,7 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
 import ProjetosEstruturaAnalitica from '@/views/projetos/ProjetosEstruturaAnalitica.vue';
+import ProjetosGantt from '@/views/projetos/ProjetosGantt.vue';
 import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
 import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
@@ -115,6 +116,7 @@ export default {
               1,
               0,
               'projetosEAP',
+              'projetosGantt',
               'tarefasListar',
               'riscosListar',
               'acompanhamentosListar',
@@ -173,6 +175,20 @@ export default {
           meta: {
             título: () => useProjetosStore()?.emFoco?.nome || 'Estrutura Analítica',
             títuloParaMenu: 'Estrutura Analítica',
+          },
+        },
+
+        {
+          path: 'gantt',
+          name: 'projetosGantt',
+          component: ProjetosGantt,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: () => useProjetosStore()?.emFoco?.nome || 'Gantt',
+            títuloParaMenu: 'Gráfico de Gantt',
           },
         },
 
