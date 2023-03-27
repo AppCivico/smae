@@ -1,7 +1,7 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
-import statuses from '@/consts/taskStatuses';
+import statuses from '@/consts/projectStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';

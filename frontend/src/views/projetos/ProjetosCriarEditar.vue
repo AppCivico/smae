@@ -4,7 +4,7 @@ import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
-import statuses from '@/consts/taskStatuses';
+import statuses from '@/consts/projectStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import truncate from '@/helpers/truncate';
 import {
