@@ -217,10 +217,10 @@ iniciar();
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label">
-          Portfolio&nbsp;<span class="tvermelho">*</span>
-        </label>
-
+        <LabelFromYup
+          name="portfolio_id"
+          :schema="schema"
+        />
         <Field
           name="portfolio_id"
           as="select"

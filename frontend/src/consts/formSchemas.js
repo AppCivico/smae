@@ -417,6 +417,7 @@ const projeto = object()
       .label('Público alvo')
       .nullable(),
     portfolio_id: number('O projeto precisa pertencer a um portfolio')
+      .label('Portfólio')
       .min(1, 'Selecione ao menos um portfolio')
       .required('O projeto precisa pertencer a um portfolio'),
     premissas: array()

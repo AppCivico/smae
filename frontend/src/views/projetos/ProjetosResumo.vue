@@ -1,6 +1,7 @@
 <script setup>
 import EstruturaAnalíticaProjeto from '@/components/projetos/EstruturaAnaliticaProjeto.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
+import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/taskStatuses';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
@@ -67,7 +68,7 @@ iniciar();
         class="f1 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
-          Código
+          {{ schema.fields['codigo'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.codigo }}
@@ -75,7 +76,7 @@ iniciar();
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Portfolio
+          {{ schema.fields['portfolio_id'].spec.label }}
         </dt>
         <dd class="t13">
           {{ portfolioStore?.portfoliosPorId[emFoco?.portfolio_id]?.titulo }}
@@ -83,7 +84,7 @@ iniciar();
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Nome do projeto
+          {{ schema.fields['nome'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.nome }}
@@ -101,7 +102,7 @@ iniciar();
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Resumo
+          {{ schema.fields['resumo'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.resumo || '-' }}
@@ -112,7 +113,7 @@ iniciar();
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Escopo
+          {{ schema.fields['escopo'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.escopo || '-' }}
@@ -123,11 +124,12 @@ iniciar();
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Principais etapas
+          {{ schema.fields['principais_etapas'].spec.label }}
         </dt>
-        <dd class="t13">
-          {{ emFoco?.principais_etapas || '-' }}
-        </dd>
+        <dd
+          class="t13"
+          v-html="emFoco?.principais_etapas || '-'"
+        />
       </dl>
     </div>
 
@@ -139,7 +141,7 @@ iniciar();
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Órgão gestor
+          {{ schema.fields['orgao_gestor_id'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
@@ -162,7 +164,7 @@ iniciar();
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Órgão responsável
+          {{ schema.fields['orgao_responsavel_id'].spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
@@ -181,7 +183,7 @@ iniciar();
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Orgãos participantes
+          {{ schema.fields['orgaos_participantes'].spec.label }}
         </dt>
         <dd class="t13">
           <template
