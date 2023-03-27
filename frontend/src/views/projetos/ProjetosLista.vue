@@ -166,7 +166,7 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
         <details
           v-for="item in Object.keys(listasAgrupadas)"
           :key="item"
-          class="board board--flex"
+          class="board board--flex f100"
         >
           <summary>
             <h2>{{ listasAgrupadas[item].titulo }}</h2>
