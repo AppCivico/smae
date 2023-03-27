@@ -476,6 +476,19 @@ const projeto = object()
     secretario_responsavel: string()
       .label('Secretário responsável')
       .nullable(),
+    status: mixed()
+      .label('Status')
+      .oneOf([
+        'Registrado',
+        'Selecionado',
+        'EmPlanejamento',
+        'Planejado',
+        'Validado',
+        'EmAcompanhamento',
+        'Suspenso',
+        'Fechado',
+      ])
+      .nullable(),
     versao: string()
       .label('Versão')
       .nullable()
