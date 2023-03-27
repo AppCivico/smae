@@ -2,6 +2,9 @@
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
+import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
+import subtractDates from '@/helpers/subtractDates';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
@@ -186,6 +189,118 @@ iniciar();
       </dl>
     </div>
   </div>
+
+  <hr class="mb1 f1">
+
+  <h2>
+    Resumo
+  </h2>
+
+  <div
+    class="flex g2 mb1"
+    v-html="emFoco?.resumo"
+  />
+
+  <table
+    v-if="['Suspenso', 'Fechado'].indexOf(emFoco?.status) !== -1"
+    class="tablemain"
+  >
+    <caption class="t12 uc w700 mb1 tamarelo">
+      Encerramento do projeto
+    </caption>
+
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col>
+    </colgroup>
+
+    <thead>
+      <tr class="pl3 center mb05 tc300 w700 t12 uc">
+        <th />
+        <th class="tr">
+          Planejado
+        </th>
+        <th class="tr">
+          Realizado
+        </th>
+        <th class="tr">
+          Desvio
+        </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <th>
+          Data de início
+        </th>
+        <td class="tr">
+          {{ emFoco?.previsao_inicio ? dateToField(emFoco.previsao_inicio) : '-' }}
+        </td>
+        <td class="tr">
+          {{ emFoco?.realizado_inicio ? dateToField(emFoco.realizado_inicio) : '-' }}
+        </td>
+        <td class="cell--number">
+          {{ emFoco?.realizado_inicio && emFoco?.previsao_inicio
+            ? `${subtractDates(emFoco.realizado_inicio, emFoco.previsao_inicio)} dias`
+            : '-' }}
+        </td>
+      </tr>
+
+      <tr>
+        <th>
+          Data de término
+        </th>
+        <td class="tr">
+          {{ emFoco?.previsao_termino ? dateToField(emFoco.previsao_termino) : '-' }}
+        </td>
+        <td class="tr">
+          {{ emFoco?.realizado_termino ? dateToField(emFoco.realizado_termino) : '-' }}
+        </td>
+        <td class="cell--number">
+          {{ emFoco?.realizado_termino && emFoco?.previsao_termino
+            ? `${subtractDates(emFoco.realizado_termino, emFoco.previsao_termino)} dias`
+            : '-' }}
+        </td>
+      </tr>
+
+      <tr>
+        <th>
+          Duração
+        </th>
+        <td class="cell--number">
+          {{ emFoco?.previsao_duracao ? `${emFoco.previsao_duracao} dias` : '-' }}
+        </td>
+        <td class="cell--number">
+          {{ emFoco?.realizado_duracao ? `${emFoco.realizado_duracao} dias` : '-' }}
+        </td>
+        <td class="cell--number">
+          {{ emFoco?.realizado_duracao && emFoco?.previsao_duracao
+            ? `${emFoco.realizado_duracao - emFoco.previsao_duracao} dias`
+            : '-' }}
+        </td>
+      </tr>
+
+      <tr>
+        <th>
+          Custo
+        </th>
+        <td class="cell--number">
+          {{ emFoco?.previsao_custo ? `R$ ${dinheiro(emFoco.previsao_custo)}` : '-' }}
+        </td>
+        <td class="cell--number">
+          {{ emFoco?.realizado_custo ? `R$ ${dinheiro(emFoco.realizado_custo)}` : '-' }}
+        </td>
+        <td class="cell--number">
+          {{ emFoco?.realizado_custo && emFoco?.previsao_custo
+            ? `R$ ${dinheiro(emFoco.realizado_custo - emFoco.previsao_custo)}`
+            : '-' }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
   <span
     v-if="chamadasPendentes?.emFoco"
