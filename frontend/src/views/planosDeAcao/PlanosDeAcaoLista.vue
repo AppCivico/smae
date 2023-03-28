@@ -7,6 +7,7 @@ import statuses from '@/consts/riskStatuses';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
+import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -15,6 +16,7 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
+const planosDeAçãoStore = usePlanosDeAçãoStore();
 const portfolioStore = usePortfolioStore();
 const riscosStore = useRiscosStore();
 const tarefasStore = useTarefasStore();
@@ -60,6 +62,7 @@ async function buscarMonitoramento(id) {
 }
 
 function iniciar() {
+  planosDeAçãoStore.$reset();
   portfolioStore.buscarTudo();
 
   if (!tarefasStore.lista.length) {

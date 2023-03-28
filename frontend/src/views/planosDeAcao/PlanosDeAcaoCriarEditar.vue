@@ -87,9 +87,6 @@ function excluirPlanoDeAção(id) {
 }
 
 async function iniciar() {
-  // apenas porque algum plano de ação novo pode ter sido criada por outra pessoa
-  planosDeAçãoStore.buscarTudo();
-
   ÓrgãosStore.getAll();
 }
 
@@ -150,6 +147,7 @@ iniciar();
         Responsável
       </legend>
     </div>
+
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup
@@ -166,7 +164,6 @@ iniciar();
             loading: projetosStore.chamadasPendentes?.emFoco,
           }"
           :disabled="!órgãosOrdenados?.length"
-          @change="setFieldValue('responsavel', null)"
         >
           <option :value="0">
             Selecionar
@@ -198,7 +195,6 @@ iniciar();
           class="inputtext light mb1"
           maxlength="60"
           :class="{ 'error': errors.responsavel }"
-          @change="setFieldValue('orgao_id', null)"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -256,6 +252,31 @@ iniciar();
 
       <div class="f1 mb1">
         <LabelFromYup
+          name="data_termino"
+          :schema="schema"
+        />
+        <Field
+          name="data_termino"
+          required
+          type="date"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.data_termino,
+            loading: chamadasPendentes.validaçãoDeDependências
+          }"
+          maxlength="10"
+          @update:model-value="values.data_termino === ''
+            ? values.data_termino = null
+            : null"
+        />
+        <ErrorMessage
+          name="data_termino"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <LabelFromYup
           name="custo"
           :schema="schema"
         />
@@ -270,7 +291,7 @@ iniciar();
         />
       </div>
 
-      <div class="f1 mb1">
+      <div class="f05 mb1">
         <LabelFromYup
           name="custo_percentual"
           :schema="schema"
@@ -333,7 +354,9 @@ iniciar();
   <div
     v-if="chamadasPendentes?.emFoco"
     class="spinner"
-  >Carregando</div>
+  >
+    Carregando
+  </div>
 
   <button
     v-if="emFoco?.id"
