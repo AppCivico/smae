@@ -37,6 +37,9 @@ def empenho_nota(nota_empenho:schm_empenho.NotaEmpenho, dao: DaoEmpenhos = Depen
 
     if result:
         resp_data = [schm_empenho.RetornoEmpenho(**item) for item in result]
+        #no caso das notas de empenho, soh pode haver um processo/dotação
+        if len(resp_data) > 1:
+            resp_data = resp_data[0]
         resp = schm_empenho.Empenhos(data=resp_data,
                     metadados=MetaDados(sucess=True))
 
