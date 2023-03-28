@@ -275,10 +275,7 @@ const planoDeAção = object()
     orgao_id: number()
       .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
-      .nullable()
-      .when('responsavel', (responsável, field) => (!responsável
-        ? field.required('Escolha um órgão ou alguém responsável pela tarefa')
-        : field)),
+      .required(),
     prazo_contramedida: date()
       .label('Término previsto')
       .required()
