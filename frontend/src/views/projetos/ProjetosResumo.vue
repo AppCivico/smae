@@ -142,7 +142,7 @@ iniciar();
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Responsáveis
+          {{ schema.fields['responsaveis_no_orgao_gestor'].spec.label }}
         </dt>
         <dd class="t13">
           <template

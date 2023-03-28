@@ -536,13 +536,7 @@ iniciar();
           name="responsaveis_no_orgao_gestor"
           :schema="schema"
           class="tc300"
-        >
-          Responsável&nbsp;<span
-            v-if="schema.fields['responsaveis_no_orgao_gestor'].spec.presence ===
-              'required'"
-            class="tvermelho"
-          >*</span>
-        </LabelFromYup>
+        />
 
         <AutocompleteField
           name="responsaveis_no_orgao_gestor"
