@@ -450,7 +450,7 @@ const projeto = object()
       .label('Principais etapas')
       .max(50000),
     responsaveis_no_orgao_gestor: array()
-      .label('Responsáveis no órgão gestor')
+      .label('Gerente do projeto')
       .nullable(),
     responsavel_id: number()
       .label('Responsável no órgão')
