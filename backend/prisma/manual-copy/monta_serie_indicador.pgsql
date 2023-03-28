@@ -10,6 +10,7 @@ DECLARE
     vAcumuladoUsaFormula boolean;
     vPeriodicidade interval;
     vIndicadorBase numeric;
+    vIndicadorNumeroCasas integer;
     -- resultado em double precision pq já passou por toda a conta
     resultado double precision;
 BEGIN
@@ -23,13 +24,15 @@ BEGIN
             when eh_serie_realizado then 'Realizado'::"Serie" else 'Previsto'::"Serie"
             end as tipo_serie,
             i.acumulado_usa_formula,
-            i.acumulado_valor_base
+            i.acumulado_valor_base,
+            coalesce(i.casas_decimais, 0)
         INTO vPeriodicidade,
         vInicio,
         vFim,
         vTipoSerie,
         vAcumuladoUsaFormula,
-        vIndicadorBase
+        vIndicadorBase,
+        vIndicadorNumeroCasas
     FROM
         indicador i
     WHERE
@@ -130,7 +133,7 @@ BEGIN
                     pIndicador_id,
                     (serieRecord.serie::text || 'Acumulado')::"Serie",
                     gs.gs as data_serie,
-                    vIndicadorBase + coalesce(sum(si.valor_nominal::numeric) OVER (order by gs.gs), 0) as valor_acc,
+                    round( vIndicadorBase + coalesce(sum(si.valor_nominal::numeric) OVER (order by gs.gs), 0), vIndicadorNumeroCasas) as valor_acc,
                     count(1) FILTER (WHERE si.ha_conferencia_pendente) OVER (order by gs.gs) > 0 as ha_conferencia_pendente
                 FROM
                     generate_series(

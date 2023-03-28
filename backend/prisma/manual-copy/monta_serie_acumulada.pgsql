@@ -6,6 +6,7 @@ DECLARE
     vPeriodicidade interval;
     vTipoSerie "Serie";
     vVariavelBase numeric;
+    vVariavelNumeroCasas integer;
     vInicio date;
     vFim date;
 BEGIN
@@ -21,11 +22,14 @@ BEGIN
         v.valor_base,
         bv.periodicidade,
         bv.inicio_medicao,
-        bv.fim_medicao INTO vTipoSerie,
+        bv.fim_medicao,
+        v.casas_decimais
+         INTO vTipoSerie,
         vVariavelBase,
         vPeriodicidade,
         vInicio,
-        vFim
+        vFim,
+        vVariavelNumeroCasas
     FROM
         variavel v
         -- na primeira versao, buscava-se pelo periodo do indicador original, mas claramente isso mostra uma falha no modelo de dados,
@@ -71,7 +75,7 @@ WHERE
                         pVariavelId,
                         (serieRecord.serie::text || 'Acumulado')::"Serie",
                         gs.gs AS data_serie,
-                        vVariavelBase + coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), 0) AS valor_acc
+                        round( vVariavelBase + coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), 0), vVariavelNumeroCasas) AS valor_acc
                     FROM
                         generate_series(vInicio, vFim, vPeriodicidade) gs
                     LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
