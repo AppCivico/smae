@@ -158,6 +158,7 @@ async function onSubmit(values) {
     values.nivel_regionalizacao = values.regionalizavel
       ? Number(values.nivel_regionalizacao)
       : null;
+    values.acumulado_valor_base = String(values.acumulado_valor_base) || null;
     values.casas_decimais = values.casas_decimais ? Number(values.casas_decimais) : null;
 
     if (!values.acumulado_usa_formula) {
@@ -836,6 +837,8 @@ if (indicador_id) {
               :value="values.acumulado_valor_base"
               class="inputtext light mb1"
               :class="{ 'error': errors.acumulado_valor_base }"
+              @update:model-value="values.acumulado_valor_base = Number(values.acumulado_valor_base)
+                || null"
             />
             <div class="error-msg">
               {{ errors.acumulado_valor_base }}
