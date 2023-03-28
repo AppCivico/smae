@@ -564,6 +564,7 @@ iniciar();
         <LabelFromYup
           name="orgaos_participantes"
           :schema="schema"
+          class="tc300"
         />
 
         <AutocompleteField
@@ -591,6 +592,7 @@ iniciar();
         <LabelFromYup
           name="orgao_responsavel_id"
           :schema="schema"
+          class="tc300"
         />
         <Field
           name="orgao_responsavel_id"
@@ -626,6 +628,7 @@ iniciar();
         <LabelFromYup
           :schema="schema"
           name="responsavel_id"
+          class="tc300"
         >
           Responsável
         </LabelFromYup>
@@ -662,7 +665,7 @@ iniciar();
       </div>
     </div>
 
-    <hr class="mb1 f1">
+    <hr class="mb2 f1">
 
     <div class="flex g2">
       <div class="f1 mb1">
