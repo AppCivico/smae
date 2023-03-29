@@ -209,6 +209,7 @@ export class IndicadoresService implements ReportableService {
         join regioes r ON CASE
             WHEN EXISTS( SELECT 1 FROM regioes WHERE parente_id = v.regiao_id AND nivel = 4 ) THEN r.parente_id = v.regiao_id
             ELSE r.id = v.regiao_id
+            END
         join regioes r_parent ON r.parente_id = r_parent.id
         join regioes r_grand_parent ON r_parent.parente_id = r_grand_parent.id
         where v.regiao_id is not null`;
