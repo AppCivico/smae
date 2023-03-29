@@ -195,7 +195,7 @@ export class IndicadoresService implements ReportableService {
                 codigo,
                 descricao,
                 nivel
-            FROM regiao;
+            FROM regiao
         )`;
 
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
