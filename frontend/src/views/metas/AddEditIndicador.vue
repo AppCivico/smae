@@ -166,6 +166,8 @@ async function onSubmit(values) {
 
     if (!values.acumulado_usa_formula) {
       values.acumulado_usa_formula = false;
+    } else {
+      values.acumulado_valor_base = null;
     }
 
     // Parent
