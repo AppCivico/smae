@@ -188,20 +188,35 @@ export class IndicadoresService implements ReportableService {
     private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresVariaveisDto[]) {
         if (indicadoresOrVar.length == 0) return;
 
+        const queryRegioesCte = `WITH regioes AS (
+            SELECT
+                id,
+                parente_id,
+                codigo,
+                descricao,
+                nivel
+            FROM regiao;
+        )`;
+
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         join indicador_variavel iv ON iv.indicador_id = i.id
         join variavel v ON v.id = iv.variavel_id
-        join regiao r ON v.regiao_id = r.id
-        join regiao r_parent ON r.parente_id = r_parent.id
-        join regiao r_grand_parent ON r_parent.parente_id = r_grand_parent.id
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+        join regioes r ON v.regiao_id = r.id
+        
+        -- Para facilitar a visualização do relatório, é forçada a manutenção do sync do segundo nível (subprefeitura).
+        join regioes r_parent ON CASE
+            WHEN r.nivel = 3 THEN r_parent.id = r.id
+            ELSE r.parente_id = r_parent.id
+            END
+        join regioes r_grand_parent ON r_parent.parente_id = r_grand_parent.id
         where v.regiao_id is not null`;
 
-        const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(sv.data_valor::date)
+        const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`${queryRegioesCte} SELECT min(sv.data_valor::date)
         FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         JOIN serie_variavel sv ON sv.serie = series.serie
         JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
@@ -209,7 +224,9 @@ export class IndicadoresService implements ReportableService {
         const anoInicio = buscaInicio[0].min.getFullYear();
 
 
-        const sql = `SELECT
+        const sql = `
+        ${queryRegioesCte}
+        SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
