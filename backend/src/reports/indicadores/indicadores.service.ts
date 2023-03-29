@@ -206,13 +206,10 @@ export class IndicadoresService implements ReportableService {
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        join regioes r ON v.regiao_id = r.id
-        
-        -- Para facilitar a visualização do relatório, é forçada a manutenção do sync do segundo nível (subprefeitura).
-        join regioes r_parent ON CASE
-            WHEN r.nivel = 3 THEN r_parent.id = r.id
-            ELSE r.parente_id = r_parent.id
-            END
+        join regioes r ON CASE
+            WHEN EXISTS( SELECT 1 FROM regioes WHERE parente_id = v.regiao_id AND nivel = 4 ) THEN r.parente_id = v.regiao_id
+            ELSE r.id = v.regiao_id
+        join regioes r_parent ON r.parente_id = r_parent.id
         join regioes r_grand_parent ON r_parent.parente_id = r_grand_parent.id
         where v.regiao_id is not null`;
 
