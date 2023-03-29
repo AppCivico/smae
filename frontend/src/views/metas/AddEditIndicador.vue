@@ -841,8 +841,9 @@ if (indicador_id) {
               :value="values.acumulado_valor_base"
               class="inputtext light mb1"
               :class="{ 'error': errors.acumulado_valor_base }"
-              @update:model-value="values.acumulado_valor_base = Number(values.acumulado_valor_base)
-                || null"
+              @update:model-value="values.acumulado_valor_base === ''
+                ? values.acumulado_valor_base = null
+                : null"
             />
             <div class="error-msg">
               {{ errors.acumulado_valor_base }}
