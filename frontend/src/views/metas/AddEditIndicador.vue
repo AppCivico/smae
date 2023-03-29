@@ -388,7 +388,6 @@ function addFunction(f) {
 // vamos usar `onkeydown` porque é o único evento disparado pelas teclas de
 // navegação em todos os navegadores
 function monitorarSetas(e) {
-  console.debug(e.key);
   switch (e.key) {
     case 'ArrowLeft':
     case 'ArrowRight':
