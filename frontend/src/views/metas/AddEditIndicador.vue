@@ -158,7 +158,10 @@ async function onSubmit(values) {
     values.nivel_regionalizacao = values.regionalizavel
       ? Number(values.nivel_regionalizacao)
       : null;
-    values.acumulado_valor_base = String(values.acumulado_valor_base) || null;
+    values.acumulado_valor_base = typeof values.acumulado_valor_base !== 'number'
+      ? null
+      : String(values.acumulado_valor_base);
+
     values.casas_decimais = values.casas_decimais ? Number(values.casas_decimais) : null;
 
     if (!values.acumulado_usa_formula) {
