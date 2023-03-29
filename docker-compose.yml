@@ -140,8 +140,8 @@ services:
   web:
     container_name: "${WEB_CONTAINER_NAME}"
     build:
-      context: ./frontend/
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: frontend/Dockerfile
     networks:
       - api
     depends_on:
