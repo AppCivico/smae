@@ -22,6 +22,10 @@ dayjs.extend(isBetween);
 dayjs.extend(localeData);
 dayjs().localeData();
 
+function declararTipoDeDependência(analisado, focado) {
+  return focado.dependencias?.find((x) => x.dependencia_tarefa_id === analisado.id)?.tipo;
+}
+
 export default function ganttChart(config) {
   const { data } = config;
   const ELEMENT = d3select(config.element);
@@ -387,7 +391,11 @@ export default function ganttChart(config) {
       })
       .on('mouseover', function (d, o) {
         svg.selectAll('.Single--Block')
-          .style('opacity', (b, i) => ((o.id === b.id) ? 1 : 0.3));
+          .style('opacity', (b, i) => ((o.id === b.id) ? 1 : 0.3))
+          .attr('class', (b, i) => ((o.id === b.id)
+            ? 'Single--Block cp Single--Block--focused'
+            : 'Single--Block cp'))
+          .attr('data-dependency-type', (b) => declararTipoDeDependência(b, o));
 
         svg.selectAll('.start-lines, .end-lines')
           .style('stroke-width', (b, i) => ((o.id === b.id) ? 3 : 1))
@@ -416,13 +424,9 @@ export default function ganttChart(config) {
           .attr('opacity', (b) => Number(o.id === b.id || getWidth(b) > 80));
 
         second_section.selectAll('.Date')
-          .style('fill', (b, i) => {
-            if (dayjs(b.start_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days') || dayjs(b.end_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days')) { return '#4894ff'; }
-          });
+          .attr('data-current', (b, i) => (dayjs(b.start_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days') || dayjs(b.end_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days')));
         second_section.selectAll('.Date-Block')
-          .style('fill', (b, i) => {
-            if (dayjs(b.start_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days') || dayjs(b.end_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days')) { return '#f0f6f9'; }
-          });
+          .attr('data-current', (b, i) => (dayjs(b.start_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days') || dayjs(b.end_date, 'MM/DD/YYYY').isBetween(o.start_date, o.end_date, 'days')));
 
         d3select(this).selectAll('.Title')
           .text((o) => o.title);

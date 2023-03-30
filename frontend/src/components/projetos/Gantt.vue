@@ -76,8 +76,8 @@ const dadosParaGantt = computed(() => props.data
     ...x,
     end_date: x.termino_real || x.termino_planejado,
     start_date: x.inicio_real || x.inicio_planejado,
-    dependsOn: x.dependencias?.map((y) => y.dependencia_tarefa_id) || [],
-    title: x.tarefa,
+    dependsOn: x.dependencias || [],
+    title: `${x.hierarquia} ${x.tarefa}`,
     completion_percentage: x.percentual_concluido,
   }))
   // eslint-disable-next-line max-len
@@ -116,6 +116,8 @@ onMounted(async () => {
 });
 </script>
 <style lang="less">
+@import '@/_less/variables.less';
+
 [id='gantt'] {
   .chart {
     overflow-x: hidden;
@@ -127,9 +129,39 @@ onMounted(async () => {
 
   .Single--Node {
     fill: #fff;
-    stroke: #ccc;
+    stroke: hsl(216, 9.8%, 90%);
     stroke-width: 1;
     border-radius: 10px;
+  }
+
+  .Single--Block--focused {
+    .Single--Node {
+    }
+  }
+
+  [data-dependency-type='termina_pro_inicio'] {
+    opacity: 1 !important;
+    .Single--Node {
+      stroke: @verde;
+    }
+  }
+  [data-dependency-type='inicia_pro_inicio'] {
+    opacity: 1 !important;
+    .Single--Node {
+      stroke: @laranja;
+    }
+  }
+  [data-dependency-type='inicia_pro_termino'] {
+    opacity: 1 !important;
+    .Single--Node {
+      stroke: @vermelho;
+    }
+  }
+  [data-dependency-type='termina_pro_termino']{
+    opacity: 1 !important;
+    .Single--Node {
+      stroke: @azul;
+    }
   }
 
   .Title {
@@ -141,7 +173,6 @@ onMounted(async () => {
   .Duration {
     fill: #989898;
     font-size: 11px;
-    text-transform: uppercase;
     font-weight: 600;
   }
 
@@ -161,10 +192,22 @@ onMounted(async () => {
     stroke: #ccc;
   }
 
+  .Date {
+    &[data-current='true'] {
+      // font-weight: bold;
+    }
+  }
+
+  .Date-Block {
+    &[data-current='true'] {
+      fill: @c100;
+    }
+  }
+
   .start-lines,
   .end-lines {
     stroke-width: 1;
-    stroke: #ccc;
+    stroke: hsl(216, 9.8%, 90%);
   }
 
   .gantt-wrapper {
