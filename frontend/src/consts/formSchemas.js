@@ -100,7 +100,12 @@ const acompanhamento = object()
       .nullable(),
     risco: array()
       .label('Riscos associados')
-      .nullable(),
+      .of(
+        number()
+          .label('Risco')
+          .nullable()
+          .required(),
+      ),
   });
 
 const custeio = object()
