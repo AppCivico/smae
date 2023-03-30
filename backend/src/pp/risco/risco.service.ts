@@ -196,6 +196,8 @@ export class RiscoService {
                 });
             }
 
+            const calcResult = dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
+
             return await this.prisma.projetoRisco.update({
                 where: { id: projeto_risco_id },
                 data: {
@@ -209,6 +211,10 @@ export class RiscoService {
                     consequencia: dto.consequencia,
                     risco_tarefa_outros: dto.risco_tarefa_outros,
                     status_risco: dto.status,
+
+                    nivel: calcResult?.nivel,
+                    grau: calcResult?.grau_valor,
+                    resposta: calcResult?.resposta_descricao,
 
                     atualizado_em: new Date(Date.now()),
                     atualizado_por: user.id
