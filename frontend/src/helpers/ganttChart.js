@@ -138,9 +138,6 @@ export default function ganttChart(config) {
       header_ranges = [getYearBoundary(config.metrics.year)];
     }
 
-    console.debug('months', months);
-    console.debug('dayjs(months[0])', dayjs(months[0]));
-
     date_boundary[0] = dayjs(months[0]).startOf('month').toDate();
     date_boundary[1] = dayjs(months[months.length - 1]).endOf('month').toDate();
 
