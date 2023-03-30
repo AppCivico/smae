@@ -24,12 +24,12 @@
     <hr class="ml1 mr1 f1">
   </div>
   <ul
-    class="legenda mb1"
+    class="legenda mb1 t13"
   >
     <li
       v-for="item in tiposDeDependências"
       :key="item.valor"
-      class="legenda__item mr1"
+      class="legenda__item mb05"
       :class="`legenda__item--${item.valor}`"
       :value="item.valor"
     >
@@ -253,15 +253,22 @@ onMounted(async () => {
   }
 
   .Date {
+    fill: @c600;
+
     &[data-current='true'] {
-      // font-weight: bold;
+      fill: @escuro;
     }
   }
 
   .Date-Block {
+
     &[data-current='true'] {
-      fill: @c100;
+      fill: @c50;
     }
+  }
+
+  .ProgressBar-Fill {
+    fill: @vermelho;
   }
 
   .start-lines,

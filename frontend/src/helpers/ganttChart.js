@@ -508,7 +508,6 @@ export default function ganttChart(config) {
 
       d.append('rect')
         .attr('class', 'ProgressBar ProgressBar-Fill')
-        .attr('fill', 'red')
         .attr('width', (d) => ((d.completion_percentage * PROGRESSBAR_WIDTH) / 100));
 
       d.selectAll('.ProgressBar')
