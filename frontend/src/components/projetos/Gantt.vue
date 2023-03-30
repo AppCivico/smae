@@ -136,31 +136,35 @@ onMounted(async () => {
 
   .Single--Block--focused {
     .Single--Node {
+      stroke: black;
     }
   }
 
   [data-dependency-type='termina_pro_inicio'] {
     opacity: 1 !important;
     .Single--Node {
-      stroke: @verde;
-    }
-  }
-  [data-dependency-type='inicia_pro_inicio'] {
-    opacity: 1 !important;
-    .Single--Node {
-      stroke: @laranja;
-    }
-  }
-  [data-dependency-type='inicia_pro_termino'] {
-    opacity: 1 !important;
-    .Single--Node {
       stroke: @vermelho;
     }
   }
-  [data-dependency-type='termina_pro_termino']{
+
+  [data-dependency-type='inicia_pro_inicio'] {
+    opacity: 1 !important;
+    .Single--Node {
+      stroke: @verde;
+    }
+  }
+
+  [data-dependency-type='inicia_pro_termino'] {
     opacity: 1 !important;
     .Single--Node {
       stroke: @azul;
+    }
+  }
+
+  [data-dependency-type='termina_pro_termino']{
+    opacity: 1 !important;
+    .Single--Node {
+      stroke: @laranja;
     }
   }
 
