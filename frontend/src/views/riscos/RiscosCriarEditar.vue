@@ -324,17 +324,13 @@ iniciar();
 
     <div class="mb1">
       <legend class="label mt2 mb1">
-        Tarefas afetadas&nbsp;<span class="tvermelho">*</span>
+        Tarefas afetadas
       </legend>
 
       <div class="flex g2">
         <div class="f2 mb1">
           <LabelFromYup class="tc300">
-            Do cronograma<template
-              v-if="!values.risco_tarefa_outros"
-            >
-              &nbsp;<span class="tvermelho">*</span>
-            </template>
+            Do cronograma
           </LabelFromYup>
           <AutocompleteField
             name="tarefa_id"
@@ -356,11 +352,7 @@ iniciar();
 
         <div class="f2 mb1">
           <LabelFromYup class="tc300">
-            Outras<template
-              v-if="!values.tarefa_id?.length"
-            >
-              &nbsp;<span class="tvermelho">*</span>
-            </template>
+            Outras
           </LabelFromYup>
           <Field
             name="risco_tarefa_outros"
