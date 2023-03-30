@@ -647,7 +647,7 @@ export default function ganttChart(config) {
     }
 
     function getYearBoundary(year) {
-      const yearDate = dayjs(year, 'YYYY');
+      const yearDate = dayjs(`01 01 ${year}`, 'YYYY');
       const startOfYear = dayjs(yearDate).startOf('year');
       const endOfYear = dayjs(yearDate).endOf('year');
 
