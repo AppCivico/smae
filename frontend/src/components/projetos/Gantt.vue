@@ -164,6 +164,7 @@ onMounted(async () => {
   .start-lines,
   .end-lines {
     stroke-width: 1;
+    stroke: #ccc;
   }
 
   .gantt-wrapper {
