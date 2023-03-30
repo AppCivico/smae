@@ -215,7 +215,6 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           :class="{ 'error': errors.contato_do_responsavel }"
-          @change="setFieldValue('orgao_id', null)"
         />
         <ErrorMessage
           class="error-msg mb1"
