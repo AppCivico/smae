@@ -21,8 +21,21 @@
         </option>
       </select>
     </div>
-    <hr class="ml2 f1">
+    <hr class="ml1 mr1 f1">
   </div>
+  <ul
+    class="legenda mb1"
+  >
+    <li
+      v-for="item in tiposDeDependências"
+      :key="item.valor"
+      class="legenda__item mr1"
+      :class="`legenda__item--${item.valor}`"
+      :value="item.valor"
+    >
+      {{ item.nome }}
+    </li>
+  </ul>
 
   <div
     id="gantt"
@@ -30,6 +43,7 @@
   />
 </template>
 <script setup>
+import dependencyTypes from '@/consts/dependencyTypes';
 import renderChart from '@/helpers/ganttChart';
 import {
   computed,
@@ -38,6 +52,8 @@ import {
   ref,
   watch
 } from 'vue';
+const tiposDeDependências = Object.keys(dependencyTypes)
+  .map((x) => ({ valor: x, nome: dependencyTypes[x] }));
 
 const props = defineProps({
   data: {
@@ -117,6 +133,46 @@ onMounted(async () => {
 </script>
 <style lang="less">
 @import '@/_less/variables.less';
+
+.legenda {
+}
+
+.legenda__item {
+  display: block;
+
+  &::before {
+    display: inline-block;
+    width: 0.75em;
+    height: 0.75em;
+    margin-right: 0.25em;
+    content: '';
+    background-color: currentColor;
+  }
+}
+
+.legenda__item--termina_pro_inicio {
+  &::before {
+    color: @vermelho;
+  }
+}
+
+.legenda__item--inicia_pro_inicio {
+  &::before {
+    color: @verde;
+  }
+}
+
+.legenda__item--inicia_pro_termino {
+  &::before {
+    color: @azul;
+  }
+}
+
+.legenda__item--termina_pro_termino {
+  &::before {
+    color: @laranja;
+  }
+}
 
 [id='gantt'] {
   .chart {
