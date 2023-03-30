@@ -183,6 +183,11 @@ onMounted(async () => {
     cursor: pointer;
   }
 
+  .first-title {
+    font-weight: bold;
+    color: @primary;
+  }
+
   .Single--Node {
     fill: #fff;
     stroke: hsl(216, 9.8%, 90%);
