@@ -1,4 +1,5 @@
-import { Type } from "class-transformer"
+import { Transform, Type } from "class-transformer"
+import { DateTime } from "luxon"
 import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
 import { PortfolioOneDto } from "../../portfolio/entities/portfolio.entity"
 import { ProjetoDetailDto } from "../../projeto/entities/projeto.entity"
@@ -12,12 +13,19 @@ export class TarefaItemDto {
     tarefa_pai_id: number | null
     tarefa: string
 
+    @Type(() => Date)
     inicio_planejado: Date | null
+    @Type(() => Date)
     termino_planejado: Date | null
+
     duracao_planejado: number | null
 
+    @Type(() => Date)
     inicio_real: Date | null
+
+    @Type(() => Date)
     termino_real: Date | null
+
     duracao_real: number | null
 
     custo_estimado: number | null
@@ -39,6 +47,14 @@ export class TarefaItemDto {
     dependencias?: TarefaDependenciaDto[]
 }
 
+export class TarefaItemProjetadoDto extends TarefaItemDto {
+    dependencias: TarefaDependenciaDto[]
+
+    projecao_inicio: DateTime | undefined
+    projecao_termino: DateTime | undefined
+    projecao_atraso: number | undefined
+}
+
 export class TarefaDetailDto extends TarefaItemDto {
     inicio_planejado_calculado: boolean
     termino_planejado_calculado: boolean
@@ -55,6 +71,12 @@ export class ListTarefaDto {
     linhas: TarefaItemDto[]
     projeto: ProjetoDetailDto
     portfolio: PortfolioOneDto
+}
+
+export class ListTarefaListDto {
+    linhas: TarefaItemDto[]
+    atraso: number | null
+    projecao_termino: Date | null
 }
 
 export class DependenciasDatasDto {
