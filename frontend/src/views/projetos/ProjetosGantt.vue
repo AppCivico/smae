@@ -1,5 +1,5 @@
 <script setup>
-import Gantt from '@/components/projetos/gantt/Gantt.vue';
+import Gantt from '@/components/projetos/Gantt.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
