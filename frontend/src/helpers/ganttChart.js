@@ -553,7 +553,7 @@ export default function ganttChart(config) {
     function renderDuration(d, i) {
       d.append('text')
         .attr('class', 'Duration')
-        .attr('x', 80)
+        .attr('x', 60)
         .text((d) => getDuration(d))
         .attr('opacity', (d) => Number(getWidth(d) > 200));
     }
@@ -564,9 +564,14 @@ export default function ganttChart(config) {
     // }
 
     function getDuration(d) {
-      const startDate = dayjs(d.start_date, 'MM/DD/YYYY').format('DD MMM');
-      const endDate = dayjs(d.end_date, 'MM/DD/YYYY').format('DD MMM');
-      return `${startDate} - ${endDate}`;
+      const startDate = dayjs(d.start_date);
+      const startYear = startDate.format('YY');
+      const endDate = dayjs(d.end_date);
+      const endYear = endDate.format('YY');
+
+      return startYear !== endYear
+        ? `${startDate.format('DD MMM YY')} - ${endDate.format('DD MMM YY')}`
+        : `${startDate.format('DD MMM')} - ${endDate.format('DD MMM')}`;
     }
 
     function trimTitle(thisWidth, node, padding) {
