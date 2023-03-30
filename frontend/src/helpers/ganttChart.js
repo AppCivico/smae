@@ -635,9 +635,9 @@ export default function ganttChart(config) {
       return ranges;
     }
 
-    function getMonthsRange(months) {
+    function getMonthsRange(monthsToCalc) {
       const ranges = [];
-      months.map((month) => {
+      monthsToCalc.forEach((month) => {
         const startOfMonth = dayjs(month).startOf('month');
         const endOfMonth = dayjs(month).endOf('month');
 
@@ -664,7 +664,7 @@ export default function ganttChart(config) {
     }
 
     function getMonthsOfTheYear(year) {
-      return range(1, 12).map((m) => `${year}-${m}-01`);
+      return range(1, 13).map((m) => `${year}-${String(m).padStart(2, '0')}-01`);
       // return dayjs.months().map((month) => `01/${month}/`);
     }
   }
