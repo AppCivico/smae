@@ -1,5 +1,5 @@
 <template>
-  <div class="flex center mb2 spacebetween">
+  <!--div class="flex center mb2 spacebetween">
     <div class="f1 mr1">
       <label class="label tc300">Exibir por</label>
       <select
@@ -22,7 +22,7 @@
       </select>
     </div>
     <hr class="ml1 mr1 f1">
-  </div>
+  </div-->
   <ul
     class="legenda mb1 t13"
   >
