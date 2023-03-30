@@ -42,8 +42,14 @@ export class TarefaController {
     @Roles(...roles)
     async findAll(@Param() params: FindOneParams, @Query() filter: FilterPPTarefa, @CurrentUser() user: PessoaFromJwt): Promise<ListTarefaDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
+        const tarefas = await this.tarefaService.findAll(projeto.id, user, filter);
+
+        if (tarefas.atraso !== null) {
+            projeto.atraso = tarefas.atraso;
+        }
+
         return {
-            linhas: await this.tarefaService.findAll(projeto.id, user, filter),
+            ...tarefas,
             projeto: projeto,
             portfolio: await this.portfolioService.findOne(projeto.portfolio_id, null),
         };

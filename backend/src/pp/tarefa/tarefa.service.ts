@@ -8,13 +8,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
 import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
-import { DependenciasDatasDto, TarefaDetailDto, TarefaItemDto } from './entities/tarefa.entity';
+import { DependenciasDatasDto, ListTarefaListDto, TarefaDetailDto, TarefaItemDto, TarefaItemProjetadoDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
 
 // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { Graph } from 'graphlib';
 import { DateTime } from 'luxon';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
@@ -204,8 +204,12 @@ export class TarefaService {
     }
 
 
-    async findAll(projetoId: number, user: PessoaFromJwt, filter: FilterPPTarefa): Promise<TarefaItemDto[]> {
+    async findAll(projetoId: number, user: PessoaFromJwt, filter: FilterPPTarefa): Promise<ListTarefaListDto> {
 
+        // just for now?!
+        filter.incluir_dependencias = true;
+
+        const antesQuery = Date.now()
         const rows = await this.prisma.tarefa.findMany({
             where: {
                 projeto_id: projetoId,
@@ -245,13 +249,158 @@ export class TarefaService {
             }
         });
 
+        this.logger.warn(`query took ${Date.now() - antesQuery} ms`);
+
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-        return rows.map((r) => {
+        const rowsWithAtraso = rows.map((r) => {
             return {
                 ...r,
                 atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
             }
         });
+
+        let ret: ListTarefaListDto = {
+            linhas: rowsWithAtraso,
+            atraso: null,
+            projecao_termino: null
+        };
+
+        if (filter.incluir_dependencias) {
+            const antesCalc = Date.now()
+            ret = this.calculaAtrasoProjeto(rowsWithAtraso as TarefaItemDto[]);
+
+            this.logger.warn(`calculaAtrasoProjeto took ${Date.now() - antesCalc} ms`);
+        }
+
+        return ret
+    }
+
+    calculaAtrasoProjeto(tarefasOrig: TarefaItemDto[]): ListTarefaListDto {
+
+        let ret: ListTarefaListDto = {
+            linhas: tarefasOrig,
+            atraso: null,
+            projecao_termino: null
+        };
+
+        // nesse caso, vai usar UTC, pois o javascript e o Prisma volta o Date como UTC.
+        const hoje = DateTime.local({ zone: 'UTC' }).startOf('day');
+        const tarefas = plainToInstance(TarefaItemProjetadoDto, <any[]>JSON.parse(JSON.stringify(tarefasOrig)));
+
+        const tarefas_por_id: Record<number, typeof tarefas[0]> = {};
+        for (const tarefa of tarefas) {
+            // pula quem não tiver dependencias como array (nao na spec do TarefaItemProjetadoDto)
+            if (Array.isArray(tarefa.dependencias) == false) continue;
+
+
+            tarefas_por_id[tarefa.id] = tarefa;
+        }
+
+        let max_term_planjeado: Date | undefined = undefined;
+        let max_term_proj: DateTime | undefined = undefined;
+        for (const tarefa of tarefas) {
+
+            // a tarefa tem que ter todas as datas de planejamento para funcionar
+            if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado)
+                continue;
+
+            if (tarefa.nivel == 1) {
+                if (!max_term_planjeado || (max_term_planjeado && max_term_planjeado.valueOf() > tarefa.termino_planejado.valueOf()))
+                    max_term_planjeado = tarefa.termino_planejado;
+            }
+
+            // se já tem uma data de termino, vamos colocar ela na projeção,
+            // pra mais tarde saber se essa tarefa vai ter um atraso no parent ou não
+            if (tarefa.termino_real) {
+                if (!tarefa.inicio_real)
+                    this.logger.error(`tarefa.inicio_real da tarefa ID ${tarefa.id} está nulo mas deveria existir (pois há data de termino), assumindo data corrente.`);
+                tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
+                tarefa.projecao_termino = DateTime.fromJSDate(tarefa.termino_real);
+
+                // acredito que vai precisar de mais um loop pra verificar se a data do parent tem filhos atrasados
+                // mas o filho em si acho que vai ficar com undefined mesmo
+                // tarefa.projecao_atraso = 0;
+                continue;
+            }
+
+            if (tarefa.n_filhos_imediatos == 0 && tarefa.tarefa_pai_id !== null && tarefa.dependencias.length == 0) {
+
+                // se não tem inicio real preenchido, considera que começou hj
+                tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
+
+                tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado });
+
+            }
+
+
+
+        }
+
+        // falta um loop aqui pra resolver as datas das dependências
+
+
+        for (const tarefa of tarefas) {
+            // a tarefa tem que ter todas as datas de planejamento para funcionar
+            if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado)
+                continue;
+
+            // agora sai buscando pelo nós
+            if (tarefa.n_filhos_imediatos > 0) {
+                const filhos = tarefas.filter((r) => { return r.tarefa_pai_id == tarefa.id });
+
+                let atraso_max = -1;
+                for (const filho of filhos) {
+                    if (!filho.projecao_termino) {
+                        this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
+                        continue;
+                    }
+
+                    // vai setando a projeção de termino do parent de acordo com o max do filhos
+                    if (!tarefa.projecao_termino || (tarefa.projecao_termino && filho.projecao_termino.valueOf() > tarefa.projecao_termino.valueOf()))
+                        tarefa.projecao_termino = filho.projecao_termino;
+
+                    const d = filho.projecao_termino.diff(DateTime.fromJSDate(tarefa.termino_planejado)).as('days');
+                    this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => ${d} dias de atraso`);
+
+                    filho.projecao_atraso = d;
+
+                    if (atraso_max < d) atraso_max = d;
+                }
+
+                if (atraso_max > 0) {
+                    this.logger.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
+
+                    tarefa.atraso = atraso_max;
+                } else {
+                    this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
+                }
+
+                if (tarefa.projecao_termino)
+                    this.logger.debug(`tarefa ${tarefa.id} - max projeção termino: ${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`);
+            }
+
+        }
+
+        // mais um loop, agora pra pegar o max da projeção do nivel 1
+        for (const tarefa of tarefas) {
+            // a tarefa tem que ter todas as datas de planejamento para funcionar
+            if (!tarefa.projecao_termino || tarefa.nivel !== 1)
+                continue;
+
+            if (!max_term_proj || (max_term_proj && tarefa.projecao_termino.valueOf() > max_term_proj.valueOf()))
+                max_term_proj = tarefa.projecao_termino;
+        }
+
+        if (max_term_planjeado && max_term_proj) {
+
+            const d = max_term_proj.diff(DateTime.fromJSDate(max_term_planjeado)).as('days');
+            this.logger.debug(`projeto max projecao_termino: ${Date2YMD.toString(max_term_proj.toJSDate())}, max termino_planejado: ${Date2YMD.toString(max_term_planjeado)} => ${d} dias de atraso`);
+
+            if (d > 0) ret.atraso = d;
+            ret.projecao_termino = max_term_proj.toJSDate();
+        }
+
+        return ret;
     }
 
 
