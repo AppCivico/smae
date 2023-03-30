@@ -15,7 +15,7 @@ export class RiscoService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(projetoId: number, dto: CreateRiscoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const calcResult = RiscoCalc.getResult(dto.probabilidade, dto.impacto);
+        const calcResult = dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
 
         const risco = await this.prisma.projetoRisco.create({
             data: {
@@ -32,9 +32,9 @@ export class RiscoService {
                 consequencia: dto.consequencia,
                 risco_tarefa_outros: dto.risco_tarefa_outros,
 
-                nivel: calcResult.nivel,
-                grau: calcResult.grau_valor,
-                resposta: calcResult.resposta_descricao,
+                nivel: calcResult?.nivel,
+                grau: calcResult?.grau_valor,
+                resposta: calcResult?.resposta_descricao,
 
                 criado_em: new Date(Date.now()),
                 criado_por: user.id
