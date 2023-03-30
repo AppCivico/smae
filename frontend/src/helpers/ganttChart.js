@@ -144,7 +144,7 @@ export default function ganttChart(config) {
     const margin = {
       top: 20, right: 50, bottom: 100, left: 50,
     };
-    let width = d3max([CHART_WIDTH, 400]) - margin.left - margin.right;
+    const width = d3max([CHART_WIDTH, 400]) - margin.left - margin.right;
     const height = CHART_HEIGHT - margin.top - margin.bottom;
 
     const x = scaleTime()
@@ -566,12 +566,12 @@ export default function ganttChart(config) {
       return `${startDate} - ${endDate}`;
     }
 
-    function trimTitle(width, node, padding) {
+    function trimTitle(thisWidth, node, padding) {
       const textBlock = d3select(node).select('.Title');
 
       let textLength = textBlock.node().getComputedTextLength();
       let text = textBlock.text();
-      while (textLength > (width - padding) && text.length > 0) {
+      while (textLength > (thisWidth - padding) && text.length > 0) {
         text = text.slice(0, -1);
         textBlock.text(`${text}...`);
         textLength = textBlock.node().getComputedTextLength();
@@ -580,13 +580,13 @@ export default function ganttChart(config) {
 
     function getWidth(node) {
       if (endsAfter(node)) {
-        width = Math.abs(x(new Date(date_boundary[1])) - x(new Date(node.start_date)));
-      } else if (startsBefore(node)) {
-        width = Math.abs(x(new Date(date_boundary[0])) - x(new Date(node.end_date)));
-      } else {
-        width = getActualWidth(node);
+        return Math.abs(x(new Date(date_boundary[1])) - x(new Date(node.start_date)));
       }
-      return width;
+
+      if (startsBefore(node)) {
+        return Math.abs(x(new Date(date_boundary[0])) - x(new Date(node.end_date)));
+      }
+      return getActualWidth(node);
     }
 
     function getActualWidth(node) {
