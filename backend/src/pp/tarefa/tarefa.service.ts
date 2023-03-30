@@ -267,7 +267,7 @@ export class TarefaService {
 
         if (filter.incluir_dependencias) {
             const antesCalc = Date.now()
-            ret = this.calculaAtrasoProjeto(rowsWithAtraso as TarefaItemDto[]);
+            ret = this.calculaAtrasoProjeto(rowsWithAtraso);
 
             this.logger.warn(`calculaAtrasoProjeto took ${Date.now() - antesCalc} ms`);
         }
@@ -286,6 +286,11 @@ export class TarefaService {
         // nesse caso, vai usar UTC, pois o javascript e o Prisma volta o Date como UTC.
         const hoje = DateTime.local({ zone: 'UTC' }).startOf('day');
         const tarefas = plainToInstance(TarefaItemProjetadoDto, <any[]>JSON.parse(JSON.stringify(tarefasOrig)));
+
+        const tarefas_ret_por_id: Record<number, typeof tarefasOrig[0]> = {};
+        for (const tarefa of ret.linhas) {
+            tarefas_ret_por_id[tarefa.id] = tarefa;
+        }
 
         const tarefas_por_id: Record<number, typeof tarefas[0]> = {};
         for (const tarefa of tarefas) {
@@ -370,7 +375,7 @@ export class TarefaService {
                 if (atraso_max > 0) {
                     this.logger.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
 
-                    tarefa.atraso = atraso_max;
+                    tarefa.projecao_atraso = atraso_max;
                 } else {
                     this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
                 }
@@ -382,7 +387,15 @@ export class TarefaService {
         }
 
         // mais um loop, agora pra pegar o max da projeção do nivel 1
+        // e tbm passar o atraso dos parent pro objeto do retorno
         for (const tarefa of tarefas) {
+
+            if (tarefa.projecao_atraso && tarefas_ret_por_id[tarefa.id] && tarefa.n_filhos_imediatos > 0) {
+                this.logger.debug(`tarefas_ret_por_id[${tarefa.id}].atraso = ${tarefa.projecao_atraso} `);
+
+                tarefas_ret_por_id[tarefa.id].atraso = tarefa.projecao_atraso;
+            }
+
             // a tarefa tem que ter todas as datas de planejamento para funcionar
             if (!tarefa.projecao_termino || tarefa.nivel !== 1)
                 continue;
