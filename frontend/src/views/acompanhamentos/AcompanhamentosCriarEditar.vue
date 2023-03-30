@@ -352,16 +352,16 @@ function excluirAcompanhamento(id) {
                 loading: riscosStore?.chamadasPendentes?.lista
               }"
             >
-              <option value="">
+              <option :value="0">
                 Selecionar
               </option>
               <option
                 v-for="item in riscosStore?.lista || []"
                 :key="item.id"
                 :value="item.id"
-                :title="item.descricao"
+                :title="item.titulo"
               >
-                {{ truncate(item.descricao, 36) }}
+                {{ item.titulo || (item.descricao ? truncate(item.descricao) : item.descricao) }}
               </option>
             </Field>
             <ErrorMessage
