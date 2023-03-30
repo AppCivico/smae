@@ -667,7 +667,7 @@ iniciar();
     <div class="flex g2">
       <div class="f1 mb1">
         <label class="label tc300">
-          Recursos
+          Responsável pela atividade
         </label>
         <Field
           name="recursos"

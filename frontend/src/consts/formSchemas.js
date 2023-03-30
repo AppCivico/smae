@@ -317,7 +317,7 @@ const projeto = object()
     atividade_id: number()
       .nullable(),
     coordenador_ue: string()
-      .label('Coordenador do órgão gestor do projeto')
+      .label('Gerente do projeto')
       .nullable(),
     codigo: string()
       .label('Código')
@@ -447,7 +447,7 @@ const projeto = object()
       .label('Principais etapas')
       .max(50000),
     responsaveis_no_orgao_gestor: array()
-      .label('Gerente do projeto')
+      .label('Responsável')
       .nullable(),
     responsavel_id: number()
       .label('Responsável no órgão')
@@ -574,14 +574,14 @@ const risco = object()
   .shape({
     causa: string()
       .label('Causa raiz')
-      .required(),
+      .nullable(),
     codigo: number()
       .label('Código')
       .min(1)
       .required(),
     consequencia: string()
       .label('Consequências')
-      .required(),
+      .nullable(),
     descricao: string()
       .label('Descrição')
       .nullable(),
@@ -589,26 +589,21 @@ const risco = object()
       .label('Impacto')
       .min(1)
       .max(5)
-      .required(),
+      .nullable(),
     probabilidade: number()
       .label('Probabilidade')
       .min(1)
       .max(5)
-      .required(),
+      .nullable(),
     registrado_em: date()
       .label('Data de registro')
       .required()
       .typeError('Data inválida'),
     risco_tarefa_outros: string()
       .label('Outras tarefas afetadas')
-      .when('tarefa_id', (tarefaId, field) => (!tarefaId
-        ? field.required()
-        : field.nullable())),
+      .nullable(),
     tarefa_id: array()
       .label('Tarefas afetadas no cronograma')
-      .when('risco_tarefa_outros', (riscoTarefaOutros, field) => (!riscoTarefaOutros
-        ? field.required()
-        : field))
       .nullable(),
     titulo: string()
       .label('Nome')
