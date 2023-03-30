@@ -1,7 +1,8 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { Regiao } from '@prisma/client';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-
+import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
@@ -21,19 +22,6 @@ class RetornoDb {
     variavel_codigo?: string;
     variavel_titulo?: string;
 
-    regiao_id?: number;
-    regiao_descricao?: string;
-    regiao_nivel?: number;
-    regiao_codigo?: number;
-    regiao_pai_id?: number;
-    regiao_pai_descricao?: string;
-    regiao_pai_codigo?: number;
-    regiao_pai_nivel?: number;
-    regiao_vo_id?: number;
-    regiao_vo_descricao?: string;
-    regiao_vo_codigo?: number;
-    regiao_vo_nivel?: number;
-
     meta_id: number;
     meta_codigo: string;
     meta_titulo: string;
@@ -47,6 +35,10 @@ class RetornoDb {
     atividade_id: number;
     atividade_codigo: string;
     atividade_titulo: string;
+}
+
+class RetornoDbRegiao extends RetornoDb {
+    regiao_id: number;
 }
 
 const {
@@ -151,7 +143,7 @@ export class IndicadoresService implements ReportableService {
                 '1 month',
             );
 
-            out.push(...this.convertRows(data));
+            out.push(...this.convertRows(data, null));
         } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
@@ -160,7 +152,7 @@ export class IndicadoresService implements ReportableService {
                 '1 year',
             );
 
-            out.push(...this.convertRows(data));
+            out.push(...this.convertRows(data, null));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
             const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
             const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
@@ -172,7 +164,7 @@ export class IndicadoresService implements ReportableService {
                 '1 decade',
             );
 
-            out.push(...this.convertRows(base_data));
+            out.push(...this.convertRows(base_data, null));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
             // indo buscar 6 meses, por isso sempre tem valor
             const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
@@ -181,22 +173,12 @@ export class IndicadoresService implements ReportableService {
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
                 '1 month',
             );
-            out.push(...this.convertRows(base_data));
+            out.push(...this.convertRows(base_data, null));
         }
     }
 
     private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresVariaveisDto[]) {
         if (indicadoresOrVar.length == 0) return;
-
-        const queryRegioesCte = `WITH regioes AS (
-            SELECT
-                id,
-                parente_id,
-                codigo,
-                descricao,
-                nivel
-            FROM regiao
-        )`;
 
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         join indicador_variavel iv ON iv.indicador_id = i.id
@@ -206,25 +188,16 @@ export class IndicadoresService implements ReportableService {
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        join regioes r ON CASE
-            WHEN EXISTS( SELECT 1 FROM regioes WHERE parente_id = v.regiao_id AND nivel = 4 ) THEN r.parente_id = v.regiao_id
-            ELSE r.id = v.regiao_id
-            END
-        join regioes r_parent ON r.parente_id = r_parent.id
-        join regioes r_grand_parent ON r_parent.parente_id = r_grand_parent.id
         where v.regiao_id is not null`;
 
-        const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`${queryRegioesCte} SELECT min(sv.data_valor::date)
+        const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(sv.data_valor::date)
         FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         JOIN serie_variavel sv ON sv.serie = series.serie
         JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
 
         const anoInicio = buscaInicio[0].min.getFullYear();
 
-
-        const sql = `
-        ${queryRegioesCte}
-        SELECT
+        const sql = `SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
@@ -269,45 +242,49 @@ export class IndicadoresService implements ReportableService {
         join ${queryFromWhere}
         `;
 
+        const regioes = await this.prisma.regiao.findMany({
+            where: { removido_em: null }
+        });
+
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-            const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+            const data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', "extract('month' from periodicidade_intervalo(v.periodicidade))::int").replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
                 anoInicio + '-01-01',
                 dto.ano + 1 + '-01-01',
                 '1 month',
             );
 
-            out.push(...this.convertRows(data));
+            out.push(...this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]);
         } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-            const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+            const data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
                 anoInicio + '-12-01',
                 dto.ano + 1 + '-12-01',
                 '1 year',
             );
 
-            out.push(...this.convertRows(data));
+            out.push(...this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]);
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
             const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
             const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
-            const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+            const base_data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)").replace(':OFFSET:', ''),
                 base_mes,
                 base_mes,
                 '1 decade',
             );
 
-            out.push(...this.convertRows(base_data));
+            out.push(...this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]);
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
             // indo buscar 6 meses, por isso sempre tem valor
-            const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
+            const base_data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text").replace(':OFFSET:', "- '1 month'::interval"),
                 dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
                 '1 month',
             );
-            out.push(...this.convertRows(base_data));
+            out.push(...this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]);
         }
     }
 
@@ -372,20 +349,20 @@ export class IndicadoresService implements ReportableService {
                     { value: 'variavel.titulo', label: 'Título da Variável' },
                     { value: 'variavel.id', label: 'ID da Variável' },
 
-                    { value: 'regiao.codigo', label: 'Distrito' },
-                    { value: 'regiao.descricao', label: 'Descrição do Distrito' },
-                    { value: 'regiao.nivel', label: 'Nível do Distrito' },
+                    { value: 'regiao_id', label: 'ID da região' },
 
-                    { value: 'regiao.id', label: 'ID do Distrito' },
-                    { value: 'regiao.parente.codigo', label: 'Código da Subprefeitura' },
-                    { value: 'regiao.parente.descricao', label: 'Descrição da Subprefeitura' },
-                    { value: 'regiao.parente.nivel', label: 'Nível da Subprefeitura' },
-                    { value: 'regiao.parente.id', label: 'ID da Subprefeitura' },
+                    { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
+                    { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
+                    { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
 
-                    { value: 'regiao.parente.parente.codigo', label: 'Código da Região' },
-                    { value: 'regiao.parente.parente.descricao', label: 'Descrição da Região' },
-                    { value: 'regiao.parente.parente.nivel', label: 'Nível da Região' },
-                    { value: 'regiao.parente.parente.id', label: 'ID da Região' },
+                    { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
+                    { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
+                    { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
+
+                    { value: 'regiao_nivel_2.id', label: 'ID da Região' },
+                    { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
+                    { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
+
                     'serie',
                     'data',
                     'valor',
@@ -413,8 +390,14 @@ export class IndicadoresService implements ReportableService {
         ];
     }
 
-    private convertRows(input: RetornoDb[]): RelIndicadoresDto[] | RelIndicadoresVariaveisDto[] {
+    private convertRows(
+        input: RetornoDb[] | RetornoDbRegiao[],
+        regioesDb: Regiao[] | null
+    ): RelIndicadoresDto[] | RelIndicadoresVariaveisDto[] {
         return input.map(db => {
+
+
+
             return {
                 indicador: {
                     codigo: db.indicador_codigo,
@@ -427,37 +410,76 @@ export class IndicadoresService implements ReportableService {
                 meta_tags: db.meta_tags ? db.meta_tags : null,
                 iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
                 atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
-                variavel: db.variavel_id ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id } : undefined,
-
-                regiao: db.regiao_id
-                    ? {
-                        id: +db.regiao_id,
-                        codigo: db.regiao_codigo,
-                        descricao: db.regiao_descricao,
-                        nivel: db.regiao_nivel,
-
-                        parente: db.regiao_pai_id
-                            ? {
-                                id: +db.regiao_pai_id,
-                                codigo: db.regiao_pai_codigo,
-                                descricao: db.regiao_pai_descricao,
-                                nivel: db.regiao_pai_nivel,
-
-                                parente: db.regiao_vo_id ? {
-                                    id: +db.regiao_vo_id,
-                                    codigo: db.regiao_vo_codigo,
-                                    descricao: db.regiao_vo_descricao,
-                                    nivel: db.regiao_vo_nivel,
-                                } : undefined
-                            }
-                            : undefined,
-                    }
-                    : undefined,
 
                 data: db.data,
                 serie: db.serie,
                 valor: db.valor,
+
+                variavel: db.variavel_id ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id } : undefined,
+                ...("regiao_id" in db && regioesDb ? this.convertRowsRegiao(regioesDb, db) : {})
+
             };
         });
     }
+
+    convertRowsRegiao(regioesDb: Regiao[], db: RetornoDbRegiao): {
+        regiao_nivel_4: RegiaoDto | null
+        regiao_nivel_3: RegiaoDto | null
+        regiao_nivel_2: RegiaoDto | null
+        regiao_nivel_1: RegiaoDto | null
+        regiao_id: number
+    } {
+        const regiao_by_id: Record<number, typeof regioesDb[0]> = {};
+        for (const r of regioesDb) {
+            regiao_by_id[r.id] = r;
+        }
+
+        let regiao_nivel_4: number | null = null;
+        let regiao_nivel_3: number | null = null;
+        let regiao_nivel_2: number | null = null;
+        let regiao_nivel_1: number | null = null;
+        let regiao_id: number = db.regiao_id;
+
+        const regiao = regiao_by_id[regiao_id];
+        if (regiao) {
+            if (regiao.nivel == 4) {
+                regiao_nivel_4 = regiao.id;
+                regiao_nivel_3 = regiao.parente_id!;
+                regiao_nivel_2 = regiao_by_id[regiao_nivel_3].parente_id!;
+                regiao_nivel_1 = regiao_by_id[regiao_nivel_2].parente_id!;
+            } else if (regiao.nivel == 3) {
+                regiao_nivel_3 = regiao.id;
+                regiao_nivel_2 = regiao.parente_id!;
+                regiao_nivel_1 = regiao_by_id[regiao_nivel_2].parente_id!;
+            } else if (regiao.nivel == 2) {
+                regiao_nivel_2 = regiao.id;
+                regiao_nivel_1 = regiao.parente_id!;
+            } else if (regiao.nivel == 1) {
+                regiao_nivel_1 = regiao.id;
+            }
+        }
+
+        return {
+            regiao_nivel_4: this.render_regiao(regiao_by_id, regiao_nivel_4),
+            regiao_nivel_3: this.render_regiao(regiao_by_id, regiao_nivel_3),
+            regiao_nivel_2: this.render_regiao(regiao_by_id, regiao_nivel_2),
+            regiao_nivel_1: this.render_regiao(regiao_by_id, regiao_nivel_1),
+            regiao_id,
+        }
+    }
+
+    render_regiao(regiao_by_id: Record<number, Regiao>, regiao_id: number | null): RegiaoDto | null {
+        if (!regiao_id) return null;
+        if (!regiao_by_id[regiao_id]) return null;
+
+        return {
+            codigo: regiao_by_id[regiao_id].codigo,
+            descricao: regiao_by_id[regiao_id].descricao,
+            id: regiao_by_id[regiao_id].id,
+            nivel: regiao_by_id[regiao_id].nivel,
+            parente_id: regiao_by_id[regiao_id].parente_id,
+        }
+    }
+
+
 }
