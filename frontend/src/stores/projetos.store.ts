@@ -181,6 +181,7 @@ export const useProjetosStore = defineStore('projetos', {
       resumo: emFoco?.resumo || '',
       orgaos_participantes: emFoco?.orgaos_participantes?.map((x) => x.id) || null,
       orgao_responsavel_id: emFoco?.orgao_responsavel?.id || null,
+      atraso: emFoco?.atraso || null, // adicionado pelo cron, pode estourar o save
       // eslint-disable-next-line max-len
       responsaveis_no_orgao_gestor: emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.id) || null,
     }),
