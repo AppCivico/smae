@@ -55,6 +55,13 @@ import {
 const tiposDeDependências = Object.keys(dependencyTypes)
   .map((x) => ({ valor: x, nome: dependencyTypes[x] }));
 
+const coresParaTiposDeDependências = {
+  inicia_pro_inicio: '#8EC122',
+  inicia_pro_termino: '#4074BF',
+  termina_pro_inicio: '#EE3B2B',
+  termina_pro_termino: '#F2890D',
+};
+
 const props = defineProps({
   data: {
     type: Array,
@@ -139,39 +146,11 @@ onMounted(async () => {
 
 .legenda__item {
   display: block;
-
-  &::before {
-    display: inline-block;
-    width: 0.75em;
-    height: 0.75em;
-    margin-right: 0.25em;
-    content: '';
-    background-color: currentColor;
-  }
 }
 
-.legenda__item--termina_pro_inicio {
-  &::before {
-    color: @vermelho;
-  }
-}
-
-.legenda__item--inicia_pro_inicio {
-  &::before {
-    color: @verde;
-  }
-}
-
-.legenda__item--inicia_pro_termino {
-  &::before {
-    color: @azul;
-  }
-}
-
-.legenda__item--termina_pro_termino {
-  &::before {
-    color: @laranja;
-  }
+.legenda__amostra {
+  display: inline-block;
+  margin-right: 0.25em;
 }
 
 [id='gantt'] {
@@ -188,11 +167,21 @@ onMounted(async () => {
     color: @primary;
   }
 
+  .Single--Block {}
+
   .Single--Node {
     fill: #fff;
     stroke: hsl(216, 9.8%, 90%);
     stroke-width: 1;
     border-radius: 10px;
+  }
+
+  .Single--Node--estimated {
+    stroke-dasharray: 3, 2;
+  }
+
+  .Single--Node--half-estimated {
+    stroke-dasharray: 6, 3, 2, 3;
   }
 
   .Single--Block--focused {

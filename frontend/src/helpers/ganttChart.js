@@ -469,7 +469,17 @@ export default function ganttChart(config) {
 
     function appendBar(d, i) {
       d.append('rect')
-        .attr('class', 'Single--Node')
+        .attr('class', (d1) => {
+          let nodeClass = 'Single--Node';
+
+          if (!d1.inicio_real && !d1.termino_real) {
+            nodeClass += ' Single--Node--estimated';
+          } if (!d1.inicio_real || !d1.termino_real) {
+            nodeClass += ' Single--Node--half-estimated';
+          }
+
+          return nodeClass;
+        })
         .attr('rx', 5)
         .attr('ry', 5)
         .attr('height', 60)
