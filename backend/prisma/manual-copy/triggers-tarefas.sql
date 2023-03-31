@@ -174,12 +174,21 @@ BEGIN
          from tarefa t
          where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
          and termino_planejado is not null
+         and (
+            select count(1) from tarefa t
+            where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
+            and termino_planejado is null
+         ) = 0
         ),
         (
          select max(termino_real)
          from tarefa t
          where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
-         and termino_real is not null
+         and (
+            select count(1) from tarefa t
+            where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
+            and termino_real is null
+         ) = 0
         ),
         (
          select sum(custo_estimado)
