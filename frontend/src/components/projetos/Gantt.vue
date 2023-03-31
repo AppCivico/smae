@@ -23,20 +23,84 @@
     </div>
     <hr class="ml1 mr1 f1">
   </div-->
-  <ul
-    class="legenda mb1 t13"
-  >
-    <li
-      v-for="item in tiposDeDependências"
-      :key="item.valor"
-      class="legenda__item mb05"
-      :class="`legenda__item--${item.valor}`"
-      :value="item.valor"
-    >
-      {{ item.nome }}
-    </li>
-  </ul>
 
+  <div class="flex mb2 spacebetween">
+    <ul
+      class="legenda f1 mb1 t13"
+    >
+      <li
+        v-for="item in tiposDeDependências"
+        :key="item.valor"
+        class="legenda__item mb05"
+        :class="`legenda__item--${item.valor}`"
+      >
+        <svg
+          class="legenda__amostra"
+          height="12"
+          width="12"
+        >
+          <rect
+            width="12"
+            height="12"
+            :fill="coresParaTiposDeDependências[item.valor]"
+          />
+        </svg>
+        {{ item.nome }}
+      </li>
+    </ul>
+
+    <ul
+      class="legenda f1 mb1 t13"
+    >
+      <li class="legenda__item mb05">
+        <svg
+          class="legenda__amostra"
+          width="20"
+          height="12"
+        >
+          <path
+            d="M0,6L20,6"
+            fill="none"
+            stroke="black"
+            stroke-width="1"
+            stroke-dasharray="3, 2"
+          />
+        </svg>
+        início e final planejados
+      </li>
+      <li class="legenda__item mb05">
+        <svg
+          class="legenda__amostra"
+          width="20"
+          height="12"
+        >
+          <path
+            d="M0,6L20,6"
+            fill="none"
+            stroke="black"
+            stroke-width="1"
+            stroke-dasharray="6, 3, 2, 3"
+          />
+        </svg>
+        início real e final planejado
+      </li>
+      <li class="legenda__item mb05">
+        <svg
+          class="legenda__amostra"
+          width="20"
+          height="12"
+        >
+          <path
+            d="M0,6L20,6"
+            fill="none"
+            stroke="black"
+            stroke-width="1"
+          />
+        </svg>
+        início e final reais
+      </li>
+    </ul>
+  </div>
   <div
     id="gantt"
     ref="svgElementContainer"
