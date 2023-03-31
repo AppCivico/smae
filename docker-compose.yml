@@ -203,6 +203,7 @@ networks:
   api:
   api_orcamento:
   smtp:
+  metadb_postgres:
 
 
 volumes:
