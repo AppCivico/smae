@@ -38,3 +38,5 @@ CREATE TRIGGER trigger_recalculate_planos_de_acao_sem_dt_term
 AFTER INSERT OR UPDATE ON "plano_acao"
 FOR EACH ROW
 EXECUTE FUNCTION recalculate_planos_de_acao_sem_dt_term();
+
+update plano_acao set id = id;
