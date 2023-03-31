@@ -215,3 +215,9 @@ volumes:
 
   minio_data:
     name: "${DATA_PREFIX}smae_minio_data"
+
+secrets:
+   db_password:
+     file: metadb_db_password.txt
+   db_user:
+     file: metadb_db_user.txt
