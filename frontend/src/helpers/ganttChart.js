@@ -1,15 +1,15 @@
+/* eslint-disable func-names */
 /* eslint-disable no-param-reassign */
-/* eslint-disable default-case */
 /* eslint-disable camelcase */
 /* eslint-disable no-use-before-define */
 import {
   axisBottom,
   axisLeft,
   max as d3max,
+  select as d3select,
   scaleBand,
   scaleTime,
-  select as d3select,
-  timeFormat
+  timeFormat,
 } from 'd3';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt';
@@ -47,23 +47,29 @@ export default function ganttChart(config) {
       case 'yearly':
         config.metrics.year += 1;
         break;
+
+      case 'sprint':
+        break;
+
+      case 'monthly':
+        config.metrics.month = dayjs(`01 ${config.metrics.month}`).add(1, 'months').format('MMMM YYYY');
+        break;
+
+      case 'quarterly':
+      {
+        const months_count = config.metrics.months.length;
+        for (let i = 0; i < months_count; i += 1) {
+          config.metrics.months[i] = dayjs(`01 ${config.metrics.months[i]}`).add(months_count, 'months').format('MMMM YYYY');
+        }
+        break;
+      }
+
       case 'overall':
+      default:
         for (let i = 0; i < config.metrics.years.length; i += 1) {
           config.metrics.years[i] += config.metrics.years.length;
         }
         break;
-      case 'sprint':
-        break;
-      case 'monthly':
-        config.metrics.month = dayjs(config.metrics.month, 'MMMM YYYY').add(1, 'months').format('MMMM YYYY');
-        break;
-      case 'quarterly': {
-        const months_count = config.metrics.months.length;
-        for (let i = 0; i < months_count; i += 1) {
-          config.metrics.months[i] = dayjs(config.metrics.months[i], 'MMMM YYYY').add(months_count, 'months').format('MMMM YYYY');
-        }
-        break;
-      }
     }
 
     draw('next');
@@ -74,23 +80,29 @@ export default function ganttChart(config) {
       case 'yearly':
         config.metrics.year -= 1;
         break;
+
+      case 'sprint':
+        break;
+
+      case 'monthly':
+        config.metrics.month = dayjs(`01 ${config.metrics.month}`).subtract(1, 'months').format('MMMM YYYY');
+        break;
+
+      case 'quarterly':
+      {
+        const months_count = config.metrics.months.length;
+        for (let i = 0; i < months_count; i += 1) {
+          config.metrics.months[i] = dayjs(`01 ${config.metrics.months[i]}`, 'MMMM').subtract(months_count, 'months').format('MMMM YYYY');
+        }
+        break;
+      }
+
       case 'overall':
+      default:
         for (let i = 0; i < config.metrics.years.length; i += 1) {
           config.metrics.years[i] -= config.metrics.years.length;
         }
         break;
-      case 'sprint':
-        break;
-      case 'monthly':
-        config.metrics.month = dayjs(config.metrics.month, 'MMMM YYYY').subtract(1, 'months').format('MMMM YYYY');
-        break;
-      case 'quarterly': {
-        const months_count = config.metrics.months.length;
-        for (let i = 0; i < months_count; i += 1) {
-          config.metrics.months[i] = dayjs(config.metrics.months[i], 'MMMM').subtract(months_count, 'months').format('MMMM YYYY');
-        }
-        break;
-      }
     }
     draw('previous');
   }
@@ -104,42 +116,56 @@ export default function ganttChart(config) {
     let header_ranges = [];
 
     d3select(config.element).node().innerHTML = '';
+    switch (config.metrics.type) {
+      case 'monthly':
+        months = [`01 ${config.metrics.month}`];
+        header_ranges = getMonthsRange(months);
+        subheader_ranges = getDaysRange(months);
+        break;
 
-    if (config.metrics.type === 'monthly') {
-      months = [config.metrics.month];
-      header_ranges = getMonthsRange(months);
-      subheader_ranges = getDaysRange(months);
-    } else if (config.metrics.type === 'overall') {
-      const { years } = config.metrics;
-      const yearsRange = [];
-      years.map((year) => {
-        months = months.concat(getMonthsOfTheYear(year));
-        yearsRange.push(getYearBoundary(year));
-      });
-      header_ranges = [{
-        name: 'Overall View',
-        start_date: yearsRange[0].start_date,
-        end_date: yearsRange[yearsRange.length - 1].end_date,
-      }];
-      subheader_ranges = yearsRange;
-    } else if (config.metrics.type === 'quarterly') {
-      months = config.metrics.months;
-      subheader_ranges = getMonthsRange(months);
-      const year = dayjs(config.metrics.months[0], 'MMMM YYYY').format('YYYY');
+      case 'quarterly':
+      {
+        months = config.metrics.months;
+        subheader_ranges = getMonthsRange(months);
+        const year = dayjs(`01 ${config.metrics.months[0]}`).format('YYYY');
 
-      header_ranges = [{
-        start_date: dayjs(config.metrics.months[0], 'MMMM YYYY').startOf('month').toDate(),
-        end_date: dayjs(config.metrics.months[config.metrics.months.length - 1], 'MMMM YYYY').endOf('month').toDate(),
-        name: year,
-      }];
-    } else if (config.metrics.type === 'yearly') {
-      months = getMonthsOfTheYear(config.metrics.year);
-      subheader_ranges = getMonthsRange(months);
-      header_ranges = [getYearBoundary(config.metrics.year)];
-    } else if (config.metrics.type === 'sprint') {
-      months = getMonthsOfTheYear(config.metrics.year);
-      subheader_ranges = config.metrics.cycles;
-      header_ranges = [getYearBoundary(config.metrics.year)];
+        header_ranges = [{
+          start_date: dayjs(`01 ${config.metrics.months[0]}`).startOf('month').toDate(),
+          end_date: dayjs(config.metrics.months[config.metrics.months.length - 1], 'MMMM YYYY').endOf('month').toDate(),
+          name: year,
+        }];
+        break;
+      }
+
+      case 'yearly':
+        months = getMonthsOfTheYear(config.metrics.year);
+        subheader_ranges = getMonthsRange(months);
+        header_ranges = [getYearBoundary(config.metrics.year)];
+        break;
+
+      case 'sprint':
+        months = getMonthsOfTheYear(config.metrics.year);
+        subheader_ranges = config.metrics.cycles;
+        header_ranges = [getYearBoundary(config.metrics.year)];
+        break;
+
+      case 'overall':
+      default:
+      {
+        const { years } = config.metrics;
+        const yearsRange = [];
+        years.forEach((year) => {
+          months = months.concat(getMonthsOfTheYear(year));
+          yearsRange.push(getYearBoundary(year));
+        });
+        header_ranges = [{
+          name: 'Projeto',
+          start_date: yearsRange[0].start_date,
+          end_date: yearsRange[yearsRange.length - 1].end_date,
+        }];
+        subheader_ranges = yearsRange;
+        break;
+      }
     }
 
     date_boundary[0] = dayjs(months[0]).startOf('month').toDate();
@@ -187,13 +213,6 @@ export default function ganttChart(config) {
       .append('g');
 
     switch (state) {
-      case 'initial':
-        first_section
-          .attr('transform', `translate( ${margin.left}, 30)`);
-        second_section
-          .attr('transform', `translate( ${margin.left}, 0)`);
-        break;
-
       case 'next':
         second_section
           .attr('transform', 'translate( 1000, 0)')
@@ -214,6 +233,14 @@ export default function ganttChart(config) {
           .attr('transform', 'translate( -1000, 30)')
           .transition()
           .attr('transform', `translate( ${margin.left}, 30)`);
+        break;
+
+      case 'initial':
+      default:
+        first_section
+          .attr('transform', `translate( ${margin.left}, 30)`);
+        second_section
+          .attr('transform', `translate( ${margin.left}, 0)`);
         break;
     }
 
@@ -245,8 +272,10 @@ export default function ganttChart(config) {
       .attr('height', height)
       .attr('fill', 'transparent')
       .on('click', () => {
-        goToPrevious();
-        config.onAreaClick('left');
+        if (config.metrics.type !== 'overall') {
+          goToPrevious();
+          config.onAreaClick('left');
+        }
       });
 
     const rightClickableArea = svg.append('rect')
@@ -255,8 +284,10 @@ export default function ganttChart(config) {
       .attr('height', height)
       .attr('fill', 'transparent')
       .on('click', () => {
-        goToNext();
-        config.onAreaClick('right');
+        if (config.metrics.type !== 'overall') {
+          goToNext();
+          config.onAreaClick('right');
+        }
       });
 
     first_section.selectAll('.bar')
@@ -626,9 +657,9 @@ export default function ganttChart(config) {
       return startDateVisible || endDateVisible;
     }
 
-    function getDaysRange(months) {
+    function getDaysRange(monthsToCalc) {
       const ranges = [];
-      months.map((month) => {
+      monthsToCalc.forEach((month) => {
         const startOfMonth = dayjs(month).startOf('month');
         const endOfMonth = dayjs(month).endOf('month');
         let day = startOfMonth;

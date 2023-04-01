@@ -1,17 +1,12 @@
 <template>
-  <!--div class="flex center mb2 spacebetween">
+  <div class="flex center mb2 spacebetween">
     <div class="f1 mr1">
       <label class="label tc300">Exibir por</label>
       <select
-        v-model="ganttType"
+        v-model="tipoDeGantt"
         class="inputtext"
+        @change="renderChart(config)"
       >
-        <option
-          value=""
-          :selected="!!status"
-        >
-          qualquer
-        </option>
         <option
           v-for="item in tiposDeGráfico"
           :key="item.value"
@@ -22,7 +17,26 @@
       </select>
     </div>
     <hr class="ml1 mr1 f1">
-  </div-->
+    <div class="f1 mr1">
+      <label class="label tc300">Ano</label>
+      <select
+        v-model="anoEmFoco"
+        :disabled="
+          !['yearly', 'monthly', 'quarterly'].includes(tipoDeGantt)"
+        class="inputtext"
+        @change="renderChart(config)"
+      >
+        <option
+          v-for="item in range(intervalo.início, intervalo.fim)"
+          :key="item"
+          :value="item"
+        >
+          {{ item }}
+        </option>
+      </select>
+    </div>
+    <hr class="ml1 mr1 f1">
+  </div>
 
   <div class="flex mb2 spacebetween">
     <ul
@@ -109,13 +123,16 @@
 <script setup>
 import dependencyTypes from '@/consts/dependencyTypes';
 import renderChart from '@/helpers/ganttChart';
+import dayjs from 'dayjs';
 import {
   computed,
   nextTick,
   onMounted,
   ref,
-  watch
+  watch,
 } from 'vue';
+// import cycles from './cycles';
+
 const tiposDeDependências = Object.keys(dependencyTypes)
   .map((x) => ({ valor: x, nome: dependencyTypes[x] }));
 
@@ -135,28 +152,29 @@ const props = defineProps({
 
 const tiposDeGráfico = [
   {
-    name: 'panorama',
+    name: 'projeto',
     value: 'overall',
   },
+  // {
+  //   name: 'sprint',
+  //   value: 'sprint',
+  // },
   {
-    name: 'sprint',
-    value: 'sprint',
-  },
-  {
-    name: 'Ano',
+    name: 'ano',
     value: 'yearly',
   },
-  {
-    name: 'Mês',
-    value: 'monthly',
-  },
-  {
-    name: 'Trimestre',
-    value: 'quarterly',
-  },
+  // {
+  //   name: 'mês',
+  //   value: 'monthly',
+  // },
+  // {
+  //   name: 'trimestre',
+  //   value: 'quarterly',
+  // },
 ];
 
-const ganttType = ref(null);
+const tipoDeGantt = ref('overall');
+const anoEmFoco = ref(null);
 const svgElementContainer = ref(null);
 const dadosParaGantt = computed(() => props.data
   .map((x) => ({
@@ -170,15 +188,76 @@ const dadosParaGantt = computed(() => props.data
   // eslint-disable-next-line max-len
   .filter((x) => x.start_date && x.end_date));
 
+const intervalo = computed(() => dadosParaGantt.value.reduce((acc, cur) => {
+  ['end_date', 'start_date'].forEach((propriedade) => {
+    const ano = dayjs(cur[propriedade]).year();
+    if (!acc.início || ano < acc.início) acc.início = ano;
+
+    if (!acc.fim || ano > acc.fim) {
+      acc.fim = ano;
+    }
+  });
+  return acc;
+}, { início: null, fim: null }));
+
+const range = (s, e) => Array.from('x'.repeat(e - s + 1), (_, i) => s + i);
+
+const date = new Date();
+
+const métricas = computed(() => {
+  switch (tipoDeGantt.value) {
+    // case 'sprint':
+    //   return {
+    //     type: 'sprint', // Type of gantt
+    //     year: anoEmFoco.value > 2000
+    //       && anoEmFoco.value < 2050
+    //       ? anoEmFoco.value
+    //       : intervalo.value.início || date.getFullYear(),
+    //     cycles,
+    //   };
+
+    case 'yearly':
+      return {
+        type: 'yearly', // Type of gantt
+        year: anoEmFoco.value > 2000
+          && anoEmFoco.value < 2050
+          ? anoEmFoco.value
+          : intervalo.value.início || date.getFullYear(),
+      };
+
+    // case 'monthly': // For Monthly Data
+    //   return {
+    //     type: 'monthly',
+    //     month: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+    //   };
+
+    // case 'quarterly': // For quarterly or half yearly data
+    //   return {
+    //     type: 'quarterly',
+    //     months: [
+    //       'January 2023',
+    //       'February 2023',
+    //       'March 2023',
+    //       'April 2023',
+    //       'May 2023',
+    //       'June 2023',
+    //     ],
+    //   };
+
+    case 'overall':
+    default:
+      return {
+        type: 'overall', // Type of gantt
+        years: range(intervalo.value.início, intervalo.value.fim),
+      };
+  }
+});
+
 const config = computed(() => ({
   data: dadosParaGantt.value,
   element: svgElementContainer.value, // The element for rendering the chart
   box_padding: 10, // Padding for the blocks
-  // metrics: {type: "overall", years: [2016, 2017, 2018]}, // Type of gantt
-  // metrics: { type: 'sprint', year: 2017, cycles }, // Type of gantt
-  metrics: { type: 'yearly', year: 2023 }, // Type of gantt
-  // metrics: {type: "monthly", month: 'March 2017'}, // For Monthly Data
-  // metrics: {type: "quarterly", months: ['January 2017','February 2017','March 2017', 'April 2017', 'May 2017', 'June 2017']}, // For quarterly or half yearly data
+  metrics: métricas.value,
   onClick: function onClick(data) {
     console.log(data); // Onclick of each node
   },
@@ -186,7 +265,22 @@ const config = computed(() => ({
     console.log('Empty Clicked');
   },
   onAreaClick: function onAreaClick(location) {
-    console.log(`Clicked On${location}`);
+    const distance = tipoDeGantt.value === 'overall'
+      ? intervalo.value.fim - intervalo.value.início
+      : 1;
+
+    switch (location) {
+      case 'right':
+        anoEmFoco.value += distance + 1;
+        break;
+
+      case 'left':
+        anoEmFoco.value -= distance - 1;
+        break;
+
+      default:
+        break;
+    }
   },
 }));
 
@@ -197,6 +291,11 @@ watch(() => props.data, async () => {
 
 onMounted(async () => {
   if (props.data.length) {
+    anoEmFoco.value = intervalo.value.início;
+
+    if (intervalo.value.início === intervalo.value.fim) {
+      tipoDeGantt.value = 'yearly';
+    }
     await nextTick();
     renderChart(config.value);
   }
