@@ -277,16 +277,10 @@ export class TarefaService {
         const hoje = DateTime.local({ zone: 'UTC' }).startOf('day');
         const tarefas = plainToInstance(TarefaItemProjetadoDto, <any[]>JSON.parse(JSON.stringify(tarefasOrig)));
 
-        const tarefas_ret_por_id: Record<number, typeof tarefasOrig[0]> = {};
-        for (const tarefa of tarefasOrig) {
-            tarefas_ret_por_id[tarefa.id] = tarefa;
-        }
-
         const tarefas_por_id: Record<number, typeof tarefas[0]> = {};
         for (const tarefa of tarefas) {
             // pula quem não tiver dependencias como array (nao na spec do TarefaItemProjetadoDto)
             if (Array.isArray(tarefa.dependencias) == false) continue;
-
 
             tarefas_por_id[tarefa.id] = tarefa;
         }
@@ -451,10 +445,10 @@ export class TarefaService {
         // e tbm passar o atraso dos parent pro objeto do retorno
         for (const tarefa of tarefas) {
 
-            if (tarefa.projecao_atraso && tarefas_ret_por_id[tarefa.id] && tarefa.n_filhos_imediatos > 0) {
-                this.logger.debug(`tarefas_ret_por_id[${tarefa.id}].atraso = ${tarefa.projecao_atraso} `);
+            if (tarefa.projecao_atraso && tarefas_por_id[tarefa.id] && tarefa.n_filhos_imediatos > 0) {
+                this.logger.debug(`calculando atraso dos filhos: tarefas_por_id[${tarefa.id}].atraso = ${tarefa.projecao_atraso}`);
 
-                tarefas_ret_por_id[tarefa.id].atraso = tarefa.projecao_atraso;
+                tarefas_por_id[tarefa.id].atraso = tarefa.projecao_atraso;
             }
 
             // a tarefa tem que ter todas as datas de planejamento para funcionar
