@@ -431,8 +431,11 @@ export class TarefaService {
                     this.logger.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
 
                     tarefa.projecao_atraso = atraso_max;
+                    console.log(tarefa)
                 } else {
                     this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
+
+                    console.log(tarefa)
                 }
 
                 if (tarefa.projecao_termino)
@@ -445,10 +448,10 @@ export class TarefaService {
         // e tbm passar o atraso dos parent pro objeto do retorno
         for (const tarefa of tarefas) {
 
-            if (tarefa.projecao_atraso && tarefas_por_id[tarefa.id] && tarefa.n_filhos_imediatos > 0) {
+            if (tarefa.projecao_atraso && tarefa.n_filhos_imediatos > 0) {
                 this.logger.debug(`calculando atraso dos filhos: tarefas_por_id[${tarefa.id}].atraso = ${tarefa.projecao_atraso}`);
 
-                tarefas_por_id[tarefa.id].atraso = tarefa.projecao_atraso;
+                tarefa.atraso = tarefa.projecao_atraso;
             }
 
             // a tarefa tem que ter todas as datas de planejamento para funcionar
