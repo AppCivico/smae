@@ -41,15 +41,10 @@ export class TarefaItemDto {
 
     atraso: number | null
 
-    /**
-     * só retorna na listagem se foi pedido
-    */
-    dependencias?: TarefaDependenciaDto[]
+    dependencias: TarefaDependenciaDto[]
 }
 
 export class TarefaItemProjetadoDto extends TarefaItemDto {
-    dependencias: TarefaDependenciaDto[]
-
     projecao_inicio: DateTime | undefined
     projecao_termino: DateTime | undefined
     projecao_atraso: number | undefined
@@ -68,13 +63,13 @@ export class TarefaDetailDto extends TarefaItemDto {
 }
 
 export class ListTarefaDto {
-    linhas: TarefaItemDto[]
+    linhas: TarefaItemProjetadoDto[]
     projeto: ProjetoDetailDto
     portfolio: PortfolioOneDto
 }
 
 export class ListTarefaListDto {
-    linhas: TarefaItemDto[]
+    linhas: TarefaItemProjetadoDto[]
     atraso: number | null
     projecao_termino: Date | null
 }
