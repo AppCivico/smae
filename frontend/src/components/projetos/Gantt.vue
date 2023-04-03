@@ -334,7 +334,7 @@ onMounted(async () => {
 
   .Single--Node {
     fill: #fff;
-    stroke: hsl(216, 9.8%, 90%);
+    stroke: @c500;
     stroke-width: 1;
     border-radius: 10px;
   }
