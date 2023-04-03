@@ -168,11 +168,5 @@ export class CreateTarefaDto {
 }
 
 export class FilterPPTarefa {
-    /**
-     * se deve retornar já na listagem as dependências (para desenho do gantt)
-    */
-    @IsBoolean()
-    @IsOptional()
-    @Transform(({ value }: any) => value === 'true')
-    incluir_dependencias?: boolean;
+
 }
