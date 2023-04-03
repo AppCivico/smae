@@ -278,8 +278,8 @@ export class PessoaService {
     }
 
     private verificarRFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
-        if (this.#matchEmailRFObrigatorio && !dto.registro_funcionario && dto.email && dto.email.indexOf(this.#matchEmailRFObrigatorio) == -1) {
-            throw new HttpException(`registro_funcionario| Registro de funcionário obrigatório para e-mails contendo ${this.#matchEmailRFObrigatorio}`, 400);
+        if (this.#matchEmailRFObrigatorio && !dto.registro_funcionario && dto.email && dto.email.endsWith('@' + this.#matchEmailRFObrigatorio)) {
+            throw new HttpException(`registro_funcionario| Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`, 400);
         }
 
         if (!this.#cpfObrigatorioSemRF) return;
@@ -346,13 +346,13 @@ export class PessoaService {
             async (prismaTx: Prisma.TransactionClient) => {
                 const emailExists = updatePessoaDto.email
                     ? await prismaTx.pessoa.count({
-                          where: {
-                              email: updatePessoaDto.email,
-                              NOT: {
-                                  id: pessoaId,
-                              },
-                          },
-                      })
+                        where: {
+                            email: updatePessoaDto.email,
+                            NOT: {
+                                id: pessoaId,
+                            },
+                        },
+                    })
                     : 0;
                 if (emailExists > 0) {
                     throw new HttpException('email| E-mail está em uso em outra conta', 400);
