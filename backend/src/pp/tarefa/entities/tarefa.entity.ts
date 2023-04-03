@@ -4,6 +4,7 @@ import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
 import { PortfolioOneDto } from "../../portfolio/entities/portfolio.entity"
 import { ProjetoDetailDto } from "../../projeto/entities/projeto.entity"
 import { TarefaDependenciaDto } from "../dto/create-tarefa.dto"
+import { ApiProperty } from "@nestjs/swagger"
 
 export class TarefaItemDto {
     id: number
@@ -45,7 +46,9 @@ export class TarefaItemDto {
 }
 
 export class TarefaItemProjetadoDto extends TarefaItemDto {
+    @ApiProperty({type: Date})
     projecao_inicio: DateTime | undefined
+    @ApiProperty({type: Date})
     projecao_termino: DateTime | undefined
     projecao_atraso: number | undefined
 }
