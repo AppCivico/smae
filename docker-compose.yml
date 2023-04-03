@@ -32,15 +32,12 @@ services:
       MB_DB_TYPE: postgres
       MB_DB_DBNAME: metabase
       MB_DB_PORT: 5432
-      MB_DB_USER_FILE: /run/secrets/db_user
-      MB_DB_PASS_FILE: /run/secrets/db_password
+      MB_DB_USER: metadb_user
+      MB_DB_PASS: metadb_pass
       MB_DB_HOST: metadb_postgres
     networks:
       - postgres
       - metadb_postgres
-    secrets:
-      - db_password
-      - db_user
     healthcheck:
       test: curl --fail -I http://localhost:3000/api/health || exit 1
       interval: 15s
@@ -51,14 +48,11 @@ services:
     container_name: "${API_CONTAINER_NAME}_metadb_postgres"
     hostname: postgres
     environment:
-      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_USER: metadb_user
       POSTGRES_DB: metabase
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_PASSWORD: metadb_pass
     networks:
       - metadb_postgres
-    secrets:
-      - db_password
-      - db_user
 
   smae_api:
     container_name: "${API_CONTAINER_NAME}"
@@ -215,9 +209,3 @@ volumes:
 
   minio_data:
     name: "${DATA_PREFIX}smae_minio_data"
-
-secrets:
-   db_password:
-     file: metadb_db_password.txt
-   db_user:
-     file: metadb_db_user.txt
