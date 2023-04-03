@@ -435,6 +435,8 @@ export class TarefaService {
                 } else {
                     this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
 
+                    tarefa.projecao_atraso=0;
+
                     console.log(tarefa)
                 }
 
