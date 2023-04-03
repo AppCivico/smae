@@ -348,7 +348,7 @@ export class TarefaService {
 
             // filtra pra ficar só com quem tem dependencias
             // e não terminou ainda (se já terminou, já temos a data de projeção no loop anterior
-            if (tarefa.dependencias.length !== 0 || tarefa.n_filhos_imediatos !== 0 || tarefa.termino_real)
+            if (tarefa.dependencias.length === 0 || tarefa.n_filhos_imediatos !== 0 || tarefa.termino_real)
                 continue;
 
             let dataInicioMax: DateTime | undefined;
