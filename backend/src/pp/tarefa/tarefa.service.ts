@@ -216,7 +216,8 @@ export class TarefaService {
                 removido_em: null,
             },
             orderBy: [
-                { tarefa_pai_id: 'asc' }
+                { nivel: 'desc' },
+                { numero: 'asc' },
             ],
             select: {
                 id: true,
@@ -328,7 +329,11 @@ export class TarefaService {
                 continue;
             }
 
-            if (tarefa.n_filhos_imediatos == 0 && tarefa.tarefa_pai_id !== null && tarefa.dependencias.length == 0) {
+            // se a tarefa tem dependencia, mas já iniciou, ela entra no algoritimo normal (soma da duração planejada)
+            if (tarefa.n_filhos_imediatos == 0 && tarefa.tarefa_pai_id !== null &&
+                (
+                    tarefa.dependencias.length == 0 || tarefa.inicio_real
+                )) {
 
                 // se não tem inicio real preenchido, considera que começou hj
                 tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
@@ -336,13 +341,80 @@ export class TarefaService {
                 tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado });
 
             }
-
-
-
         }
 
-        // falta um loop aqui pra resolver as datas das dependências
+        // resolvendo as dependencias
+        for (const tarefa of tarefas) {
 
+            // filtra pra ficar só com quem tem dependencias
+            // e não terminou ainda (se já terminou, já temos a data de projeção no loop anterior
+            if (tarefa.dependencias.length !== 0 || tarefa.n_filhos_imediatos !== 0 || tarefa.termino_real)
+                continue;
+
+            let dataInicioMax: DateTime | undefined;
+            let dataTerminoMax: DateTime | undefined;
+
+            for (const dependencia of tarefa.dependencias) {
+                const depTarefa = tarefas_por_id[dependencia.dependencia_tarefa_id];
+                if (!depTarefa) continue;
+
+                let depDateInicio: DateTime | undefined;
+                let depDateTermino: DateTime | undefined;
+
+                switch (dependencia.tipo) {
+                    case TarefaDependenteTipo.termina_pro_inicio:
+                        depDateInicio = depTarefa.termino_real ? DateTime.fromJSDate(depTarefa.termino_real) :
+                            depTarefa.projecao_termino ? depTarefa.projecao_termino : hoje;
+                        break;
+                    case TarefaDependenteTipo.inicia_pro_inicio:
+                        depDateInicio = depTarefa.inicio_real ? DateTime.fromJSDate(depTarefa.inicio_real) :
+                            depTarefa.projecao_inicio ? depTarefa.projecao_inicio : hoje;
+                        break;
+                    case TarefaDependenteTipo.inicia_pro_termino:
+                        depDateTermino = depTarefa.inicio_real ? DateTime.fromJSDate(depTarefa.inicio_real) :
+                            depTarefa.projecao_inicio ? depTarefa.projecao_inicio : hoje;;
+                        break;
+                    case TarefaDependenteTipo.termina_pro_termino:
+                        depDateTermino = depTarefa.termino_real ? DateTime.fromJSDate(depTarefa.termino_real) :
+                            depTarefa.projecao_termino ? depTarefa.projecao_termino : hoje;
+                        break;
+                }
+
+                // entao vamos setar o inicio estimado, usando o máximo (pois o inicio é após o termino de todas as deps)
+                if (depDateInicio) {
+                    depDateInicio = depDateInicio.plus({ days: dependencia.latencia });
+
+                    if (!dataInicioMax || (dataInicioMax && depDateInicio.valueOf() > dataInicioMax.valueOf())) {
+                        dataInicioMax = depDateInicio;
+                    }
+                }
+
+                if (depDateTermino) {
+                    depDateTermino = depDateTermino.plus({ days: dependencia.latencia });
+
+                    if (!dataInicioMax || (dataTerminoMax && dataTerminoMax.valueOf() > depDateTermino.valueOf())) {
+                        dataTerminoMax = depDateTermino;
+                    }
+                }
+            }
+
+            // se deu pra chegar numa data de termino, usa ela
+            // de preferencia com a data de inicio calculada tbm
+            if (dataTerminoMax) {
+                tarefa.projecao_inicio = dataInicioMax ? dataInicioMax : hoje;
+                tarefa.projecao_termino = dataTerminoMax;
+            } else {
+                // se não encontrou de termino, mas tem data de inicio, usa o inicio projetado com a duração, se tiver disponveil
+
+                if (tarefa.duracao_planejado) {
+                    tarefa.projecao_inicio = dataInicioMax ? dataInicioMax : hoje;
+                    tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado })
+                } else {
+                    this.logger.warn(`tarefa ${tarefa.id} não tem duração planejada e não foi possivel projeção a duração pelas dependencias`)
+                }
+            }
+
+        }
 
         for (const tarefa of tarefas) {
             // a tarefa tem que ter todas as datas de planejamento para funcionar
