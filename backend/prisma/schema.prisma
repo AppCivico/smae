@@ -2703,6 +2703,8 @@ model ProjetoAcompanhamento {
     detalhamento_status  String?
     pontos_atencao       String?
 
+    cronograma_paralizado Boolean @default(false)
+
     criado_em  DateTime
     criado_por Int
 

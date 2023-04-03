@@ -115,6 +115,7 @@ export class AcompanhamentoService {
                 detalhamento_status: true,
                 pontos_atencao: true,
                 prazo_realizado: true,
+                cronograma_paralizado: true,
 
                 ProjetoAcompanhamentoRisco: {
                     select: {
@@ -143,6 +144,7 @@ export class AcompanhamentoService {
             detalhamento_status: projetoAcompanhamento.detalhamento_status,
             pontos_atencao: projetoAcompanhamento.pontos_atencao,
             prazo_realizado: projetoAcompanhamento.prazo_realizado,
+            cronograma_paralizado: projetoAcompanhamento.cronograma_paralizado,
 
             risco: projetoAcompanhamento.ProjetoAcompanhamentoRisco.map(r => {
                 return {
