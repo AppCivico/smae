@@ -268,14 +268,7 @@ export class TarefaService {
     calculaAtrasoProjeto(tarefasOrig: TarefaItemDto[]): ListTarefaListDto {
 
         let ret: ListTarefaListDto = {
-            linhas: tarefasOrig.map((r) => {
-                return {
-                    ...r,
-                    projecao_inicio: undefined,
-                    projecao_termino: undefined,
-                    projecao_atraso: undefined,
-                }
-            }),
+            linhas: [],
             atraso: null,
             projecao_termino: null
         };
@@ -285,7 +278,7 @@ export class TarefaService {
         const tarefas = plainToInstance(TarefaItemProjetadoDto, <any[]>JSON.parse(JSON.stringify(tarefasOrig)));
 
         const tarefas_ret_por_id: Record<number, typeof tarefasOrig[0]> = {};
-        for (const tarefa of ret.linhas) {
+        for (const tarefa of tarefasOrig) {
             tarefas_ret_por_id[tarefa.id] = tarefa;
         }
 
@@ -480,6 +473,8 @@ export class TarefaService {
             if (d > 0) ret.atraso = d;
             ret.projecao_termino = max_term_proj.toJSDate();
         }
+
+        ret.linhas = tarefas;
 
         return ret;
     }
