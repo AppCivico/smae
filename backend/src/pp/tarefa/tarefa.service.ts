@@ -275,6 +275,89 @@ export class TarefaService {
 
         return ret
     }
+/*
+
+        const graphvizString = `
+digraph G {
+  // Set default node and edge styles
+  node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial"];
+  edge [color="#333333", fontname="Arial"];
+
+  nodeX [label="Projeto"]
+  // Define nodes
+  ${rows.filter(r => r.nivel <= 2).map((row) => `node${row.id} [label="${row.tarefa.replace('"','')}", fillcolor="${row.nivel === 1 ? "#4287f5" : "#ffffff"}"]`).join("\n")}
+
+  ${rows.filter(r => r.nivel == 1)
+                .map((row) => `nodeX -> node${row.id}`)
+                .join("\n")
+            }
+
+// Define edges
+${rows.filter(r => r.nivel <= 2)
+                .filter((row) => row.tarefa_pai_id !== null)
+                .map((row) => `node${row.tarefa_pai_id} -> node${row.id}`)
+                .join("\n")}
+}
+
+`;
+digraph G {
+    // Set default node and edge styles
+    node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial"];
+    edge [color="#333333", fontname="Arial"];
+
+    // Set layout to vertical
+    rankdir=TB;
+
+    // Set distance between nodes on the same rank
+    ranksep=0.2;
+
+    nodeX [label="Projeto"]
+    // Define nodes
+    node11 [label="cool bro", fillcolor="#ffffff"]
+  node6 [label="bbb aaaaa", fillcolor="#ffffff"]
+  node13 [label="obter produtos", fillcolor="#ffffff"]
+  node40 [label="Outra, outra tarefa da Regina", fillcolor="#ffffff"]
+  node14 [label="limpeza simples", fillcolor="#ffffff"]
+  node3 [label="outra task", fillcolor="#ffffff"]
+  node39 [label="Outra tarefa da Regina", fillcolor="#4287f5"]
+  node38 [label="Tarefa da Regina", fillcolor="#4287f5"]
+  node56 [label="testar cronograma", fillcolor="#4287f5"]
+  node37 [label="A tarefa novíssima", fillcolor="#4287f5"]
+  node36 [label="A tarefa nova", fillcolor="#4287f5"]
+  node2 [label="segunda task at all", fillcolor="#4287f5"]
+  node1 [label="primeira task at all", fillcolor="#4287f5"]
+  node12 [label="limpar a casa", fillcolor="#4287f5"]
+  node71 [label="nona", fillcolor="#4287f5"]
+  node27 [label="festejar abcde\nfghijk lmnopq rstuvx\n98765 ultima", fillcolor="#4287f5"]
+  node152 [label="teste", fillcolor="#4287f5"]
+
+    nodeX -> node39
+  nodeX -> node38
+  nodeX -> node56
+  nodeX -> node37
+  nodeX -> node36
+  nodeX -> node2
+  nodeX -> node1
+  nodeX -> node12
+  nodeX -> node71
+  nodeX -> node27
+  nodeX -> node152
+
+  // Define edges
+  node2 -> node11
+  node1 -> node6
+  node12 -> node13
+  node39 -> node40
+  node13 -> node14 [color=none]
+  node6 -> node3 [color=none]
+
+
+
+  }
+
+
+        console.log(graphvizString);
+    */
 
     calculaAtrasoProjeto(tarefasOrig: TarefaItemDto[]): ListTarefaListDto {
 
