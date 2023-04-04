@@ -10,6 +10,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
                     emit: 'event',
                     level: 'query',
                 },
+                {
+                    emit: 'stdout',
+                    level: 'error',
+                },
+                {
+                    emit: 'stdout',
+                    level: 'info',
+                },
+                {
+                    emit: 'stdout',
+                    level: 'warn',
+                },
             ],
         });
     }
@@ -21,7 +33,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         this.$on('query', async e => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            console.log(`${e.query} ${e.params}`);
+            console.log(`${e.query} ${e.params} took ${e.duration}ms`);
         });
     }
 
