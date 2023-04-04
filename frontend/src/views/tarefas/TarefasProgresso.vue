@@ -138,9 +138,10 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Data de início real&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="inicio_real"
+          :schema="schema"
+        />
         <Field
           name="inicio_real"
           type="date"
@@ -164,9 +165,10 @@ async function onSubmit(_, { controlledValues: carga }) {
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">
-          Duração real
-        </label>
+        <LabelFromYup
+          name="duracao_real"
+          :schema="schema"
+        />
         <Field
           name="duracao_real"
           type="number"
@@ -188,9 +190,10 @@ async function onSubmit(_, { controlledValues: carga }) {
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">
-          Data de término real
-        </label>
+        <LabelFromYup
+          name="termino_real"
+          :schema="schema"
+        />
         <Field
           name="termino_real"
           type="date"
@@ -250,10 +253,10 @@ async function onSubmit(_, { controlledValues: carga }) {
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">
-          Porcentual concluído&nbsp;<span class="tvermelho">*</span>
-        </label>
-
+        <LabelFromYup
+          name="percentual_concluido"
+          :schema="schema"
+        />
         <Field
           name="percentual_concluido"
           type="number"

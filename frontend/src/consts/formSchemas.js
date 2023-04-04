@@ -10,7 +10,7 @@ import {
   object,
   ref,
   setLocale,
-  string
+  string,
 } from 'yup';
 
 setLocale({
@@ -622,9 +622,11 @@ const risco = object()
 const tarefa = object()
   .shape({
     custo_estimado: number()
+      .label('Previsão de custo')
       .min(0)
       .nullable(),
     custo_real: number()
+      .label('Custo real')
       .min(0)
       .nullable(),
     dependencias: array()
@@ -643,52 +645,66 @@ const tarefa = object()
       )
       .strict(),
     descricao: string()
+      .label('Descrição')
       .min(0)
       .max(2048)
       .nullable(),
     duracao_planejado: number()
+      .label('Duração prevista')
       .min(0)
       .nullable(),
     duracao_real: number()
+      .label('Duração real')
       .min(0)
       .nullable(),
     eh_marco: boolean()
+      .label('Marco do projeto?')
       .nullable(),
     inicio_planejado: date()
+      .label('Previsão de início')
       .nullable()
       .typeError('Data inválida'),
     inicio_real: date()
+      .label('Data de início real')
       .nullable()
       .typeError('Data inválida'),
     nivel: number()
       .min(1)
       .nullable(),
     numero: number()
+      .label('Ordem')
       .min(1)
       .nullable(),
     orgao_id: number()
+      .label('Órgão responsável')
       .min(1, 'Selecione um órgão responsável')
       .required('Escolha um órgão responsável pela tarefa'),
     percentual_concluido: number()
+      .label('Porcentual concluído')
       .min(0)
       .max(100)
       .nullable(),
     recursos: string()
+      .label('Responsável pela atividade')
       .min(0)
       .max(2048),
     tarefa: string()
+      .label('Tarefa')
       .min(1)
       .max(60)
       .required(),
     tarefa_pai_id: number()
+      .label('Tarefa-mãe')
       .min(0)
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     termino_planejado: date()
+      .label('Previsão de término')
       .min(ref('inicio_planejado'), 'Precisa ser posterior à data de início')
       .nullable()
       .typeError('Data inválida'),
     termino_real: date()
+      .label('Data de término real')
       .min(ref('inicio_real'), 'Precisa ser posterior à data de início')
       .nullable()
       .typeError('Data inválida'),

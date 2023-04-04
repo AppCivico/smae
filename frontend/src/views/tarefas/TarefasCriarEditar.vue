@@ -174,9 +174,10 @@ iniciar();
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Nome da tarefa&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="tarefa"
+          :schema="schema"
+        />
         <Field
           name="tarefa"
           type="text"
@@ -196,7 +197,9 @@ iniciar();
             :value="true"
             class="inputcheckbox"
           />
-          <span :class="{ 'error': errors.eh_marco }">Marco do projeto</span>
+          <span :class="{ 'error': errors.eh_marco }">
+            {{ schema.fields.eh_marco.spec.label }}
+          </span>
         </label>
       </div>
     </div>
@@ -204,10 +207,10 @@ iniciar();
 
     <div class="flex g2 mb1 flexwrap">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Tarefa-mãe
-        </label>
-
+        <LabelFromYup
+          name="tarefa_pai_id"
+          :schema="schema"
+        />
         <Field
           name="tarefa_pai_id"
           as="select"
@@ -243,9 +246,10 @@ iniciar();
       />
 
       <div class="f1 mb1">
-        <label class="label tc300">
-          Ordem&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="numero"
+          :schema="schema"
+        />
         <Field
           name="numero"
           type="number"
@@ -262,8 +266,10 @@ iniciar();
       </div>
 
       <div class="f1 mb1">
-        <label class="label tc300">Órgão responsável&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="orgao_id"
+          :schema="schema"
+        />
         <Field
           name="orgao_id"
           as="select"
@@ -298,7 +304,7 @@ iniciar();
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
-        <p class="label tc300">
+        <p class="label">
           Tarefas irmãs
         </p>
         <ol class="pl0">
@@ -324,9 +330,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Descrição
-        </label>
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
         <Field
           name="descricao"
           as="textarea"
@@ -502,9 +509,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Previsão de início
-        </label>
+        <LabelFromYup
+          name="inicio_planejado"
+          :schema="schema"
+        />
         <Field
           v-if="!values?.n_filhos_imediatos"
           :disabled="
@@ -543,9 +551,10 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">
-          Duração prevista
-        </label>
+        <LabelFromYup
+          name="duracao_planejado"
+          :schema="schema"
+        />
         <Field
           v-if="!values?.n_filhos_imediatos"
           :disabled="
@@ -588,9 +597,10 @@ iniciar();
         />
       </div>
       <div class="f1 mb1">
-        <label class="label tc300">
-          Previsão de término
-        </label>
+        <LabelFromYup
+          name="termino_planejado"
+          :schema="schema"
+        />
         <Field
           v-if="!values?.n_filhos_imediatos"
           :disabled="
@@ -655,9 +665,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Previsão de custo
-        </label>
+        <LabelFromYup
+          name="custo_estimado"
+          :schema="schema"
+        />
         <MaskedFloatInput
           v-if="!values?.n_filhos_imediatos"
           name="custo_estimado"
@@ -681,9 +692,10 @@ iniciar();
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Responsável pela atividade
-        </label>
+        <LabelFromYup
+          name="recursos"
+          :schema="schema"
+        />
         <Field
           name="recursos"
           as="textarea"
