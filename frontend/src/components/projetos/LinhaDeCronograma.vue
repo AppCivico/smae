@@ -1,5 +1,6 @@
 <script>
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -39,6 +40,7 @@ export default {
     oProjetoÉPrioritário: () => useProjetosStore()?.emFoco?.eh_prioritario,
   },
   methods: {
+    dinheiro,
     dateToField,
     excluirTarefa(id) {
       useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -125,6 +127,12 @@ export default {
     </td>
     <td class="cell--data">
       {{ dateToField(linha.termino_real) }}
+    </td>
+    <td class="cell--number">
+      {{ linha.custo_estimado ? `R$${dinheiro(linha.custo_estimado)}` : '-' }}
+    </td>
+    <td class="cell--number">
+      {{ linha.custo_real ? `R$${dinheiro(linha.custo_real)}` : '-' }}
     </td>
     <td class="cell--number">
       <template v-if="linha.atraso">
