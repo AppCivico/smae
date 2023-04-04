@@ -9,7 +9,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form
+  ErrorMessage, Field, Form,
 } from 'vee-validate';
 import { useRouter } from 'vue-router';
 
@@ -237,18 +237,19 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <label class="label tc300">
-          Custo real&nbsp;<span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="custo_real"
+          :schema="schema"
+        />
         <MaskedFloatInput
-          name="custo_estimado"
-          :value="values.custo_estimado"
+          name="custo_real"
+          :value="values.custo_real"
           :disabled="emFoco.n_filhos_imediatos > 0"
           class="inputtext light mb1"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="custo_estimado"
+          name="custo_real"
         />
       </div>
 
