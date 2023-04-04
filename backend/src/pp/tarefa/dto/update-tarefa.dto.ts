@@ -21,7 +21,6 @@ export class UpdateTarefaDto extends PartialType(CreateTarefaDto) {
 // e outra é pro @Expose funcionar na hora de usar o excludeExtraneousValues
 export class UpdateTarefaRealizadoDto extends PickType(CreateTarefaDto,
     [
-        'custo_estimado',
         'custo_real',
         'inicio_real',
         'duracao_real',
@@ -29,8 +28,6 @@ export class UpdateTarefaRealizadoDto extends PickType(CreateTarefaDto,
         'percentual_concluido',
     ] as const
 ) {
-    @Expose()
-    custo_estimado: any
     @Expose()
     custo_real: any
     @Expose()
