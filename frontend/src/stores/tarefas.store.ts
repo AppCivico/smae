@@ -8,6 +8,8 @@ import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 import { useProjetosStore } from './projetos.store';
 
+import flatten from '@/helpers/flatDataTree';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Lista = ListTarefaDto['linhas'];
@@ -218,13 +220,12 @@ export const useTarefasStore = defineStore('tarefas', {
         }), {});
     },
 
-    // eslint-disable-next-line max-len
-    tarefasOrdenadas: ({ lista }) => lista.sort((a, b) => (a.tarefa_pai_id || 0) - (b.tarefa_pai_id || 0)
-      || a.nivel - b.nivel
-      || a.numero - b.numero),
+    tarefasOrdenadas(): TarefaComHierarquia[] {
+      return flatten(this.árvoreDeTarefas);
+    },
 
     tarefasComHierarquia(): TarefaComHierarquia[] {
-      return this.tarefasOrdenadas
+      return this.lista
         // eslint-disable-next-line max-len
         .map((x: TarefaItemDto) => ({ ...x, hierarquia: resolverHierarquia(x, this.tarefasPorId) }));
     },
