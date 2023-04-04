@@ -151,6 +151,11 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     previsao_termino: Date | null;
 
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(0, { message: '$property| Mínimo 0' })
+    tolerancia_atraso?: number
+
     /**
      * previsão de custo, número positivo com até 2 casas, pode enviar null
      **/
