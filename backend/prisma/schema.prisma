@@ -954,8 +954,8 @@ model Variavel {
     VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
     PedidoComplementacao           PedidoComplementacao[]
 
-    removido_por   Int?
-    removido_em    DateTime? @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
 
     @@index([regiao_id])
     @@map("variavel")
@@ -2201,8 +2201,9 @@ model Projeto {
     realizado_duracao Int?
     realizado_custo   Float?
 
-    percentual_concluido Float @default(0)
-    atraso               Int?
+    tolerancia_atraso Int     @default(0) // em dias
+    em_atraso         Boolean @default(false)
+    atraso            Int?
 
     status         ProjetoStatus
     fase           ProjetoFase

@@ -415,7 +415,8 @@ export class ProjetoService {
                 secretario_responsavel: true,
                 coordenador_ue: true,
                 atraso: true,
-                percentual_concluido: true,
+                em_atraso: true,
+                tolerancia_atraso: true,
                 realizado_duracao: true,
 
                 orgao_gestor: {

@@ -130,7 +130,8 @@ export class ProjetoDetailDto {
     realizado_custo: number | null;
 
     atraso: number | null;
-    percentual_concluido: number;
+    tolerancia_atraso: number;
+    em_atraso: boolean;
     realizado_duracao: number | null;
 
     escopo: string | null;
