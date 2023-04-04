@@ -53,7 +53,7 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
       </template>
       <template
         v-if="perm?.CadastroOrgao
-          || perm?.CadastroFonteRecurso
+          || perm?.CadastroUnidadeMedida
           || perm?.CadastroTipoDocumento
           || perm?.CadastroOds"
       >
@@ -66,8 +66,8 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             Órgãos
           </router-link>
           <router-link
-            v-if="perm?.CadastroFonteRecurso"
-            to="/fonte-recurso"
+            v-if="perm?.CadastroUnidadeMedida"
+            to="/unidade-medida"
           >
             Fontes de Recurso
           </router-link>

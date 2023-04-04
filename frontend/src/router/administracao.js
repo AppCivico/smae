@@ -120,7 +120,7 @@ export default [
     ],
   },
   {
-    path: '/fonte-recurso',
+    path: '/unidade-medida',
     children: [
       {
         path: '',
