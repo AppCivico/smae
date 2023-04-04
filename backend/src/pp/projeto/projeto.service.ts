@@ -220,6 +220,7 @@ export class ProjetoService {
                     resumo: dto.resumo,
                     previsao_inicio: dto.previsao_inicio,
                     previsao_termino: dto.previsao_termino,
+                    tolerancia_atraso: dto.tolerancia_atraso,
 
                     origem_tipo: origem_tipo,
                     origem_outro: origem_outro,
@@ -770,6 +771,7 @@ export class ProjetoService {
                     secretario_executivo: dto.secretario_executivo,
                     secretario_responsavel: dto.secretario_responsavel,
                     coordenador_ue: dto.coordenador_ue,
+                    tolerancia_atraso: dto.tolerancia_atraso,
 
                     orgaos_participantes: dto.orgaos_participantes !== undefined ? {
                         createMany: {
