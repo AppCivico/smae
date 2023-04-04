@@ -517,7 +517,7 @@ export default function ganttChart(config) {
 
           if (!d1.inicio_real && !d1.termino_real) {
             nodeClass += ' Single--Node--estimated';
-          } if (!d1.inicio_real || !d1.termino_real) {
+          } else if (!d1.inicio_real || !d1.termino_real) {
             nodeClass += ' Single--Node--half-estimated';
           }
 
