@@ -69,7 +69,7 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             v-if="perm?.CadastroUnidadeMedida"
             to="/unidade-medida"
           >
-            Fontes de Recurso
+            Unidades de Medida
           </router-link>
           <router-link
             v-if="perm?.CadastroTipoDocumento"
