@@ -30,7 +30,7 @@ export default function ganttChart(config) {
   const { data } = config;
   const ELEMENT = d3select(config.element);
   const CHART_WIDTH = ELEMENT.node().getBoundingClientRect().width;
-  const CHART_HEIGHT = d3max([((data.length * 80) + 100), 300]);
+  const CHART_HEIGHT = d3max([((data.length * 100) + 100), 300]);
   const PROGRESSBAR_WIDTH = 200;
   const PROGRESSBAR_BOUNDARY = 380;
   const EMPTYBLOCK_WIDTH = ((80 * CHART_WIDTH) / 100);
@@ -402,16 +402,28 @@ export default function ganttChart(config) {
       .append('g')
       .attr('class', 'Single--Block cp')
       .attr('transform', (d, i) => `translate(${x(new Date(d.start_date))},${0})`)
+      .attr('data-is-milestone', (b) => String(!!b.eh_marco))
       .call(appendBar);
 
+    Blocks
+      .append('foreignObject')
+      .attr('width', 100)
+      .attr('height', 50)
+      .attr('x', 0)
+      .attr('y', (d, i) => y(i + 1))
+      .attr('transform', (d, i) => 'translate(-50, -25)')
+      .attr('data-is-milestone', (b) => String(!!b.eh_marco))
+      .html((d) => `<div class="btn hierarchy">${d.hierarquia}</div>`);
+
+    // Blocks
     Blocks
       .append('g')
       .attr('transform', (d) => {
         if (startsBefore(d) && isVisible(d)) {
           const position = Math.abs(x(new Date(d.start_date)));
-          return `translate(${position}, 0)`;
+          return `translate(${position}, 15)`;
         }
-        return 'translate(0, 0)';
+        return 'translate(0, 15)';
       })
       .call(appendTitle)
       .call(appendFooter);
@@ -534,7 +546,7 @@ export default function ganttChart(config) {
           if (position < 10) {
             position = 0;
           }
-          return `translate(${position}, ${y(i + 1) + 45})`;
+          return `translate(${position}, ${y(i + 1) + 35})`;
         })
         .call(renderTerm)
         .call(renderDuration)

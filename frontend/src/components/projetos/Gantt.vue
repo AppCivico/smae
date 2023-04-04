@@ -18,6 +18,23 @@
     </div>
     <hr class="ml1 mr1 f1">
     <div class="f1 mr1">
+      <label class="label tc300">Filtrar por</label>
+      <select
+        v-model="filtroAtivo"
+        class="inputtext"
+        @change="renderChart(config)"
+      >
+        <option
+          v-for="item in opçõesDeFiltragem"
+          :key="item.value"
+          :value="item.value"
+        >
+          {{ item.name }}
+        </option>
+      </select>
+    </div>
+    <hr class="ml1 mr1 f1">
+    <div class="f1 mr1">
       <label class="label tc300">Ano</label>
       <select
         v-model="anoEmFoco"
@@ -38,82 +55,99 @@
     <hr class="ml1 mr1 f1">
   </div>
 
-  <div class="flex mb2 spacebetween">
-    <ul
-      class="legenda f1 mb1 t13"
-    >
-      <li
-        v-for="item in tiposDeDependências"
-        :key="item.valor"
-        class="legenda__item mb05"
-        :class="`legenda__item--${item.valor}`"
-      >
-        <svg
-          class="legenda__amostra"
-          height="12"
-          width="12"
+  <div class="flex mb2 spacebetween t13">
+    <div class="f1">
+      <ul class="legenda mb1">
+        <li
+          v-for="item in tiposDeDependências"
+          :key="item.valor"
+          class="legenda__item mb05"
+          :class="`legenda__item--${item.valor}`"
         >
-          <rect
+          <svg
+            class="legenda__amostra"
+            height="12"
+            width="12"
+          >
+            <rect
+              width="12"
+              height="12"
+              :fill="coresParaTiposDeDependências[item.valor]"
+            />
+          </svg>
+          {{ item.nome }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="f1">
+      <ul class="legenda mb1">
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
+            width="20"
+            height="12"
+          >
+            <path
+              d="M0,6L20,6"
+              fill="none"
+              stroke="black"
+              stroke-width="1"
+              stroke-dasharray="3, 2"
+            />
+          </svg>
+          início e final planejados
+        </li>
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
+            width="20"
+            height="12"
+          >
+            <path
+              d="M0,6L20,6"
+              fill="none"
+              stroke="black"
+              stroke-width="1"
+              stroke-dasharray="6, 3, 2, 3"
+            />
+          </svg>
+          início real e final planejado
+        </li>
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
+            width="20"
+            height="12"
+          >
+            <path
+              d="M0,6L20,6"
+              fill="none"
+              stroke="black"
+              stroke-width="1"
+            />
+          </svg>
+          início e final reais
+        </li>
+      </ul>
+      <ul class="legenda mb1">
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
             width="12"
             height="12"
-            :fill="coresParaTiposDeDependências[item.valor]"
-          />
-        </svg>
-        {{ item.nome }}
-      </li>
-    </ul>
-
-    <ul
-      class="legenda f1 mb1 t13"
-    >
-      <li class="legenda__item mb05">
-        <svg
-          class="legenda__amostra"
-          width="20"
-          height="12"
-        >
-          <path
-            d="M0,6L20,6"
-            fill="none"
-            stroke="black"
-            stroke-width="1"
-            stroke-dasharray="3, 2"
-          />
-        </svg>
-        início e final planejados
-      </li>
-      <li class="legenda__item mb05">
-        <svg
-          class="legenda__amostra"
-          width="20"
-          height="12"
-        >
-          <path
-            d="M0,6L20,6"
-            fill="none"
-            stroke="black"
-            stroke-width="1"
-            stroke-dasharray="6, 3, 2, 3"
-          />
-        </svg>
-        início real e final planejado
-      </li>
-      <li class="legenda__item mb05">
-        <svg
-          class="legenda__amostra"
-          width="20"
-          height="12"
-        >
-          <path
-            d="M0,6L20,6"
-            fill="none"
-            stroke="black"
-            stroke-width="1"
-          />
-        </svg>
-        início e final reais
-      </li>
-    </ul>
+          >
+            <polygon
+              points="0,0 0,12 12,0"
+              fill="red"
+              stroke="none"
+              stroke-width="0"
+            />
+          </svg>
+          marcos do projeto
+        </li>
+      </ul>
+    </div>
   </div>
   <div
     id="gantt"
@@ -150,6 +184,21 @@ const props = defineProps({
   },
 });
 
+const opçõesDeFiltragem = [
+  {
+    name: 'projeção',
+    value: 'projeção',
+  },
+  {
+    name: 'planejamento',
+    value: 'planejamento',
+  },
+  {
+    name: 'realização',
+    value: 'realização',
+  },
+];
+
 const tiposDeGráfico = [
   {
     name: 'projeto',
@@ -175,14 +224,30 @@ const tiposDeGráfico = [
 
 const tipoDeGantt = ref('overall');
 const anoEmFoco = ref(null);
+const filtroAtivo = ref('projeção');
 const svgElementContainer = ref(null);
+
+const retornarData = (real, planejado) => {
+  console.debug(real, planejado);
+
+  switch (filtroAtivo.value) {
+    case 'realização':
+      return real;
+
+    case 'planejamento':
+      return planejado;
+
+    default:
+      return real || planejado;
+  }
+};
+
 const dadosParaGantt = computed(() => props.data
   .map((x) => ({
     ...x,
-    end_date: x.termino_real || x.termino_planejado,
-    start_date: x.inicio_real || x.inicio_planejado,
-    dependsOn: x.dependencias || [],
-    title: `${x.hierarquia} ${x.tarefa}`,
+    end_date: retornarData(x.termino_real, x.termino_planejado),
+    start_date: retornarData(x.inicio_real, x.inicio_planejado),
+    title: x.tarefa,
     completion_percentage: x.percentual_concluido,
   }))
   // eslint-disable-next-line max-len
@@ -332,6 +397,38 @@ onMounted(async () => {
 
   .Single--Block {}
 
+  .hierarchy {
+    box-sizing: content-box;
+    display: block;
+    margin: 0 auto;
+    width: max-content;
+    border-radius: 100px;
+    border: 5px solid #FFF;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    overflow: hidden;
+    padding: 0 1.35em;
+    position: relative;
+  }
+
+  [data-is-milestone="true"] .hierarchy {
+    border-radius: 0 100px 100px 100px;
+
+    &::before {
+      content: '';
+      top: -6px;
+      left: -6px;
+      color: @vermelho;
+      width: 26px;
+      height: 26px;
+      position: absolute;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"><polygon fill="%23ff0000" points="0,0 0,20 20,0" stroke="%23ffffff" stroke-width="5px" /></svg>');
+    }
+  }
+
   .Single--Node {
     fill: #fff;
     stroke: @c500;
@@ -355,6 +452,7 @@ onMounted(async () => {
 
   [data-dependency-type='termina_pro_inicio'] {
     opacity: 1 !important;
+
     .Single--Node {
       stroke: @vermelho;
     }
