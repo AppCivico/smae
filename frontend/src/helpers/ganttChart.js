@@ -2,6 +2,27 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable camelcase */
 /* eslint-disable no-use-before-define */
+
+// Copyright(c) 2017, Skcript Technologies Pvt.Ltd.
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 import {
   axisBottom,
   axisLeft,
@@ -26,6 +47,12 @@ function declararTipoDeDependência(analisado, focado) {
   return focado.dependencias?.find((x) => x.dependencia_tarefa_id === analisado.id)?.tipo;
 }
 
+/**
+ * Draw Gantt chart
+ *
+ * @param {*} config
+ * @link https://gist.github.com/varun-raj/5d2caa6a9ad7de08bd5d86698e3a2403#file-license-md
+ */
 export default function ganttChart(config) {
   const { data } = config;
   const ELEMENT = d3select(config.element);
@@ -415,7 +442,6 @@ export default function ganttChart(config) {
       .attr('data-is-milestone', (b) => String(!!b.eh_marco))
       .html((d) => `<div class="btn hierarchy">${d.hierarquia}</div>`);
 
-    // Blocks
     Blocks
       .append('g')
       .attr('transform', (d) => {
