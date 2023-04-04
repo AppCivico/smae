@@ -118,8 +118,8 @@ export default {
               'projetosEAP',
               'projetosGantt',
               'tarefasListar',
-              'riscosListar',
               'acompanhamentosListar',
+              'riscosListar',
               'liçõesAprendidasListar',
             );
           }
