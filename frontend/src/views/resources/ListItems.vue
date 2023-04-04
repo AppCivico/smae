@@ -25,20 +25,20 @@ function filterItems(){
 <template>
     <Dashboard>
         <div class="flex spacebetween center mb2">
-            <h1>Fontes de recurso</h1>
+            <h1>Unidades de medida</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/fonte-recurso/novo" class="btn big ml2" v-if="perm?.CadastroFonteRecurso?.inserir">Nova fonte</router-link>
+            <router-link to="/unidade-medida/novo" class="btn big ml2" v-if="perm?.CadastroFonteRecurso?.inserir">Nova fonte</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
                 <input v-model="filters.textualSearch" @input="filterItems" placeholder="Buscar" type="text" class="inputtext" />
             </div>
         </div>
-        
+
         <table class="tablemain">
             <thead>
                 <tr>
-                    <th style="width: 45%">Fonte</th>
+                    <th style="width: 45%">Descrição</th>
                     <th style="width: 45%">Sigla</th>
                     <th style="width: 10%"></th>
                 </tr>
@@ -46,11 +46,11 @@ function filterItems(){
             <tbody>
                 <template v-if="itemsFiltered.length">
                     <tr v-for="item in itemsFiltered" :key="item.id">
-                        <td>{{ item.fonte }}</td>
+                        <td>{{ item.descricao }}</td>
                         <td>{{ item.sigla }}</td>
                         <td style="white-space: nowrap; text-align: right;">
-                            <template v-if="perm?.CadastroFonteRecurso?.editar">
-                                <router-link :to="`/fonte-recurso/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
+                            <template v-if="perm?.CadastroUnidadeMedida?.editar">
+                                <router-link :to="`/unidade-medida/editar/${item.id}`" class="tprimary"><svg width="20" height="20"><use xlink:href="#i_edit"></use></svg></router-link>
                             </template>
                         </td>
                     </tr>

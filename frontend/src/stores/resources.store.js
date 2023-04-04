@@ -16,7 +16,7 @@ export const useResourcesStore = defineStore({
         async getAll() {
             this.resources = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/fonte-recurso`);    
+                let r = await requestS.get(`${baseUrl}/unidade-medida`);
                 this.resources = r.linhas;
             } catch (error) {
                 this.resources = { error };
@@ -35,7 +35,7 @@ export const useResourcesStore = defineStore({
             }
         },
         async insertType(params) {
-            if(await requestS.post(`${baseUrl}/fonte-recurso`, params)) return true;
+            if(await requestS.post(`${baseUrl}/unidade-medida`, params)) return true;
             return false;
         },
         async updateType(id, params) {
@@ -43,11 +43,11 @@ export const useResourcesStore = defineStore({
                 sigla: params.sigla,
                 fonte: params.fonte,
             };
-            if(await requestS.patch(`${baseUrl}/fonte-recurso/${id}`, m)) return true;
+            if(await requestS.patch(`${baseUrl}/unidade-medida/${id}`, m)) return true;
             return false;
         },
         async deleteType(id) {
-            if(await requestS.delete(`${baseUrl}/fonte-recurso/${id}`)) return true;
+            if(await requestS.delete(`${baseUrl}/unidade-medida/${id}`)) return true;
             return false;
         },
         async filterResources(f){
