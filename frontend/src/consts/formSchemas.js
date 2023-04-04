@@ -65,6 +65,9 @@ const autenticação = object()
 
 const acompanhamento = object()
   .shape({
+    cronograma_paralizado: boolean()
+      .label('Cronograma paralizado')
+      .nullable(),
     data_registro: date()
       .label('Data do registro')
       .required()

@@ -11,7 +11,7 @@ import {
   ErrorMessage,
   Field,
   FieldArray,
-  Form
+  Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -44,6 +44,10 @@ async function onSubmit(_, { controlledValues }) {
 
   if (!carga.risco) {
     carga.risco = [];
+  }
+
+  if (!carga.cronograma_paralizado) {
+    carga.cronograma_paralizado = false;
   }
 
   try {
@@ -323,7 +327,21 @@ function excluirAcompanhamento(id) {
         />
       </div>
     </div>
-
+    <div class="g2 mb2">
+      <div class="f05 mb1 mt1">
+        <label class="block mt1">
+          <Field
+            name="cronograma_paralizado"
+            type="checkbox"
+            :value="true"
+            class="inputcheckbox"
+          />
+          <span :class="{ 'error': errors.cronograma_paralizado }">
+            {{ schema.fields.cronograma_paralizado.spec.label }}
+          </span>
+        </label>
+      </div>
+    </div>
     <div class="g2 mb2">
       <FieldArray
         v-slot="{ fields, push, remove }"
