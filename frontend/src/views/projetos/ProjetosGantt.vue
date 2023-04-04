@@ -11,7 +11,7 @@ const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
 const {
-  tarefasComHierarquia,
+  tarefasOrdenadas,
 } = storeToRefs(tarefasStore);
 
 defineProps({
@@ -55,8 +55,8 @@ iniciar();
   </div>
 
   <Gantt
-    v-if="tarefasComHierarquia.length"
-    :data="tarefasComHierarquia"
+    v-if="tarefasOrdenadas.length"
+    :data="tarefasOrdenadas"
   />
 
   <div
