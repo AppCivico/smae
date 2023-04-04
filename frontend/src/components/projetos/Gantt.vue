@@ -228,8 +228,6 @@ const filtroAtivo = ref('projeção');
 const svgElementContainer = ref(null);
 
 const retornarData = (real, planejado) => {
-  console.debug(real, planejado);
-
   switch (filtroAtivo.value) {
     case 'realização':
       return real;
