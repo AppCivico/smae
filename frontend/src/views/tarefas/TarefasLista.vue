@@ -168,6 +168,8 @@ iniciar();
       <col class="col--data">
 
       <col>
+      <col>
+      <col>
 
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
@@ -176,25 +178,50 @@ iniciar();
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th class="" />
-        <th class="" />
+        <th />
+        <th />
+        <th />
+        <th />
+        <th colspan="2">
+          Previsão
+        </th>
+        <th colspan="2">
+          Execução
+        </th>
+        <th colspan="2">
+          Custo
+        </th>
+        <th />
+        <th />
+        <th />
+        <th />
+      </tr>
+      <tr class="pl3 center mb05 tc300 w700 t12 uc">
+        <th />
+        <th />
         <th class="cell--number">
-          % concluída
+          % conclusão
         </th>
         <th class="cell--number">
           Duração
         </th>
         <th class="cell--data">
-          Início Previsto
+          Início
         </th>
         <th class="cell--data">
-          Término Previsto
+          Término
         </th>
         <th class="cell--data">
-          Início Real
+          Início
         </th>
         <th class="cell--data">
-          Término Real
+          Término
+        </th>
+        <th class="cell--number">
+          Estimado
+        </th>
+        <th class="cell--number">
+          Real
         </th>
         <th class="cell--number">
           Atraso
