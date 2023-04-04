@@ -27,7 +27,7 @@ function filterItems(){
         <div class="flex spacebetween center mb2">
             <h1>Unidades de medida</h1>
             <hr class="ml2 f1"/>
-            <router-link to="/unidade-medida/novo" class="btn big ml2" v-if="perm?.CadastroFonteRecurso?.inserir">Nova fonte</router-link>
+            <router-link to="/unidade-medida/novo" class="btn big ml2" v-if="perm?.CadastroUnidadeMedida?.inserir">Nova unidade de Medida</router-link>
         </div>
         <div class="flex center mb2">
             <div class="f2 search">
