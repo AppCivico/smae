@@ -86,7 +86,7 @@ async function checkDelete(id) {
                 </div>
             </Form>
         </template>
-        <template v-if="tempResources.id">
+        <template v-if="tempResources.id && perm?.CadastroUnidadeMedida?.remover">
             <button @click="checkDelete(tempResources.id)" class="btn amarelo big">Remover item</button>
         </template>
         <template v-if="tempResources?.loading">
