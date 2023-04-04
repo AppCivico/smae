@@ -92,7 +92,7 @@ const acompanhamento = object()
       .nullable()
       .typeError('${label} inválido'),
     prazo_realizado: date()
-      .label('Prazo para realização')
+      .label('Data de realização')
       .nullable()
       .typeError('${label} inválido'),
     responsavel: string()

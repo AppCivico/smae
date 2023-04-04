@@ -199,24 +199,6 @@ function excluirAcompanhamento(id) {
     </div>
 
     <div class="flex g2 mb1">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="prazo_encaminhamento"
-          :schema="schema"
-        />
-        <Field
-          id="prazo_encaminhamento"
-          name="prazo_encaminhamento"
-          type="date"
-          required
-          class="inputtext light mb1"
-          :class="{ 'error': errors.prazo_encaminhamento }"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="prazo_encaminhamento"
-        />
-      </div>
       <div class="f2 mb1">
         <LabelFromYup
           name="responsavel"
@@ -236,6 +218,24 @@ function excluirAcompanhamento(id) {
         <ErrorMessage
           name="responsavel"
           class="error-msg"
+        />
+      </div>
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="prazo_encaminhamento"
+          :schema="schema"
+        />
+        <Field
+          id="prazo_encaminhamento"
+          name="prazo_encaminhamento"
+          type="date"
+          required
+          class="inputtext light mb1"
+          :class="{ 'error': errors.prazo_encaminhamento }"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="prazo_encaminhamento"
         />
       </div>
       <div class="f1 mb1">
