@@ -29,7 +29,6 @@ function iniciar() {
 
 iniciar();
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <div>

@@ -80,6 +80,20 @@ export default {
         'tabela-de-etapas__titulo-da-tarefa--fora-do-EAP': linha.nivel > 2
       }"
     >
+      <svg
+        v-if="linha.eh_marco"
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        fill="none"
+        style="float: left;"
+      >
+        <title>Marco</title>
+        <polygon
+          fill="#ff0000"
+          points="0,0 0,12 12,0"
+          stroke="none"
+        /></svg>
       <router-link
         :to="{
           name: 'tarefasProgresso',

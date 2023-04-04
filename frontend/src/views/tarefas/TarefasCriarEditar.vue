@@ -16,7 +16,7 @@ import {
   ErrorMessage,
   Field,
   FieldArray,
-  Form
+  Form,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -73,6 +73,10 @@ async function onSubmit(_, { controlledValues: valores }) {
 
   if (!carga.dependencias && !emFoco?.n_filhos_imediatos) {
     carga.dependencias = [];
+  }
+
+  if (!carga.eh_marco) {
+    carga.eh_marco = false;
   }
 
   try {
@@ -183,6 +187,17 @@ iniciar();
           class="error-msg mb1"
           name="tarefa"
         />
+      </div>
+      <div class="f05 mb1 mt1">
+        <label class="block mt1">
+          <Field
+            name="eh_marco"
+            type="checkbox"
+            :value="true"
+            class="inputcheckbox"
+          />
+          <span :class="{ 'error': errors.eh_marco }">Marco do projeto</span>
+        </label>
       </div>
     </div>
     <hr class="mb1 f1">

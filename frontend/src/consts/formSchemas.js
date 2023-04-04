@@ -648,6 +648,8 @@ const tarefa = object()
     duracao_real: number()
       .min(0)
       .nullable(),
+    eh_marco: boolean()
+      .nullable(),
     inicio_planejado: date()
       .nullable()
       .typeError('Data inválida'),
