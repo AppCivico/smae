@@ -1,20 +1,16 @@
 <script setup>
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import dateToField from '@/helpers/dateToField';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
-const projetosStore = useProjetosStore();
 const tarefasStore = useTarefasStore();
-
-const {
-  emFoco: projetoEmFoco,
-} = storeToRefs(projetosStore);
 const {
   árvoreDeTarefas, chamadasPendentes, erro,
 } = storeToRefs(tarefasStore);
+
+const projetoEmFoco = computed(() => tarefasStore?.extra.projeto);
 
 // eslint-disable-next-line max-len
 const nívelMáximoPermitido = computed(() => tarefasStore?.extra?.portfolio?.nivel_maximo_tarefa || 0);
