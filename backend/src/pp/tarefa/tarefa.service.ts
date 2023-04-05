@@ -420,24 +420,24 @@ export class TarefaService {
                         tarefa.projecao_termino = filho.projecao_termino;
 
                     const d = filho.projecao_termino.diff(DateTime.fromJSDate(tarefa.termino_planejado)).as('days');
-                    this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => ${d} dias de atraso`);
 
-                    filho.projecao_atraso = d;
+                    if (d > 0) {
+                        this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => ${d} dias de atraso`);
+                        filho.projecao_atraso = d;
 
-                    if (atraso_max < d) atraso_max = d;
+                        if (atraso_max < d) atraso_max = d;
+                    } else {
+                        this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => sem atraso`);
+                    }
                 }
 
                 if (atraso_max > 0) {
                     this.logger.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
 
                     tarefa.projecao_atraso = atraso_max;
-                    console.log(tarefa)
                 } else {
                     this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
-
-                    tarefa.projecao_atraso=0;
-
-                    console.log(tarefa)
+                    tarefa.projecao_atraso = 0;
                 }
 
                 if (tarefa.projecao_termino)
@@ -452,7 +452,6 @@ export class TarefaService {
 
             if (tarefa.projecao_atraso && tarefa.n_filhos_imediatos > 0) {
                 this.logger.debug(`calculando atraso dos filhos: tarefas_por_id[${tarefa.id}].atraso = ${tarefa.projecao_atraso}`);
-
                 tarefa.atraso = tarefa.projecao_atraso;
             }
 
