@@ -2191,15 +2191,19 @@ model Projeto {
     origem_outro     String?
     meta_codigo      String?
     publico_alvo     String
-    previsao_inicio  DateTime? // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
-    previsao_termino DateTime?
+    previsao_inicio  DateTime?         @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
+    previsao_termino DateTime?         @db.Date()
     previsao_duracao Int?
 
     // calculado pelo cronograma
-    realizado_inicio  DateTime?
-    realizado_termino DateTime?
+    realizado_inicio  DateTime? @db.Date()
+    realizado_termino DateTime? @db.Date()
     realizado_duracao Int?
     realizado_custo   Float?
+
+    projecao_inicio  DateTime? @db.Date()
+    projecao_termino DateTime? @db.Date()
+    projecao_atraso  Int?
 
     tolerancia_atraso Int     @default(0) // em dias
     em_atraso         Boolean @default(false)
