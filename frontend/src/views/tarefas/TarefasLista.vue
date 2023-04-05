@@ -189,7 +189,7 @@ iniciar();
           Execução
         </th>
         <th colspan="2">
-          Custo
+          Custo <small>(R$)</small>
         </th>
         <th />
         <th />
