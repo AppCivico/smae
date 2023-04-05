@@ -36,7 +36,7 @@ const {
   erro,
   itemParaEdição,
   tarefasAgrupadasPorMãe,
-  tarefasComHierarquia,
+  tarefasOrdenadas,
   tarefasPorId,
 } = storeToRefs(tarefasStore);
 
@@ -56,7 +56,7 @@ const dependênciasValidadas = ref([]);
 const tiposDeDependências = Object.keys(dependencyTypes)
   .map((x) => ({ valor: x, nome: dependencyTypes[x] }));
 
-const todasAsOutrasTarefas = computed(() => tarefasComHierarquia.value
+const todasAsOutrasTarefas = computed(() => tarefasOrdenadas.value
   .filter((x) => x.id !== props.tarefaId));
 
 // eslint-disable-next-line max-len
@@ -226,7 +226,7 @@ iniciar();
             Selecionar
           </option>
           <option
-            v-for="item in tarefasComHierarquia"
+            v-for="item in tarefasOrdenadas"
             :key="item.id"
             :value="item.id"
           >
