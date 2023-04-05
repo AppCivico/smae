@@ -517,6 +517,7 @@ export class TarefaService {
 
         let atraso_projeto: number | null = null;
         let projecao_termino: Date | null = null;
+        let em_atraso: boolean = false;
         if (max_term_planjeado && max_term_proj) {
 
             const d = max_term_proj.diff(DateTime.fromJSDate(max_term_planjeado)).as('days');
@@ -525,23 +526,27 @@ export class TarefaService {
             if (d > 0) atraso_projeto = d;
             projecao_termino = max_term_proj.toJSDate();
         }
+        em_atraso = atraso_projeto && projeto.previsao_duracao && projeto.previsao_duracao > 0 ?
+            ((atraso_projeto / projeto.previsao_duracao * 100) >= projeto.tolerancia_atraso)
+            : false;
 
-        if (ret.projeto.atraso !== atraso_projeto || ret.projeto.projecao_termino !== projecao_termino) {
+        if (ret.projeto.atraso !== atraso_projeto
+            || ret.projeto.projecao_termino !== projecao_termino
+            || ret.projeto.em_atraso !== em_atraso) {
             this.logger.debug(`iniciando sincronização do atrasdo projeto...`);
             await this.prisma.projeto.update({
                 where: { id: projeto.id },
                 data: {
                     atraso: atraso_projeto,
                     projecao_termino,
-                    em_atraso: atraso_projeto && projeto.previsao_duracao && projeto.previsao_duracao > 0 ?
-                        ((atraso_projeto / projeto.previsao_duracao * 100) >= projeto.tolerancia_atraso)
-                        : false,
+                    em_atraso,
                 }
             });
         }
 
         ret.projeto.atraso = atraso_projeto;
         ret.projeto.projecao_termino = projecao_termino;
+        ret.projeto.em_atraso = em_atraso;
 
         ret.linhas = tarefas;
 
