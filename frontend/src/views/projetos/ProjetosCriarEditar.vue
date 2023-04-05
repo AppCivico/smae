@@ -8,11 +8,11 @@ import statuses from '@/consts/projectStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import truncate from '@/helpers/truncate';
 import {
-useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore
+  useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import {
-ErrorMessage, Field, FieldArray, Form
+  ErrorMessage, Field, FieldArray, Form,
 } from 'vee-validate';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -935,6 +935,28 @@ iniciar();
         <ErrorMessage
           name="previsao_termino"
           class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="tolerancia_atraso"
+          :schema="schema"
+        />
+        <Field
+          name="tolerancia_atraso"
+          type="number"
+          min="0"
+          max="100"
+          class="inputtext light mb1"
+          :disabled="emFoco.n_filhos_imediatos > 0"
+          :class="{ 'error': errors.tolerancia_atraso }"
+          @update:model-value="values.tolerancia_atraso = Number(values.tolerancia_atraso)"
+        />
+
+        <ErrorMessage
+          class="error-msg mb1"
+          name="tolerancia_atraso"
         />
       </div>
     </div>
