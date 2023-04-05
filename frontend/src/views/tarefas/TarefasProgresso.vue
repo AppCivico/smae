@@ -276,6 +276,8 @@ async function onSubmit(_, { controlledValues: carga }) {
       </div>
     </div>
 
+    <FormErrorsList :errors="errors" />
+
     <div
       v-if="emFoco.n_filhos_imediatos === 0"
       class="flex spacebetween center mb2"
