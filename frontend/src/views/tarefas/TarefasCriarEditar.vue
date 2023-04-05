@@ -13,10 +13,10 @@ import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  Form,
+ErrorMessage,
+Field,
+FieldArray,
+Form,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -255,7 +255,9 @@ iniciar();
         <LabelFromYup
           name="numero"
           :schema="schema"
-        />
+        >
+          {{ schema.fields.numero.spec.label }}&nbsp;<span class="tvermelho">*</span>
+        </LabelFromYup>
         <Field
           name="numero"
           type="number"
@@ -360,7 +362,7 @@ iniciar();
 
       <div class="g2 mb2">
         <legend class="label mt2 mb1">
-          Dependências
+          {{ schema.fields.dependencias.spec.label }}
         </legend>
 
         <FieldArray

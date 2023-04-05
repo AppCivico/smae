@@ -627,6 +627,7 @@ const risco = object()
 
 const tarefa = object()
   .shape({
+    atualizacao_do_realizado: boolean(),
     custo_estimado: number()
       .label('Previsão de custo')
       .min(0)
@@ -636,6 +637,7 @@ const tarefa = object()
       .min(0)
       .nullable(),
     dependencias: array()
+      .label('Dependências')
       .of(
         object()
           .shape({
@@ -646,6 +648,7 @@ const tarefa = object()
             latencia: number()
               .label('Dias de latência')
               .integer()
+              .required()
               .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
             tipo: mixed()
               .label('Tipo de relação')
@@ -676,15 +679,19 @@ const tarefa = object()
       .typeError('Data inválida'),
     inicio_real: date()
       .label('Data de início real')
-      .nullable()
-      .typeError('Data inválida'),
+      .typeError('Data inválida')
+      .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
+        ? field.required()
+        : field.nullable())),
     nivel: number()
       .min(1)
       .nullable(),
     numero: number()
       .label('Ordem')
       .min(1)
-      .nullable(),
+      .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (!atualizacaoDoRealizado
+        ? field.required()
+        : field.nullable())),
     orgao_id: number()
       .label('Órgão responsável')
       .min(1, 'Selecione um órgão responsável')
@@ -693,7 +700,9 @@ const tarefa = object()
       .label('Porcentual concluído')
       .min(0)
       .max(100)
-      .nullable(),
+      .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
+        ? field.required()
+        : field.nullable())),
     recursos: string()
       .label('Responsável pela atividade')
       .min(0)
