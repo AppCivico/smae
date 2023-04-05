@@ -294,6 +294,7 @@ export class TarefaService {
                 continue;
 
             if (tarefa.nivel == 1) {
+                console.log('max_term_planjeado', tarefa);
                 if (!max_term_planjeado || (max_term_planjeado && max_term_planjeado.valueOf() > tarefa.termino_planejado.valueOf()))
                     max_term_planjeado = tarefa.termino_planejado;
             }
