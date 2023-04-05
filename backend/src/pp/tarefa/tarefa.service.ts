@@ -16,6 +16,7 @@ import { Graph } from 'graphlib';
 import { DateTime } from 'luxon';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
+import { ProjetoService } from '../projeto/projeto.service';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
 
@@ -49,6 +50,7 @@ export class TarefaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly utils: TarefaUtilsService,
+        private readonly projetoService: ProjetoService,
     ) { }
 
     async create(projetoId: number, dto: CreateTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -206,10 +208,12 @@ export class TarefaService {
 
     async findAll(projetoId: number, user: PessoaFromJwt, filter: FilterPPTarefa): Promise<ListTarefaListDto> {
 
+        const projeto = await this.projetoService.findOne(projetoId, user, true);
+
         const antesQuery = Date.now()
         const rows = await this.prisma.tarefa.findMany({
             where: {
-                projeto_id: projetoId,
+                projeto_id: projeto.id,
                 removido_em: null,
             },
             orderBy: [
@@ -262,19 +266,18 @@ export class TarefaService {
 
 
         const antesCalc = Date.now()
-        const ret = await this.calculaAtrasoProjeto(rowsWithAtraso);
+        const ret = await this.calculaAtrasoProjeto(rowsWithAtraso, projeto);
 
         this.logger.warn(`calculaAtrasoProjeto took ${Date.now() - antesCalc} ms`);
 
         return ret
     }
 
-    async calculaAtrasoProjeto(tarefasOrig: TarefaItemDbDto[]): Promise<ListTarefaListDto> {
+    async calculaAtrasoProjeto(tarefasOrig: TarefaItemDbDto[], projeto: ProjetoDetailDto): Promise<ListTarefaListDto> {
 
         let ret: ListTarefaListDto = {
             linhas: [],
-            atraso: null,
-            projecao_termino: null
+            projeto: projeto,
         };
 
         // nesse caso, vai usar UTC, pois o javascript e o Prisma volta o Date como UTC.
@@ -512,14 +515,33 @@ export class TarefaService {
             await Promise.all(updates);
         }
 
+        let atraso_projeto: number | null = null;
+        let projecao_termino: Date | null = null;
         if (max_term_planjeado && max_term_proj) {
 
             const d = max_term_proj.diff(DateTime.fromJSDate(max_term_planjeado)).as('days');
             this.logger.debug(`projeto max projecao_termino: ${Date2YMD.toString(max_term_proj.toJSDate())}, max termino_planejado: ${Date2YMD.toString(max_term_planjeado)} => ${d} dias de atraso`);
 
-            if (d > 0) ret.atraso = d;
-            ret.projecao_termino = max_term_proj.toJSDate();
+            if (d > 0) atraso_projeto = d;
+            projecao_termino = max_term_proj.toJSDate();
         }
+
+        if (ret.projeto.atraso !== atraso_projeto || ret.projeto.projecao_termino !== projecao_termino) {
+            this.logger.debug(`iniciando sincronização do atrasdo projeto...`);
+            await this.prisma.projeto.update({
+                where: { id: projeto.id },
+                data: {
+                    atraso: atraso_projeto,
+                    projecao_termino,
+                    em_atraso: atraso_projeto && projeto.previsao_duracao && projeto.previsao_duracao > 0 ?
+                        ((atraso_projeto / projeto.previsao_duracao * 100) >= projeto.tolerancia_atraso)
+                        : false,
+                }
+            });
+        }
+
+        ret.projeto.atraso = atraso_projeto;
+        ret.projeto.projecao_termino = projecao_termino;
 
         ret.linhas = tarefas;
 
