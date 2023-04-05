@@ -410,6 +410,8 @@ export class TarefaService {
 
                 let atraso_max = -1;
                 for (const filho of filhos) {
+                    if (filho.termino_real) continue;
+
                     if (!filho.projecao_termino) {
                         this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
                         continue;
