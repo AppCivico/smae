@@ -134,6 +134,12 @@ async function onSubmit(_, { controlledValues: carga }) {
     :validation-schema="schema"
     @submit="onSubmit"
   >
+    <Field
+      name="atualizacao_do_realizado"
+      type="hidden"
+      :value="true"
+    />
+
     <hr class="mb1 f1">
 
     <div class="flex g2">
@@ -141,7 +147,9 @@ async function onSubmit(_, { controlledValues: carga }) {
         <LabelFromYup
           name="inicio_real"
           :schema="schema"
-        />
+        >
+          {{ schema.fields.inicio_real.spec.label }}&nbsp;<span class="tvermelho">*</span>
+        </LabelFromYup>
         <Field
           name="inicio_real"
           type="date"
@@ -257,7 +265,9 @@ async function onSubmit(_, { controlledValues: carga }) {
         <LabelFromYup
           name="percentual_concluido"
           :schema="schema"
-        />
+        >
+          {{ schema.fields.percentual_concluido.spec.label }}&nbsp;<span class="tvermelho">*</span>
+        </LabelFromYup>
         <Field
           name="percentual_concluido"
           type="number"
@@ -268,7 +278,6 @@ async function onSubmit(_, { controlledValues: carga }) {
           :class="{ 'error': errors.percentual_concluido }"
           @update:model-value="values.percentual_concluido = Number(values.percentual_concluido)"
         />
-
         <ErrorMessage
           class="error-msg mb1"
           name="percentual_concluido"
