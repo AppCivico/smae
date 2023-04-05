@@ -495,6 +495,11 @@ const projeto = object()
         'Fechado',
       ])
       .nullable(),
+    tolerancia_atraso: number()
+      .label('Percentual de tolerância com atraso')
+      .min(0)
+      .max(100)
+      .nullable(),
     versao: string()
       .label('Versão')
       .nullable()
