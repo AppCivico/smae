@@ -2495,9 +2495,9 @@ model Tarefa {
     termino_planejado_calculado Boolean @default(false)
     duracao_planejado_calculado Boolean @default(false)
 
-    projecao_inicio  DateTime? @db.Date()
-    projecao_termino DateTime? @db.Date()
-    projecao_atraso  Int?
+    db_projecao_inicio  DateTime? @db.Date() @map("projecao_inicio")
+    db_projecao_termino DateTime? @db.Date() @map("projecao_termino")
+    db_projecao_atraso  Int? @map("projecao_atraso")
 
     n_filhos_imediatos Int @default(0)
 
