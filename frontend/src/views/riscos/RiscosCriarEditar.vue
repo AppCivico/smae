@@ -30,7 +30,7 @@ const {
 } = storeToRefs(riscosStore);
 
 const {
-  tarefasComHierarquia,
+  tarefasOrdenadas,
 } = storeToRefs(tarefasStore);
 
 const props = defineProps({
@@ -81,7 +81,7 @@ function excluirRisco(id) {
 }
 
 function iniciar() {
-  if (!tarefasComHierarquia.value.length) {
+  if (!tarefasOrdenadas.value.length) {
     tarefasStore.buscarTudo();
   }
 }
@@ -335,7 +335,7 @@ iniciar();
           <AutocompleteField
             name="tarefa_id"
             :controlador="{ busca: '', participantes: values.tarefa_id || [] }"
-            :grupo="tarefasComHierarquia"
+            :grupo="tarefasOrdenadas"
             label="tarefa"
             :class="{
               error: errors.tarefa_id,
