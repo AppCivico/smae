@@ -158,6 +158,8 @@
 import dependencyTypes from '@/consts/dependencyTypes';
 import renderChart from '@/helpers/ganttChart';
 import dayjs from 'dayjs';
+import { useRoute, useRouter } from 'vue-router';
+
 import {
   computed,
   nextTick,
@@ -165,6 +167,9 @@ import {
   ref,
   watch,
 } from 'vue';
+
+const route = useRoute();
+const router = useRouter();
 // import cycles from './cycles';
 
 const tiposDeDependências = Object.keys(dependencyTypes)
@@ -226,25 +231,26 @@ const tipoDeGantt = ref('overall');
 const anoEmFoco = ref(null);
 const filtroAtivo = ref('projeção');
 const svgElementContainer = ref(null);
+const projetoId = route?.params?.projetoId;
 
-const retornarData = (real, planejado) => {
+const qualPropriedadeDeData = (términoOuInício) => {
   switch (filtroAtivo.value) {
     case 'realização':
-      return real;
+      return términoOuInício === 'término' ? 'termino_real' : 'inicio_real';
 
     case 'planejamento':
-      return planejado;
+      return términoOuInício === 'término' ? 'termino_planejado' : 'inicio_planejado';
 
     default:
-      return real || planejado;
+      return términoOuInício === 'término' ? 'projecao_termino' : 'projecao_inicio';
   }
 };
 
 const dadosParaGantt = computed(() => props.data
   .map((x) => ({
     ...x,
-    end_date: retornarData(x.termino_real, x.termino_planejado),
-    start_date: retornarData(x.inicio_real, x.inicio_planejado),
+    end_date: x[qualPropriedadeDeData('término')],
+    start_date: x[qualPropriedadeDeData('início')],
     title: x.tarefa,
     completion_percentage: x.percentual_concluido,
   }))
