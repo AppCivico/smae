@@ -88,7 +88,7 @@ iniciar();
           typeof route?.meta?.título === 'function'
           ? route.meta.título()
           : route?.meta?.título
-          || (riscoId ? 'Risco' : 'Novo risco') }}
+        }}
       </h1>
     </div>
 

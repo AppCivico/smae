@@ -32,8 +32,8 @@ export default {
       meta: {
         título: () => {
           if (useRiscosStore()?.emFoco) {
-            const { codigo, titulo } = useRiscosStore().emFoco;
-            return `${codigo} - ${titulo}`;
+            const { codigo, descricao } = useRiscosStore().emFoco;
+            return `${codigo} - ${descricao}`;
           }
           return 'Resumo de risco';
         },
