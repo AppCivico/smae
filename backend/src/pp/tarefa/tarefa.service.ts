@@ -487,7 +487,7 @@ export class TarefaService {
                     updates.push(this.prisma.tarefa.update({
                         where: { id: tarefa.id },
                         data: {
-                            db_projecao_atraso: tarefa.projecao_atraso === undefined ? null : projecao_atraso,
+                            db_projecao_atraso: tarefa.projecao_atraso === undefined ? null : tarefa.projecao_atraso,
                             db_projecao_inicio: tarefa.projecao_inicio?.toJSDate() || null,
                             db_projecao_termino: tarefa.projecao_termino?.toJSDate() || null,
                         }
