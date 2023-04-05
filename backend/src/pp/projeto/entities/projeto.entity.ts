@@ -124,6 +124,7 @@ export class ProjetoDetailDto {
     previsao_custo: number | null;
     previsao_duracao: number | null;
     previsao_termino: Date | null;
+    projecao_termino: Date | null;
 
     realizado_inicio: Date | null;
     realizado_termino: Date | null;

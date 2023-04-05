@@ -82,8 +82,7 @@ export class ListTarefaDto {
 
 export class ListTarefaListDto {
     linhas: TarefaItemProjetadoDto[]
-    atraso: number | null
-    projecao_termino: Date | null
+    projeto: ProjetoDetailDto
 }
 
 export class DependenciasDatasDto {
