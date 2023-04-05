@@ -32,8 +32,8 @@ services:
       MB_DB_TYPE: postgres
       MB_DB_DBNAME: metabase
       MB_DB_PORT: 5432
-      MB_DB_USER: metadb_user
-      MB_DB_PASS: metadb_pass
+      MB_DB_USER: postgres
+      MB_DB_PASS: password
       MB_DB_HOST: metadb_postgres
     networks:
       - postgres
@@ -48,9 +48,9 @@ services:
     container_name: "${API_CONTAINER_NAME}_metadb_postgres"
     hostname: postgres
     environment:
-      POSTGRES_USER: metadb_user
+      POSTGRES_USER: postgres
       POSTGRES_DB: metabase
-      POSTGRES_PASSWORD: metadb_pass
+      POSTGRES_PASSWORD: password
     networks:
       - metadb_postgres
 
