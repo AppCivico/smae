@@ -441,8 +441,12 @@ iniciar();
                   error: errors[`dependencias[${idx}].latencia`],
                   loading: chamadasPendentes.validaçãoDeDependências
                 }"
-                @update:model-value="fields[idx].value.latencia = Number(fields[idx].value.latencia)
-                  || 0
+                @update:model-value="() => {
+                  if (typeof fields[idx]?.value.latencia !== 'undefined') {
+                    fields[idx].value.latencia = Number(fields[idx].value.latencia)
+                      || 0;
+                  }
+                }
                 "
               />
 
