@@ -773,7 +773,7 @@ export class TarefaService {
           FROM tarefa_path;`;
         const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
 
-        if (buscaFilhos[0].filhas.includes(novoPai.id))
+        if (buscaFilhos[0].filhas?.includes(novoPai.id))
             throw new HttpException(`A nova tarefa-mãe não pode ser uma subordinada da tarefa atual (e nem a própria tarefa)`, 400);
 
         const portConfig = await prismaTx.projeto.findFirstOrThrow({
@@ -881,7 +881,7 @@ export class TarefaService {
             if (dep.dependencia_tarefa_id === tarefa_corrente_id)
                 throw new HttpException('Você não pode ter como dependência a própria tarefa', 400);
 
-            if (buscaParents[0].parents.includes(dep.dependencia_tarefa_id))
+            if (buscaParents[0].parents?.includes(dep.dependencia_tarefa_id))
                 throw new HttpException('Você não pode ter como dependência uma tarefa superior a sua tarefa', 400);
         }
 
