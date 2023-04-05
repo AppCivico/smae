@@ -43,12 +43,21 @@ export class TarefaItemDto {
     atraso: number | null
 
     dependencias: TarefaDependenciaDto[]
+
 }
 
+export class TarefaItemDbDto extends TarefaItemDto {
+
+    db_projecao_inicio: Date | null
+    db_projecao_termino: Date | null
+    db_projecao_atraso: number | null
+}
+
+
 export class TarefaItemProjetadoDto extends TarefaItemDto {
-    @ApiProperty({type: Date})
+    @ApiProperty({ type: Date })
     projecao_inicio: DateTime | undefined
-    @ApiProperty({type: Date})
+    @ApiProperty({ type: Date })
     projecao_termino: DateTime | undefined
     projecao_atraso: number | undefined
 }

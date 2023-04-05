@@ -8,7 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
 import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
-import { DependenciasDatasDto, ListTarefaListDto, TarefaDetailDto, TarefaItemDto, TarefaItemProjetadoDto } from './entities/tarefa.entity';
+import { DependenciasDatasDto, ListTarefaListDto, TarefaDetailDto, TarefaItemDbDto, TarefaItemDto, TarefaItemProjetadoDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
 
 // ta os types de da lib "graphlib" que é por enquanto pure-js
@@ -242,7 +242,11 @@ export class TarefaService {
                         tipo: true,
                         latencia: true,
                     }
-                }
+                },
+
+                db_projecao_atraso: true,
+                db_projecao_inicio: true,
+                db_projecao_termino: true,
             }
         });
 
@@ -258,14 +262,14 @@ export class TarefaService {
 
 
         const antesCalc = Date.now()
-        const ret = this.calculaAtrasoProjeto(rowsWithAtraso);
+        const ret = await this.calculaAtrasoProjeto(rowsWithAtraso);
 
         this.logger.warn(`calculaAtrasoProjeto took ${Date.now() - antesCalc} ms`);
 
         return ret
     }
 
-    calculaAtrasoProjeto(tarefasOrig: TarefaItemDto[]): ListTarefaListDto {
+    async calculaAtrasoProjeto(tarefasOrig: TarefaItemDbDto[]): Promise<ListTarefaListDto> {
 
         let ret: ListTarefaListDto = {
             linhas: [],
@@ -276,6 +280,11 @@ export class TarefaService {
         // nesse caso, vai usar UTC, pois o javascript e o Prisma volta o Date como UTC.
         const hoje = DateTime.local({ zone: 'UTC' }).startOf('day');
         const tarefas = plainToInstance(TarefaItemProjetadoDto, <any[]>JSON.parse(JSON.stringify(tarefasOrig)));
+
+        const orig_tarefas_por_id: Record<number, typeof tarefasOrig[0]> = {};
+        for (const tarefa of tarefasOrig) {
+            orig_tarefas_por_id[tarefa.id] = tarefa;
+        }
 
         const tarefas_por_id: Record<number, typeof tarefas[0]> = {};
         for (const tarefa of tarefas) {
@@ -451,6 +460,8 @@ export class TarefaService {
 
         // mais um loop, agora pra pegar o max da projeção do nivel 1
         // e tbm passar o atraso dos parent pro objeto do retorno
+        // e tbm conferir quem precisa atualizar as projeções no banco de dados
+        const updates: Promise<any>[] = [];
         for (const tarefa of tarefas) {
 
             if (tarefa.projecao_atraso && tarefa.n_filhos_imediatos > 0) {
@@ -458,12 +469,41 @@ export class TarefaService {
                 tarefa.atraso = tarefa.projecao_atraso;
             }
 
+            const tarefa_orig = orig_tarefas_por_id[tarefa.id];
+            if (tarefa_orig) {
+                if (
+                    (tarefa_orig.db_projecao_atraso !== tarefa.projecao_atraso)
+                    || (tarefa_orig.db_projecao_inicio === undefined && tarefa.projecao_inicio)
+                    || (tarefa_orig.db_projecao_inicio?.valueOf() !== tarefa.projecao_inicio?.valueOf())
+                    || (tarefa_orig.db_projecao_termino === undefined && tarefa.projecao_termino)
+                    || (tarefa_orig.db_projecao_termino?.valueOf() !== tarefa.projecao_termino?.valueOf())
+                ) {
+                    updates.push(this.prisma.tarefa.update({
+                        where: { id: tarefa.id },
+                        data: {
+                            db_projecao_atraso: tarefa.projecao_atraso || null,
+                            db_projecao_inicio: tarefa.projecao_inicio?.toJSDate() || null,
+                            db_projecao_termino: tarefa.projecao_termino?.toJSDate() || null,
+                        }
+                    }));
+                }
+            }
+
+            (tarefa as any).db_projecao_atraso = undefined;//tira do retorno pro frontend não receber
+            (tarefa as any).db_projecao_inicio = undefined;//tira do retorno pro frontend não receber
+            (tarefa as any).db_projecao_termino = undefined;//tira do retorno pro frontend não receber
+
             // a tarefa tem que ter todas as datas de planejamento para funcionar
             if (!tarefa.projecao_termino || tarefa.nivel !== 1)
                 continue;
 
             if (!max_term_proj || (max_term_proj && tarefa.projecao_termino.valueOf() > max_term_proj.valueOf()))
                 max_term_proj = tarefa.projecao_termino;
+        }
+
+        if (updates.length) {
+            this.logger.debug(`aguardando sincronização do banco...`);
+            await Promise.all(updates);
         }
 
         if (max_term_planjeado && max_term_proj) {
