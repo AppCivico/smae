@@ -185,9 +185,7 @@ export const useTarefasStore = defineStore('tarefas', {
     itemParaEdição(): {} {
       const { emFoco, route, tarefasAgrupadasPorMãe } = this;
       const idDaTarefaMãe = emFoco?.tarefa_pai_id || Number(route.query.tarefa_pai_id) || null;
-      const posiçõesEmUso = !idDaTarefaMãe
-        ? 1
-        : tarefasAgrupadasPorMãe[idDaTarefaMãe]?.length || 0;
+      const posiçõesEmUso = tarefasAgrupadasPorMãe[idDaTarefaMãe || 0]?.length || 0;
 
       return {
         ...emFoco,
