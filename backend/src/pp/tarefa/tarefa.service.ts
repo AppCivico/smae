@@ -321,7 +321,7 @@ export class TarefaService {
                 // se não tem inicio real preenchido, considera que começou hj
                 tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
 
-                tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado });
+                tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
 
             }
         }
@@ -391,7 +391,7 @@ export class TarefaService {
 
                 if (tarefa.duracao_planejado) {
                     tarefa.projecao_inicio = dataInicioMax ? dataInicioMax : hoje;
-                    tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado })
+                    tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 })
                 } else {
                     this.logger.warn(`tarefa ${tarefa.id} não tem duração planejada e não foi possivel projeção a duração pelas dependencias`)
                 }
