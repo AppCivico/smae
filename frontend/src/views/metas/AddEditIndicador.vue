@@ -4,7 +4,7 @@ import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
 import {
-  useAlertStore, useAtividadesStore, useAuthStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useVariaveisStore
+  useAlertStore, useAtividadesStore, useAuthStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useVariaveisStore,
 } from '@/stores';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
@@ -158,7 +158,9 @@ async function onSubmit(values) {
     values.nivel_regionalizacao = values.regionalizavel
       ? Number(values.nivel_regionalizacao)
       : null;
-    values.acumulado_valor_base = typeof values.acumulado_valor_base !== 'number'
+    values.acumulado_valor_base = values.acumulado_valor_base === ''
+      || values.acumulado_valor_base === null
+      || Number.isNaN(Number(values.acumulado_valor_base))
       ? null
       : String(values.acumulado_valor_base);
 
@@ -841,9 +843,6 @@ if (indicador_id) {
               :value="values.acumulado_valor_base"
               class="inputtext light mb1"
               :class="{ 'error': errors.acumulado_valor_base }"
-              @update:model-value="values.acumulado_valor_base === ''
-                ? values.acumulado_valor_base = null
-                : null"
             />
             <div class="error-msg">
               {{ errors.acumulado_valor_base }}

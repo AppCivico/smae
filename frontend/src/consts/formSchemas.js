@@ -184,6 +184,7 @@ const indicador = object()
   .shape({
     acumulado_valor_base: number()
       .label('Valor base do indicador')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
     casas_decimais: number()
       .min(0)
