@@ -640,11 +640,15 @@ const tarefa = object()
         object()
           .shape({
             dependencia_tarefa_id: number()
+              .label('Tarefa relacionada')
               .min(1, 'Campo obrigatório')
               .required(),
             latencia: number()
-              .integer(),
+              .label('Dias de latência')
+              .integer()
+              .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
             tipo: mixed()
+              .label('Tipo de relação')
               .required()
               .oneOf(['termina_pro_inicio', 'inicia_pro_inicio', 'inicia_pro_termino', 'termina_pro_termino']),
           }),

@@ -373,9 +373,11 @@ iniciar();
             class="flex g2"
           >
             <div class="f2 mb1">
-              <label class="label tc300">
-                Tarefa&nbsp;<span class="tvermelho">*</span>
-              </label>
+              <LabelFromYup
+                class="tc300"
+                :schema="schema.fields.dependencias.innerType"
+                name="dependencia_tarefa_id"
+              />
               <Field
                 :name="`dependencias[${idx}].dependencia_tarefa_id`"
                 maxlength="2"
@@ -404,9 +406,12 @@ iniciar();
             </div>
 
             <div class="f2 mb1">
-              <label class="label tc300">
-                Tipo de relação&nbsp;<span class="tvermelho">*</span>
-              </label>
+              <LabelFromYup
+                class="tc300"
+                :schema="schema.fields.dependencias.innerType"
+                name="tipo"
+              />
+
               <Field
                 :name="`dependencias[${idx}].tipo`"
                 maxlength="2"
@@ -435,9 +440,11 @@ iniciar();
             </div>
 
             <div class="f1 mb1">
-              <label class="label tc300">
-                Dias de latência&nbsp;<span class="tvermelho">*</span>
-              </label>
+              <LabelFromYup
+                class="tc300"
+                :schema="schema.fields.dependencias.innerType"
+                name="latencia"
+              />
               <Field
                 :name="`dependencias[${idx}].latencia`"
                 type="number"
@@ -736,6 +743,8 @@ iniciar();
         suas modificações.
       </p>
     </div>
+
+    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
