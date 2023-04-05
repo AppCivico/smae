@@ -220,7 +220,13 @@ iniciar();
             loading: chamadasPendentes.lista,
           }"
           :disabled="chamadasPendentes.lista"
-          @change="setFieldValue('nivel', (tarefasPorId[values.tarefa_pai_id]?.nivel || 0) + 1)"
+          @change="() => {
+            setFieldValue('nivel', (tarefasPorId[values.tarefa_pai_id]?.nivel || 0) + 1);
+            setFieldValue(
+              'numero',
+              (tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0].length || 0) + 1
+            );
+          }"
         >
           <option :value="null">
             Selecionar
