@@ -472,17 +472,18 @@ export class TarefaService {
             const tarefa_orig = orig_tarefas_por_id[tarefa.id];
             if (tarefa_orig) {
                 if (
-                    (tarefa_orig.db_projecao_atraso !== tarefa.projecao_atraso)
-                    || (tarefa_orig.db_projecao_inicio === undefined && tarefa.projecao_inicio)
+                    (tarefa_orig.db_projecao_atraso != tarefa.projecao_atraso)
+                    || (tarefa_orig.db_projecao_inicio === null && tarefa.projecao_inicio)
                     || (tarefa_orig.db_projecao_inicio?.valueOf() !== tarefa.projecao_inicio?.valueOf())
-                    || (tarefa_orig.db_projecao_termino === undefined && tarefa.projecao_termino)
+                    || (tarefa_orig.db_projecao_termino === null && tarefa.projecao_termino)
                     || (tarefa_orig.db_projecao_termino?.valueOf() !== tarefa.projecao_termino?.valueOf())
                 ) {
-                    console.log('Debug: tarefa_orig.db_projecao_atraso !== tarefa.projecao_atraso:', tarefa_orig.db_projecao_atraso !== tarefa.projecao_atraso);
-                    console.log('Debug: tarefa_orig.db_projecao_inicio === undefined && tarefa.projecao_inicio:', tarefa_orig.db_projecao_inicio === undefined && tarefa.projecao_inicio);
-                    console.log('Debug: tarefa_orig.db_projecao_inicio?.valueOf() !== tarefa.projecao_inicio?.valueOf():', tarefa_orig.db_projecao_inicio?.valueOf() !== tarefa.projecao_inicio?.valueOf());
-                    console.log('Debug: tarefa_orig.db_projecao_termino === undefined && tarefa.projecao_termino:', tarefa_orig.db_projecao_termino === undefined && tarefa.projecao_termino);
-                    console.log('Debug: tarefa_orig.db_projecao_termino?.valueOf() !== tarefa.projecao_termino?.valueOf():', tarefa_orig.db_projecao_termino?.valueOf() !== tarefa.projecao_termino?.valueOf());
+                    console.log('----------------------' + tarefa.id);
+                    console.log('Debug: tarefa_orig.db_projecao_atraso !== tarefa.projecao_atraso:', tarefa_orig.db_projecao_atraso != tarefa.projecao_atraso, tarefa_orig.db_projecao_atraso, tarefa.projecao_atraso);
+                    console.log('Debug: tarefa_orig.db_projecao_inicio === null && tarefa.projecao_inicio:', tarefa_orig.db_projecao_inicio === null && tarefa.projecao_inicio, tarefa_orig.db_projecao_inicio, tarefa.projecao_inicio);
+                    console.log('Debug: tarefa_orig.db_projecao_inicio?.valueOf() !== tarefa.projecao_inicio?.valueOf():', tarefa_orig.db_projecao_inicio?.valueOf() !== tarefa.projecao_inicio?.valueOf(), tarefa_orig.db_projecao_inicio?.valueOf(), tarefa.projecao_inicio?.valueOf());
+                    console.log('Debug: tarefa_orig.db_projecao_termino === null && tarefa.projecao_termino:', tarefa_orig.db_projecao_termino === null && tarefa.projecao_termino, tarefa_orig.db_projecao_termino, tarefa.projecao_termino);
+                    console.log('Debug: tarefa_orig.db_projecao_termino?.valueOf() !== tarefa.projecao_termino?.valueOf():', tarefa_orig.db_projecao_termino?.valueOf() !== tarefa.projecao_termino?.valueOf(), tarefa_orig.db_projecao_termino?.valueOf(), tarefa.projecao_termino?.valueOf());
 
                     updates.push(this.prisma.tarefa.update({
                         where: { id: tarefa.id },
