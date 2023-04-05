@@ -387,7 +387,7 @@ export default function ganttChart(config) {
         .attr('class', 'EmptyMessage')
         .attr('font-size', 25)
         .attr('y', 25)
-        .text('There is no objective yet, please click to add one');
+        .text('Não há tarefas para essa seleção');
 
       const EMPTRYBLOCK_BUTTON = EMPTYBLOCK
         .append('g')
@@ -398,19 +398,10 @@ export default function ganttChart(config) {
         });
 
       EMPTRYBLOCK_BUTTON
-        .append('rect')
+        .append('foreignObject')
         .attr('width', 100)
-        .attr('height', 35)
-        .attr('rx', 4)
-        .attr('ry', 4)
-        .attr('fill', BUTTON_COLOR);
-
-      EMPTRYBLOCK_BUTTON
-        .append('text')
-        .attr('fill', '#fff')
-        .attr('y', 25)
-        .attr('x', 10)
-        .text('Click Here');
+        .attr('height', 48)
+        .html('<button class="btn">Criar tarefa</button>');
 
       const textBlock = EMPTYBLOCK.select('.EmptyMessage');
 
