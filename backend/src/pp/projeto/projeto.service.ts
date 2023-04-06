@@ -507,7 +507,6 @@ export class ProjetoService {
             ...projeto,
             responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
-            atraso: Math.round(Math.random() * 9876545678987654),
             orgaos_participantes: projeto.orgaos_participantes.map(o => {
                 return {
                     id: o.orgao.id,
