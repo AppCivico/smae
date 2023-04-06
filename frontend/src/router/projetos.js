@@ -37,9 +37,9 @@ export default {
     ],
     rotasParaMenuSecundário: [
       'projetosListar',
-      'projetosListarPrioritários',
-      'projetosListarArquivados',
     ],
+
+    títuloParaGrupoDeLinksNoMenu: 'Gestão de projetos',
   },
   children: [
     {
@@ -61,8 +61,8 @@ export default {
       path: 'prioritarios',
       component: ProjetosLista,
       meta: {
-        título: 'Projetos prioritários',
-        títuloParaMenu: 'Projetos prioritários',
+        título: 'Projetos ativos',
+        títuloParaMenu: 'Ativos',
       },
       props: ({ params, query }) => ({
         ...params,
@@ -76,8 +76,8 @@ export default {
       path: 'arquivados',
       component: ProjetosLista,
       meta: {
-        título: 'Projetos arquivados',
-        títuloParaMenu: 'Projetos arquivados',
+        título: 'Arquivo de projetos',
+        títuloParaMenu: 'Arquivo',
       },
       props: ({ params, query }) => ({
         ...params,

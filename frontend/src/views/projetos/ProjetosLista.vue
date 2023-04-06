@@ -128,7 +128,7 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
       }"
       class="btn bgnone outline ml1"
     >
-      Prioritários
+      Ativos
     </router-link>
     <router-link
       v-show="route.name !== 'projetosListar'"
