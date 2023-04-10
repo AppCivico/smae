@@ -35,6 +35,7 @@ const props = defineProps({
 });
 
 const control = ref(props.controlador);
+const emit = defineEmits(['change']);
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
 // É aqui que deixamos o componente retro-compatível
@@ -59,10 +60,12 @@ onUpdated(() => { start(); });
 
 function removeParticipante(item, p) {
   item.participantes.splice(item.participantes.indexOf(p), 1);
+  emit('change', item.participantes);
 }
 function pushId(e, id) {
   e.push(id);
   e = [...new Set(e)];
+  emit('change', e);
 }
 function buscar(e, item, g, label) {
   e.preventDefault();
