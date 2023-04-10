@@ -46,8 +46,8 @@ async function onSubmit(_, { controlledValues }) {
     carga.risco = [];
   }
 
-  if (!carga.cronograma_paralizado) {
-    carga.cronograma_paralizado = false;
+  if (!carga.cronograma_paralisado) {
+    carga.cronograma_paralisado = false;
   }
 
   try {
@@ -331,13 +331,13 @@ function excluirAcompanhamento(id) {
       <div class="f05 mb1 mt1">
         <label class="block mt1">
           <Field
-            name="cronograma_paralizado"
+            name="cronograma_paralisado"
             type="checkbox"
             :value="true"
             class="inputcheckbox"
           />
-          <span :class="{ 'error': errors.cronograma_paralizado }">
-            {{ schema.fields.cronograma_paralizado.spec.label }}
+          <span :class="{ 'error': errors.cronograma_paralisado }">
+            {{ schema.fields.cronograma_paralisado.spec.label }}
           </span>
         </label>
       </div>
