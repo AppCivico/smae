@@ -275,7 +275,7 @@ export class ProjetoService {
                 eh_prioritario: filters.eh_prioritario,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 arquivado: filters.arquivado,
-                status: filters.status,
+                status: filters.status ? { in: filters.status } : undefined,
                 portfolio: { removido_em: null },
                 portfolio_id: filters.portfolio_id,
                 AND: permissionsSet.length > 0 ? [
