@@ -153,6 +153,7 @@ v_previsao_custo  numeric;
 v_realizado_custo  numeric;
 v_previsao_duracao int;
 v_realizado_duracao int;
+v_percentual_concluido int;
 
 BEGIN
 
@@ -224,6 +225,35 @@ BEGIN
             null
         end;
 
+    with subtarefas as (
+        -- pega cada tarefa (nivel 1)
+        select t.duracao_planejado, t.percentual_concluido
+        from tarefa t
+        where t.tarefa_pai_id IS NULL and t.projeto_id = pProjetoId and t.removido_em is null
+    ),
+    t1 as (
+        -- pega o total de horas planejadas, pode ser 0 se faltar preenchimento nos filhos, ou
+        -- se tudo começar e acabar no mesmo dia
+        select sum( t.duracao_planejado ) as total_duracao
+        from subtarefas t
+        where
+            -- só calcular quando todos os filhos tiverem duracao
+            (select count(1) from subtarefas st where st.duracao_planejado is null) = 0
+    ),
+    t2 as (
+        -- divide cada subtarefa pelo total usando a conta que foi passada:
+        -- (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
+        select (
+            coalesce(t.duracao_planejado, 0)
+                *
+            coalesce(t.percentual_concluido, 0.0)
+        )::numeric / 100.0 as prog_perc
+        from subtarefas t
+    )
+    -- e entao aplica a soma
+    select sum(prog_perc)::numeric / nullif((select total_duracao from t1), 0)::numeric into v_percentual_concluido
+    from t2;
+
     UPDATE projeto p
     SET
         previsao_inicio = v_previsao_inicio,
@@ -233,7 +263,8 @@ BEGIN
         previsao_custo = v_previsao_custo,
         realizado_custo = v_realizado_custo,
         previsao_duracao = v_previsao_duracao,
-        realizado_duracao = v_realizado_duracao
+        realizado_duracao = v_realizado_duracao,
+        percentual_concluido = round(v_percentual_concluido * 100.0)
 
     WHERE p.id = pProjetoId
     AND (
@@ -244,6 +275,7 @@ BEGIN
         (v_previsao_custo is DISTINCT from previsao_custo) OR
         (v_realizado_custo is DISTINCT from realizado_custo) OR
         (v_previsao_duracao is DISTINCT from previsao_duracao) OR
+        (round(v_percentual_concluido * 100.0) is DISTINCT from percentual_concluido) OR
         (v_realizado_duracao is DISTINCT from realizado_duracao)
     );
 
@@ -527,7 +559,7 @@ BEGIN
             (custo_real IS DISTINCT FROM v_custo_real) OR
             (duracao_real IS DISTINCT FROM v_duracao_real) OR
             (duracao_planejado IS DISTINCT FROM v_duracao_planejado) OR
-            (percentual_concluido IS DISTINCT FROM v_percentual_concluido)
+            (percentual_concluido IS DISTINCT FROM round(v_percentual_concluido * 100))
         );
     END IF;
 
@@ -658,7 +690,7 @@ BEGIN
             (custo_real IS DISTINCT FROM v_custo_real) OR
             (duracao_real IS DISTINCT FROM v_duracao_real) OR
             (duracao_planejado IS DISTINCT FROM v_duracao_planejado) OR
-            (percentual_concluido IS DISTINCT FROM v_percentual_concluido)
+            (percentual_concluido IS DISTINCT FROM round(v_percentual_concluido * 100.0))
         );
 
     END IF;
