@@ -1,7 +1,7 @@
 <script setup>
 import { useField } from 'vee-validate';
 import {
-  onMounted, onUpdated, ref, toRef, watch
+  onMounted, onUpdated, ref, toRef, watch,
 } from 'vue';
 
 const props = defineProps({
@@ -84,7 +84,7 @@ function buscar(e, item, g, label) {
         v-model="control.busca"
         type="text"
         class="inputtext light mb05"
-        @keyup.enter.stop.prevent="buscar($event,control,grupo,label)"
+        @keyup.enter.stop.prevent="buscar($event, control, grupo, label)"
       >
       <ul>
         <li
@@ -108,7 +108,7 @@ function buscar(e, item, g, label) {
       v-for="p in grupo.filter((x) => control.participantes.includes(x.id))"
       :key="p.id"
       class="tagsmall"
-      :title="p.nome || p.titulo || p.descricao ||p.nome_completo || null"
+      :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
       @click="removeParticipante(control, p.id)"
     >{{ p[label] }}<svg
       width="12"
