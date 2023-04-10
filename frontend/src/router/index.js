@@ -1,3 +1,4 @@
+import qs from 'qs';
 import { createRouter, createWebHistory } from 'vue-router';
 
 // Stores
@@ -21,7 +22,7 @@ import {
   SingleCronograma,
   SingleEvolucao,
   SingleIniciativa,
-  SingleMeta, SinglePainelMeta
+  SingleMeta, SinglePainelMeta,
 } from '@/views/metas';
 import {
   ListCiclos, ListCiclosPassados,
@@ -29,7 +30,7 @@ import {
   ListMonitoramentoMetasCronograma,
   ListMonitoramentoMetasEvolucao,
   MonitoramentoMetas,
-  MonitoramentoMetasCronograma
+  MonitoramentoMetasCronograma,
 } from '@/views/monitoramento';
 import {
   AddEditCusteio,
@@ -38,7 +39,7 @@ import {
   AddRealizadoNota,
   AddRealizadoProcesso,
   EditRealizado,
-  MetaOrcamento
+  MetaOrcamento,
 } from '@/views/orcamento';
 import administracao from './administracao';
 
@@ -216,6 +217,12 @@ export const router = createRouter({
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
+  parseQuery(query) {
+    return qs.parse(query);
+  },
+  stringifyQuery(query) {
+    return qs.stringify(query) || '';
+  },
 });
 
 router.beforeEach(async (r) => {

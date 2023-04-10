@@ -8,6 +8,7 @@
     "lodash": "^4.17.21",
     "nice-number": "^1.0.3",
     "pinia": "^2.0.17",
+    "qs": "^6.11.1",
     "vee-validate": "^4.7.4",
     "vue": "^3.2.37",
     "vue-router": "^4.1.3",
