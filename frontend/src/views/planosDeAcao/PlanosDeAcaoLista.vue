@@ -109,6 +109,18 @@ iniciar();
   <div class="boards">
     <div class="flex g2 mb1">
       <dl
+        v-if="emFoco?.descricao"
+        class="f1 mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields['descricao'].spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.descricao }}
+        </dd>
+      </dl>
+
+      <dl
         v-if="emFoco?.causa"
         class="f1 mb1"
       >

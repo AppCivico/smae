@@ -78,8 +78,8 @@ export default {
           meta: {
             título: () => {
               if (useRiscosStore()?.emFoco) {
-                const { codigo, descricao } = useRiscosStore().emFoco;
-                return `${codigo} - ${descricao}`;
+                const { codigo, titulo } = useRiscosStore().emFoco;
+                return `${codigo} - ${titulo}`;
               }
               return 'Editar risco';
             },
