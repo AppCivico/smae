@@ -347,20 +347,24 @@ const projeto = object()
       .label('Escopo')
       .max(50000),
     fonte_recursos: array()
+      .label('Fontes de recursos')
       .nullable()
       .of(
         object()
           .shape({
             fonte_recurso_cod_sof: string()
+              .label('Código SOF')
               .matches(/\d\d/)
               .required('A fonte é obrigatória'),
             fonte_recurso_ano: number()
+              .label('Ano')
               .min(2003, 'A partir de 2003')
               .max(3000, 'Até o ano 3000')
               .required('Escolha um ano válido'),
             id: number()
               .nullable(),
             valor_nominal: mixed()
+              .label('Valor nominal')
               .when('valor_percentual', {
                 is: (valorPercentual) => !valorPercentual,
                 then: number()
@@ -369,6 +373,7 @@ const projeto = object()
                   .nullable(),
               }),
             valor_percentual: mixed()
+              .label('Valor percentual')
               .when('valor_nominal', {
                 is: (valorNominal) => !valorNominal,
                 then: number()
@@ -464,6 +469,7 @@ const projeto = object()
       .label('Responsável no órgão')
       .nullable(),
     restricoes: array()
+      .label('Restrições')
       .of(
         object()
           .shape({
