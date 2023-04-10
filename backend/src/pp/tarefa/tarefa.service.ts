@@ -388,7 +388,7 @@ export class TarefaService {
                 if (depDateTermino) {
                     depDateTermino = depDateTermino.plus({ days: dependencia.latencia });
 
-                    if (!dataInicioMax || (dataTerminoMax && dataTerminoMax.valueOf() > depDateTermino.valueOf())) {
+                    if (!dataTerminoMax || (dataTerminoMax && dataTerminoMax.valueOf() > depDateTermino.valueOf())) {
                         dataTerminoMax = depDateTermino;
                     }
                 }
@@ -397,16 +397,18 @@ export class TarefaService {
             // se deu pra chegar numa data de termino, usa ela
             // de preferencia com a data de inicio calculada tbm
             if (dataTerminoMax) {
-                tarefa.projecao_inicio = dataInicioMax ? dataInicioMax : hoje;
+                // só pode usar a data de inicio, se for maior que a data corrente
+                tarefa.projecao_inicio = dataInicioMax && dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
                 tarefa.projecao_termino = dataTerminoMax;
             } else {
                 // se não encontrou de termino, mas tem data de inicio, usa o inicio projetado com a duração, se tiver disponível
 
                 if (tarefa.duracao_planejado) {
-                    tarefa.projecao_inicio = dataInicioMax ? dataInicioMax : hoje;
+                    // só pode usar a data de inicio, se for maior que a data corrente
+                    tarefa.projecao_inicio = dataInicioMax && dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
                     tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 })
                 } else {
-                    this.logger.warn(`tarefa ${tarefa.id} não tem duração planejada e não foi possivel projeção a duração pelas dependencias`)
+                    this.logger.warn(`tarefa ${tarefa.id} não tem duração planejada e não foi possível projeção a duração pelas dependencias`)
                 }
             }
 
