@@ -15,6 +15,10 @@ export class FilterProjetoDto {
     arquivado?: boolean;
 
     @IsOptional()
+    @Transform(({ value }: any) => {
+        if (Array.isArray(value)) return value;
+        return value.split(',');
+    })
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     @IsArray({ message: '$property| precisa ser uma array.' })
     @ArrayMinSize(0, { message: '$property| precisa ter pelo menos um item' })
