@@ -2207,6 +2207,8 @@ model Projeto {
     em_atraso         Boolean @default(false)
     atraso            Int?
 
+    percentual_concluido Int? // calculado
+
     status         ProjetoStatus
     fase           ProjetoFase
     arquivado      Boolean       @default(false)
@@ -2315,8 +2317,17 @@ model Projeto {
 
     tarefa_lock_seq Int @default(0)
 
+    // data em que o sistema deve novamente calcular os atrasos automaticamente
+    tarefas_proximo_recalculo DateTime @default(now())
+
     @@index([removido_em])
     @@map("projeto")
+}
+
+enum ProjetoMotivoRelatorio {
+    MudancaDeStatus
+    ProjetoEmAprovacao
+    ProjetoTerminou
 }
 
 model ProjetoRelatorioFila {
@@ -2329,6 +2340,8 @@ model ProjetoRelatorioFila {
 
     relatorio_id Int?
     relatorio    Relatorio? @relation(fields: [relatorio_id], references: [id])
+
+    motivado_relatorio ProjetoMotivoRelatorio @default(MudancaDeStatus)
 
     @@index([projeto_id])
     @@map("projeto_relatorio_fila")
@@ -2710,7 +2723,7 @@ model ProjetoAcompanhamento {
     detalhamento_status  String?
     pontos_atencao       String?
 
-    cronograma_paralizado Boolean @default(false)
+    cronograma_paralisado Boolean @default(false)
 
     criado_em  DateTime
     criado_por Int

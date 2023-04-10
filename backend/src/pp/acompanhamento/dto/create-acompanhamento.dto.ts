@@ -49,7 +49,7 @@ export class CreateProjetoAcompanhamentoDto {
 
     @IsOptional()
     @IsBoolean()
-    cronograma_paralizado?: boolean
+    cronograma_paralisado?: boolean
 
 
     //@IsOptional()

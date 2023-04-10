@@ -375,7 +375,8 @@ export class TarefaService {
                         break;
                 }
 
-                // entao vamos setar o inicio estimado, usando o máximo (pois o inicio é após o termino de todas as deps)
+                // então vamos setar o inicio estimado, usando o máximo (pois o inicio é após o termino de todas as deps)
+                // se a data de termino ficar menor que hoje, usar hoje
                 if (depDateInicio) {
                     depDateInicio = depDateInicio.plus({ days: dependencia.latencia });
 
@@ -399,7 +400,7 @@ export class TarefaService {
                 tarefa.projecao_inicio = dataInicioMax ? dataInicioMax : hoje;
                 tarefa.projecao_termino = dataTerminoMax;
             } else {
-                // se não encontrou de termino, mas tem data de inicio, usa o inicio projetado com a duração, se tiver disponveil
+                // se não encontrou de termino, mas tem data de inicio, usa o inicio projetado com a duração, se tiver disponível
 
                 if (tarefa.duracao_planejado) {
                     tarefa.projecao_inicio = dataInicioMax ? dataInicioMax : hoje;
