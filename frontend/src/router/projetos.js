@@ -52,7 +52,12 @@ export default {
       },
       props: ({ params, query }) => ({
         ...params,
-        status: query.status?.replace('_', '').toLowerCase(),
+        // eslint-disable-next-line no-nested-ternary
+        status: Array.isArray(query.status)
+          ? query.status.map((x) => x.replace('_', '').toLowerCase())
+          : query.status
+            ? [query.status.replace('_', '').toLowerCase()]
+            : [],
       }),
     },
 

@@ -1,4 +1,5 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
 import statuses from '@/consts/projectStatuses';
@@ -15,7 +16,8 @@ const {
 const route = useRoute();
 const router = useRouter();
 
-const listaDeStatuses = arrayToValueAndLabel(statuses);
+const listaDeStatuses = arrayToValueAndLabel(statuses)
+  .map((x) => ({ ...x, id: x.valor.toLowerCase() }));
 
 const statusesPorChaveCaixaBaixa = Object.keys(statuses).reduce((acc, cur) => ({
   ...acc, [cur.toLowerCase()]: { valor: cur, etiqueta: statuses[cur] },
@@ -31,18 +33,18 @@ const props = defineProps({
     default: false,
   },
   status: {
-    type: String,
-    default: '',
-    validator: (value) => !value || !!statuses[value.toLowerCase()],
+    type: Array,
+    default: () => [],
+    validator: (value) => !value?.length || !!value.find((x) => !statuses[x.toLowerCase()]),
   },
 });
 
 const parâmetros = ref({});
 const termoDeBusca = ref('');
 
-const status = statusesPorChaveCaixaBaixa[props.status]?.valor || '';
+const status = props.status.map((x) => statusesPorChaveCaixaBaixa[x]?.valor);
 
-if (status) {
+if (status.length) {
   parâmetros.value.status = status;
 }
 
@@ -86,28 +88,16 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
   <div class="flex center mb2 spacebetween">
     <div class="f1 mr1">
       <label class="label tc300">Filtrar por status</label>
-      <select
-        class="inputtext"
+      <AutocompleteField
+        name="orgaos"
+        :controlador="{ busca: '', participantes: props.status || [] }"
+        :grupo="listaDeStatuses"
+        label="etiqueta"
         @change="($event) => router.push({
           name: route.name,
-          query: { status: $event.target.value || undefined }
+          query: { status: $event || undefined }
         })"
-      >
-        <option
-          value=""
-          :selected="!!status"
-        >
-          qualquer
-        </option>
-        <option
-          v-for="item in listaDeStatuses"
-          :key="item.valor"
-          :value="item.valor"
-          :selected="props.status === item.valor.toLowerCase()"
-        >
-          {{ item.etiqueta }}
-        </option>
-      </select>
+      />
     </div>
     <hr class="ml2 f1">
     <router-link
