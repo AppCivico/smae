@@ -177,6 +177,110 @@ export class PPProjetosService implements ReportableService {
         };
     }
 
+    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
+        const dados = myInput as PPProjetosRelatorioDto;
+
+        const out: FileOutput[] = [];
+
+        if (dados.linhas.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse([dados.linhas]);
+            out.push({
+                name: 'projetos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.cronograma.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse([dados.cronograma]);
+            out.push({
+                name: 'cronograma.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.riscos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse([dados.riscos]);
+            out.push({
+                name: 'riscos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.planos_de_acao.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse([dados.planos_de_acao]);
+            out.push({
+                name: 'planos_de_acao.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.monitoramento_planos_de_acao.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse([dados.monitoramento_planos_de_acao]);
+            out.push({
+                name: 'monitoramento_planos_de_acao.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.licoes_aprendidas.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse([dados.licoes_aprendidas]);
+            out.push({
+                name: 'licoes_aprendidas.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.acompanhamentos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse([dados.acompanhamentos]);
+            out.push({
+                name: 'acompanhamentos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        return [
+            {
+                name: 'info.json',
+                buffer: Buffer.from(
+                    JSON.stringify({
+                        params: params,
+                        horario: Date2YMD.tzSp2UTC(new Date()),
+                    }),
+                    'utf8',
+                ),
+            },
+            ...out,
+        ];
+    }
+
     private async queryDataProjetos(filters: CreateRelProjetosDto, out: RelProjetosDto[]) {
         const sql = `SELECT
             projeto.id,
@@ -542,34 +646,4 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
-        const dados = myInput as PPProjetosRelatorioDto;
-
-        const out: FileOutput[] = [];
-
-
-        const json2csvParser = new Parser({
-            ...DefaultCsvOptions,
-            transforms: defaultTransform,
-        });
-        const linhas = json2csvParser.parse([dados.linhas]);
-        out.push({
-            name: 'detalhes-do-projeto.csv',
-            buffer: Buffer.from(linhas, 'utf8'),
-        });
-
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8',
-                ),
-            },
-            ...out,
-        ];
-    }
 }
