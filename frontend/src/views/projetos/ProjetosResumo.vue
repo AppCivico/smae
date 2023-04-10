@@ -117,16 +117,141 @@ iniciar();
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['principais_etapas'].spec.label }}
+          {{ schema.fields['nao_escopo'].spec.label }}
         </dt>
         <dd
           class="t13"
-          v-html="emFoco?.principais_etapas || '-'"
+          v-html="emFoco?.nao_escopo || '-'"
         />
       </dl>
     </div>
 
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields['objetivo'].spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.objetivo || '-'"
+        />
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields['objeto'].spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.objeto || '-'"
+        />
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields['publico_alvo'].spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.publico_alvo || '-'"
+        />
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields['premissas'].spec.label }}
+        </dt>
+        <dd class="t13">
+          <ul>
+            <li v-if="!emFoco?.premissas?.length">
+              {{ '-' }}
+            </li>
+            <li
+              v-for="item in emFoco?.premissas"
+              :key="item.id"
+            >
+              {{ item.premissa }}
+            </li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields['restricoes'].spec.label }}
+        </dt>
+        <dd class="t13">
+          <ul>
+            <li v-if="!emFoco?.restricoes?.length">
+              {{ '-' }}
+            </li>
+            <li
+              v-for="item in emFoco?.restricoes"
+              :key="item.id"
+            >
+              {{ item.restricao }}
+            </li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
     <hr class="mb1 f1">
+
+    <h2>
+      {{ schema.fields['fonte_recursos'].spec.label }}
+    </h2>
+
+    <div class="flex g2 mb2">
+      <table class="tablemain">
+        <thead>
+          <tr>
+            <th>
+              {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_cod_sof.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_ano.spec.label }}
+            </th>
+            <th class="cell--number">
+              {{ schema.fields.fonte_recursos.innerType.fields.valor_nominal.spec.label }}
+            </th>
+            <th class="cell--number">
+              {{ schema.fields.fonte_recursos.innerType.fields.valor_percentual.spec.label }}
+            </th>
+          </tr>
+        </thead>
+
+        <tr
+          v-for="item in emFoco?.fonte_recursos"
+          :key="item.id"
+        >
+          <td>{{ item.fonte_recurso_cod_sof }}</td>
+          <td>{{ item.fonte_recurso_ano }}</td>
+          <td class="cell--number">
+            {{ item.valor_nominal ? `R$ ${dinheiro(item.valor_nominal)}` : '-' }}
+          </td>
+          <td class="cell--number">
+            {{ item.valor_percentual ? `R$ ${dinheiro(item.valor_percentual)}` : '-' }}
+          </td>
+        </tr>
+        <tr v-if="!emFoco?.fonte_recursos?.length">
+          <td
+            colspan="4"
+            class="center"
+          >
+            -
+          </td>
+        </tr>
+      </table>
+    </div>
 
     <h2>
       Órgãos
