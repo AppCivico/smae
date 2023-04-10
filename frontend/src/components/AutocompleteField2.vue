@@ -125,3 +125,8 @@ function buscar(e, item, g, label) {
     </div>
   </template>
 </template>
+<style scoped>
+.like-a__text {
+  white-space: nowrap;
+}
+</style>
