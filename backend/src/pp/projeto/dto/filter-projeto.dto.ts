@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNumber, isNumber, IsOptional } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsNumber, isNumber, IsOptional } from 'class-validator';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -16,10 +16,14 @@ export class FilterProjetoDto {
 
     @IsOptional()
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
+    @IsArray({ message: '$property| precisa ser uma array.' })
+    @ArrayMinSize(0, { message: '$property| precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
     @IsEnum(ProjetoStatus, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
+        each: true
     })
-    status?: ProjetoStatus;
+    status?: ProjetoStatus[];
 
     /**
      * órgão responsável
