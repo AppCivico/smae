@@ -10,6 +10,7 @@ import { PPProjetoModule } from '../pp-projeto/pp-projeto.module';
 import { PrevisaoCustoModule } from '../previsao-custo/previsao-custo.module';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
+import { PPProjetosModule } from '../pp-projetos/pp-projetos.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { ReportsService } from './reports.service';
         MonitoramentoMensalModule,
         PrevisaoCustoModule,
         PPProjetoModule,
+        PPProjetosModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
