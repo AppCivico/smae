@@ -10,7 +10,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const projetosStore = useProjetosStore();
 const {
-  lista, chamadasPendentes, erro,
+  chamadasPendentes, erro,
 } = storeToRefs(projetosStore);
 const route = useRoute();
 const router = useRouter();
