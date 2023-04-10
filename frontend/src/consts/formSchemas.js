@@ -264,7 +264,8 @@ const planoDeAção = object()
       .label('Contato do responsável'),
     contramedida: string()
       .label('Contra-medidas')
-      .max(50000),
+      .max(50000)
+      .required(),
     custo: number()
       .label('Custo da contra-medida')
       .min(0)
@@ -292,7 +293,7 @@ const planoDeAção = object()
       .typeError('Data inválida'),
     responsavel: string()
       .label('Responsável')
-      .nullable()
+      .required()
       .max(60),
   }, [['orgao_id', 'responsavel']]);
 
