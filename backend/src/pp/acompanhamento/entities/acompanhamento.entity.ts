@@ -25,7 +25,7 @@ export class DetailProjetoAcompanhamentoDto {
     detalhamento_status: string | null
     pontos_atencao: string | null
     prazo_realizado: Date | null
-    cronograma_paralizado: boolean
+    cronograma_paralisado: boolean
     risco: RiscoIdCod[] | null
 }
 
