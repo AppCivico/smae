@@ -304,8 +304,10 @@ export class TarefaService {
         for (const tarefa of tarefas) {
 
             // a tarefa tem que ter todas as datas de planejamento para funcionar
-            if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado)
+            if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
+                this.logger.warn(`tarefa ${tarefa.id} sem inicio_planejado|duracao_planejado|termino_planejado, não será calculado projeção`);
                 continue;
+            }
 
             if (tarefa.nivel == 1) {
                 if (!max_term_planjeado || (max_term_planjeado && tarefa.termino_planejado.valueOf() > max_term_planjeado.valueOf()))
@@ -320,14 +322,16 @@ export class TarefaService {
                 tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
                 tarefa.projecao_termino = DateTime.fromJSDate(tarefa.termino_real);
 
+                this.logger.debug(`tarefa ${tarefa.id} já finalizou`);
                 // acredito que vai precisar de mais um loop pra verificar se a data do parent tem filhos atrasados
                 // mas o filho em si acho que vai ficar com undefined mesmo
                 // tarefa.projecao_atraso = 0;
                 continue;
             }
 
-            // se a tarefa tem dependencia, mas já iniciou, ela entra no algoritimo normal (soma da duração planejada)
-            if (tarefa.n_filhos_imediatos == 0 && tarefa.tarefa_pai_id !== null &&
+            // se não tem filhos (é folha, mesmo se for no nivel 1) OU
+            // se a tarefa tem dependência, mas já iniciou, ela entra no algorítimo normal (soma da duração planejada)
+            if (tarefa.n_filhos_imediatos == 0 &&
                 (
                     tarefa.dependencias.length == 0 || tarefa.inicio_real
                 )) {
@@ -336,6 +340,7 @@ export class TarefaService {
                 tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
 
                 tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
+                this.logger.debug(`tarefa ${tarefa.id} não tem dependência, projecao_inicio=${Date2YMD.toString(tarefa.projecao_inicio.toJSDate())}, projecao_termino=${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`);
 
             }
         }
@@ -402,66 +407,86 @@ export class TarefaService {
                 // só pode usar a data de inicio, se for maior que a data corrente
                 tarefa.projecao_inicio = dataInicioMax && dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
                 tarefa.projecao_termino = dataTerminoMax;
+                this.logger.debug(`tarefa ${tarefa.id} calculado com base nas dependências, usando término=data de término máxima das dependências`)
             } else {
                 // se não encontrou de termino, mas tem data de inicio, usa o inicio projetado com a duração, se tiver disponível
 
+
                 if (tarefa.duracao_planejado) {
+                    this.logger.debug(`tarefa ${tarefa.id} calculado com base nas dependências, usando término=data projeção de inicio + soma da duração planejada`)
                     // só pode usar a data de inicio, se for maior que a data corrente
                     tarefa.projecao_inicio = dataInicioMax && dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
                     tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 })
                 } else {
-                    this.logger.warn(`tarefa ${tarefa.id} não tem duração planejada e não foi possível projeção a duração pelas dependencias`)
+                    this.logger.warn(`tarefa ${tarefa.id} não tem duração planejada e não foi possível projeção a duração pelas dependências`)
                 }
             }
 
         }
 
+        // calculando projeção de quem tem filhos
         for (const tarefa of tarefas) {
+            // filha quem não tem filho
+            if (tarefa.n_filhos_imediatos == 0) continue;
+
             // a tarefa tem que ter todas as datas de planejamento para funcionar
-            if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado)
+            if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
+                this.logger.warn(`tarefa ${tarefa.id} sem inicio_planejado|duracao_planejado|termino_planejado, não será calculado projeção pelos filhos`);
                 continue;
-
-            // agora sai buscando pelo nós
-            if (tarefa.n_filhos_imediatos > 0) {
-                const filhos = tarefas.filter((r) => { return r.tarefa_pai_id == tarefa.id });
-
-                let atraso_max = -1;
-                for (const filho of filhos) {
-                    if (filho.termino_real) continue;
-
-                    if (!filho.projecao_termino) {
-                        this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
-                        continue;
-                    }
-
-                    // vai setando a projeção de termino do parent de acordo com o max do filhos
-                    if (!tarefa.projecao_termino || (tarefa.projecao_termino && filho.projecao_termino.valueOf() > tarefa.projecao_termino.valueOf()))
-                        tarefa.projecao_termino = filho.projecao_termino;
-
-                    const d = filho.projecao_termino.diff(DateTime.fromJSDate(tarefa.termino_planejado)).as('days');
-
-                    if (d > 0) {
-                        this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => ${d} dias de atraso`);
-                        filho.projecao_atraso = d;
-
-                        if (atraso_max < d) atraso_max = d;
-                    } else {
-                        this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => sem atraso`);
-                    }
-                }
-
-                if (atraso_max > 0) {
-                    this.logger.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
-
-                    tarefa.projecao_atraso = atraso_max;
-                } else {
-                    this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
-                    tarefa.projecao_atraso = 0;
-                }
-
-                if (tarefa.projecao_termino)
-                    this.logger.debug(`tarefa ${tarefa.id} - max projeção termino: ${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`);
             }
+
+            const filhos = tarefas.filter((r) => { return r.tarefa_pai_id == tarefa.id });
+
+            let projecao_inicio_min: DateTime | undefined = undefined;
+            let atraso_max = -1;
+            for (const filho of filhos) {
+                if (filho.termino_real) continue;
+
+                if (!filho.projecao_termino) {
+                    this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
+                    continue;
+                }
+
+                if (filho.projecao_inicio &&
+                    (!projecao_inicio_min ||
+                        (projecao_inicio_min && filho.projecao_inicio.valueOf() < projecao_inicio_min.valueOf()))
+                )
+                    projecao_inicio_min = filho.projecao_inicio;
+
+                // vai setando a projeção de termino do parent de acordo com o max do filhos
+                if (!tarefa.projecao_termino || (tarefa.projecao_termino && filho.projecao_termino.valueOf() > tarefa.projecao_termino.valueOf()))
+                    tarefa.projecao_termino = filho.projecao_termino;
+
+                const d = filho.projecao_termino.diff(DateTime.fromJSDate(tarefa.termino_planejado)).as('days');
+
+                if (d > 0) {
+                    this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => ${d} dias de atraso`);
+                    filho.projecao_atraso = d;
+
+                    if (atraso_max < d) atraso_max = d;
+                } else {
+                    this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(filho.projecao_termino.toJSDate())}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => sem atraso`);
+                }
+            }
+
+            if (atraso_max > 0) {
+                this.logger.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
+
+                tarefa.projecao_atraso = atraso_max;
+            } else {
+                this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
+                tarefa.projecao_atraso = 0;
+            }
+
+            if (projecao_inicio_min) {
+                tarefa.projecao_inicio = projecao_inicio_min;
+            } else {
+                this.logger.warn(`tarefa ${tarefa.id} - faltando projeção de inicio`);
+            }
+
+            if (tarefa.projecao_termino)
+                this.logger.debug(`tarefa ${tarefa.id} - max projeção termino: ${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`);
+
 
         }
 
