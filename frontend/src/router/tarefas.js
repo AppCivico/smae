@@ -1,3 +1,4 @@
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
 import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasLista from '@/views/tarefas/TarefasLista.vue';
@@ -69,7 +70,7 @@ export default {
           }),
 
           meta: {
-            título: 'Editar tarefa',
+            título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
             títuloParaMenu: 'Editar tarefa',
 
             rotaDeEscape: 'tarefasListar',
@@ -93,7 +94,9 @@ export default {
             tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
           }),
           meta: {
-            título: 'Registrar progresso',
+            título: () => (useTarefasStore()?.emFoco?.tarefa
+              ? `Registro de progresso de ${useTarefasStore().emFoco.tarefa}`
+              : 'Registrar progresso'),
             títuloParaMenu: 'Progresso',
 
             rotaDeEscape: 'tarefasListar',

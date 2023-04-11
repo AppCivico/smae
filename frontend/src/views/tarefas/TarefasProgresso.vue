@@ -59,7 +59,7 @@ async function onSubmit(_, { controlledValues: carga }) {
   <div class="flex spacebetween center mb2">
     <div>
       <div class="t12 uc w700 tamarelo">
-        {{ $route?.meta?.título || 'Registro de progresso' }}
+        {{ 'Registro de progresso' }}
       </div>
 
       <h1>{{ emFoco?.tarefa }}</h1>
