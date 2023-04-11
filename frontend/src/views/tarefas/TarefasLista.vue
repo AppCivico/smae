@@ -10,7 +10,7 @@ const {
   árvoreDeTarefas, chamadasPendentes, erro,
 } = storeToRefs(tarefasStore);
 
-const projetoEmFoco = computed(() => tarefasStore?.extra.projeto);
+const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto);
 
 // eslint-disable-next-line max-len
 const nívelMáximoPermitido = computed(() => tarefasStore?.extra?.portfolio?.nivel_maximo_tarefa || 0);
