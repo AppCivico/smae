@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma, ProjetoStatus } from '@prisma/client';
+import { Prisma, ProjetoMotivoRelatorio, ProjetoStatus } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ProjetoService } from '../projeto.service';
@@ -63,8 +63,15 @@ export class AcaoService {
                 }
             });
 
+            let motivo: ProjetoMotivoRelatorio = 'MudancaDeStatus';
+            switch (dbAction.status) {
+                case 'Selecionado': motivo = 'ProjetoSelecionado'; break;
+                case 'Planejado': motivo = 'ProjetoPlanejado'; break;
+                case 'Fechado': motivo = 'ProjetoEncerrado'; break;
+            }
+
             // basta isso para gerar um relatório
-            await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id } });
+            await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id, motivado_relatorio: motivo } });
         }, {
             isolationLevel: 'Serializable',
             maxWait: 60 * 1000,
