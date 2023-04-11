@@ -151,7 +151,7 @@ export default {
           meta: {
             título: () => useProjetosStore()?.emFoco?.nome || 'Editar projeto',
             títuloParaMenu: 'Editar projeto',
-            rotaDeEscape: 'projetosListar',
+            rotaDeEscape: 'projetosResumo',
           },
         },
 
