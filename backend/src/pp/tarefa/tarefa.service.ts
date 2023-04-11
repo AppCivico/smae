@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
-import { plainToInstance, Type } from 'class-transformer';
+import { Type, plainToInstance } from 'class-transformer';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -8,14 +8,16 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
 import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
-import { DependenciasDatasDto, ListTarefaListDto, TarefaDetailDto, TarefaItemDbDto, TarefaItemDto, TarefaItemProjetadoDto } from './entities/tarefa.entity';
+import { DependenciasDatasDto, ListTarefaListDto, TarefaDetailDto, TarefaItemDbDto, TarefaItemProjetadoDto } from './entities/tarefa.entity';
 import { TarefaUtilsService } from './tarefa.service.utils';
 
 // ta os types de da lib "graphlib" que é por enquanto pure-js
+import { Cron } from '@nestjs/schedule';
 import { Graph } from 'graphlib';
 import { DateTime } from 'luxon';
-import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { JOB_LOCK_NUMBER_TAREFA } from '../../common/dto/locks';
 import { ProjetoService } from '../projeto/projeto.service';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
@@ -206,7 +208,7 @@ export class TarefaService {
     }
 
 
-    async findAll(projetoId: number, user: PessoaFromJwt, filter: FilterPPTarefa): Promise<ListTarefaListDto> {
+    async findAll(projetoId: number, user: PessoaFromJwt | undefined, filter: FilterPPTarefa): Promise<ListTarefaListDto> {
 
         const projeto = await this.projetoService.findOne(projetoId, user, true);
 
@@ -1146,7 +1148,53 @@ export class TarefaService {
         return (graphlib.alg.topsort(grafo) as string[]).map(n => +n);
     }
 
+    @Cron('15 * * * * *')
+    async handleCron() {
+        if (Boolean(process.env['DISABLE_TAREFA_CRONTAB'])) return;
 
+        await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient) => {
+                this.logger.debug(`Adquirindo lock para tick do atraso e projeções dos projetos`);
+                const locked: {
+                    locked: boolean;
+                }[] = await prisma.$queryRaw`SELECT
+                pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER_TAREFA}) as locked
+            `;
+                if (!locked[0].locked) {
+                    this.logger.debug(`Já está em processamento...`);
+                    return;
+                }
+
+                await this.verificaAtrasoProjetos();
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
+                isolationLevel: 'Serializable',
+            },
+        );
+    }
+
+    async verificaAtrasoProjetos() {
+        // order by random pra se tiver algum projeto com erro 500, ainda vai eventualmente
+        // processar a maioria eventualmente, limite pra não pra não estourar o tempo do lock
+        const projetos: { id: number }[] = await this.prisma.$queryRaw`SELECT id from projeto
+        WHERE tarefas_proximo_recalculo < NOW() ORDER BY random() LIMIT 10`;
+
+        const amanha = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').plus({ day: 1 });
+        for (const projeto of projetos) {
+            this.logger.debug(`Recalculando atraso e projeções do projeto ${projeto.id}`);
+
+            await this.findAll(projeto.id, undefined, {});
+            await this.prisma.projeto.update({
+                where: { id: projeto.id },
+                data: {
+                    tarefas_proximo_recalculo: amanha.toJSDate()
+                }
+            });
+        }
+
+    }
 }
 /*
             const graphvizString = `
