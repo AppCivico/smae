@@ -145,6 +145,15 @@ export const useOrcamentosStore = defineStore({
   },
 
   getters: {
+    FontesDeRecursosPorAnoPorCódigo({ DotacaoSegmentos }) {
+      return Object.keys(DotacaoSegmentos).reduce((acc,cur)=> {
+        acc[cur] = DotacaoSegmentos[cur].fonte_recursos?.reduce((acc2,cur2)=> {
+          return {...acc2, [cur2.codigo]: cur2}
+        },{});
+        return acc;
+      },{});
+    },
+
     orcamentoEmFoco({ OrcamentoRealizado }) {
       const { ano, id } = this.route.params;
       const anoEmFoco = OrcamentoRealizado[ano] || [];
