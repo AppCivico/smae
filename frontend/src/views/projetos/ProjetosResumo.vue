@@ -5,10 +5,16 @@ import statuses from '@/consts/projectStatuses';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
+import truncate from '@/helpers/truncate';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
+import { watch } from 'vue';
 
+const OrçamentosStore = useOrcamentosStore();
+
+const { DotacaoSegmentos, FontesDeRecursosPorAnoPorCódigo } = storeToRefs(OrçamentosStore);
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const {
@@ -20,6 +26,18 @@ defineProps({
     type: Number,
     default: 0,
   },
+});
+
+watch(() => emFoco.value, () => {
+  if (Array.isArray(emFoco?.value?.fonte_recursos)) {
+    emFoco.value.fonte_recursos.forEach((fonte) => {
+      if (fonte.fonte_recurso_ano) {
+        if (!Array.isArray(DotacaoSegmentos?.value?.[fonte.fonte_recurso_ano]?.fonte_recursos)) {
+          OrçamentosStore.getDotacaoSegmentos(fonte.fonte_recurso_ano);
+        }
+      }
+    });
+  }
 });
 
 function iniciar() {
@@ -212,18 +230,23 @@ iniciar();
 
     <div class="flex g2 mb2">
       <table class="tablemain">
+        <col class="col--minimum">
+        <col>
+        <col>
+        <col>
+        <col>
         <thead>
           <tr>
-            <th>
+            <th class="cell--minimum" colspan="2">
               {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_cod_sof.spec.label }}
             </th>
-            <th>
+            <th class="cell--number cell--minimum">
               {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_ano.spec.label }}
             </th>
-            <th class="cell--number">
+            <th class="cell--number cell--minimum">
               {{ schema.fields.fonte_recursos.innerType.fields.valor_nominal.spec.label }}
             </th>
-            <th class="cell--number">
+            <th class="cell--number cell--minimum">
               {{ schema.fields.fonte_recursos.innerType.fields.valor_percentual.spec.label }}
             </th>
           </tr>
@@ -233,8 +256,22 @@ iniciar();
           v-for="item in emFoco?.fonte_recursos"
           :key="item.id"
         >
-          <td>{{ item.fonte_recurso_cod_sof }}</td>
-          <td>{{ item.fonte_recurso_ano }}</td>
+          <td>
+            {{ item.fonte_recurso_cod_sof }}
+          </td>
+          <td :title="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao">
+            <template v-if="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao">
+              {{
+                truncate(
+                  FontesDeRecursosPorAnoPorCódigo[item.fonte_recurso_ano][item.fonte_recurso_cod_sof].descricao,
+                  36
+                )
+              }}
+            </template>
+          </td>
+          <td class="cell--number">
+            {{ item.fonte_recurso_ano }}
+          </td>
           <td class="cell--number">
             {{ item.valor_nominal ? `R$ ${dinheiro(item.valor_nominal)}` : '-' }}
           </td>
@@ -244,7 +281,7 @@ iniciar();
         </tr>
         <tr v-if="!emFoco?.fonte_recursos?.length">
           <td
-            colspan="4"
+            colspan="5"
             class="center"
           >
             -
