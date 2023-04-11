@@ -146,7 +146,10 @@ async function onSubmit(_, { controlledValues: valores }) {
 
     if (resposta) {
       const rotaApósSalvamento = props.projetoId
-        ? { name: 'projetosListar' }
+        ? {
+          name: 'projetosResumo',
+          params: { projetoId: resposta.id },
+        }
         : {
           name: 'projetosEditar',
           params: { projetoId: resposta.id },
