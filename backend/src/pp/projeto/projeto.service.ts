@@ -420,6 +420,7 @@ export class ProjetoService {
                 tolerancia_atraso: true,
                 projecao_termino: true,
                 realizado_duracao: true,
+                percentual_concluido: true,
 
                 orgao_gestor: {
                     select: {
