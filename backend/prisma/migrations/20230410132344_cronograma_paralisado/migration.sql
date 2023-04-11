@@ -25,7 +25,7 @@ v_previsao_custo  numeric;
 v_realizado_custo  numeric;
 v_previsao_duracao int;
 v_realizado_duracao int;
-v_percentual_concluido int;
+v_percentual_concluido numeric;
 
 BEGIN
 
