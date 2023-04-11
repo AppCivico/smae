@@ -257,7 +257,15 @@ export class ReportsService {
         );
     }
 
-    private async verificaRelatorioProjetos() {
+    async executaRelatorioProjetos(filaId: number) {
+        try {
+            await this.verificaRelatorioProjetos(filaId);
+        } catch (error) {
+            this.logger.error(`Falha ao executar executaRelatorioProjetos(${filaId}): ${error}`);
+        }
+    }
+
+    private async verificaRelatorioProjetos(filtroId?: number | undefined) {
 
         const pending = await this.prisma.projetoRelatorioFila.findMany({
             where: {
@@ -265,6 +273,7 @@ export class ReportsService {
                 AND: [
                     {
                         OR: [
+                            { id: filtroId },
                             { congelado_em: null },
                             {
                                 congelado_em: {

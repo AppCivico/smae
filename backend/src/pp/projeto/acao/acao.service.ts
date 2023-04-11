@@ -42,6 +42,8 @@ export class AcaoService {
         const dbAction = dePara[dto.acao];
         if (!dbAction) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
 
+        const now = new Date(Date.now());
+        let reportFilaId: number | undefined;
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             let arquivado: boolean | undefined = undefined;
             let eh_prioritario: boolean | undefined = undefined;
@@ -55,7 +57,7 @@ export class AcaoService {
             await prismaTx.projeto.update({
                 where: { id: projeto.id },
                 data: {
-                    [dbAction.date]: new Date(Date.now()),
+                    [dbAction.date]: now,
                     [dbAction.user]: user.id,
                     status: dbAction.status,
                     eh_prioritario,
@@ -72,14 +74,27 @@ export class AcaoService {
             }
 
             // basta isso para gerar um relatório
-            await prismaTx.projetoRelatorioFila.create({ data: { projeto_id: projeto.id, motivado_relatorio: motivo } });
+            const fila = await prismaTx.projetoRelatorioFila.create({
+                data: {
+                    projeto_id: projeto.id,
+                    motivado_relatorio: motivo,
+                    congelado_em: now,
+                    // coloca na fila, mas já coloca com o processamento congelado,
+                    // pois vamos forçar um processamento imediato nesta própria thread
+                },
+                select: { id: true },
+            });
+            reportFilaId = fila.id;
         }, {
             isolationLevel: 'Serializable',
             maxWait: 60 * 1000,
             timeout: 15 * 1000,
         });
 
-
+        // não precisa do await (não é necessário travar o response do usuário até a finalização do relatório
+        // mas o executaRelatorioProjetos faz o log em caso de erro
+        if (reportFilaId)
+            this.reportsService.executaRelatorioProjetos(reportFilaId)
 
     }
 
