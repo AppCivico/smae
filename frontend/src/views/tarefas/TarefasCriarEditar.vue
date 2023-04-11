@@ -155,7 +155,7 @@ iniciar();
         v-if="tarefaId"
         class="t12 uc w700 tamarelo"
       >
-        {{ $route?.meta?.título || 'Editar tarefa' }}
+        {{ 'Editar tarefa' }}
       </div>
       {{ emFoco?.tarefa || (tarefaId ? 'Tarefa' : 'Nova tarefa') }}
     </h1>
