@@ -1,7 +1,7 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { FonteRelatorio, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
@@ -36,12 +36,14 @@ export class ReportsService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
-        private readonly orcamentoService: OrcamentoService,
-        private readonly uploadService: UploadService,
-        private readonly indicadoresService: IndicadoresService,
-        private readonly mmService: MonitoramentoMensalService,
-        private readonly previsaoCustoService: PrevisaoCustoService,
-        private readonly ppProjetoService: PPProjetoService,
+
+        @Inject(forwardRef(() => OrcamentoService)) private readonly orcamentoService: OrcamentoService,
+        @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService,
+        @Inject(forwardRef(() => IndicadoresService)) private readonly indicadoresService: IndicadoresService,
+        @Inject(forwardRef(() => MonitoramentoMensalService)) private readonly mmService: MonitoramentoMensalService,
+        @Inject(forwardRef(() => PrevisaoCustoService)) private readonly previsaoCustoService: PrevisaoCustoService,
+        @Inject(forwardRef(() => PPProjetoService)) private readonly ppProjetoService: PPProjetoService
+
     ) { }
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {

@@ -1,16 +1,17 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Prisma, ProjetoMotivoRelatorio, ProjetoStatus } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ProjetoService } from '../projeto.service';
 import { CreateAcaoDto, ProjetoAcao } from './dto/acao.dto';
+import { ReportsService } from '../../../reports/relatorios/reports.service';
 
 @Injectable()
 export class AcaoService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly projetoService: ProjetoService,
-
+        @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
+        @Inject(forwardRef(() => ReportsService)) private readonly reportsService: ReportsService,
     ) { }
 
     async create(dto: CreateAcaoDto, user: PessoaFromJwt) {
@@ -77,6 +78,8 @@ export class AcaoService {
             maxWait: 60 * 1000,
             timeout: 15 * 1000,
         });
+
+
 
     }
 
