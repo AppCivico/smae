@@ -2087,11 +2087,11 @@ enum ProjetoStatus {
     Registrado // Arquivado ou Priorizado caso seja priorizado
     Selecionado // Arquivado ou EmPlanejamento caso seja Aprovado
     EmPlanejamento // Arquivado ou Validado caso o iniciado
-    Planejado
+    Planejado // vai para o SEI o arquivo do relatorio
     Validado // EmSuspensao ou EmFechamento caso fechado
     EmAcompanhamento // Suspenso, fechado
     Suspenso // Volta pra EmAcompanhamento ou Fechado
-    Fechado //
+    Fechado // vai para o SEI o arquivo do relatorio
 }
 
 model Portfolio {
@@ -2324,8 +2324,9 @@ model Projeto {
 
 enum ProjetoMotivoRelatorio {
     MudancaDeStatus
-    ProjetoEmAprovacao
-    ProjetoTerminou
+    ProjetoSelecionado
+    ProjetoPlanejado
+    ProjetoEncerrado
 }
 
 model ProjetoRelatorioFila {
