@@ -81,8 +81,7 @@ export class TarefaUtilsService {
     }
 
     async lockProjeto(prismaTx: Prisma.TransactionClient, projetoId: number) {
-        // modifica o projeto, pro banco entrar em modo serialize em todas as tarefas
-        await prismaTx.projeto.update({ where: { id: projetoId }, data: { tarefa_lock_seq: { increment: 1 } } });
+        await prismaTx.$executeRaw`select id from projeto where id = ${projetoId}::int FOR UPDATE`;
     }
 
     async verifica_nivel_maximo(projetoId: number, nivel: number) {
