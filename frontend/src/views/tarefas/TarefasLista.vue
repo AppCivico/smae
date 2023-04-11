@@ -112,7 +112,7 @@ iniciar();
           Percentual concluído
         </dt>
         <dd class="t13">
-          {{ projetoEmFoco?.percentual_concluido
+          {{ typeof projetoEmFoco?.percentual_concluido === 'number'
             ? projetoEmFoco?.percentual_concluido + '%'
             : '-' }}
         </dd>
@@ -122,7 +122,9 @@ iniciar();
           Atraso
         </dt>
         <dd class="t13">
-          {{ projetoEmFoco?.atraso ? projetoEmFoco?.atraso + ' dias' : '-' }}
+          {{ projetoEmFoco?.atraso
+            ? projetoEmFoco?.atraso + ' dias'
+            : '-' }}
         </dd>
       </div>
       <div class="f1 mb1">
@@ -130,7 +132,7 @@ iniciar();
           Custo previsto
         </dt>
         <dd class="t13">
-          {{ projetoEmFoco?.previsao_custo
+          {{ typeof projetoEmFoco?.previsao_custo === 'number'
             ? `R$${dinheiro(projetoEmFoco?.previsao_custo)}`
             : '-' }}
         </dd>
@@ -140,7 +142,7 @@ iniciar();
           Custo real
         </dt>
         <dd class="t13">
-          {{ projetoEmFoco?.realizado_custo
+          {{ typeof projetoEmFoco?.realizado_custo === 'number'
             ? `R$${dinheiro(projetoEmFoco?.realizado_custo)}`
             : '-' }}
         </dd>
