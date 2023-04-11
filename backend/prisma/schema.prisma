@@ -2315,8 +2315,6 @@ model Projeto {
     ProjetoRelatorioFila      ProjetoRelatorioFila[]
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
-    tarefa_lock_seq Int @default(0)
-
     // data em que o sistema deve novamente calcular os atrasos automaticamente
     tarefas_proximo_recalculo DateTime @default(now())
 

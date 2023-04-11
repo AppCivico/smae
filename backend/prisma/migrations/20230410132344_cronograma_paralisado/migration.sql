@@ -5,6 +5,8 @@ CREATE TYPE "ProjetoMotivoRelatorio" AS ENUM ('MudancaDeStatus', 'ProjetoEmAprov
 ALTER TABLE "projeto" ADD COLUMN     "percentual_concluido" INTEGER,
 ADD COLUMN     "tarefas_proximo_recalculo" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
+ALTER TABLE "projeto" drop column tarefa_lock_seq;
+
 -- AlterTable
 ALTER TABLE "projeto_acompanhamento" rename COLUMN "cronograma_paralizado" to "cronograma_paralisado";
 
