@@ -1,6 +1,7 @@
 <script setup>
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -47,7 +48,7 @@ iniciar();
   </div>
 
   <div class="boards mb4">
-    <dl class="flex g2">
+    <dl class="flex flexwrap g2">
       <div class="mr2">
         <dt class="t12 uc w700 mb05 tamarelo">
           Início previsto
@@ -96,29 +97,52 @@ iniciar();
           }}
         </dd>
       </div>
-
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Duração
         </dt>
         <dd class="t13">
-          {{ projetoEmFoco?.realizado_duracao ? projetoEmFoco?.realizado_duracao + ' dias' : '-' }}
+          {{ projetoEmFoco?.realizado_duracao
+            ? projetoEmFoco?.realizado_duracao + ' dias'
+            : '-' }}
         </dd>
       </div>
-      <!-- <div class="f1 mb1">
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Conclusão
+          Percentual concluído
         </dt>
         <dd class="t13">
-          {{ projetoEmFoco?.percentual_concluido ? projetoEmFoco?.percentual_concluido + '%' : '-' }}
+          {{ projetoEmFoco?.percentual_concluido
+            ? projetoEmFoco?.percentual_concluido + '%'
+            : '-' }}
         </dd>
-      </div> -->
+      </div>
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Atraso
         </dt>
         <dd class="t13">
           {{ projetoEmFoco?.atraso ? projetoEmFoco?.atraso + ' dias' : '-' }}
+        </dd>
+      </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Custo previsto
+        </dt>
+        <dd class="t13">
+          {{ projetoEmFoco?.previsao_custo
+            ? `R$${dinheiro(projetoEmFoco?.previsao_custo)}`
+            : '-' }}
+        </dd>
+      </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Custo real
+        </dt>
+        <dd class="t13">
+          {{ projetoEmFoco?.realizado_custo
+            ? `R$${dinheiro(projetoEmFoco?.realizado_custo)}`
+            : '-' }}
         </dd>
       </div>
     </dl>
