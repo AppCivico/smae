@@ -2,13 +2,13 @@
 import dinheiro from '@/helpers/dinheiro';
 import { useField } from 'vee-validate';
 import {
-  computed, toRef
+  computed, toRef,
 } from 'vue';
 
 const props = defineProps({
   value: {
-    type: Number,
-    required: true,
+    type: Number || null,
+    default: null,
   },
   // necessária para que o vee-validate não se perca
   name: {
@@ -25,10 +25,15 @@ const { handleChange } = useField(name, undefined, {
 
 const typedValue = computed({
   get() {
-    return dinheiro(props.value);
+    return props.value === '' || props.value === null
+      ? null
+      : dinheiro(props.value);
   },
   set: (newValue) => {
-    const cleanValue = Number(newValue.replace(/[\D]/g, '')) / 100;
+    const cleanValue = newValue === '' || newValue === null
+      ? null
+      : Number(newValue.replace(/[\D]/g, '')) / 100;
+
     handleChange(cleanValue);
     emit('update:modelValue', cleanValue);
   },
