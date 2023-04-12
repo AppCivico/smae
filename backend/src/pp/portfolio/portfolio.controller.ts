@@ -26,7 +26,7 @@ export class PortfolioController {
     @Get()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
             linhas: await this.portfolioService.findAll(user),
