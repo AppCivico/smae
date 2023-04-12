@@ -419,8 +419,8 @@ const projeto = object()
       .label('Descrição de origem fora do PdM')
       .max(500)
       .nullable()
-      .when('origem_tipo', (origemTipo, field) => (origemTipo !== 'PdmSistema'
-        ? field.required('Esse campo é obrigatório caso não se escolha um Programa de Metas corrente')
+      .when('origem_tipo', (origemTipo, field) => (origemTipo && origemTipo !== 'PdmSistema'
+        ? field.required('Descrição de origem é obrigatório caso não se escolha um Programa de Metas corrente')
         : field)),
     origem_tipo: mixed()
       .label('Origem')
