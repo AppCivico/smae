@@ -954,7 +954,7 @@ iniciar();
           min="0"
           max="100"
           class="inputtext light mb1"
-          :disabled="emFoco.n_filhos_imediatos > 0"
+          :disabled="emFoco?.n_filhos_imediatos > 0"
           :class="{ 'error': errors.tolerancia_atraso }"
           @update:model-value="values.tolerancia_atraso = Number(values.tolerancia_atraso)"
         />
