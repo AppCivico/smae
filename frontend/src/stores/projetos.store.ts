@@ -1,7 +1,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ListDadosMetaIniciativaAtividadesDto } from '@/../../backend/src/meta/dto/create-meta.dto';
 import { ProjetoAcao } from '@/../../backend/src/pp/projeto/acao/dto/acao.dto';
-import { ListProjetoDto, ProjetoDetailDto, ProjetoPermissoesDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
+import {
+  ListProjetoDocumento,
+  ListProjetoDto,
+  ProjetoDetailDto,
+  ProjetoPermissoesDto
+} from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
@@ -19,12 +24,14 @@ interface ChamadasPendentes {
   pdmsSimplificados: boolean;
   metaSimplificada: boolean;
   mudarStatus: boolean;
+  arquivos: boolean;
 }
 
 interface Estado {
   lista: Lista;
   emFoco: ProjetoDetailDto | null;
   chamadasPendentes: ChamadasPendentes;
+  arquivos: ListProjetoDocumento['linhas'] | [];
 
   permissões: ProjetoPermissoesDto | null;
   pdmsSimplificados: PdmsSimplificados;
@@ -36,6 +43,7 @@ export const useProjetosStore = defineStore('projetos', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
+    arquivos: [],
 
     chamadasPendentes: {
       lista: true,
@@ -43,6 +51,7 @@ export const useProjetosStore = defineStore('projetos', {
       pdmsSimplificados: false,
       metaSimplificada: false,
       mudarStatus: false,
+      arquivos: false,
     },
 
     permissões: null,
@@ -155,6 +164,39 @@ export const useProjetosStore = defineStore('projetos', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.emFoco = false;
+        return false;
+      }
+    },
+
+    async buscarArquivos(id = 0, params = {}): Promise<void> {
+      this.chamadasPendentes.arquivos = true;
+
+      try {
+        const resposta: ListProjetoDocumento = await this.requestS.get(`${baseUrl}/projeto/${id || this.route.params.projetoId}/documento`, params);
+
+        if (Array.isArray(resposta.linhas)) {
+          this.arquivos = resposta.linhas;
+        }
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.arquivos = false;
+    },
+
+    async excluirArquivo(id: Number, idDoProjeto = 0): Promise<boolean> {
+      this.chamadasPendentes.arquivos = true;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento/${id}`);
+
+        this.arquivos = this.arquivos.filter(x => x.id !== id);
+        this.chamadasPendentes.arquivos = false;
+
+        console.debug('this.chamadasPendentes.arquivos', this.chamadasPendentes.arquivos);
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.arquivos = false;
         return false;
       }
     },
