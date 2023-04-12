@@ -164,7 +164,15 @@ async function onSubmit(_, { controlledValues: valores }) {
   }
 }
 
-watch(emFoco, () => {
+function iniciar() {
+  if (!portfolioStore.lista?.length) {
+    portfolioStore.buscarTudo();
+  }
+
+  ÓrgãosStore.getAllOrganResponsibles().finally(() => {
+    chamadasPendentes.value.emFoco = false;
+  });
+
   if (emFoco.value?.origem_tipo) {
     buscarDadosParaOrigens(emFoco.value.origem_tipo);
   }
@@ -173,22 +181,16 @@ watch(emFoco, () => {
     buscarMetaSimplificada(emFoco.value?.meta_id);
   }
 
-  if (emFoco.value?.fonte_recursos?.length) {
+  if (Array.isArray(emFoco.value?.fonte_recursos) && emFoco.value.fonte_recursos.length) {
     emFoco.value.fonte_recursos.forEach((x) => {
       BuscarDotaçãoParaAno(x.fonte_recurso_ano);
     });
   }
-});
-
-async function iniciar() {
-  if (!portfolioStore.lista?.length) {
-    portfolioStore.buscarTudo();
-  }
-
-  ÓrgãosStore.getAllOrganResponsibles().finally(() => {
-    chamadasPendentes.value.emFoco = false;
-  });
 }
+
+watch(emFoco, () => {
+  iniciar();
+});
 
 iniciar();
 </script>
