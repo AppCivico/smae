@@ -7,15 +7,19 @@ import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import truncate from '@/helpers/truncate';
-import {
-  useAlertStore, useOrcamentosStore, useOrgansStore, usePortfolioStore, useProjetosStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, Form,
 } from 'vee-validate';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const listaDeStatuses = arrayToValueAndLabel(statuses);
 
@@ -27,6 +31,7 @@ const projetosStore = useProjetosStore();
 const {
   chamadasPendentes,
   emFoco,
+  arquivos,
   erro,
   itemParaEdição,
   permissões,
@@ -108,6 +113,12 @@ async function buscarMetaSimplificada(valorOuEvento) {
   }
 }
 
+function excluirArquivo(id) {
+  alertStore.confirmAction('Deseja remover o arquivo?', () => {
+    projetosStore.excluirArquivo(id);
+  }, 'Remover');
+}
+
 async function onSubmit(_, { controlledValues: valores }) {
   const carga = valores;
 
@@ -168,6 +179,8 @@ function iniciar() {
   if (!portfolioStore.lista?.length) {
     portfolioStore.buscarTudo();
   }
+
+  projetosStore.buscarArquivos();
 
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
@@ -503,7 +516,7 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{
-            error: errors.orgao_gestor_id ,
+            error: errors.orgao_gestor_id,
             loading: ÓrgãosStore.organs.loading,
           }"
           :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
@@ -685,7 +698,7 @@ iniciar();
           :class="{ 'error': errors.origem_tipo }"
           @change="
             buscarDadosParaOrigens($event);
-            setFieldValue('meta_id',null);
+            setFieldValue('meta_id', null);
             setFieldValue('meta_codigo', null);
             setFieldValue('origem_outro', null);
           "
@@ -1404,6 +1417,69 @@ iniciar();
     </div>
   </Form>
 
+  <table
+    v-if="arquivos.length"
+    class="tablemain mb1"
+  >
+    <caption>
+      Lista de documentos
+    </caption>
+    <col>
+    <col>
+    <col class="col--botão-de-ação">
+    <thead>
+      <tr>
+        <th>Arquivo</th>
+        <th>Descrição</th>
+        <th />
+      </tr>
+    </thead>
+    <tbody>
+      <template
+        v-for="item in arquivos"
+        :key="item.id"
+      >
+        <tr>
+          <td
+            class="cell--minimum"
+            :class="{ loading: chamadasPendentes.arquivos }"
+          >
+            <a
+              :href="baseUrl + '/download/' + item?.arquivo?.download_token"
+              download
+            >
+              {{ item?.arquivo?.nome_original ?? '-' }}
+            </a>
+          </td>
+          <td
+            class=""
+            :class="{ loading: chamadasPendentes.arquivos }"
+          >
+            <a
+              :href="baseUrl + '/download/' + item?.arquivo?.download_token"
+              download
+            >
+              {{ item?.arquivo?.descricao ?? '-' }}
+            </a>
+          </td>
+          <td>
+            <button
+              class="like-a__text"
+              type="button"
+              :disabled="chamadasPendentes.arquivos"
+              @click="excluirArquivo(item.id)"
+            >
+              <svg
+                width="20"
+                height="20"
+                arial-label="excluir"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
   <span
     v-if="chamadasPendentes?.emFoco"
     class="spinner"
