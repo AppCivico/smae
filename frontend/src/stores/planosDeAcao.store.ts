@@ -105,8 +105,8 @@ export const usePlanosDeAçãoStore = defineStore('planosDeAção', {
   getters: {
     itemParaEdição: ({ emFoco, route }) => ({
       ...emFoco,
-      custo: emFoco?.custo || 0,
-      custo_percentual: emFoco?.custo_percentual || 0,
+      custo: emFoco?.custo || null,
+      custo_percentual: emFoco?.custo_percentual || null,
       orgao_id: emFoco?.orgao?.id || 0,
       prazo_contramedida: emFoco?.prazo_contramedida ? dateTimeToDate(emFoco.prazo_contramedida) : null,
       projeto_risco_id: Number(route?.params?.riscoId),
