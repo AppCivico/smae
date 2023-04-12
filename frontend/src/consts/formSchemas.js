@@ -269,12 +269,14 @@ const planoDeAção = object()
     custo: number()
       .label('Custo da contra-medida')
       .min(0)
-      .required(),
+      .required()
+      .typeError('${label} inválido'),
     custo_percentual: number()
       .label('% do custo do projeto')
       .max(100)
       .min(0)
-      .required(),
+      .required()
+      .typeError('${label} inválida'),
     data_termino: date()
       .label('Término efetivo')
       .nullable()
@@ -449,11 +451,12 @@ const projeto = object()
     previsao_custo: number()
       .label('Previsão de custos')
       .min(0)
-      .required('Previsão de custo é obrigatória'),
+      .required('Previsão de custo é obrigatória')
+      .typeError('${label} inválida'),
     previsao_inicio: date()
       .label('Previsão de início')
       .nullable()
-      .typeError('Data inválida'),
+      .typeError('${label} inválida'),
     previsao_termino: date()
       .label('Previsão de término')
       .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
@@ -642,7 +645,8 @@ const tarefa = object()
     custo_real: number()
       .label('Custo real')
       .min(0)
-      .nullable(),
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     dependencias: array()
       .label('Dependências')
       .of(
@@ -707,6 +711,7 @@ const tarefa = object()
       .label('Porcentual concluído')
       .min(0)
       .max(100)
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
         ? field.required()
         : field.nullable())),
