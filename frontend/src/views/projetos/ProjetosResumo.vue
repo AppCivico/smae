@@ -237,7 +237,10 @@ iniciar();
         <col>
         <thead>
           <tr>
-            <th class="cell--minimum" colspan="2">
+            <th
+              class="cell--minimum"
+              colspan="2"
+            >
               {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_cod_sof.spec.label }}
             </th>
             <th class="cell--number cell--minimum">
@@ -355,22 +358,13 @@ iniciar();
   <hr class="mb1 f1">
 
   <h2>
-    Resumo
+    Encerramento do projeto
   </h2>
-
-  <div
-    class="flex g2 mb1"
-    v-html="emFoco?.resumo"
-  />
 
   <table
     v-if="['Suspenso', 'Fechado'].indexOf(emFoco?.status) !== -1"
     class="tablemain"
   >
-    <caption class="t12 uc w700 mb1 tamarelo">
-      Encerramento do projeto
-    </caption>
-
     <colgroup>
       <col>
       <col>
