@@ -17,7 +17,7 @@ export class ProjetoProxyPdmMetasController {
     @Get('pdm-e-metas')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     @ApiOperation({
         summary: 'Consulta Metas e PDM do sistema',
         description: 'Como não há necessidade de puxar todo os dados da meta e do PDM, esse endpoint retorna um resumo de Meta+PDM',
@@ -29,7 +29,7 @@ export class ProjetoProxyPdmMetasController {
     @ApiBearerAuth('access-token')
     @Get('iniciativas-atividades')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     async buscaMetasIniciativaAtividades(@Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]): Promise<ListDadosMetaIniciativaAtividadesDto> {
         return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
     }

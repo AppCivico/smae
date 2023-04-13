@@ -13,7 +13,7 @@ import { FilterPlanoAcaoDto } from './dto/filter-plano-acao.dto';
 import { UpdatePlanoAcaoDto } from './dto/update-plano-acao.dto';
 import { PlanoAcaoService } from './plano-de-acao.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Risco')
@@ -21,7 +21,6 @@ export class PlanoAcaoController {
     constructor(
         private readonly planoAcaoService: PlanoAcaoService,
         private readonly projetoService: ProjetoService,
-
     ) { }
 
     @Post(':id/plano-de-acao')
@@ -29,6 +28,7 @@ export class PlanoAcaoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async create(@Param() params: FindOneParams, @Body() dto: CreatePlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        await this.projetoService.findOne(params.id, user, false);
         return await this.planoAcaoService.create(params.id, dto, user);
     }
 
@@ -48,25 +48,27 @@ export class PlanoAcaoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<PlanoAcaoDetailDto> {
+        await this.projetoService.findOne(params.id, user, true);
         return await this.planoAcaoService.findOne(params.id, params.id2, user);
     }
 
     @Patch(':id/plano-de-acao/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async update(@Param() params: FindTwoParams, @Body() updatePlanoAcaoDto: UpdatePlanoAcaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        await this.projetoService.findOne(params.id, user, false);
         return await this.planoAcaoService.update(params.id2, updatePlanoAcaoDto, user);
     }
 
     @Delete(':id/plano-de-acao/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles(...roles)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        await this.projetoService.findOne(params.id, user, false);
         await this.planoAcaoService.remove(params.id2, user);
         return '';
     }

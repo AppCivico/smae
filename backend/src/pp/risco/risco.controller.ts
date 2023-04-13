@@ -12,7 +12,7 @@ import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from './entities/risco.entity';
 import { RiscoService } from './risco.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Risco')
@@ -56,7 +56,7 @@ export class RiscoController {
     @Patch(':id/risco/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async update(@Param() params: FindTwoParams, @Body() updateRiscoDto: UpdateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
         return await this.riscoService.update(params.id2, updateRiscoDto, user);
@@ -65,7 +65,7 @@ export class RiscoController {
     @Delete(':id/risco/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles(...roles)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

@@ -11,7 +11,7 @@ import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto'
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Acompanhamento')

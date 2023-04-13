@@ -13,7 +13,7 @@ import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.d
 import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto } from './entities/tarefa.entity';
 import { TarefaService } from './tarefa.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Tarefas')

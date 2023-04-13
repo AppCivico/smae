@@ -11,6 +11,9 @@ import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-proj
 import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
+import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
+
+const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @ApiTags('Projeto')
 @Controller('projeto')
@@ -20,10 +23,11 @@ export class ProjetoController {
         private readonly projetoSeiService: ProjetoSeiService
     ) { }
 
+    // só o administrador do órgão pode iniciar novos projetos
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles('Projeto.administrador_no_orgao')
     async create(@Body() createProjetoDto: CreateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.create(createProjetoDto, user);
     }
@@ -31,7 +35,7 @@ export class ProjetoController {
     @Get()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
         return { linhas: await this.projetoService.findAll(filters, user) };
     }
@@ -39,7 +43,7 @@ export class ProjetoController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
         return await this.projetoService.findOne(params.id, user, true);
     }
@@ -47,7 +51,7 @@ export class ProjetoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async update(@Param() params: FindOneParams, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.update(params.id, updateProjetoDto, user);
     }
@@ -55,7 +59,7 @@ export class ProjetoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto')
+    @Roles(...roles)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -66,7 +70,7 @@ export class ProjetoController {
     @Post(':id/documento')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async upload(@Param() params: FindOneParams, @Body() createPdmDocDto: CreateProjetoDocumentDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.projetoService.append_document(params.id, createPdmDocDto, user);
     }
@@ -74,14 +78,14 @@ export class ProjetoController {
     @Get(':id/documento')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDocumento> {
         return { linhas: await this.projetoService.list_document(params.id, user) };
     }
 
     @Delete(':id/documento/:id2')
     @ApiBearerAuth('access-token')
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     @ApiUnauthorizedResponse()
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -93,7 +97,7 @@ export class ProjetoController {
     @Post(':id/sei')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async createSEI(@Param() params: FindOneParams, @Body() createProjetoRegistroSei: CreateProjetoSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, false);
         return await this.projetoSeiService.append_sei(projeto, createProjetoRegistroSei, user);
@@ -102,7 +106,7 @@ export class ProjetoController {
     @Get(':id/sei')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
         return { linhas: await this.projetoSeiService.list_sei(projeto, user) };
@@ -111,7 +115,7 @@ export class ProjetoController {
     @Get(':id/sei/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async findOneSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoSeiDto> {
         const projeto = await this.projetoService.findOne(params.id, user, true);
         const rows = await this.projetoSeiService.list_sei(projeto, user, params.id2);
@@ -122,7 +126,7 @@ export class ProjetoController {
     @Patch(':id/sei/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     async updateSEI(@Param() params: FindTwoParams, @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, false);
         return await this.projetoSeiService.update_sei(projeto, params.id2, updateProjetoRegistroSeiDto, user);
@@ -130,7 +134,7 @@ export class ProjetoController {
 
     @Delete(':id/sei/:id2')
     @ApiBearerAuth('access-token')
-    @Roles('Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(...roles)
     @ApiUnauthorizedResponse()
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
