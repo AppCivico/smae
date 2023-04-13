@@ -33,6 +33,10 @@ async function checkClose() {
     caminhoParaSaída = router.resolve(propriedadesDaRota)?.path
       || route.matched[parentRoutePosition].path;
   } else {
+    // Note: params are ignored if a path is provided, which is not the case for
+    // query, as shown in the example above.
+    // @link: https://router.vuejs.org/guide/essentials/navigation.html
+
     caminhoParaSaída = route.matched[parentRoutePosition].path;
   }
 
