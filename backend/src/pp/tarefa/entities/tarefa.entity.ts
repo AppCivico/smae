@@ -3,7 +3,7 @@ import { Type } from "class-transformer"
 import { DateTime } from "luxon"
 import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
 import { PortfolioOneDto } from "../../portfolio/entities/portfolio.entity"
-import { ProjetoDetailDto } from "../../projeto/entities/projeto.entity"
+import { IdTituloNivelMaxDto, ProjetoDetailDto } from "../../projeto/entities/projeto.entity"
 import { TarefaDependenciaDto } from "../dto/create-tarefa.dto"
 
 export class TarefaItemDto {
@@ -77,7 +77,7 @@ export class TarefaDetailDto extends TarefaItemDto {
 export class ListTarefaDto {
     linhas: TarefaItemProjetadoDto[]
     projeto: ProjetoDetailDto
-    portfolio: PortfolioOneDto
+    portfolio: IdTituloNivelMaxDto
 }
 
 export class ListTarefaListDto {
