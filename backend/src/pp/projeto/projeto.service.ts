@@ -422,6 +422,13 @@ export class ProjetoService {
                 realizado_duracao: true,
                 percentual_concluido: true,
 
+                portfolio: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        nivel_maximo_tarefa: true
+                    }
+                },
                 orgao_gestor: {
                     select: {
                         id: true,
