@@ -95,12 +95,14 @@ export class PortfolioService {
         let orgao_id: undefined | number = undefined;
         if (!user.hasSomeRoles(['Projeto.administrador'])) {
 
-            if (user.hasSomeRoles(['SMAE.gestor_de_projeto']) === false)
-                throw new HttpException('Necessário SMAE.gestor_de_projeto ou Projeto.administrador para listar os portfolios', 400);
+            if (user.hasSomeRoles(['SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto']) === false)
+                throw new HttpException('Necessário SMAE.gestor_de_projeto, SMAE.colaborador_de_projeto ou Projeto.administrador para listar os portfolios', 400);
 
             // só vai poder ver os portfolios que tem a organização dele
-            if (!user.orgao_id) throw new HttpException('usuário está sem órgão', 400);
-            orgao_id = user.orgao_id!;
+            // porem, isso só vale pro cadastro (de novos projetos), na listagem, esse filtro precisa ser no front,
+            // ou o front deixar de usar esse endpoint pra quem for apenas SMAE.colaborador_de_projeto
+            //if (!user.orgao_id) throw new HttpException('usuário está sem órgão', 400);
+            //orgao_id = user.orgao_id!;
         }
 
         const listActive = await this.prisma.portfolio.findMany({
