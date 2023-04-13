@@ -173,7 +173,8 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['SMAE.superadmin', 'Faz parte do perfil Administrador Geral'],
     ],
     Projeto: [
-        ['Projeto.administrador', '(Projeto) Administrar Portfólio e todos os projetos'],
+        ['Projeto.administrar_portfolios', '(Projeto) Administrar todos os portfólios, sem acesso aos projetos'],
+        ['Projeto.administrador_no_orgao', '(Projeto) Cria novos projetos e acesso total aos projetos do orgão em que pertence'],
         ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
     ],
@@ -334,7 +335,14 @@ const PerfilAcessoConfig: {
             nome: 'Administrador de Portfólio',
             descricao: 'Gerenciar os Portfólios',
             privilegios: [
-                'Projeto.administrador',
+                'Projeto.administrar_portfolios',
+            ]
+        },
+        {
+            nome: 'Criador e Gestor de Projetos no Órgão',
+            descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
+            privilegios: [
+                'Projeto.administrador_no_orgao',
             ]
         },
         {

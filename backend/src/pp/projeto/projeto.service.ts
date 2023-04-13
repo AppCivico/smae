@@ -250,24 +250,7 @@ export class ProjetoService {
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
 
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
-        if (!user.hasSomeRoles(['Projeto.administrador'])) {
-
-            if (user.hasSomeRoles(['SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto']) === false)
-                throw new HttpException('Necessário SMAE.gestor_de_projeto, SMAE.colaborador_de_projeto ou Projeto.administrador para listar os projetos', 400);
-
-            if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
-                permissionsSet.push({
-                    responsaveis_no_orgao_gestor: { has: user.id }
-                });
-            }
-
-            if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
-                permissionsSet.push({
-                    responsavel_id: user.id
-                });
-            }
-        }
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user);
 
         const rows = await this.prisma.projeto.findMany({
             where: {
@@ -370,14 +353,51 @@ export class ProjetoService {
         return ret;
     }
 
+    private getProjetoPermissionSet(user: PessoaFromJwt | undefined) {
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
+        if (!user) return permissionsSet;
+
+        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+            permissionsSet.push({
+                portfolio: {
+                    orgaos: {
+                        some: {
+                            orgao_id: user.orgao_id
+                        }
+                    }
+                }
+            });
+        } else if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
+            permissionsSet.push({
+                responsaveis_no_orgao_gestor: { has: user.id }
+            });
+        } else if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
+            permissionsSet.push({
+                responsavel_id: user.id
+            });
+        } else {
+            throw new HttpException('Sem permissões para acesso aos projetos.', 400);
+        }
+        return permissionsSet;
+    }
+
     // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
     // o órgão gestor continua podendo preencher os dados realizado
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
 
         console.log({ id, user, readonly });
 
-        const projeto = await this.prisma.projeto.findFirstOrThrow({
-            where: { id: id, removido_em: null },
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user);
+        const projeto = await this.prisma.projeto.findFirst({
+            where: {
+                id: id,
+                removido_em: null,
+                AND: permissionsSet.length > 0 ? [
+                    {
+                        OR: permissionsSet
+                    }
+                ] : undefined,
+            },
             select: {
                 id: true,
                 arquivado: true,
@@ -500,6 +520,7 @@ export class ProjetoService {
                 em_planejamento_em: true,
             },
         });
+        if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
 
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
@@ -577,7 +598,7 @@ export class ProjetoService {
 
         let pessoaPodeEscrever = false;
         if (user) {
-            if (user.hasSomeRoles(['Projeto.administrador'])) {
+            if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
                 pessoaPodeEscrever = true;
             } else if (
                 user.hasSomeRoles(['SMAE.gestor_de_projeto'])

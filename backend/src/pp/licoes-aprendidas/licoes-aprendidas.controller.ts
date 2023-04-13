@@ -12,7 +12,7 @@ import { UpdateLicoesAprendidasDto } from './dto/update-licoes-aprendidas.dto';
 import { LicaoAprendida, ListLicoesAprendidasDto } from './entities/licoes-aprendidas.entity';
 import { LicoesAprendidasService } from './licoes-aprendidas.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Lições Aprendidas')

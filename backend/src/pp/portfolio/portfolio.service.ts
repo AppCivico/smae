@@ -50,13 +50,7 @@ export class PortfolioService {
 
     async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
         let orgao_id: undefined | number = undefined;
-        if (user != null && !user.hasSomeRoles(['Projeto.administrador'])) {
-            // provavelmente há outras situações para criar aqui, por exemplo, se a pessoa fizer
-            // parte dos responsáveis, ela pode visualizar mas não pode criar
-            if (user.hasSomeRoles(['SMAE.gestor_de_projeto']) === false) throw new HttpException('Necessário SMAE.gestor_de_projeto se não for Projeto.administrador', 400);
-
-            // só vai poder ver os portfolios que tem a organização dele
-            if (!user.orgao_id) throw new HttpException('usuário está sem órgão', 400);
+        if (user != null && !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'])) {
             orgao_id = user.orgao_id!;
         }
 
@@ -93,16 +87,11 @@ export class PortfolioService {
 
     async findAll(user: PessoaFromJwt): Promise<PortfolioDto[]> {
         let orgao_id: undefined | number = undefined;
-        if (!user.hasSomeRoles(['Projeto.administrador'])) {
 
-            if (user.hasSomeRoles(['SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto']) === false)
-                throw new HttpException('Necessário SMAE.gestor_de_projeto, SMAE.colaborador_de_projeto ou Projeto.administrador para listar os portfolios', 400);
-
-            // só vai poder ver os portfolios que tem a organização dele
-            // porem, isso só vale pro cadastro (de novos projetos), na listagem, esse filtro precisa ser no front,
-            // ou o front deixar de usar esse endpoint pra quem for apenas SMAE.colaborador_de_projeto
-            //if (!user.orgao_id) throw new HttpException('usuário está sem órgão', 400);
-            //orgao_id = user.orgao_id!;
+        // só pra manter mais ou menos uma retrocompatibilidade com o frontend
+        // preciso pensar melhor nesse filtro
+        if (user.hasSomeRoles(['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'])) {
+            orgao_id = user.orgao_id!;
         }
 
         const listActive = await this.prisma.portfolio.findMany({
