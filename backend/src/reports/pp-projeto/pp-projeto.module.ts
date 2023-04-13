@@ -6,11 +6,18 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { UploadModule } from '../../upload/upload.module';
 import { PPProjetoController } from './pp-projeto.controller';
 import { PPProjetoService } from './pp-projeto.service';
+import { RiscoService } from 'src/pp/risco/risco.service';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
+import { RiscoModule } from 'src/pp/risco/risco.module';
+import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
+import { PlanoAcaoModule } from 'src/pp/plano-de-acao/plano-de-acao.module';
+import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 
 @Module({
-    imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule],
+    imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule, RiscoModule, TarefaModule, PlanoAcaoModule],
     controllers: [PPProjetoController],
-    providers: [PPProjetoService, ProjetoService],
+    providers: [PPProjetoService, ProjetoService, RiscoService, TarefaService, PlanoAcaoService, TarefaUtilsService],
     exports: [PPProjetoService],
 })
 export class PPProjetoModule { }

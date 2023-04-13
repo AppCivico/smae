@@ -11,6 +11,12 @@ export class PlanoAcao {
     orgao: IdSigla | null
     contato_do_responsavel: string | null
     data_termino: Date | null
+    projeto_risco: RiscoIdCod
+}
+
+export class RiscoIdCod {
+    id: number
+    codigo: number
 }
 
 export class ListPlanoAcaoDto {
