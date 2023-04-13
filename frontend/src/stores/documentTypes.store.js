@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
 import { requestS } from '@/helpers';
+import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useDocumentTypesStore = defineStore({
@@ -16,7 +16,7 @@ export const useDocumentTypesStore = defineStore({
         async getAll() {
             this.documentTypes = { loading: true };
             try {
-                let r = await requestS.get(`${baseUrl}/tipo-documento`);    
+                let r = await requestS.get(`${baseUrl}/tipo-documento`);
                 this.documentTypes = r.linhas;
             } catch (error) {
                 this.documentTypes = { error };
