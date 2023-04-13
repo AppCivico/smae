@@ -20,6 +20,8 @@ import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
+import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
+import { PPStatusService } from '../pp-status/pp-status.service';
 const AdmZip = require("adm-zip");
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
@@ -42,8 +44,9 @@ export class ReportsService {
         @Inject(forwardRef(() => IndicadoresService)) private readonly indicadoresService: IndicadoresService,
         @Inject(forwardRef(() => MonitoramentoMensalService)) private readonly mmService: MonitoramentoMensalService,
         @Inject(forwardRef(() => PrevisaoCustoService)) private readonly previsaoCustoService: PrevisaoCustoService,
-        @Inject(forwardRef(() => PPProjetoService)) private readonly ppProjetoService: PPProjetoService
-
+        @Inject(forwardRef(() => PPProjetoService)) private readonly ppProjetoService: PPProjetoService,
+        @Inject(forwardRef(() => PPProjetosService)) private readonly ppProjetosService: PPProjetosService,
+        @Inject(forwardRef(() => PPStatusService)) private readonly ppStatusService: PPStatusService
     ) { }
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
@@ -143,6 +146,12 @@ export class ReportsService {
                 break;
             case 'Projeto':
                 service = this.ppProjetoService;
+                break;
+            case 'Projetos':
+                service = this.ppProjetosService;
+                break;
+            case 'ProjetoStatus':
+                service = this.ppStatusService;
                 break;
         }
         if (service === null) throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
