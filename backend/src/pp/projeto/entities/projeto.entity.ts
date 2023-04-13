@@ -98,6 +98,12 @@ export class ListProjetoSeiDto {
     linhas: ProjetoSeiDto[]
 }
 
+export class IdTituloNivelMaxDto {
+    id: number;
+    titulo: string;
+    nivel_maximo_tarefa: number
+}
+
 export class ProjetoDetailDto {
     id: number;
     meta_id: number | null;
@@ -115,7 +121,8 @@ export class ProjetoDetailDto {
     @ApiProperty({ enum: ProjetoFase, enumName: 'ProjetoFase' })
     fase: ProjetoFase;
     resumo: string;
-    portfolio_id: number
+    portfolio_id: number;
+    portfolio: IdTituloNivelMaxDto;
     codigo: string | null;
     objeto: string;
     objetivo: string;
