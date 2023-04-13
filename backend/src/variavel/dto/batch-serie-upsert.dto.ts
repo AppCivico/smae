@@ -1,5 +1,5 @@
 import { Serie } from '@prisma/client';
-import { IsArray, isArray, IsNumberString, IsString, ValidateIf } from 'class-validator';
+import { IsArray, IsNumberString, IsString, ValidateIf } from 'class-validator';
 
 export class ExistingSerieJwt {
     id: number;

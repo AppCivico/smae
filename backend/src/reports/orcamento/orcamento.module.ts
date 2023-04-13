@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { OrcamentoService } from './orcamento.service';
-import { OrcamentoController } from './orcamento.controller';
-import { PrismaModule } from '../../prisma/prisma.module';
-import { UtilsService } from '../utils/utils.service';
 import { DotacaoModule } from '../../dotacao/dotacao.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 import { PrevisaoCustoModule } from '../previsao-custo/previsao-custo.module';
+import { UtilsService } from '../utils/utils.service';
+import { OrcamentoController } from './orcamento.controller';
+import { OrcamentoService } from './orcamento.service';
 
 @Module({
     imports: [

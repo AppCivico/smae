@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
 import { AuthService } from '../src/auth/auth.service';
 import { AccessToken } from '../src/auth/models/AccessToken';
-import { OrganizacaoExpert, PessoaExpert } from './lib/common';
 import { Orgao } from '../src/orgao/entities/orgao.entity';
+import { OrganizacaoExpert, PessoaExpert } from './lib/common';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;

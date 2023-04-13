@@ -5,11 +5,11 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
+import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { ListPessoaDto } from './dto/list-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
-import { CreatePessoaDto } from './dto/create-pessoa.dto';
-import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { PessoaService } from './pessoa.service';
 
 @ApiTags('Pessoa')

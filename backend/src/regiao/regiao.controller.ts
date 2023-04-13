@@ -1,15 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RegiaoService } from './regiao.service';
-import { CreateRegiaoDto } from './dto/create-regiao.dto';
-import { UpdateRegiaoDto } from './dto/update-regiao.dto';
-import { ListRegiaoDto } from './dto/list-regiao.dto';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateRegiaoDto } from './dto/create-regiao.dto';
 import { DetalheRegiaoDto } from './dto/detalhe-regiao.dto';
+import { ListRegiaoDto } from './dto/list-regiao.dto';
+import { UpdateRegiaoDto } from './dto/update-regiao.dto';
+import { RegiaoService } from './regiao.service';
 
 @ApiTags('Regiao')
 @Controller('regiao')

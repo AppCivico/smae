@@ -6,11 +6,11 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorNominal, SerieIndicadorValorPorPeriodo, ValorSerieExistente } from '../variavel/entities/variavel.entity';
+import { VariavelService } from '../variavel/variavel.service';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { Indicador } from './entities/indicador.entity';
-import { VariavelService } from '../variavel/variavel.service';
 
 const FP = require('../../public/js/formula_parser.js');
 

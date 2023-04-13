@@ -3,9 +3,9 @@ import { PdmCicloService } from './pdm-ciclo.service';
 
 import { ApiBearerAuth, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { ListPdmCicloDto, ListPdmCicloV2Dto } from './entities/pdm-ciclo.entity';
-import { FilterPdmCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
 import { FindOneParams } from '../common/decorators/find-params';
+import { FilterPdmCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
+import { ListPdmCicloDto, ListPdmCicloV2Dto } from './entities/pdm-ciclo.entity';
 
 @Controller('pdm-ciclo')
 @ApiTags('PDM - Ciclo físico')

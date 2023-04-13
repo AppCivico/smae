@@ -3,11 +3,11 @@ import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { MfService } from './../mf.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelService } from '../../variavel/variavel.service';
+import { MfService } from './../mf.service';
 import {
     CamposRealizado,
     CamposRealizadoParaSerie,
@@ -15,12 +15,9 @@ import {
     CicloFaseDto,
     FilterMfMetasDto,
     FilterVariavelAnaliseQualitativaDto,
-    IniciativasRetorno,
-    MfFasesPermissoesDto,
+    IniciativasRetorno, MfAvancarFasesDto, MfFasesPermissoesDto,
     MfListVariavelAnaliseQualitativaDto,
-    MfMetaDto,
-    MfAvancarFasesDto,
-    MfSeriesAgrupadas,
+    MfMetaDto, MfSeriesAgrupadas,
     MfSerieValorNomimal,
     RetornoMetaVariaveisDto,
     VariavelAnaliseQualitativaDocumentoDto,
@@ -28,7 +25,7 @@ import {
     VariavelComplementacaoDto,
     VariavelComSeries,
     VariavelConferidaDto,
-    VariavelQtdeDto,
+    VariavelQtdeDto
 } from './dto/mf-meta.dto';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };

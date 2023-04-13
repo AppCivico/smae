@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CalculaAtraso } from '../common/CalculaAtraso';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';

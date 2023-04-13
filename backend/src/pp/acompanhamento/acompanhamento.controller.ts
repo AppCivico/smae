@@ -1,15 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
-import { AcompanhamentoService } from './acompanhamento.service';
-import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
-import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
-import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { AcompanhamentoService } from './acompanhamento.service';
+import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
+import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
+import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 

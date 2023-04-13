@@ -1,10 +1,10 @@
-import { Transform, Type } from "class-transformer"
+import { ApiProperty } from "@nestjs/swagger"
+import { Type } from "class-transformer"
 import { DateTime } from "luxon"
 import { IdSiglaDescricao } from "../../../common/dto/IdSigla.dto"
 import { PortfolioOneDto } from "../../portfolio/entities/portfolio.entity"
 import { ProjetoDetailDto } from "../../projeto/entities/projeto.entity"
 import { TarefaDependenciaDto } from "../dto/create-tarefa.dto"
-import { ApiProperty } from "@nestjs/swagger"
 
 export class TarefaItemDto {
     id: number

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { TipoDocumentoService } from './tipo-documento.service';
-import { TipoDocumentoController } from './tipo-documento.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { TipoDocumentoController } from './tipo-documento.controller';
+import { TipoDocumentoService } from './tipo-documento.service';
 
 @Module({
     imports: [PrismaModule],

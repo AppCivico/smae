@@ -3,7 +3,6 @@ import { PainelConteudoTipoDetalhe, Periodicidade, Periodo, Prisma } from '@pris
 import { Decimal } from '@prisma/client/runtime';
 import { DateTime } from 'luxon';
 import * as moment from 'moment';
-import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,7 +15,7 @@ import {
     PainelConteudoIdAndMeta,
     PainelConteudoUpsertRet,
     UpdatePainelConteudoDetalheDto,
-    UpdatePainelConteudoVisualizacaoDto,
+    UpdatePainelConteudoVisualizacaoDto
 } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 

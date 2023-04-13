@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import { IniciativasCronoRetorno, RetornoMetaCronogramaDto } from './../metas/dto/mf-crono.dto';
 import { MfService } from './../mf.service';
-import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class MetasCronogramaService {

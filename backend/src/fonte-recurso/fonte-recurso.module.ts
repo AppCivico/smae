@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { FonteRecursoService } from './fonte-recurso.service';
-import { FonteRecursoController } from './fonte-recurso.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { FonteRecursoController } from './fonte-recurso.controller';
+import { FonteRecursoService } from './fonte-recurso.service';
 
 @Module({
     imports: [PrismaModule],

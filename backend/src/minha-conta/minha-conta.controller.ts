@@ -1,9 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiProduces, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { MinhaContaDto } from './models/minha-conta.dto';
 import { PessoaService } from '../pessoa/pessoa.service';
+import { MinhaContaDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 
 @ApiTags('Minha Conta')

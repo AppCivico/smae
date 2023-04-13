@@ -1,15 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { ListTagDto } from './dto/list-tag.dto';
-import { TagService } from './tag.service';
-import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateTagDto } from './dto/create-tag.dto';
 import { FilterTagDto } from './dto/filter-tag.dto';
+import { ListTagDto } from './dto/list-tag.dto';
+import { UpdateTagDto } from './dto/update-tag.dto';
+import { TagService } from './tag.service';
 
 @ApiTags('Tag')
 @Controller('tag')

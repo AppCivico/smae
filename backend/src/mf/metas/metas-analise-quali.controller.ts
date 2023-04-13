@@ -5,9 +5,9 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { MfService } from '../mf.service';
 import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from './../metas/dto/mf-meta-analise-quali.dto';
 import { MetasAnaliseQualiService } from './../metas/metas-analise-quali.service';
-import { MfService } from '../mf.service';
 import { MfListVariavelAnaliseQualitativaDto, RequestInfoDto } from './dto/mf-meta.dto';
 
 @ApiTags('Monitoramento Fisico - análise qualitativa da meta')

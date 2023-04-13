@@ -11,9 +11,9 @@ import { CronogramaService } from '../../cronograma/cronograma.service';
 import { FilterCronogramaDto } from '../../cronograma/dto/fillter-cronograma.dto';
 import { ListCronogramaDto } from '../../cronograma/dto/list-cronograma.dto';
 import { EtapaService } from '../../etapa/etapa.service';
+import { MfService } from '../mf.service';
 import { MfEtapaDto, RetornoMetaCronogramaDto } from './../metas/dto/mf-crono.dto';
 import { MetasCronogramaService } from './../metas/metas-cronograma.service';
-import { MfService } from '../mf.service';
 import { RequestInfoDto } from './dto/mf-meta.dto';
 
 @ApiTags('Monitoramento Fisico - Cronogramas')

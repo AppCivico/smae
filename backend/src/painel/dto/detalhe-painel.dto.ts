@@ -1,6 +1,5 @@
 import { Periodicidade, Periodo, Prisma, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IS_ARRAY } from 'class-validator';
 
 export class DetailPainelVisualizacaoDto {
     id: number;

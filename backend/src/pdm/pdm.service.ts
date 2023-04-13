@@ -1,6 +1,6 @@
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CicloFisico, CicloFisicoFase, Prisma } from '@prisma/client';
+import { CicloFisicoFase, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';

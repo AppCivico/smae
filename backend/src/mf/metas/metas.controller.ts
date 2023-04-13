@@ -18,7 +18,7 @@ import {
     VariavelAnaliseQualitativaDocumentoDto,
     VariavelAnaliseQualitativaDto,
     VariavelComplementacaoDto,
-    VariavelConferidaDto,
+    VariavelConferidaDto
 } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';

@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 
 export class RelPrevisaoCustoDto {
