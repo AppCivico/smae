@@ -1,16 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedError } from './errors/unauthorized.error';
+import { PerfilAcessoPrivilegios } from '../pessoa/dto/perifl-acesso-privilegios.dto';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
-import { JwtPessoaPayload } from './models/JwtPessoaPayload';
+import { UnauthorizedError } from './errors/unauthorized.error';
 import { AccessToken } from './models/AccessToken';
-import { ReducedAccessToken } from './models/ReducedAccessToken';
-import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
 import { EscreverNovaSenhaRequestBody } from './models/EscreverNovaSenhaRequestBody.dto';
+import { JwtPessoaPayload } from './models/JwtPessoaPayload';
+import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
+import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
-import { PerfilAcesso } from '@prisma/client';
-import { PerfilAcessoPrivilegios } from '../pessoa/dto/perifl-acesso-privilegios.dto';
 
 @Injectable()
 export class AuthService {

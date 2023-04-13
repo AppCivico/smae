@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
-import { Type, plainToInstance } from 'class-transformer';
+import { plainToInstance, Type } from 'class-transformer';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CicloFisico, Pdm } from '@prisma/client';
-import { plainToClass } from 'class-transformer';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
 import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service';
@@ -9,7 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 import { DefaultCsvOptions, FileOutput } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
-import { RelMfMetas, RetMonitoramentoFisico, RetMonitoramentoMensal, RelSerieVariavelDto } from './entities/monitoramento-mensal.entity';
+import { RelMfMetas, RelSerieVariavelDto, RetMonitoramentoFisico, RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
 
 const {
     Parser,

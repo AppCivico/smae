@@ -1,16 +1,16 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
+import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas, ListVariavelDto } from './dto/list-variavel.dto';
-import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
-import { CreateVariavelDto } from './dto/create-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
+import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
 
 @ApiTags('Indicador')

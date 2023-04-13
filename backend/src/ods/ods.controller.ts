@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { OdsService } from './ods.service';
-import { CreateOdsDto } from './dto/create-ods.dto';
-import { UpdateOdsDto } from './dto/update-ods.dto';
-import { ListOdsDto } from './dto/list-ods.dto';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateOdsDto } from './dto/create-ods.dto';
+import { ListOdsDto } from './dto/list-ods.dto';
+import { UpdateOdsDto } from './dto/update-ods.dto';
+import { OdsService } from './ods.service';
 
 @ApiTags('ODS')
 @Controller('ods')

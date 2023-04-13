@@ -1,17 +1,17 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import { Pessoa } from '../pessoa/entities/pessoa.entity';
+import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { IsPublic } from './decorators/is-public.decorator';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { AccessToken } from './models/AccessToken';
 import { AuthRequestLogin } from './models/AuthRequestLogin';
 import { EscreverNovaSenhaRequestBody } from './models/EscreverNovaSenhaRequestBody.dto';
 import { LoginRequestBody } from './models/LoginRequestBody.dto';
 import { PerfilDeAcessoLinhaDto } from './models/PerfilDeAcesso.dto';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
-import { Pessoa } from '../pessoa/entities/pessoa.entity';
-import { AuthService } from './auth.service';
-import { IsPublic } from './decorators/is-public.decorator';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { AccessToken } from './models/AccessToken';
 
 @Controller()
 export class AuthController {

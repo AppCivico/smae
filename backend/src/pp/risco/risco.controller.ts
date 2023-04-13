@@ -1,14 +1,13 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
-import { plainToClass } from 'class-transformer';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { FindOneParams, FindThreeParams, FindTwoParams } from '../../common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { ProjetoService } from '../projeto/projeto.service';
-import { CreateProjetoRiscoTarefaDto, CreateRiscoDto } from './dto/create-risco.dto';
+import { CreateRiscoDto } from './dto/create-risco.dto';
 import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from './entities/risco.entity';
 import { RiscoService } from './risco.service';

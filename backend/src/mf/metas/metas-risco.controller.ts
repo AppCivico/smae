@@ -4,10 +4,10 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { MfService } from '../mf.service';
 import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from './../metas/dto/mf-meta-risco.dto';
 import { RequestInfoDto } from './../metas/dto/mf-meta.dto';
 import { MetasRiscoService } from './../metas/metas-risco.service';
-import { MfService } from '../mf.service';
 
 @ApiTags('Monitoramento Fisico - Risco')
 @Controller('metas')

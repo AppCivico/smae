@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ProjetoStatus, ProjetoFase, ProjetoOrigemTipo, StatusRisco } from "@prisma/client";
+import { ProjetoFase, ProjetoStatus, StatusRisco } from "@prisma/client";
 import { IdSiglaDescricao } from "src/common/dto/IdSigla.dto";
-import { ProjetoDetailDto, ProjetoMetaDetailDto, ProjetoPermissoesDto, ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from "src/pp/projeto/entities/projeto.entity";
+import { ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from "src/pp/projeto/entities/projeto.entity";
 import { IdNomeExibicao } from "src/variavel/entities/variavel.entity";
 
 export class RelProjetosDto {

@@ -3,8 +3,8 @@ import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { FilterFechamentoDto, MfListFechamentoDto, FechamentoDto } from './../metas/dto/mf-meta-fechamento.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { FechamentoDto, FilterFechamentoDto, MfListFechamentoDto } from './../metas/dto/mf-meta-fechamento.dto';
 
 @Injectable()
 export class MetasFechamentoService {

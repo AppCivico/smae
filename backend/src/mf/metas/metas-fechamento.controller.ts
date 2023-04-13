@@ -4,9 +4,9 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { MfService } from '../mf.service';
 import { FechamentoDto, FilterFechamentoDto, MfListFechamentoDto } from './../metas/dto/mf-meta-fechamento.dto';
 import { RequestInfoDto } from './../metas/dto/mf-meta.dto';
-import { MfService } from '../mf.service';
 import { MetasFechamentoService } from './metas-fechamento.service';
 
 @ApiTags('Monitoramento Fisico - Fechamento')

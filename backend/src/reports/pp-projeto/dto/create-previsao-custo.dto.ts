@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsInt } from 'class-validator';
 
 
 export class CreateRelProjetoDto {

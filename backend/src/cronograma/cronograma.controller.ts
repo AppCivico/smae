@@ -6,7 +6,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateEtapaDto } from '../etapa/dto/create-etapa.dto';
-import { FilterEtapaDto, FilterEtapaSemCronoIdDto } from '../etapa/dto/filter-etapa.dto';
+import { FilterEtapaSemCronoIdDto } from '../etapa/dto/filter-etapa.dto';
 import { ListEtapaDto } from '../etapa/dto/list-etapa.dto';
 import { EtapaService } from '../etapa/etapa.service';
 import { CronogramaService } from './cronograma.service';

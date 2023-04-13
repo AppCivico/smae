@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, IsBoolean, IsInt, IsNumberString, IsOptional, IsString, Matches, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsBoolean, IsInt, IsNumberString, IsOptional, IsString, Matches, ValidateIf, ValidateNested } from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
 export class FormulaVariaveis {

@@ -1,9 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { CicloAtivoDto } from './metas/dto/mf-meta.dto';
-import { PrismaService } from '../prisma/prisma.service';
 import { Date2YMD } from '../common/date2ymd';
+import { PrismaService } from '../prisma/prisma.service';
+import { CicloAtivoDto } from './metas/dto/mf-meta.dto';
 
 @Injectable()
 export class MfService {

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { TextoConfigService } from './texto-config.service';
-import { TextoConfigController } from './texto-config.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { TextoConfigController } from './texto-config.controller';
+import { TextoConfigService } from './texto-config.service';
 
 @Module({
     imports: [PrismaModule],

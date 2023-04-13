@@ -1,18 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
-import { plainToClass } from 'class-transformer';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { FindOneParams, FindThreeParams, FindTwoParams } from '../../common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
-import { ProjetoService } from '../projeto/projeto.service';
 import { ListPlanoAcaoDto, PlanoAcaoDetailDto } from '../plano-de-acao/entities/plano-acao.entity';
-import { PlanoAcaoService } from './plano-de-acao.service';
+import { ProjetoService } from '../projeto/projeto.service';
 import { CreatePlanoAcaoDto } from './dto/create-plano-acao.dto';
 import { FilterPlanoAcaoDto } from './dto/filter-plano-acao.dto';
 import { UpdatePlanoAcaoDto } from './dto/update-plano-acao.dto';
+import { PlanoAcaoService } from './plano-de-acao.service';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 

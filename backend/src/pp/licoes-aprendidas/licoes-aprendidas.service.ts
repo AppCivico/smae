@@ -6,8 +6,8 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { CreateLicoesApreendidasDto } from './dto/create-licoes-aprendidas.dto';
-import { LicaoAprendida } from './entities/licoes-aprendidas.entity';
 import { UpdateLicoesAprendidasDto } from './dto/update-licoes-aprendidas.dto';
+import { LicaoAprendida } from './entities/licoes-aprendidas.entity';
 
 @Injectable()
 export class LicoesAprendidasService {

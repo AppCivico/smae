@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { TipoOrgaoService } from './tipo-orgao.service';
-import { CreateTipoOrgaoDto } from './dto/create-tipo-orgao.dto';
-import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
-import { ListTipoOrgaoDto } from './dto/list-tipo-orgao.dto';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateTipoOrgaoDto } from './dto/create-tipo-orgao.dto';
+import { ListTipoOrgaoDto } from './dto/list-tipo-orgao.dto';
+import { UpdateTipoOrgaoDto } from './dto/update-tipo-orgao.dto';
+import { TipoOrgaoService } from './tipo-orgao.service';
 
 @ApiTags('Tipo de Órgão')
 @Controller('tipo-orgao')

@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
-import { PdmService } from './pdm.service';
-import { PdmController } from './pdm.controller';
-import { PrismaModule } from '../prisma/prisma.module';
-import { UploadModule } from '../upload/upload.module';
-import { ObjetivoEstrategicoService } from '../objetivo-estrategico/objetivo-estrategico.service';
 import { EixoService } from '../eixo/eixo.service';
-import { MetaService } from '../meta/meta.service';
-import { TagService } from '../tag/tag.service';
+import { ObjetivoEstrategicoService } from '../objetivo-estrategico/objetivo-estrategico.service';
+import { PrismaModule } from '../prisma/prisma.module';
 import { SubTemaService } from '../subtema/subtema.service';
+import { TagService } from '../tag/tag.service';
+import { UploadModule } from '../upload/upload.module';
+import { PdmController } from './pdm.controller';
+import { PdmService } from './pdm.service';
 
 @Module({
     imports: [PrismaModule, UploadModule],

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient(
     { log: ['query'] }

@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
 import { DotacaoService } from './dotacao.service';
-import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto, AnoParteDotacaoDto, ParteDotacaoDto } from './dto/dotacao.dto';
+import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
 import { ListValorRealizadoDotacaoDto, ListValorRealizadoNotaEmpenhoDto, ListValorRealizadoProcessoDto, OrcadoProjetoDto, ValorPlanejadoDto } from './entities/dotacao.entity';
 
 @Controller('dotacao')

@@ -36,9 +36,15 @@ import { PainelModule } from './painel/painel.module';
 import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 import { PdmModule } from './pdm/pdm.module';
 import { PessoaModule } from './pessoa/pessoa.module';
+import { AcompanhamentoModule } from './pp/acompanhamento/acompanhamento.module';
+import { LicoesAprendidasModule } from './pp/licoes-aprendidas/licoes-aprendidas.module';
+import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plano-acao-monitoramento.module';
+import { PlanoAcaoModule } from './pp/plano-de-acao/plano-de-acao.module';
 import { PortfolioModule } from './pp/portfolio/portfolio.module';
 import { AcaoModule } from './pp/projeto/acao/acao.module';
 import { ProjetoModule } from './pp/projeto/projeto.module';
+import { RiscoModule } from './pp/risco/risco.module';
+import { TarefaModule } from './pp/tarefa/tarefa.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RegiaoModule } from './regiao/regiao.module';
 import { IndicadoresModule } from './reports/indicadores/indicadores.module';
@@ -57,12 +63,6 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
-import { TarefaModule } from './pp/tarefa/tarefa.module';
-import { RiscoModule } from './pp/risco/risco.module';
-import { PlanoAcaoMonitoramentoModule } from './pp/plano-acao-monitoramento/plano-acao-monitoramento.module';
-import { PlanoAcaoModule } from './pp/plano-de-acao/plano-de-acao.module';
-import { AcompanhamentoModule } from './pp/acompanhamento/acompanhamento.module';
-import { LicoesAprendidasModule } from './pp/licoes-aprendidas/licoes-aprendidas.module';
 
 @Module({
     imports: [

@@ -1,10 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { PPProjetosService } from './pp-projetos.service';
-import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
-import { PPProjetosRelatorioDto } from './entities/projetos.entity';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
+import { PPProjetosRelatorioDto } from './entities/projetos.entity';
+import { PPProjetosService } from './pp-projetos.service';
 
 @ApiTags('Relatórios - API')
 @Controller('relatorio/projetos')

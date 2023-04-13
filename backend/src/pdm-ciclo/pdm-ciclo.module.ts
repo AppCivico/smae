@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { PdmCicloService } from './pdm-ciclo.service';
-import { PdmCicloController } from './pdm-ciclo.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { PdmCicloController } from './pdm-ciclo.controller';
+import { PdmCicloService } from './pdm-ciclo.service';
 
 @Module({
     imports: [PrismaModule],

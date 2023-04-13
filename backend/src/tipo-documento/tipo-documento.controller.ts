@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { ListTipoDocumentoDto } from './dto/list-tipo-documento.dto';
-import { TipoDocumentoService } from './tipo-documento.service';
-import { CreateTipoDocumentoDto } from './dto/create-tipo-documento.dto';
-import { UpdateTipoDocumentoDto } from './dto/update-tipo-documento.dto';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateTipoDocumentoDto } from './dto/create-tipo-documento.dto';
+import { ListTipoDocumentoDto } from './dto/list-tipo-documento.dto';
+import { UpdateTipoDocumentoDto } from './dto/update-tipo-documento.dto';
+import { TipoDocumentoService } from './tipo-documento.service';
 
 @ApiTags('Tipo de Documento')
 @Controller('tipo-documento')

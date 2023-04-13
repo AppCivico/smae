@@ -6,8 +6,8 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
-import { DetailProjetoAcompanhamentoDto, ProjetoAcompanhamento } from './entities/acompanhamento.entity';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
+import { DetailProjetoAcompanhamentoDto, ProjetoAcompanhamento } from './entities/acompanhamento.entity';
 
 @Injectable()
 export class AcompanhamentoService {

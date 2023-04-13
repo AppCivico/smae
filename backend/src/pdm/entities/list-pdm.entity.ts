@@ -1,4 +1,4 @@
-import { IsBoolean, isBoolean, IsISO8601, IsOptional, IsString, Length, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsISO8601, IsOptional, IsString, Length, MaxLength, MinLength } from 'class-validator';
 
 export class ListPdm {
     /**

@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { StatusRisco } from "@prisma/client";
-import { IsArray, IsEnum, IsInt, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsOptional } from "class-validator";
 import { CreateRiscoDto } from "./create-risco.dto";
 
 export class UpdateRiscoDto extends OmitType(PartialType(CreateRiscoDto), []) {
