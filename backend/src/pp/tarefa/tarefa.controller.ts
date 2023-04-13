@@ -4,10 +4,9 @@ import { plainToClass } from 'class-transformer';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
-import { PortfolioService } from '../portfolio/portfolio.service';
 import { ProjetoService } from '../projeto/projeto.service';
 import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
@@ -22,8 +21,6 @@ export class TarefaController {
     constructor(
         private readonly tarefaService: TarefaService,
         private readonly projetoService: ProjetoService,
-        private readonly portfolioService: PortfolioService,
-
     ) { }
 
     @Post(':id/tarefa')
@@ -45,7 +42,7 @@ export class TarefaController {
 
         return {
             ...tarefasProj,
-            portfolio: await this.portfolioService.findOne(tarefasProj.projeto.portfolio_id, null),
+            portfolio: tarefasProj.projeto.portfolio,
         };
     }
 
