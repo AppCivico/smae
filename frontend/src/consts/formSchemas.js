@@ -54,16 +54,7 @@ addMethod(mixed, 'inArray', function _(arrayValue, message = '${path} not found 
   });
 });
 
-const autenticação = object()
-  .shape({
-    username: string()
-      .email('E-mail inválido')
-      .required('Preencha seu e-mail'),
-    password: string()
-      .required('Preencha sua senha'),
-  });
-
-const acompanhamento = object()
+export const acompanhamento = object()
   .shape({
     cronograma_paralisado: boolean()
       .label('Cronograma paralisado')
@@ -112,7 +103,16 @@ const acompanhamento = object()
       ),
   });
 
-const custeio = object()
+export const autenticação = object()
+  .shape({
+    username: string()
+      .email('E-mail inválido')
+      .required('Preencha seu e-mail'),
+    password: string()
+      .required('Preencha sua senha'),
+  });
+
+export const custeio = object()
   .shape({
     custo_previsto: string()
       .required('Preencha o investimento.'),
@@ -121,7 +121,7 @@ const custeio = object()
       .matches(regEx.dotação, 'Formato inválido'),
   });
 
-const etapa = object()
+export const etapa = object()
   .shape({
     descricao: string()
       .nullable(),
@@ -145,7 +145,7 @@ const etapa = object()
       .required('Preencha o título'),
   });
 
-const etapaDeMonitoramento = object()
+export const etapaDeMonitoramento = object()
   .shape({
     inicio_real: string()
       .nullable()
@@ -156,7 +156,7 @@ const etapaDeMonitoramento = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
   });
 
-const fase = object()
+export const fase = object()
   .shape({
     descricao: string()
       .nullable(),
@@ -180,7 +180,7 @@ const fase = object()
       .required('Preencha o título'),
   });
 
-const indicador = object()
+export const indicador = object()
   .shape({
     acumulado_valor_base: number()
       .label('Valor base do indicador')
@@ -218,7 +218,7 @@ const indicador = object()
       .required('Preencha o título'),
   });
 
-const liçãoAprendida = object()
+export const liçãoAprendida = object()
   .shape({
     data_registro: date()
       .label('Data do registro')
@@ -236,7 +236,7 @@ const liçãoAprendida = object()
       .required(),
   });
 
-const monitoramentoDePlanoDeAção = object()
+export const monitoramentoDePlanoDeAção = object()
   .shape({
     descricao: string()
       .required(),
@@ -245,7 +245,7 @@ const monitoramentoDePlanoDeAção = object()
       .typeError('Data inválida'),
   });
 
-const novaSenha = object()
+export const novaSenha = object()
   .shape({
     password: string()
       .required('Preencha sua nova senha')
@@ -258,7 +258,7 @@ const novaSenha = object()
       .oneOf([ref('password'), null], 'Senhas não coincidem'),
   });
 
-const planoDeAção = object()
+export const planoDeAção = object()
   .shape({
     contato_do_responsavel: string()
       .label('Contato do responsável'),
@@ -299,7 +299,7 @@ const planoDeAção = object()
       .max(60),
   }, [['orgao_id', 'responsavel']]);
 
-const portfolio = object({
+export const portfolio = object({
   orgaos: array()
     .min(1, 'Selecione ao menos um órgão')
     .required(),
@@ -307,7 +307,7 @@ const portfolio = object({
     .required('Um portfolio requer um título'),
 });
 
-const processo = object()
+export const processo = object()
   .shape({
     descricao: string()
       .label('Descrição')
@@ -325,7 +325,7 @@ const processo = object()
       .required(),
   });
 
-const projeto = object()
+export const projeto = object()
   .shape({
     atividade_id: number()
       .nullable(),
@@ -517,7 +517,7 @@ const projeto = object()
       .max(20),
   });
 
-const região = object()
+export const região = object()
   .shape({
     descricao: string()
       .required('Preencha a descrição'),
@@ -532,7 +532,7 @@ const região = object()
       .nullable(),
   });
 
-const relatórioMensal = object({
+export const relatórioMensal = object({
   fonte: string()
     .required(),
   parametros: object({
@@ -553,7 +553,7 @@ const relatórioMensal = object({
   salvar_arquivo: boolean(),
 });
 
-const relatórioOrçamentário = object({
+export const relatórioOrçamentário = object({
   fonte: string()
     .required(),
   salvar_arquivo: boolean(),
@@ -571,7 +571,7 @@ const relatórioOrçamentário = object({
   }),
 });
 
-const relatórioSemestralOuAnual = object({
+export const relatórioSemestralOuAnual = object({
   fonte: string()
     .required(),
   parametros: object({
@@ -595,7 +595,7 @@ const relatórioSemestralOuAnual = object({
   salvar_arquivo: boolean(),
 });
 
-const risco = object()
+export const risco = object()
   .shape({
     causa: string()
       .label('Causa raiz')
@@ -635,7 +635,7 @@ const risco = object()
       .required(),
   }, [['risco_tarefa_outros', 'tarefa_id']]);
 
-const tarefa = object()
+export const tarefa = object()
   .shape({
     atualizacao_do_realizado: boolean(),
     custo_estimado: number()
@@ -741,7 +741,7 @@ const tarefa = object()
       .typeError('Data inválida'),
   });
 
-const usuário = object()
+export const usuário = object()
   .shape({
     desativado: string()
       .nullable(),
@@ -767,7 +767,7 @@ const usuário = object()
       .required('Selecione ao menos uma permissão'),
   });
 
-const variável = (singleIndicadores) => object()
+export const variável = (singleIndicadores) => object()
   .shape({
     acumulativa: string()
       .nullable(),
@@ -809,28 +809,3 @@ const variável = (singleIndicadores) => object()
     valor_base: string()
       .required('Preencha o valor base'),
   });
-
-export {
-  acompanhamento,
-  autenticação,
-  custeio,
-  etapa,
-  etapaDeMonitoramento,
-  fase,
-  indicador,
-  liçãoAprendida,
-  monitoramentoDePlanoDeAção,
-  novaSenha,
-  planoDeAção,
-  portfolio,
-  processo,
-  projeto,
-  região,
-  relatórioMensal,
-  relatórioOrçamentário,
-  relatórioSemestralOuAnual,
-  risco,
-  tarefa,
-  usuário,
-  variável,
-};
