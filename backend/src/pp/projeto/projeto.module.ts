@@ -8,7 +8,6 @@ import { ProjetoProxyPdmMetasController } from './projeto.proxy-pdm-metas.contro
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
-import { PortfolioService } from '../portfolio/portfolio.service';
 
 @Module({
     imports: [PrismaModule, PortfolioModule, UploadModule, MetaModule],

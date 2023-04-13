@@ -440,7 +440,6 @@ export class TarefaService {
             let projecao_inicio_min: DateTime | undefined = undefined;
             let atraso_max = -1;
             for (const filho of filhos) {
-                if (filho.termino_real) continue;
 
                 if (!filho.projecao_termino) {
                     this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
@@ -452,6 +451,10 @@ export class TarefaService {
                         (projecao_inicio_min && filho.projecao_inicio.valueOf() < projecao_inicio_min.valueOf()))
                 )
                     projecao_inicio_min = filho.projecao_inicio;
+
+                // pula quem terminou na hr de fazer projecao do atraso
+                // mas tem que ficar calculado a projecao do inicio
+                if (filho.termino_real) continue;
 
                 // vai setando a projeção de termino do parent de acordo com o max do filhos
                 if (!tarefa.projecao_termino || (tarefa.projecao_termino && filho.projecao_termino.valueOf() > tarefa.projecao_termino.valueOf()))
