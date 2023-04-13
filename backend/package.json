@@ -13,6 +13,7 @@
     "db:seed": "prisma db seed",
     "db:generate": "prisma generate",
     "db:prod:deploy": "prisma migrate deploy",
+    "organize-imports": "organize-imports-cli tsconfig.json",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
