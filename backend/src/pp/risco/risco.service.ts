@@ -56,7 +56,7 @@ export class RiscoService {
         return { id: risco.id }
     }
 
-    async findAll(projetoId: number, user: PessoaFromJwt): Promise<ProjetoRisco[]> {
+    async findAll(projetoId: number, user: PessoaFromJwt | undefined): Promise<ProjetoRisco[]> {
         const projetoRisco = await this.prisma.projetoRisco.findMany({
             where: {
                 projeto_id: projetoId,
@@ -147,6 +147,13 @@ export class RiscoService {
                             select: {
                                 id: true,
                                 sigla: true
+                            }
+                        },
+
+                        projeto_risco: {
+                            select: {
+                                id: true,
+                                codigo: true
                             }
                         }
                     }

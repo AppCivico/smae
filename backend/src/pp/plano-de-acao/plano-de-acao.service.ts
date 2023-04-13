@@ -42,7 +42,7 @@ export class PlanoAcaoService {
         return {id: plano_acao.id}
     }
 
-    async findAll(projetoId: number, filters: FilterPlanoAcaoDto, user: PessoaFromJwt): Promise<PlanoAcao[]> {
+    async findAll(projetoId: number, filters: FilterPlanoAcaoDto, user: PessoaFromJwt | undefined): Promise<PlanoAcao[]> {
         return await this.prisma.planoAcao.findMany({
             where: {
                 projeto_risco: {
@@ -65,6 +65,12 @@ export class PlanoAcaoService {
                     select: {
                         id: true,
                         sigla: true
+                    }
+                },
+                projeto_risco: {
+                    select: {
+                        id: true,
+                        codigo: true
                     }
                 }
             }
