@@ -200,6 +200,23 @@ export const useProjetosStore = defineStore('projetos', {
         return false;
       }
     },
+
+    async enviarArquivo(params = {}, idDoProjeto = 0): Promise<boolean> {
+      this.chamadasPendentes.arquivos = true;
+
+      try {
+        let resposta;
+
+        resposta = await this.requestS.post(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento`, params);
+
+        this.chamadasPendentes.arquivos = false;
+        return resposta;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.arquivos = false;
+        return false;
+      }
+    },
   },
   getters: {
     itemParaEdição: ({ emFoco, route }) => ({

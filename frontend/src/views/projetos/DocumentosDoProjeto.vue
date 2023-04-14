@@ -62,7 +62,6 @@ iniciar();
             </a>
           </td>
           <td
-            class=""
             :class="{ loading: chamadasPendentes.arquivos }"
           >
             <a
@@ -93,10 +92,29 @@ iniciar();
     </tbody>
   </table>
 
+  <router-link
+    :to="{
+      name: 'projetosNovoDocumento'
+    }"
+    class="addlink mb1"
+  >
+    <svg
+      width="20"
+      height="20"
+    >
+      <use xlink:href="#i_+" />
+    </svg>
+    Adicionar arquivo
+  </router-link>
+
   <span
     v-if="chamadasPendentes?.arquivos"
     class="spinner"
   >Carregando</span>
+
+  <router-view v-slot="{ Component }">
+    <component :is="Component" />
+  </router-view>
 
   <div
     v-if="erro"
