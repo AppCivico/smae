@@ -1406,11 +1406,12 @@ iniciar();
     </div>
   </Form>
 
-
-  <span
+  <div
     v-if="chamadasPendentes?.emFoco"
     class="spinner"
-  >Carregando</span>
+  >
+    Carregando
+  </div>
 
   <div
     v-if="erro"
