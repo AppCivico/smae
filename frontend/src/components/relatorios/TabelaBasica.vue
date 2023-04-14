@@ -1,0 +1,93 @@
+<script setup>
+import dateToDate from '@/helpers/dateToDate';
+import { useAlertStore, useAuthStore, useRelatoriosStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+
+const { temPermissãoPara } = storeToRefs(useAuthStore());
+const alertStore = useAlertStore();
+const relatoriosStore = useRelatoriosStore();
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
+
+function excluirRelatório(id) {
+  alertStore.confirmAction('Deseja remover o relatório?', () => {
+    relatoriosStore.delete(id);
+  }, 'Remover');
+}
+
+</script>
+<template>
+  <table class="tablemain">
+    <col>
+    <col class="col--dataHora">
+
+    <col
+      v-if="temPermissãoPara(['Reports.remover'])"
+      class="col--botão-de-ação"
+    >
+    <col class="col--botão-de-ação">
+
+    <thead>
+      <tr>
+        <th>criador</th>
+        <th>gerado em</th>
+        <th v-if="temPermissãoPara(['Reports.remover'])" />
+        <th />
+      </tr>
+    </thead>
+
+    <tbody>
+      <template v-if="relatoriosStore.relatorios.length">
+        <tr
+          v-for="item in relatoriosStore.relatorios"
+          :key="item.id"
+        >
+          <td>{{ item.criador?.nome_exibicao }}</td>
+          <td>{{ localizeDate(item.criado_em) }}</td>
+          <td v-if="temPermissãoPara(['Reports.remover'])">
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="excluirRelatório(item.id)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </td>
+          <td>
+            <a
+              :href="`${baseUrl}/download/${item.arquivo}`"
+              download
+              title="baixar"
+            ><img
+              src="../../assets/icons/baixar.svg"
+            ></a>
+          </td>
+        </tr>
+      </template>
+      <tr v-else-if="relatoriosStore.loading">
+        <td
+          colspan="4"
+          aria-busy="true"
+        >
+          Carregando
+        </td>
+      </tr>
+      <tr v-else-if="relatoriosStore.error">
+        <td colspan="4">
+          erro: {{ relatoriosStore.error }}
+        </td>
+      </tr>
+      <tr v-else>
+        <td colspan="4">
+          Nenhum resultado encontrado.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</template>

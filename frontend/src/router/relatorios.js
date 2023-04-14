@@ -2,6 +2,10 @@ import MenuSecundario from '@/components/MenuSecundario.vue';
 import NovoMensal from '@/views/relatorios/NovoMensal.vue';
 import NovoOrcamentario from '@/views/relatorios/NovoOrcamentario.vue';
 import NovoSemestralOuAnual from '@/views/relatorios/NovoSemestralOuAnual.vue';
+import RelatóriosDePortfolio from '@/views/relatorios/RelatoriosDePortfolio.vue';
+import RelatóriosDePrevisãoECusto from '@/views/relatorios/RelatoriosDePrevisaoECusto.vue';
+import RelatoriosDeProjeto from '@/views/relatorios/RelatoriosDeProjeto.vue';
+import RelatóriosDeProjetoEStatus from '@/views/relatorios/RelatoriosDeProjetoEStatus.vue';
 import RelatoriosMensais from '@/views/relatorios/RelatoriosMensais.vue';
 import RelatoriosOrcamentarios from '@/views/relatorios/RelatoriosOrcamentarios.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
@@ -30,6 +34,10 @@ export default {
       'RelatóriosMensais',
       'RelatóriosSemestraisOuAnuais',
       'RelatóriosOrçamentários',
+      'RelatóriosDeProjeto',
+      'RelatóriosDePrevisãoECusto',
+      'RelatóriosDePortfolio',
+      'RelatóriosDeProjetoEStatus',
     ],
   },
 
@@ -101,6 +109,66 @@ export default {
           meta: {
             título: 'Novo relatório de orçamentos',
           },
+        },
+      ],
+    },
+
+    {
+      name: 'RelatóriosDeProjeto',
+      path: 'projeto',
+      meta: {
+        título: 'Relatórios de projeto',
+        títuloParaMenu: 'Relatório de projeto',
+      },
+      children: [
+        {
+          path: '',
+          component: RelatoriosDeProjeto,
+        },
+      ],
+    },
+
+    {
+      name: 'RelatóriosDePrevisãoECusto',
+      path: 'previsao-e-custo',
+      meta: {
+        título: 'Relatórios de previsão e custo',
+        títuloParaMenu: 'Relatório de previsão e custo',
+      },
+      children: [
+        {
+          path: '',
+          component: RelatóriosDePrevisãoECusto,
+        },
+      ],
+    },
+
+    {
+      name: 'RelatóriosDePortfolio',
+      path: 'portfolio',
+      meta: {
+        título: 'Relatórios de portfolio',
+        títuloParaMenu: 'Relatório de portfolio',
+      },
+      children: [
+        {
+          path: '',
+          component: RelatóriosDePortfolio,
+        },
+      ],
+    },
+
+    {
+      name: 'RelatóriosDeProjetoEStatus',
+      path: 'projeto-e-status',
+      meta: {
+        título: 'Relatórios de projeto e status',
+        títuloParaMenu: 'Relatório de projeto e status',
+      },
+      children: [
+        {
+          path: '',
+          component: RelatóriosDeProjetoEStatus,
         },
       ],
     },
