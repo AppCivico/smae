@@ -13,7 +13,7 @@ import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.d
 import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto } from './entities/tarefa.entity';
 import { TarefaService } from './tarefa.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Tarefas')
@@ -28,7 +28,7 @@ export class TarefaController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async create(@Param() params: FindOneParams, @Body() dto: CreateTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         return await this.tarefaService.create(projeto.id, dto, user);
     }
@@ -51,7 +51,7 @@ export class TarefaController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TarefaDetailDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.tarefaService.findOne(projeto, params.id2, user);
     }
 
@@ -68,13 +68,14 @@ export class TarefaController {
         // mais fazer escritas no projeto em si
         console.log(`before ${JSON.stringify(dto)}`);
 
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+
         if (dto.atualizacao_do_realizado) {
             console.log(`dto.atualizacao_do_realizado=true`);
             dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
             console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
             console.log(dto);
 
-            const projeto = await this.projetoService.findOne(params.id, user, true);
 
             if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
                 throw new HttpException("Não é possível editar o realizado da tarefa, pois o seu acesso é apenas leitura e você não é o responsável do projeto.", 400);
@@ -83,7 +84,6 @@ export class TarefaController {
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
         } else {
 
-            const projeto = await this.projetoService.findOne(params.id, user, false);
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
         }
     }
@@ -95,7 +95,7 @@ export class TarefaController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         await this.tarefaService.remove(projeto.id, params.id2, user);
         return '';
@@ -106,7 +106,7 @@ export class TarefaController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async calcula_dependencias_tarefas(@Param() params: FindOneParams, @Body() dto: CheckDependenciasDto, @CurrentUser() user: PessoaFromJwt): Promise<DependenciasDatasDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         const result = await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
         if (!result) throw new HttpException('Faltando dependências', 400);

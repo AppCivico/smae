@@ -210,7 +210,7 @@ export class TarefaService {
 
     async findAll(projetoId: number, user: PessoaFromJwt | undefined, filter: FilterPPTarefa): Promise<ListTarefaListDto> {
 
-        const projeto = await this.projetoService.findOne(projetoId, user, true);
+        const projeto = await this.projetoService.findOne(projetoId, user, 'ReadOnly');
 
         const antesQuery = Date.now()
         const rows = await this.prisma.tarefa.findMany({

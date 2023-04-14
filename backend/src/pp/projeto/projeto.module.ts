@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { UploadModule } from 'src/upload/upload.module';
 import { MetaModule } from '../../meta/meta.module';
 import { PrismaModule } from '../../prisma/prisma.module';
-import { UploadModule } from '../../upload/upload.module';
 import { PortfolioModule } from '../portfolio/portfolio.module';
 import { ProjetoController } from './projeto.controller';
 import { ProjetoProxyPdmMetasController } from './projeto.proxy-pdm-metas.controller';
@@ -10,7 +10,12 @@ import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 
 @Module({
-    imports: [PrismaModule, PortfolioModule, UploadModule, MetaModule],
+    imports: [
+        PrismaModule,
+        MetaModule,
+        UploadModule,
+        PortfolioModule
+    ],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService]

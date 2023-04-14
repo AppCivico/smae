@@ -13,7 +13,7 @@ import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @ApiTags('Projeto')
 @Controller('projeto')
@@ -45,7 +45,7 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
-        return await this.projetoService.findOne(params.id, user, true);
+        return await this.projetoService.findOne(params.id, user, 'ReadOnly');
     }
 
     @Patch(':id')
@@ -99,7 +99,7 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async createSEI(@Param() params: FindOneParams, @Body() createProjetoRegistroSei: CreateProjetoSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.projetoSeiService.append_sei(projeto, createProjetoRegistroSei, user);
     }
 
@@ -108,7 +108,7 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return { linhas: await this.projetoSeiService.list_sei(projeto, user) };
     }
 
@@ -117,7 +117,7 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async findOneSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoSeiDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         const rows = await this.projetoSeiService.list_sei(projeto, user, params.id2);
         if (!rows[0]) throw new HttpException("SEI não encontrado", 404);
         return rows[0];
@@ -128,7 +128,7 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async updateSEI(@Param() params: FindTwoParams, @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.projetoSeiService.update_sei(projeto, params.id2, updateProjetoRegistroSeiDto, user);
     }
 
@@ -139,7 +139,7 @@ export class ProjetoController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         await this.projetoSeiService.remove_sei(projeto, params.id2, user);
         return null;
     }

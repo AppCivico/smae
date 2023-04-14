@@ -12,7 +12,7 @@ import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from './entities/risco.entity';
 import { RiscoService } from './risco.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
 @Controller('projeto')
 @ApiTags('Projeto - Risco')
@@ -28,7 +28,7 @@ export class RiscoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async create(@Param() params: FindOneParams, @Body() dto: CreateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, false);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         return await this.riscoService.create(projeto.id, dto, user);
     }
@@ -38,7 +38,7 @@ export class RiscoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoRiscoDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return {
             linhas: await this.riscoService.findAll(projeto.id, user),
         };
@@ -49,7 +49,7 @@ export class RiscoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoRiscoDetailDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.riscoService.findOne(projeto.id, params.id2, user);
     }
 
@@ -58,7 +58,7 @@ export class RiscoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async update(@Param() params: FindTwoParams, @Body() updateRiscoDto: UpdateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.riscoService.update(params.id2, updateRiscoDto, user);
     }
 
@@ -69,7 +69,7 @@ export class RiscoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, true);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         await this.riscoService.remove(projeto.id, params.id2, user);
         return '';
     }

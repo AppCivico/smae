@@ -173,8 +173,9 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['SMAE.superadmin', 'Faz parte do perfil Administrador Geral'],
     ],
     Projeto: [
-        ['Projeto.administrar_portfolios', '(Projeto) Administrar todos os portfólios, sem acesso aos projetos'],
-        ['Projeto.administrador_no_orgao', '(Projeto) Cria novos projetos e acesso total aos projetos do orgão em que pertence'],
+        ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
+        ['Projeto.administrador', 'Acesso total aos projetos'],
+        ['Projeto.administrador_no_orgao', 'Acesso total aos projetos com o portfólio do orgão em que pertence'],
         ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
     ],
@@ -224,33 +225,31 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
     'CadastroPainel.visualizar',
 ];
 
+const removerItem = (nome: string) => {
+    return {
+        nome: nome,
+        descricao: '',
+        privilegios: false as false
+    }
+};
+
 const PerfilAcessoConfig: {
     nome: string;
     descricao: string;
     privilegios: ListaDePrivilegios[] | false
 }[] = [
+        removerItem('Técnico CP'),
+        removerItem('Unidade de Entregas'),
+        removerItem('Responsável por meta na CP - orçamento'),
+        removerItem('Administrador de Portfolio'),
+        removerItem('Administrador Geral'),
+        removerItem('Administrador CP'),
+        removerItem('Coordenadoria de Planejamento'),
+        removerItem('Criador e Gestor de Projetos no Órgão'),
+        removerItem('Responsável por meta na CP'),
+        // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo acima, pra não ficar sobrando no banco
         {
-            nome: 'Técnico CP',
-            descricao: '',
-            privilegios: false
-        },
-        {
-            nome: 'Unidade de Entregas',
-            descricao: '',
-            privilegios: false
-        },
-        {
-            nome: 'Responsável por meta na CP - orçamento',
-            descricao: '',
-            privilegios: false
-        },
-        {
-            nome: 'Administrador de Portfolio',
-            descricao: '',
-            privilegios: false
-        },
-        {
-            nome: 'Administrador Geral',
+            nome: 'Administrador Geral do SMAE',
             descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
             privilegios: [
                 'SMAE.superadmin',
@@ -258,7 +257,7 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Administrador CP',
+            nome: 'Administrador Coordenadoria de Planejamento',
             descricao: 'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
             privilegios: [
                 'PDM.admin_cp',
@@ -301,8 +300,8 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Coordenadoria de Planejamento',
-            descricao: 'Pode criar pessoas no mesmo órgão',
+            nome: 'Gestor de usuários no mesmo órgão',
+            descricao: 'Pode criar e editar usuários no mesmo órgão',
             privilegios: [
                 'CadastroPessoa.inserir',
                 'CadastroPessoa.editar',
@@ -320,7 +319,7 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Responsável por meta na CP',
+            nome: 'Responsável por meta na Coordenadoria de Planejamento',
             descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
             privilegios: PrivRespNaCp
         },
@@ -339,22 +338,22 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Criador e Gestor de Projetos no Órgão',
+            nome: 'Gestor de Projetos no Órgão',
             descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
             privilegios: [
                 'Projeto.administrador_no_orgao',
             ]
         },
         {
-            nome: 'Órgão Gestor',
-            descricao: 'Pode ser escolhido para administrar os projetos, enquanto participar do órgão gestor',
+            nome: 'Gestor de projetos',
+            descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
             privilegios: [
                 'SMAE.gestor_de_projeto',
             ]
         },
         {
             nome: 'Colaborador de Projetos',
-            descricao: 'Pode ser escolhido como responsável em projetos e contribuir durante a fase de registro e planejamento',
+            descricao: 'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
             privilegios: [
                 'SMAE.colaborador_de_projeto',
             ]

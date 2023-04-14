@@ -26,7 +26,7 @@ export class PortfolioService {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
                     titulo: dto.titulo,
-                    nivel_maximo_tarefa: dto.nivel_maximo_tarefa || 1,
+                    nivel_maximo_tarefa: dto.nivel_maximo_tarefa || undefined, // deixa o default do banco
                 },
                 select: { id: true },
             });
@@ -50,7 +50,7 @@ export class PortfolioService {
 
     async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
         let orgao_id: undefined | number = undefined;
-        if (user != null && !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'])) {
+        if (user != null && !user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
             orgao_id = user.orgao_id!;
         }
 
@@ -90,7 +90,7 @@ export class PortfolioService {
 
         // só pra manter mais ou menos uma retrocompatibilidade com o frontend
         // preciso pensar melhor nesse filtro
-        if (user.hasSomeRoles(['Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'])) {
+        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
             orgao_id = user.orgao_id!;
         }
 

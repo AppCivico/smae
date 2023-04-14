@@ -14,6 +14,7 @@ import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
+import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Registrado: 'Registro',
@@ -34,7 +35,11 @@ export class ProjetoOrgaoParticipante {
 @Injectable()
 export class ProjetoService {
     private readonly logger = new Logger(ProjetoService.name);
-    constructor(private readonly prisma: PrismaService, private readonly portfolioService: PortfolioService, private readonly uploadService: UploadService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly portfolioService: PortfolioService,
+        private readonly uploadService: UploadService
+    ) { }
 
     private async processaOrigem(dto: CreateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
         let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
@@ -357,7 +362,9 @@ export class ProjetoService {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
         if (!user) return permissionsSet;
 
-        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+        if (user.hasSomeRoles(['Projeto.administrador'])) {
+            // nenhum filtro
+        } else if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
             permissionsSet.push({
                 portfolio: {
                     orgaos: {
@@ -378,12 +385,13 @@ export class ProjetoService {
         } else {
             throw new HttpException('Sem permissões para acesso aos projetos.', 400);
         }
+
         return permissionsSet;
     }
 
     // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
     // o órgão gestor continua podendo preencher os dados realizado
-    async findOne(id: number, user: PessoaFromJwt | undefined, readonly: boolean): Promise<ProjetoDetailDto> {
+    async findOne(id: number, user: PessoaFromJwt | undefined, readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>): Promise<ProjetoDetailDto> {
 
         console.log({ id, user, readonly });
 
@@ -556,7 +564,7 @@ export class ProjetoService {
             responsavel_id: number | null
         },
         user: PessoaFromJwt | undefined,
-        readonly: boolean
+        readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>
     ): Promise<ProjetoPermissoesDto> {
         const permissoes: ProjetoPermissoesDto = {
             acao_arquivar: false,
@@ -598,7 +606,7 @@ export class ProjetoService {
 
         let pessoaPodeEscrever = false;
         if (user) {
-            if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+            if (user.hasSomeRoles(['Projeto.administrador_no_orgao', 'Projeto.administrador'])) {
                 pessoaPodeEscrever = true;
             } else if (
                 user.hasSomeRoles(['SMAE.gestor_de_projeto'])
@@ -698,7 +706,7 @@ export class ProjetoService {
             }
         }
 
-        if (user && (readonly == false && pessoaPodeEscrever == false)) {
+        if (user && (readonly == 'ReadOnly' && pessoaPodeEscrever == false)) {
             throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
         }
 
@@ -710,7 +718,7 @@ export class ProjetoService {
         //if (dto.codigo) throw new HttpException('codigo| O campo código não deve ser enviado.', 400);
 
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        const projeto = await this.findOne(projetoId, user, false);
+        const projeto = await this.findOne(projetoId, user, 'ReadWrite');
 
         // migrou de status, verificar se  realmente poderia mudar
         if (dto.status && dto.status != projeto.status) {
@@ -1069,7 +1077,7 @@ export class ProjetoService {
 
     async append_document(projetoId: number, createPdmDocDto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, false);
+        await this.findOne(projetoId, user, 'ReadWrite');
 
         const arquivoId = this.uploadService.checkUploadToken(createPdmDocDto.upload_token);
 
@@ -1090,7 +1098,7 @@ export class ProjetoService {
 
     async list_document(projetoId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, false);
+        await this.findOne(projetoId, user, 'ReadWrite');
 
         const arquivos: ProjetoDocumentoDto[] = await this.prisma.projetoDocumento.findMany({
             where: { projeto_id: projetoId, removido_em: null },
@@ -1116,7 +1124,7 @@ export class ProjetoService {
 
     async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, false);
+        await this.findOne(projetoId, user, 'ReadWrite');
 
         await this.prisma.projetoDocumento.updateMany({
             where: { projeto_id: projetoId, removido_em: null, id: projetoDocId },

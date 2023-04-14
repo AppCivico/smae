@@ -28,7 +28,7 @@ export class PPProjetoService implements ReportableService {
     ) { }
 
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
-        const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(dto.projeto_id, undefined, true);
+        const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(dto.projeto_id, undefined, 'ReadOnly');
 
         const detail: RelProjetoRelatorioDto = {
             ...projetoRow,
