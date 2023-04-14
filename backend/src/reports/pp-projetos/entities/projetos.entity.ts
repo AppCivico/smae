@@ -42,6 +42,7 @@ export class RelProjetosDto {
 }
 
 export class RelProjetosCronogramaDto {
+    projeto_id: number
     projeto_codigo: string
     numero: number
     nivel: number
@@ -61,6 +62,7 @@ export class RelProjetosCronogramaDto {
 }
 
 export class RelProjetosRiscosDto {
+    projeto_id: number
     projeto_codigo: string
     codigo: string
     titulo: string
@@ -78,6 +80,7 @@ export class RelProjetosRiscosDto {
 }
 
 export class RelProjetosPlanoAcaoDto {
+    projeto_id: number
     projeto_codigo: string
     risco_codigo: string
     contramedida: string
@@ -90,6 +93,7 @@ export class RelProjetosPlanoAcaoDto {
 }
 
 export class RelProjetosPlanoAcaoMonitoramentosDto {
+    projeto_id: number
     projeto_codigo: string
     risco_codigo: string
     plano_acao_id: number
@@ -98,6 +102,7 @@ export class RelProjetosPlanoAcaoMonitoramentosDto {
 }
 
 export class RelProjetosLicoesAprendidasDto {
+    projeto_id: number
     projeto_codigo: string
     data_registro: Date
     responsavel: string
@@ -106,6 +111,7 @@ export class RelProjetosLicoesAprendidasDto {
 }
 
 export class RelProjetosAcompanhamentosDto {
+    projeto_id: number
     projeto_codigo: string
     data_registro: Date
     participantes: string
@@ -118,6 +124,7 @@ export class RelProjetosAcompanhamentosDto {
     observacao: string | null
     detalhamento_status: string | null
     pontos_atencao: string | null
+    riscos: string | null
 }
 
 export class PPProjetosRelatorioDto {

@@ -61,6 +61,7 @@ class RetornoDbProjeto {
 }
 
 class RetornoDbCronograma {
+    projeto_id: number
     projeto_codigo: string
     numero: number
     nivel: number
@@ -82,6 +83,7 @@ class RetornoDbCronograma {
 }
 
 class RetornoDbRiscos {
+    projeto_id: number
     projeto_codigo: string
     codigo: string
     titulo: string
@@ -99,6 +101,7 @@ class RetornoDbRiscos {
 }
 
 class RetornoDbPlanosAcao {
+    projeto_id: number
     projeto_codigo: string
     risco_codigo: string
     contramedida: string
@@ -111,6 +114,7 @@ class RetornoDbPlanosAcao {
 }
 
 class RetornoDbPlanosAcaoMonitoramentos {
+    projeto_id: number
     projeto_codigo: string
     risco_codigo: string
     plano_acao_id: number
@@ -119,6 +123,7 @@ class RetornoDbPlanosAcaoMonitoramentos {
 }
 
 class RetornoDbLicoesAprendidas {
+    projeto_id: number
     projeto_codigo: string
     data_registro: Date
     responsavel: string
@@ -127,6 +132,7 @@ class RetornoDbLicoesAprendidas {
 }
 
 class RetornoDbAcompanhamentos {
+    projeto_id: number
     projeto_codigo: string
     data_registro: Date
     participantes: string
@@ -139,6 +145,7 @@ class RetornoDbAcompanhamentos {
     observacao?: string
     detalhamento_status?: string
     pontos_atencao?: string
+    riscos?: string
 }
 
 @Injectable()
@@ -399,6 +406,7 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataCronograma(filters: CreateRelProjetosDto, out: RelProjetosCronogramaDto[]) {
         const sql = `SELECT
+            projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto.atraso,
             resp.id AS responsavel_id,
@@ -414,7 +422,13 @@ export class PPProjetosService implements ReportableService {
             t.duracao_real,
             t.percentual_concluido,
             t.custo_real,
-            '' as dependencias
+            (
+                SELECT
+                    string_agg(concat(t2.nivel::text, '.', t2.numero::text, ' ', t2.tarefa), ' / ')
+                FROM tarefa_dependente td
+                JOIN tarefa t2 ON t2.id = td.tarefa_id
+                WHERE td.dependencia_tarefa_id = t.id
+            ) as dependencias
         FROM projeto
           JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           JOIN pessoa resp ON resp.id = projeto.responsavel_id
@@ -431,6 +445,7 @@ export class PPProjetosService implements ReportableService {
     ): RelProjetosCronogramaDto[] {
         return input.map(db => {
             return {
+                projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 numero: db.numero,
                 nivel: db.nivel,
@@ -455,6 +470,7 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataRiscos(filters: CreateRelProjetosDto, out: RelProjetosRiscosDto[]) {
         const sql = `SELECT
+            projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto_risco.codigo,
             projeto_risco.titulo,
@@ -468,7 +484,12 @@ export class PPProjetosService implements ReportableService {
             projeto_risco.nivel,
             projeto_risco.grau,
             projeto_risco.resposta,
-            '' as tarefas_afetadas
+            (
+                SELECT string_agg(t.tarefa, ' / ')
+                FROM risco_tarefa rt
+                JOIN tarefa t ON rt.tarefa_id = t.id
+                WHERE rt.projeto_risco_id = projeto_risco.id
+            ) as tarefas_afetadas
         FROM projeto
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
         `;
@@ -483,6 +504,7 @@ export class PPProjetosService implements ReportableService {
     ): RelProjetosRiscosDto[] {
         return input.map(db => {
             return {
+                projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 codigo: db.codigo,
                 titulo: db.titulo,
@@ -503,6 +525,7 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataPlanosAcao(filters: CreateRelProjetosDto, out: RelProjetosPlanoAcaoDto[]) {
         const sql = `SELECT
+            projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto_risco.codigo AS risco_codigo,
             plano_acao.contramedida,
@@ -527,6 +550,7 @@ export class PPProjetosService implements ReportableService {
     ): RelProjetosPlanoAcaoDto[] {
         return input.map(db => {
             return {
+                projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 risco_codigo: db.risco_codigo,
                 contramedida: db.contramedida,
@@ -542,6 +566,7 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataPlanosAcaoMonitoramento(filters: CreateRelProjetosDto, out: RelProjetosPlanoAcaoMonitoramentosDto[]) {
         const sql = `SELECT
+            projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto_risco.codigo AS risco_codigo,
             plano_acao.id AS plano_acao_id,
@@ -563,6 +588,7 @@ export class PPProjetosService implements ReportableService {
     ): RelProjetosPlanoAcaoMonitoramentosDto[] {
         return input.map(db => {
             return {
+                projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 risco_codigo: db.risco_codigo,
                 plano_acao_id: db.plano_acao_id,
@@ -574,6 +600,7 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataLicoesAprendidas(filters: CreateRelProjetosDto, out: RelProjetosLicoesAprendidasDto[]) {
         const sql = `SELECT
+            projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto_licao_aprendida.data_registro,
             projeto_licao_aprendida.responsavel,
@@ -593,6 +620,7 @@ export class PPProjetosService implements ReportableService {
     ): RelProjetosLicoesAprendidasDto[] {
         return input.map(db => {
             return {
+                projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 data_registro: db.data_registro,
                 responsavel: db.responsavel,
@@ -604,6 +632,7 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataAcompanhamentos(filters: CreateRelProjetosDto, out: RelProjetosAcompanhamentosDto[]) {
         const sql = `SELECT
+            projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto_acompanhamento.data_registro,
             projeto_acompanhamento.participantes,
@@ -615,9 +644,17 @@ export class PPProjetosService implements ReportableService {
             projeto_acompanhamento.responsavel,
             projeto_acompanhamento.observacao,
             projeto_acompanhamento.detalhamento_status,
-            projeto_acompanhamento.pontos_atencao
+            projeto_acompanhamento.pontos_atencao,
+            (
+                SELECT string_agg(r.codigo::text, ' / ')
+                FROM projeto_acompanhamento_risco ar
+                JOIN projeto_risco r ON ar.projeto_risco_id = r.id
+                WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
+            ) AS riscos
         FROM projeto
           JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
+          JOIN projeto_acompanhamento_risco ON projeto_acompanhamento_risco.projeto_acompanhamento_id = projeto_acompanhamento.id
+          JOIN projeto_risco ON projeto_risco.id = projeto_acompanhamento_risco.projeto_risco_id
         `;
 
         const data: RetornoDbAcompanhamentos[] = await this.prisma.$queryRawUnsafe(sql);
@@ -630,6 +667,7 @@ export class PPProjetosService implements ReportableService {
     ): RelProjetosAcompanhamentosDto[] {
         return input.map(db => {
             return {
+                projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 data_registro: db.data_registro,
                 participantes: db.participantes,
@@ -642,6 +680,7 @@ export class PPProjetosService implements ReportableService {
                 observacao: db.observacao ? db.observacao : null,
                 detalhamento_status: db.detalhamento_status ? db.detalhamento_status : null,
                 pontos_atencao: db.pontos_atencao ? db.pontos_atencao : null,
+                riscos: db.riscos ? db.riscos : null
             };
         });
     }
