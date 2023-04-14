@@ -1,5 +1,7 @@
 import MenuSecundário from '@/components/MenuSecundario.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import DialogWrapper from '@/views/DialogWrapper.vue';
+import ProjetoEnviarArquivo from '@/views/projetos/ProjetoEnviarArquivo.vue';
 import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
 import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
 import ProjetosEstruturaAnalitica from '@/views/projetos/ProjetosEstruturaAnalitica.vue';
@@ -9,7 +11,6 @@ import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
 import acompanhamentos from './acompanhamentos';
-
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
 import riscos from './riscos';
@@ -214,6 +215,25 @@ export default {
             título: 'Documentos do projeto',
             títuloParaMenu: 'Documentos',
           },
+
+          children: [
+            {
+              path: 'novo',
+              component: DialogWrapper,
+              meta: {
+                rotaDeEscape: 'projetosDocumentos',
+                título: 'Novo documento do projeto',
+                títuloParaMenu: 'Novo documento',
+              },
+              children: [
+                {
+                  path: '',
+                  name: 'projetosNovoDocumento',
+                  component: ProjetoEnviarArquivo,
+                },
+              ],
+            },
+          ],
         },
 
         processos,
