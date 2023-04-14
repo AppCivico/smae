@@ -98,7 +98,7 @@ export class PPStatusService implements ReportableService {
             ...DefaultCsvOptions,
             transforms: defaultTransform,
         });
-        const linhas = json2csvParser.parse([dados.linhas]);
+        const linhas = json2csvParser.parse(dados.linhas);
         out.push({
             name: 'projeto-status.csv',
             buffer: Buffer.from(linhas, 'utf8'),

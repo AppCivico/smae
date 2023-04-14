@@ -194,7 +194,7 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
-            const linhas = json2csvParser.parse([dados.linhas]);
+            const linhas = json2csvParser.parse(dados.linhas);
             out.push({
                 name: 'projetos.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -206,7 +206,7 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
-            const linhas = json2csvParser.parse([dados.cronograma]);
+            const linhas = json2csvParser.parse(dados.cronograma);
             out.push({
                 name: 'cronograma.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -218,7 +218,7 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
-            const linhas = json2csvParser.parse([dados.riscos]);
+            const linhas = json2csvParser.parse(dados.riscos);
             out.push({
                 name: 'riscos.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -230,7 +230,7 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
-            const linhas = json2csvParser.parse([dados.planos_de_acao]);
+            const linhas = json2csvParser.parse(dados.planos_de_acao);
             out.push({
                 name: 'planos_de_acao.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -242,7 +242,7 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
-            const linhas = json2csvParser.parse([dados.monitoramento_planos_de_acao]);
+            const linhas = json2csvParser.parse(dados.monitoramento_planos_de_acao);
             out.push({
                 name: 'monitoramento_planos_de_acao.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -254,7 +254,7 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
-            const linhas = json2csvParser.parse([dados.licoes_aprendidas]);
+            const linhas = json2csvParser.parse(dados.licoes_aprendidas);
             out.push({
                 name: 'licoes_aprendidas.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -266,7 +266,7 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
-            const linhas = json2csvParser.parse([dados.acompanhamentos]);
+            const linhas = json2csvParser.parse(dados.acompanhamentos);
             out.push({
                 name: 'acompanhamentos.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
