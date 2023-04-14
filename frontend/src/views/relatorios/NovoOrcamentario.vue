@@ -1,5 +1,8 @@
 <script setup>
-import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
+import CheckClose from '../../components/CheckClose.vue';
+import { relatórioOrçamentário as schema } from '@/consts/formSchemas';
+import maskMonth from '@/helpers/maskMonth';
+import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { router } from '@/router';
 import { useAlertStore, usePdMStore, useRelatoriosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
@@ -15,25 +18,16 @@ const { current } = storeToRefs(relatoriosStore);
 
 const { loading } = storeToRefs(relatoriosStore);
 
-const listaDeSemestres = [
-  'Primeiro',
-  'Segundo',
-];
-
-const listaDePeríodos = [
-  'Semestral',
-  'Anual',
-];
-
 current.value = {
-  fonte: 'Indicadores',
+  fonte: 'Orcamento',
   parametros: {
     tipo: 'Analitico',
     pdm_id: 0,
     meta_id: 0,
-    ano: 2003,
-    periodo: '',
-    semestre: '',
+    tags: [],
+    inicio: '',
+    fim: '',
+    orgaos: [],
   },
   salvar_arquivo: false,
 };
@@ -43,10 +37,8 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    if (values.parametros.periodo === 'Anual') {
-      values.parametros.semestre = undefined;
-    }
-
+    values.parametros.inicio = monthAndYearToDate(values.parametros.inicio);
+    values.parametros.fim = monthAndYearToDate(values.parametros.fim);
     if (!values.salvar_arquivo) {
       values.salvar_arquivo = false;
     }
@@ -77,7 +69,11 @@ onMounted(() => {
 });
 </script>
 
-<template>
+<template>  <div class="flex spacebetween center mb2">
+    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <hr class="ml2 f1">
+    <CheckClose />
+  </div>
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
@@ -86,8 +82,12 @@ onMounted(() => {
   >
     <div class="flex g2 mb2">
       <div class="f1">
-        <label class="label"><abbr title="Programa de metas">PdM</abbr> <span class="tvermelho">*</span></label>
+        <label class="label">
+          <abbr title="Programa de metas">PdM</abbr>
+          <span class="tvermelho">*</span>
+        </label>
         <Field
+          v-model="current.parametros.pdm_id"
           name="parametros.pdm_id"
           as="select"
           class="inputtext light
@@ -112,87 +112,42 @@ onMounted(() => {
       </div>
       <div class="f1">
         <label
-          for="ano"
+          for="inicio"
           class="label"
-        >ano <span class="tvermelho">*</span></label>
+        >mês/ano início <span class="tvermelho">*</span></label>
         <Field
-          id="ano"
-          placeholder="2003"
-          name="parametros.ano"
-          type="number"
+          id="inicio"
+          v-model="current.parametros.inicio"
+          placeholder="01/2003"
+          name="parametros.inicio"
+          type="text"
           class="inputtext light mb1"
-          :class="{ 'error': errors['parametro.ano'] }"
-          min="2003"
+          :class="{ 'error': errors['parametro.inicio'] }"
+          maxlength="7"
+          @keyup="maskMonth"
         />
         <div class="error-msg">
-          {{ errors['parametros.ano'] }}
+          {{ errors['parametros.inicio'] }}
         </div>
       </div>
-
       <div class="f1">
         <label
-          for="periodo"
+          for="fim"
           class="label"
-        >periodo <span class="tvermelho">*</span></label>
+        >mês/ano final <span class="tvermelho">*</span></label>
         <Field
-          id="periodo"
+          id="fim"
+          v-model="current.parametros.fim"
           placeholder="01/2003"
-          name="parametros.periodo"
-          as="select"
+          name="parametros.fim"
+          type="text"
           class="inputtext light mb1"
-          :class="{ 'error': errors['parametros.periodo'] }"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option
-            v-for="item, k in listaDePeríodos"
-            :key="k"
-            :value="item"
-            :selected="k == current.parametros?.periodo"
-          >
-            {{ item }}
-          </option>
-        </Field>
+          :class="{ 'error': errors['parametros.fim'] }"
+          maxlength="7"
+          @keyup="maskMonth"
+        />
         <div class="error-msg">
-          {{ errors['parametros.periodo'] }}
-        </div>
-      </div>
-
-      <div class="f1">
-        <label
-          for="semestre"
-          class="label"
-        >
-          semestre
-          <span
-            v-show="values.parametros.periodo === 'Semestral'"
-            class="tvermelho"
-          >*</span>
-        </label>
-        <Field
-          id="semestre"
-          placeholder="01/2003"
-          name="parametros.semestre"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors['parametros.semestre'] }"
-          :disabled="values.parametros.periodo !== 'Semestral'"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option
-            v-for="item, k in listaDeSemestres"
-            :key="k"
-            :value="item"
-            :selected="k == current.parametros?.semestre"
-          >
-            {{ item }}
-          </option>
-        </Field>
-        <div class="error-msg">
-          {{ errors['parametros.semestre'] }}
+          {{ errors['parametros.fim'] }}
         </div>
       </div>
     </div>

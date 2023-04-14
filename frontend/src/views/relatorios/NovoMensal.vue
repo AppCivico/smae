@@ -1,4 +1,5 @@
 <script setup>
+import CheckClose from '../../components/CheckClose.vue';
 // import AutocompleteField from '@/components/AutocompleteField.vue';
 import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
@@ -77,7 +78,11 @@ onMounted(() => {
 });
 </script>
 
-<template>
+<template>  <div class="flex spacebetween center mb2">
+    <h1>{{ $route.meta.título || $route.name }}</h1>
+    <hr class="ml2 f1">
+    <CheckClose />
+  </div>
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
