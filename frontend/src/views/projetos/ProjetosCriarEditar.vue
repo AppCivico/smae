@@ -2,7 +2,6 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import DocumentosDoProjeto from '@/components/projetos/DocumentosDoProjeto.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
@@ -1407,7 +1406,6 @@ iniciar();
     </div>
   </Form>
 
-  <DocumentosDoProjeto v-if="props.projetoId" />
 
   <span
     v-if="chamadasPendentes?.emFoco"
