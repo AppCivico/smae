@@ -1,12 +1,11 @@
 import MenuSecundario from '@/components/MenuSecundario.vue';
-
-import {
-  RelatoriosMensais,
-  RelatoriosOrcamentarios,
-  RelatoriosRaiz,
-  RelatoriosSemestraisOuAnuais,
-  RelatórioCriarOuEditar
-} from '@/views/relatorios';
+import NovoMensal from '@/views/relatorios/NovoMensal.vue';
+import NovoOrcamentario from '@/views/relatorios/NovoOrcamentario.vue';
+import NovoSemestralOuAnual from '@/views/relatorios/NovoSemestralOuAnual.vue';
+import RelatoriosMensais from '@/views/relatorios/RelatoriosMensais.vue';
+import RelatoriosOrcamentarios from '@/views/relatorios/RelatoriosOrcamentarios.vue';
+import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
+import RelatoriosSemestraisOuAnuais from '@/views/relatorios/RelatoriosSemestraisOuAnuais.vue';
 
 export default {
   path: '/relatorios',
@@ -52,7 +51,7 @@ export default {
           component: RelatoriosMensais,
         },
         {
-          component: RelatórioCriarOuEditar,
+          component: NovoMensal,
           path: 'novo',
           name: 'novoRelatórioMensal',
           meta: {
@@ -74,7 +73,7 @@ export default {
           component: RelatoriosSemestraisOuAnuais,
         },
         {
-          component: RelatórioCriarOuEditar,
+          component: NovoSemestralOuAnual,
           path: 'novo',
           name: 'novoRelatórioSemestralOuAnual',
           meta: {
@@ -96,7 +95,7 @@ export default {
           component: RelatoriosOrcamentarios,
         },
         {
-          component: RelatórioCriarOuEditar,
+          component: NovoOrcamentario,
           path: 'novo',
           name: 'novoRelatórioOrçamentário',
           meta: {
