@@ -76,4 +76,5 @@ export type ListaDePrivilegios =
     | 'PDM.coordenador_responsavel_cp'
     | 'PDM.tecnico_cp'
     | 'PDM.admin_cp'
-    | 'PDM.ponto_focal';
+    | 'PDM.ponto_focal'
+    | 'Projeto.administrador';

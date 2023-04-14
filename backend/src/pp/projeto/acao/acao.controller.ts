@@ -14,7 +14,7 @@ export class AcaoController {
     @Patch()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles('Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
     @ApiResponse({ description: 'sucesso ao executar ação', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async create(@Body() dto: CreateAcaoDto, @CurrentUser() user: PessoaFromJwt) {
