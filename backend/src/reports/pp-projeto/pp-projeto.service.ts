@@ -114,10 +114,17 @@ export class PPProjetoService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
+                fields: [
+                    { value: 'numero', label: 'numero'},
+                    { value: 'tarefa', label: 'tarefa'},
+                    { value: 'inicio_planejado', label: 'inicio_planejado'},
+                    { value: 'termino_planejado', label: 'termino_planejado'},
+                    { value: 'custo_estimado', label: 'custo_estima,do'}
+                ]
             });
             const linhas = json2csvParser.parse([dados.cronograma]);
             out.push({
-                name: 'cronograma/eap.csv',
+                name: 'cronograma|eap.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
@@ -126,6 +133,13 @@ export class PPProjetoService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
+                fields: [
+                    { value: 'codigo_risco', label: 'codigo_risco'},
+                    { value: 'contramedida', label: 'contramedida'},
+                    { value: 'prazo_contramedida', label: 'prazo_contramedida'},
+                    { value: 'responsavel', label: 'responsavel'},
+                    { value: 'medidas_de_contingencia', label: 'medidas_de_contingencia'},
+                ]
             });
             const linhas = json2csvParser.parse([dados.planos_acao]);
             out.push({
@@ -138,6 +152,14 @@ export class PPProjetoService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
+                fields: [
+                    { value: 'codigo', label: 'codigo'},
+                    { value: 'titulo', label: 'titulo'},
+                    { value: 'descricao', label: 'descricao'},
+                    { value: 'probabilidade', label: 'probabilidade'},
+                    { value: 'impacto', label: 'impacto'},
+                    { value: 'grau', label: 'grau'},
+                ]
             });
             const linhas = json2csvParser.parse([dados.riscos]);
             out.push({
