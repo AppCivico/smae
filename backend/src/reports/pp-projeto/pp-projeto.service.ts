@@ -122,7 +122,7 @@ export class PPProjetoService implements ReportableService {
                     { value: 'custo_estimado', label: 'custo_estima,do'}
                 ]
             });
-            const linhas = json2csvParser.parse([dados.cronograma]);
+            const linhas = json2csvParser.parse(dados.cronograma);
             out.push({
                 name: 'cronograma|eap.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -141,7 +141,7 @@ export class PPProjetoService implements ReportableService {
                     { value: 'medidas_de_contingencia', label: 'medidas_de_contingencia'},
                 ]
             });
-            const linhas = json2csvParser.parse([dados.planos_acao]);
+            const linhas = json2csvParser.parse(dados.planos_acao);
             out.push({
                 name: 'planos-acao.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
@@ -161,7 +161,7 @@ export class PPProjetoService implements ReportableService {
                     { value: 'grau', label: 'grau'},
                 ]
             });
-            const linhas = json2csvParser.parse([dados.riscos]);
+            const linhas = json2csvParser.parse(dados.riscos);
             out.push({
                 name: 'riscos.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
