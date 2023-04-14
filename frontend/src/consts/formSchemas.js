@@ -104,9 +104,15 @@ export const acompanhamento = object()
   });
 
 export const arquivo = object().shape({
-  descricao: string().required('Preencha a descrição'),
-  tipo_documento_id: string().nullable(),
-  arquivo: string().required('Selecione um arquivo'),
+  descricao: string()
+    .label('Descrição')
+    .required('Preencha a descrição'),
+  tipo_documento_id: string()
+    .label('Tipo de Documento')
+    .required(),
+  arquivo: string()
+    .label('Arquivo')
+    .required('Selecione um arquivo'),
 });
 
 export const autenticação = object()
