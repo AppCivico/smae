@@ -1,10 +1,15 @@
 <script setup>
-import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import DocumentosDoProjeto from '@/views/projetos/DocumentosDoProjeto.vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
+defineProps({
+  projetoId: {
+    type: Number,
+    default: 0,
+  },
+});
 const projetosStore = useProjetosStore();
 const {
   emFoco,
@@ -28,16 +33,18 @@ const route = useRoute();
       </h1>
     </div>
     <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeProjeto />
 
-    <template v-if="emFoco?.id && !emFoco.arquivado">
-      <router-link
-        :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
-        class="btn big ml2"
-      >
-        Editar
-      </router-link>
-    </template>
+    <router-link
+      :to="{
+        name: 'projetosNovoDocumento',
+        params: {
+          projetoId
+        }
+      }"
+      class="btn ml2"
+    >
+      Novo arquivo
+    </router-link>
   </div>
 
   <DocumentosDoProjeto />
