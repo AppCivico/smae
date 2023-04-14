@@ -1,6 +1,5 @@
 <script setup>
 import EstruturaAnalíticaProjeto from '@/components/projetos/EstruturaAnaliticaProjeto.vue';
-import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
@@ -43,16 +42,6 @@ iniciar();
       <h1>{{ emFoco?.nome }}</h1>
     </div>
     <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeProjeto />
-
-    <template v-if="emFoco?.id && !emFoco.arquivado">
-      <router-link
-        :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
-        class="btn big ml2"
-      >
-        Editar
-      </router-link>
-    </template>
   </div>
 
   <EstruturaAnalíticaProjeto
