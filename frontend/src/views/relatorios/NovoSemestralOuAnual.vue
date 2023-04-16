@@ -140,7 +140,7 @@ onMounted(() => {
         <label
           for="periodo"
           class="label"
-        >periodo <span class="tvermelho">*</span></label>
+        >período <span class="tvermelho">*</span></label>
         <Field
           id="periodo"
           placeholder="01/2003"
