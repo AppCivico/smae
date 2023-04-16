@@ -72,9 +72,12 @@ export class RelProjetosRiscosDto {
     causa: string | null
     consequencia: string | null
     probabilidade: number | null
+    probabilidade_descricao: string | null
     impacto: number | null
+    impacto_descricao: string | null
     nivel: number | null
     grau: number | null
+    grau_descricao: string | null
     resposta: string | null
     tarefas_afetadas: string | null
 }

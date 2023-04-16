@@ -7,6 +7,7 @@ import { ProjetoFase, ProjetoStatus, StatusRisco } from '@prisma/client';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import { PPProjetosRelatorioDto, RelProjetosAcompanhamentosDto, RelProjetosCronogramaDto, RelProjetosDto, RelProjetosLicoesAprendidasDto, RelProjetosPlanoAcaoDto, RelProjetosPlanoAcaoMonitoramentosDto, RelProjetosRiscosDto } from './entities/projetos.entity';
+import { RiscoCalc } from 'src/common/RiscoCalc';
 
 const {
     Parser,
@@ -538,6 +539,9 @@ export class PPProjetosService implements ReportableService {
         input: RetornoDbRiscos[],
     ): RelProjetosRiscosDto[] {
         return input.map(db => {
+            let riscoCalc;
+            if (db.impacto && db.probabilidade) riscoCalc = RiscoCalc.getResult(db.impacto, db.probabilidade);
+
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
@@ -549,9 +553,12 @@ export class PPProjetosService implements ReportableService {
                 causa: db.causa ? db.causa : null,
                 consequencia: db.consequencia ? db.consequencia : null,
                 probabilidade: db.probabilidade ? db.probabilidade : null,
+                probabilidade_descricao: riscoCalc ? riscoCalc.probabilidade_descricao : null,
                 impacto: db.impacto ? db.impacto : null,
+                impacto_descricao: riscoCalc ? riscoCalc.impacto_descricao : null,
                 nivel: db.nivel ? db.nivel : null,
                 grau: db.grau ? db.grau : null,
+                grau_descricao: riscoCalc ? riscoCalc.grau_descricao : null,
                 resposta: db.resposta ? db.resposta : null,
                 tarefas_afetadas: db.tarefas_afetadas ? db.tarefas_afetadas : null,
             };

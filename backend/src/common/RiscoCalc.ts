@@ -4,6 +4,8 @@ export class ProjetoRiscoCalcResults {
     grau_descricao: string
     resposta_valor: number
     resposta_descricao: string
+    impacto_descricao: string
+    probabilidade_descricao: string
 }
 
 const probabilidadeDescricao = ['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta/Fato'];
@@ -13,6 +15,9 @@ const respostaDescricao = ['Aceitar', 'Mitigar', 'Mitigar', 'Eliminar', 'Transfe
 
 export class RiscoCalc {
     static getResult(probabilidade: number, impacto: number) {
+        const impacto_descricao: string = impactoDescricao[impacto - 1];
+        const probabilidade_descricao: string = probabilidadeDescricao[probabilidade - 1];
+
         const nivel: number = probabilidade * impacto;
 
         let grau_valor: number;
@@ -60,6 +65,8 @@ export class RiscoCalc {
             grau_descricao,
             resposta_valor,
             resposta_descricao,
+            impacto_descricao,
+            probabilidade_descricao
         }
     }
 }

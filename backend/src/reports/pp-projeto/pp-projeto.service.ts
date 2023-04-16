@@ -120,8 +120,11 @@ export class PPProjetoService implements ReportableService {
                 titulo: e.titulo,
                 descricao: e.descricao,
                 probabilidade: e.probabilidade,
+                probabilidade_descricao: e.probabilidade_descricao,
                 impacto: e.impacto,
-                grau: e.grau
+                impacto_descricao: e.impacto_descricao,
+                grau: e.grau,
+                grau_descricao: e.grau_descricao
             }
         });
 
