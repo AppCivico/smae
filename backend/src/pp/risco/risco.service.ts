@@ -90,9 +90,13 @@ export class RiscoService {
             return {
                 ...r,
 
+                impacto_descricao: calcResult ? calcResult.impacto_descricao : null,
+                probabilidade_descricao: calcResult ? calcResult.probabilidade_descricao : null,
                 nivel: calcResult ? calcResult.nivel : null,
                 grau: calcResult ? calcResult.grau_valor : null,
-                resposta: calcResult ? calcResult.resposta_descricao : null
+                grau_descricao: calcResult ? calcResult.grau_descricao : null,
+                resposta: calcResult ? calcResult.resposta_descricao : null,
+                resposta_descricao: calcResult ? calcResult.resposta_descricao : null,
             }
         })
     }
@@ -167,8 +171,11 @@ export class RiscoService {
 
         return {
             ...projetoRisco,
+            impacto_descricao: calcResult ? calcResult.impacto_descricao : null,
+            probabilidade_descricao: calcResult ? calcResult.probabilidade_descricao : null,
             nivel: calcResult ? calcResult.nivel : null,
             grau: calcResult ? calcResult.grau_valor : null,
+            grau_descricao: calcResult ? calcResult.grau_descricao : null,
             resposta: calcResult ? calcResult.resposta_descricao : null,
 
             tarefas_afetadas: projetoRisco?.RiscoTarefa.map(r => {

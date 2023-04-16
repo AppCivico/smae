@@ -37,8 +37,11 @@ export class RelProjetoRiscoDto {
     titulo: string
     descricao: string | null
     probabilidade: number | null
+    probabilidade_descricao: string | null
     impacto: number | null
+    impacto_descricao: string | null
     grau: number | null
+    grau_descricao: string | null
 }
 
 export class RelProjetoPlanoAcaoDto {
