@@ -25,7 +25,10 @@ export class PPStatusService implements ReportableService {
 
     async create(dto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
         const projetoRows = await this.prisma.projeto.findMany({
-            where: { removido_em: null },
+            where: {
+                portfolio_id: dto.portfolio_id,
+                removido_em: null
+            },
             select: {
                 id: true,
                 codigo: true,
