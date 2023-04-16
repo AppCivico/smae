@@ -681,7 +681,7 @@ async function atualizar_superadmin() {
         },
     });
 
-    const idPerfilAcesso = (await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'Administrador Geral' } })).id;
+    const idPerfilAcesso = (await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'Administrador Geral do SMAE' } })).id;
 
     let pessoaPerfilAdmin = await prisma.pessoaPerfil.findFirst({
         where: {
