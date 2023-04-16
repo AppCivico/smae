@@ -165,13 +165,15 @@ export class PPProjetosService implements ReportableService {
         const out_licoes_aprendidas: RelProjetosLicoesAprendidasDto[] = [];
         const out_acompanhamentos: RelProjetosAcompanhamentosDto[] = [];
 
-        await this.queryDataProjetos(dto, out_projetos);
-        await this.queryDataCronograma(dto, out_cronogramas);
-        await this.queryDataRiscos(dto, out_riscos);
-        await this.queryDataPlanosAcao(dto, out_planos_acao);
-        await this.queryDataPlanosAcaoMonitoramento(dto, out_monitoramento_planos_acao);
-        await this.queryDataLicoesAprendidas(dto, out_licoes_aprendidas);
-        await this.queryDataAcompanhamentos(dto, out_acompanhamentos);
+        const whereString = await this.buildFilteredWhereStr(dto);
+
+        await this.queryDataProjetos(whereString, out_projetos);
+        await this.queryDataCronograma(whereString, out_cronogramas);
+        await this.queryDataRiscos(whereString, out_riscos);
+        await this.queryDataPlanosAcao(whereString, out_planos_acao);
+        await this.queryDataPlanosAcaoMonitoramento(whereString, out_monitoramento_planos_acao);
+        await this.queryDataLicoesAprendidas(whereString, out_licoes_aprendidas);
+        await this.queryDataAcompanhamentos(whereString, out_acompanhamentos);
 
         return {
             linhas: out_projetos,
@@ -288,7 +290,37 @@ export class PPProjetosService implements ReportableService {
         ];
     }
 
-    private async queryDataProjetos(filters: CreateRelProjetosDto, out: RelProjetosDto[]) {
+    private async buildFilteredWhereStr(filters: CreateRelProjetosDto): Promise<string> {
+        const whereString: string = '';
+        let filterKeysLen: number = 0;
+
+        if (!filters.codigo && !filters.portfolio_id && !filters.orgao_responsavel_id && !filters.status) {
+            return whereString;
+        } else {
+            filterKeysLen = Object.keys(filters).length;
+            whereString.concat('WHERE ', whereString);
+        }
+
+        if (filters.codigo) {
+            whereString.concat(`projeto.codigo = ${filters.codigo}`, whereString);
+
+            filterKeysLen--;
+            if (filterKeysLen > 0) whereString.concat(' AND ');
+        };
+        
+        if (filters.portfolio_id) {
+            whereString.concat(`projeto.portfolio_id = ${filters.portfolio_id}`, whereString);
+        
+            filterKeysLen--;
+            if (filterKeysLen > 0) whereString.concat(' AND ');
+        }
+
+        if (filters.status) whereString.concat(`projeto.status = ${filters.status}`, whereString);
+
+        return whereString;
+    }
+
+    private async queryDataProjetos(whereStr: string, out: RelProjetosDto[]) {
         const sql = `SELECT
             projeto.id,
             projeto.portfolio_id,
@@ -335,6 +367,7 @@ export class PPProjetosService implements ReportableService {
           JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           JOIN orgao o ON po.orgao_id = o.id
           JOIN pessoa resp ON resp.id = projeto.responsavel_id
+        ${whereStr}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql);
@@ -404,7 +437,7 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async queryDataCronograma(filters: CreateRelProjetosDto, out: RelProjetosCronogramaDto[]) {
+    private async queryDataCronograma(whereStr: string, out: RelProjetosCronogramaDto[]) {
         const sql = `SELECT
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
@@ -433,6 +466,7 @@ export class PPProjetosService implements ReportableService {
           JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           JOIN pessoa resp ON resp.id = projeto.responsavel_id
           JOIN tarefa t ON t.projeto_id = projeto.id
+        ${whereStr}
         `;
 
         const data: RetornoDbCronograma[] = await this.prisma.$queryRawUnsafe(sql);
@@ -468,7 +502,7 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async queryDataRiscos(filters: CreateRelProjetosDto, out: RelProjetosRiscosDto[]) {
+    private async queryDataRiscos(whereStr: string, out: RelProjetosRiscosDto[]) {
         const sql = `SELECT
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
@@ -492,6 +526,7 @@ export class PPProjetosService implements ReportableService {
             ) as tarefas_afetadas
         FROM projeto
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+        ${whereStr}
         `;
 
         const data: RetornoDbRiscos[] = await this.prisma.$queryRawUnsafe(sql);
@@ -523,7 +558,7 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async queryDataPlanosAcao(filters: CreateRelProjetosDto, out: RelProjetosPlanoAcaoDto[]) {
+    private async queryDataPlanosAcao(whereStr: string, out: RelProjetosPlanoAcaoDto[]) {
         const sql = `SELECT
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
@@ -538,6 +573,7 @@ export class PPProjetosService implements ReportableService {
         FROM projeto
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
           JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
+        ${whereStr}
         `;
 
         const data: RetornoDbPlanosAcao[] = await this.prisma.$queryRawUnsafe(sql);
@@ -564,7 +600,7 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async queryDataPlanosAcaoMonitoramento(filters: CreateRelProjetosDto, out: RelProjetosPlanoAcaoMonitoramentosDto[]) {
+    private async queryDataPlanosAcaoMonitoramento(whereStr: string, out: RelProjetosPlanoAcaoMonitoramentosDto[]) {
         const sql = `SELECT
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
@@ -576,6 +612,7 @@ export class PPProjetosService implements ReportableService {
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
           JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
           JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id
+        ${whereStr}
         `;
 
         const data: RetornoDbPlanosAcaoMonitoramentos[] = await this.prisma.$queryRawUnsafe(sql);
@@ -598,7 +635,7 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async queryDataLicoesAprendidas(filters: CreateRelProjetosDto, out: RelProjetosLicoesAprendidasDto[]) {
+    private async queryDataLicoesAprendidas(whereStr: string, out: RelProjetosLicoesAprendidasDto[]) {
         const sql = `SELECT
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
@@ -608,6 +645,7 @@ export class PPProjetosService implements ReportableService {
             projeto_licao_aprendida.observacao
         FROM projeto
           JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
+        ${whereStr}
         `;
 
         const data: RetornoDbLicoesAprendidas[] = await this.prisma.$queryRawUnsafe(sql);
@@ -630,7 +668,7 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async queryDataAcompanhamentos(filters: CreateRelProjetosDto, out: RelProjetosAcompanhamentosDto[]) {
+    private async queryDataAcompanhamentos(whereStr: string, out: RelProjetosAcompanhamentosDto[]) {
         const sql = `SELECT
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
@@ -655,6 +693,7 @@ export class PPProjetosService implements ReportableService {
           JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
           JOIN projeto_acompanhamento_risco ON projeto_acompanhamento_risco.projeto_acompanhamento_id = projeto_acompanhamento.id
           JOIN projeto_risco ON projeto_risco.id = projeto_acompanhamento_risco.projeto_risco_id
+        ${whereStr}
         `;
 
         const data: RetornoDbAcompanhamentos[] = await this.prisma.$queryRawUnsafe(sql);
