@@ -45,6 +45,7 @@ class RetornoDbProjeto {
     responsavel_nome_exibicao: string
 
     fonte_recurso_id: number
+    fonte_recurso_nome: string
     fonte_recurso_cod_sof: string
     fonte_recurso_ano: number
     fonte_recurso_valor_pct: number
@@ -351,6 +352,7 @@ export class PPProjetosService implements ReportableService {
             resp.id AS responsavel_id,
             resp.nome_exibicao AS responsavel_nome_exibicao,
             r.id AS fonte_recurso_id,
+            r.fonte AS fonte_recurso_nome,
             r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
             r.fonte_recurso_ano AS fonte_recurso_ano,
             r.valor_percentual AS fonte_recurso_valor_pct,
@@ -431,6 +433,7 @@ export class PPProjetosService implements ReportableService {
 
                 fonte_recurso: db.fonte_recurso_id ? {
                     id: db.fonte_recurso_id,
+                    nome: db.fonte_recurso_nome,
                     fonte_recurso_cod_sof: db.fonte_recurso_cod_sof,
                     fonte_recurso_ano: db.fonte_recurso_ano,
                     valor_percentual: db.fonte_recurso_valor_pct,
