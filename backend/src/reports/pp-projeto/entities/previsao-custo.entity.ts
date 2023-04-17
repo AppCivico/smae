@@ -30,6 +30,7 @@ export class RelProjetoCronogramaDto {
     inicio_planejado: Date | null
     termino_planejado: Date | null
     custo_estimado: number | null
+    duracao_planejado: number | null
 }
 
 export class RelProjetoRiscoDto {

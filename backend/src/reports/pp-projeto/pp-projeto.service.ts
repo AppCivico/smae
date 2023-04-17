@@ -104,12 +104,15 @@ export class PPProjetoService implements ReportableService {
         // TODO: Validar niveis de tarefa (seguir ppt)
         const tarefasRows = await this.tarefaService.findAll(dto.projeto_id, undefined, {});
         const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map(e => {
+            let numero: string;
+
             return {
                 numero: e.numero,
                 tarefa: e.tarefa,
                 inicio_planejado: e.inicio_planejado,
                 termino_planejado: e.termino_planejado,
-                custo_estimado: e.custo_estimado
+                custo_estimado: e.custo_estimado,
+                duracao_planejado: e.duracao_planejado
             }
         });
 
@@ -205,15 +208,7 @@ export class PPProjetoService implements ReportableService {
         if (dados.riscos.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [
-                    { value: 'codigo', label: 'codigo'},
-                    { value: 'titulo', label: 'titulo'},
-                    { value: 'descricao', label: 'descricao'},
-                    { value: 'probabilidade', label: 'probabilidade'},
-                    { value: 'impacto', label: 'impacto'},
-                    { value: 'grau', label: 'grau'},
-                ]
+                transforms: defaultTransform
             });
             const linhas = json2csvParser.parse(dados.riscos);
             out.push({
