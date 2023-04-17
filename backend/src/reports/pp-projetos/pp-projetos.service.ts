@@ -65,6 +65,7 @@ class RetornoDbProjeto {
 class RetornoDbCronograma {
     projeto_id: number
     projeto_codigo: string
+    hierarquia?: string
     numero: number
     nivel: number
     tarefa: string
@@ -451,8 +452,10 @@ export class PPProjetosService implements ReportableService {
             projeto.atraso,
             resp.id AS responsavel_id,
             resp.nome_exibicao AS responsavel_nome_exibicao,
+            t.id,
             t.numero,
             t.nivel,
+            '' AS hierarquia,
             t.tarefa,
             t.inicio_planejado,
             t.termino_planejado,
@@ -466,8 +469,8 @@ export class PPProjetosService implements ReportableService {
                 SELECT
                     string_agg(concat(t2.nivel::text, '.', t2.numero::text, ' ', t2.tarefa), ' / ')
                 FROM tarefa_dependente td
-                JOIN tarefa t2 ON t2.id = td.tarefa_id
-                WHERE td.dependencia_tarefa_id = t.id
+                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
+                WHERE td.tarefa_id = t.id
             ) as dependencias
         FROM projeto
           JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
