@@ -544,6 +544,35 @@ export const região = object()
       .nullable(),
   });
 
+export const relatórioDePrevisãoDeCusto = object()
+  .shape({
+    fonte: string()
+      .required(),
+    parametros: object({
+      atividade_id: string()
+        .label('Atividade')
+        .nullable(),
+      iniciativa_id: string()
+        .label('Iniciativa')
+        .nullable(),
+      meta_id: string()
+        .label('Meta')
+        .nullable(),
+      periodo_ano: mixed()
+        .label('Período')
+        .oneOf(['Corrente', 'Anterior'])
+        .required(),
+      pdm_id: string()
+        .label('PDM')
+        .required()
+        .typeError('Valor inválido'),
+      tags: array()
+        .label('Tags')
+        .nullable(),
+    }),
+    salvar_arquivo: boolean(),
+  });
+
 export const relatórioDeProjeto = object({
   fonte: string()
     .required(),
