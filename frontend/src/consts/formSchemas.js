@@ -636,17 +636,22 @@ export const relatórioMensal = object({
     .required(),
   parametros: object({
     pdm_id: string()
+      .label('PDM')
       .required('Escolha um PdM'),
     mes: number()
+      .label('Mês')
       .min(1)
       .max(12)
       .required('Escolha um mês'),
     ano: number()
+      .label('Ano')
       .min(2003, 'A partir de 2003')
       .required('Escolha um ano válido'),
     tags: array()
+      .label('Tags')
       .nullable(),
     paineis: array()
+      .label('Painéis')
       .nullable(),
   }),
   salvar_arquivo: boolean(),
