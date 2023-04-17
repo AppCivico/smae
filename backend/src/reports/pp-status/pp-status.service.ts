@@ -35,6 +35,13 @@ export class PPStatusService implements ReportableService {
                 nome: true,
                 previsao_custo: true,
                 realizado_custo: true,
+                em_atraso: true,
+
+                orgao_responsavel: {
+                    select: {
+                        sigla: true
+                    }
+                },
 
                 tarefas: {
                     where: { nivel: 1 },
@@ -59,12 +66,26 @@ export class PPStatusService implements ReportableService {
         });
 
         const projetoStatusOut: RelProjetoStatusRelatorioDto[] = projetoRows.map(p => {
+            let cronograma: string;
+            const acompanhamento = p.ProjetoAcompanhamento[0];
+
+            if (acompanhamento.cronograma_paralisado) {
+                cronograma = 'Paralisado'
+            } else if (p.em_atraso) {
+                cronograma = 'Atrasado'
+            } else {
+                cronograma = 'Em dia'
+            }
+
             return {
                 id: p.id,
                 codigo: p.codigo,
                 nome: p.nome,
                 previsao_custo: p.previsao_custo,
                 realizado_custo: p.realizado_custo,
+                cronograma: cronograma,
+
+                orgao_responsavel_sigla: p.orgao_responsavel ? p.orgao_responsavel.sigla : null,
 
                 detalhamento_status: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].detalhamento_status : null,
                 pontos_atencao: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].pontos_atencao : null,

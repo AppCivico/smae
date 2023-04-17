@@ -5,7 +5,8 @@ export class RelProjetoStatusRelatorioDto {
     tarefas: string | null
     detalhamento_status: string | null
     pontos_atencao: string | null
-    //TODO adicionar status
+    cronograma: string
+    orgao_responsavel_sigla: string | null
     previsao_custo: number | null
     realizado_custo: number | null
 }
