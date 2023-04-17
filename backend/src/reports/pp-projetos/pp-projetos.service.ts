@@ -104,6 +104,7 @@ class RetornoDbRiscos {
 class RetornoDbPlanosAcao {
     projeto_id: number
     projeto_codigo: string
+    plano_acao_id: number
     risco_codigo: string
     contramedida: string
     medidas_de_contingencia: string
@@ -571,6 +572,7 @@ export class PPProjetosService implements ReportableService {
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto_risco.codigo AS risco_codigo,
+            plano_acao.id as plano_acao_id,
             plano_acao.contramedida,
             plano_acao.medidas_de_contingencia,
             plano_acao.prazo_contramedida,
@@ -596,6 +598,7 @@ export class PPProjetosService implements ReportableService {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
+                plano_acao_id: db.plano_acao_id,
                 risco_codigo: db.risco_codigo,
                 contramedida: db.contramedida,
                 medidas_de_contingencia: db.medidas_de_contingencia,
