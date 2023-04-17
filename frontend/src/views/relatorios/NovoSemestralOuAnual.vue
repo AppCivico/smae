@@ -1,17 +1,17 @@
 <script setup>
 import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
-import { router } from '@/router';
 import { useAlertStore, usePdMStore, useRelatoriosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
+const router = useRouter();
 const { current } = storeToRefs(relatoriosStore);
 
 const { loading } = storeToRefs(relatoriosStore);
@@ -40,26 +40,24 @@ current.value = {
 };
 
 async function onSubmit(values) {
+  const carga = values;
+
   try {
-    let msg;
-    let r;
-
-    if (values.parametros.periodo === 'Anual') {
-      values.parametros.semestre = undefined;
+    if (carga.parametros.periodo === 'Anual') {
+      delete carga.parametros.semestre;
     }
 
-    if (!values.salvar_arquivo) {
-      values.salvar_arquivo = false;
+    if (!carga.salvar_arquivo) {
+      carga.salvar_arquivo = false;
     }
 
-    r = await relatoriosStore.insert(values);
-    msg = 'Dados salvos com sucesso!';
+    const r = await relatoriosStore.insert(carga);
+    const msg = 'Dados salvos com sucesso!';
 
-    if (r == true) {
+    if (r === true) {
       alertStore.success(msg);
-
       if (values.salvar_arquivo && route.meta?.rotaDeEscape) {
-        await router.push({ name: route.meta.rotaDeEscape });
+        router.push({ name: route.meta.rotaDeEscape });
       }
     }
   } catch (error) {
@@ -78,7 +76,8 @@ onMounted(() => {
 });
 </script>
 
-<template>  <div class="flex spacebetween center mb2">
+<template>
+  <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título || $route.name }}</h1>
     <hr class="ml2 f1">
     <CheckClose />

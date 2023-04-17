@@ -1,17 +1,16 @@
 <script setup>
-import CheckClose from '../../components/CheckClose.vue';
 // import AutocompleteField from '@/components/AutocompleteField.vue';
 import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
-import { router } from '@/router';
 import {
-  useAlertStore, usePaineisStore, usePdMStore, useRelatoriosStore, useTagsStore
+  useAlertStore, usePaineisStore, usePdMStore, useRelatoriosStore, useTagsStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import CheckClose from '../../components/CheckClose.vue';
 
 const TagsStore = useTagsStore();
 const { filtradasPorPdM } = storeToRefs(TagsStore);
@@ -21,6 +20,7 @@ const PdMStore = usePdMStore();
 const PainéisStore = usePaineisStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
+const router = useRouter();
 const { current } = storeToRefs(relatoriosStore);
 
 const { loading } = storeToRefs(relatoriosStore);
@@ -38,24 +38,22 @@ current.value = {
 };
 
 async function onSubmit(values) {
+  const carga = values;
   try {
-    let msg;
-    let r;
-
-    values.parametros.inicio = monthAndYearToDate(values.parametros.inicio);
-    values.parametros.fim = monthAndYearToDate(values.parametros.fim);
-    if (!values.salvar_arquivo) {
-      values.salvar_arquivo = false;
+    carga.parametros.inicio = monthAndYearToDate(carga.parametros.inicio);
+    carga.parametros.fim = monthAndYearToDate(carga.parametros.fim);
+    if (!carga.salvar_arquivo) {
+      carga.salvar_arquivo = false;
     }
 
-    r = await relatoriosStore.insert(values);
-    msg = 'Dados salvos com sucesso!';
+    const r = await relatoriosStore.insert(carga);
+    const msg = 'Dados salvos com sucesso!';
 
-    if (r == true) {
+    if (r === true) {
       alertStore.success(msg);
 
-      if (values.salvar_arquivo && route.meta?.rotaDeEscape) {
-        await router.push({ name: route.meta.rotaDeEscape });
+      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
       }
     }
   } catch (error) {
@@ -78,7 +76,8 @@ onMounted(() => {
 });
 </script>
 
-<template>  <div class="flex spacebetween center mb2">
+<template>
+  <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título || $route.name }}</h1>
     <hr class="ml2 f1">
     <CheckClose />

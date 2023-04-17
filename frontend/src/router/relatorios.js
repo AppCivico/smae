@@ -50,7 +50,6 @@ export default {
       redirect: '/relatorios/mensal',
     },
     {
-      name: 'RelatóriosMensais',
       path: 'mensal',
       meta: {
         título: 'Relatórios Mensais',
@@ -59,6 +58,7 @@ export default {
       children: [
         {
           path: '',
+          name: 'RelatóriosMensais',
           component: RelatoriosMensais,
         },
         {
@@ -67,12 +67,12 @@ export default {
           name: 'novoRelatórioMensal',
           meta: {
             título: 'Novo relatório mensal',
+            rotaDeEscape: 'RelatóriosMensais',
           },
         },
       ],
     },
     {
-      name: 'RelatóriosSemestraisOuAnuais',
       path: 'semestral-ou-anual',
       meta: {
         título: 'Relatórios Semestrais e Anuais',
@@ -81,6 +81,7 @@ export default {
       children: [
         {
           path: '',
+          name: 'RelatóriosSemestraisOuAnuais',
           component: RelatoriosSemestraisOuAnuais,
         },
         {
@@ -89,12 +90,12 @@ export default {
           name: 'novoRelatórioSemestralOuAnual',
           meta: {
             título: 'Novo relatório semestral ou anual',
+            rotaDeEscape: 'RelatóriosSemestraisOuAnuais',
           },
         },
       ],
     },
     {
-      name: 'RelatóriosOrçamentários',
       path: 'orcamentarios',
       meta: {
         título: 'Relatórios orçamentários',
@@ -103,6 +104,7 @@ export default {
       children: [
         {
           path: '',
+          name: 'RelatóriosOrçamentários',
           component: RelatoriosOrcamentarios,
         },
         {
@@ -111,6 +113,7 @@ export default {
           name: 'novoRelatórioOrçamentário',
           meta: {
             título: 'Novo relatório de orçamentos',
+            rotaDeEscape: 'RelatóriosOrçamentários',
           },
         },
       ],
