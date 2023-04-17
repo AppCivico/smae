@@ -1,5 +1,7 @@
 FROM node:18-alpine
 
+RUN apk add --no-cache graphviz
+
 WORKDIR /usr/src/app
 
 RUN npm --loglevel=error install -g npm@9.2.0
