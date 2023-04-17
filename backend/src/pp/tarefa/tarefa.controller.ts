@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
+import { Response } from 'express';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -44,6 +45,23 @@ export class TarefaController {
             ...tarefasProj,
             portfolio: tarefasProj.projeto.portfolio,
         };
+    }
+
+    @Get(':id/tarefas-eap')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    @ApiResponse({ status: 200, description: 'Imagem da EAP' })
+    async getEAP(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @Res() res: Response,
+    ): Promise<void> {
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
+
+        const imgStream = await this.tarefaService.getEap(projeto, params.id, user, 'png');
+        res.type('image/png');
+        imgStream.pipe(res);
     }
 
     @Get(':id/tarefa/:id2')

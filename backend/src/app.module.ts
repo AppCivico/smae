@@ -63,6 +63,7 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
+import { GraphvizModule } from './graphviz/graphviz.module';
 
 @Module({
     imports: [
@@ -129,7 +130,8 @@ import { VariavelModule } from './variavel/variavel.module';
         PlanoAcaoModule,
         PlanoAcaoMonitoramentoModule,
         AcompanhamentoModule,
-        LicoesAprendidasModule
+        LicoesAprendidasModule,
+        GraphvizModule
     ],
     controllers: [AppController],
     providers: [

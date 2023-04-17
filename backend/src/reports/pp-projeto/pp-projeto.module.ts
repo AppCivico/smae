@@ -13,11 +13,13 @@ import { RiscoModule } from 'src/pp/risco/risco.module';
 import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
 import { PlanoAcaoModule } from 'src/pp/plano-de-acao/plano-de-acao.module';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
+import { GraphvizModule } from 'src/graphviz/graphviz.module';
+import { TarefaDotTemplate } from 'src/pp/tarefa/tarefa.dot.template';
 
 @Module({
-    imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule, RiscoModule, TarefaModule, PlanoAcaoModule],
+    imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule, RiscoModule, TarefaModule, PlanoAcaoModule, GraphvizModule],
     controllers: [PPProjetoController],
-    providers: [PPProjetoService, ProjetoService, RiscoService, TarefaService, PlanoAcaoService, TarefaUtilsService],
+    providers: [PPProjetoService, ProjetoService, RiscoService, TarefaService, PlanoAcaoService, TarefaUtilsService, TarefaDotTemplate],
     exports: [PPProjetoService],
 })
 export class PPProjetoModule { }
