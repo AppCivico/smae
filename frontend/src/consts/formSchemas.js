@@ -24,8 +24,8 @@ setLocale({
     required: ({ label }) => (label ? `${label} não é opcional` : 'Data obrigatória'),
   },
   mixed: {
-    default: 'Não é válido',
-    oneOf: 'Opção inválida',
+    default: 'Valor de ${label} não é válido',
+    oneOf: 'Opção inválida para ${label}',
     required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
   number: {
