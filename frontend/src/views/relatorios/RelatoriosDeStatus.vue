@@ -17,6 +17,13 @@ onMounted(() => {
   <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
+    <router-link
+      v-if="temPermissãoPara('Reports.executar')"
+      :to="{ name: 'novoRelatórioDeStatus' }"
+      class="btn big ml2"
+    >
+      Novo relatório
+    </router-link>
   </div>
 
   <TabelaBásica />
