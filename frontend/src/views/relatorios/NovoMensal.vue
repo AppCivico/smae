@@ -1,8 +1,7 @@
 <script setup>
-// import AutocompleteField from '@/components/AutocompleteField.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
-import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import {
   useAlertStore, usePaineisStore, usePdMStore, useRelatoriosStore, useTagsStore,
 } from '@/stores';
@@ -14,7 +13,6 @@ import CheckClose from '../../components/CheckClose.vue';
 
 const TagsStore = useTagsStore();
 const { filtradasPorPdM } = storeToRefs(TagsStore);
-
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
 const PainéisStore = usePaineisStore();
@@ -22,7 +20,6 @@ const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
 const { current } = storeToRefs(relatoriosStore);
-
 const { loading } = storeToRefs(relatoriosStore);
 
 current.value = {
@@ -40,8 +37,6 @@ current.value = {
 async function onSubmit(values) {
   const carga = values;
   try {
-    carga.parametros.inicio = monthAndYearToDate(carga.parametros.inicio);
-    carga.parametros.fim = monthAndYearToDate(carga.parametros.fim);
     if (!carga.salvar_arquivo) {
       carga.salvar_arquivo = false;
     }
@@ -99,7 +94,10 @@ onMounted(() => {
           name="parametros.pdm_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors['parametros.pdm_id'] }"
+          :class="{
+            loading: loading,
+            error: errors['parametros.pdm_id']
+          }"
           :disabled="loading"
         >
           <option value="">
@@ -176,73 +174,52 @@ onMounted(() => {
           </div>
       </div-->
 
-    <div
-      v-if="filtradasPorPdM(values.parametros.pdm_id)?.length"
-      class="mb2"
-    >
-      <div class="label">
-        Tags
+    <div class="mb2">
+      <LabelFromYup
+        name="tags"
+        :schema="schema.fields.parametros"
+      />
+      <AutocompleteField
+        name="parametros.tags"
+        :controlador="{ busca: '', participantes: values.parametros.tags || [] }"
+        :grupo="filtradasPorPdM(values.parametros.pdm_id)"
+        label="descricao"
+        :class="{
+          error: errors['parametros.tags'],
+          loading: filtradasPorPdM(values.parametros.pdm_id)?.loading,
+        }"
+      />
+
+      <div
+        v-if="errors['parametros.tags']"
+        class="error-msg"
+      >
+        {{ errors['parametros.tags'] }}
       </div>
-      <template v-if="filtradasPorPdM(values.parametros.pdm_id)?.loading">
-        <span class="spinner">Carregando</span>
-      </template>
-      <template v-if="filtradasPorPdM(values.parametros.pdm_id).length">
-        <label
-          v-for="item in filtradasPorPdM(values.parametros.pdm_id)"
-          :key="item.id"
-          class="block mb1"
-        >
-          <Field
-            name="parametros.tags"
-            class="inputcheckbox"
-            type="checkbox"
-            :class="{ 'error': errors['parametros.tags'] }"
-            :value="item.id"
-            :checked="values.parametros.tags && values.parametros.tags.includes(item.id)"
-          /><span>{{ item.descricao }}</span>
-        </label>
-        <div class="error-msg">
-          {{ errors['parametros.tags'] }}
-        </div>
-      </template>
     </div>
 
-    <!--div class="mb2" v-if="PainéisStore.Paineis?.length">
-          <div class="pl2">
-            <label class="label">Painéis</label>
-            <AutocompleteField :controlador="paineis" :grupo="PainéisStore.Paineis" label="descricao" />
-          </div>
-      </div-->
+    <div class="mb2">
+      <LabelFromYup
+        name="paineis"
+        :schema="schema.fields.parametros"
+      />
+      <AutocompleteField
+        name="parametros.paineis"
+        :controlador="{ busca: '', participantes: values.parametros.paineis || [] }"
+        :grupo="PainéisStore.Paineis"
+        label="nome"
+        :class="{
+          error: errors['parametros.paineis'],
+          loading: PainéisStore.Paineis?.loading,
+        }"
+      />
 
-    <div
-      v-if="PainéisStore.Paineis?.length"
-      class="mb2"
-    >
-      <div class="label">
-        Painéis
+      <div
+        v-if="errors['parametros.paineis']"
+        class="error-msg"
+      >
+        {{ errors['parametros.paineis'] }}
       </div>
-      <template v-if="PainéisStore.Paineis?.loading">
-        <span class="spinner">Carregando</span>
-      </template>
-      <template v-if="PainéisStore.Paineis.length">
-        <label
-          v-for="item in PainéisStore.Paineis"
-          :key="item.id"
-          class="block mb1"
-        >
-          <Field
-            name="parametros.paineis"
-            class="inputcheckbox"
-            type="checkbox"
-            :class="{ 'error': errors['parametros.paineis'] }"
-            :value="item.id"
-            :checked="values.parametros.paineis && values.parametros.paineis.includes(item.id)"
-          /><span>{{ item.nome }}</span>
-        </label>
-        <div class="error-msg">
-          {{ errors['parametros.paineis'] }}
-        </div>
-      </template>
     </div>
 
     <hr>
