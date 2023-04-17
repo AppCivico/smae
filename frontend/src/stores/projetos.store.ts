@@ -5,6 +5,7 @@ import {
   ListProjetoDocumento,
   ListProjetoDto,
   ProjetoDetailDto,
+  ProjetoDto,
   ProjetoPermissoesDto
 } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
@@ -252,6 +253,15 @@ export const useProjetosStore = defineStore('projetos', {
 
     projetosPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    projetosPorPortfolio: ({ lista }: Estado): { [k: number | string]: ProjetoDto[] } => lista
+      .reduce((acc: any, cur: ProjetoDto) => {
+        if (!acc[cur.portfolio.id]) {
+          acc[cur.portfolio.id] = [];
+        }
+        acc[cur.portfolio.id].push(cur);
+        return acc;
+      }, {}),
 
     órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
       const órgãos = emFoco?.orgaos_participantes && Array.isArray(emFoco?.orgaos_participantes)
