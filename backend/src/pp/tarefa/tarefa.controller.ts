@@ -64,6 +64,20 @@ export class TarefaController {
         imgStream.pipe(res);
     }
 
+    @Get(':id/tarefas-hierarquia')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
+    async getTarefasHierarquia(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        return await this.tarefaService.tarefasHierarquia(projeto);
+    }
+
+
     @Get(':id/tarefa/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()

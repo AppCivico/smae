@@ -1242,4 +1242,38 @@ export class TarefaService {
 
     }
 
+    async tarefasHierarquia(projeto: ProjetoDetailDto): Promise<Record<string, string>> {
+        const rows = await this.findAllRows(projeto);
+
+        const filhosPeloPai: Record<number, typeof rows> = {};
+        rows.forEach(row => {
+            const paiId = row.tarefa_pai_id;
+            if (paiId !== null) {
+                filhosPeloPai[paiId] = filhosPeloPai[paiId] || [];
+                filhosPeloPai[paiId].push(row);
+            }
+        });
+
+        function buscaFilhos(paiId: number, prefix: string): Record<string, string> {
+            const result: Record<number, string> = {};
+            const filhos = filhosPeloPai[paiId] || [];
+            filhos.forEach(filho => {
+                const newPrefix = `${prefix}${prefix ? "." : ""}${filho.numero}`;
+                result[filho.id] = newPrefix;
+                const childResults = buscaFilhos(filho.id, newPrefix);
+                Object.assign(result, childResults);
+            });
+            return result;
+        }
+
+        const nivel1 = rows.filter(row => row.tarefa_pai_id === null);
+        let resul: Record<string, string> = {};
+        nivel1.forEach(r => {
+            resul[r.id] = `${r.numero}`;
+            Object.assign(resul, buscaFilhos(r.id, `${r.numero}`));
+        });
+
+        return resul;
+    }
+
 }
