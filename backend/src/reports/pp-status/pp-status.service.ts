@@ -69,7 +69,7 @@ export class PPStatusService implements ReportableService {
             let cronograma: string;
             const acompanhamento = p.ProjetoAcompanhamento[0];
 
-            if (acompanhamento.cronograma_paralisado) {
+            if (acompanhamento && acompanhamento.cronograma_paralisado) {
                 cronograma = 'Paralisado'
             } else if (p.em_atraso) {
                 cronograma = 'Atrasado'
