@@ -295,8 +295,7 @@ export const planoDeAção = object()
       .typeError('Data inválida'),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
-      .max(50000)
-      .required(),
+      .max(50000),
     orgao_id: number()
       .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
