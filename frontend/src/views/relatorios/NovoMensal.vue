@@ -7,7 +7,7 @@ import {
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
 
@@ -19,20 +19,19 @@ const PainéisStore = usePaineisStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
-const { current } = storeToRefs(relatoriosStore);
 const { loading } = storeToRefs(relatoriosStore);
 
-current.value = {
+const initialValues = computed(() => ({
   fonte: 'MonitoramentoMensal',
   parametros: {
     tipo: 'Analitico',
-    pdm_id: 0,
+    pdm_id: null,
     ano: 2003,
     tags: [],
     paineis: [],
   },
   salvar_arquivo: false,
-};
+}));
 
 async function onSubmit(values) {
   const carga = values;
@@ -63,7 +62,7 @@ onMounted(() => {
     const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
     if (currentPdM?.id) {
       loading.value = false;
-      current.value.parametros.pdm_id = currentPdM.id;
+      initialValues.value.parametros.pdm_id = currentPdM.id;
     }
   });
 
@@ -80,7 +79,7 @@ onMounted(() => {
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
-    :initial-values="current"
+    :initial-values="initialValues"
     @submit="onSubmit"
   >
     <div class="flex g2 mb2">
@@ -90,7 +89,7 @@ onMounted(() => {
           <span class="tvermelho">*</span>
         </label>
         <Field
-          v-model="current.parametros.pdm_id"
+          v-model="initialValues.parametros.pdm_id"
           name="parametros.pdm_id"
           as="select"
           class="inputtext light mb1"
@@ -123,7 +122,6 @@ onMounted(() => {
           mês <span class="tvermelho">*</span>
         </label>
         <Field
-          v-model="current.parametros.mes"
           name="parametros.mes"
           as="select"
           class="inputtext light mb1"
@@ -166,13 +164,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
-    <!--div class="mb2" v-if="filtradasPorPdM(values.parametros.pdm_id).length">
-          <div class="pl2">
-            <label class="label">Tags</label>
-            <AutocompleteField :controlador="tags" :grupo="filtradasPorPdM(values.parametros.pdm_id)" label="descricao" />
-          </div>
-      </div-->
 
     <div class="mb2">
       <LabelFromYup
