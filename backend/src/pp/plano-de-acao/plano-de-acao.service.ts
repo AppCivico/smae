@@ -32,6 +32,7 @@ export class PlanoAcaoService {
         const plano_acao = await this.prisma.planoAcao.create({
             data: {
                 ...dto,
+                medidas_de_contingencia: dto.medidas_de_contingencia || '',
 
                 criado_em: new Date(Date.now()),
                 criado_por: user.id
