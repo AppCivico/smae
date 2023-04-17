@@ -352,7 +352,7 @@ export class PPProjetosService implements ReportableService {
             resp.id AS responsavel_id,
             resp.nome_exibicao AS responsavel_nome_exibicao,
             r.id AS fonte_recurso_id,
-            r.fonte AS fonte_recurso_nome,
+            sof.descricao AS fonte_recurso_nome,
             r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
             r.fonte_recurso_ano AS fonte_recurso_ano,
             r.valor_percentual AS fonte_recurso_valor_pct,
@@ -367,6 +367,7 @@ export class PPProjetosService implements ReportableService {
         FROM projeto
           JOIN portfolio ON portfolio.id = projeto.portfolio_id
           JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
+          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof AND sof.ano = r.fonte_recurso_ano AND sof.col = 'fonte_recursos'
           JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
           JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
           JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
