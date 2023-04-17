@@ -1,8 +1,8 @@
 <script setup>
+import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { router } from '@/router';
 
 import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 
@@ -167,7 +167,7 @@ function openParent(e) {
                   :name="v.series[RealizadoAcumulado]?.referencia"
                   :value="
                     singleVariaveis.acumulativa
-                      ? acumular(k[1],i)
+                      ? acumular(v.periodo)
                       : v.series[RealizadoAcumulado]?.valor_nominal
                   "
                   :disabled="singleVariaveis.acumulativa||!v.series[RealizadoAcumulado]?.referencia"
