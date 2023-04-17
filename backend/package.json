@@ -66,6 +66,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.5.0",
+    "ts-graphviz": "^1.5.5",
     "winston": "^3.8.2",
     "xlsx": "^0.18.5"
   },

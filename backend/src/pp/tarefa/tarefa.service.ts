@@ -19,6 +19,8 @@ import { CalculaAtraso } from '../../common/CalculaAtraso';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_LOCK_NUMBER_TAREFA } from '../../common/dto/locks';
 import { ProjetoService } from '../projeto/projeto.service';
+import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
+import { TarefaDotTemplate } from './tarefa.dot.template';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
 
@@ -37,8 +39,6 @@ export class InferenciaDatasDto {
     duracao_planejado: number | null
 }
 
-
-
 export class ValidacaoDatas {
     dependencias_datas: DependenciasDatasDto | null
     ordem_topologica_inicio_planejado: number[]
@@ -52,7 +52,9 @@ export class TarefaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly utils: TarefaUtilsService,
+        private readonly dotTemplate: TarefaDotTemplate,
         private readonly projetoService: ProjetoService,
+        private readonly graphvizService: GraphvizService
     ) { }
 
     async create(projetoId: number, dto: CreateTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -213,7 +215,29 @@ export class TarefaService {
         const projeto = await this.projetoService.findOne(projetoId, user, 'ReadOnly');
 
         const antesQuery = Date.now()
-        const rows = await this.prisma.tarefa.findMany({
+        const rows = await this.findAllRows(projeto);
+
+        this.logger.warn(`query took ${Date.now() - antesQuery} ms`);
+
+        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
+        const rowsWithAtraso = rows.map((r) => {
+            return {
+                ...r,
+                atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
+            }
+        });
+
+
+        const antesCalc = Date.now()
+        const ret = await this.calculaAtrasoProjeto(rowsWithAtraso, projeto);
+
+        this.logger.warn(`calculaAtrasoProjeto took ${Date.now() - antesCalc} ms`);
+
+        return ret
+    }
+
+    private async findAllRows(projeto: ProjetoDetailDto) {
+        return await this.prisma.tarefa.findMany({
             where: {
                 projeto_id: projeto.id,
                 removido_em: null,
@@ -255,24 +279,6 @@ export class TarefaService {
                 db_projecao_termino: true,
             }
         });
-
-        this.logger.warn(`query took ${Date.now() - antesQuery} ms`);
-
-        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-        const rowsWithAtraso = rows.map((r) => {
-            return {
-                ...r,
-                atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
-            }
-        });
-
-
-        const antesCalc = Date.now()
-        const ret = await this.calculaAtrasoProjeto(rowsWithAtraso, projeto);
-
-        this.logger.warn(`calculaAtrasoProjeto took ${Date.now() - antesCalc} ms`);
-
-        return ret
     }
 
     async calculaAtrasoProjeto(tarefasOrig: TarefaItemDbDto[], projeto: ProjetoDetailDto): Promise<ListTarefaListDto> {
@@ -1223,86 +1229,17 @@ export class TarefaService {
         }
 
     }
-}
-/*
-            const graphvizString = `
-    digraph G {
-      // Set default node and edge styles
-      node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial"];
-      edge [color="#333333", fontname="Arial"];
 
-      nodeX [label="Projeto"]
-      // Define nodes
-      ${rows.filter(r => r.nivel <= 2).map((row) => `node${row.id} [label="${row.tarefa.replace('"','')}", fillcolor="${row.nivel === 1 ? "#4287f5" : "#ffffff"}"]`).join("\n")}
+    async getEap(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt, format: GraphvizServiceFormat): Promise<NodeJS.ReadableStream> {
 
-      ${rows.filter(r => r.nivel == 1)
-                    .map((row) => `nodeX -> node${row.id}`)
-                    .join("\n")
-                }
 
-    // Define edges
-    ${rows.filter(r => r.nivel <= 2)
-                    .filter((row) => row.tarefa_pai_id !== null)
-                    .map((row) => `node${row.tarefa_pai_id} -> node${row.id}`)
-                    .join("\n")}
+        const rows = await this.findAllRows(projeto);
+
+        const graphvizString = this.dotTemplate.buildGraphvizString(projeto.nome, rows);
+
+        const imgStream = await this.graphvizService.generateImage(graphvizString, format);
+        return imgStream;
+
     }
 
-    `;
-    digraph G {
-        // Set default node and edge styles
-        node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial"];
-        edge [color="#333333", fontname="Arial"];
-
-        // Set layout to vertical
-        rankdir=TB;
-
-        // Set distance between nodes on the same rank
-        ranksep=0.2;
-
-        nodeX [label="Projeto"]
-        // Define nodes
-        node11 [label="cool bro", fillcolor="#ffffff"]
-      node6 [label="bbb aaaaa", fillcolor="#ffffff"]
-      node13 [label="obter produtos", fillcolor="#ffffff"]
-      node40 [label="Outra, outra tarefa da Regina", fillcolor="#ffffff"]
-      node14 [label="limpeza simples", fillcolor="#ffffff"]
-      node3 [label="outra task", fillcolor="#ffffff"]
-      node39 [label="Outra tarefa da Regina", fillcolor="#4287f5"]
-      node38 [label="Tarefa da Regina", fillcolor="#4287f5"]
-      node56 [label="testar cronograma", fillcolor="#4287f5"]
-      node37 [label="A tarefa novíssima", fillcolor="#4287f5"]
-      node36 [label="A tarefa nova", fillcolor="#4287f5"]
-      node2 [label="segunda task at all", fillcolor="#4287f5"]
-      node1 [label="primeira task at all", fillcolor="#4287f5"]
-      node12 [label="limpar a casa", fillcolor="#4287f5"]
-      node71 [label="nona", fillcolor="#4287f5"]
-      node27 [label="festejar abcde\nfghijk lmnopq rstuvx\n98765 ultima", fillcolor="#4287f5"]
-      node152 [label="teste", fillcolor="#4287f5"]
-
-        nodeX -> node39
-      nodeX -> node38
-      nodeX -> node56
-      nodeX -> node37
-      nodeX -> node36
-      nodeX -> node2
-      nodeX -> node1
-      nodeX -> node12
-      nodeX -> node71
-      nodeX -> node27
-      nodeX -> node152
-
-      // Define edges
-      node2 -> node11
-      node1 -> node6
-      node12 -> node13
-      node39 -> node40
-      node13 -> node14 [color=none]
-      node6 -> node3 [color=none]
-
-
-
-      }
-
-
-            console.log(graphvizString);
-        */
+}
