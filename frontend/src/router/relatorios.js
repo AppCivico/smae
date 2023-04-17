@@ -2,6 +2,7 @@ import MenuSecundario from '@/components/MenuSecundario.vue';
 import NovoMensal from '@/views/relatorios/NovoMensal.vue';
 import NovoOrcamentario from '@/views/relatorios/NovoOrcamentario.vue';
 import NovoRelatórioDePortfolio from '@/views/relatorios/NovoRelatorioDePortfolio.vue';
+import NovoRelatórioDeProjeto from '@/views/relatorios/NovoRelatorioDeProjeto.vue';
 import NovoRelatórioDeStatus from '@/views/relatorios/NovoRelatorioDeStatus.vue';
 import NovoSemestralOuAnual from '@/views/relatorios/NovoSemestralOuAnual.vue';
 import RelatóriosDePortfolio from '@/views/relatorios/RelatoriosDePortfolio.vue';
@@ -116,7 +117,6 @@ export default {
     },
 
     {
-      name: 'RelatóriosDeProjeto',
       path: 'projeto',
       meta: {
         título: 'Relatórios de projeto',
@@ -125,7 +125,17 @@ export default {
       children: [
         {
           path: '',
+          name: 'RelatóriosDeProjeto',
           component: RelatoriosDeProjeto,
+        },
+        {
+          component: NovoRelatórioDeProjeto,
+          path: 'novo',
+          name: 'novoRelatórioDeProjeto',
+          meta: {
+            título: 'Novo relatório de projeto',
+            rotaDeEscape: 'RelatóriosDeProjeto',
+          },
         },
       ],
     },
@@ -177,8 +187,8 @@ export default {
       },
       children: [
         {
-          name: 'RelatóriosDeStatus',
           path: '',
+          name: 'RelatóriosDeStatus',
           component: RelatóriosDeStatus,
         },
         {

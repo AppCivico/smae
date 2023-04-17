@@ -544,6 +544,20 @@ export const região = object()
       .nullable(),
   });
 
+export const relatórioDeProjeto = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    projeto_id: number()
+      .label('Projeto')
+      .min(1, '${label} é obrigatório')
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .typeError('Valor inválido'),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioDeStatus = object({
   fonte: string()
     .required(),
