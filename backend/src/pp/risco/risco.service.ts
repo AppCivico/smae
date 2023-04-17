@@ -57,48 +57,79 @@ export class RiscoService {
     }
 
     async findAll(projetoId: number, user: PessoaFromJwt | undefined): Promise<ProjetoRisco[]> {
-        const projetoRisco = await this.prisma.projetoRisco.findMany({
-            where: {
-                projeto_id: projetoId,
-                removido_em: null
-            },
-            orderBy: [{ codigo: 'asc' }],
-            select: {
-                id: true,
-                codigo: true,
-                registrado_em: true,
-                descricao: true,
-                causa: true,
-                consequencia: true,
-                probabilidade: true,
-                impacto: true,
-                nivel: true,
-                grau: true,
-                resposta: true,
-                risco_tarefa_outros: true,
-                status_risco: true,
-                titulo: true,
-                planos_de_acao_sem_dt_term: true,
-            }
+
+        const projetoRiscoList = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<ProjetoRisco[]> => {
+            const projetoRisco = await prismaTx.projetoRisco.findMany({
+                where: {
+                    projeto_id: projetoId,
+                    removido_em: null
+                },
+                orderBy: [{ codigo: 'asc' }],
+                select: {
+                    id: true,
+                    codigo: true,
+                    registrado_em: true,
+                    descricao: true,
+                    causa: true,
+                    consequencia: true,
+                    probabilidade: true,
+                    impacto: true,
+                    nivel: true,
+                    grau: true,
+                    resposta: true,
+                    risco_tarefa_outros: true,
+                    status_risco: true,
+                    titulo: true,
+                    planos_de_acao_sem_dt_term: true,
+                }
+            });
+    
+            const projetoRiscoPromises = projetoRisco.map(async (r) => {
+                let nivel: number | null = null;
+                let grau: number | null = null;
+                let resposta: string | null = null;
+                let calcResult;
+
+                if (r.nivel && r.grau && r.resposta) {
+                    nivel = r.nivel;
+                    grau = r.grau;
+                    resposta = r.resposta;
+                } else {
+                    if (r.probabilidade && r.impacto) {
+                        calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
+
+                        nivel = calcResult.nivel;
+                        grau = calcResult.grau_valor;
+                        resposta = calcResult.resposta_descricao;
+
+                        await prismaTx.projetoRisco.update({
+                            where: { id: r.id },
+                            data: {
+                                nivel,
+                                grau,
+                                resposta
+                            }
+                        });
+                    }
+                }
+
+                return {
+                    ...r,
+
+                    impacto_descricao: calcResult ? calcResult.impacto_descricao : null,
+                    probabilidade_descricao: calcResult ? calcResult.probabilidade_descricao : null,
+                    nivel: nivel,
+                    grau: grau,
+                    grau_descricao: calcResult ? calcResult.grau_descricao : null,
+                    resposta: resposta,
+                    resposta_descricao: calcResult ? calcResult.resposta_descricao : null,
+                };
+            });
+
+            return Promise.all(projetoRiscoPromises)
         });
 
-
-        return projetoRisco.map(r => {
-            let calcResult;
-            if (r.probabilidade && r.impacto) calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
-
-            return {
-                ...r,
-
-                impacto_descricao: calcResult ? calcResult.impacto_descricao : null,
-                probabilidade_descricao: calcResult ? calcResult.probabilidade_descricao : null,
-                nivel: calcResult ? calcResult.nivel : null,
-                grau: calcResult ? calcResult.grau_valor : null,
-                grau_descricao: calcResult ? calcResult.grau_descricao : null,
-                resposta: calcResult ? calcResult.resposta_descricao : null,
-                resposta_descricao: calcResult ? calcResult.resposta_descricao : null,
-            }
-        })
+        return projetoRiscoList;
     }
 
     async findOne(projetoId: number, riscoId: number, user: PessoaFromJwt): Promise<ProjetoRiscoDetailDto> {
