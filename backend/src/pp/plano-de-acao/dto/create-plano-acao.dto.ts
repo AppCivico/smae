@@ -1,5 +1,5 @@
 import { Type } from "class-transformer"
-import { IsNumber, IsOptional, IsString, ValidateIf } from "class-validator"
+import { IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator"
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
 
 export class CreatePlanoAcaoDto {
@@ -27,11 +27,14 @@ export class CreatePlanoAcaoDto {
     @IsNumber()
     custo_percentual: number
 
+    @IsOptional()
     @IsString()
-    medidas_de_contingencia: string
+    @MaxLength(50000)
+    medidas_de_contingencia: string | undefined
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     contato_do_responsavel: string
 
     @IsOptional()
