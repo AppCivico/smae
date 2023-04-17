@@ -636,7 +636,12 @@ export const relatórioOrçamentário = object({
     fim: string()
       .required('Preencha a data')
       .matches(regEx['month/year'], 'Formato inválido'),
-    tipo: string()
+    tipo: mixed()
+      .label('Tipo')
+      .oneOf([
+        'Analitico',
+        'Consolidado',
+      ])
       .required('Escolha o tipo'),
   }),
 });
@@ -659,7 +664,12 @@ export const relatórioSemestralOuAnual = object({
         then: (schema) => schema.required('Escolha o semestre'),
       })
       .matches(regEx['^(:?Primeiro|Segundo)$'], 'Valor inválido'),
-    tipo: string()
+    tipo: mixed()
+      .label('Tipo')
+      .oneOf([
+        'Analitico',
+        'Consolidado',
+      ])
       .required('Escolha o tipo'),
   }),
   salvar_arquivo: boolean(),
