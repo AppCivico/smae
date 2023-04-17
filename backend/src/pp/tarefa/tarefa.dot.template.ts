@@ -57,7 +57,7 @@ export class TarefaDotTemplate {
             digraph G {
               // Set default node and edge styles
               node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial"];
-              edge [color="#E3E5E8", fontname="Arial", arrowhead="none"];
+              edge [color="#00000010", fontname="Arial", arrowhead="none"];
 
               splines="polyline";
               nodesep=0.5;           // Adjust the distance between nodes within the same rank
