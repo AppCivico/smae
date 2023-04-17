@@ -15,12 +15,8 @@ export class RelProjetosDto {
     */
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status: ProjetoStatus;
-    /**
-     * @example "Acompanhamento"
-    */
-    @ApiProperty({ enum: ProjetoFase, enumName: 'ProjetoFase' })
-    fase: ProjetoFase;
     portfolio_id: number
+    portfolio_titulo: string
     codigo: string | null;
     objeto: string;
     objetivo: string;
