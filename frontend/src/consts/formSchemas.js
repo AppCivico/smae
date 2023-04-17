@@ -557,6 +557,37 @@ export const relatórioDeStatus = object({
   salvar_arquivo: boolean(),
 });
 
+export const relatórioDePortfolio = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    orgao_responsavel_id: number()
+      .min(0)
+      .label('Órgão responsável')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .nullable(),
+    portfolio_id: number()
+      .label('Portfolio')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .required()
+      .typeError('Valor inválido'),
+    status: mixed()
+      .label('Status')
+      .nullable()
+      .oneOf([
+        'EmAcompanhamento',
+        'EmPlanejamento',
+        'Fechado',
+        'Planejado',
+        'Registrado',
+        'Selecionado',
+        'Suspenso',
+        'Validado',
+      ]),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioMensal = object({
   fonte: string()
     .required(),
