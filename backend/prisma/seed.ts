@@ -225,7 +225,7 @@ const PrivRespNaCp: ListaDePrivilegios[] = [
     'CadastroPainel.visualizar',
 ];
 
-const removerItem = (nome: string) => {
+const removerNomePerfil = (nome: string) => {
     return {
         nome: nome,
         descricao: '',
@@ -233,23 +233,26 @@ const removerItem = (nome: string) => {
     }
 };
 
+const atualizacoesPerfil: Array<PromiseLike<any>> = [];
+const atualizarNomePerfil = (nomeCorrente: string, nomesAnterioes: string[]) => {
+    for (const nomeAnterior of nomesAnterioes) {
+        atualizacoesPerfil.push(prisma.perfilAcesso.updateMany({
+            where: { nome: nomeAnterior },
+            data: { nome: nomeCorrente }
+        }));
+    }
+    return nomeCorrente;
+};
+
 const PerfilAcessoConfig: {
     nome: string;
     descricao: string;
     privilegios: ListaDePrivilegios[] | false
 }[] = [
-        removerItem('Técnico CP'),
-        removerItem('Unidade de Entregas'),
-        removerItem('Responsável por meta na CP - orçamento'),
-        removerItem('Administrador de Portfolio'),
-        removerItem('Administrador Geral'),
-        removerItem('Administrador CP'),
-        removerItem('Coordenadoria de Planejamento'),
-        removerItem('Criador e Gestor de Projetos no Órgão'),
-        removerItem('Responsável por meta na CP'),
-        // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo acima, pra não ficar sobrando no banco
+        // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo usando o
+        // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
         {
-            nome: 'Administrador Geral do SMAE',
+            nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
             descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
             privilegios: [
                 'SMAE.superadmin',
@@ -257,7 +260,7 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Administrador Coordenadoria de Planejamento',
+            nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
             descricao: 'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
             privilegios: [
                 'PDM.admin_cp',
@@ -300,7 +303,7 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Gestor de usuários no mesmo órgão',
+            nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
             descricao: 'Pode criar e editar usuários no mesmo órgão',
             privilegios: [
                 'CadastroPessoa.inserir',
@@ -319,7 +322,7 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Responsável por meta na Coordenadoria de Planejamento',
+            nome: atualizarNomePerfil('Responsável por meta na Coordenadoria de Planejamento', ['Responsável por meta na CP']),
             descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
             privilegios: PrivRespNaCp
         },
@@ -345,7 +348,7 @@ const PerfilAcessoConfig: {
             ]
         },
         {
-            nome: 'Gestor de projetos',
+            nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
             descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
             privilegios: [
                 'SMAE.gestor_de_projeto',
@@ -358,12 +361,22 @@ const PerfilAcessoConfig: {
                 'SMAE.colaborador_de_projeto',
             ]
         },
-
+        removerNomePerfil('Técnico CP'),
+        removerNomePerfil('Unidade de Entregas'),
+        removerNomePerfil('Responsável por meta na CP - orçamento'),
+        removerNomePerfil('Administrador de Portfolio'),
+        removerNomePerfil('Administrador Geral'),
+        removerNomePerfil('Administrador CP'),
+        removerNomePerfil('Coordenadoria de Planejamento'),
+        removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
+        removerNomePerfil('Responsável por meta na CP'),
     ];
 
-console.log(PerfilAcessoConfig);
 
 async function main() {
+    if (atualizacoesPerfil.length)
+        await Promise.all(atualizacoesPerfil);
+
     await criar_emaildb_config();
     await criar_texto_config();
     await atualizar_modulos_e_privilegios();
