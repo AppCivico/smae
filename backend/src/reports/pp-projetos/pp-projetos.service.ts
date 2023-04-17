@@ -18,6 +18,7 @@ const defaultTransform = [flatten({ paths: [] })];
 class RetornoDbProjeto {
     id: number
     portfolio_id: number
+    portfolio_titulo: string
     meta_id?: number
     iniciativa_id?: number
     atividade_id?: number
@@ -39,7 +40,6 @@ class RetornoDbProjeto {
     data_revisao?: Date
     versao?: string
     status: ProjetoStatus
-    fase: ProjetoFase
 
     responsavel_id: number
     responsavel_nome_exibicao: string
@@ -325,6 +325,7 @@ export class PPProjetosService implements ReportableService {
         const sql = `SELECT
             projeto.id,
             projeto.portfolio_id,
+            portfolio.titulo,
             projeto.meta_id,
             projeto.iniciativa_id,
             projeto.atividade_id,
@@ -346,7 +347,6 @@ export class PPProjetosService implements ReportableService {
             projeto.data_revisao,
             projeto.versao,
             projeto.status,
-            projeto.fase,
             resp.id AS responsavel_id,
             resp.nome_exibicao AS responsavel_nome_exibicao,
             r.id AS fonte_recurso_id,
@@ -362,6 +362,7 @@ export class PPProjetosService implements ReportableService {
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao
         FROM projeto
+          JOIN portfolio ON portfolio.id = projeto.portfolio_id
           JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
           JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
@@ -383,6 +384,7 @@ export class PPProjetosService implements ReportableService {
             return {
                 id: db.id,
                 portfolio_id: db.portfolio_id,
+                portfolio_titulo: db.portfolio_titulo,
                 meta_id: db.meta_id ? db.meta_id : null,
                 iniciativa_id: db.iniciativa_id ? db.iniciativa_id : null,
                 atividade_id: db.atividade_id ? db.atividade_id : null,
@@ -404,7 +406,6 @@ export class PPProjetosService implements ReportableService {
                 data_revisao: db.data_revisao,
                 versao: db.versao ? db.versao : null,
                 status: db.status,
-                fase: db.fase,
 
                 orgao_participante: {
                     id: db.orgao_id,
