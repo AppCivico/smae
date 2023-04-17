@@ -1,11 +1,12 @@
 import MenuSecundario from '@/components/MenuSecundario.vue';
 import NovoMensal from '@/views/relatorios/NovoMensal.vue';
 import NovoOrcamentario from '@/views/relatorios/NovoOrcamentario.vue';
+import NovoRelatórioDeStatus from '@/views/relatorios/NovoRelatorioDeStatus.vue';
 import NovoSemestralOuAnual from '@/views/relatorios/NovoSemestralOuAnual.vue';
 import RelatóriosDePortfolio from '@/views/relatorios/RelatoriosDePortfolio.vue';
 import RelatóriosDePrevisãoECusto from '@/views/relatorios/RelatoriosDePrevisaoECusto.vue';
 import RelatoriosDeProjeto from '@/views/relatorios/RelatoriosDeProjeto.vue';
-import RelatóriosDeProjetoEStatus from '@/views/relatorios/RelatoriosDeProjetoEStatus.vue';
+import RelatóriosDeStatus from '@/views/relatorios/RelatoriosDeStatus.vue';
 import RelatoriosMensais from '@/views/relatorios/RelatoriosMensais.vue';
 import RelatoriosOrcamentarios from '@/views/relatorios/RelatoriosOrcamentarios.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
@@ -37,7 +38,7 @@ export default {
       'RelatóriosDeProjeto',
       'RelatóriosDePrevisãoECusto',
       'RelatóriosDePortfolio',
-      'RelatóriosDeProjetoEStatus',
+      'RelatóriosDeStatus',
     ],
   },
 
@@ -159,16 +160,25 @@ export default {
     },
 
     {
-      name: 'RelatóriosDeProjetoEStatus',
       path: 'projeto-e-status',
       meta: {
-        título: 'Relatórios de projeto e status',
-        títuloParaMenu: 'Relatório de projeto e status',
+        título: 'Relatórios de status',
+        títuloParaMenu: 'Relatório de status',
       },
       children: [
         {
+          name: 'RelatóriosDeStatus',
           path: '',
-          component: RelatóriosDeProjetoEStatus,
+          component: RelatóriosDeStatus,
+        },
+        {
+          component: NovoRelatórioDeStatus,
+          path: 'novo',
+          name: 'novoRelatórioDeStatus',
+          meta: {
+            título: 'Novo relatório de status',
+            rotaDeEscape: 'RelatóriosDeStatus',
+          },
         },
       ],
     },

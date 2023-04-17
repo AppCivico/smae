@@ -544,6 +544,19 @@ export const região = object()
       .nullable(),
   });
 
+export const relatórioDeStatus = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    portfolio_id: number()
+      .label('Portfolio')
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .typeError('Valor inválido'),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioMensal = object({
   fonte: string()
     .required(),
