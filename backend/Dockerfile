@@ -149,14 +149,8 @@ RUN apk add --no-cache graphviz
 # pro nosso caso, ta otimo, nosso html é gerado por nos mesmos, então é safe
 # porem, é um pouco mais chato de instalar (veja acima, o tanto de coisa pra compilar ele)
 RUN apk add --no-cache \
- g++ \
- git \
- gtk+3.0 \
- gtk+3.0-dev \
- make \
  mesa-dev \
  openssl-dev \
- patch \
  fontconfig-dev \
  freetype-dev
 
