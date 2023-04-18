@@ -95,7 +95,7 @@ export class PPProjetoService implements ReportableService {
                         valor = e.valor_percentual!.toString()
                     }
 
-                    return `${nome_fonte}: ${valor}`
+                    return Promise.resolve(`${nome_fonte}: ${valor}`)
                 }).join('/')
                 : null,
 
