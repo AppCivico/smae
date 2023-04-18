@@ -22,10 +22,14 @@ export class CreatePlanoAcaoDto {
     prazo_contramedida: Date | null
 
     @IsNumber()
-    custo: number
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    custo: number | null
 
     @IsNumber()
-    custo_percentual: number
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    custo_percentual: number | null
 
     @IsOptional()
     @IsString()
