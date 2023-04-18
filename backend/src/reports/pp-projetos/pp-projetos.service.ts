@@ -337,7 +337,7 @@ export class PPProjetosService implements ReportableService {
             if (filterKeysLen > 0) whereString = whereString.concat(' AND ');
         }
 
-        if (filters.status) whereString = whereString.concat(`projeto.status = ${filters.status}`);
+        if (filters.status) whereString = whereString.concat(`projeto.status = '${filters.status}'`);
 
         return whereString;
     }
