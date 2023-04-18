@@ -491,9 +491,9 @@ export class PPProjetosService implements ReportableService {
                 WHERE td.tarefa_id = t.id
             ) as dependencias
         FROM projeto
-          JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-          JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          JOIN tarefa t ON t.projeto_id = projeto.id
+          LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
+          LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+          LEFT JOIN tarefa t ON t.projeto_id = projeto.id
         ${whereStr}
         `;
 
@@ -553,7 +553,7 @@ export class PPProjetosService implements ReportableService {
                 WHERE rt.projeto_risco_id = projeto_risco.id
             ) as tarefas_afetadas
         FROM projeto
-          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+          LEFT JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
         ${whereStr}
         `;
 
@@ -606,8 +606,8 @@ export class PPProjetosService implements ReportableService {
             plano_acao.responsavel,
             plano_acao.data_termino
         FROM projeto
-          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
-          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
+          LEFT JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+          LEFT JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
         ${whereStr}
         `;
 
@@ -645,9 +645,9 @@ export class PPProjetosService implements ReportableService {
             plano_acao_monitoramento.data_afericao,
             plano_acao_monitoramento.descricao
         FROM projeto
-          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
-          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
-          JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id
+          LEFT JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+          LEFT JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
+          LEFT JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id
         ${whereStr}
         `;
 
@@ -680,7 +680,7 @@ export class PPProjetosService implements ReportableService {
             projeto_licao_aprendida.descricao,
             projeto_licao_aprendida.observacao
         FROM projeto
-          JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
+          LEFT JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
         ${whereStr}
         `;
 
@@ -726,9 +726,9 @@ export class PPProjetosService implements ReportableService {
                 WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
             ) AS riscos
         FROM projeto
-          JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
-          JOIN projeto_acompanhamento_risco ON projeto_acompanhamento_risco.projeto_acompanhamento_id = projeto_acompanhamento.id
-          JOIN projeto_risco ON projeto_risco.id = projeto_acompanhamento_risco.projeto_risco_id
+          LEFT JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
+          LEFT JOIN projeto_acompanhamento_risco ON projeto_acompanhamento_risco.projeto_acompanhamento_id = projeto_acompanhamento.id
+          LEFT JOIN projeto_risco ON projeto_risco.id = projeto_acompanhamento_risco.projeto_risco_id
         ${whereStr}
         `;
 
