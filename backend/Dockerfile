@@ -139,7 +139,7 @@ RUN cd /tmp/wkhtmltopdf \
  && make distclean
 
 
-FROM node:18-alpine as SMAE_API
+FROM node:18-bullseye as SMAE_API
 
 # Instala o graphviz (dot) para gerar EAP do tarefas do lado do server-side
 RUN apk add --no-cache graphviz
