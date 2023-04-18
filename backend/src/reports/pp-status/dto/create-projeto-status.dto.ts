@@ -8,8 +8,7 @@ export class CreateRelProjetoStatusDto {
      */
     @IsInt()
     @Transform(({ value }: any) => +value)
-    @IsOptional()
-    portfolio_id?: number;
+    portfolio_id: number;
 
     //TODO filtro por data (range?)
 }
