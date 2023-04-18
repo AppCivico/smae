@@ -109,12 +109,13 @@ export class PPProjetoService implements ReportableService {
             orgaos_participantes: projetoRow.orgaos_participantes ? projetoRow.orgaos_participantes.map(e => e.sigla).join('/') : null
         };
 
-        // TODO: Validar niveis de tarefa (seguir ppt)
+        const tarefasHierarquia = await this.tarefaService.tarefasHierarquia(projetoRow);
+
         const tarefasRows = await this.tarefaService.findAll(dto.projeto_id, undefined, {});
         const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map(e => {
-            let numero: string;
 
             return {
+                hirearquia: tarefasHierarquia[e.id],
                 numero: e.numero,
                 tarefa: e.tarefa,
                 inicio_planejado: e.inicio_planejado,
