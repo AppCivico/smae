@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -24,6 +24,12 @@ export class PPStatusService implements ReportableService {
     ) { }
 
     async create(dto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
+        console.log(dto.portfolio_id);
+        console.log(dto.portfolio_id);
+        console.log(dto.portfolio_id);
+        console.log(dto.portfolio_id);
+        console.log(dto.portfolio_id);
+        if (!dto.portfolio_id) throw new HttpException('Faltando portfolio_id', 400);
         const projetoRows = await this.prisma.projeto.findMany({
             where: {
                 portfolio_id: dto.portfolio_id,
