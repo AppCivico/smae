@@ -23,6 +23,7 @@ services:
   metabase:
     image: metabase/metabase:latest
     container_name: "${API_CONTAINER_NAME}_metabase"
+    restart: unless-stopped
     hostname: metabase
     volumes:
       - /dev/urandom:/dev/random:ro
@@ -45,6 +46,7 @@ services:
       retries: 5
   metadb_postgres:
     image: postgres:latest
+    restart: unless-stopped
     container_name: "${API_CONTAINER_NAME}_metadb_postgres"
     hostname: postgres
     environment:
