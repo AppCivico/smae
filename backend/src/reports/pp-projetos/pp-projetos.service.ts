@@ -563,7 +563,7 @@ export class PPProjetosService implements ReportableService {
                         const idMatch = e.match('^\d*');
                         if (!idMatch) throw new Error('Falha na regex para dependências');
 
-                        const id = idMatch[1];
+                        const id = idMatch[0];
                         console.log("==============");
                         console.log(id);
                         console.log(tarefasHierarquia);
