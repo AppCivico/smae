@@ -332,7 +332,7 @@ export class PPProjetosService implements ReportableService {
         }
 
         if (filters.status) {
-            whereConditions.push(`projeto.status = $${paramIndex}`);
+            whereConditions.push(`projeto.status = $${paramIndex}::"enum_ProjetoStatus"`);
             queryParams.push(filters.status);
             paramIndex++;
         }
