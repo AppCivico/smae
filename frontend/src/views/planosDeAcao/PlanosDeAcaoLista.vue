@@ -256,10 +256,10 @@ iniciar();
             {{ dateToField(item.prazo_contramedida) }}
           </td>
           <td class="cell--number">
-            {{ item.custo ? 'R$' + dinheiro(item.custo) : '-' }}
+            {{ typeof item.custo == 'number' ? 'R$' + dinheiro(item.custo) : '-' }}
           </td>
           <td class="cell--number">
-            {{ item.custo_percentual ? item.custo_percentual + '%' : '-' }}
+            {{ typeof item.custo_percentual === 'number' ? item.custo_percentual + '%' : '-' }}
           </td>
           <td class="center">
             <router-link
