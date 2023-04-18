@@ -299,7 +299,7 @@ export class PPProjetosService implements ReportableService {
     }
 
     private async buildFilteredWhereStr(filters: CreateRelProjetosDto): Promise<string> {
-        const whereString: string = '';
+        let whereString: string = '';
         let filterKeysLen: number = 0;
 
         if (typeof(filters.codigo) === undefined && typeof(filters.portfolio_id) === undefined && typeof(filters.orgao_responsavel_id) === undefined && typeof(filters.status) === undefined) {
