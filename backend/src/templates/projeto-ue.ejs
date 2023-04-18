@@ -33,12 +33,20 @@
 				text-align: justify;
 			}
 
-			table ul {
+            ul {
+                list-style-type: circle;
+            }
+
+            .table-1 li {
+                margin-left: -1.5em;
+            }
+
+			.table-2 ul {
 				margin-right: 30px;
 				line-height: 1.3em;
 			}
 
-			table ul > li {
+			.table-2 ul > li {
 				font-size: 0.9em;
 				margin-top: 15px;
 			}
@@ -53,6 +61,7 @@
 			.table-1 td {
 				border-bottom: 0.5px solid #09295e;
 				padding: 0.3em;
+                padding-right: 1.5em;
 			}
 
 			.dark-blue {
@@ -163,7 +172,7 @@
 							<% if(fonteDeRecursos.length > 0 ){ %>
 								<ul>
 									<% fonteDeRecursos.forEach(item => { %>
-										<li><%= item.fonte_recurso_cod_sof %></li>
+										<li><%= item %></li>
 									<% }); %>
 								</ul>
 							<% } %>
@@ -181,7 +190,7 @@
 			</table>
 
 			<br>
-			<table>
+			<table class="table-2">
 				<tbody>
 					<tr style="vertical-align: top">
 						<td style="width: 30%" class="zero-margin  light-green">
