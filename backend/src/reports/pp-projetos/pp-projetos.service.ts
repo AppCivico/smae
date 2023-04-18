@@ -516,7 +516,7 @@ export class PPProjetosService implements ReportableService {
             t.custo_real,
             (
                 SELECT
-                    string_agg(concat(t.id::text, ' ', td.tipo::text, t2.latencia::text), '/')
+                    string_agg(concat(t.id::text, ' ', td.tipo::text, td.latencia::text), '/')
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
                 WHERE td.tarefa_id = t.id
