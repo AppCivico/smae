@@ -115,7 +115,6 @@ export class PPProjetoService implements ReportableService {
 
             return {
                 hirearquia: tarefasHierarquia[e.id],
-                numero: e.numero,
                 tarefa: e.tarefa,
                 inicio_planejado: e.inicio_planejado,
                 termino_planejado: e.termino_planejado,

@@ -8,6 +8,8 @@ import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import { PPProjetosRelatorioDto, RelProjetosAcompanhamentosDto, RelProjetosCronogramaDto, RelProjetosDto, RelProjetosLicoesAprendidasDto, RelProjetosPlanoAcaoDto, RelProjetosPlanoAcaoMonitoramentosDto, RelProjetosRiscosDto } from './entities/projetos.entity';
 import { RiscoCalc } from 'src/common/RiscoCalc';
+import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 
 const {
     Parser,
@@ -78,6 +80,7 @@ class RetornoDbProjeto {
 class RetornoDbCronograma {
     projeto_id: number
     projeto_codigo: string
+    id: number
     hierarquia?: string
     numero: number
     nivel: number
@@ -170,7 +173,7 @@ export class PPProjetosService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
-
+        private readonly tarefasService: TarefaService
     ) { }
 
     async create(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
@@ -527,16 +530,22 @@ export class PPProjetosService implements ReportableService {
 
         const data: RetornoDbCronograma[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
-        out.push(...this.convertRowsCronograma(data));
+        const convertedRows = await this.convertRowsCronograma(data); 
+        out.push(...convertedRows);
     }
 
-    private convertRowsCronograma(
+    private async convertRowsCronograma(
         input: RetornoDbCronograma[],
-    ): RelProjetosCronogramaDto[] {
-        return input.map(db => {
+    ): Promise<RelProjetosCronogramaDto[]> {
+
+        return await Promise.all(input.map(async db => {
+            const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
+            const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
+
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
+                hirearquia: tarefasHierarquia[db.id],
                 numero: db.numero,
                 nivel: db.nivel,
                 tarefa: db.tarefa,
@@ -555,7 +564,7 @@ export class PPProjetosService implements ReportableService {
                     nome_exibicao: db.responsavel_nome_exibicao
                 } : null,
             };
-        });
+        }));
     }
 
     private async queryDataRiscos(whereCond: WhereCond, out: RelProjetosRiscosDto[]) {
