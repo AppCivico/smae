@@ -516,7 +516,7 @@ export class PPProjetosService implements ReportableService {
             t.custo_real,
             (
                 SELECT
-                    string_agg(concat(t.id::text, ' ', td.tipo::text, td.latencia::text), '/')
+                    string_agg(concat(td.dependencia_tarefa_id::text, ' ', td.tipo::text, td.latencia::text), '/')
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
                 WHERE td.tarefa_id = t.id
@@ -541,7 +541,7 @@ export class PPProjetosService implements ReportableService {
         return await Promise.all(input.map(async db => {
             const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
             const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
-
+            console.log(tarefasHierarquia);
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
