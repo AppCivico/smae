@@ -564,7 +564,7 @@ export const relatórioDePrevisãoDeCusto = object()
       pdm_id: string()
         .label('PDM')
         .required()
-        .typeError('Valor inválido'),
+        .typeError('${label} inválido'),
       tags: array()
         .label('Tags')
         .nullable(),
@@ -594,7 +594,7 @@ export const relatórioDeStatus = object({
       .label('Portfolio')
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('Valor inválido'),
+      .typeError('${label} inválido'),
   }),
   salvar_arquivo: boolean(),
 });
@@ -612,7 +612,7 @@ export const relatórioDePortfolio = object({
       .label('Portfolio')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .required()
-      .typeError('Valor inválido'),
+      .typeError('${label} inválido'),
     status: mixed()
       .label('Status')
       .nullable()
