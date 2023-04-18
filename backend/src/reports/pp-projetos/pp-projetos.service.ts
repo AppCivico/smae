@@ -303,6 +303,7 @@ export class PPProjetosService implements ReportableService {
         let filterKeysLen: number = 0;
 
         if (typeof(filters.codigo) === undefined && typeof(filters.portfolio_id) === undefined && typeof(filters.orgao_responsavel_id) === undefined && typeof(filters.status) === undefined) {
+            console.log('caso undef');
             return whereString;
         } else {
             filterKeysLen = Object.keys(filters).length;
