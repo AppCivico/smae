@@ -56,8 +56,8 @@ export class TarefaDotTemplate {
         const graphvizString = `
             digraph G {
               // Set default node and edge styles
-              node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial", margin="0.18"];
-              edge [color="#00000010", fontname="Arial", arrowhead="none"];
+              node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Roboto", margin="0.18"];
+              edge [color="#00000010", fontname="Roboto", arrowhead="none"];
 
               splines="polyline";
               nodesep=0.5;           // Adjust the distance between nodes within the same rank
@@ -68,10 +68,10 @@ export class TarefaDotTemplate {
               // Set distance between nodes on the same rank
               ranksep=0.2;
 
-              nodeX [label="${escapeDotLabel(projetoLabel)}", fillcolor="#152741" color="transparent" fontcolor="#F7C234", style="rounded,filled", fontname="Arial bold"]
+              nodeX [label="${escapeDotLabel(projetoLabel)}", fillcolor="#152741" color="transparent" fontcolor="#F7C234", style="rounded,filled", fontname="Roboto Bold"]
               // Define nodes
-              ${this._getLevel1Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#E3E5E8", "#000000BB", '#E3E5E8', 'Arial bold')).join("\n")}
-              ${this._getLevel2Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#ffffff", "#000000", "#E3E5E8", 'Arial')).join("\n")}
+              ${this._getLevel1Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#E3E5E8", "#000000BB", '#E3E5E8', 'Roboto Bold')).join("\n")}
+              ${this._getLevel2Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#ffffff", "#000000", "#E3E5E8", 'Roboto')).join("\n")}
 
               // Define edges for level 1
               ${this._getLevel1Nodes(rows).map(row => this._createEdge("X", row.id.toString())).join("\n")}
