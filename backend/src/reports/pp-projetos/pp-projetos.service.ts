@@ -299,48 +299,33 @@ export class PPProjetosService implements ReportableService {
     }
 
     private async buildFilteredWhereStr(filters: CreateRelProjetosDto): Promise<string> {
-        let whereString: string = '';
-        let filterKeysLen: number = 0;
-
-        if (typeof(filters.codigo) === undefined && typeof(filters.portfolio_id) === undefined && typeof(filters.orgao_responsavel_id) === undefined && typeof(filters.status) === undefined) {
-            console.log('caso undef');
-            return whereString;
-        } else {
-            filterKeysLen = Object.keys(filters).length;
-            whereString = whereString.concat('WHERE ');
-        }
+        const whereConditions: string[] = [];
 
         if (filters.orgao_responsavel_id) {
             console.log('param orgao_responsavel_id existe');
-            whereString = whereString.concat(`projeto.orgao_responsavel_id = ${filters.orgao_responsavel_id}`);
-            console.log(whereString);
-
-            filterKeysLen--;
-            if (filterKeysLen > 0) whereString = whereString.concat(' AND ');
+            whereConditions.push(`projeto.orgao_responsavel_id = ${filters.orgao_responsavel_id}::int`);
         }
 
         if (filters.codigo) {
-            console.log('param codigo existe');
-            whereString = whereString.concat(`projeto.codigo = ${filters.codigo}`);
-            console.log(whereString);
-
-            filterKeysLen--;
-            if (filterKeysLen > 0) whereString = whereString.concat(' AND ');
-        };
-        
-        if (filters.portfolio_id) {
-            console.log('param portfolio_id existe');
-            whereString = whereString.concat(`projeto.portfolio_id = ${filters.portfolio_id}`);
-            console.log(whereString);
-        
-            filterKeysLen--;
-            if (filterKeysLen > 0) whereString = whereString.concat(' AND ');
+            //console.log('param codigo existe');
+            //whereConditions.push(`projeto.codigo = ${filters.codigo}`); // cade o escape???
+            throw new Error('filtro código não suportado');
         }
 
-        if (filters.status) whereString = whereString.concat(`projeto.status = '${filters.status}'`);
+        if (filters.portfolio_id) {
+            console.log('param portfolio_id existe');
+            whereConditions.push(`projeto.portfolio_id = ${filters.portfolio_id}::int`);
+        }
 
+        if (filters.status) {
+            whereConditions.push(`projeto.status = '${filters.status}::int'`);
+        }
+
+        let whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return whereString;
     }
+
+
 
     private async queryDataProjetos(whereStr: string, out: RelProjetosDto[]) {
         const sql = `SELECT
