@@ -90,14 +90,14 @@ export class RiscoService {
                 let resposta: string | null = null;
                 let calcResult;
 
+                if (r.probabilidade && r.impacto) calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
+
                 if (r.nivel && r.grau && r.resposta) {
                     nivel = r.nivel;
                     grau = r.grau;
                     resposta = r.resposta;
                 } else {
-                    if (r.probabilidade && r.impacto) {
-                        calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
-
+                    if (calcResult) {
                         nivel = calcResult.nivel;
                         grau = calcResult.grau_valor;
                         resposta = calcResult.resposta_descricao;
