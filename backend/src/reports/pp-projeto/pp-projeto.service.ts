@@ -181,13 +181,6 @@ export class PPProjetoService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: [
-                    { value: 'numero', label: 'numero'},
-                    { value: 'tarefa', label: 'tarefa'},
-                    { value: 'inicio_planejado', label: 'inicio_planejado'},
-                    { value: 'termino_planejado', label: 'termino_planejado'},
-                    { value: 'custo_estimado', label: 'custo_estima,do'}
-                ]
             });
             const linhas = json2csvParser.parse(dados.cronograma);
             out.push({
