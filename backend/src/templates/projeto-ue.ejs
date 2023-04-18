@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unidade de Entregas</title>
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: auto;
+            border: none;
+        }
+
+        th,
+        td {
+            border: none;
+            text-align: left;
+            padding: 0;
+            margin: 0;
+            vertical-align: top;
+        }
+
+        /* Add dark blue background */
+
+        .dark-blue {
+            background-color: #09295e;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.3em;
+        }
+
+        .very-light-blue {
+            background-color: #dce7eb;
+        }
+
+        /* Add #DAFDF5 background */
+        .light-green {
+            background-color: #DAFDF5;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .zero-margin h2 {
+            margin: 0;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .half-padding {
+            padding: 0.5em;
+
+        }
+
+        .zero-margin h2 {
+            margin: 0;
+        }
+
+        .full-width-and-height {
+            display: -webkit-box;
+            /* wkhtmltopdf uses this one */
+            display: flex;
+        }
+
+        body {
+            padding: 20px 5%;
+            background-color: #F9F9F9;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Unidade de Entregas</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <td class="dark-blue">Nome do Projeto</td>
+                <td>
+                    <%= nomeDoProjeto %>
+                </td>
+                <td class="dark-blue">Status do Plano de Projeto</td>
+                <td>
+                    <%= statusDoProjeto %>
+                </td>
+            </tr>
+            <tr>
+                <td class="dark-blue">Descrição resumida do Projeto</td>
+                <td colspan="3">
+                    <%= descricaoDoProjeto %>
+                </td>
+            </tr>
+            <tr>
+                <td class="dark-blue">Órgão Responsável</td>
+                <td>
+                    <%= orgaoResponsavel.join(', ') %></td>
+					<td class="dark-blue">Responsável pelo Projeto</td>
+					<td><%= responsavelPeloProjeto %></td>
+				</tr>
+				<tr>
+					<td class="dark-blue">Data de Início (estimativa)</td>
+					<td><%= dataInicio %></td>
+					<td class="dark-blue">Data de Término (estimativa)</td>
+					<td><%= dataTermino %></td>
+				</tr>
+				<tr>
+					<td class="dark-blue">Custo Estimado</td>
+					<td><%= custoEstimado %></td>
+					<td class="dark-blue">Fonte(s) de Recurso Planejada(s)</td>
+					<td>
+                        <% if(fonteDeRecursos.length > 0 ){ %>
+                        <ul>
+                            <% fonteDeRecursos.forEach(item => { %>
+                                <li><%= item.fonte_recurso_cod_sof %></li>
+                            <% }); %>
+                        </ul>
+                        <% } %>
+                    </td>
+				</tr>
+				<tr>
+					<td class="dark-blue">Origem</td>
+					<td><%= origem %></td>
+					<td class="dark-blue">Meta vinculada</td>
+					<td><%= codigoDaMeta %>
+						<%= textoDaMeta %></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<br>
+		<table>
+			<tbody>
+				<tr style="vertical-align: top">
+					<td style="width: 30%" class="zero-margin  light-green">
+						<h2 class="dark-blue text-center half-padding">Escopo</h2>
+						<div class="full-width-and-height">
+							<ul>
+								<% escopo.forEach(item => { %>
+									<li><%= item %></li>
+								<% }); %>
+							</ul>
+						</div>
+					</td>
+					<td style="width: 5%">&nbsp;</td>
+					<td style="width: 30%" class="zero-margin  light-green">
+						<h2 class="dark-blue text-center half-padding">Principais Etapas</h2>
+						<div class="full-width-and-height ">
+							<ul>
+								<% etapas.forEach(item => { %>
+									<li><%= item %></li>
+								<% }); %>
+							</ul>
+						</div>
+					</td>
+					<td style="width: 5%">&nbsp;</td>
+					<td style="width: 30%" class="zero-margin  light-green">
+						<h2 class="dark-blue text-center half-padding">Órgãos Envolvidos</h2>
+						<div class="full-width-and-height ">
+							<ul>
+								<% orgaosEnvolvidos.forEach(item => { %>
+									<li><%= item %></li>
+								<% }); %>
+							</ul>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<br>
+
+		<h3>Documentos relacionados</h3>
+		<ul>
+			<% documentosRelacionados.forEach(item => { %>
+				<li><%= item %></li>
+			<% }); %>
+		</ul>
+
+		<br>
+
+		<h3>Data de entrada</h3>
+		<%= dataDeEntrada %>
+	</body>
+
+</html>
