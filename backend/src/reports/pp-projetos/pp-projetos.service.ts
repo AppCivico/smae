@@ -518,7 +518,7 @@ export class PPProjetosService implements ReportableService {
             projeto.codigo AS projeto_codigo,
             projeto_risco.codigo,
             projeto_risco.titulo,
-            projeto_risco.registrado_em,
+            projeto_risco.registrado_em AS data_registro,
             projeto_risco.status_risco,
             projeto_risco.descricao,
             projeto_risco.causa,
