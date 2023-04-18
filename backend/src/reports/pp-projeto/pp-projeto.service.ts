@@ -189,7 +189,7 @@ export class PPProjetoService implements ReportableService {
             });
             const linhas = json2csvParser.parse(dados.cronograma);
             out.push({
-                name: 'cronograma|eap.csv',
+                name: 'cronograma.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
