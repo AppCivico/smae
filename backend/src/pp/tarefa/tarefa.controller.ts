@@ -64,6 +64,13 @@ export class TarefaController {
 
         const imgStream = await this.tarefaService.getEap(projeto, params.id, user, formato);
         res.type(GraphvizContentTypeMap[formato]);
+
+        if (formato == 'pdf' || formato == 'svg')
+            res.set({
+                'Content-Disposition': `attachment; filename="eap-projeto-${params.id}.${formato}"`,
+                'Access-Control-Expose-Headers': 'content-disposition',
+            });
+
         imgStream.pipe(res);
     }
 
