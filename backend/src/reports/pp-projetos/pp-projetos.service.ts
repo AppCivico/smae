@@ -183,10 +183,6 @@ export class PPProjetosService implements ReportableService {
         const out_acompanhamentos: RelProjetosAcompanhamentosDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto);
-        console.log('===================================');
-        console.dir({ dto }, { depth: 2 });
-        console.log(whereCond);
-        console.log('===================================');
 
         await this.queryDataProjetos(whereCond, out_projetos);
         await this.queryDataCronograma(whereCond, out_cronogramas);
