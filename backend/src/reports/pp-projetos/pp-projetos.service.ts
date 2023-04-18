@@ -171,6 +171,7 @@ export class PPProjetosService implements ReportableService {
 
         const whereString = await this.buildFilteredWhereStr(dto);
         console.log('===================================');
+        console.dir({ dto }, { depth: 2 });
         console.log(whereString);
         console.log('===================================');
 
