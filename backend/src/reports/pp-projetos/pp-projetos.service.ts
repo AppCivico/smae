@@ -384,14 +384,14 @@ export class PPProjetosService implements ReportableService {
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao
         FROM projeto
-          JOIN portfolio ON portfolio.id = projeto.portfolio_id
-          JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
+          LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
+          LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof AND sof.ano = r.fonte_recurso_ano AND sof.col = 'fonte_recursos'
-          JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
-          JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
-          JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
-          JOIN orgao o ON po.orgao_id = o.id
-          JOIN pessoa resp ON resp.id = projeto.responsavel_id
+          LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
+          LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
+          LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
+          LEFT JOIN orgao o ON po.orgao_id = o.id
+          LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
         ${whereStr}
         `;
 
