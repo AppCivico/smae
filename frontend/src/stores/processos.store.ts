@@ -100,7 +100,7 @@ export const useProcessosStore = defineStore('processos', {
   getters: {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
-      processo_sei: formatProcesso(emFoco?.processo_sei) || null,
+      processo_sei: formatProcesso(emFoco?.processo_sei) || '',
     }),
 
     // eslint-disable-next-line max-len
