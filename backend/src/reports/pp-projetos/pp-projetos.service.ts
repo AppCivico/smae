@@ -318,7 +318,7 @@ export class PPProjetosService implements ReportableService {
         }
 
         if (filters.status) {
-            whereConditions.push(`projeto.status = '${filters.status}::int'`);
+            whereConditions.push(`projeto.status = '${filters.status}'`);
         }
 
         let whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
