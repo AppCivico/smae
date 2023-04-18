@@ -56,8 +56,8 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     if (resposta) {
       alertStore.success(msg);
-      await router.push({ name: 'riscosListar' });
       riscosStore.$reset();
+      router.push({ name: 'riscosListar' });
     }
   } catch (error) {
     alertStore.error(error);

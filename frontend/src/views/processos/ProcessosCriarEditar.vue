@@ -54,8 +54,8 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     if (resposta) {
       alertStore.success(msg);
-      await router.push({ name: 'processosListar' });
       processosStore.$reset();
+      router.push({ name: 'processosListar' });
     }
   } catch (error) {
     alertStore.error(error);

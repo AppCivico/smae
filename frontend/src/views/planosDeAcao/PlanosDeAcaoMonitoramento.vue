@@ -46,8 +46,8 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     if (resposta) {
       alertStore.success('Dados salvos com sucesso!');
-      await router.push({ name: 'planosDeAçãoListar' });
       planosDeAçãoStore.$reset();
+      router.push({ name: 'planosDeAçãoListar' });
     }
   } catch (error) {
     alertStore.error(error);

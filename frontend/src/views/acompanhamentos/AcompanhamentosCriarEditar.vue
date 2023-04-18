@@ -61,8 +61,8 @@ async function onSubmit(_, { controlledValues }) {
 
     if (resposta) {
       alertStore.success(msg);
-      await router.push({ name: 'acompanhamentosListar' });
       acompanhamentosStore.$reset();
+      router.push({ name: 'acompanhamentosListar' });
     }
   } catch (error) {
     alertStore.error(error);

@@ -158,8 +158,8 @@ async function onSubmit(_, { controlledValues: valores }) {
         };
 
       alertStore.success(msg);
-      await router.push(rotaApósSalvamento);
       projetosStore.$reset();
+      router.push(rotaApósSalvamento);
     }
   } catch (error) {
     alertStore.error(error);
