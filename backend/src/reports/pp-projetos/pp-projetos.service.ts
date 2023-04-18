@@ -516,7 +516,7 @@ export class PPProjetosService implements ReportableService {
             t.custo_real,
             (
                 SELECT
-                    string_agg(concat(td.dependencia_tarefa_id::text, ' ', td.tipo::text, td.latencia::text), '/')
+                    string_agg(concat(td.dependencia_tarefa_id::text, ' ', td.tipo::text, ' ', td.latencia::text), '/')
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
                 WHERE td.tarefa_id = t.id
@@ -566,7 +566,7 @@ export class PPProjetosService implements ReportableService {
                         const id = idMatch[1];
                         const hierarquia = tarefasHierarquia[id];
 
-                        return e.replace('^\d*', hierarquia);
+                        return e.replace(id, hierarquia);
                     }).join('/')
                 ) : null,
                 atraso: db.atraso ? db.atraso : null,
