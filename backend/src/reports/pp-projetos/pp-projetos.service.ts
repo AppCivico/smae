@@ -329,7 +329,7 @@ export class PPProjetosService implements ReportableService {
         }
 
         if (filters.status) {
-            whereConditions.push(`projeto.status = $${paramIndex}`);
+            whereConditions.push(`projeto.status = ANY($${paramIndex})::varchar[]`);
             queryParams.push(filters.status);
             paramIndex++;
         }
