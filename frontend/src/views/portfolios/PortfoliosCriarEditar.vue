@@ -51,8 +51,8 @@ async function onSubmit(values) {
     }
 
     alertStore.success(msg);
-    await router.push({ name: 'portfoliosListar' });
     portfolioStore.$reset();
+    router.push({ name: 'portfoliosListar' });
   } catch (error) {
     alertStore.error(error);
   }

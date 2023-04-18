@@ -53,8 +53,8 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     if (resposta) {
       alertStore.success(msg);
-      await router.push({ name: 'liçõesAprendidasListar' });
       liçõesAprendidasStore.$reset();
+      router.push({ name: 'liçõesAprendidasListar' });
     }
   } catch (error) {
     alertStore.error(error);
