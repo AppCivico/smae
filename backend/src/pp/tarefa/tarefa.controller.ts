@@ -9,10 +9,11 @@ import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ProjetoService } from '../projeto/projeto.service';
-import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa } from './dto/create-tarefa.dto';
+import { CheckDependenciasDto, CreateTarefaDto, FilterEAPDto, FilterPPTarefa } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
 import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto } from './entities/tarefa.entity';
 import { TarefaService } from './tarefa.service';
+import { GraphvizContentTypeMap } from 'src/graphviz/graphviz.service';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
@@ -54,13 +55,15 @@ export class TarefaController {
     @ApiResponse({ status: 200, description: 'Imagem da EAP' })
     async getEAP(
         @Param() params: FindOneParams,
+        @Query() filter: FilterEAPDto,
         @CurrentUser() user: PessoaFromJwt,
         @Res() res: Response,
     ): Promise<void> {
+        const formato = filter.formato ?? 'png';
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
 
-        const imgStream = await this.tarefaService.getEap(projeto, params.id, user, 'png');
-        res.type('image/png');
+        const imgStream = await this.tarefaService.getEap(projeto, params.id, user, formato);
+        res.type(GraphvizContentTypeMap[formato]);
         imgStream.pipe(res);
     }
 

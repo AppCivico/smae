@@ -1231,8 +1231,6 @@ export class TarefaService {
     }
 
     async getEap(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt, format: GraphvizServiceFormat): Promise<NodeJS.ReadableStream> {
-
-
         const rows = await this.findAllRows(projeto);
 
         const graphvizString = this.dotTemplate.buildGraphvizString(projeto.nome, rows);

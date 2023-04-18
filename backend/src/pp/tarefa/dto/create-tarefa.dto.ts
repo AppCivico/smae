@@ -3,6 +3,7 @@ import { TarefaDependenteTipo } from "@prisma/client"
 import { Transform, Type } from "class-transformer"
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
+import { GraphvizServiceFormat } from "src/graphviz/graphviz.service"
 
 export class TarefaDependenciaDto {
 
@@ -168,5 +169,16 @@ export class CreateTarefaDto {
 }
 
 export class FilterPPTarefa {
+
+}
+
+export class FilterEAPDto {
+
+    @IsOptional()
+    @ApiProperty({ enum: GraphvizServiceFormat, enumName: 'GraphvizServiceFormat', example: 'png', description: 'padrão é PNG' })
+    @IsEnum(GraphvizServiceFormat, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(GraphvizServiceFormat).join(', '),
+    })
+    formato?: GraphvizServiceFormat
 
 }
