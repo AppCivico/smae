@@ -307,37 +307,37 @@ export class PPProjetosService implements ReportableService {
             return whereString;
         } else {
             filterKeysLen = Object.keys(filters).length;
-            whereString.concat('WHERE ');
+            whereString = whereString.concat('WHERE ');
         }
 
         if (filters.orgao_responsavel_id) {
             console.log('param orgao_responsavel_id existe');
-            whereString.concat(`projeto.orgao_responsavel_id = ${filters.orgao_responsavel_id}`);
+            whereString = whereString.concat(`projeto.orgao_responsavel_id = ${filters.orgao_responsavel_id}`);
             console.log(whereString);
 
             filterKeysLen--;
-            if (filterKeysLen > 0) whereString.concat(' AND ');
+            if (filterKeysLen > 0) whereString = whereString.concat(' AND ');
         }
 
         if (filters.codigo) {
             console.log('param codigo existe');
-            whereString.concat(`projeto.codigo = ${filters.codigo}`);
+            whereString = whereString.concat(`projeto.codigo = ${filters.codigo}`);
             console.log(whereString);
 
             filterKeysLen--;
-            if (filterKeysLen > 0) whereString.concat(' AND ');
+            if (filterKeysLen > 0) whereString = whereString.concat(' AND ');
         };
         
         if (filters.portfolio_id) {
             console.log('param portfolio_id existe');
-            whereString.concat(`projeto.portfolio_id = ${filters.portfolio_id}`);
+            whereString = whereString.concat(`projeto.portfolio_id = ${filters.portfolio_id}`);
             console.log(whereString);
         
             filterKeysLen--;
-            if (filterKeysLen > 0) whereString.concat(' AND ');
+            if (filterKeysLen > 0) whereString = whereString.concat(' AND ');
         }
 
-        if (filters.status) whereString.concat(`projeto.status = ${filters.status}`);
+        if (filters.status) whereString = whereString.concat(`projeto.status = ${filters.status}`);
 
         return whereString;
     }
