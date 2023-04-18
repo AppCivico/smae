@@ -1,23 +1,26 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { TrimPipe } from './common/pipes/trim-pipe';
+
 const winston = require('winston'),
     expressWinston = require('express-winston');
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
     const config = new DocumentBuilder()
         .setTitle('SMAE - OpenAPI file')
         .setDescription(
             '*SMAE*\n\n' +
-                '**CONVERSÃO AUTOMÁTICA PARA CSV**' +
-                '\n\nTodos os endpoints que devolvem `application/json` também podem devolver CSV, utilize o' +
-                'header `Accept: text/csv` para explodir apenas as linhas, ou então `Accept: text/csv; unwind-all` (mais lento, que expande tudo) que transforma todas as arrays em items. ' +
-                '\n\nPor padrão todos os campos deep são achatados (flatten).' +
-                '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.',
+            '**CONVERSÃO AUTOMÁTICA PARA CSV**' +
+            '\n\nTodos os endpoints que devolvem `application/json` também podem devolver CSV, utilize o' +
+            'header `Accept: text/csv` para explodir apenas as linhas, ou então `Accept: text/csv; unwind-all` (mais lento, que expande tudo) que transforma todas as arrays em items. ' +
+            '\n\nPor padrão todos os campos deep são achatados (flatten).' +
+            '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.',
         )
         .addBearerAuth(
             {
@@ -65,6 +68,10 @@ async function bootstrap() {
     );
     expressWinston.requestWhitelist.push('body');
     expressWinston.responseWhitelist.push('body');
+
+    // templates para gerar relatorios
+    app.setBaseViewsDir(join(__dirname, '..', 'templates'));
+    app.setViewEngine('ejs');
 
     await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }

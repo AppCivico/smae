@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
@@ -13,8 +13,9 @@ import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto, ProjetoRecursos } from './entities/projeto.entity';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
+import { FormatCurrency } from 'src/common/format-currency';
 
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Registrado: 'Registro',
@@ -31,6 +32,27 @@ export class ProjetoOrgaoParticipante {
     projeto_id: number
     orgao_id: number
 }
+
+export type HtmlProjetoUe = {
+    nomeDoProjeto: string;
+    statusDoProjeto: string;
+    descricaoDoProjeto: string;
+    orgaoResponsavel: string[];
+    responsavelPeloProjeto: string;
+    dataInicio: string;
+    dataTermino: string;
+    custoEstimado: string;
+    fonteDeRecursos: ProjetoRecursos[]
+    origem: string;
+    codigoDaMeta: string | null;
+    textoDaMeta: string;
+    escopo: string[];
+    etapas: string[];
+    orgaosEnvolvidos: string[];
+    documentosRelacionados: string[];
+    dataDeEntrada: string;
+};
+
 
 @Injectable()
 export class ProjetoService {
@@ -389,6 +411,42 @@ export class ProjetoService {
         return permissionsSet;
     }
 
+    async getDadosProjetoUe(id: number, user: PessoaFromJwt | undefined): Promise<HtmlProjetoUe> {
+
+        const projeto = await this.findOne(id, user, 'ReadOnly');
+
+        const arquivos: ProjetoDocumentoDto[] = await this.findAllDocumentos(id);
+
+        const fc = new FormatCurrency();
+        return {
+            nomeDoProjeto: projeto.nome,
+            statusDoProjeto: projeto.status,
+            descricaoDoProjeto: projeto.resumo,
+            orgaoResponsavel: projeto.orgao_responsavel ? [
+                projeto.orgao_responsavel.sigla + ' - ' + projeto.orgao_responsavel.descricao
+            ] : [],
+            responsavelPeloProjeto: projeto.responsavel ? projeto.responsavel.nome_exibicao : '-',
+            dataInicio: Date2YMD.dbDateToDMY(projeto.previsao_inicio) ?? '-',
+            dataTermino: Date2YMD.dbDateToDMY(projeto.previsao_termino) ?? '-',
+            custoEstimado: projeto.previsao_custo ? fc.toString(projeto.previsao_custo) : '-',
+            fonteDeRecursos: projeto.fonte_recursos ? projeto.fonte_recursos : [],
+            origem:
+                projeto.origem_tipo == 'Outro'
+                    ? projeto.origem_outro ?? ''
+                    : projeto.origem_tipo == 'PdmAntigo'
+                        ? 'Outro Programa de Metas'
+                        : 'Programa de Metas',
+            codigoDaMeta: projeto.meta ? projeto.meta.codigo : projeto.meta_codigo,
+            textoDaMeta: projeto.meta ? projeto.meta.titulo : '',
+            escopo: projeto.escopo ? [projeto.escopo] : [],
+            etapas: projeto.principais_etapas ? projeto.principais_etapas.split('\n') : [],
+            orgaosEnvolvidos: projeto.orgaos_participantes.map(r => r.sigla + ' - ' + r.descricao),
+            documentosRelacionados: arquivos.map(r => r.arquivo.nome_original + ' - ' + r.arquivo.descricao),
+            dataDeEntrada: Date2YMD.dbDateToDMY(projeto.data_revisao) ?? '-'
+        };
+
+
+    }
     // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
     // o órgão gestor continua podendo preencher os dados realizado
     async findOne(id: number, user: PessoaFromJwt | undefined, readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>): Promise<ProjetoDetailDto> {
@@ -1100,7 +1158,16 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(projetoId, user, 'ReadWrite');
 
-        const arquivos: ProjetoDocumentoDto[] = await this.prisma.projetoDocumento.findMany({
+        const arquivos: ProjetoDocumentoDto[] = await this.findAllDocumentos(projetoId);
+        for (const item of arquivos) {
+            item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
+        }
+
+        return arquivos;
+    }
+
+    private async findAllDocumentos(projetoId: number): Promise<ProjetoDocumentoDto[]> {
+        return await this.prisma.projetoDocumento.findMany({
             where: { projeto_id: projetoId, removido_em: null },
             select: {
                 id: true,
@@ -1115,11 +1182,6 @@ export class ProjetoService {
                 },
             },
         });
-        for (const item of arquivos) {
-            item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
-        }
-
-        return arquivos;
     }
 
     async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {

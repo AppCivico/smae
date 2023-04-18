@@ -1,5 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Response } from 'express';
+import { IsPublic } from 'src/auth/decorators/is-public.decorator';
+import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -11,7 +14,7 @@ import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-proj
 import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
-import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
+import { Date2YMD } from 'src/common/date2ymd';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
@@ -40,6 +43,28 @@ export class ProjetoController {
         return { linhas: await this.projetoService.findAll(filters, user) };
     }
 
+    @IsPublic()
+    @Get(':id/html-unidade-entrega')
+    async getHtmlUnidadeEntrega(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @Res() res: Response
+    ): Promise<void> {
+        const dados = await this.projetoService.getDadosProjetoUe(params.id, user);
+
+        //const templatesDir = join(__dirname, '..', 'templates');
+        //ejs.renderFile(join(templatesDir, 'users.ejs'), { users })
+        //    .then(renderedHtml => {
+        //        res.json({ html: renderedHtml });
+        //    })
+        //    .catch(error => {
+        //        res.status(500).json({ error: 'An error occurred while rendering the template.' });
+        //    });
+
+        return res.render('projeto-ue', { ...dados });
+
+    }
+
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
@@ -47,6 +72,8 @@ export class ProjetoController {
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
         return await this.projetoService.findOne(params.id, user, 'ReadOnly');
     }
+
+
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
@@ -143,4 +170,6 @@ export class ProjetoController {
         await this.projetoSeiService.remove_sei(projeto, params.id2, user);
         return null;
     }
+
+
 }

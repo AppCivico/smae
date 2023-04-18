@@ -5,6 +5,10 @@
     "compilerOptions": {
         "assets": [
             "public/**/*",
+            {
+                "include": "templates/",
+                "watchAssets": true
+            },
             "js/**/*"
         ],
         "plugins": [
