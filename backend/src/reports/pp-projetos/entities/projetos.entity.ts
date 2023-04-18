@@ -42,6 +42,7 @@ export class RelProjetosDto {
 export class RelProjetosCronogramaDto {
     projeto_id: number
     projeto_codigo: string
+    tarefa_id: number
     numero: number
     nivel: number
     tarefa: string
