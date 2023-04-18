@@ -28,6 +28,18 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Fechado: 'Encerramento'
 } as const;
 
+const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
+    Registrado: 'Registrado',
+    Selecionado: 'Selecionado',
+    EmPlanejamento: 'Em Planejamento',
+    Planejado: 'Planejado',
+    Validado: 'Validado',
+    EmAcompanhamento: 'Em Acompanhamento',
+    Suspenso: 'Suspenso',
+    Fechado: 'Fechado'
+};
+
+
 export class ProjetoOrgaoParticipante {
     projeto_id: number
     orgao_id: number
@@ -42,7 +54,7 @@ export type HtmlProjetoUe = {
     dataInicio: string;
     dataTermino: string;
     custoEstimado: string;
-    fonteDeRecursos: ProjetoRecursos[]
+    fonteDeRecursos: string[]
     origem: string;
     codigoDaMeta: string | null;
     textoDaMeta: string;
@@ -413,10 +425,31 @@ export class ProjetoService {
 
         const projeto = await this.findOne(id, user, 'ReadOnly');
 
+        const fonte_recursos: string[] = [];
+
+        if (projeto.fonte_recursos) {
+            // como é o relatorio é 1 projeto por vez
+            // e não imagino que cada projeto via ter muitas fontes de recurso, vou fazer 1
+            // query pra cada item
+
+            for (const fr of projeto.fonte_recursos) {
+                const rows: {
+                    codigo: string;
+                    descricao: string;
+                }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
+
+                and ano = ${fr.fonte_recurso_ano}::int
+                and codigo = ${fr.fonte_recurso_cod_sof}::varchar`;
+
+                if (rows[0])
+                    fonte_recursos.push(rows[0].codigo + ' - ' + rows[0].descricao);
+            }
+        }
+
         const fc = new FormatCurrency();
         return {
             nomeDoProjeto: projeto.nome,
-            statusDoProjeto: projeto.status,
+            statusDoProjeto: ProjetoStatusParaExibicao[projeto.status],
             descricaoDoProjeto: projeto.resumo,
             orgaoResponsavel: projeto.orgao_responsavel ? [
                 projeto.orgao_responsavel.sigla + ' - ' + projeto.orgao_responsavel.descricao
@@ -425,7 +458,7 @@ export class ProjetoService {
             dataInicio: Date2YMD.dbDateToDMY(projeto.previsao_inicio),
             dataTermino: Date2YMD.dbDateToDMY(projeto.previsao_termino),
             custoEstimado: projeto.previsao_custo ? fc.toString(projeto.previsao_custo) : '-',
-            fonteDeRecursos: projeto.fonte_recursos ? projeto.fonte_recursos : [],
+            fonteDeRecursos: fonte_recursos,
             origem:
                 projeto.origem_tipo == 'Outro'
                     ? projeto.origem_outro || ''
