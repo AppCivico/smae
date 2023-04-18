@@ -83,7 +83,7 @@ export class PPProjetoService implements ReportableService {
             meta: projetoRow.meta,
             responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length ? projetoRow.responsaveis_no_orgao_gestor.map(e => e.nome_exibicao).join('/') : null,
 
-            fonte_recursos: projetoRow.fonte_recursos ?
+            fonte_recursos: projetoRow.fonte_recursos ? await Promise.resolve(
                 projetoRow.fonte_recursos.map(async e => {
                     let valor: string;
 
@@ -95,8 +95,8 @@ export class PPProjetoService implements ReportableService {
                         valor = e.valor_percentual!.toString()
                     }
 
-                    return Promise.resolve(`${nome_fonte}: ${valor}`)
-                }).join('/')
+                    return `${nome_fonte}: ${valor}`
+                }).join('/'))
                 : null,
 
             premissas: projetoRow.premissas ? projetoRow.premissas.map(e => e.premissa).join('/') : null,
