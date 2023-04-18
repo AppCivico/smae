@@ -26,7 +26,7 @@ const router = useRouter();
 const initialValues = {
   fonte: 'Projetos',
   parametros: {
-    status: 'Selecionado',
+    status: null,
     orgao_responsavel_id: null,
     portfolio_id: null,
   },
@@ -72,7 +72,7 @@ iniciar();
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -92,7 +92,6 @@ iniciar();
             loading: portfolioStore.chamadasPendentes.lista
           }"
           :disabled="portfolioStore.chamadasPendentes.lista"
-          @change="setFieldValue('parametros.projeto_id', 0)"
         >
           <option :value="null">
             Selecionar
