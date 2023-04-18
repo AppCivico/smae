@@ -47,6 +47,13 @@ class RetornoDbProjeto {
     versao?: string
     status: ProjetoStatus
 
+    orgao_responsavel_id: number
+    orgao_responsavel_sigla: string
+    orgao_responsavel_descricao: string
+    orgao_gestor_id: number
+    orgao_gestor_sigla: string 
+    orgao_gestor_descricao: string 
+    gestores: string 
     responsavel_id: number
     responsavel_nome_exibicao: string
 
@@ -366,8 +373,20 @@ export class PPProjetosService implements ReportableService {
             projeto.data_revisao,
             projeto.versao,
             projeto.status,
+            orgao_responsavel.id AS orgao_responsavel_id, 
+            orgao_responsavel.sigla AS orgao_responsavel_sigla,
+            orgao_responsavel.descricao AS orgao_responsavel_descricao,
             resp.id AS responsavel_id,
             resp.nome_exibicao AS responsavel_nome_exibicao,
+            orgao_gestor.id as orgao_gestor_id,
+            orgao_gestor.sigla as orgao_gestor_sigla,
+            orgao_gestor.descricao as orgao_gestor_descricao,
+            (
+                SELECT
+                    string_agg(nome_exibicao, '/')
+                FROM pessoa
+                WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
+            ) as gestores,
             r.id AS fonte_recurso_id,
             sof.descricao AS fonte_recurso_nome,
             r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
@@ -389,6 +408,8 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id
+          LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
+          LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
         ${whereCond.whereString}
         `;
@@ -433,6 +454,19 @@ export class PPProjetosService implements ReportableService {
                     sigla: db.orgao_sigla,
                     descricao: db.orgao_descricao
                 },
+
+                orgao_responsavel: db.orgao_responsavel_id ? {
+                    id: db.orgao_responsavel_id,
+                    sigla: db.orgao_responsavel_sigla,
+                    descricao: db.orgao_responsavel_descricao
+                } : null,
+
+                orgao_gestor: {
+                    id: db.orgao_gestor_id,
+                    sigla: db.orgao_gestor_sigla,
+                    descricao: db.orgao_gestor_descricao
+                },
+                gestores: db.gestores,
 
                 responsavel: db.responsavel_id ? {
                     id: db.responsavel_id,

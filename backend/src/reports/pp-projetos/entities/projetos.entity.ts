@@ -29,6 +29,8 @@ export class RelProjetosDto {
     nao_escopo: string | null;
 
     orgao_participante: IdSiglaDescricao;
+    orgao_gestor: IdSiglaDescricao;
+    orgao_responsavel: IdSiglaDescricao | null;
     responsavel: IdNomeExibicao | null;
     premissa: ProjetoPremissa | null;
     restricao: ProjetoRestricoes | null;
