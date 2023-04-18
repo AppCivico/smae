@@ -3,7 +3,6 @@ import CheckClose from '@/components/CheckClose.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import { arquivo as schema } from '@/consts/formSchemas';
 import requestS from '@/helpers/requestS.ts';
-import { router } from '@/router';
 import {
   useAlertStore,
   useDocumentTypesStore,
@@ -12,11 +11,12 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { reactive } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const route = useRoute();
+const router = useRouter();
 const projetosStore = useProjetosStore();
 const alertStore = useAlertStore();
 const documentTypesStore = useDocumentTypesStore();
