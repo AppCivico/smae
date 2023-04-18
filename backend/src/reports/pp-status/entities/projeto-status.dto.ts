@@ -1,5 +1,6 @@
 export class RelProjetoStatusRelatorioDto {
     id: number
+    portfolio_id: number
     codigo: string | null
     nome: string
     tarefas: string | null
