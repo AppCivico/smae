@@ -31,6 +31,7 @@ export class PPStatusService implements ReportableService {
             },
             select: {
                 id: true,
+                portfolio_id: true,
                 codigo: true,
                 nome: true,
                 previsao_custo: true,
@@ -79,6 +80,7 @@ export class PPStatusService implements ReportableService {
 
             return {
                 id: p.id,
+                portfolio_id: p.portfolio_id,
                 codigo: p.codigo,
                 nome: p.nome,
                 previsao_custo: p.previsao_custo,
