@@ -42,7 +42,6 @@ export class PPProjetoService implements ReportableService {
             meta_codigo: projetoRow.meta_codigo,
             nome: projetoRow.nome,
             status: projetoRow.status,
-            fase: projetoRow.fase,
             resumo: projetoRow.resumo,
             codigo: projetoRow.codigo,
             objeto: projetoRow.objeto,
@@ -84,17 +83,21 @@ export class PPProjetoService implements ReportableService {
             meta: projetoRow.meta,
             responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length ? projetoRow.responsaveis_no_orgao_gestor.map(e => e.nome_exibicao).join('/') : null,
 
-            fonte_recursos: projetoRow.fonte_recursos ? projetoRow.fonte_recursos.map(e => {
-                let valor: string;
+            fonte_recursos: projetoRow.fonte_recursos ?
+                projetoRow.fonte_recursos.map(async e => {
+                    let valor: string;
 
-                if (e.valor_nominal) {
-                    valor = e.valor_nominal.toString();
-                } else {
-                    valor = e.valor_percentual!.toString()
-                }
+                    const nome_fonte: string = await this.prisma.$queryRaw`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${e.fonte_recurso_ano} AND col = 'fonte_recursos'`;
 
-                return `${e.fonte_recurso_cod_sof}: ${valor}`
-            }).join('/') : null,
+                    if (e.valor_nominal) {
+                        valor = e.valor_nominal.toString();
+                    } else {
+                        valor = e.valor_percentual!.toString()
+                    }
+
+                    return `${nome_fonte}: ${valor}`
+                }).join('/')
+                : null,
 
             premissas: projetoRow.premissas ? projetoRow.premissas.map(e => e.premissa).join('/') : null,
             restricoes: projetoRow.restricoes ? projetoRow.restricoes.map(e => e.restricao).join('/') : null,
