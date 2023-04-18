@@ -16,6 +16,7 @@ export class FilterProjetoDto {
 
     @IsOptional()
     @Transform(({ value }: any) => {
+        if (!value) return undefined;
         if (Array.isArray(value)) return value;
         return value.split(',');
     })
