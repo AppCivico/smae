@@ -415,8 +415,6 @@ export class ProjetoService {
 
         const projeto = await this.findOne(id, user, 'ReadOnly');
 
-        const arquivos: ProjetoDocumentoDto[] = await this.findAllDocumentos(id);
-
         const fc = new FormatCurrency();
         return {
             nomeDoProjeto: projeto.nome,
@@ -426,8 +424,8 @@ export class ProjetoService {
                 projeto.orgao_responsavel.sigla + ' - ' + projeto.orgao_responsavel.descricao
             ] : [],
             responsavelPeloProjeto: projeto.responsavel ? projeto.responsavel.nome_exibicao : '-',
-            dataInicio: Date2YMD.dbDateToDMY(projeto.previsao_inicio) ?? '-',
-            dataTermino: Date2YMD.dbDateToDMY(projeto.previsao_termino) ?? '-',
+            dataInicio: Date2YMD.dbDateToDMY(projeto.previsao_inicio),
+            dataTermino: Date2YMD.dbDateToDMY(projeto.previsao_termino),
             custoEstimado: projeto.previsao_custo ? fc.toString(projeto.previsao_custo) : '-',
             fonteDeRecursos: projeto.fonte_recursos ? projeto.fonte_recursos : [],
             origem:
@@ -441,8 +439,8 @@ export class ProjetoService {
             escopo: projeto.escopo ? [projeto.escopo] : [],
             etapas: projeto.principais_etapas ? projeto.principais_etapas.split('\n') : [],
             orgaosEnvolvidos: projeto.orgaos_participantes.map(r => r.sigla + ' - ' + r.descricao),
-            documentosRelacionados: arquivos.map(r => r.arquivo.nome_original + ' - ' + r.arquivo.descricao),
-            dataDeEntrada: Date2YMD.dbDateToDMY(projeto.data_revisao) ?? '-'
+            documentosRelacionados: [],
+            dataDeEntrada: 'remover'
         };
 
 
