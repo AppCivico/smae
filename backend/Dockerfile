@@ -142,17 +142,17 @@ RUN cd /tmp/wkhtmltopdf \
 FROM node:18-bullseye as SMAE_API
 
 # Instala o graphviz (dot) para gerar EAP do tarefas do lado do server-side
-RUN apk add --no-cache graphviz
+RUN apt-get update && apt-get install -y --no-install-recommends graphviz
 
 # Instala as deps do wkhtmltopdf (html para PDF), que é um pouco mais simples que o WeasyPrint,
 # muito mais leve do que usar o html-pdf-chrome ou Puppeteer
 # pro nosso caso, ta otimo, nosso html é gerado por nos mesmos, então é safe
 # porem, é um pouco mais chato de instalar (veja acima, o tanto de coisa pra compilar ele)
-RUN apk add --no-cache \
- mesa-dev \
- openssl-dev \
- fontconfig-dev \
- freetype-dev
+RUN apt-get install -y --no-install-recommends \
+ libgl1-mesa-dev \
+ libssl-dev \
+ libfontconfig1-dev \
+ libfreetype6-dev
 
 # 1: Copy the wkhtmltopdf executable:
 COPY --from=builder /bin/wkhtmltopdf /bin/wkhtmltopdf
