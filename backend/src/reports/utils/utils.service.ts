@@ -8,6 +8,8 @@ import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-e
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { CreateRelPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao-custo.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
+import { CreateRelProjetosDto } from '../pp-projetos/dto/create-projetos.dto';
+import { CreateRelProjetoStatusDto } from '../pp-status/dto/create-projeto-status.dto';
 
 @Injectable()
 export class UtilsService {
@@ -87,6 +89,12 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'Projeto':
             theClass = CreateRelProjetoDto;
+            break;
+        case 'Projetos':
+            theClass = CreateRelProjetosDto;
+            break;
+        case 'ProjetoStatus':
+            theClass = CreateRelProjetoStatusDto;
             break;
         default:
             return false;
