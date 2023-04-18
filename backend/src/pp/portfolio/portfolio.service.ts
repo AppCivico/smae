@@ -90,7 +90,7 @@ export class PortfolioService {
 
         // só pra manter mais ou menos uma retrocompatibilidade com o frontend
         // preciso pensar melhor nesse filtro
-        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+        if (!user.hasSomeRoles(['Projeto.administrador']) && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
             orgao_id = user.orgao_id!;
         }
 
