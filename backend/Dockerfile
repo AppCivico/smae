@@ -6,7 +6,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends graphviz
 # Instala as deps do wkhtmltopdf (html para PDF), que é um pouco mais simples que o WeasyPrint,
 # muito mais leve do que usar o html-pdf-chrome ou Puppeteer
 # pro nosso caso, ta otimo, nosso html é gerado por nos mesmos, então é safe
-RUN apt-get install -y --no-install-recommends wkhtmltopdf
+RUN apt-get install -y --no-install-recommends wkhtmltopdf fontconfig
+
+RUN mkdir -p /usr/share/fonts/truetype/roboto
+
+COPY ./fonts/* /usr/share/fonts/truetype/roboto/
+
+RUN fc-cache -f -v
 
 WORKDIR /usr/src/app
 
