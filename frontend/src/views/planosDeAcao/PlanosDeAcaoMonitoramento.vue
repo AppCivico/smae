@@ -49,8 +49,8 @@ async function onSubmit(_, { controlledValues: carga }) {
       await router.push({ name: 'planosDeAçãoListar' });
       planosDeAçãoStore.$reset();
     }
-  } catch (erro) {
-    alertStore.error(erro);
+  } catch (error) {
+    alertStore.error(error);
   }
   chamadaPendente.value = false;
 }
