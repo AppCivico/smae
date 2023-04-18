@@ -560,17 +560,18 @@ export class PPProjetosService implements ReportableService {
                 custo_real: db.custo_real ? db.custo_real : null,
                 dependencias: db.dependencias ? (
                     db.dependencias.split('/').map(e => {
-                        const idMatch = e.match('^\d*');
+                        const regex = /^\d*/;
+                        const idMatch = regex.exec(e);
                         if (!idMatch) throw new Error('Falha na regex para dependências');
 
-                        const id = idMatch[0];
+                        const id = idMatch[1];
                         console.log("==============");
+                        console.log(idMatch);
                         console.log(id);
                         console.log(tarefasHierarquia);
                         console.log("==============");
                         const hierarquia = tarefasHierarquia[id];
 
-                        const regex = /^\d*/;
                         return e.replace(regex, hierarquia);
                     }).join('/')
                 ) : null,
