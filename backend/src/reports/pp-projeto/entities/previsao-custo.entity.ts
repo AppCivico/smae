@@ -5,7 +5,7 @@ export class RelProjetoRelatorioDto extends PartialType(OmitType(ProjetoDetailDt
     'premissas', 'restricoes', 'fonte_recursos',
     'orgaos_participantes', 'responsaveis_no_orgao_gestor',
     'selecionado_em', 'em_planejamento_em', 'permissoes',
-    'responsavel', 'portfolio', 'orgao_gestor', 'orgao_responsavel'
+    'responsavel', 'portfolio', 'orgao_gestor', 'orgao_responsavel', 'fase'
 ])) {
     fonte_recursos: string | null
     premissas: string | null
