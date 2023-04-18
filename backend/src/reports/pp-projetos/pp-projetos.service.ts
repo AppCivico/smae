@@ -302,7 +302,7 @@ export class PPProjetosService implements ReportableService {
         const whereString: string = '';
         let filterKeysLen: number = 0;
 
-        if (!filters.codigo && !filters.portfolio_id && !filters.orgao_responsavel_id && !filters.status) {
+        if (typeof(filters.codigo) === undefined && typeof(filters.portfolio_id) === undefined && typeof(filters.orgao_responsavel_id) === undefined && typeof(filters.status) === undefined) {
             return whereString;
         } else {
             filterKeysLen = Object.keys(filters).length;
