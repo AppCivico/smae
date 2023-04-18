@@ -87,19 +87,20 @@ export class PPProjetoService implements ReportableService {
                 projetoRow.fonte_recursos.map(async (e) => {
                     let valor: string;
 
-                    const nome_fonte: string = await this.prisma.$queryRaw<string>`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${e.fonte_recurso_ano} AND col = 'fonte_recursos'`;
+                    class queryRet {
+                        descricao: string
+                    }
+
+                    const nome_fonte: queryRet[] = await this.prisma.$queryRaw`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${e.fonte_recurso_ano} AND col = 'fonte_recursos'`;
                     console.log(nome_fonte);
-                    console.log(nome_fonte);
-                    console.log(nome_fonte);
-                    console.log(nome_fonte);
-                    console.log(nome_fonte);
+
                     if (e.valor_nominal) {
                         valor = e.valor_nominal.toString();
                     } else {
                         valor = e.valor_percentual!.toString();
                     }
 
-                    return `${nome_fonte}: ${valor}`;
+                    return `${nome_fonte[0].descricao}: ${valor}`;
                 }))).join('/')
                 : null,
 
