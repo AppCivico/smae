@@ -36,8 +36,8 @@ function escapeDotLabel(inputString: string): string {
 @Injectable()
 export class TarefaDotTemplate {
 
-    _generateNode(id: number, label: string, fillColor: string, fontcolor: string, color: string) {
-        return `node${id} [label="${escapeDotLabel(label)}", fillcolor="${fillColor}", fontcolor="${fontcolor}", color="${color}", style="rounded,filled"]`;
+    _generateNode(id: number, label: string, fillColor: string, fontcolor: string, color: string, fontname: string) {
+        return `node${id} [label="${escapeDotLabel(label)}", fillcolor="${fillColor}", fontcolor="${fontcolor}", color="${color}", style="rounded,filled", fontname="${fontname}"]`;
     }
 
     _createEdge(fromId: string, toId: string) {
@@ -56,7 +56,7 @@ export class TarefaDotTemplate {
         const graphvizString = `
             digraph G {
               // Set default node and edge styles
-              node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial"];
+              node [shape=rectangle, style=filled, fillcolor="#ffffff", fontname="Arial", margin="0.18"];
               edge [color="#00000010", fontname="Arial", arrowhead="none"];
 
               splines="polyline";
@@ -68,10 +68,10 @@ export class TarefaDotTemplate {
               // Set distance between nodes on the same rank
               ranksep=0.2;
 
-              nodeX [label="${escapeDotLabel(projetoLabel)}", fillcolor="#152741" fontcolor="#F7C234", style="rounded,filled"]
+              nodeX [label="${escapeDotLabel(projetoLabel)}", fillcolor="#152741" color="transparent" fontcolor="#F7C234", style="rounded,filled", fontname="Arial bold"]
               // Define nodes
-              ${this._getLevel1Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#E3E5E8", "#000000", '#E3E5E8')).join("\n")}
-              ${this._getLevel2Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#ffffff", "#000000", "#E3E5E8")).join("\n")}
+              ${this._getLevel1Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#E3E5E8", "#000000BB", '#E3E5E8', 'Arial bold')).join("\n")}
+              ${this._getLevel2Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#ffffff", "#000000", "#E3E5E8", 'Arial')).join("\n")}
 
               // Define edges for level 1
               ${this._getLevel1Nodes(rows).map(row => this._createEdge("X", row.id.toString())).join("\n")}
