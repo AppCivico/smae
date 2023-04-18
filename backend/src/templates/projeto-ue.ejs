@@ -36,6 +36,10 @@
                 text-align: justify;
             }
 
+            .pre-wrap {
+                white-space: pre-wrap;
+            }
+
             ul {
                 list-style-type: circle;
             }
@@ -52,6 +56,7 @@
 			.table-2 ul > li {
 				font-size: 0.9em;
 				margin-top: 15px;
+                white-space: pre-wrap;
 			}
 
 			/* Add dark blue background */
@@ -155,9 +160,7 @@
 							<%= statusDoProjeto %>
 						</td>
 
-						<td colspan="2" class="text-justify">
-							<%= descricaoDoProjeto %>
-						</td>
+						<td colspan="2" class="text-justify pre-wrap"><%= descricaoDoProjeto %></td>
 					</tr>
 					<tr>
 						<td class="header">Órgão Responsável</td>
