@@ -1,189 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unidade de Entregas</title>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Unidade de Entregas</title>
 
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: auto;
-            border: none;
-        }
+		<style>
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: auto;
+				border: none;
+			}
 
-        th,
-        td {
-            border: none;
-            text-align: left;
-            padding: 0;
-            margin: 0;
-            vertical-align: top;
-        }
+			th,
+			td {
+				border: none;
+				text-align: left;
+				padding: 0;
+				margin: 0;
+				vertical-align: top;
+			}
 
-        /* Add dark blue background */
+			/* Add dark blue background */
 
-        .dark-blue {
-            background-color: #09295e;
-            color: #fff;
-            font-weight: bold;
-            padding: 0.3em;
-        }
+			.table-1 td.header {
+				color: #09295e;
+				font-weight: bold;
+			}
 
-        .very-light-blue {
-            background-color: #dce7eb;
-        }
+			.table-1 td {
+				border-bottom: 0.5px solid #09295e;
+				padding: 0.3em;
+			}
 
-        /* Add #DAFDF5 background */
-        .light-green {
-            background-color: #DAFDF5;
-            color: #000;
-            font-weight: bold;
-        }
+			.dark-blue {
+				background-color: #09295e;
+				color: #fff;
+				font-weight: bold;
+				padding: 0.3em;
+			}
 
-        .zero-margin h2 {
-            margin: 0;
-        }
+			.light-green {
+				background-color: #DAFDF5;
+				color: #000;
+				font-weight: bold;
+			}
 
-        .text-center {
-            text-align: center;
-        }
+			.zero-margin h2 {
+				margin: 0;
+			}
 
-        .half-padding {
-            padding: 0.5em;
+			.text-center {
+				text-align: center;
+			}
 
-        }
+			.half-padding {
+				padding: 0.5em;
 
-        .zero-margin h2 {
-            margin: 0;
-        }
+			}
 
-        .full-width-and-height {
-            display: -webkit-box;
-            /* wkhtmltopdf uses this one */
-            display: flex;
-        }
+			.zero-margin h2 {
+				margin: 0;
+			}
 
-        body {
-            padding: 20px 5%;
-            background-color: #F9F9F9;
-        }
-    </style>
-</head>
+			.page-padding {
+				padding: 20px 5%;
+			}
 
-<body>
-    <h1>Unidade de Entregas</h1>
+			html,
+			body {
+				background-color: #F9F9F9;
+			}
 
-    <table>
-        <tbody>
-            <tr>
-                <td class="dark-blue">Nome do Projeto</td>
-                <td>
-                    <%= nomeDoProjeto %>
-                </td>
-                <td class="dark-blue">Status do Plano de Projeto</td>
-                <td>
-                    <%= statusDoProjeto %>
-                </td>
-            </tr>
-            <tr>
-                <td class="dark-blue">Descrição resumida do Projeto</td>
-                <td colspan="3">
-                    <%= descricaoDoProjeto %>
-                </td>
-            </tr>
-            <tr>
-                <td class="dark-blue">Órgão Responsável</td>
-                <td>
-                    <%= orgaoResponsavel.join(', ') %></td>
-					<td class="dark-blue">Responsável pelo Projeto</td>
-					<td><%= responsavelPeloProjeto %></td>
-				</tr>
-				<tr>
-					<td class="dark-blue">Data de Início (estimativa)</td>
-					<td><%= dataInicio %></td>
-					<td class="dark-blue">Data de Término (estimativa)</td>
-					<td><%= dataTermino %></td>
-				</tr>
-				<tr>
-					<td class="dark-blue">Custo Estimado</td>
-					<td><%= custoEstimado %></td>
-					<td class="dark-blue">Fonte(s) de Recurso Planejada(s)</td>
-					<td>
-                        <% if(fonteDeRecursos.length > 0 ){ %>
-                        <ul>
-                            <% fonteDeRecursos.forEach(item => { %>
-                                <li><%= item.fonte_recurso_cod_sof %></li>
-                            <% }); %>
-                        </ul>
-                        <% } %>
-                    </td>
-				</tr>
-				<tr>
-					<td class="dark-blue">Origem</td>
-					<td><%= origem %></td>
-					<td class="dark-blue">Meta vinculada</td>
-					<td><%= codigoDaMeta %>
-						<%= textoDaMeta %></td>
-				</tr>
-			</tbody>
-		</table>
+			/* Apply A4 page size and remove margin */
+			@page {
+				size: A4;
+				margin: 0;
+			}
 
-		<br>
-		<table>
-			<tbody>
-				<tr style="vertical-align: top">
-					<td style="width: 30%" class="zero-margin  light-green">
-						<h2 class="dark-blue text-center half-padding">Escopo</h2>
-						<div class="full-width-and-height">
+			/* Set the body element to 100% width and height, with no margin or padding */
+			body {
+				width: 100%;
+				min-height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="page-padding">
+			<h1>Unidade de Entregas</h1>
+
+			<table class="table-1" style="table-layout: fixed;">
+				<tbody>
+					<tr>
+						<td class="header">Nome do Projeto</td>
+						<td>
+							<%= nomeDoProjeto %>
+						</td>
+						<td colspan="2" class="header">Descrição resumida do Projeto</td>
+					</tr>
+
+					<tr>
+						<td class="header">Status do Plano de Projeto</td>
+						<td>
+							<%= statusDoProjeto %>
+						</td>
+
+						<td colspan="2">
+							<%= descricaoDoProjeto %>
+						</td>
+					</tr>
+					<tr>
+						<td class="header">Órgão Responsável</td>
+						<td>
+							<%= orgaoResponsavel.join(', ') %></td>
+						<td class="header">Responsável pelo Projeto</td>
+						<td><%= responsavelPeloProjeto %></td>
+					</tr>
+					<tr>
+						<td class="header">Data de Início (estimativa)</td>
+						<td><%= dataInicio %></td>
+						<td class="header">Data de Término (estimativa)</td>
+						<td><%= dataTermino %></td>
+					</tr>
+					<tr>
+						<td class="header">Custo Estimado</td>
+						<td><%= custoEstimado %></td>
+						<td class="header">Fonte(s) de Recurso Planejada(s)</td>
+						<td>
+							<% if(fonteDeRecursos.length > 0 ){ %>
+								<ul>
+									<% fonteDeRecursos.forEach(item => { %>
+										<li><%= item.fonte_recurso_cod_sof %></li>
+									<% }); %>
+								</ul>
+							<% } %>
+						</td>
+					</tr>
+					<tr>
+						<td class="header">Origem</td>
+						<td><%= origem %></td>
+						<td class="header">Meta vinculada</td>
+						<td><%= codigoDaMeta %>
+							-
+							<%= textoDaMeta %></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<br>
+			<table>
+				<tbody>
+					<tr style="vertical-align: top">
+						<td style="width: 30%" class="zero-margin  light-green">
+							<h2 class="dark-blue text-center half-padding">Escopo</h2>
+
 							<ul>
 								<% escopo.forEach(item => { %>
 									<li><%= item %></li>
 								<% }); %>
 							</ul>
-						</div>
-					</td>
-					<td style="width: 5%">&nbsp;</td>
-					<td style="width: 30%" class="zero-margin  light-green">
-						<h2 class="dark-blue text-center half-padding">Principais Etapas</h2>
-						<div class="full-width-and-height ">
+
+						</td>
+						<td style="width: 5%">&nbsp;</td>
+						<td style="width: 30%" class="zero-margin  light-green">
+							<h2 class="dark-blue text-center half-padding">Principais Etapas</h2>
+
 							<ul>
 								<% etapas.forEach(item => { %>
 									<li><%= item %></li>
 								<% }); %>
 							</ul>
-						</div>
-					</td>
-					<td style="width: 5%">&nbsp;</td>
-					<td style="width: 30%" class="zero-margin  light-green">
-						<h2 class="dark-blue text-center half-padding">Órgãos Envolvidos</h2>
-						<div class="full-width-and-height ">
+
+						</td>
+						<td style="width: 5%">&nbsp;</td>
+						<td style="width: 30%" class="zero-margin  light-green">
+							<h2 class="dark-blue text-center half-padding">Órgãos Envolvidos</h2>
+
 							<ul>
 								<% orgaosEnvolvidos.forEach(item => { %>
 									<li><%= item %></li>
 								<% }); %>
 							</ul>
-						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
 
-		<br>
-
-		<h3>Documentos relacionados</h3>
-		<ul>
-			<% documentosRelacionados.forEach(item => { %>
-				<li><%= item %></li>
-			<% }); %>
-		</ul>
-
-		<br>
-
-		<h3>Data de entrada</h3>
-		<%= dataDeEntrada %>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</body>
-
 </html>

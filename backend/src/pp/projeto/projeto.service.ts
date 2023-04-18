@@ -49,8 +49,6 @@ export type HtmlProjetoUe = {
     escopo: string[];
     etapas: string[];
     orgaosEnvolvidos: string[];
-    documentosRelacionados: string[];
-    dataDeEntrada: string;
 };
 
 
@@ -430,17 +428,13 @@ export class ProjetoService {
             fonteDeRecursos: projeto.fonte_recursos ? projeto.fonte_recursos : [],
             origem:
                 projeto.origem_tipo == 'Outro'
-                    ? projeto.origem_outro ?? ''
-                    : projeto.origem_tipo == 'PdmAntigo'
-                        ? 'Outro Programa de Metas'
-                        : 'Programa de Metas',
+                    ? projeto.origem_outro || ''
+                    : 'Programa de Metas',
             codigoDaMeta: projeto.meta ? projeto.meta.codigo : projeto.meta_codigo,
             textoDaMeta: projeto.meta ? projeto.meta.titulo : '',
-            escopo: projeto.escopo ? [projeto.escopo] : [],
-            etapas: projeto.principais_etapas ? projeto.principais_etapas.split('\n') : [],
+            escopo: projeto.escopo ? projeto.escopo.split('\n\n') : [],
+            etapas: projeto.principais_etapas ? projeto.principais_etapas.split('\n\n') : [],
             orgaosEnvolvidos: projeto.orgaos_participantes.map(r => r.sigla + ' - ' + r.descricao),
-            documentosRelacionados: [],
-            dataDeEntrada: 'remover'
         };
 
 
