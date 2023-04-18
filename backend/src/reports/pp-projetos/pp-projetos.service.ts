@@ -516,7 +516,7 @@ export class PPProjetosService implements ReportableService {
             t.custo_real,
             (
                 SELECT
-                    string_agg(concat(t2.nivel::text, '.', t2.numero::text, ' ', t2.tarefa), ' / ')
+                    string_agg(concat(t.id::text, ' ', td.tipo::text, t2.latencia::text), '/')
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
                 WHERE td.tarefa_id = t.id
@@ -545,6 +545,7 @@ export class PPProjetosService implements ReportableService {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
+                tarefa_id: db.id,
                 hirearquia: tarefasHierarquia[db.id],
                 numero: db.numero,
                 nivel: db.nivel,
@@ -557,7 +558,17 @@ export class PPProjetosService implements ReportableService {
                 duracao_real: db.duracao_real ? db.duracao_real : null,
                 percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
                 custo_real: db.custo_real ? db.custo_real : null,
-                dependencias: db.dependencias ? db.dependencias : null,
+                dependencias: db.dependencias ? (
+                    db.dependencias.split('/').map(e => {
+                        const idMatch = e.match('^\d*');
+                        if (!idMatch) throw new Error('Falha na regex para dependências');
+
+                        const id = idMatch[1];
+                        const hierarquia = tarefasHierarquia[id];
+
+                        return e.replace('^\d*', hierarquia);
+                    }).join('/')
+                ) : null,
                 atraso: db.atraso ? db.atraso : null,
                 responsavel: db.responsavel_id ? {
                     id: db.responsavel_id,
