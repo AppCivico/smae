@@ -48,4 +48,16 @@ export class Date2YMD {
 
         return DateTime.fromISO(str).plus({ days: days }).toJSDate();
     }
+
+    // usado quando a saida é um outro humano diretamente
+    // não passar DateTime * VAI VOLTAR 1 DIA se for ainda -03 em SP
+    static dbDateToDMY(data: Date | null): string {
+        if (!data) return '';
+        const dt = DateTime.fromJSDate(data, { zone: 'UTC' });
+        return (
+            dt.day.toString().padStart(2, '0') + '/' +
+            dt.month.toString().padStart(2, '0') + '/' +
+            dt.year
+        );
+    }
 }

@@ -1,8 +1,0 @@
-Agradecer
-
-https://github.com/IcaliaLabs/docker-wkhtmltopdf
-
-Achei o patch do wkhtmltopdf pra rodar no alpine melhor do que usar outros uma imagem inteira do
-container de uma contribuidor desconhecido
-
-
