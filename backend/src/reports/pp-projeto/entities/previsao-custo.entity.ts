@@ -26,7 +26,6 @@ export class RelProjetoRelatorioDto extends PartialType(OmitType(ProjetoDetailDt
 
 export class RelProjetoCronogramaDto {
     hirearquia: string
-    numero: number
     tarefa: string
     inicio_planejado: Date | null
     termino_planejado: Date | null
