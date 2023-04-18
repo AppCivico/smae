@@ -625,6 +625,7 @@ export const relatórioDePortfolio = object({
         'Selecionado',
         'Suspenso',
         'Validado',
+        null,
       ]),
   }),
   salvar_arquivo: boolean(),
