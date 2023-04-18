@@ -10,7 +10,7 @@ RUN apt-get install -y --no-install-recommends wkhtmltopdf
 
 WORKDIR /usr/src/app
 
-RUN npm --loglevel=error install -g npm@9.2.0
+RUN npm --loglevel=error install -g npm@9.6.4
 
 COPY --chown=1000:1000 package.json ./
 COPY --chown=1000:1000 package-lock.json ./
