@@ -566,7 +566,8 @@ export class PPProjetosService implements ReportableService {
                         const id = idMatch[1];
                         const hierarquia = tarefasHierarquia[id];
 
-                        return e.replace(id, hierarquia);
+                        const regex = /^\d*/;
+                        return e.replace(regex, hierarquia);
                     }).join('/')
                 ) : null,
                 atraso: db.atraso ? db.atraso : null,
