@@ -572,7 +572,7 @@ export class PPProjetosService implements ReportableService {
                         const tipo = this.tarefasUtilsService.tarefaDependenteTipoSigla(row.tipo);
                         const latencia_str = row.latencia == 0 ? '' : row.latencia;
 
-                        return `${hierarquia} + ${tipo} + ${latencia_str}`;
+                        return `${hierarquia} ${tipo} ${latencia_str}`;
                     }).join('/')
                 ) : null,
                 atraso: db.atraso ? db.atraso : null,
