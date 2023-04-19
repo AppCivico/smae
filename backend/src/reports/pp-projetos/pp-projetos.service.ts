@@ -522,9 +522,8 @@ export class PPProjetosService implements ReportableService {
                 WHERE td.tarefa_id = t.id
             ) as dependencias
         FROM projeto
-          LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          LEFT JOIN tarefa t ON t.projeto_id = projeto.id
+          RIGHT JOIN tarefa t ON t.projeto_id = projeto.id
         ${whereCond.whereString}
         `;
 
