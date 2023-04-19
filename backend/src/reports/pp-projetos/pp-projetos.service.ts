@@ -10,6 +10,7 @@ import { PPProjetosRelatorioDto, RelProjetosAcompanhamentosDto, RelProjetosCrono
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 
 const {
     Parser,
@@ -173,7 +174,8 @@ export class PPProjetosService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
-        private readonly tarefasService: TarefaService
+        private readonly tarefasService: TarefaService,
+        private readonly tarefasUtilsService: TarefaUtilsService
     ) { }
 
     async create(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
@@ -516,15 +518,15 @@ export class PPProjetosService implements ReportableService {
             t.custo_real,
             (
                 SELECT
-                    string_agg(concat(td.dependencia_tarefa_id::text, ' ', td.tipo::text, ' ', td.latencia::text), '/')
+                  string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
                 WHERE td.tarefa_id = t.id
             ) as dependencias
-        FROM projeto
-          LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          RIGHT JOIN tarefa t ON t.projeto_id = projeto.id
-        ${whereCond.whereString}
+            FROM projeto
+            LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+            RIGHT JOIN tarefa t ON t.projeto_id = projeto.id
+            ${whereCond.whereString}
         `;
 
         const data: RetornoDbCronograma[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
@@ -538,9 +540,14 @@ export class PPProjetosService implements ReportableService {
     ): Promise<RelProjetosCronogramaDto[]> {
 
         return await Promise.all(input.map(async db => {
+            interface dependenciaRow {
+                id: number
+                tipo: string
+                latencia: number
+            }
+
             const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
             const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
-            console.log(tarefasHierarquia);
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
@@ -559,19 +566,13 @@ export class PPProjetosService implements ReportableService {
                 custo_real: db.custo_real ? db.custo_real : null,
                 dependencias: db.dependencias ? (
                     db.dependencias.split('/').map(e => {
-                        const regex = /^\d*/;
-                        const idMatch = regex.exec(e);
-                        if (!idMatch) throw new Error('Falha na regex para dependências');
+                        const row: dependenciaRow = JSON.parse(e);
 
-                        const id = idMatch[0];
-                        console.log("==============");
-                        console.log(idMatch);
-                        console.log(id);
-                        console.log(tarefasHierarquia);
-                        console.log("==============");
-                        const hierarquia = tarefasHierarquia[id];
+                        const hierarquia = tarefasHierarquia[row.id];
+                        const tipo = this.tarefasUtilsService.tarefaDependenteTipoSigla(row.tipo);
+                        const latencia_str = row.latencia == 0 ? '' : row.latencia;
 
-                        return e.replace(regex, hierarquia);
+                        return `${hierarquia} + ${tipo} + ${latencia_str}`;
                     }).join('/')
                 ) : null,
                 atraso: db.atraso ? db.atraso : null,

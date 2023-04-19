@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TarefaDependenteTipo } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -98,6 +98,26 @@ export class TarefaUtilsService {
         });
         if (count == 0)
             throw new HttpException(`Órgão não foi encontrado.`, 400);
+    }
+
+    tarefaDependenteTipoSigla(tipo: string): string {
+        let ret: string = '';
+
+        switch (tipo) {
+            case 'inicia_pro_inicio':
+                ret = 'II';
+                break;
+            case 'inicia_pro_termino':
+                ret = 'IT'
+                break;
+            case 'termina_pro_inicio':
+                ret = 'TI'
+                break;
+            case 'termina_pro_termino':
+                ret = 'TT'
+        }
+
+        return ret;
     }
 
 }
