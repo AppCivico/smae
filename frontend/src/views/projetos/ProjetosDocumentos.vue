@@ -1,6 +1,6 @@
 <script setup>
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import DocumentosDoProjeto from '@/views/projetos/DocumentosDoProjeto.vue';
+import DocumentosDoProjeto from '@/components/projetos/DocumentosDoProjeto.vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
