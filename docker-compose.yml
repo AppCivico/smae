@@ -81,6 +81,7 @@ services:
       - minio
       - api
       - api_orcamento
+      - api_sei
     depends_on:
       - db
       - minio
@@ -107,6 +108,24 @@ services:
       options:
         max-file: "2"
         max-size: 100MB
+
+  smae_sei:
+    container_name: "${API_CONTAINER_NAME}_sei"
+    build:
+      context: ./backend-sei/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SOF_API_TOKEN: "${SEI_API_TOKEN}"
+      PORT: 80
+    networks:
+      - api_sei
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
 
   email_service:
     container_name: "${EMAILDB_CONTAINER_NAME}"
@@ -200,6 +219,7 @@ networks:
   api_orcamento:
   smtp:
   metadb_postgres:
+  api_sei:
 
 
 volumes:

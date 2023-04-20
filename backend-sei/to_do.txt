@@ -1,0 +1,16 @@
+#criar endpoint para os assuntos
+
+#vai puxar as unidades e os assuntos, tipo de processo vamos criar um padrão
+
+#sempre restrito 
+#validar a hipótese legal - sempre como documento preparatório
+# no tipo de documento usar um tipo de documento já existente que se aplique - deixar hardcoded
+
+#nome do documento = Plano de Projeto
+#nivel de acesso do documento é restrito
+
+#vamos criar uma capa do projeto
+
+#NomeArquivo tem que colocar a extensão
+
+# o arquivo vai ser um zip

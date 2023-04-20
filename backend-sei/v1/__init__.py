@@ -1,0 +1,1 @@
+from .endpoints.basic import app as basic_routes
