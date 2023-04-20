@@ -47,4 +47,4 @@ $ npm run start:prod
 
 ## License
 
-SMAE é produzido com licença [GPLv3](../LICENSE)
+SMAE é produzido com licença [AGPL](../LICENSE)
