@@ -199,15 +199,16 @@ iniciar();
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      <div
-        v-if="projetoId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ 'Editar projeto' }}
+    <header>
+      <div class="t12 uc w700 tamarelo">
+        Portfolio
+        {{ portfolioStore?.portfoliosPorId[emFoco?.portfolio_id]?.titulo }}
       </div>
-      {{ emFoco?.nome || (projetoId ? 'Projeto' : 'Novo projeto') }}
-    </h1>
+
+      <h1>
+        {{ emFoco?.nome || (projetoId ? 'Projeto' : 'Novo projeto') }}
+      </h1>
+    </header>
 
     <hr class="ml2 f1">
 

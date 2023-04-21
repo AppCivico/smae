@@ -31,16 +31,7 @@ iniciar();
 
 <template>
   <div class="flex spacebetween center mb2">
-    <div>
-      <div class="t12 uc w700 tamarelo">
-        Projeto
-        <template v-if="emFoco?.eh_prioritario">
-          prioritário
-        </template>
-      </div>
-
-      <h1>{{ emFoco?.nome }}</h1>
-    </div>
+    <h1>{{ emFoco?.nome }}</h1>
     <hr class="ml2 f1">
   </div>
 
