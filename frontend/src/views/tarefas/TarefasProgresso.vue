@@ -38,10 +38,7 @@ const props = defineProps({
 async function onSubmit(_, { controlledValues: carga }) {
   try {
     const resposta = await tarefasStore.salvarItem(
-      {
-        ...carga,
-        atualizacao_do_realizado: true,
-      },
+      carga,
       props.tarefaId,
     );
 
