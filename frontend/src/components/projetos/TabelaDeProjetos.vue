@@ -1,11 +1,5 @@
 <script setup>
 import statuses from '@/consts/projectStatuses';
-import {
-  useAlertStore, useProjetosStore
-} from '@/stores';
-
-const alertStore = useAlertStore();
-const projetosStore = useProjetosStore();
 
 const props = defineProps({
   erro: {
@@ -28,15 +22,6 @@ const props = defineProps({
 
 const metasPorId = {};
 
-async function excluirProjetos(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await projetosStore.excluirItem(id)) {
-      projetosStore.$reset();
-      projetosStore.buscarTudo();
-      alertStore.success('Projetos removido.');
-    }
-  }, 'Remover');
-}
 </script>
 <template>
   <table class="tablemain">
@@ -45,7 +30,6 @@ async function excluirProjetos(id) {
       <col>
       <col>
       <col>
-      <!--col class="col--botão-de-ação"-->
       <col class="col--botão-de-ação">
     </colgroup>
     <thead>
@@ -62,7 +46,6 @@ async function excluirProjetos(id) {
         <th>
           Status
         </th>
-        <!--th /-->
         <th />
       </tr>
     </thead>
@@ -102,19 +85,6 @@ async function excluirProjetos(id) {
         <td>
           {{ statuses[item.status] || item.status }}
         </td>
-        <!--td>
-          <button
-            class="like-a__text addlink"
-            arial-label="excluir"
-            title="excluir"
-            @click="excluirProjetos(item.id)"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg>
-          </button>
-        </td-->
         <td>
           <router-link
             v-if="!item.arquivado"
