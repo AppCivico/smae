@@ -109,10 +109,10 @@ export default {
     </th>
 
     <td class="cell--number">
-      {{ linha.percentual_concluido !== null ? linha.percentual_concluido + '%' : '-' }}
+      {{ typeof linha.percentual_concluido === 'number' ? linha.percentual_concluido + '%' : '-' }}
     </td>
     <td class="cell--number">
-      {{ linha.duracao_planejado !== null ? linha.duracao_planejado + 'd' : '-' }}
+      {{ typeof linha.duracao_planejado === 'number' ? linha.duracao_planejado + 'd' : '-' }}
     </td>
     <td class="cell--data">
       {{ dateToField(linha.inicio_planejado) }}
@@ -143,10 +143,10 @@ export default {
       {{ dateToField(linha.termino_real) }}
     </td>
     <td class="cell--number">
-      {{ linha.custo_estimado ? dinheiro(linha.custo_estimado) : '-' }}
+      {{ typeof linha.custo_estimado === 'number' ? dinheiro(linha.custo_estimado) : '-' }}
     </td>
     <td class="cell--number">
-      {{ linha.custo_real ? dinheiro(linha.custo_real) : '-' }}
+      {{ typeof linha.custo_real === 'number' ? dinheiro(linha.custo_real) : '-' }}
     </td>
     <td class="cell--number">
       <template v-if="linha.atraso">
@@ -224,8 +224,7 @@ export default {
 
   <template
     v-if="
-      Array.isArray(linha.children)
-      && (!nívelMáximoVisível || nívelMáximoVisível > linha.nivel)
+      Array.isArray(linha.children) && (!nívelMáximoVisível || nívelMáximoVisível > linha.nivel)
     "
   >
     <LinhaDeCronograma
