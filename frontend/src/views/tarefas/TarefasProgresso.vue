@@ -273,7 +273,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :disabled="emFoco.n_filhos_imediatos > 0"
           :class="{ 'error': errors.percentual_concluido }"
-          @update:model-value="values.percentual_concluido = Number(values.percentual_concluido)"
+          @update:model-value="values.percentual_concluido = Number(values.percentual_concluido) ?? null"
         />
         <ErrorMessage
           class="error-msg mb1"

@@ -828,6 +828,7 @@ export const tarefa = object()
       .min(0)
       .max(100)
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .typeError('Valor inválido')
       .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
         ? field.required()
         : field.nullable())),
