@@ -49,16 +49,7 @@ iniciar();
 
 <template>
   <div class="flex spacebetween center mb2">
-    <div>
-      <div class="t12 uc w700 tamarelo">
-        Projeto
-        <template v-if="emFoco?.eh_prioritario">
-          prioritário
-        </template>
-      </div>
-
-      <h1>{{ emFoco?.nome }}</h1>
-    </div>
+    <h1>{{ emFoco?.nome }}</h1>
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeProjeto />
 
@@ -83,22 +74,6 @@ iniciar();
         </dt>
         <dd class="t13">
           {{ emFoco?.codigo }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['portfolio_id'].spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ portfolioStore?.portfoliosPorId[emFoco?.portfolio_id]?.titulo }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['nome'].spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.nome }}
         </dd>
       </dl>
       <dl class="f1 mb1">
