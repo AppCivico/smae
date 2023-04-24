@@ -77,4 +77,6 @@ export type ListaDePrivilegios =
     | 'PDM.tecnico_cp'
     | 'PDM.admin_cp'
     | 'PDM.ponto_focal'
-    | 'Projeto.administrador';
+    | 'Projeto.administrador'
+    | 'Reports.dashboard_pdm'
+    | 'Reports.dashboard_portfolios';

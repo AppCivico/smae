@@ -64,6 +64,7 @@ import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { GraphvizModule } from './graphviz/graphviz.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
     imports: [
@@ -131,7 +132,8 @@ import { GraphvizModule } from './graphviz/graphviz.module';
         PlanoAcaoMonitoramentoModule,
         AcompanhamentoModule,
         LicoesAprendidasModule,
-        GraphvizModule
+        GraphvizModule,
+        DashboardModule
     ],
     controllers: [AppController],
     providers: [

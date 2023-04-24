@@ -166,6 +166,8 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
         ['Reports.remover', 'Remover relatórios'],
+        ['Reports.dashboard_pdm', 'Dashboard de programa de metas'],
+        ['Reports.dashboard_portfolios', 'Dashboard de portfólios'],
     ],
 
     Config: [

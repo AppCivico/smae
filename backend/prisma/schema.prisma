@@ -2509,9 +2509,9 @@ model Tarefa {
     termino_planejado_calculado Boolean @default(false)
     duracao_planejado_calculado Boolean @default(false)
 
-    db_projecao_inicio  DateTime? @db.Date() @map("projecao_inicio")
-    db_projecao_termino DateTime? @db.Date() @map("projecao_termino")
-    db_projecao_atraso  Int? @map("projecao_atraso")
+    db_projecao_inicio  DateTime? @map("projecao_inicio") @db.Date()
+    db_projecao_termino DateTime? @map("projecao_termino") @db.Date()
+    db_projecao_atraso  Int?      @map("projecao_atraso")
 
     n_filhos_imediatos Int @default(0)
 
@@ -2747,4 +2747,15 @@ model ProjetoAcompanhamentoRisco {
     projeto_acompanhamento    ProjetoAcompanhamento @relation(fields: [projeto_acompanhamento_id], references: [id])
 
     @@map("projeto_acompanhamento_risco")
+}
+
+model MetabasePermissao {
+    id Int @id @default(autoincrement())
+
+    permissao      String
+    configuracao   Json   @default("{}") @db.Json
+    metabase_url   String
+    metabase_token String
+    ordem          Int
+    titulo         String
 }
