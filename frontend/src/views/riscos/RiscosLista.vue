@@ -176,6 +176,13 @@ iniciar();
           >
             {{ linha.titulo }}
           </router-link>
+          <i
+            v-if="linha.planos_de_acao_sem_dt_term?.length"
+            class="tooltip tooltip--danger"
+            :title="linha.planos_de_acao_sem_dt_term.length === 1
+                ? 'Há 1 plano de ação sem término definido'
+                : `Há ${linha.planos_de_acao_sem_dt_term?.length} planos de ação sem término definido`"
+          >!</i>
         </th>
         <td class="center">
           <span
