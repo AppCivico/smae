@@ -34,14 +34,12 @@ export class DashboardService {
                 { algorithm: 'HS256', expiresIn: 86400, }
             );
 
-            const url = new URL(r.metabase_url);
-            url.searchParams.append('token', jwt);
-
+            const url = r.metabase_url + '/embed/dashboard/' + jwt + '#bordered=true&titled=true';
 
             liberados.push({
                 id: r.id,
                 titulo: r.titulo,
-                url: url.toString(),
+                url: url,
             });
         }
 
