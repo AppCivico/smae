@@ -1,4 +1,5 @@
 <script setup>
+import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -53,7 +54,7 @@ iniciar();
         <dt class="t12 uc w700 mb05 tamarelo">
           Início previsto
         </dt>
-        <dd class="t13">
+        <dd class="t13 dado-estimado">
           {{
             projetoEmFoco?.previsao_inicio
             ? dateToField(projetoEmFoco.previsao_inicio)
@@ -65,7 +66,7 @@ iniciar();
         <dt class="t12 uc w700 mb05 tamarelo">
           Término previsto
         </dt>
-        <dd class="t13">
+        <dd class="t13 dado-estimado">
           {{
             projetoEmFoco?.previsao_termino
             ? dateToField(projetoEmFoco.previsao_termino)
@@ -77,7 +78,7 @@ iniciar();
         <dt class="t12 uc w700 mb05 tamarelo">
           Início real
         </dt>
-        <dd class="t13">
+        <dd class="t13 dado-efetivo">
           {{
             projetoEmFoco?.realizado_inicio
             ? dateToField(projetoEmFoco.realizado_inicio)
@@ -89,7 +90,7 @@ iniciar();
         <dt class="t12 uc w700 mb05 tamarelo">
           Término real
         </dt>
-        <dd class="t13">
+        <dd class="t13 dado-efetivo">
           {{
             projetoEmFoco?.realizado_termino
             ? dateToField(projetoEmFoco.realizado_termino)
@@ -131,7 +132,7 @@ iniciar();
         <dt class="t12 uc w700 mb05 tamarelo">
           Custo previsto
         </dt>
-        <dd class="t13">
+        <dd class="t13 dado-estimado">
           {{ typeof projetoEmFoco?.previsao_custo === 'number'
             ? `R$${dinheiro(projetoEmFoco?.previsao_custo)}`
             : '-' }}
@@ -141,7 +142,7 @@ iniciar();
         <dt class="t12 uc w700 mb05 tamarelo">
           Custo real
         </dt>
-        <dd class="t13">
+        <dd class="t13 dado-efetivo">
           {{ typeof projetoEmFoco?.realizado_custo === 'number'
             ? `R$${dinheiro(projetoEmFoco?.realizado_custo)}`
             : '-' }}
@@ -174,6 +175,8 @@ iniciar();
     </div>
   </div>
 
+  <LegendaEstimadoVsEfetivo />
+
   <table
     v-if="árvoreDeTarefas.length"
     class="tabela-de-etapas"
@@ -204,10 +207,16 @@ iniciar();
         <th />
         <th />
         <th />
-        <th colspan="2">
+        <th
+          colspan="2"
+          class="dado-estimado"
+        >
           Previsão
         </th>
-        <th colspan="2">
+        <th
+          colspan="2"
+          class="dado-efetivo"
+        >
           Execução
         </th>
         <th colspan="2">
@@ -239,10 +248,10 @@ iniciar();
         <th class="cell--data">
           Término
         </th>
-        <th class="cell--number">
+        <th class="cell--number dado-estimado">
           Estimado
         </th>
-        <th class="cell--number">
+        <th class="cell--number dado-efetivo">
           Real
         </th>
         <th class="cell--number">
