@@ -200,11 +200,6 @@ iniciar();
 <template>
   <div class="flex spacebetween center mb2">
     <header>
-      <div class="t12 uc w700 tamarelo">
-        Portfolio
-        {{ portfolioStore?.portfoliosPorId[emFoco?.portfolio_id]?.titulo }}
-      </div>
-
       <h1>
         {{ emFoco?.nome || (projetoId ? 'Projeto' : 'Novo projeto') }}
       </h1>
