@@ -9,7 +9,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
-  Form
+  Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -173,6 +173,50 @@ iniciar();
         />
         <ErrorMessage
           name="descricao"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f2 mb1">
+        <LabelFromYup
+          name="contexto"
+          :schema="schema"
+        />
+        <Field
+          id="contexto"
+          name="contexto"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.contexto }"
+        />
+        <ErrorMessage
+          name="contexto"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f2 mb1">
+        <LabelFromYup
+          name="resultado"
+          :schema="schema"
+        />
+        <Field
+          id="resultado"
+          name="resultado"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.resultado }"
+        />
+        <ErrorMessage
+          name="resultado"
           class="error-msg"
         />
       </div>
