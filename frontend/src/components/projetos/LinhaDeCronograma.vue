@@ -108,13 +108,13 @@ export default {
       </router-link>
     </th>
 
-    <td class="cell--number">
+    <td class="cell--number dado-efetivo">
       {{ typeof linha.percentual_concluido === 'number' ? linha.percentual_concluido + '%' : '-' }}
     </td>
     <td class="cell--number">
       {{ typeof linha.duracao_planejado === 'number' ? linha.duracao_planejado + 'd' : '-' }}
     </td>
-    <td class="cell--data">
+    <td class="cell--data dado-estimado">
       {{ dateToField(linha.inicio_planejado) }}
 
       <i
@@ -125,7 +125,7 @@ export default {
           : `Calculada com base em ${linha.n_dep_inicio_planejado} dependências`"
       >i</i>
     </td>
-    <td class="cell--data">
+    <td class="cell--data dado-estimado">
       {{ dateToField(linha.termino_planejado) }}
 
       <i
@@ -136,16 +136,16 @@ export default {
           : `Calculada com base em ${linha.n_dep_termino_planejado} dependências`"
       >i</i>
     </td>
-    <td class="cell--data">
+    <td class="cell--data dado-efetivo">
       {{ dateToField(linha.inicio_real) }}
     </td>
-    <td class="cell--data">
+    <td class="cell--data dado-efetivo">
       {{ dateToField(linha.termino_real) }}
     </td>
-    <td class="cell--number">
+    <td class="cell--number dado-estimado">
       {{ typeof linha.custo_estimado === 'number' ? dinheiro(linha.custo_estimado) : '-' }}
     </td>
-    <td class="cell--number">
+    <td class="cell--number dado-efetivo">
       {{ typeof linha.custo_real === 'number' ? dinheiro(linha.custo_real) : '-' }}
     </td>
     <td class="cell--number">

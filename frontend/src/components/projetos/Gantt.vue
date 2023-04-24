@@ -91,7 +91,7 @@
             <path
               d="M0,6L20,6"
               fill="none"
-              stroke="black"
+              stroke="#634A09"
               stroke-width="1"
               stroke-dasharray="3, 2"
             />
@@ -107,7 +107,7 @@
             <path
               d="M0,6L20,6"
               fill="none"
-              stroke="black"
+              stroke="#807B65"
               stroke-width="1"
               stroke-dasharray="6, 3, 2, 3"
             />
@@ -123,7 +123,7 @@
             <path
               d="M0,6L20,6"
               fill="none"
-              stroke="black"
+              stroke="#3B5881"
               stroke-width="1"
             />
           </svg>
@@ -440,17 +440,19 @@ onMounted(async () => {
 
   .Single--Node {
     fill: #fff;
-    stroke: @c500;
+    stroke: @efetivo;
     stroke-width: 1;
     border-radius: 10px;
   }
 
   .Single--Node--estimated {
     stroke-dasharray: 3, 2;
+    stroke: @estimativa;
   }
 
   .Single--Node--half-estimated {
     stroke-dasharray: 6, 3, 2, 3;
+    stroke: #807B65;
   }
 
   .Single--Block--focused {
