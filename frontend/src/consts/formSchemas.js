@@ -232,16 +232,22 @@ export const indicador = object()
 
 export const liçãoAprendida = object()
   .shape({
+    contexto: string()
+      .label('Contexto')
+      .nullable(),
     data_registro: date()
       .label('Data do registro')
       .required()
       .typeError('${label} inválida'),
     descricao: string()
-      .label('Descrição')
+      .label('O que foi feito')
       .required()
       .nullable(),
     observacao: string()
       .label('Observação')
+      .nullable(),
+    resultado: string()
+      .label('Resultado')
       .nullable(),
     responsavel: string()
       .label('Responsável')
