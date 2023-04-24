@@ -331,7 +331,12 @@ const config = computed(() => ({
     console.log(data); // Onclick of each node
   },
   onEmptyButtonClick: function onEmptyButtonClick() {
-    console.log('Empty Clicked');
+    router.push({
+      name: 'tarefasCriar',
+      params: {
+        projetoId,
+      },
+    });
   },
   onAreaClick: function onAreaClick(location) {
     const distance = tipoDeGantt.value === 'overall'
