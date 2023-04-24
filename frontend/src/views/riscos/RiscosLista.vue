@@ -125,7 +125,6 @@ iniciar();
       <col style="width: 8em">
       <col style="width: 9em">
       <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
     </colgroup>
 
     <thead>
