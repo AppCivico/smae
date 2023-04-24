@@ -2758,4 +2758,6 @@ model MetabasePermissao {
     metabase_token String
     ordem          Int
     titulo         String
+
+    @@map("metabase_permissao")
 }

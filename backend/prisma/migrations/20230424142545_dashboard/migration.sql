@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "MetabasePermissao" (
+CREATE TABLE "metabase_permissao" (
     "id" SERIAL NOT NULL,
     "permissao" TEXT NOT NULL,
     "configuracao" JSON NOT NULL DEFAULT '{}',
@@ -8,5 +8,5 @@ CREATE TABLE "MetabasePermissao" (
     "ordem" INTEGER NOT NULL,
     "titulo" TEXT NOT NULL,
 
-    CONSTRAINT "MetabasePermissao_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "metabase_permissao_pkey" PRIMARY KEY ("id")
 );
