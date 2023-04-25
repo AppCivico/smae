@@ -42,6 +42,7 @@ import {
   MetaOrcamento,
 } from '@/views/orcamento';
 import administracao from './administracao';
+import análise from './analise';
 
 import projetos from './projetos';
 import relatorios from './relatorios';
@@ -57,6 +58,8 @@ export const router = createRouter({
     { path: '/nova-senha', component: NewPassword },
 
     ...administracao,
+
+    análise,
 
     {
       path: '/monitoramento',
