@@ -12,7 +12,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
-  Form
+  Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -90,21 +90,12 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <div>
-      <div
-        v-if="riscoId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ 'Editar risco' }}
-      </div>
-      <h1>
-        {{
-          typeof route?.meta?.título === 'function'
-          ? route.meta.título()
-          : route?.meta?.título
+    <h1>
+      {{ typeof route?.meta?.título === 'function'
+        ? route.meta.título()
+        : route?.meta?.título
           || (riscoId ? 'Risco' : 'Novo risco') }}
-      </h1>
-    </div>
+    </h1>
 
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeRisco
@@ -294,7 +285,7 @@ iniciar();
               :class="`etiqueta--alerta__peso-${values.probabilidade && values.impacto
                 ? RiscoCalc.getResult(values.probabilidade, values.impacto)?.grau_valor
                 : null
-                }`"
+              }`"
             >
               <template v-if="values.probabilidade && values.impacto">
                 {{ RiscoCalc.getResult(values.probabilidade, values.impacto)?.grau_valor }}
