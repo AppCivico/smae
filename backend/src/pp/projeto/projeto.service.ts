@@ -284,19 +284,30 @@ export class ProjetoService {
         return created;
     }
 
+    async findAllIds(user: PessoaFromJwt): Promise<{ id: number }[]> {
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user);
+        return await this.prisma.projeto.findMany({
+            where: {
+                AND: permissionsSet.length > 0 ? [
+                    {
+                        OR: permissionsSet
+                    }
+                ] : undefined,
+            },
+            select: { id: true }
+        });
+    }
+
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
-
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user);
 
         const rows = await this.prisma.projeto.findMany({
             where: {
-                removido_em: null,
                 eh_prioritario: filters.eh_prioritario,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 arquivado: filters.arquivado,
                 status: filters.status ? { in: filters.status } : undefined,
-                portfolio: { removido_em: null },
                 portfolio_id: filters.portfolio_id,
                 AND: permissionsSet.length > 0 ? [
                     {
@@ -391,7 +402,12 @@ export class ProjetoService {
     }
 
     private getProjetoPermissionSet(user: PessoaFromJwt | undefined) {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
+            {
+                removido_em: null,
+                portfolio: { removido_em: null },
+            }
+        ];
         if (!user) return permissionsSet;
 
         if (user.hasSomeRoles(['Projeto.administrador'])) {

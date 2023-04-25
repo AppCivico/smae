@@ -1,10 +1,16 @@
-import { Module } from '@nestjs/common';
-import { DashboardService } from './dashboard.service';
-import { DashboardController } from './dashboard.controller';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { MetaModule } from '../meta/meta.module';
+import { ProjetoModule } from '../pp/projeto/projeto.module';
+import { DashboardController } from './dashboard.controller';
+import { DashboardService } from './dashboard.service';
 
 @Module({
-    imports: [PrismaModule],
+    imports: [
+        PrismaModule,
+        forwardRef(() => ProjetoModule),
+        forwardRef(() => MetaModule),
+    ],
     controllers: [DashboardController],
     providers: [DashboardService]
 })
