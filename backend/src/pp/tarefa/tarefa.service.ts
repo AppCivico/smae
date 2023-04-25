@@ -562,18 +562,22 @@ export class TarefaService {
         // TODO ver como pensar se ta concluído, provavelmente contar se todas as tarefas tem data de termino,
         // ou se o status do projeto é fechado
         let status_cronograma: string = 'Em dia';
+        if (projeto.realizado_termino != null) {
+            status_cronograma = 'Concluído';
+        } else {
 
-        const estaPausado = await this.prisma.projetoAcompanhamento.findFirst({
-            where: {
-                removido_em: null,
-                projeto_id: projeto.id,
-            },
-            orderBy: [
-                { data_registro: 'desc' }
-            ],
-            take: 1,
-        });
-        if (estaPausado && estaPausado.cronograma_paralisado) status_cronograma = 'Paralisado';
+            const estaPausado = await this.prisma.projetoAcompanhamento.findFirst({
+                where: {
+                    removido_em: null,
+                    projeto_id: projeto.id,
+                },
+                orderBy: [
+                    { data_registro: 'desc' }
+                ],
+                take: 1,
+            });
+            if (estaPausado && estaPausado.cronograma_paralisado) status_cronograma = 'Paralisado';
+        }
 
         if (max_term_planjeado && max_term_proj) {
 
@@ -588,7 +592,9 @@ export class TarefaService {
             percentual_atraso = Math.round(atraso_projeto / projeto.previsao_duracao * 100)
             em_atraso = percentual_atraso >= projeto.tolerancia_atraso;
 
-            if (em_atraso && status_cronograma != 'Paralisado') status_cronograma = 'Atrasado';
+            // se por acaso, tiver atraso e ao mesmo tempo já Concluído, manter o Concluído!
+            if (em_atraso && status_cronograma != 'Paralisado' && status_cronograma != 'Concluído')
+                status_cronograma = 'Atrasado';
         }
 
         if (ret.projeto.atraso !== atraso_projeto
@@ -597,7 +603,7 @@ export class TarefaService {
             || ret.projeto.percentual_atraso !== percentual_atraso
             || ret.projeto.status_cronograma !== status_cronograma
         ) {
-            this.logger.debug(`iniciando sincronização do atrasdo projeto...`);
+            this.logger.debug(`iniciando sincronização do atrasado projeto...`);
             await this.prisma.projeto.update({
                 where: { id: projeto.id },
                 data: {
