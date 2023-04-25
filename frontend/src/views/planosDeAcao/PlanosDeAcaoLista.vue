@@ -76,11 +76,11 @@ iniciar();
 <template>
   <div class="flex spacebetween center mb2">
     <div>
-      <div class="t12 uc w700 tamarelo">
-        Risco
-        <template v-if="emFoco?.eh_prioritario">
-          prioritário
-        </template>
+      <div
+        v-if="emFoco?.eh_prioritario"
+        class="t12 uc w700 tamarelo"
+      >
+        Risco prioritário
       </div>
 
       <h1>
