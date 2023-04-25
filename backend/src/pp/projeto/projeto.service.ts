@@ -357,7 +357,7 @@ export class ProjetoService {
                 },
                 portfolio: {
                     select: { id: true, titulo: true }
-                }
+                },
             },
         });
 
@@ -609,6 +609,8 @@ export class ProjetoService {
                 },
                 selecionado_em: true,
                 em_planejamento_em: true,
+                percentual_atraso: true,
+                status_cronograma: true,
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);

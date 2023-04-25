@@ -14,19 +14,20 @@ export class AcompanhamentoService {
     private readonly logger = new Logger(AcompanhamentoService.name);
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(projetoId: number, dto: CreateProjetoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(projeto_id: number, dto: CreateProjetoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
         //if (!dto.risco_tarefa_outros && Array.isArray(dto.risco) == false || (Array.isArray(dto.risco) && dto.risco.length == 0))
         //throw new HttpException('Se não for enviado um risco do sistema, é necessário informar um risco externo', 400);
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const now = new Date(Date.now());
 
             const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                 data: {
-                    projeto_id: projetoId,
+                    projeto_id: projeto_id,
                     ...{ ...dto, risco: undefined },
 
-                    criado_em: new Date(Date.now()),
+                    criado_em: now,
                     criado_por: user.id
                 },
                 select: { id: true }
@@ -42,6 +43,8 @@ export class AcompanhamentoService {
                     })
                 });
             }
+
+            await this.atualizaProjeto(prismaTx, projeto_id, now);
 
             return { id: acompanhamento.id };
         });
@@ -167,6 +170,7 @@ export class AcompanhamentoService {
 
         const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
 
+            const now = new Date(Date.now());
             if (dto.risco !== undefined) {
                 await prismaTx.projetoAcompanhamentoRisco.deleteMany({
                     where: { projeto_acompanhamento_id: self.id }
@@ -183,12 +187,18 @@ export class AcompanhamentoService {
                     });
             }
 
+            await this.atualizaProjeto(prismaTx, projeto_id, now);
+
             return await prismaTx.projetoAcompanhamento.update({
                 where: {
                     id,
                 },
                 data: {
-                    ...{ ...dto, risco: undefined },
+                    ...{
+                        ...dto,
+                        risco: undefined,
+                        atualizado: now,
+                    },
                 },
                 select: { id: true }
             });
@@ -197,6 +207,15 @@ export class AcompanhamentoService {
         });
 
         return updated;
+    }
+
+    private async atualizaProjeto(prismaTx: Prisma.TransactionClient, projeto_id: number, now: Date) {
+        await prismaTx.projeto.update({
+            where: { id: projeto_id },
+            data: {
+                tarefas_proximo_recalculo: now
+            }
+        });
     }
 
     async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
