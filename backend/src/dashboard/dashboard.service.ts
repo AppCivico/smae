@@ -54,7 +54,7 @@ export class DashboardService {
                 { algorithm: 'HS256', expiresIn: 86400, }
             );
 
-            const url = r.metabase_url + '/embed/dashboard/' + jwt + '#bordered=true&titled=true';
+            const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=true';
 
             liberados.push({
                 id: r.id,
