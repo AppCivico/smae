@@ -122,6 +122,7 @@ iniciar();
       <col class="col--data">
       <col>
       <col style="width: 8em">
+      <col class="col--minimum">
       <col style="width: 8em">
       <col style="width: 9em">
       <col class="col--botão-de-ação">
@@ -140,6 +141,9 @@ iniciar();
         </th>
         <th class="center">
           Grau
+        </th>
+        <th class="tr">
+          Planos pendentes
         </th>
         <th class="tl">
           Resposta indicada
@@ -176,13 +180,6 @@ iniciar();
           >
             {{ linha.titulo }}
           </router-link>
-          <i
-            v-if="linha.planos_de_acao_sem_dt_term?.length"
-            class="tooltip tooltip--danger"
-            :title="linha.planos_de_acao_sem_dt_term.length === 1
-                ? 'Há 1 plano de ação sem término definido'
-                : `Há ${linha.planos_de_acao_sem_dt_term?.length} planos de ação sem término definido`"
-          >!</i>
         </th>
         <td class="center">
           <span
@@ -194,6 +191,14 @@ iniciar();
               - {{ grauDescricao[linha.grau - 1] }}
             </template>
           </span>
+        </td>
+        <td
+          class="cell--number"
+          :class="{
+            tvermelho: linha.planos_de_acao_sem_dt_term?.length
+          }"
+        >
+          {{ linha.planos_de_acao_sem_dt_term?.length || '-' }}
         </td>
         <td class="center">
           {{ linha.resposta }}
