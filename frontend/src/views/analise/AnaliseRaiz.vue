@@ -15,6 +15,7 @@ const {
 dashboardStore.$reset();
 dashboardStore.buscarTudo()
   .then(() => {
+    if (route.query.id) return;
     if (lista.value.length && lista.value[0].id) {
       router.replace({
         query: {
