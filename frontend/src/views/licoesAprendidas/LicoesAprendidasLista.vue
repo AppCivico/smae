@@ -66,6 +66,7 @@ iniciar();
     class="tabela-de-etapas"
   >
     <colgroup>
+      <col class="col--minimum">
       <col class="col--data">
       <col>
       <col>
@@ -75,6 +76,7 @@ iniciar();
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
+        <th />
         <th class="tl">
           {{ schema.fields['data_registro'].spec.label }}
         </th>
@@ -97,6 +99,9 @@ iniciar();
       class="tablemain"
     >
       <tr>
+        <td class="cell--number">
+          {{ linha.sequencial }}
+        </td>
         <td class="cell--data">
           {{ dateToField(linha.data_registro) }}
         </td>

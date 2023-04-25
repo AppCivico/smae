@@ -94,6 +94,10 @@ iniciar();
       >
         {{ 'Editar licoesaprendida' }}
       </div>
+      <template v-if="emFoco?.sequencial">
+        {{ emFoco.sequencial }} -
+      </template>
+
       {{ emFoco?.descricao
         || (licaoAprendidaId ? 'LicoesAprendida' : 'Nova lição aprendida') }}
     </h1>
