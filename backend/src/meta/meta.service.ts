@@ -159,13 +159,20 @@ export class MetaService {
         return arr;
     }
 
-    async findAll(filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
+    private async getMetasPermissionSet(user: PessoaFromJwt | undefined) {
+        const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
+            {
+                removido_em: null,
+            }
+        ];
+        if (!user) return permissionsSet;
+
         // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
         // 'CadastroMeta.inserir'
         // atualmente nesse serviço não tem nada de painel, então acho que precisa rever esse TODO
         // pra outro lugar (o frontend da um get em /painel sem informar qual meta
         // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
-        // depois o busca a serie do painel-conteudo correspondente
+        // depois o busca a serie do painel-conteúdo correspondente
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
@@ -173,11 +180,37 @@ export class MetaService {
             filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
+        return permissionsSet;
+    }
+
+    async findAllIds(user: PessoaFromJwt): Promise<{ id: number }[]> {
+        const permissionsSet = await this.getMetasPermissionSet(user);
+
+        return await this.prisma.meta.findMany({
+            where: {
+                AND: permissionsSet.length > 0 ? [
+                    {
+                        OR: permissionsSet
+                    }
+                ] : undefined,
+            },
+            select: { id: true }
+        });
+
+    }
+
+    async findAll(filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
+
+        const permissionsSet = await this.getMetasPermissionSet(user);
+
         const listActive = await this.prisma.meta.findMany({
             where: {
-                removido_em: null,
+                AND: permissionsSet.length > 0 ? [
+                    {
+                        OR: permissionsSet
+                    }
+                ] : undefined,
                 pdm_id: filters?.pdm_id,
-                AND: [{ id: filters?.id }, { id: filterIdIn ? { in: filterIdIn } : undefined }],
             },
             orderBy: [{ codigo: 'asc' }],
             select: {
