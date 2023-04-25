@@ -141,6 +141,8 @@ export class ProjetoDetailDto {
     atraso: number | null;
     tolerancia_atraso: number;
     em_atraso: boolean;
+    percentual_atraso: number | null;
+    status_cronograma: string | null;
     realizado_duracao: number | null;
 
     escopo: string | null;

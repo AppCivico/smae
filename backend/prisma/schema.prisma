@@ -2211,6 +2211,13 @@ model Projeto {
 
     percentual_concluido Int? // calculado
 
+    // campos para relatorios, calculados via triggers ou que precisam
+    // de mudanças
+    percentual_atraso Int?
+    status_cronograma String?
+    risco_maximo      String?
+    qtde_riscos       Int     @default(0)
+
     status         ProjetoStatus
     fase           ProjetoFase
     arquivado      Boolean       @default(false)
@@ -2733,6 +2740,7 @@ model ProjetoAcompanhamento {
     removido_por               Int?
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
 
+    @@index([projeto_id, data_registro])
     @@map("projeto_acompanhamento")
 }
 
