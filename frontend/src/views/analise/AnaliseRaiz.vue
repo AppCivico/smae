@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { useDashboardStore } from '@/stores/dashboard.store.ts';
+import { iframeResize } from 'iframe-resizer';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -66,7 +67,7 @@ dashboardStore.buscarTudo()
 
     <div
       v-if="chamadasPendentes?.lista"
-      class="spinner"
+      class="iframe-placeholder loading"
     >
       Carregando
     </div>
@@ -76,6 +77,20 @@ dashboardStore.buscarTudo()
       :src="dashboardEmFoco.url"
       frameborder="0"
       allowtransparency
+      @load="iframeResize({ log: true }, $event.target)"
     />
   </Dashboard>
 </template>
+<style lang="css">
+iframe {
+  min-width: 100%;
+  flex-grow: 1;
+}
+
+.iframe-placeholder {
+  margin-right: auto;
+  margin-left: auto;
+  width: max-content;
+  padding-right: 2.5em;
+}
+</style>

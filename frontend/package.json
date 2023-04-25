@@ -5,6 +5,7 @@
     "d3": "^7.6.1",
     "d3-org-chart": "^2.7.0",
     "dayjs": "^1.11.7",
+    "iframe-resizer": "^4.3.6",
     "lodash": "^4.17.21",
     "nice-number": "^1.0.3",
     "pinia": "^2.0.17",
