@@ -48,6 +48,7 @@ BEGIN
             FROM projeto_risco
             WHERE projeto_id = NEW.projeto_id
             AND removido_em IS NULL
+            and status_risco != 'Fechado'
         ),
         risco_maximo =
         (

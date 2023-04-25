@@ -907,20 +907,6 @@ export class ProjetoService {
                 }
             });
 
-            console.log(
-                [
-                    (dto.meta_id && projeto.meta_id != dto.meta_id)
-                    ,
-                    (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
-                    ,
-                    (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
-                    ,
-                    (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
-                    ,
-                    (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
-                ]
-            );
-
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
             // ou atualizar o código
             if (projeto.em_planejamento_em !== null && (
