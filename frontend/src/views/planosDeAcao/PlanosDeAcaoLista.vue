@@ -203,7 +203,9 @@ iniciar();
         <th class="tl">
           Responsável
         </th>
-        <th>Prazo</th>
+        <th class="cell--data">
+          Prazo
+        </th>
         <th class="cell--number tr">
           Custo
         </th>
@@ -252,8 +254,13 @@ iniciar();
           <td>
             {{ item.responsavel || item.orgao.sigla }}
           </td>
-          <td>
+          <td class="cell--data">
             {{ dateToField(item.prazo_contramedida) }}
+            <i
+              v-if="!item.data_termino"
+              class="tooltip tooltip--danger"
+              title="Término pendente"
+            >!</i>
           </td>
           <td class="cell--number">
             {{ typeof item.custo == 'number' ? 'R$' + dinheiro(item.custo) : '-' }}
