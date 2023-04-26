@@ -29,7 +29,7 @@ dashboardStore.buscarTudo()
 </script>
 <template>
   <Dashboard>
-    <div class="flex spacebetween center">
+    <div class="flex spacebetween center flexwrap">
       <header>
         <h1>
           {{ typeof route?.meta?.título === 'function'
@@ -50,7 +50,7 @@ dashboardStore.buscarTudo()
             id: item.id,
           },
         }"
-        class="btn bgnone outline ml1"
+        class="btn bgnone outline ml1 mb1"
       >
         {{ item.titulo }}
       </router-link>
