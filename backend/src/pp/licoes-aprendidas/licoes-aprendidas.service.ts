@@ -42,9 +42,13 @@ export class LicoesAprendidasService {
                         sequencial: true
                     }
                 });
-                if (!ultimoSeqRow) throw new Error("Erro interno ao buscar row de Lições Aprendidas");
 
-                sequencial = ultimoSeqRow.sequencial + 1;
+                if (!ultimoSeqRow) {
+                    console.log('Não foi encontrada Lição Aprendida (não removida) para projeto_id=' + projetoId);
+                    sequencial = 1;
+                } else {
+                    sequencial = ultimoSeqRow.sequencial + 1;
+                }
             }
 
             const licao_aprendida = await prismaTx.projetoLicaoAprendida.create({
