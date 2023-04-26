@@ -155,7 +155,9 @@ select
 
     eixo.descricao as macro_tema,
     objetivo_estrategico.descricao as tema,
-    array_agg(distinct orgao.sigla order by orgao.sigla) as orgaos
+    string_agg(distinct orgao.sigla , ', ' order by orgao.sigla ) as orgaos
+    --array_agg(distinct orgao.sigla order by orgao.sigla ) as orgaos
+    --jsonb_object_agg(distinct orgao.sigla, true order by orgao.sigla ) as orgaos
 
 from view_status_realizacao_metas m
 inner join eixo on m.macro_tema_id = eixo.id
