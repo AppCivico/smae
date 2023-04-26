@@ -387,7 +387,7 @@ export class PPProjetosService implements ReportableService {
             orgao_gestor.descricao as orgao_gestor_descricao,
             (
                 SELECT
-                    string_agg(nome_exibicao, '/')
+                    string_agg(nome_exibicao, '|')
                 FROM pessoa
                 WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
             ) as gestores,
@@ -521,7 +521,7 @@ export class PPProjetosService implements ReportableService {
             t.custo_real,
             (
                 SELECT
-                  string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
+                  string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '|')
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
                 WHERE td.tarefa_id = t.id
@@ -568,7 +568,7 @@ export class PPProjetosService implements ReportableService {
                 percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
                 custo_real: db.custo_real ? db.custo_real : null,
                 dependencias: db.dependencias ? (
-                    db.dependencias.split('/').map(e => {
+                    db.dependencias.split('|').map(e => {
                         const row: dependenciaRow = JSON.parse(e);
 
                         const hierarquia = tarefasHierarquia[row.id];
@@ -576,7 +576,7 @@ export class PPProjetosService implements ReportableService {
                         const latencia_str = row.latencia == 0 ? '' : row.latencia;
 
                         return `${hierarquia} ${tipo} ${latencia_str}`;
-                    }).join('/')
+                    }).join('|')
                 ) : null,
                 atraso: db.atraso ? db.atraso : null,
                 responsavel: db.responsavel_id ? {
@@ -604,7 +604,7 @@ export class PPProjetosService implements ReportableService {
             projeto_risco.grau,
             projeto_risco.resposta,
             (
-                SELECT string_agg(t.tarefa, ' / ')
+                SELECT string_agg(t.tarefa, '|')
                 FROM risco_tarefa rt
                 JOIN tarefa t ON rt.tarefa_id = t.id
                 WHERE rt.projeto_risco_id = projeto_risco.id
@@ -783,7 +783,7 @@ export class PPProjetosService implements ReportableService {
             projeto_acompanhamento.detalhamento_status,
             projeto_acompanhamento.pontos_atencao,
             (
-                SELECT string_agg(r.codigo::text, ' / ')
+                SELECT string_agg(r.codigo::text, '|')
                 FROM projeto_acompanhamento_risco ar
                 JOIN projeto_risco r ON ar.projeto_risco_id = r.id
                 WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
