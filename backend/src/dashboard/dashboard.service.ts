@@ -25,6 +25,7 @@ export class DashboardService {
         });
 
         const memory: any = {};
+        let usar_options_pdm: boolean = false;
 
         for (const r of rows) {
             if (!user.hasSomeRoles([r.permissao as any])) continue;
@@ -44,6 +45,7 @@ export class DashboardService {
                     memory['metas_ids'] = (await this.metaService.findAllIds(user)).map(p => p.id);
 
                 (config as any)['params']['metas_ids'] = memory['metas_ids'];
+                usar_options_pdm = true;
             }
 
             const jwt = sign(
@@ -53,6 +55,10 @@ export class DashboardService {
                 r.metabase_token,
                 { algorithm: 'HS256', expiresIn: 86400, }
             );
+
+            if (usar_options_pdm){
+
+            }
 
             const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=true';
 
