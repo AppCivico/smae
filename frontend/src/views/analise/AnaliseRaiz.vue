@@ -3,29 +3,53 @@ import { Dashboard } from '@/components';
 import { useDashboardStore } from '@/stores/dashboard.store.ts';
 import { iframeResize } from 'iframe-resizer';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
 const dashboardStore = useDashboardStore();
 
 const {
-  chamadasPendentes, erro, lista, dashboardEmFoco,
+  chamadasPendentes, erro, lista, dashboardEmFoco, endereçoParaIframe,
 } = storeToRefs(dashboardStore);
 
-dashboardStore.$reset();
-dashboardStore.buscarTudo()
-  .then(() => {
-    if (route.query.id) return;
-    if (lista.value.length && lista.value[0].id) {
+const props = defineProps({
+  opção: {
+    type: Number,
+    default: 0,
+  },
+  id: {
+    type: Number,
+    default: 0,
+  },
+});
+
+async function iniciar() {
+  if (!lista.value.length) {
+    dashboardStore.$reset();
+    await dashboardStore.buscarTudo();
+  }
+  const primeiroId = lista.value[0]?.id;
+  const primeiraOpção = dashboardEmFoco.value?.opcoes?.[0]?.id;
+
+  if (!props.id || (primeiraOpção && !props.opção)) {
+    if (primeiroId) {
       router.replace({
         query: {
           ...route.query,
-          id: lista.value[0].id,
+          id: route.query.id || primeiroId,
+          opcao: primeiraOpção,
         },
       });
     }
-  });
+  }
+}
+
+onBeforeRouteLeave((to, from) => {
+  dashboardStore.$reset();
+});
+
+iniciar();
 </script>
 <template>
   <Dashboard>
@@ -37,6 +61,43 @@ dashboardStore.buscarTudo()
             : $route?.meta?.título || 'Análise' }}
         </h1>
       </header>
+    </div>
+
+    <div class="flex center mb2 spacebetween">
+      <div
+        v-if="Array.isArray(dashboardEmFoco?.opcoes)"
+        class="f1 mr1"
+      >
+        <label class="label tc300">
+          {{ dashboardEmFoco?.opcoes_titulo || 'Opções' }}
+        </label>
+
+        <select
+          class="inputtext"
+          @change="($event) => router.push({
+            query: {
+              ...$route.query,
+              opcao: $event.target.value || undefined
+            }
+
+          })"
+        >
+          <option
+            value=""
+            :selected="!props.opção"
+          >
+            qualquer
+          </option>
+          <option
+            v-for="item in dashboardEmFoco.opcoes"
+            :key="item.id"
+            :value="item.id"
+            :selected="props.opção === item.id"
+          >
+            {{ item.titulo }}
+          </option>
+        </select>
+      </div>
 
       <hr class="ml2 f1">
 
@@ -48,6 +109,7 @@ dashboardStore.buscarTudo()
           query: {
             ...$route.query,
             id: item.id,
+              opcao: undefined,
           },
         }"
         class="btn bgnone outline ml1 mb1"
@@ -73,8 +135,9 @@ dashboardStore.buscarTudo()
     </div>
 
     <iframe
-      v-else-if="dashboardEmFoco"
-      :src="dashboardEmFoco.url"
+      v-else-if="endereçoParaIframe"
+      ref="iframe"
+      :src="endereçoParaIframe"
       frameborder="0"
       allowtransparency
       @load="iframeResize($event.target)"

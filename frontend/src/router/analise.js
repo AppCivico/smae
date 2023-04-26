@@ -7,6 +7,8 @@ export default {
 
   props: ({ params, query }) => ({
     ...query,
+    opção: Number(query.opcao),
+    id: Number(query.id),
     ...params,
   }),
 
