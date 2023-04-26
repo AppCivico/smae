@@ -146,10 +146,13 @@ class RetornoDbPlanosAcaoMonitoramentos {
 class RetornoDbLicoesAprendidas {
     projeto_id: number
     projeto_codigo: string
+    sequencial: number
     data_registro: Date
     responsavel: string
     descricao: string
     observacao?: string
+    contexto?: string
+    resultado?: string
 }
 
 class RetornoDbAcompanhamentos {
@@ -729,10 +732,13 @@ export class PPProjetosService implements ReportableService {
         const sql = `SELECT
             projeto.id AS projeto_id,
             projeto.codigo AS projeto_codigo,
+            projeto_licao_aprendida.sequencial,
             projeto_licao_aprendida.data_registro,
             projeto_licao_aprendida.responsavel,
             projeto_licao_aprendida.descricao,
-            projeto_licao_aprendida.observacao
+            projeto_licao_aprendida.observacao,
+            projeto_licao_aprendida.contexto,
+            projeto_licao_aprendida.resultado
         FROM projeto
           RIGHT JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
         ${whereCond.whereString}
@@ -750,10 +756,13 @@ export class PPProjetosService implements ReportableService {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
+                sequencial: db.sequencial,
                 data_registro: db.data_registro,
                 responsavel: db.responsavel,
                 descricao: db.descricao,
-                observacao: db.observacao ? db.observacao : null
+                observacao: db.observacao ? db.observacao : null,
+                contexto: db.contexto ? db.contexto : null,
+                resultado: db.resultado ? db.resultado : null,
             };
         });
     }
