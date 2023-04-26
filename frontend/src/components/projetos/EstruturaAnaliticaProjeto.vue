@@ -2,13 +2,15 @@
   <div ref="svgElementContainer" />
 </template>
 <script setup>
+import { useResizeObserver } from '@vueuse/core';
 import { select as d3Select } from 'd3';
 import { OrgChart } from 'd3-org-chart';
+import { debounce } from 'lodash';
 import {
   nextTick,
   onMounted,
   ref,
-  watch
+  watch,
 } from 'vue';
 
 const props = defineProps({
@@ -74,6 +76,12 @@ ${d.data.hierarquia || d.data.numero ? `<span class="btn" style="box-sizing: con
     .getChartState()
     .svg.on('wheel.zoom', null);
 }
+
+useResizeObserver(svgElementContainer, debounce(async () => {
+  chartReference.value = null;
+  await nextTick();
+  renderChart(props.data);
+}, 400));
 
 watch(() => props.data, async () => {
   await nextTick();
