@@ -81,7 +81,7 @@ export class PPProjetoService implements ReportableService {
             orgao_responsavel_sigla: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.sigla : null,
             orgao_responsavel_descricao: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.descricao : null,
             meta: projetoRow.meta,
-            responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length ? projetoRow.responsaveis_no_orgao_gestor.map(e => e.nome_exibicao).join('/') : null,
+            responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length ? projetoRow.responsaveis_no_orgao_gestor.map(e => e.nome_exibicao).join('|') : null,
 
             fonte_recursos: projetoRow.fonte_recursos ? (await Promise.all(
                 projetoRow.fonte_recursos.map(async (e) => {
@@ -100,12 +100,12 @@ export class PPProjetoService implements ReportableService {
                     }
 
                     return `${nome_fonte[0].descricao}: ${valor}`;
-                }))).join('/')
+                }))).join('|')
                 : null,
 
-            premissas: projetoRow.premissas ? projetoRow.premissas.map(e => e.premissa).join('/') : null,
-            restricoes: projetoRow.restricoes ? projetoRow.restricoes.map(e => e.restricao).join('/') : null,
-            orgaos_participantes: projetoRow.orgaos_participantes ? projetoRow.orgaos_participantes.map(e => e.sigla).join('/') : null
+            premissas: projetoRow.premissas ? projetoRow.premissas.map(e => e.premissa).join('|') : null,
+            restricoes: projetoRow.restricoes ? projetoRow.restricoes.map(e => e.restricao).join('|') : null,
+            orgaos_participantes: projetoRow.orgaos_participantes ? projetoRow.orgaos_participantes.map(e => e.sigla).join('|') : null
         };
 
         const tarefasHierarquia = await this.tarefaService.tarefasHierarquia(projetoRow);
