@@ -21,10 +21,10 @@ export class RelProjetosDto {
     objeto: string;
     objetivo: string;
     publico_alvo: string | null;
-    previsao_inicio: Date | null;
+    previsao_inicio: string | null;
     previsao_custo: number | null;
     previsao_duracao: number | null;
-    previsao_termino: Date | null;
+    previsao_termino: string | null;
     escopo: string | null;
     nao_escopo: string | null;
 
@@ -46,11 +46,11 @@ export class RelProjetosCronogramaDto {
     numero: number
     nivel: number
     tarefa: string
-    inicio_planejado: Date | null
-    termino_planejado: Date | null
+    inicio_planejado: string | null
+    termino_planejado: string | null
     custo_estimado: number | null
-    inicio_real: Date | null
-    termino_real: Date | null
+    inicio_real: string | null
+    termino_real: string | null
     duracao_real: number | null
     percentual_concluido: number | null
     custo_real: number | null
@@ -87,11 +87,11 @@ export class RelProjetosPlanoAcaoDto {
     risco_codigo: string
     contramedida: string
     medidas_de_contingencia: string
-    prazo_contramedida: Date | null
+    prazo_contramedida: string | null
     custo: number | null
     custo_percentual: number | null
     responsavel: string | null
-    data_termino: Date | null
+    data_termino: string | null
 }
 
 export class RelProjetosPlanoAcaoMonitoramentosDto {
@@ -99,7 +99,7 @@ export class RelProjetosPlanoAcaoMonitoramentosDto {
     projeto_codigo: string
     risco_codigo: string
     plano_acao_id: number
-    data_afericao: Date
+    data_afericao: string
     descricao: string
 }
 
@@ -107,7 +107,7 @@ export class RelProjetosLicoesAprendidasDto {
     projeto_id: number
     projeto_codigo: string
     sequencial: number
-    data_registro: Date
+    data_registro: string
     responsavel: string
     descricao: string
     observacao: string | null
@@ -118,11 +118,11 @@ export class RelProjetosLicoesAprendidasDto {
 export class RelProjetosAcompanhamentosDto {
     projeto_id: number
     projeto_codigo: string
-    data_registro: Date
+    data_registro: string
     participantes: string
     cronograma_paralizado: boolean
-    prazo_encaminhamento: Date | null
-    prazo_realizado: Date | null
+    prazo_encaminhamento: string | null
+    prazo_realizado: string | null
     detalhamento: string | null
     encaminhamento: string | null
     responsavel: string | null

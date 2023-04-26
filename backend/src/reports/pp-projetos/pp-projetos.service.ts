@@ -387,7 +387,7 @@ export class PPProjetosService implements ReportableService {
             orgao_gestor.descricao as orgao_gestor_descricao,
             (
                 SELECT
-                    string_agg(nome_exibicao, '|')
+                    string_agg(nome_exibicao, '/')
                 FROM pessoa
                 WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
             ) as gestores,
@@ -439,8 +439,8 @@ export class PPProjetosService implements ReportableService {
                 objeto: db.objeto,
                 objetivo: db.objetivo,
                 publico_alvo: db.publico_alvo,
-                previsao_inicio: db.previsao_inicio ? db.previsao_inicio : null,
-                previsao_termino: db.previsao_termino ? db.previsao_termino : null,
+                previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
+                previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
                 previsao_duracao: db.previsao_duracao ? db.previsao_duracao : null,
                 previsao_custo: db.previsao_custo ? db.previsao_custo : null,
                 escopo: db.escopo ? db.escopo : null,
@@ -521,7 +521,7 @@ export class PPProjetosService implements ReportableService {
             t.custo_real,
             (
                 SELECT
-                  string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '|')
+                  string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
                 WHERE td.tarefa_id = t.id
@@ -559,16 +559,16 @@ export class PPProjetosService implements ReportableService {
                 numero: db.numero,
                 nivel: db.nivel,
                 tarefa: db.tarefa,
-                inicio_planejado: db.inicio_planejado ? db.inicio_planejado : null,
-                termino_planejado: db.termino_planejado ? db.termino_planejado : null,
+                inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
+                termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
                 custo_estimado: db.custo_estimado ? db.custo_estimado : null,
-                inicio_real: db.inicio_real ? db.inicio_real : null,
-                termino_real: db.termino_real ? db.termino_real : null,
+                inicio_real: db.inicio_real ? Date2YMD.toString(db.inicio_real) : null,
+                termino_real: db.termino_real ? Date2YMD.toString(db.termino_real) : null,
                 duracao_real: db.duracao_real ? db.duracao_real : null,
                 percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
                 custo_real: db.custo_real ? db.custo_real : null,
                 dependencias: db.dependencias ? (
-                    db.dependencias.split('|').map(e => {
+                    db.dependencias.split('/').map(e => {
                         const row: dependenciaRow = JSON.parse(e);
 
                         const hierarquia = tarefasHierarquia[row.id];
@@ -576,7 +576,7 @@ export class PPProjetosService implements ReportableService {
                         const latencia_str = row.latencia == 0 ? '' : row.latencia;
 
                         return `${hierarquia} ${tipo} ${latencia_str}`;
-                    }).join('|')
+                    }).join('/')
                 ) : null,
                 atraso: db.atraso ? db.atraso : null,
                 responsavel: db.responsavel_id ? {
@@ -684,11 +684,11 @@ export class PPProjetosService implements ReportableService {
                 risco_codigo: db.risco_codigo,
                 contramedida: db.contramedida,
                 medidas_de_contingencia: db.medidas_de_contingencia,
-                prazo_contramedida: db.prazo_contramedida ? db.prazo_contramedida : null,
+                prazo_contramedida: db.prazo_contramedida ? Date2YMD.toString(db.prazo_contramedida) : null,
                 custo: db.custo ? db.custo : null,
                 custo_percentual: db.custo_percentual ? db.custo_percentual : null,
                 responsavel: db.responsavel ? db.responsavel : null,
-                data_termino: db.data_termino ? db.data_termino : null,
+                data_termino: db.data_termino ? Date2YMD.toString(db.data_termino) : null,
             };
         });
     }
@@ -722,7 +722,7 @@ export class PPProjetosService implements ReportableService {
                 projeto_codigo: db.projeto_codigo,
                 risco_codigo: db.risco_codigo,
                 plano_acao_id: db.plano_acao_id,
-                data_afericao: db.data_afericao,
+                data_afericao: Date2YMD.toString(db.data_afericao),
                 descricao: db.descricao
             };
         });
@@ -757,7 +757,7 @@ export class PPProjetosService implements ReportableService {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 sequencial: db.sequencial,
-                data_registro: db.data_registro,
+                data_registro: Date2YMD.toString(db.data_registro),
                 responsavel: db.responsavel,
                 descricao: db.descricao,
                 observacao: db.observacao ? db.observacao : null,
@@ -807,11 +807,11 @@ export class PPProjetosService implements ReportableService {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
-                data_registro: db.data_registro,
+                data_registro: Date2YMD.toString(db.data_registro),
                 participantes: db.participantes,
                 cronograma_paralizado: db.cronograma_paralizado,
-                prazo_encaminhamento: db.prazo_encaminhamento ? db.prazo_encaminhamento : null,
-                prazo_realizado: db.prazo_realizado ? db.prazo_realizado : null,
+                prazo_encaminhamento: db.prazo_encaminhamento ? Date2YMD.toString(db.prazo_encaminhamento) : null,
+                prazo_realizado: db.prazo_realizado ? Date2YMD.toString(db.prazo_realizado) : null,
                 detalhamento: db.detalhamento ? db.detalhamento : null,
                 encaminhamento: db.encaminhamento ? db.encaminhamento : null,
                 responsavel: db.responsavel ? db.responsavel : null,
