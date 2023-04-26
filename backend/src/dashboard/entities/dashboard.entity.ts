@@ -16,6 +16,8 @@ export class DashboardItemComOpcoesDto {
     opcoes: DashboardOptionDto[]
 }
 
+export type RetornoLinhasDashboardLinhasDto = DashboardItemDto | DashboardItemComOpcoesDto
+
 export class DashboardLinhasDto {
-    linhas: DashboardItemDto[] | DashboardItemComOpcoesDto[]
+    linhas: RetornoLinhasDashboardLinhasDto[]
 }

@@ -1,11 +1,12 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { DashboardItemDto } from './entities/dashboard.entity';
+import { DashboardItemDto, DashboardOptionDto, RetornoLinhasDashboardLinhasDto } from './entities/dashboard.entity';
 
 import { sign } from 'jsonwebtoken';
 import { MetaService } from '../meta/meta.service';
 import { ProjetoService } from '../pp/projeto/projeto.service';
+import { DashboardLinhasDto } from './entities/dashboard.entity';
 
 @Injectable()
 export class DashboardService {
@@ -16,16 +17,15 @@ export class DashboardService {
         @Inject(forwardRef(() => MetaService)) private readonly metaService: MetaService,
     ) { }
 
-    async findAll(user: PessoaFromJwt): Promise<DashboardItemDto[]> {
+    async findAll(user: PessoaFromJwt): Promise<RetornoLinhasDashboardLinhasDto[]> {
 
-        const liberados: DashboardItemDto[] = [];
+        const liberados: RetornoLinhasDashboardLinhasDto[] = [];
 
         const rows = await this.prisma.metabasePermissao.findMany({
             orderBy: [{ ordem: 'asc' }]
         });
 
         const memory: any = {};
-        let usar_options_pdm: boolean = false;
 
         for (const r of rows) {
             if (!user.hasSomeRoles([r.permissao as any])) continue;
@@ -45,28 +45,60 @@ export class DashboardService {
                     memory['metas_ids'] = (await this.metaService.findAllIds(user)).map(p => p.id);
 
                 (config as any)['params']['metas_ids'] = memory['metas_ids'];
-                usar_options_pdm = true;
             }
 
-            const jwt = sign(
-                {
-                    ...config,
-                },
-                r.metabase_token,
-                { algorithm: 'HS256', expiresIn: 86400, }
-            );
+            if (config && (config as any)['params'] && (config as any)['params']['pdm_id']) {
 
-            if (usar_options_pdm){
+                const pdms = await this.prisma.pdm.findMany({
+                    orderBy: [
+                        { ativo: 'desc' }, { nome: 'asc' }
+                    ],
+                    select: { id: true, nome: true }
+                });
 
+                const opcoes: DashboardOptionDto[] = [];
+                for (const pdm of pdms) {
+                    (config as any)['params']['pdm_id'] = pdm.id;
+
+                    const jwt = sign(
+                        {
+                            ...config,
+                        },
+                        r.metabase_token,
+                        { algorithm: 'HS256', expiresIn: 86400, }
+                    );
+                    const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=true';
+
+                    opcoes.push({
+                        titulo: pdm.nome,
+                        url: url,
+                    });
+                }
+
+                liberados.push({
+                    id: r.id,
+                    titulo: r.titulo,
+                    opcoes_titulo: 'Programa de Metas',
+                    opcoes: opcoes
+                });
+
+            } else {
+                const jwt = sign(
+                    {
+                        ...config,
+                    },
+                    r.metabase_token,
+                    { algorithm: 'HS256', expiresIn: 86400, }
+                );
+                const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=true';
+
+                liberados.push({
+                    id: r.id,
+                    titulo: r.titulo,
+                    url: url,
+                });
             }
 
-            const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=true';
-
-            liberados.push({
-                id: r.id,
-                titulo: r.titulo,
-                url: url,
-            });
         }
 
         return liberados;
