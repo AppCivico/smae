@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsOptional, IsString, ValidateIf } from "class-validator";
+import { IsNumber, IsOptional, IsString, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreateLicoesApreendidasDto {
@@ -17,4 +17,17 @@ export class CreateLicoesApreendidasDto {
     @IsString()
     @IsOptional()
     observacao: string
+
+    @IsNumber()
+    @IsOptional()
+    sequencial?: number
+
+    @IsString()
+    @IsOptional()
+    contexto?: string
+
+    @IsString()
+    @IsOptional()
+    resultado?: string
+
 }

@@ -17,10 +17,40 @@ export class LicoesAprendidasService {
     async create(projetoId: number, dto: CreateLicoesApreendidasDto, user: PessoaFromJwt): Promise<RecordWithId> {
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            let sequencial: number | undefined = dto.sequencial;
+            
+            // Caso o "sequencial" seja enviado, deve ser checado se não há já um mesmo sequencial para o mesmo projeto.
+            if (sequencial) {
+                const exists = await prismaTx.projetoLicaoAprendida.count({
+                    where: {
+                        projeto_id: projetoId,
+                        removido_em: null,
+                        sequencial: sequencial,
+                    }
+                });
+
+                if (exists) throw new HttpException('sequencial| Valor já em uso', 400);
+            } else {
+                const ultimoSeqRow = await prismaTx.projetoLicaoAprendida.findFirst({
+                    take: 1,
+                    where: {
+                        projeto_id: projetoId,
+                        removido_em: null
+                    },
+                    orderBy: [{ sequencial: 'desc' }],
+                    select: {
+                        sequencial: true
+                    }
+                });
+                if (!ultimoSeqRow) throw new Error("Erro interno ao buscar row de Lições Aprendidas");
+
+                sequencial = ultimoSeqRow.sequencial + 1;
+            }
 
             const licao_aprendida = await prismaTx.projetoLicaoAprendida.create({
                 data: {
                     ...dto,
+                    sequencial,
 
                     projeto_id: projetoId,
                     criado_em: new Date(Date.now()),
@@ -44,10 +74,13 @@ export class LicoesAprendidasService {
             orderBy: [{ data_registro: 'desc' }],
             select: {
                 id: true,
+                sequencial: true,
                 data_registro: true,
                 responsavel: true,
                 descricao: true,
                 observacao: true,
+                contexto: true,
+                resultado: true
             }
         });
 
@@ -63,10 +96,13 @@ export class LicoesAprendidasService {
             },
             select: {
                 id: true,
+                sequencial: true,
                 data_registro: true,
                 responsavel: true,
                 descricao: true,
                 observacao: true,
+                contexto: true,
+                resultado: true,
             }
         });
         if (!licaoAprendida) throw new HttpException('Não foi possível encontrar lição aprendida para este ID', 400)
@@ -77,6 +113,18 @@ export class LicoesAprendidasService {
     async update(projeto_id: number, id: number, dto: UpdateLicoesAprendidasDto, user: PessoaFromJwt) {
 
         const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            // Caso o "sequencial" seja enviado, deve ser checado se não há já um mesmo sequencial para o mesmo projeto.
+            if (dto.sequencial) {
+                const exists = await prismaTx.projetoLicaoAprendida.count({
+                    where: {
+                        projeto_id: projeto_id,
+                        removido_em: null,
+                        sequencial: dto.sequencial,
+                    }
+                });
+
+                if (exists) throw new HttpException('sequencial| Valor já em uso', 400);
+            }
 
             return await prismaTx.projetoLicaoAprendida.update({
                 where: { id },
