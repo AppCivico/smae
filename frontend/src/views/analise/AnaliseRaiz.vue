@@ -45,7 +45,7 @@ async function iniciar() {
   }
 }
 
-onBeforeRouteLeave((to, from) => {
+onBeforeRouteLeave(() => {
   dashboardStore.$reset();
 });
 
@@ -109,7 +109,7 @@ iniciar();
           query: {
             ...$route.query,
             id: item.id,
-              opcao: undefined,
+            opcao: undefined,
           },
         }"
         class="btn bgnone outline ml1 mb1"
@@ -136,7 +136,6 @@ iniciar();
 
     <iframe
       v-else-if="endereçoParaIframe"
-      ref="iframe"
       :src="endereçoParaIframe"
       frameborder="0"
       allowtransparency
