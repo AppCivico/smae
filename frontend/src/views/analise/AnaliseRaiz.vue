@@ -29,7 +29,7 @@ dashboardStore.buscarTudo()
 </script>
 <template>
   <Dashboard>
-    <div class="flex spacebetween center mb2">
+    <div class="flex spacebetween center">
       <header>
         <h1>
           {{ typeof route?.meta?.título === 'function'
