@@ -46,16 +46,16 @@ export class PPProjetoService implements ReportableService {
             codigo: projetoRow.codigo,
             objeto: projetoRow.objeto,
             objetivo: projetoRow.objetivo,
-            data_aprovacao: projetoRow.data_aprovacao,
-            data_revisao: projetoRow.data_revisao,
+            data_aprovacao: Date2YMD.toStringOrNull(projetoRow.data_aprovacao),
+            data_revisao: Date2YMD.toStringOrNull(projetoRow.data_revisao),
             versao: projetoRow.versao,
             publico_alvo: projetoRow.publico_alvo,
-            previsao_inicio: projetoRow.previsao_inicio,
+            previsao_inicio: Date2YMD.toStringOrNull(projetoRow.previsao_inicio),
             previsao_custo: projetoRow.previsao_custo,
             previsao_duracao: projetoRow.previsao_duracao,
-            previsao_termino: projetoRow.previsao_termino,
-            realizado_inicio: projetoRow.realizado_inicio,
-            realizado_termino: projetoRow.realizado_termino,
+            previsao_termino: Date2YMD.toStringOrNull(projetoRow.previsao_termino),
+            realizado_inicio: Date2YMD.toStringOrNull(projetoRow.realizado_inicio),
+            realizado_termino: Date2YMD.toStringOrNull(projetoRow.realizado_termino),
             realizado_custo: projetoRow.realizado_custo,
             escopo: projetoRow.escopo,
             nao_escopo: projetoRow.nao_escopo,
@@ -69,7 +69,7 @@ export class PPProjetoService implements ReportableService {
             atraso: projetoRow.atraso,
             em_atraso: projetoRow.em_atraso,
             tolerancia_atraso: projetoRow.tolerancia_atraso,
-            projecao_termino: projetoRow.projecao_termino,
+            projecao_termino: Date2YMD.toStringOrNull(projetoRow.projecao_termino),
             realizado_duracao: projetoRow.realizado_duracao,
             percentual_concluido: projetoRow.percentual_concluido,
             portfolio_titulo: projetoRow.portfolio.titulo,
@@ -116,8 +116,8 @@ export class PPProjetoService implements ReportableService {
             return {
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
-                inicio_planejado: e.inicio_planejado,
-                termino_planejado: e.termino_planejado,
+                inicio_planejado: Date2YMD.toStringOrNull(e.inicio_planejado),
+                termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
                 custo_estimado: e.custo_estimado,
                 duracao_planejado: e.duracao_planejado
             }
@@ -143,7 +143,7 @@ export class PPProjetoService implements ReportableService {
             return {
                 codigo_risco: e.projeto_risco.codigo,
                 contramedida: e.contramedida,
-                prazo_contramedida: e.prazo_contramedida,
+                prazo_contramedida: Date2YMD.toStringOrNull(e.prazo_contramedida),
                 responsavel: e.responsavel,
                 medidas_de_contingencia: e.medidas_de_contingencia
             }

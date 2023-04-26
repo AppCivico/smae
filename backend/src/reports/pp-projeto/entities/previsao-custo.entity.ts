@@ -5,7 +5,9 @@ export class RelProjetoRelatorioDto extends PartialType(OmitType(ProjetoDetailDt
     'premissas', 'restricoes', 'fonte_recursos',
     'orgaos_participantes', 'responsaveis_no_orgao_gestor',
     'selecionado_em', 'em_planejamento_em', 'permissoes',
-    'responsavel', 'portfolio', 'orgao_gestor', 'orgao_responsavel', 'fase'
+    'responsavel', 'portfolio', 'orgao_gestor', 'orgao_responsavel', 'fase',
+    'previsao_inicio','previsao_termino','realizado_inicio','realizado_termino', 'projecao_termino',
+    'data_aprovacao', 'data_revisao'
 ])) {
     fonte_recursos: string | null
     premissas: string | null
@@ -22,13 +24,20 @@ export class RelProjetoRelatorioDto extends PartialType(OmitType(ProjetoDetailDt
     orgao_responsavel_id: number | null
     orgao_responsavel_sigla: string | null
     orgao_responsavel_descricao: string | null
+    previsao_inicio: string | null
+    previsao_termino: string | null
+    realizado_inicio: string | null
+    realizado_termino: string | null
+    projecao_termino: string | null
+    data_aprovacao: string | null
+    data_revisao: string | null
 }
 
 export class RelProjetoCronogramaDto {
     hirearquia: string
     tarefa: string
-    inicio_planejado: Date | null
-    termino_planejado: Date | null
+    inicio_planejado: string | null
+    termino_planejado: string | null
     custo_estimado: number | null
     duracao_planejado: number | null
 }
@@ -49,7 +58,7 @@ export class RelProjetoPlanoAcaoDto {
     codigo_risco: number
     contramedida: string
     medidas_de_contingencia: string
-    prazo_contramedida: Date | null
+    prazo_contramedida: string | null
     responsavel: string | null
 }
 
