@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { DashboardItemDto, DashboardLinhasDto } from '@/../../backend/src/dashboard/entities/dashboard.entity';
+import { DashboardItemComOpcoesDto, DashboardItemDto, DashboardLinhasDto, DashboardOptionDto } from '@/../../backend/src/dashboard/entities/dashboard.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -41,7 +41,7 @@ export const useDashboardStore = defineStore('dashboard', {
   },
 
   getters: {
-    dashboardEmFoco(): DashboardItemDto | null {
+    dashboardEmFoco(): DashboardItemComOpcoesDto | DashboardItemDto | null {
       const { lista, route: { query: { id } } } = this;
 
       return (!id
@@ -49,5 +49,19 @@ export const useDashboardStore = defineStore('dashboard', {
         : lista.find(x => x.id === Number(id))
       ) || null;
     },
+
+    opçãoEmFoco(): DashboardOptionDto | null {
+      const { dashboardEmFoco, route: { query: { opcao: opção } } } = this;
+
+      return !dashboardEmFoco?.opcoes || !Array.isArray(dashboardEmFoco.opcoes)
+        ? null
+        : dashboardEmFoco.opcoes.find((x: DashboardOptionDto) => x.id === Number(opção)) || null;
+    },
+
+    endereçoParaIframe(): String | null {
+      const { dashboardEmFoco, opçãoEmFoco } = this;
+
+      return opçãoEmFoco?.url || dashboardEmFoco?.url || '';
+    }
   },
 });
