@@ -77,7 +77,7 @@ dashboardStore.buscarTudo()
       :src="dashboardEmFoco.url"
       frameborder="0"
       allowtransparency
-      @load="iframeResize({ log: true }, $event.target)"
+      @load="iframeResize($event.target)"
     />
   </Dashboard>
 </template>
