@@ -211,6 +211,7 @@ export class MetaService {
                     }
                 ] : undefined,
                 pdm_id: filters?.pdm_id,
+                id: filters?.id,
             },
             orderBy: [{ codigo: 'asc' }],
             select: {
