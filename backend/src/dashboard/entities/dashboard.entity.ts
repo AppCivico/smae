@@ -6,16 +6,16 @@ export class DashboardItemDto {
 
 export class DashboardOptionDto {
     url: string
-    value: string
+    titulo: string
 }
 
-export class DashboardItemWithOptionsDto {
+export class DashboardItemComOpcoesDto {
     id: number
     titulo: string
-    options_label: string
-    options: DashboardOptionDto[]
+    opcoes_titulo: string
+    opcoes: DashboardOptionDto[]
 }
 
 export class DashboardLinhasDto {
-    linhas: DashboardItemDto[] | DashboardItemWithOptionsDto[]
+    linhas: DashboardItemDto[] | DashboardItemComOpcoesDto[]
 }
