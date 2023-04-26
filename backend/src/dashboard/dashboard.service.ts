@@ -72,6 +72,7 @@ export class DashboardService {
                     opcoes.push({
                         titulo: pdm.nome,
                         url: url,
+                        id: pdm.id
                     });
                 }
 

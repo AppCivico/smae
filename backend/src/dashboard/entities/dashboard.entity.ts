@@ -5,6 +5,7 @@ export class DashboardItemDto {
 }
 
 export class DashboardOptionDto {
+    id: number
     url: string
     titulo: string
 }
