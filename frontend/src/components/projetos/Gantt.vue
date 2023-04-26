@@ -157,7 +157,9 @@
 <script setup>
 import dependencyTypes from '@/consts/dependencyTypes';
 import renderChart from '@/helpers/ganttChart';
+import { useResizeObserver } from '@vueuse/core';
 import dayjs from 'dayjs';
+import { debounce } from 'lodash';
 import { useRoute, useRouter } from 'vue-router';
 
 import {
@@ -357,6 +359,12 @@ const config = computed(() => ({
     }
   },
 }));
+
+useResizeObserver(svgElementContainer, debounce(async () => {
+  await nextTick();
+
+  renderChart(config.value);
+}, 400));
 
 watch(() => props.data, async () => {
   await nextTick();
