@@ -106,10 +106,13 @@ export class RelProjetosPlanoAcaoMonitoramentosDto {
 export class RelProjetosLicoesAprendidasDto {
     projeto_id: number
     projeto_codigo: string
+    sequencial: number
     data_registro: Date
     responsavel: string
     descricao: string
     observacao: string | null
+    contexto: string | null
+    resultado: string | null
 }
 
 export class RelProjetosAcompanhamentosDto {
