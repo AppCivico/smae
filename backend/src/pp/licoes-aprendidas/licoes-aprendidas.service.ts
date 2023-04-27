@@ -75,7 +75,7 @@ export class LicoesAprendidasService {
                 projeto_id: projetoId,
                 removido_em: null
             },
-            orderBy: [{ data_registro: 'desc' }],
+            orderBy: [{ sequencial: 'asc' }, { projeto_id: 'asc' }],
             select: {
                 id: true,
                 sequencial: true,
