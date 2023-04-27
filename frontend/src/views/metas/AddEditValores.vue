@@ -41,7 +41,9 @@ async function onSubmit(el) {
     el.target.querySelectorAll('[name]').forEach((x) => {
       values.valores.push({
         referencia: x.name,
-        valor: !isNaN(parseFloat(x.value)) ? String(parseFloat(x.value.replace(',', '.'))) : '',
+        valor: !isNaN(parseFloat(x.value))
+          ? String(parseFloat(x.value.replace(',', '.')))
+          : '',
       });
     });
 
@@ -154,7 +156,7 @@ function openParent(e) {
                   :name="v.series[Previsto]?.referencia"
                   :value="v.series[Previsto]?.valor_nominal"
                   class="inputtext light mb1"
-                  @input="singleVariaveis.acumulativa&&soma(k[1],i)"
+                  @input="singleVariaveis.acumulativa && soma(k[1], i)"
                 >
               </div>
               <div class="f1">
