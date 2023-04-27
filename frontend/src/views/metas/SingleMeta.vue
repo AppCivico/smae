@@ -115,7 +115,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
             class="mr2"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Responsável na Coordenadoria de projetos
+              Responsável na coordenadoria de Planejamento
             </div>
             <div class="t13">
               {{ singleMeta.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
