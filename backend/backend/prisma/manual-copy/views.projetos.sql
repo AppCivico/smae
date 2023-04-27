@@ -71,6 +71,7 @@ FROM
 WHERE
     termino_planejado <= now() at time zone 'America/Sao_Paulo'
 and custo_estimado is not null
+and tarefa_pai_id is null
 group by 1,3;
 
 --
