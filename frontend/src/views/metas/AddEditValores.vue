@@ -1,10 +1,9 @@
 <script setup>
 import { router } from '@/router';
+import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
-
-import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -141,53 +140,55 @@ function limparFormulário() {
       Valores previstos e previstos acumulados para cada período <span class="tvermelho">*</span>
     </div>
     <hr class="mb2">
-    <form @submit="onSubmit">
-      <div class="auxiliar-de-preenchimento accordeon pb1">
-        <div class="auxiliar-de-preenchimento__container">
-          <div
-            class="flex center pt1"
-            @click="openParent"
-          >
-            <span class="t0"><svg
-              class="arrow"
-              width="13"
-              height="8"
-            ><use xlink:href="#i_down" /></svg></span> Auxiliar de preenchimento
-          </div>
-          <div
-            class="content flex g2 end mt1"
-          >
-            <div class="f1">
-              <label class="label">Valor a aplicar</label>
-              <input
-                v-model="valorPadrão"
-                type="number"
-                min="0"
-                class="inputtext light mb1"
-              >
-            </div>
-            <button
-              type="button"
-              class="f0 mb1 btn bgnone outline tcprimary"
-              :disabled="valorPadrão === ''"
-              @click="preencherVaziosCom"
-            >
-              Preencher vazios
-            </button>
-
-            <button
-              type="reset"
-              class="f0 mb1 pl0 pr0 btn bgnone"
-              @click="limparFormulário"
-            >
-              &times; limpar tudo
-            </button>
-          </div>
-        </div>
+    <div class="auxiliar-de-preenchimento accordeon mb1 pb1">
+      <div
+        class="flex center pt1"
+        @click="openParent"
+      >
+        <span class="t0"><svg
+          class="arrow"
+          width="13"
+          height="8"
+        ><use xlink:href="#i_down" /></svg></span> Auxiliar de preenchimento
       </div>
+      <div
+        class="content flex g2 end mt1"
+      >
+        <div class="f1">
+          <label class="label">Valor a aplicar</label>
+          <input
+            v-model="valorPadrão"
+            type="number"
+            min="0"
+            class="inputtext light mb1"
+          >
+        </div>
+        <button
+          type="button"
+          class="f0 mb1 btn bgnone outline tcprimary"
+          :disabled="valorPadrão === ''"
+          @click="preencherVaziosCom"
+        >
+          Preencher vazios
+        </button>
 
-      <hr class="mb2 f1">
+        <button
+          type="reset"
+          form="form"
+          class="f0 mb1 pl0 pr0 btn bgnone"
+          @click="limparFormulário"
+        >
+          &times; limpar tudo
+        </button>
+      </div>
+    </div>
 
+    <hr class="mb2 f1">
+
+    <form
+      id="form"
+      @submit="onSubmit"
+    >
       <div
         v-if="Valores[var_id]?.linhas"
         ref="envelopeDeValores"
@@ -284,11 +285,15 @@ function limparFormulário() {
   transition-property: color;
   transition-duration: 300ms;
   overflow: hidden;
+  background-color: white;
+  z-index: 1;
 
   &.active {
     position: sticky;
     top: -3rem;
     color: inherit;
+    box-shadow: 0 5px 15px 0 fade(black, 5);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 125%, 0% 125%);
 
     +hr {
       display: none;
@@ -296,8 +301,4 @@ function limparFormulário() {
   }
 }
 
-.active>.auxiliar-de-preenchimento__container {
-  background-color: white;
-  box-shadow: 0 5px 15px 0 fade(black, 5);
-}
 </style>
