@@ -1,10 +1,9 @@
 <script setup>
 import { router } from '@/router';
+import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-
-import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -41,7 +40,9 @@ async function onSubmit(el) {
     el.target.querySelectorAll('[name]').forEach((x) => {
       values.valores.push({
         referencia: x.name,
-        valor: !isNaN(parseFloat(x.value)) ? String(parseFloat(x.value.replace(',', '.'))) : '',
+        valor: !isNaN(parseFloat(x.value))
+          ? String(parseFloat(x.value.replace(',', '.')))
+          : '',
       });
     });
 
@@ -110,7 +111,7 @@ function openParent(e) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <template v-if="!(Valores[var_id]?.loading || Valores[var_id]?.error)&&var_id">
+  <template v-if="!(Valores[var_id]?.loading || Valores[var_id]?.error) && var_id">
     <div class="label">
       Valores realizados e realizados acumulados para cada período <span class="tvermelho">*</span>
     </div>
@@ -170,7 +171,8 @@ function openParent(e) {
                       ? acumular(v.periodo)
                       : v.series[RealizadoAcumulado]?.valor_nominal
                   "
-                  :disabled="singleVariaveis.acumulativa||!v.series[RealizadoAcumulado]?.referencia"
+                  :disabled="singleVariaveis.acumulativa
+                    || !v.series[RealizadoAcumulado]?.referencia"
                   class="inputtext light mb1"
                 >
               </div>
