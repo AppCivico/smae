@@ -284,17 +284,10 @@ function limparFormulário() {
 <style lang="less" scoped>
 @import '@/_less/variables.less';
 
-[id='form'] {
-  background-attachment: fixed;
-  background-image:
-    linear-gradient(to bottom, white 0, white 135px, fade(black, 5) 135px, transparent 155px);
-}
-
 .auxiliar-de-preenchimento {
   color: @c400;
   transition-property: color;
   transition-duration: 300ms;
-  overflow: hidden;
   background-color: white;
   z-index: 1;
 
@@ -302,8 +295,19 @@ function limparFormulário() {
     position: sticky;
     top: -3rem;
     color: inherit;
-    box-shadow: 0 5px 15px 0 fade(black, 5);
-    clip-path: polygon(0% 0%, 100% 0%, 100% 125%, 0% 125%);
+
+    &:after {
+      background-attachment: fixed;
+      background-image:
+        linear-gradient(to bottom, white 0, white 135px, fade(black, 5) 135px, transparent 155px);
+      content: '';
+      position: absolute;
+      pointer-events: none;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 20px;
+    }
 
     +hr {
       display: none;
