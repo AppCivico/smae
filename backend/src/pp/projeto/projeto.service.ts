@@ -285,7 +285,7 @@ export class ProjetoService {
     }
 
     async findAllIds(user: PessoaFromJwt): Promise<{ id: number }[]> {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, true);
         return await this.prisma.projeto.findMany({
             where: {
                 AND: permissionsSet.length > 0 ? [
@@ -300,7 +300,7 @@ export class ProjetoService {
 
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, false);
 
         const rows = await this.prisma.projeto.findMany({
             where: {
@@ -401,7 +401,7 @@ export class ProjetoService {
         return ret;
     }
 
-    private getProjetoPermissionSet(user: PessoaFromJwt | undefined) {
+    private getProjetoPermissionSet(user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 removido_em: null,
@@ -409,6 +409,8 @@ export class ProjetoService {
             }
         ];
         if (!user) return permissionsSet;
+
+        if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
 
         if (user.hasSomeRoles(['Projeto.administrador'])) {
             // nenhum filtro
@@ -494,7 +496,7 @@ export class ProjetoService {
 
         console.log({ id, user, readonly });
 
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, false);
         const projeto = await this.prisma.projeto.findFirst({
             where: {
                 id: id,

@@ -159,13 +159,14 @@ export class MetaService {
         return arr;
     }
 
-    private async getMetasPermissionSet(user: PessoaFromJwt | undefined) {
+    private async getMetasPermissionSet(user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
             {
                 removido_em: null,
             }
         ];
         if (!user) return permissionsSet;
+        if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
 
         // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
         // 'CadastroMeta.inserir'
@@ -173,6 +174,7 @@ export class MetaService {
         // pra outro lugar (o frontend da um get em /painel sem informar qual meta
         // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
         // depois o busca a serie do painel-conteúdo correspondente
+
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
@@ -184,7 +186,7 @@ export class MetaService {
     }
 
     async findAllIds(user: PessoaFromJwt): Promise<{ id: number }[]> {
-        const permissionsSet = await this.getMetasPermissionSet(user);
+        const permissionsSet = await this.getMetasPermissionSet(user, true);
 
         return await this.prisma.meta.findMany({
             where: {
@@ -201,7 +203,7 @@ export class MetaService {
 
     async findAll(filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
 
-        const permissionsSet = await this.getMetasPermissionSet(user);
+        const permissionsSet = await this.getMetasPermissionSet(user, false);
 
         const listActive = await this.prisma.meta.findMany({
             where: {

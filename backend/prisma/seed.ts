@@ -363,6 +363,16 @@ const PerfilAcessoConfig: {
                 'SMAE.colaborador_de_projeto',
             ]
         },
+        {
+            nome: 'Analista de dados',
+            descricao: 'Entra diretamente para as análises e tem acesso total para metas e projetos',
+            privilegios: [
+                'SMAE.loga_direto_na_analise',
+                'SMAE.acesso_bi',
+                'Reports.dashboard_pdm',
+                'Reports.dashboard_portfolios',
+            ]
+        },
         removerNomePerfil('Técnico CP'),
         removerNomePerfil('Unidade de Entregas'),
         removerNomePerfil('Responsável por meta na CP - orçamento'),
