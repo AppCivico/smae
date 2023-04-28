@@ -2,6 +2,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import CheckClose from '@/components/CheckClose.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -88,18 +89,13 @@ iniciar();
 <template>
   <div class="flex spacebetween center mb2">
     <h1>
-      <div
-        v-if="licaoAprendidaId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ 'Editar licoesaprendida' }}
-      </div>
       <template v-if="emFoco?.sequencial">
         {{ emFoco.sequencial }} -
       </template>
 
       {{ emFoco?.descricao
-        || (licaoAprendidaId ? 'LicoesAprendida' : 'Nova lição aprendida') }}
+        ? truncate(emFoco.descricao, 36)
+        : 'Lição Aprendida' || 'Nova lição aprendida' }}
     </h1>
 
     <hr class="ml2 f1">
