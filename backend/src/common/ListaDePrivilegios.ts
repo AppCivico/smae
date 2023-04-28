@@ -79,4 +79,6 @@ export type ListaDePrivilegios =
     | 'PDM.ponto_focal'
     | 'Projeto.administrador'
     | 'Reports.dashboard_pdm'
-    | 'Reports.dashboard_portfolios';
+    | 'Reports.dashboard_portfolios'
+    | 'SMAE.loga_direto_na_analise'
+    | 'SMAE.acesso_bi';
