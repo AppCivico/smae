@@ -2,7 +2,7 @@
 import { router } from '@/router';
 import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
 
 const editModalStore = useEditModalStore();
@@ -23,6 +23,10 @@ VariaveisStore.getById(indicador_id, var_id);
 const Realizado = ref(null);
 const RealizadoAcumulado = ref(null);
 const decimais = ref(0);
+
+const envelopeDeValores = ref(null);
+const valorPadrão = ref(0);
+
 (async () => {
   await VariaveisStore.getValores(var_id);
   Realizado.value = Valores.value[var_id]?.ordem_series.indexOf('Realizado');
@@ -95,6 +99,27 @@ function nestLinhas(l) {
 function openParent(e) {
   e.target.closest('.accordeon').classList.toggle('active');
 }
+
+function preencherVaziosCom() {
+  envelopeDeValores.value.querySelectorAll('[name]').forEach((x) => {
+    if (!x.value && !x.disabled) {
+      x.closest('.accordeon').classList.add('active');
+      x.value = Number(toRaw(valorPadrão.value));
+      x.dispatchEvent(new Event('input'));
+    }
+  });
+}
+
+function limparFormulário() {
+  envelopeDeValores.value.querySelectorAll('[name]').forEach((x) => {
+    if (!x.disabled) {
+      x.closest('.accordeon').classList.add('active');
+      x.value = '';
+      x.dispatchEvent(new Event('input'));
+    }
+  });
+}
+
 </script>
 
 <template>
@@ -116,8 +141,59 @@ function openParent(e) {
       Valores realizados e realizados acumulados para cada período <span class="tvermelho">*</span>
     </div>
     <hr class="mb2">
-    <form @submit="onSubmit">
-      <div v-if="Valores[var_id]?.linhas">
+    <div class="auxiliar-de-preenchimento accordeon mb1 pb1">
+      <div
+        class="flex center pt1"
+        @click="openParent"
+      >
+        <span class="t0"><svg
+          class="arrow"
+          width="13"
+          height="8"
+        ><use xlink:href="#i_down" /></svg></span> Auxiliar de preenchimento
+      </div>
+      <div
+        class="content flex g2 end mt1"
+      >
+        <div class="f1">
+          <label class="label">Valor a aplicar</label>
+          <input
+            v-model="valorPadrão"
+            type="number"
+            min="0"
+            class="inputtext light mb1"
+          >
+        </div>
+        <button
+          type="button"
+          class="f0 mb1 btn bgnone outline tcprimary"
+          :disabled="valorPadrão === ''"
+          @click="preencherVaziosCom"
+        >
+          Preencher vazios
+        </button>
+
+        <button
+          type="reset"
+          form="form"
+          class="f0 mb1 pl0 pr0 btn bgnone"
+          @click="limparFormulário"
+        >
+          &times; limpar tudo
+        </button>
+      </div>
+    </div>
+
+    <hr class="mb2 f1">
+
+    <form
+      id="form"
+      @submit="onSubmit"
+    >
+      <div
+        v-if="Valores[var_id]?.linhas"
+        ref="envelopeDeValores"
+      >
         <div
           v-for="k in nestLinhas(Valores[var_id].linhas)"
           :key="k[0]"
@@ -204,3 +280,34 @@ function openParent(e) {
     </div>
   </template>
 </template>
+
+<style lang="less" scoped>
+@import '@/_less/variables.less';
+
+[id='form'] {
+  background-attachment: fixed;
+  background-image:
+    linear-gradient(to bottom, white 0, white 135px, fade(black, 5) 135px, transparent 155px);
+}
+
+.auxiliar-de-preenchimento {
+  color: @c400;
+  transition-property: color;
+  transition-duration: 300ms;
+  overflow: hidden;
+  background-color: white;
+  z-index: 1;
+
+  &.active {
+    position: sticky;
+    top: -3rem;
+    color: inherit;
+    box-shadow: 0 5px 15px 0 fade(black, 5);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 125%, 0% 125%);
+
+    +hr {
+      display: none;
+    }
+  }
+}
+</style>
