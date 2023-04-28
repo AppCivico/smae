@@ -379,7 +379,7 @@ function excluirAcompanhamento(id) {
                 :value="item.id"
                 :title="item.titulo"
               >
-                {{ item.titulo || (item.descricao ? truncate(item.descricao) : item.descricao) }}
+                {{ item.titulo || (item.descricao ? truncate(item.descricao, 36) : item.descricao) }}
               </option>
             </Field>
             <ErrorMessage
