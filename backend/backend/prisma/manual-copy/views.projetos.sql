@@ -94,7 +94,8 @@ select
     case when coalesce(serie.meta_realizada, 0) >= coalesce(serie.meta_prevista, 1)
         then 'Atingida' else 'Não Atingida'
     end AS status_meta,
-    meta.macro_tema_id, meta.tema_id
+    meta.macro_tema_id, meta.tema_id,
+    meta.titulo as titulo_meta
 from meta
 inner join indicador on indicador.meta_id = meta.id and indicador.removido_em is null
 left join (
@@ -156,7 +157,8 @@ select
 
     eixo.descricao as macro_tema,
     objetivo_estrategico.descricao as tema,
-    string_agg(distinct orgao.sigla , ', ' order by orgao.sigla ) as orgaos
+    string_agg(distinct orgao.sigla , ', ' order by orgao.sigla ) as orgaos,
+    titulo_meta as titulo_meta
     --array_agg(distinct orgao.sigla order by orgao.sigla ) as orgaos
     --jsonb_object_agg(distinct orgao.sigla, true order by orgao.sigla ) as orgaos
 
@@ -166,4 +168,4 @@ inner join objetivo_estrategico on m.tema_id = objetivo_estrategico.id
 inner join meta_orgao on m.id = meta_orgao.meta_id
 inner join orgao on meta_orgao.orgao_id = orgao.id
 
-group by 1,2,3,4,5,6,7,8,9;
+group by 1,2,3,4,5,6,7,8,9,11;
