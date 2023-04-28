@@ -295,13 +295,14 @@ function limparFormulário() {
     &:after {
       background-attachment: fixed;
       background-image:
-        linear-gradient(to bottom, white 0, white 135px, fade(black, 5) 135px, transparent 155px);
+        linear-gradient(to bottom, white 0, white 135px, fade(black, 3.5) 135px, transparent 155px);
       content: '';
       position: absolute;
       pointer-events: none;
+      border-radius: 6px 6px 0 0;
       top: 100%;
-      left: 0;
-      right: 0;
+      left: -6px;
+      right: -6px;
       height: 20px;
     }
 
