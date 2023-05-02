@@ -38,7 +38,10 @@ lines AS (
         col,
         trim((json_array_elements(arr)) ->> 'codigo') AS codigo,
         (json_array_elements(arr)) ->> 'cod_orgao' AS cod_orgao,
-        trim((json_array_elements(arr)) ->> 'descricao') AS descricao
+
+        regexp_replace(
+            regexp_replace(trim((json_array_elements(arr)) ->> 'descricao'), '\s+', ' ', 'g'), '''', '´', 'g'
+        ) AS descricao
     FROM
         lists
 )
