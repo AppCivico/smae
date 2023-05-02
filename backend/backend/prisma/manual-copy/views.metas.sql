@@ -1,3 +1,82 @@
+
+DROP MATERIALIZED VIEW sof_entidades_linhas;
+CREATE MATERIALIZED VIEW sof_entidades_linhas AS
+WITH dict AS (
+    SELECT
+        ano,
+        array_agg(json_keys) AS keys
+    FROM (
+        SELECT
+            json_object_keys(dados) AS json_keys,
+            ano
+        FROM
+            sof_entidade) a
+    WHERE
+        json_keys IN ('projetos_atividades', 'unidades', 'fonte_recursos', 'orgaos')
+        -- json_keys not in ('metadados')
+    GROUP BY
+        ano
+),
+exploded AS (
+    SELECT
+        ano,
+        unnest(keys) AS k
+    FROM
+        dict
+),
+lists AS (
+    SELECT
+        sof.ano,
+        e.k AS col,
+        json_extract_path(sof.dados, e.k) AS arr
+    FROM
+        exploded e
+        JOIN sof_entidade sof ON sof.ano = e.ano
+),
+lines AS (
+    SELECT
+        ano,
+        col,
+        trim((json_array_elements(arr)) ->> 'codigo') AS codigo,
+        (json_array_elements(arr)) ->> 'cod_orgao' AS cod_orgao,
+
+        regexp_replace(
+            regexp_replace(trim((json_array_elements(arr)) ->> 'descricao'), '\s+', ' ', 'g'), '''', '´', 'g'
+        ) AS descricao
+    FROM
+        lists
+)
+SELECT
+    ano,
+    col,
+    coalesce(codigo, '') AS codigo,
+    coalesce(cod_orgao, '') AS cod_orgao,
+    string_agg(descricao, ' / ' ORDER BY descricao) AS descricao
+FROM
+    lines
+GROUP BY
+    1,
+    2,
+    3,
+    4;
+
+/*
+WITH upper_case_counts AS (
+  SELECT descricao, lower(descricao) AS lower_descricao, count_upper_case_chars(descricao) AS num_upper_case
+  FROM sof_entidades_linhas
+  WHERE col = 'orgaos'
+),
+min_upper_case_counts AS (
+  SELECT lower_descricao, MIN(num_upper_case) AS min_num_upper_case
+  FROM upper_case_counts
+  GROUP BY lower_descricao
+)
+SELECT ucc.descricao
+FROM upper_case_counts AS ucc
+JOIN min_upper_case_counts AS mucc
+ON ucc.lower_descricao = mucc.lower_descricao AND ucc.num_upper_case = mucc.min_num_upper_case;
+*/
+
 create or replace view view_meta_orcamento_plan as
 select
     x.pdm_id,
@@ -261,81 +340,3 @@ BEGIN
     RETURN count_upper;
 END;
 $$ LANGUAGE plpgsql;
-
-DROP MATERIALIZED VIEW sof_entidades_linhas;
-CREATE MATERIALIZED VIEW sof_entidades_linhas AS
-WITH dict AS (
-    SELECT
-        ano,
-        array_agg(json_keys) AS keys
-    FROM (
-        SELECT
-            json_object_keys(dados) AS json_keys,
-            ano
-        FROM
-            sof_entidade) a
-    WHERE
-        json_keys IN ('projetos_atividades', 'unidades', 'fonte_recursos', 'orgaos')
-        -- json_keys not in ('metadados')
-    GROUP BY
-        ano
-),
-exploded AS (
-    SELECT
-        ano,
-        unnest(keys) AS k
-    FROM
-        dict
-),
-lists AS (
-    SELECT
-        sof.ano,
-        e.k AS col,
-        json_extract_path(sof.dados, e.k) AS arr
-    FROM
-        exploded e
-        JOIN sof_entidade sof ON sof.ano = e.ano
-),
-lines AS (
-    SELECT
-        ano,
-        col,
-        trim((json_array_elements(arr)) ->> 'codigo') AS codigo,
-        (json_array_elements(arr)) ->> 'cod_orgao' AS cod_orgao,
-
-        regexp_replace(
-            regexp_replace(trim((json_array_elements(arr)) ->> 'descricao'), '\s+', ' ', 'g'), '''', '´', 'g'
-        ) AS descricao
-    FROM
-        lists
-)
-SELECT
-    ano,
-    col,
-    coalesce(codigo, '') AS codigo,
-    coalesce(cod_orgao, '') AS cod_orgao,
-    string_agg(descricao, ' / ' ORDER BY descricao) AS descricao
-FROM
-    lines
-GROUP BY
-    1,
-    2,
-    3,
-    4;
-
-/*
-WITH upper_case_counts AS (
-  SELECT descricao, lower(descricao) AS lower_descricao, count_upper_case_chars(descricao) AS num_upper_case
-  FROM sof_entidades_linhas
-  WHERE col = 'orgaos'
-),
-min_upper_case_counts AS (
-  SELECT lower_descricao, MIN(num_upper_case) AS min_num_upper_case
-  FROM upper_case_counts
-  GROUP BY lower_descricao
-)
-SELECT ucc.descricao
-FROM upper_case_counts AS ucc
-JOIN min_upper_case_counts AS mucc
-ON ucc.lower_descricao = mucc.lower_descricao AND ucc.num_upper_case = mucc.min_num_upper_case;
-*/
