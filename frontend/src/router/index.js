@@ -59,8 +59,6 @@ export const router = createRouter({
 
     ...administracao,
 
-    análise,
-
     {
       path: '/monitoramento',
       children: [
@@ -215,7 +213,9 @@ export const router = createRouter({
 
       ],
     },
+
     projetos,
+    análise,
     relatorios,
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
