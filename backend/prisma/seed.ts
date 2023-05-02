@@ -304,6 +304,8 @@ const PerfilAcessoConfig: {
 
                 'Reports.executar',
                 'Reports.remover',
+
+                'Reports.dashboard_pdm',
             ]
         },
         {
@@ -349,6 +351,7 @@ const PerfilAcessoConfig: {
             descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
             privilegios: [
                 'Projeto.administrador_no_orgao',
+                'Reports.dashboard_portfolios',
             ]
         },
         {
@@ -356,6 +359,7 @@ const PerfilAcessoConfig: {
             descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
             privilegios: [
                 'SMAE.gestor_de_projeto',
+                'Reports.dashboard_portfolios',
             ]
         },
         {
@@ -363,6 +367,7 @@ const PerfilAcessoConfig: {
             descricao: 'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
             privilegios: [
                 'SMAE.colaborador_de_projeto',
+                'Reports.dashboard_portfolios',
             ]
         },
         {
