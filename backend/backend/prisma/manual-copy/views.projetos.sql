@@ -169,3 +169,4 @@ inner join meta_orgao on m.id = meta_orgao.meta_id
 inner join orgao on meta_orgao.orgao_id = orgao.id
 
 group by 1,2,3,4,5,6,7,8,9,11;
+update projeto set tarefas_proximo_recalculo=now();
