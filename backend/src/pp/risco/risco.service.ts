@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, StatusRisco } from '@prisma/client';
+import { Prisma, ProjetoStatus, StatusRisco } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { RiscoCalc } from 'src/common/RiscoCalc';
@@ -17,12 +17,15 @@ export class RiscoService {
     async create(projetoId: number, dto: CreateRiscoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const calcResult = dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
 
+        // Na criação, o código é fixado, para sempre ir para o final da lista.
+        const codigo: number = 9999;
+
         const risco = await this.prisma.projetoRisco.create({
             data: {
                 projeto_id: projetoId,
                 status_risco: StatusRisco.SemInformacao,
 
-                codigo: dto.codigo,
+                codigo: codigo,
                 registrado_em: dto.registrado_em,
                 probabilidade: dto.probabilidade,
                 impacto: dto.impacto,
@@ -239,6 +242,57 @@ export class RiscoService {
                         }
                     })
                 });
+            }
+
+            if (dto.codigo) {
+                // O código só pode ser modificado caso o status do Projeto for diferente de ['Planejado','Validado ','EmAcompanhamento','Suspenso','Fechado ']
+                const valoresAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+
+                const projetoRisco = await prismaTx.projetoRisco.findFirst({
+                    where: { id: projeto_risco_id },
+                    select: {
+                        projeto: {
+                            select: {
+                                id: true,
+                                status: true
+                            }
+                        }
+                    }
+                });
+                if (!projetoRisco) throw new Error('Erro interno ao buscar dados do Projeto Prioritário.');
+
+                const projetoStatus: ProjetoStatus = projetoRisco.projeto.status;
+
+                if (valoresAceitaveis.includes(projetoStatus)) {
+                    const riscosAbaixo = await prismaTx.projetoRisco.findMany({
+                        where: {
+                            projeto_id: projetoRisco.projeto.id,
+                            removido_em: null,
+                            codigo: {
+                                gte: dto.codigo,
+                                // Valor padrão do "final da fila"
+                                lte: 9999
+                            }
+                        },
+                        orderBy: { codigo: 'asc' },
+                        select: {
+                            id: true,
+                            codigo: true,
+                        }
+                    });
+
+                    const updates = [];
+                    for (const row of riscosAbaixo) {
+                        updates.push(
+                            prismaTx.projetoRisco.update({
+                                where: {id: row.id},
+                                data: { codigo: row.codigo + 1 }
+                            })
+                        );
+                    }
+
+                    Promise.all(updates);
+                }
             }
 
             const calcResult = dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
