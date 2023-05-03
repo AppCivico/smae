@@ -294,6 +294,8 @@ export class RiscoService {
                     }
 
                     if (updates.length) {
+                        console.log(updates.length);
+                        console.dir(updates, { depth: 2 });
                         await Promise.all(updates);
                     }
                 }
