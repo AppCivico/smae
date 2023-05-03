@@ -322,6 +322,10 @@ export class RiscoService {
                 },
                 select: { id: true }
             });
+        },
+        {
+            maxWait: 15000,
+            timeout: 60000,
         });
 
         return updated;
