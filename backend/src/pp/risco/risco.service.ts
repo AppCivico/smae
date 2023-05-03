@@ -282,19 +282,23 @@ export class RiscoService {
                         }
                     });
 
+                    console.dir(riscosAbaixo, {depth: 2});
+                    const updates = [];
                     let primeiraRow: boolean = true;
                     for (const row of riscosAbaixo) {
                         if (primeiraRow && row.codigo != dto.codigo) {
                             break;
                         }
                         
-                        await prismaTx.projetoRisco.update({
+                        updates.push(prismaTx.projetoRisco.update({
                             where: {id: row.id},
                             data: { codigo: row.codigo + 1 }
-                        })
+                        }));
 
                         primeiraRow = false;
                     }
+
+                    await Promise.all(updates);
                 }
             }
 
