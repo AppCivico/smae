@@ -281,22 +281,17 @@ export class RiscoService {
                         }
                     });
 
-                    const updates = [];
+                    let primeiraRow: boolean = true;
                     for (const row of riscosAbaixo) {
-                        if (row.codigo != dto.codigo) break;
+                        if (primeiraRow && row.codigo != dto.codigo) {
+                            primeiraRow = false;
+                            break;
+                        }
 
-                        updates.push(
-                            prismaTx.projetoRisco.update({
-                                where: {id: row.id},
-                                data: { codigo: row.codigo + 1 }
-                            })
-                        );
-                    }
-
-                    if (updates.length) {
-                        console.log(updates.length);
-                        console.dir(updates, { depth: 2 });
-                        await Promise.all(updates);
+                        await prismaTx.projetoRisco.update({
+                            where: {id: row.id},
+                            data: { codigo: row.codigo + 1 }
+                        })
                     }
                 }
             }
