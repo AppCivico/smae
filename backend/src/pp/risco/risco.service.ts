@@ -284,14 +284,15 @@ export class RiscoService {
                     let primeiraRow: boolean = true;
                     for (const row of riscosAbaixo) {
                         if (primeiraRow && row.codigo != dto.codigo) {
-                            primeiraRow = false;
                             break;
                         }
-
+                        
                         await prismaTx.projetoRisco.update({
                             where: {id: row.id},
                             data: { codigo: row.codigo + 1 }
                         })
+
+                        primeiraRow = false;
                     }
                 }
             }
