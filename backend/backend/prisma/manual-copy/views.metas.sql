@@ -199,24 +199,15 @@ union all
 -- collapse pro resultado do mesmo ano/meta/orgao/acao ficar na mesma linha, mas
 -- talvez não seja necessário pro metabase, podemos tirar pra evitar esse processamento a toa
 select
-    x.*,
-    case when valor_planejado is not null
-    and valor_empenhado is not null
-    and valor_planejado != 0 then
-        round(valor_empenhado::numeric/valor_planejado::numeric)*100
-    end as percentual_execucao
-from (
-    select
-    pdm_id, ano, id,
-    sum(valor_empenhado) filter (where valor_empenhado is not null) as valor_empenhado,
-    sum(valor_liquidado) filter (where valor_liquidado is not null) as valor_liquidado,
-    acao_orcamentaria,
-    orgao_sof,
-    sum(qtde) as qtde,
-    sum(valor_planejado) filter (where valor_planejado is not null) as valor_planejado
-    from myq
-    group by 1,2,3,6,7
-) x;
+pdm_id, ano, id,
+sum(valor_empenhado) filter (where valor_empenhado is not null) as valor_empenhado,
+sum(valor_liquidado) filter (where valor_liquidado is not null) as valor_liquidado,
+acao_orcamentaria,
+orgao_sof,
+sum(qtde) as qtde,
+sum(valor_planejado) filter (where valor_planejado is not null) as valor_planejado
+from myq
+group by 1,2,3,6,7;
 --
 create or replace view view_variaveis_pdm as
      -- indicadores do pdm
