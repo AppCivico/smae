@@ -291,7 +291,7 @@ export class RiscoService {
                         );
                     }
 
-                    Promise.all(updates);
+                    await Promise.all(updates);
                 }
             }
 
