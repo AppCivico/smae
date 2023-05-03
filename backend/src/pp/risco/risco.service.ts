@@ -266,6 +266,7 @@ export class RiscoService {
                 if (valoresAceitaveis.includes(projetoStatus)) {
                     const riscosAbaixo = await prismaTx.projetoRisco.findMany({
                         where: {
+                            id: {not: projeto_risco_id},
                             projeto_id: projetoRisco.projeto.id,
                             removido_em: null,
                             codigo: {
