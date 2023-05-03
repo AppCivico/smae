@@ -302,6 +302,7 @@ with variaveis_mes as (
     join variavel v on v.id = vv.variavel_id
     join orgao ov on ov.id = v.orgao_id
     join serie_variavel sv on sv.variavel_id = vv.variavel_id and sv.serie = 'PrevistoAcumulado'
+    and date_trunc('month', sv.data_valor + ( v.atraso_meses || 'month')::interval) = cf.data_ciclo
     group by 1, 2, 3, 4
 )
 select
