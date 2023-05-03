@@ -304,7 +304,7 @@ export class RiscoService {
 
             const calcResult = dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
 
-            return await this.prisma.projetoRisco.update({
+            return await prismaTx.projetoRisco.update({
                 where: { id: projeto_risco_id },
                 data: {
                     codigo: dto.codigo,
