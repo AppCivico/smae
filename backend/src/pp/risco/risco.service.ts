@@ -291,7 +291,7 @@ export class RiscoService {
                             projeto_id: projetoRisco.projeto.id,
                             removido_em: null,
                             codigo: {
-                                gte: dto.codigo - 1,
+                                gte: dto.codigo,
                                 // Valor padrão do "final da fila"
                                 lte: 9999
                             }
@@ -307,9 +307,7 @@ export class RiscoService {
                     const updates = [];
                     let primeiraRow: boolean = true;
                     for (const row of riscosAbaixo) {
-                        if (primeiraRow && row.codigo != dto.codigo) {
-                            break;
-                        }
+                        if (primeiraRow && row.codigo != dto.codigo) break;
                         
                         updates.push(prismaTx.projetoRisco.update({
                             where: {id: row.id},
