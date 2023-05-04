@@ -241,3 +241,17 @@ router.beforeEach(async (r) => {
     return '/login';
   }
 });
+
+router.beforeEach((to, from, next) => {
+  const { título } = to.meta;
+
+  if (título) {
+    document.title = `${typeof título === 'function'
+      ? título()
+      : título} | SMAE`;
+  } else if (document.title !== 'SMAE') {
+    document.title = 'SMAE';
+  }
+
+  next();
+});
