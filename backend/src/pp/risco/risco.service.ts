@@ -318,6 +318,8 @@ export class RiscoService {
                     }
 
                     await Promise.all(updates);
+                } else {
+                    throw new HttpException('Status do Projeto não permite alteração no código', 400);
                 }
             }
 
