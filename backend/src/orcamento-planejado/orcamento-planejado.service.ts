@@ -9,7 +9,7 @@ import { OrcamentoPlanejado } from './entities/orcamento-planejado.entity';
 
 @Injectable()
 export class OrcamentoPlanejadoService {
-    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
+    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) { }
 
     async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const dotacao = await this.prisma.dotacaoPlanejado.findFirst({
@@ -204,6 +204,7 @@ export class OrcamentoPlanejadoService {
                 removido_em: null,
                 dotacao: filters?.dotacao,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
+                meta_id: { not: null },
             },
             select: {
                 criador: { select: { nome_exibicao: true } },
@@ -269,7 +270,7 @@ export class OrcamentoPlanejadoService {
             rows.push({
                 id: orcamentoPlanejado.id,
                 ano_referencia: orcamentoPlanejado.ano_referencia,
-                meta: orcamentoPlanejado.meta,
+                meta: orcamentoPlanejado.meta!,
                 iniciativa: orcamentoPlanejado.iniciativa,
                 atividade: orcamentoPlanejado.atividade,
                 criado_em: orcamentoPlanejado.criado_em,
@@ -297,7 +298,7 @@ export class OrcamentoPlanejadoService {
         const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!orcamentoPlanejado) throw new HttpException('Orçamento planejado não encontrado', 404);
+        if (!orcamentoPlanejado || orcamentoPlanejado.meta_id === null) throw new HttpException('Orçamento planejado não encontrado', 404);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp

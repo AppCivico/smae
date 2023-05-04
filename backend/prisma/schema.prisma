@@ -167,9 +167,9 @@ model Pessoa {
     MetaCicloFisicoAnaliseDocumentoCriador   MetaCicloFisicoAnaliseDocumento[] @relation("criador")
     MetaCicloFisicoAnaliseDocumentoRemovedor MetaCicloFisicoAnaliseDocumento[] @relation("removedor")
     EtapaResponsavel                         EtapaResponsavel[]
-    MetaOrcamentoCriados                     MetaOrcamento[]                   @relation("criador")
-    MetaOrcamentoRemovidos                   MetaOrcamento[]                   @relation("removedor")
-    MetaOrcamentoAtualizados                 MetaOrcamento[]                   @relation("atualizador")
+    MetaOrcamentoCriados                     OrcamentoPrevisto[]                   @relation("criador")
+    MetaOrcamentoRemovidos                   OrcamentoPrevisto[]                   @relation("removedor")
+    MetaOrcamentoAtualizados                 OrcamentoPrevisto[]                   @relation("atualizador")
     OrcamentoPlanejadoCriados                OrcamentoPlanejado[]              @relation("criador")
     OrcamentoPlanejadoRemovidos              OrcamentoPlanejado[]              @relation("removedor")
     OrcamentoRealizadoCriados                OrcamentoRealizado[]              @relation("criador")
@@ -735,7 +735,7 @@ model Meta {
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
     MetaCicloFisicoRisco            MetaCicloFisicoRisco[]
     MetaCicloFisicoFechamento       MetaCicloFisicoFechamento[]
-    MetaOrcamento                   MetaOrcamento[]
+    MetaOrcamento                   OrcamentoPrevisto[]
     OrcamentoPlanejado              OrcamentoPlanejado[]
     OrcamentoRealizado              OrcamentoRealizado[]
     projetos                        Projeto[]
@@ -1061,7 +1061,7 @@ model Iniciativa {
     PainelConteudoDetalhe  PainelConteudoDetalhe[]
     OrcamentoPlanejado     OrcamentoPlanejado[]
     OrcamentoRealizado     OrcamentoRealizado[]
-    MetaOrcamento          MetaOrcamento[]
+    MetaOrcamento          OrcamentoPrevisto[]
     projetos               Projeto[]
 
     @@index([meta_id])
@@ -1142,7 +1142,7 @@ model Atividade {
     PainelConteudoDetalhe PainelConteudoDetalhe[]
     OrcamentoPlanejado    OrcamentoPlanejado[]
     OrcamentoRealizado    OrcamentoRealizado[]
-    MetaOrcamento         MetaOrcamento[]
+    MetaOrcamento         OrcamentoPrevisto[]
     projetos              Projeto[]
 
     @@index([iniciativa_id])
@@ -1809,9 +1809,11 @@ model PdmOrcamentoConfig {
     @@map("meta_orcamento_config")
 }
 
-model MetaOrcamento {
-    id                 Int  @id @default(autoincrement())
-    meta_id            Int
+model OrcamentoPrevisto {
+    id Int @id @default(autoincrement())
+
+    projeto_id         Int?
+    meta_id            Int?
     iniciativa_id      Int?
     atividade_id       Int?
     versao_anterior_id Int? @unique
@@ -1831,15 +1833,16 @@ model MetaOrcamento {
 
     parte_dotacao String @default("")
 
-    meta        Meta        @relation(fields: [meta_id], references: [id])
+    projeto     Projeto?    @relation(fields: [projeto_id], references: [id])
+    meta        Meta?       @relation(fields: [meta_id], references: [id])
     iniciativa  Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade   Atividade?  @relation(fields: [atividade_id], references: [id])
     criador     Pessoa      @relation("criador", fields: [criado_por], references: [id])
     removedor   Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
     atualizador Pessoa?     @relation("atualizador", fields: [atualizado_por], references: [id])
 
-    versao_anterior MetaOrcamento? @relation("versao_anterior", fields: [versao_anterior_id], references: [id])
-    versao_seguinte MetaOrcamento? @relation("versao_anterior")
+    versao_anterior OrcamentoPrevisto? @relation("versao_anterior", fields: [versao_anterior_id], references: [id])
+    versao_seguinte OrcamentoPrevisto? @relation("versao_anterior")
 
     @@index([meta_id, ano_referencia])
     @@map("meta_orcamento")
@@ -1861,6 +1864,9 @@ model DotacaoPlanejado {
     pressao_orcamentaria      Boolean
     smae_soma_valor_planejado Float
 
+    pp_pressao_orcamentaria Boolean @default(false)
+    pp_soma_valor_planejado Float   @default(0)
+
     @@unique([ano_referencia, dotacao])
     @@map("dotacao_planejado")
 }
@@ -1880,6 +1886,9 @@ model DotacaoRealizado {
 
     smae_soma_valor_empenho   Float @default(0)
     smae_soma_valor_liquidado Float @default(0)
+
+    pp_soma_valor_empenho   Float @default(0)
+    pp_soma_valor_liquidado Float @default(0)
 
     @@unique([ano_referencia, dotacao])
     @@map("dotacao_realizado")
@@ -1901,6 +1910,9 @@ model DotacaoProcesso {
 
     smae_soma_valor_empenho   Float @default(0)
     smae_soma_valor_liquidado Float @default(0)
+
+    pp_soma_valor_empenho   Float @default(0)
+    pp_soma_valor_liquidado Float @default(0)
 
     @@unique([ano_referencia, dotacao, dotacao_processo])
     @@map("dotacao_processo")
@@ -1924,13 +1936,17 @@ model DotacaoProcessoNota {
     smae_soma_valor_empenho   Float @default(0)
     smae_soma_valor_liquidado Float @default(0)
 
+    pp_soma_valor_empenho   Float @default(0)
+    pp_soma_valor_liquidado Float @default(0)
+
     @@unique([ano_referencia, dotacao, dotacao_processo, dotacao_processo_nota])
     @@map("dotacao_processo_nota")
 }
 
 model OrcamentoPlanejado {
     id            Int  @id @default(autoincrement())
-    meta_id       Int
+    projeto_id    Int?
+    meta_id       Int?
     iniciativa_id Int?
     atividade_id  Int?
 
@@ -1944,7 +1960,8 @@ model OrcamentoPlanejado {
     removido_em  DateTime?
     removido_por Int?
 
-    meta       Meta        @relation(fields: [meta_id], references: [id])
+    projeto    Projeto?    @relation(fields: [projeto_id], references: [id])
+    meta       Meta?       @relation(fields: [meta_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
     criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
@@ -2325,7 +2342,9 @@ model Projeto {
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     // data em que o sistema deve novamente calcular os atrasos automaticamente
-    tarefas_proximo_recalculo DateTime @default(now())
+    tarefas_proximo_recalculo DateTime             @default(now())
+    MetaOrcamento             OrcamentoPrevisto[]
+    OrcamentoPlanejado        OrcamentoPlanejado[]
 
     @@index([removido_em])
     @@map("projeto")

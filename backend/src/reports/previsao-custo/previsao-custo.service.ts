@@ -31,7 +31,7 @@ export class PrevisaoCustoService implements ReportableService {
             ano = dto.ano;
         }
 
-        const metaOrcamentos = await this.prisma.metaOrcamento.findMany({
+        const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
                 meta_id: { in: metas.map(r => r.id) },
                 ano_referencia: ano,
