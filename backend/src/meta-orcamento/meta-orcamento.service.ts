@@ -117,6 +117,13 @@ export class MetaOrcamentoService {
 
 
     async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamentoUpdatedRet> {
+        const alreadyUpdated = await this.prisma.orcamentoPrevisto.count({
+            where: {
+                versao_anterior_id: +id
+            }
+        });
+        if (alreadyUpdated) throw new HttpException('meta orçamento já foi atualizado, atualize a página', 400);
+
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
