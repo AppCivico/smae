@@ -480,17 +480,21 @@ export class MetaService {
             select 'meta' as tipo, m.id as meta_id, null::int as iniciativa_id, null::int as atividade_id, m.codigo, m.titulo
             from meta m
             where m.id = ${meta_id}
+            order by m.codigo
             union all
             select 'iniciativa' as tipo, m.id as meta_id, i.id , null, i.codigo, i.titulo
             from meta m
             join iniciativa i on i.meta_id = m.id and i.removido_em is null
             where m.id = ${meta_id}
+            order by i.codigo
             union all
             select 'atividade' as tipo, m.id as meta_id, i.id as iniciativa_id, a.id as atividade_id, a.codigo, a.titulo
             from meta m
             join iniciativa i on i.meta_id = m.id and i.removido_em is null
             join atividade a on a.iniciativa_id = i.id and a.removido_em is null
-            where m.id = ${meta_id}`;
+            where m.id = ${meta_id}
+            order by a.codigo
+            `;
 
             if (rows.length == 0) throw new HttpException(`Meta ${meta_id} não encontrada`, 404);
 
