@@ -14,7 +14,7 @@ export class MetaOrcamentoUpdatedRet {
 }
 @Injectable()
 export class MetaOrcamentoService {
-    constructor(private readonly prisma: PrismaService, private readonly orcamentoPlanejado: OrcamentoPlanejadoService, private readonly dotacaoService: DotacaoService) {}
+    constructor(private readonly prisma: PrismaService, private readonly orcamentoPlanejado: OrcamentoPlanejadoService, private readonly dotacaoService: DotacaoService) { }
 
     async create(dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
@@ -40,7 +40,7 @@ export class MetaOrcamentoService {
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
-                const metaOrcamento = await prisma.metaOrcamento.create({
+                const metaOrcamento = await prisma.orcamentoPrevisto.create({
                     data: {
                         criado_por: user.id,
                         criado_em: now,
@@ -74,12 +74,13 @@ export class MetaOrcamentoService {
             filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
-        const metaOrcamentos = await this.prisma.metaOrcamento.findMany({
+        const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
                 AND: [{ meta_id: filters?.meta_id }, { meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
                 ano_referencia: filters?.ano_referencia,
                 removido_em: null,
                 versao_anterior_id: null,
+                meta_id: { not: null },
             },
             select: {
                 id: true,
@@ -99,6 +100,7 @@ export class MetaOrcamentoService {
         const list = metaOrcamentos.map(r => {
             return {
                 ...r,
+                meta: { ...r.meta! },
                 custo_previsto: r.custo_previsto.toFixed(2),
                 projeto_atividade: '',
                 parte_dotacao: this.expandirParteDotacao(r.parte_dotacao),
@@ -136,7 +138,7 @@ export class MetaOrcamentoService {
         });
         if (!meta) throw new HttpException('meta não encontrada', 400);
 
-        const metaOrcamento = await this.prisma.metaOrcamento.findFirst({
+        const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
             where: { id: +id, removido_em: null },
         });
         if (!metaOrcamento) throw new HttpException('meta orçamento não encontrada', 400);
@@ -150,7 +152,7 @@ export class MetaOrcamentoService {
             async (prisma: Prisma.TransactionClient): Promise<number> => {
                 const now = new Date(Date.now());
 
-                const metaOrcamento = await prisma.metaOrcamento.update({
+                const metaOrcamento = await prisma.orcamentoPrevisto.update({
                     where: {
                         id: +id,
                     },
@@ -173,7 +175,7 @@ export class MetaOrcamentoService {
                     },
                 });
 
-                const metaOrcamentoAtualizado = await prisma.metaOrcamento.create({
+                const metaOrcamentoAtualizado = await prisma.orcamentoPrevisto.create({
                     data: {
                         versao_anterior_id: metaOrcamento.id,
 
@@ -203,10 +205,10 @@ export class MetaOrcamentoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const metaOrcamento = await this.prisma.metaOrcamento.findFirst({
+        const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!metaOrcamento) throw new HttpException('meta orçamento não encontrada', 400);
+        if (!metaOrcamento || metaOrcamento.meta_id == null) throw new HttpException('meta orçamento não encontrada', 400);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
@@ -217,7 +219,7 @@ export class MetaOrcamentoService {
         }
 
         const now = new Date(Date.now());
-        await this.prisma.metaOrcamento.updateMany({
+        await this.prisma.orcamentoPrevisto.updateMany({
             where: { id: +id, removido_em: null },
             data: { removido_em: now, removido_por: user.id },
         });
