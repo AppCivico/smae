@@ -129,7 +129,9 @@ function agrupaFilhos(array) {
                   {{ g.label }}
                 </td>
                 <td class="w700">
-                  {{ g.items.length ? formataValor(g.items.reduce((red, x) => red + Number(x.custo_previsto), 0)) : '-' }}
+                  {{ g.items.length
+                    ? formataValor(g.items.reduce((red, x) => red + Number(x.custo_previsto), 0))
+                    : '-' }}
                 </td>
                 <td />
               </tr>
@@ -149,7 +151,9 @@ function agrupaFilhos(array) {
                     {{ gg.label }}
                   </td>
                   <td class="w700">
-                    {{ gg.items.length ? formataValor(gg.items.reduce((red, x) => red + Number(x.custo_previsto), 0)) : '-' }}
+                    {{ gg.items.length
+                      ? formataValor(gg.items.reduce((red, x) => red + Number(x.custo_previsto), 0))
+                      : '-' }}
                   </td>
 
                   <td />

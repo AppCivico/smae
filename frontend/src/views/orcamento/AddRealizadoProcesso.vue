@@ -5,7 +5,7 @@ import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';
 import { router } from '@/router';
 import {
-  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore
+  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
@@ -256,7 +256,9 @@ async function validarDota() {
                   v-if="m?.iniciativas?.length"
                   class="label tc300"
                 >
-                  {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1 ? ' e ' + activePdm.rotulo_atividade : '' }}
+                  {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
+                    ? ' e ' + activePdm.rotulo_atividade
+                    : '' }}
                 </div>
                 <div
                   v-for="i in m.iniciativas"

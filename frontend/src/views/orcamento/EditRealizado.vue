@@ -3,7 +3,7 @@ import { Dashboard } from '@/components';
 import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
 import { router } from '@/router';
 import {
-  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore
+  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
@@ -219,14 +219,18 @@ function validaPartes(a) {
               <input
                 class="inputtext light mb1 disabled"
                 type="text"
-                :value="(it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao)) ? `${it.codigo} - ${it.descricao}` : ''"
+                :value="(it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : ''"
                 disabled
               >
               <div
                 v-if="d_orgao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -234,14 +238,18 @@ function validaPartes(a) {
               <input
                 class="inputtext light mb1 disabled"
                 type="text"
-                :value="(it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade)) ? `${it.codigo} - ${it.descricao}` : ''"
+                :value="(it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : ''"
                 disabled
               >
               <div
                 v-if="d_unidade"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -249,14 +257,18 @@ function validaPartes(a) {
               <input
                 class="inputtext light mb1 disabled"
                 type="text"
-                :value="(it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao)) ? `${it.codigo} - ${it.descricao}` : ''"
+                :value="(it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : ''"
                 disabled
               >
               <div
                 v-if="d_funcao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -264,14 +276,18 @@ function validaPartes(a) {
               <input
                 class="inputtext light mb1 disabled"
                 type="text"
-                :value="(it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : ''"
+                :value="(it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : ''"
                 disabled
               >
               <div
                 v-if="d_subfuncao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -279,14 +295,18 @@ function validaPartes(a) {
               <input
                 class="inputtext light mb1 disabled"
                 type="text"
-                :value="(it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa)) ? `${it.codigo} - ${it.descricao}` : ''"
+                :value="(it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : ''"
                 disabled
               >
               <div
                 v-if="d_programa"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
           </div>
@@ -301,14 +321,18 @@ function validaPartes(a) {
               <input
                 class="inputtext light mb1 disabled"
                 type="text"
-                :value="(it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : ''"
+                :value="(it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : ''"
                 disabled
               >
               <div
                 v-if="d_projetoatividade"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -325,14 +349,18 @@ function validaPartes(a) {
               <input
                 class="inputtext light mb1 disabled"
                 type="text"
-                :value="(it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte)) ? `${it.codigo} - ${it.descricao}` : ''"
+                :value="(it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : ''"
                 disabled
               >
               <div
                 v-if="d_fonte"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
           </div>
@@ -394,7 +422,9 @@ function validaPartes(a) {
                 v-if="m?.iniciativas?.length"
                 class="label tc300"
               >
-                {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1 ? ' e ' + activePdm.rotulo_atividade : '' }}
+                {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
+                  ? ' e ' + activePdm.rotulo_atividade
+                  : '' }}
               </div>
               <div
                 v-for="i in m.iniciativas"

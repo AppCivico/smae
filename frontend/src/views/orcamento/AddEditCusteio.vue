@@ -5,7 +5,7 @@ import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { router } from '@/router';
 import {
-  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore
+  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
@@ -244,7 +244,9 @@ function montaDotacao(a) {
                 v-if="d_orgao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -257,7 +259,9 @@ function montaDotacao(a) {
                 :disabled="!d_orgao"
                 @change="montaDotacao"
               >
-                {{ (orgs = DotacaoSegmentos[ano].unidades.filter(x => x.cod_orgao == d_orgao)) ? '' : '' }}
+                {{ (orgs = DotacaoSegmentos[ano].unidades.filter(x => x.cod_orgao == d_orgao))
+                  ? ''
+                  : '' }}
                 <option
                   v-if="!orgs.length"
                   value="00"
@@ -276,7 +280,9 @@ function montaDotacao(a) {
                 v-if="d_unidade"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -300,7 +306,9 @@ function montaDotacao(a) {
                 v-if="d_funcao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -324,7 +332,9 @@ function montaDotacao(a) {
                 v-if="d_subfuncao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -351,7 +361,9 @@ function montaDotacao(a) {
                 v-if="d_programa"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
           </div>
@@ -382,7 +394,9 @@ function montaDotacao(a) {
                 v-if="d_projetoatividade"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
             <div class="f1">
@@ -416,7 +430,9 @@ function montaDotacao(a) {
                 v-if="d_fonte"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte)) ? `${it.codigo} - ${it.descricao}` : '' }}
+                {{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
+                  ? `${it.codigo} - ${it.descricao}`
+                  : '' }}
               </div>
             </div>
           </div>
@@ -447,7 +463,9 @@ function montaDotacao(a) {
                 v-if="m?.iniciativas?.length"
                 class="label tc300"
               >
-                {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1 ? ' e ' + activePdm.rotulo_atividade : '' }}
+                {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
+                  ? ' e ' + activePdm.rotulo_atividade
+                  : '' }}
               </div>
               <div
                 v-for="i in m.iniciativas"

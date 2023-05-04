@@ -1,13 +1,18 @@
 <script setup>
-import { ref, onMounted, onUpdated  } from 'vue';
+import { Dashboard } from '@/components';
+import { default as SimpleOrcamentoCusteio } from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
+import { default as SimpleOrcamentoPlanejado } from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
+import { default as SimpleOrcamentoRealizado } from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 import { storeToRefs } from 'pinia';
+import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { Dashboard} from '@/components';
-import { default as SimpleOrcamentoCusteio} from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
-import { default as SimpleOrcamentoPlanejado} from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
-import { default as SimpleOrcamentoRealizado} from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 
-import { useAlertStore, useEditModalStore, useAuthStore, usePdMStore, useMetasStore, useOrcamentosStore } from '@/stores';
+import {
+  useAlertStore,
+  useAuthStore,
+  useEditModalStore,
+  useMetasStore, useOrcamentosStore,
+} from '@/stores';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
@@ -15,75 +20,121 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 const editModalStore = useEditModalStore();
 
-const props = defineProps(['area','title']);
-const SimpleOrcamento = props.area=='Realizado'?SimpleOrcamentoRealizado:props.area=='Planejado'?SimpleOrcamentoPlanejado:SimpleOrcamentoCusteio;
+const props = defineProps(['area', 'title']);
+const SimpleOrcamento = props.area == 'Realizado' ? SimpleOrcamentoRealizado : props.area == 'Planejado' ? SimpleOrcamentoPlanejado : SimpleOrcamentoCusteio;
 
 const route = useRoute();
-const meta_id = route.params.meta_id;
-const iniciativa_id = route.params.iniciativa_id;
-const atividade_id = route.params.atividade_id;
+const { meta_id } = route.params;
+const { iniciativa_id } = route.params;
+const { atividade_id } = route.params;
 
 const MetasStore = useMetasStore();
 const { activePdm } = storeToRefs(MetasStore);
-const parentlink = `${meta_id?'/metas/'+meta_id:''}${iniciativa_id?'/iniciativas/'+iniciativa_id:''}${atividade_id?'/atividades/'+atividade_id:''}`;
-const parent_id = atividade_id??iniciativa_id??meta_id??false;
-const parent_field = atividade_id?'atividade_id':iniciativa_id?'iniciativa_id':meta_id?'meta_id':false;
-let parentLabel = ref(atividade_id?'-':iniciativa_id?'-':meta_id?'Meta':false);
+const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
+const parent_id = atividade_id ?? iniciativa_id ?? meta_id ?? false;
+const parent_field = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
+const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
 
 const OrcamentosStore = useOrcamentosStore();
 OrcamentosStore.clear();
 
-(async()=>{
-    await MetasStore.getPdM();
-    if(atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
-    else if(iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
+(async () => {
+  await MetasStore.getPdM();
+  if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
+  else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
 })();
 
-function start(){
+function start() {
 }
-onMounted(()=>{start()});
-onUpdated(()=>{start()});
+onMounted(() => { start(); });
+onUpdated(() => { start(); });
 </script>
 <template>
-    <Dashboard>
-        <div class="flex spacebetween center mb2">
-            <div>
-                <div class="t12 uc w700 tamarelo">{{parentLabel}}</div>
-                <h1>{{title}}</h1>
-            </div>
-            <hr class="ml2 f1"/>
+  <Dashboard>
+    <div class="flex spacebetween center mb2">
+      <div>
+        <div class="t12 uc w700 tamarelo">
+          {{ parentLabel }}
         </div>
-        
-        <div class="boards">
-            <template v-if="activePdm.id">
-                <template v-if="fs = activePdm.orcamento_config.filter(x=>x.ano_referencia==new Date().getUTCFullYear())">
-                    <h2 v-if="fs.length" class="mb2">Ano corrente</h2>
-                    <template v-for="orc in fs" :key="orc.ano_referencia">
-                        <SimpleOrcamento :meta_id="meta_id" :config="orc" :parentlink="parentlink" />
-                    </template>
-                    
-                </template>
+        <h1>{{ title }}</h1>
+      </div>
+      <hr class="ml2 f1">
+    </div>
 
-                <template v-if="fs = activePdm.orcamento_config.filter(x=>x.ano_referencia>new Date().getUTCFullYear()).sort((a,b)=>b.ano_referencia-a.ano_referencia)">
-                    <h2 v-if="fs.length" class="mb2">Próximos anos</h2>
-                    <template v-for="orc in fs" :key="orc.ano_referencia">
-                        <SimpleOrcamento :meta_id="meta_id" :config="orc" :parentlink="parentlink" />
-                    </template>
-                </template>
-                <template v-if="fs = activePdm.orcamento_config.filter(x=>x.ano_referencia<new Date().getUTCFullYear()).sort((a,b)=>b.ano_referencia-a.ano_referencia)">
-                    <h2 v-if="fs.length" class="mb2">Anos anteriores</h2>
-                    <template v-for="orc in fs" :key="orc.ano_referencia">
-                        <SimpleOrcamento :meta_id="meta_id" :config="orc" :parentlink="parentlink" />
-                    </template>
-                    
-                </template>
-            </template>
-            <template v-else-if="activePdm.loading">
-                <div class="p1"><span>Carregando</span> <svg class="ml1 ib" width="20" height="20"><use xlink:href="#i_spin"></use></svg></div>
-            </template>
-            <template v-else-if="activePdm.error">
-                <div class="error p1"><p class="error-msg">Error: {{activePdm.error}}</p></div>
-            </template>
+    <div class="boards">
+      <template v-if="activePdm.id">
+        <template v-if="fs = activePdm.orcamento_config.filter(x => x.ano_referencia == new Date().getUTCFullYear())">
+          <h2
+            v-if="fs.length"
+            class="mb2"
+          >
+            Ano corrente
+          </h2>
+          <template
+            v-for="orc in fs"
+            :key="orc.ano_referencia"
+          >
+            <SimpleOrcamento
+              :meta_id="meta_id"
+              :config="orc"
+              :parentlink="parentlink"
+            />
+          </template>
+        </template>
+
+        <template v-if="fs = activePdm.orcamento_config.filter(x => x.ano_referencia > new Date().getUTCFullYear()).sort((a, b) => b.ano_referencia - a.ano_referencia)">
+          <h2
+            v-if="fs.length"
+            class="mb2"
+          >
+            Próximos anos
+          </h2>
+          <template
+            v-for="orc in fs"
+            :key="orc.ano_referencia"
+          >
+            <SimpleOrcamento
+              :meta_id="meta_id"
+              :config="orc"
+              :parentlink="parentlink"
+            />
+          </template>
+        </template>
+        <template v-if="fs = activePdm.orcamento_config.filter(x => x.ano_referencia < new Date().getUTCFullYear()).sort((a, b) => b.ano_referencia - a.ano_referencia)">
+          <h2
+            v-if="fs.length"
+            class="mb2"
+          >
+            Anos anteriores
+          </h2>
+          <template
+            v-for="orc in fs"
+            :key="orc.ano_referencia"
+          >
+            <SimpleOrcamento
+              :meta_id="meta_id"
+              :config="orc"
+              :parentlink="parentlink"
+            />
+          </template>
+        </template>
+      </template>
+      <template v-else-if="activePdm.loading">
+        <div class="p1">
+          <span>Carregando</span> <svg
+            class="ml1 ib"
+            width="20"
+            height="20"
+          ><use xlink:href="#i_spin" /></svg>
         </div>
-    </Dashboard>
+      </template>
+      <template v-else-if="activePdm.error">
+        <div class="error p1">
+          <p class="error-msg">
+            Error: {{ activePdm.error }}
+          </p>
+        </div>
+      </template>
+    </div>
+  </Dashboard>
 </template>

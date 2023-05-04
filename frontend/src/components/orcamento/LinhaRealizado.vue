@@ -13,8 +13,8 @@ const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.va
   >
     <td style="word-break: break-all;">
       {{ item?.dotacao }}
-      {{ item?.processo ? '/ ' + item?.processo : '' }}
-      {{ item?.nota_empenho ? ' / ' + item?.nota_empenho : '' }}
+      {{ item?.processo ? '/ ' + item.processo : '' }}
+      {{ item?.nota_empenho ? ' / ' + item.nota_empenho : '' }}
     </td>
 
     <td :class="{'tvermelho': alemDoEmpenhado(item)}">

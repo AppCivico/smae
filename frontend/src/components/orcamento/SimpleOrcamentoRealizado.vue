@@ -107,10 +107,14 @@ function agrupaFilhos(array) {
                   ><use xlink:href="#i_right" /></svg><span>{{ g.label }}</span></span>
                 </td>
                 <td class="w700">
-                  {{ g.items.length ? formataValor(g.items.reduce((red,x) => red + Number(x.soma_valor_empenho),0)) : '-' }}
+                  {{ g.items.length
+                    ? formataValor(g.items.reduce((red, x) => red + Number(x.soma_valor_empenho), 0))
+                    : '-' }}
                 </td>
                 <td class="w700">
-                  {{ g.items.length ? formataValor(g.items.reduce((red,x) => red + Number(x.soma_valor_liquidado),0)) : '-' }}
+                  {{ g.items.length
+                    ? formataValor(g.items.reduce((red, x) => red + Number(x.soma_valor_liquidado), 0))
+                    : '-' }}
                 </td>
                 <td />
                 <td />
@@ -121,7 +125,7 @@ function agrupaFilhos(array) {
                 :parentlink="parentlink"
               />
             </tbody>
-            <template v-for="(gg,kk) in g.filhos">
+            <template v-for="(gg, kk) in g.filhos">
               <tbody>
                 <tr>
                   <td class="tc600 w700 pl2">
@@ -132,10 +136,14 @@ function agrupaFilhos(array) {
                     ><use xlink:href="#i_right" /></svg><span>{{ gg.label }}</span></span>
                   </td>
                   <td class="w700">
-                    {{ gg.items.length ? formataValor(gg.items.reduce((red,x) => red + Number(x.soma_valor_empenho),0)) : '-' }}
+                    {{ gg.items.length
+                      ? formataValor(gg.items.reduce((red, x) => red + Number(x.soma_valor_empenho), 0))
+                      : '-' }}
                   </td>
                   <td class="w700">
-                    {{ gg.items.length ? formataValor(gg.items.reduce((red,x) => red + Number(x.soma_valor_liquidado),0)) : '-' }}
+                    {{ gg.items.length
+                      ? formataValor(gg.items.reduce((red, x) => red + Number(x.soma_valor_liquidado), 0))
+                      : '-' }}
                   </td>
                   <td />
                   <td />

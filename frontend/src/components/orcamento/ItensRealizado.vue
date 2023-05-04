@@ -3,7 +3,7 @@ import dinheiro from '@/helpers/dinheiro';
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import {
-  computed, onMounted, onUpdated, ref
+  computed, onMounted, onUpdated, ref,
 } from 'vue';
 
 import months from '@/consts/months';
