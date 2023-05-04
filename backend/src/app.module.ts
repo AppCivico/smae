@@ -65,6 +65,7 @@ import { UploadModule } from './upload/upload.module';
 import { VariavelModule } from './variavel/variavel.module';
 import { GraphvizModule } from './graphviz/graphviz.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
 
 @Module({
     imports: [
@@ -133,7 +134,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
         AcompanhamentoModule,
         LicoesAprendidasModule,
         GraphvizModule,
-        DashboardModule
+        DashboardModule,
+        OrcamentoPrevistoModule
     ],
     controllers: [AppController],
     providers: [

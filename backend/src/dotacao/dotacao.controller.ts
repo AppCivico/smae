@@ -6,13 +6,16 @@ import { DotacaoService } from './dotacao.service';
 import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
 import { ListValorRealizadoDotacaoDto, ListValorRealizadoNotaEmpenhoDto, ListValorRealizadoProcessoDto, OrcadoProjetoDto, ValorPlanejadoDto } from './entities/dotacao.entity';
 
+// o controller de dotação só verifica se o usuário está autenticado,
+// mas não confere se tem os privilégios de orçamento, como ele é apenas read-only
+// não tem muito problema qualquer usuário fazer chamadas nele
 @Controller('dotacao')
 export class DotacaoController {
     constructor(
         private readonly dotacaoService: DotacaoService,
         private readonly processoService: DotacaoProcessoService,
         private readonly notaEmpenhoService: DotacaoProcessoNotaService,
-    ) {}
+    ) { }
 
     @ApiTags('Orçamento - Planejado')
     @ApiOperation({

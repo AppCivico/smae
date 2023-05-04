@@ -14,7 +14,11 @@ export class MetaOrcamentoUpdatedRet {
 }
 @Injectable()
 export class MetaOrcamentoService {
-    constructor(private readonly prisma: PrismaService, private readonly orcamentoPlanejado: OrcamentoPlanejadoService, private readonly dotacaoService: DotacaoService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
+        private readonly dotacaoService: DotacaoService
+    ) { }
 
     async create(dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
@@ -103,7 +107,7 @@ export class MetaOrcamentoService {
                 meta: { ...r.meta! },
                 custo_previsto: r.custo_previsto.toFixed(2),
                 projeto_atividade: '',
-                parte_dotacao: this.expandirParteDotacao(r.parte_dotacao),
+                parte_dotacao: this.dotacaoService.expandirParteDotacao(r.parte_dotacao),
             };
         });
         await this.dotacaoService.setManyProjetoAtividade(list);
@@ -111,15 +115,6 @@ export class MetaOrcamentoService {
         return list;
     }
 
-    // 11.13.08.091.*.1.278.*.00 => 11.13.08.091.****.1.278.********.00
-    // 11.*.08.091.*.1.278.*.00 => 11.**.08.091.****.1.278.********.00
-    private expandirParteDotacao(parte_dotacao: string): string {
-        const partes = parte_dotacao.split('.');
-        if ((partes[1] == '*')) partes[1] = '**';
-        if ((partes[4] == '*')) partes[4] = '****';
-        if ((partes[7] == '*')) partes[7] = '********';
-        return partes.join('.');
-    }
 
     async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamentoUpdatedRet> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);

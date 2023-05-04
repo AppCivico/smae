@@ -71,6 +71,7 @@ export type ListaDePrivilegios =
     | 'Config.editar'
     | 'Projeto.administrar_portfolios'
     | 'Projeto.administrador_no_orgao'
+    | 'Projeto.orcamento'
     | 'SMAE.gestor_de_projeto'
     | 'SMAE.colaborador_de_projeto'
     | 'PDM.coordenador_responsavel_cp'
