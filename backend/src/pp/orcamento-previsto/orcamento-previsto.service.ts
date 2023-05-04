@@ -109,6 +109,13 @@ export class OrcamentoPrevistoService {
         });
         if (!metaOrcamento) throw new HttpException('projeto orçamento não encontrada', 400);
 
+        const alreadyUpdated = await this.prisma.orcamentoPrevisto.count({
+            where: {
+                versao_anterior_id: +id
+            }
+        });
+        if (alreadyUpdated) throw new HttpException('projeto orçamento já foi atualizado, atualize a página', 400);
+
         //const anoCount = await this.prisma.pdmOrcamentoConfig.count({
         //    where: { pdm_id: meta.pdm_id, ano_referencia: metaOrcamento.ano_referencia, previsao_custo_disponivel: true },
         //});
