@@ -179,7 +179,8 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
         ['Projeto.administrador', 'Acesso total aos projetos'],
-        ['Projeto.administrador_no_orgao', 'Acesso total aos projetos com o portfólio do orgão em que pertence'],
+        ['Projeto.administrador_no_orgao', 'Acesso total aos projetos com o portfólio do órgão em que pertence'],
+        ['Projeto.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
         ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
     ],
@@ -333,10 +334,17 @@ const PerfilAcessoConfig: {
             privilegios: PrivRespNaCp
         },
         {
-            nome: 'Orçamento',
+            nome: atualizarNomePerfil('Orçamento - Metas', ['Orçamento']),
             descricao: 'Pode criar orçamento para as metas que tem acesso.',
             privilegios: [
                 'CadastroMeta.orcamento'
+            ]
+        },
+        {
+            nome: 'Orçamento - Projetos',
+            descricao: 'Pode criar orçamento para os projetos que tem acesso.',
+            privilegios: [
+                'Projeto.orcamento'
             ]
         },
         {
@@ -381,6 +389,7 @@ const PerfilAcessoConfig: {
             ]
         },
         removerNomePerfil('Técnico CP'),
+        removerNomePerfil('Orçamento'),
         removerNomePerfil('Unidade de Entregas'),
         removerNomePerfil('Responsável por meta na CP - orçamento'),
         removerNomePerfil('Administrador de Portfolio'),
