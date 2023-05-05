@@ -6,15 +6,15 @@ import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import truncate from '@/helpers/truncate';
-import { useOrcamentosStore } from '@/stores/orcamentos.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
 
-const OrçamentosStore = useOrcamentosStore();
+const DotaçãoStore = useDotaçãoStore();
 
-const { DotacaoSegmentos, FontesDeRecursosPorAnoPorCódigo } = storeToRefs(OrçamentosStore);
+const { DotaçãoSegmentos, FontesDeRecursosPorAnoPorCódigo } = storeToRefs(DotaçãoStore);
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const {
@@ -32,8 +32,8 @@ watch(() => emFoco.value, () => {
   if (Array.isArray(emFoco?.value?.fonte_recursos)) {
     emFoco.value.fonte_recursos.forEach((fonte) => {
       if (fonte.fonte_recurso_ano) {
-        if (!Array.isArray(DotacaoSegmentos?.value?.[fonte.fonte_recurso_ano]?.fonte_recursos)) {
-          OrçamentosStore.getDotacaoSegmentos(fonte.fonte_recurso_ano);
+        if (!Array.isArray(DotaçãoSegmentos?.value?.[fonte.fonte_recurso_ano]?.fonte_recursos)) {
+          DotaçãoStore.getDotaçãoSegmentos(fonte.fonte_recurso_ano);
         }
       }
     });

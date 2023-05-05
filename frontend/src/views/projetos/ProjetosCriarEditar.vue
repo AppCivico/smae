@@ -8,7 +8,7 @@ import statuses from '@/consts/projectStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
-import { useOrcamentosStore } from '@/stores/orcamentos.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
@@ -22,7 +22,7 @@ import { useRoute, useRouter } from 'vue-router';
 const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const ÓrgãosStore = useOrgansStore();
-const OrçamentosStore = useOrcamentosStore();
+const DotaçãoStore = useDotaçãoStore();
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
@@ -42,7 +42,7 @@ const {
   órgãosQueTemResponsáveisEPorId,
 } = storeToRefs(ÓrgãosStore);
 
-const { DotacaoSegmentos } = storeToRefs(OrçamentosStore);
+const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 
 const router = useRouter();
 const route = useRoute();
@@ -97,8 +97,8 @@ async function buscarDadosParaOrigens(valorOuEvento) {
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
 
-  if (!DotacaoSegmentos?.value?.[ano]) {
-    OrçamentosStore.getDotacaoSegmentos(ano);
+  if (!DotaçãoSegmentos?.value?.[ano]) {
+    DotaçãoStore.getDotaçãoSegmentos(ano);
   }
 }
 
@@ -1041,7 +1041,7 @@ iniciar();
                 </option>
                 <option
                   v-for="item in
-                    DotacaoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.fonte_recursos || []"
+                    DotaçãoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.fonte_recursos || []"
                   :key="item.codigo"
                   :value="item.codigo"
                   :title="item.descricao"

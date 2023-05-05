@@ -7,10 +7,13 @@ import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+const DotaçãoStore = useDotaçãoStore();
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -33,7 +36,8 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/ini
 const parent_item = ref(atividade_id ? singleAtividade : iniciativa_id ? singleIniciativa : meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoCusteio, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
+const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
+const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 const currentEdit = ref({});
 
 const dota = ref('');
@@ -48,7 +52,7 @@ const d_fonte = ref('');
 const caret = ref(0);
 
 (async () => {
-  await OrcamentosStore.getDotacaoSegmentos(ano);
+  /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
   await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
 
   OrcamentoCusteio.value[ano].map((x) => {
@@ -220,7 +224,7 @@ function montaDotacao(a) {
             </div>
           </div>
         </div>
-        <template v-if="DotacaoSegmentos[ano]?.atualizado_em">
+        <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
           <label class="label mb1">parte da dotação - por segmento</label>
           <div class="flex g2 mb2">
             <div class="f1">
@@ -233,7 +237,7 @@ function montaDotacao(a) {
                 @change="montaDotacao"
               >
                 <option
-                  v-for="i in DotacaoSegmentos[ano].orgaos"
+                  v-for="i in DotaçãoSegmentos[ano].orgaos"
                   :key="i.codigo"
                   :value="i.codigo"
                 >
@@ -244,7 +248,7 @@ function montaDotacao(a) {
                 v-if="d_orgao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
+                {{ (it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
                   ? `${it.codigo} - ${it.descricao}`
                   : '' }}
               </div>
@@ -259,7 +263,7 @@ function montaDotacao(a) {
                 :disabled="!d_orgao"
                 @change="montaDotacao"
               >
-                {{ (orgs = DotacaoSegmentos[ano].unidades.filter(x => x.cod_orgao == d_orgao))
+                {{ (orgs = DotaçãoSegmentos[ano].unidades.filter(x => x.cod_orgao == d_orgao))
                   ? ''
                   : '' }}
                 <option
@@ -280,7 +284,7 @@ function montaDotacao(a) {
                 v-if="d_unidade"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
+                {{ (it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
                   ? `${it.codigo} - ${it.descricao}`
                   : '' }}
               </div>
@@ -295,7 +299,7 @@ function montaDotacao(a) {
                 @change="montaDotacao"
               >
                 <option
-                  v-for="i in DotacaoSegmentos[ano].funcoes"
+                  v-for="i in DotaçãoSegmentos[ano].funcoes"
                   :key="i.codigo"
                   :value="i.codigo"
                 >
@@ -306,7 +310,7 @@ function montaDotacao(a) {
                 v-if="d_funcao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
+                {{ (it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
                   ? `${it.codigo} - ${it.descricao}`
                   : '' }}
               </div>
@@ -321,7 +325,7 @@ function montaDotacao(a) {
                 @change="montaDotacao"
               >
                 <option
-                  v-for="i in DotacaoSegmentos[ano].subfuncoes"
+                  v-for="i in DotaçãoSegmentos[ano].subfuncoes"
                   :key="i.codigo"
                   :value="i.codigo"
                 >
@@ -332,7 +336,7 @@ function montaDotacao(a) {
                 v-if="d_subfuncao"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
+                {{ (it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
                   ? `${it.codigo} - ${it.descricao}`
                   : '' }}
               </div>
@@ -350,7 +354,7 @@ function montaDotacao(a) {
                   ****
                 </option>
                 <option
-                  v-for="i in DotacaoSegmentos[ano].programas"
+                  v-for="i in DotaçãoSegmentos[ano].programas"
                   :key="i.codigo"
                   :value="i.codigo"
                 >
@@ -361,7 +365,7 @@ function montaDotacao(a) {
                 v-if="d_programa"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].programas.find(x => x.codigo == d_programa))
+                {{ (it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == d_programa))
                   ? `${it.codigo} - ${it.descricao}`
                   : '' }}
               </div>
@@ -383,7 +387,7 @@ function montaDotacao(a) {
                 @change="montaDotacao"
               >
                 <option
-                  v-for="i in DotacaoSegmentos[ano].projetos_atividades"
+                  v-for="i in DotaçãoSegmentos[ano].projetos_atividades"
                   :key="i.codigo"
                   :value="i.codigo"
                 >
@@ -394,7 +398,7 @@ function montaDotacao(a) {
                 v-if="d_projetoatividade"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+                {{ (it = DotaçãoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
                   ? `${it.codigo} - ${it.descricao}`
                   : '' }}
               </div>
@@ -419,7 +423,7 @@ function montaDotacao(a) {
                 @change="montaDotacao"
               >
                 <option
-                  v-for="i in DotacaoSegmentos[ano].fonte_recursos"
+                  v-for="i in DotaçãoSegmentos[ano].fonte_recursos"
                   :key="i.codigo"
                   :value="i.codigo"
                 >
@@ -430,7 +434,7 @@ function montaDotacao(a) {
                 v-if="d_fonte"
                 class="t12 tc500"
               >
-                {{ (it = DotacaoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
+                {{ (it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
                   ? `${it.codigo} - ${it.descricao}`
                   : '' }}
               </div>
