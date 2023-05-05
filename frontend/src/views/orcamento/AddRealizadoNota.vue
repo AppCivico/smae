@@ -5,6 +5,7 @@ import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
@@ -12,6 +13,7 @@ import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
+const DotaçãoStore = useDotaçãoStore();
 const route = useRoute();
 const { meta_id } = route.params;
 const { ano } = route.params;
@@ -31,8 +33,7 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoRealizado, DotacaoSegmentos } = storeToRefs(OrcamentosStore);
-OrcamentosStore.getDotacaoSegmentos(ano);
+const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 const currentEdit = ref({});
 const dota = ref('');
 const dotaAno = ref(ano);
@@ -125,7 +126,8 @@ async function validarDota(evt) {
     respostasof.value = { loading: true };
     const val = await schema.validate({ nota_empenho: dota.value, valor_empenho: 1, valor_liquidado: 1 });
     if (val) {
-      const r = await OrcamentosStore.getDotacaoRealizadoNota(`${dota.value}/${dotaAno.value}`, dotaAno.value);
+      const r = await DotaçãoStore
+        .getDotaçãoRealizadoNota(`${dota.value}/${dotaAno.value}`, dotaAno.value, { pdm_id: activePdm.value.id });
       respostasof.value = r;
     }
   } catch (error) {

@@ -10,7 +10,6 @@ export const useOrcamentosStore = defineStore({
     OrcamentoCusteio: {},
     OrcamentoPlanejado: {},
     OrcamentoRealizado: {},
-    DotacaoSegmentos: {},
   }),
   actions: {
     clear() {
@@ -91,69 +90,9 @@ export const useOrcamentosStore = defineStore({
       if (await requestS.delete(`${baseUrl}/orcamento-realizado/${id}`)) return true;
       return false;
     },
-
-    // Dotacoes
-    async getDotacaoSegmentos(ano) {
-      try {
-        if (!this.DotacaoSegmentos[ano]
-          || this.DotacaoSegmentos[ano]?.atualizado_em != new Date().toISOString().substring(0, 10)
-        ) {
-          this.DotacaoSegmentos[ano] = { loading: true };
-        }
-
-        const r = await requestS.get(`${baseUrl}/sof-entidade/${ano}`);
-        if (r.dados) {
-          this.DotacaoSegmentos[ano] = r.dados;
-          this.DotacaoSegmentos[ano].atualizado_em = r.atualizado_em;
-        }
-      } catch (error) {
-        this.DotacaoSegmentos[ano] = { error };
-      }
-    },
-    async getDotacaoPlanejado(dotacao, ano) {
-      try {
-        const r = await requestS.patch(`${baseUrl}/dotacao/valor-planejado`, { dotacao, ano: Number(ano) });
-        return r;
-      } catch (error) {
-        return { error };
-      }
-    },
-    async getDotacaoRealizado(dotacao, ano) {
-      try {
-        const r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado`, { dotacao, ano: Number(ano) });
-        return r.linhas.length ? r.linhas[0] : {};
-      } catch (error) {
-        return { error };
-      }
-    },
-    async getDotacaoRealizadoNota(nota_empenho, ano) {
-      try {
-        const r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`, { nota_empenho, ano: Number(ano) });
-        return r.linhas.length ? r.linhas[0] : {};
-      } catch (error) {
-        return { error };
-      }
-    },
-    async getDotacaoRealizadoProcesso(processo, ano) {
-      try {
-        const r = await requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`, { processo, ano: Number(ano) });
-        return r.linhas;
-      } catch (error) {
-        return { error };
-      }
-    },
   },
 
   getters: {
-    FontesDeRecursosPorAnoPorCódigo({ DotacaoSegmentos }) {
-      return Object.keys(DotacaoSegmentos).reduce((acc,cur)=> {
-        acc[cur] = DotacaoSegmentos[cur].fonte_recursos?.reduce((acc2,cur2)=> {
-          return {...acc2, [cur2.codigo]: cur2}
-        },{});
-        return acc;
-      },{});
-    },
-
     orcamentoEmFoco({ OrcamentoRealizado }) {
       const { ano, id } = this.route.params;
       const anoEmFoco = OrcamentoRealizado[ano] || [];
