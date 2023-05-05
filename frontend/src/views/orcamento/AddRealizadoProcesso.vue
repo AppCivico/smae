@@ -85,7 +85,7 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alteraç+++ões?', `${parentlink}/orcamento/realizado`);
+  alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/orcamento/realizado`);
 }
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento`); }, 'Remover');
