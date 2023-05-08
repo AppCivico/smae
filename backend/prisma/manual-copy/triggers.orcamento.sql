@@ -1,6 +1,8 @@
 CREATE OR REPLACE FUNCTION f_tgr_update_soma_dotacao()
     RETURNS TRIGGER
     AS $$
+DECLARE
+ tmp INTEGER;
 BEGIN
     -- Pdm dotacao_planejado
     WITH pdm_sum AS(
@@ -31,9 +33,7 @@ BEGIN
             DO UPDATE SET
                 pressao_orcamentaria = EXCLUDED.pressao_orcamentaria,
                 soma_valor_planejado = EXCLUDED.soma_valor_planejado
-    )
-        SELECT
-            1;
+    ) SELECT 1 into tmp;
 
     -- Portfoliodotacao_planejado calculations
     WITH portfolio_sum AS(
@@ -62,8 +62,7 @@ BEGIN
             DO UPDATE SET
                 pressao_orcamentaria = EXCLUDED.pressao_orcamentaria,
                 soma_valor_planejado = EXCLUDED.soma_valor_planejado
-    )
-    SELECT 1;
+    ) SELECT 1 into tmp;
 
     RETURN NEW;
 END;
