@@ -90,8 +90,6 @@ export class DotacaoProcessoNotaService {
                                     dotacao: dotacaoProcesso.dotacao,
                                     dotacao_processo: dotacaoProcesso.processo,
                                     dotacao_processo_nota: dto.nota_empenho,
-                                    smae_soma_valor_empenho: 0,
-                                    smae_soma_valor_liquidado: 0,
                                 },
                                 select: { id: true },
                             });
@@ -133,31 +131,81 @@ export class DotacaoProcessoNotaService {
                 valor_liquidado: true,
                 mes_utilizado: true,
                 ano_referencia: true,
-                smae_soma_valor_empenho: true,
-                smae_soma_valor_liquidado: true,
                 dotacao_processo: true,
                 dotacao_processo_nota: true,
             },
         });
 
         this.logger.debug(`> dbList: ${JSON.stringify(dbList)}`);
-        const list = dbList.map(r => {
+        const pList = dbList.map(async (r) => {
+            const smaeResults = await this.get_smae_soma_valor_realizado(r.dotacao, r.dotacao_processo, dto);
             return {
                 ...r,
                 dotacao_processo: undefined,
                 dotacao_processo_nota: undefined,
                 processo: r.dotacao_processo,
                 nota_empenho: r.dotacao_processo_nota,
-                smae_soma_valor_empenho: r.smae_soma_valor_empenho.toFixed(2),
-                smae_soma_valor_liquidado: r.smae_soma_valor_liquidado.toFixed(2),
+                ...smaeResults,
                 empenho_liquido: r.empenho_liquido.toFixed(2),
                 valor_liquidado: r.valor_liquidado.toFixed(2),
                 mes_utilizado: r.mes_utilizado,
                 projeto_atividade: '',
             };
         });
+
+        const list = await Promise.all(pList);
         await this.dotacaoService.setManyProjetoAtividade(list);
 
         return list;
     }
+
+    async get_smae_soma_valor_realizado(dotacao: string, processo: string, dto: AnoDotacaoNotaEmpenhoDto): Promise<{
+        smae_soma_valor_empenho: string,
+        smae_soma_valor_liquidado: string,
+    }> {
+        let smae_soma_valor_empenho: string = '0.00';
+        let smae_soma_valor_liquidado: string = '0.00';
+
+        if (dto.pdm_id) {
+            const qr = await this.prisma.pdmDotacaoProcessoNota.findUnique({
+                where: {
+                    pdm_id_ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
+                        ano_referencia: dto.ano,
+                        dotacao: dotacao,
+                        dotacao_processo_nota: processo,
+                        dotacao_processo: dto.nota_empenho,
+                        pdm_id: dto.pdm_id,
+                    }
+                },
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+            });
+            if (qr) {
+                smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
+            }
+        } else if (dto.portfolio_id) {
+            const qr = await this.prisma.portfolioDotacaoProcessoNota.findUnique({
+                where: {
+                    portfolio_id_ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
+                        ano_referencia: dto.ano,
+                        dotacao: dotacao,
+                        dotacao_processo: processo,
+                        dotacao_processo_nota: dto.nota_empenho,
+                        portfolio_id: dto.portfolio_id,
+                    }
+                },
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+            });
+            if (qr) {
+                smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
+            }
+        }
+
+        return {
+            smae_soma_valor_empenho,
+            smae_soma_valor_liquidado,
+        };
+    }
+
 }

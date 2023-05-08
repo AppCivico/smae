@@ -17,7 +17,11 @@ type PartialOrcamentoRealizadoDto = {
 @Injectable()
 export class OrcamentoRealizadoService {
     liberarValoresMaioresQueSof: boolean;
-    constructor(private readonly prisma: PrismaService, private readonly orcamentoPlanejado: OrcamentoPlanejadoService, private readonly dotacaoService: DotacaoService) {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
+        private readonly dotacaoService: DotacaoService
+    ) {
         // deixar desligado a verificação
         this.liberarValoresMaioresQueSof = true;
     }
@@ -57,11 +61,11 @@ export class OrcamentoRealizadoService {
                 const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
-                    mes_utilizado = await this.atualizaNotaEmpenho(prismaTxn, dotacao, processo, nota_empenho, soma_valor_empenho, soma_valor_liquidado);
+                    mes_utilizado = await this.atualizaNotaEmpenho(prismaTxn, dotacao, processo, nota_empenho);
                 } else if (processo) {
-                    mes_utilizado = await this.atualizaProcesso(prismaTxn, dto, dotacao, processo, soma_valor_empenho, soma_valor_liquidado);
+                    mes_utilizado = await this.atualizaProcesso(prismaTxn, dto, dotacao, processo);
                 } else if (dotacao) {
-                    mes_utilizado = await this.atualizaDotacao(prismaTxn, dto, dotacao, soma_valor_empenho, soma_valor_liquidado);
+                    mes_utilizado = await this.atualizaDotacao(prismaTxn, dto, dotacao);
                 } else {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
                 }
@@ -113,7 +117,7 @@ export class OrcamentoRealizadoService {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
+        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null) throw new HttpException('Orçamento realizado não encontrado', 404);
         console.log(dto);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
@@ -151,10 +155,6 @@ export class OrcamentoRealizadoService {
                         orcRealizado.dotacao,
                         orcRealizado.processo,
                         orcRealizado.nota_empenho,
-                        nova_soma_valor_empenho,
-                        nova_soma_valor_liquidado,
-                        orcRealizado.soma_valor_empenho,
-                        orcRealizado.soma_valor_liquidado, // valores atuais para serem descontados
                     );
                 } else if (orcRealizado.processo) {
                     await this.atualizaProcesso(
@@ -162,20 +162,12 @@ export class OrcamentoRealizadoService {
                         { ano_referencia: orcRealizado.ano_referencia },
                         orcRealizado.dotacao,
                         orcRealizado.processo,
-                        nova_soma_valor_empenho,
-                        nova_soma_valor_liquidado,
-                        orcRealizado.soma_valor_empenho,
-                        orcRealizado.soma_valor_liquidado, // valores atuais para serem descontados
                     );
                 } else if (orcRealizado.dotacao) {
                     await this.atualizaDotacao(
                         prismaTxn,
                         { ano_referencia: orcRealizado.ano_referencia },
                         orcRealizado.dotacao,
-                        nova_soma_valor_empenho,
-                        nova_soma_valor_liquidado,
-                        orcRealizado.soma_valor_empenho,
-                        orcRealizado.soma_valor_liquidado, // valores atuais para serem descontados
                     );
                 } else {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
@@ -232,18 +224,10 @@ export class OrcamentoRealizadoService {
         prismaTxn: Prisma.TransactionClient,
         dto: PartialOrcamentoRealizadoDto,
         dotacao: string,
-        soma_valor_empenho: number,
-        soma_valor_liquidado: number,
-        soma_valor_empenho_desconto = 0,
-        soma_valor_liquidado_desconto = 0,
     ) {
         console.log({
             func: 'atualizaDotacao',
             dotacao,
-            soma_valor_empenho,
-            soma_valor_liquidado,
-            soma_valor_empenho_desconto,
-            soma_valor_liquidado_desconto,
         });
 
         const dotacaoTx = await prismaTxn.dotacaoRealizado.findUnique({
@@ -254,37 +238,43 @@ export class OrcamentoRealizadoService {
                 },
             },
         });
+
         if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir durante a atualização.', 400);
         const mes_utilizado = dotacaoTx.mes_utilizado;
 
-        const novaSomaEmpenho = dotacaoTx.smae_soma_valor_empenho + soma_valor_empenho - soma_valor_empenho_desconto;
-        const novaSomaLiquido = dotacaoTx.smae_soma_valor_liquidado + soma_valor_liquidado - soma_valor_liquidado_desconto;
-        console.log({ novaSomaEmpenho, novaSomaLiquido });
+        await prismaTxn.dotacaoRealizado.update({
+            where: { id: dotacaoTx.id },
+            data: { id: dotacaoTx.id },
+        });
 
-        if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaEmpenho * 100) > Math.round(dotacaoTx.empenho_liquido * 100)) {
-            throw new HttpException(
-                `Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para a Dotação ${dotacaoTx.empenho_liquido.toFixed(2)}.` +
-                FRASE_FIM,
-                400,
-            );
-        }
+        const novo_valor = await prismaTxn.pdmDotacaoRealizado.findFirst({
+            where: {
+                ano_referencia: dto.ano_referencia,
+                dotacao: dotacao,
+            }
+        });
 
-        if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaLiquido * 100) > Math.round(dotacaoTx.valor_liquidado * 100)) {
+        if (novo_valor && this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_empenho.greaterThan(dotacaoTx.empenho_liquido)) {
             throw new HttpException(
-                `Novo valor de liquidado no SMAE (${novaSomaLiquido.toFixed(2)}) seria maior do que o valor de liquidado para a Dotação (${dotacaoTx.valor_liquidado.toFixed(
+                `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(2)}) seria maior do que o valor de empenho para a Dotação-Processo (${dotacaoTx.empenho_liquido.toFixed(
                     2,
                 )}).` + FRASE_FIM,
                 400,
             );
         }
 
-        await prismaTxn.dotacaoRealizado.update({
-            where: { id: dotacaoTx.id },
-            data: {
-                smae_soma_valor_empenho: novaSomaEmpenho,
-                smae_soma_valor_liquidado: novaSomaLiquido,
-            },
-        });
+        if (novo_valor && this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_liquidado.greaterThan(dotacaoTx.valor_liquidado)
+        ) {
+            throw new HttpException(
+                `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(2)}) seria maior do que o valor liquidado para a Dotação-Processo (${dotacaoTx.valor_liquidado.toFixed(
+                    2,
+                )}).` + FRASE_FIM,
+                400,
+            );
+        }
+
         return mes_utilizado;
     }
 
@@ -293,11 +283,8 @@ export class OrcamentoRealizadoService {
         dto: PartialOrcamentoRealizadoDto,
         dotacao: string,
         processo: string,
-        soma_valor_empenho: number,
-        soma_valor_liquidado: number,
-        soma_valor_empenho_desconto = 0,
-        soma_valor_liquidado_desconto = 0,
     ) {
+
         const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
             where: {
                 ano_referencia_dotacao_dotacao_processo: {
@@ -306,36 +293,45 @@ export class OrcamentoRealizadoService {
                     dotacao_processo: processo,
                 },
             },
+            select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true }
         });
-        if (!processoTx) throw new HttpException('Operação não pode ser realizada no momento. Processo deixou de existir durante a atualização.', 400);
+        if (!processoTx) throw new HttpException('Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.', 400);
         const mes_utilizado = processoTx.mes_utilizado;
-
-        const novaSomaEmpenho = processoTx.smae_soma_valor_empenho + soma_valor_empenho - soma_valor_empenho_desconto;
-        const novaSomaLiquido = processoTx.smae_soma_valor_liquidado + soma_valor_liquidado - soma_valor_liquidado_desconto;
-
-        if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaEmpenho * 100) > Math.round(processoTx.empenho_liquido * 100)) {
-            throw new HttpException(
-                `Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para o Processo (${processoTx.empenho_liquido.toFixed(2)}).` +
-                FRASE_FIM,
-                400,
-            );
-        }
-
-        if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaLiquido * 100) > Math.round(processoTx.valor_liquidado * 100)) {
-            throw new HttpException(
-                `Novo valor de liquidado no SMAE (${novaSomaLiquido.toFixed(2)}) seria maior do que o valor liquidado para o Processo (${processoTx.valor_liquidado.toFixed(2)}).` +
-                FRASE_FIM,
-                400,
-            );
-        }
 
         await prismaTxn.dotacaoProcesso.update({
             where: { id: processoTx.id },
-            data: {
-                smae_soma_valor_empenho: novaSomaEmpenho,
-                smae_soma_valor_liquidado: novaSomaLiquido,
-            },
+            data: { id: processoTx.id },
         });
+
+        const novo_valor = await prismaTxn.pdmDotacaoProcesso.findFirst({
+            where: {
+                ano_referencia: dto.ano_referencia,
+                dotacao: dotacao,
+                dotacao_processo: processo,
+            }
+        });
+
+        if (novo_valor && this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_empenho.greaterThan(processoTx.empenho_liquido)) {
+            throw new HttpException(
+                `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(2)}) seria maior do que o valor de empenho para a Dotação-Processo (${processoTx.empenho_liquido.toFixed(
+                    2,
+                )}).` + FRASE_FIM,
+                400,
+            );
+        }
+
+        if (novo_valor && this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_liquidado.greaterThan(processoTx.valor_liquidado)
+        ) {
+            throw new HttpException(
+                `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(2)}) seria maior do que o valor liquidado para a Dotação-Processo (${processoTx.valor_liquidado.toFixed(
+                    2,
+                )}).` + FRASE_FIM,
+                400,
+            );
+        }
+
         return mes_utilizado;
     }
 
@@ -348,10 +344,6 @@ export class OrcamentoRealizadoService {
         dotacao: string,
         processo: string | null,
         nota_empenho: string,
-        soma_valor_empenho: number,
-        soma_valor_liquidado: number,
-        soma_valor_empenho_desconto = 0,
-        soma_valor_liquidado_desconto = 0,
     ) {
         const notaEmpenhoTx = await prismaTxn.dotacaoProcessoNota.findUnique({
             where: {
@@ -367,38 +359,46 @@ export class OrcamentoRealizadoService {
                     dotacao_processo_nota: nota_empenho,
                 },
             },
+            select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true }
         });
         if (!notaEmpenhoTx) throw new HttpException('Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.', 400);
         const mes_utilizado = notaEmpenhoTx.mes_utilizado;
 
-        const novaSomaEmpenho = notaEmpenhoTx.smae_soma_valor_empenho + soma_valor_empenho - soma_valor_empenho_desconto;
-        const novaSomaLiquido = notaEmpenhoTx.smae_soma_valor_liquidado + soma_valor_liquidado - soma_valor_liquidado_desconto;
-
-        if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaEmpenho * 100) > Math.round(notaEmpenhoTx.empenho_liquido * 100)) {
-            throw new HttpException(
-                `Novo valor de empenho no SMAE (${novaSomaEmpenho.toFixed(2)}) seria maior do que o valor de empenho para a Nota-Empenho (${notaEmpenhoTx.empenho_liquido.toFixed(
-                    2,
-                )}).` + FRASE_FIM,
-                400,
-            );
-        }
-
-        if (this.liberarValoresMaioresQueSof == false && Math.round(novaSomaLiquido * 100) > Math.round(notaEmpenhoTx.valor_liquidado * 100)) {
-            throw new HttpException(
-                `Novo valor de liquidado no SMAE (${novaSomaLiquido.toFixed(2)}) seria maior do que o valor liquidado para a Nota-Empenho (${notaEmpenhoTx.valor_liquidado.toFixed(
-                    2,
-                )}).` + FRASE_FIM,
-                400,
-            );
-        }
-
         await prismaTxn.dotacaoProcessoNota.update({
             where: { id: notaEmpenhoTx.id },
-            data: {
-                smae_soma_valor_empenho: novaSomaEmpenho,
-                smae_soma_valor_liquidado: novaSomaLiquido,
-            },
+            data: { id: notaEmpenhoTx.id },
         });
+
+        const novo_valor = await prismaTxn.pdmDotacaoProcessoNota.findFirst({
+            where: {
+                ano_referencia: this.getAnoNota(nota_empenho),
+                dotacao: dotacao,
+                dotacao_processo: processo!,
+                dotacao_processo_nota: nota_empenho,
+            }
+        });
+
+        if (novo_valor && this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_empenho.greaterThan(notaEmpenhoTx.empenho_liquido)) {
+            throw new HttpException(
+                `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(2)}) seria maior do que o valor de empenho para a Nota-Empenho (${notaEmpenhoTx.empenho_liquido.toFixed(
+                    2,
+                )}).` + FRASE_FIM,
+                400,
+            );
+        }
+
+        if (novo_valor && this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_liquidado.greaterThan(notaEmpenhoTx.valor_liquidado)
+        ) {
+            throw new HttpException(
+                `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(2)}) seria maior do que o valor liquidado para a Nota-Empenho (${notaEmpenhoTx.valor_liquidado.toFixed(
+                    2,
+                )}).` + FRASE_FIM,
+                400,
+            );
+        }
+
         return mes_utilizado;
     }
 
@@ -467,6 +467,12 @@ export class OrcamentoRealizadoService {
             filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
+        const meta = await this.prisma.meta.findFirst({
+            where: { id: filters.meta_id, removido_em: null },
+            select: { pdm_id: true, id: true },
+        });
+        if (meta === null) throw new HttpException('404', 404);
+
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
@@ -511,15 +517,31 @@ export class OrcamentoRealizadoService {
                 if (dotacoesEncontradas[op.dotacao] == undefined) dotacoesEncontradas[op.dotacao] = true;
             }
         }
+
         // cruza as nota-empenho
+        const notasSomaInfo = await this.prisma.pdmDotacaoProcessoNota.findMany({
+            where: {
+                dotacao_processo_nota: { in: Object.keys(notaEncontradas) },
+                ano_referencia: filters.ano_referencia,
+                pdm_id: meta.pdm_id,
+            },
+            select: {
+                soma_valor_empenho: true,
+                soma_valor_liquidado: true,
+                dotacao_processo_nota: true
+            }
+        });
+        const notasInfoSomaRef: Record<string, (typeof notasSomaInfo)[0]> = {};
+        for (const nota of notasSomaInfo) {
+            notasInfoSomaRef[nota.dotacao_processo_nota] = nota;
+        }
         const notasInfo = await this.prisma.dotacaoProcessoNota.findMany({
             where: {
                 dotacao_processo_nota: { in: Object.keys(notaEncontradas) },
                 ano_referencia: filters.ano_referencia,
             },
             select: {
-                smae_soma_valor_empenho: true,
-                smae_soma_valor_liquidado: true,
+
                 dotacao_processo_nota: true,
                 empenho_liquido: true,
                 valor_liquidado: true,
@@ -531,14 +553,29 @@ export class OrcamentoRealizadoService {
         }
 
         // cruza os processos
+        const processoSomaInfo = await this.prisma.pdmDotacaoProcesso.findMany({
+            where: {
+                dotacao_processo: { in: Object.keys(processosEncontrados) },
+                ano_referencia: filters.ano_referencia,
+                pdm_id: meta.pdm_id,
+            },
+            select: {
+                soma_valor_empenho: true,
+                soma_valor_liquidado: true,
+                dotacao_processo: true,
+                dotacao: true,
+            }
+        });
+        const processoInfoSomaRef: Record<string, (typeof processoSomaInfo)[0]> = {};
+        for (const processo of processoSomaInfo) {
+            processoInfoSomaRef[processo.dotacao + '_' + processo.dotacao_processo] = processo;
+        }
         const processoInfo = await this.prisma.dotacaoProcesso.findMany({
             where: {
                 dotacao_processo: { in: Object.keys(processosEncontrados) },
                 ano_referencia: filters.ano_referencia,
             },
             select: {
-                smae_soma_valor_empenho: true,
-                smae_soma_valor_liquidado: true,
                 dotacao_processo: true,
                 dotacao: true,
                 empenho_liquido: true,
@@ -551,14 +588,29 @@ export class OrcamentoRealizadoService {
         }
 
         // cruza as dotações
+        const dotacoesSomaInfo = await this.prisma.pdmDotacaoRealizado.findMany({
+            where: {
+                dotacao: { in: Object.keys(dotacoesEncontradas) },
+                ano_referencia: filters.ano_referencia,
+                pdm_id: meta.pdm_id,
+            },
+            select: {
+                soma_valor_empenho: true,
+                soma_valor_liquidado: true,
+
+                dotacao: true,
+            },
+        });
+        const dotacoesSomaInfoRef: Record<string, (typeof dotacoesSomaInfo)[0]> = {};
+        for (const dotacao of dotacoesSomaInfo) {
+            dotacoesSomaInfoRef[dotacao.dotacao] = dotacao;
+        }
         const dotacoesInfo = await this.prisma.dotacaoRealizado.findMany({
             where: {
                 dotacao: { in: Object.keys(dotacoesEncontradas) },
                 ano_referencia: filters.ano_referencia,
             },
             select: {
-                smae_soma_valor_empenho: true,
-                smae_soma_valor_liquidado: true,
                 empenho_liquido: true,
                 valor_liquidado: true,
                 dotacao: true,
@@ -579,23 +631,29 @@ export class OrcamentoRealizadoService {
 
             if (orcaRealizado.nota_empenho && notasInfoRef[orcaRealizado.nota_empenho]) {
                 const notaInfo = notasInfoRef[orcaRealizado.nota_empenho];
+                const notaSomaInfo = notasInfoSomaRef[orcaRealizado.nota_empenho];
 
-                smae_soma_valor_empenho = notaInfo.smae_soma_valor_empenho.toFixed(2);
-                smae_soma_valor_liquidado = notaInfo.smae_soma_valor_liquidado.toFixed(2);
+                smae_soma_valor_empenho = notaSomaInfo?.soma_valor_empenho.toFixed(2) ?? '0.00'
+                smae_soma_valor_liquidado = notaSomaInfo?.soma_valor_liquidado.toFixed(2) ?? '0.00';
 
                 empenho_liquido = notaInfo.empenho_liquido.toFixed(2);
                 valor_liquidado = notaInfo.valor_liquidado.toFixed(2);
             } else if (orcaRealizado.processo && processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo]) {
                 const processoInfo = processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
-                smae_soma_valor_empenho = processoInfo.smae_soma_valor_empenho.toFixed(2);
-                smae_soma_valor_liquidado = processoInfo.smae_soma_valor_liquidado.toFixed(2);
+                const processoSomaInfo = processoInfoSomaRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
+
+                smae_soma_valor_empenho = processoSomaInfo?.soma_valor_empenho.toFixed(2) ?? '0.00';
+                smae_soma_valor_liquidado = processoSomaInfo?.soma_valor_liquidado.toFixed(2) ?? '0.00';
 
                 empenho_liquido = processoInfo.empenho_liquido.toFixed(2);
                 valor_liquidado = processoInfo.valor_liquidado.toFixed(2);
             } else if (dotacoesInfoRef[orcaRealizado.dotacao]) {
                 const dotacaoInfo = dotacoesInfoRef[orcaRealizado.dotacao];
-                smae_soma_valor_empenho = dotacaoInfo.smae_soma_valor_empenho.toFixed(2);
-                smae_soma_valor_liquidado = dotacaoInfo.smae_soma_valor_liquidado.toFixed(2);
+                const dotacaoSomaInfo = dotacoesSomaInfoRef[orcaRealizado.dotacao];
+
+                smae_soma_valor_empenho = dotacaoSomaInfo?.soma_valor_empenho.toFixed(2) ?? '0.00';
+                smae_soma_valor_liquidado = dotacaoSomaInfo?.soma_valor_liquidado.toFixed(2) ?? '0.00';
+
                 empenho_liquido = dotacaoInfo.empenho_liquido.toFixed(2);
                 valor_liquidado = dotacaoInfo.valor_liquidado.toFixed(2);
             }
@@ -608,7 +666,7 @@ export class OrcamentoRealizadoService {
             rows.push({
                 id: orcaRealizado.id,
                 ano_referencia: orcaRealizado.ano_referencia,
-                meta: orcaRealizado.meta,
+                meta: orcaRealizado.meta!,
                 iniciativa: orcaRealizado.iniciativa,
                 atividade: orcaRealizado.atividade,
                 criado_em: orcaRealizado.criado_em,
@@ -642,7 +700,7 @@ export class OrcamentoRealizadoService {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
+        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null) throw new HttpException('Orçamento realizado não encontrado', 404);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
@@ -677,14 +735,9 @@ export class OrcamentoRealizadoService {
                         });
                         if (!notaTx) throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
 
-                        const smae_soma_valor_empenho = notaTx.smae_soma_valor_empenho - orcRealizado.soma_valor_empenho;
-                        const smae_soma_valor_liquidado = notaTx.smae_soma_valor_liquidado - orcRealizado.soma_valor_liquidado;
                         await prismaTxn.dotacaoProcessoNota.update({
                             where: { id: notaTx.id },
-                            data: {
-                                smae_soma_valor_empenho,
-                                smae_soma_valor_liquidado,
-                            },
+                            data: { id: notaTx.id },
                         });
                     } else if (orcRealizado.processo) {
                         const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
@@ -698,14 +751,9 @@ export class OrcamentoRealizadoService {
                         });
                         if (!processoTx) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
 
-                        const smae_soma_valor_empenho = processoTx.smae_soma_valor_empenho - orcRealizado.soma_valor_empenho;
-                        const smae_soma_valor_liquidado = processoTx.smae_soma_valor_liquidado - orcRealizado.soma_valor_liquidado;
                         await prismaTxn.dotacaoProcesso.update({
                             where: { id: processoTx.id },
-                            data: {
-                                smae_soma_valor_empenho,
-                                smae_soma_valor_liquidado,
-                            },
+                            data: { id: processoTx.id },
                         });
                     } else if (orcRealizado.dotacao) {
                         const processoTx = await prismaTxn.dotacaoRealizado.findUnique({
@@ -718,14 +766,9 @@ export class OrcamentoRealizadoService {
                         });
                         if (!processoTx) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
 
-                        const smae_soma_valor_empenho = processoTx.smae_soma_valor_empenho - orcRealizado.soma_valor_empenho;
-                        const smae_soma_valor_liquidado = processoTx.smae_soma_valor_liquidado - orcRealizado.soma_valor_liquidado;
                         await prismaTxn.dotacaoRealizado.update({
                             where: { id: processoTx.id },
-                            data: {
-                                smae_soma_valor_empenho,
-                                smae_soma_valor_liquidado,
-                            },
+                            data: { id: processoTx.id },
                         });
                     }
                 }

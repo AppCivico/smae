@@ -8,7 +8,7 @@ import { ValorRealizadoProcessoDto } from './entities/dotacao.entity';
 
 @Injectable()
 export class DotacaoProcessoService {
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService, private readonly dotacaoService: DotacaoService) {}
+    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService, private readonly dotacaoService: DotacaoService) { }
 
     async valorRealizadoProcesso(dto: AnoDotacaoProcessoDto): Promise<ValorRealizadoProcessoDto[]> {
         const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
@@ -75,8 +75,6 @@ export class DotacaoProcessoService {
                                     ano_referencia: dto.ano,
                                     dotacao: dotacaoProcesso.dotacao,
                                     dotacao_processo: dto.processo,
-                                    smae_soma_valor_empenho: 0,
-                                    smae_soma_valor_liquidado: 0,
                                 },
                                 select: { id: true },
                             });
@@ -113,28 +111,76 @@ export class DotacaoProcessoService {
                 valor_liquidado: true,
                 mes_utilizado: true,
                 ano_referencia: true,
-                smae_soma_valor_empenho: true,
-                smae_soma_valor_liquidado: true,
                 dotacao_processo: true,
             },
         });
 
-        const list = dbList.map(r => {
+        const pList = dbList.map(async (r) => {
+            const smaeResults = await this.get_smae_soma_valor_realizado(r.dotacao, dto);
             return {
                 ...r,
                 dotacao_processo: undefined,
                 processo: r.dotacao_processo,
-                smae_soma_valor_empenho: r.smae_soma_valor_empenho.toFixed(2),
-                smae_soma_valor_liquidado: r.smae_soma_valor_liquidado.toFixed(2),
+                ...smaeResults,
                 empenho_liquido: r.empenho_liquido.toFixed(2),
                 valor_liquidado: r.valor_liquidado.toFixed(2),
                 mes_utilizado: r.mes_utilizado,
                 ano_referencia: r.ano_referencia,
-                projeto_atividade: '',
+                projeto_atividade: ''
             };
         });
+
+        const list = await Promise.all(pList);
         await this.dotacaoService.setManyProjetoAtividade(list);
 
         return list;
     }
+
+    async get_smae_soma_valor_realizado(dotacao: string, dto: AnoDotacaoProcessoDto): Promise<{
+        smae_soma_valor_empenho: string,
+        smae_soma_valor_liquidado: string,
+    }> {
+        let smae_soma_valor_empenho: string = '0.00';
+        let smae_soma_valor_liquidado: string = '0.00';
+
+        if (dto.pdm_id) {
+            const qr = await this.prisma.pdmDotacaoProcesso.findUnique({
+                where: {
+                    pdm_id_ano_referencia_dotacao_dotacao_processo: {
+                        ano_referencia: dto.ano,
+                        dotacao: dotacao,
+                        dotacao_processo: dto.processo,
+                        pdm_id: dto.pdm_id,
+                    }
+                },
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+            });
+            if (qr) {
+                smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
+            }
+        } else if (dto.portfolio_id) {
+            const qr = await this.prisma.portfolioDotacaoProcesso.findUnique({
+                where: {
+                    portfolio_id_ano_referencia_dotacao_dotacao_processo: {
+                        ano_referencia: dto.ano,
+                        dotacao: dotacao,
+                        dotacao_processo: dto.processo,
+                        portfolio_id: dto.portfolio_id,
+                    }
+                },
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+            });
+            if (qr) {
+                smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
+            }
+        }
+
+        return {
+            smae_soma_valor_empenho,
+            smae_soma_valor_liquidado,
+        };
+    }
+
 }
