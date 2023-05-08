@@ -258,6 +258,7 @@ ALTER TABLE "orcamento_realizado" ADD CONSTRAINT "orcamento_realizado_projeto_id
 
 -- AddForeignKey
 ALTER TABLE "orcamento_realizado" ADD CONSTRAINT "orcamento_realizado_meta_id_fkey" FOREIGN KEY ("meta_id") REFERENCES "meta"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
 CREATE OR REPLACE FUNCTION f_tgr_update_soma_dotacao()
     RETURNS TRIGGER
     AS $$
@@ -284,8 +285,7 @@ BEGIN
             pdm_sum.valor_planejado_sum > NEW.val_orcado_atualizado,
             pdm_sum.valor_planejado_sum
         FROM
-            pdm_sum,
-            dotacao_planejado
+            pdm_sum
         ON CONFLICT(pdm_id,
             ano_referencia,
             dotacao)
@@ -315,11 +315,10 @@ BEGIN
             portfolio_sum.portfolio_id,
             NEW.ano_referencia,
             NEW.dotacao,
-            portfolio_sum.valor_planejado_sum > dotacao_planejado.val_orcado_atualizado,
+            portfolio_sum.valor_planejado_sum > NEW.val_orcado_atualizado,
             portfolio_sum.valor_planejado_sum
         FROM
-            portfolio_sum,
-            dotacao_planejado
+            portfolio_sum
         ON CONFLICT(portfolio_id, ano_referencia, dotacao)
             DO UPDATE SET
                 pressao_orcamentaria = EXCLUDED.pressao_orcamentaria,
@@ -331,6 +330,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
+
 
 CREATE TRIGGER tgr_dotacao_change
 AFTER INSERT OR UPDATE

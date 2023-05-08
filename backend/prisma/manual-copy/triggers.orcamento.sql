@@ -24,8 +24,7 @@ BEGIN
             pdm_sum.valor_planejado_sum > NEW.val_orcado_atualizado,
             pdm_sum.valor_planejado_sum
         FROM
-            pdm_sum,
-            dotacao_planejado
+            pdm_sum
         ON CONFLICT(pdm_id,
             ano_referencia,
             dotacao)
@@ -55,11 +54,10 @@ BEGIN
             portfolio_sum.portfolio_id,
             NEW.ano_referencia,
             NEW.dotacao,
-            portfolio_sum.valor_planejado_sum > dotacao_planejado.val_orcado_atualizado,
+            portfolio_sum.valor_planejado_sum > NEW.val_orcado_atualizado,
             portfolio_sum.valor_planejado_sum
         FROM
-            portfolio_sum,
-            dotacao_planejado
+            portfolio_sum
         ON CONFLICT(portfolio_id, ano_referencia, dotacao)
             DO UPDATE SET
                 pressao_orcamentaria = EXCLUDED.pressao_orcamentaria,
