@@ -300,7 +300,7 @@ export class DotacaoService {
 
                 id: dotacaoExistente.id,
                 informacao_valida: dotacaoExistente.informacao_valida,
-                smae_soma_valor_planejado: dotacaoExistente.smae_soma_valor_planejado.toFixed(2),
+                smae_soma_valor_planejado: await this.get_smae_soma_valor_planejado(dto),
                 mes_utilizado: dotacaoExistente.mes_utilizado,
                 projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
             };
@@ -323,10 +323,41 @@ export class DotacaoService {
             val_orcado_inicial: dotacaoPlanejado.val_orcado_inicial.toFixed(2),
             saldo_disponivel: dotacaoPlanejado.saldo_disponivel.toFixed(2),
             informacao_valida: dotacaoPlanejado.informacao_valida,
-            smae_soma_valor_planejado: dotacaoPlanejado.smae_soma_valor_planejado.toFixed(2),
+            smae_soma_valor_planejado: await this.get_smae_soma_valor_planejado(dto),
             mes_utilizado: dotacaoPlanejado.mes_utilizado,
             projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
         };
+    }
+
+    async get_smae_soma_valor_planejado(dto: AnoDotacaoDto): Promise<string> {
+        let valor: string = '0.00';
+        if (dto.pdm_id) {
+            const qr = await this.prisma.pdmDotacaoPlanejado.findUnique({
+                where: {
+                    pdm_id_ano_referencia_dotacao: {
+                        ano_referencia: dto.ano,
+                        dotacao: dto.dotacao,
+                        pdm_id: dto.pdm_id,
+                    }
+                },
+                select: { soma_valor_planejado: true }
+            });
+            if (qr) valor = qr.soma_valor_planejado.toFixed(2);
+        } else if (dto.portfolio_id) {
+            const qr = await this.prisma.portfolioDotacaoPlanejado.findUnique({
+                where: {
+                    portfolio_id_ano_referencia_dotacao: {
+                        ano_referencia: dto.ano,
+                        dotacao: dto.dotacao,
+                        portfolio_id: dto.portfolio_id,
+                    }
+                },
+                select: { soma_valor_planejado: true }
+            });
+            if (qr) valor = qr.soma_valor_planejado.toFixed(2);
+        }
+
+        return valor;
     }
 
     async valorRealizadoDotacao(dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto[]> {
@@ -342,7 +373,7 @@ export class DotacaoService {
         const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
 
         if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual) {
-            return [await this.renderDotacaoRealizado(dotacaoRealizadoExistente)];
+            return [await this.renderDotacaoRealizado(dotacaoRealizadoExistente, dto)];
         }
 
         await this.sincronizarDotacaoRealizado(dto, mesMaisAtual);
@@ -356,10 +387,10 @@ export class DotacaoService {
             },
         });
 
-        return [await this.renderDotacaoRealizado(dotacaoRealizado)];
+        return [await this.renderDotacaoRealizado(dotacaoRealizado, dto)];
     }
 
-    private async renderDotacaoRealizado(dotacao: DotacaoRealizado): Promise<ValorRealizadoDotacaoDto> {
+    private async renderDotacaoRealizado(dotacao: DotacaoRealizado, dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto> {
         return {
             id: dotacao.id,
             dotacao: dotacao.dotacao,
@@ -368,12 +399,58 @@ export class DotacaoService {
             valor_liquidado: dotacao.valor_liquidado.toFixed(2),
             mes_utilizado: dotacao.mes_utilizado,
 
-            smae_soma_valor_empenho: dotacao.smae_soma_valor_empenho.toFixed(2),
-            smae_soma_valor_liquidado: dotacao.smae_soma_valor_liquidado.toFixed(2),
+            ...(await this.get_smae_soma_valor_realizado(dto)),
 
             projeto_atividade: await this.getOneProjetoAtividade(dotacao.ano_referencia, dotacao.dotacao),
         };
     }
+
+
+    async get_smae_soma_valor_realizado(dto: AnoDotacaoDto): Promise<{
+        smae_soma_valor_empenho: string,
+        smae_soma_valor_liquidado: string,
+    }> {
+        let smae_soma_valor_empenho: string = '0.00';
+        let smae_soma_valor_liquidado: string = '0.00';
+
+        if (dto.pdm_id) {
+            const qr = await this.prisma.pdmDotacaoRealizado.findUnique({
+                where: {
+                    pdm_id_ano_referencia_dotacao: {
+                        ano_referencia: dto.ano,
+                        dotacao: dto.dotacao,
+                        pdm_id: dto.pdm_id,
+                    }
+                },
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+            });
+            if (qr) {
+                smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
+            }
+        } else if (dto.portfolio_id) {
+            const qr = await this.prisma.portfolioDotacaoRealizado.findUnique({
+                where: {
+                    portfolio_id_ano_referencia_dotacao: {
+                        ano_referencia: dto.ano,
+                        dotacao: dto.dotacao,
+                        portfolio_id: dto.portfolio_id,
+                    }
+                },
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+            });
+            if (qr) {
+                smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+                smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
+            }
+        }
+
+        return {
+            smae_soma_valor_empenho,
+            smae_soma_valor_liquidado,
+        };
+    }
+
 
     private async sincronizarDotacaoRealizado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
@@ -428,8 +505,6 @@ export class DotacaoService {
                                     mes_utilizado: mes,
                                     ano_referencia: dto.ano,
                                     dotacao: dto.dotacao,
-                                    smae_soma_valor_empenho: 0,
-                                    smae_soma_valor_liquidado: 0,
                                 },
                                 select: { id: true },
                             });
@@ -493,7 +568,6 @@ export class DotacaoService {
                                     val_orcado_atualizado: dotacao.val_orcado_atualizado,
                                     val_orcado_inicial: dotacao.val_orcado_inicial,
                                     saldo_disponivel: dotacao.saldo_disponivel,
-                                    pressao_orcamentaria: Math.round(jaExiste.smae_soma_valor_planejado * 100) > Math.round(dotacao.val_orcado_atualizado * 100),
                                 },
                             });
                         }
@@ -509,8 +583,6 @@ export class DotacaoService {
                                     mes_utilizado: mes,
                                     ano_referencia: dto.ano,
                                     dotacao: dto.dotacao,
-                                    pressao_orcamentaria: false,
-                                    smae_soma_valor_planejado: 0,
                                 },
                                 select: { id: true },
                             });
@@ -524,43 +596,11 @@ export class DotacaoService {
                 );
             }
         } catch (error) {
-            if (error instanceof SofError) {
-                await this.prisma.$transaction(
-                    async (prisma: Prisma.TransactionClient) => {
-                        const jaExiste = await prisma.dotacaoPlanejado.findUnique({
-                            where: {
-                                ano_referencia_dotacao: {
-                                    ano_referencia: dto.ano,
-                                    dotacao: dto.dotacao,
-                                },
-                            },
-                        });
-
-                        // se ainda não existe (pode ter iniciado já por causa do lock)
-                        if (!jaExiste) {
-                            await prisma.dotacaoPlanejado.create({
-                                data: {
-                                    informacao_valida: false,
-                                    sincronizado_em: null,
-                                    val_orcado_atualizado: 0,
-                                    val_orcado_inicial: 0,
-                                    saldo_disponivel: 0,
-                                    mes_utilizado: mes,
-                                    ano_referencia: dto.ano,
-                                    dotacao: dto.dotacao,
-                                    pressao_orcamentaria: false,
-                                    smae_soma_valor_planejado: 0,
-                                },
-                                select: { id: true },
-                            });
-                        }
-                    },
-                    {
-                        isolationLevel: 'Serializable',
-                    },
+            if (error instanceof SofError)
+                throw new HttpException(
+                    'No momento, o serviço SOF está indisponível, e não é possível criar uma Dotação de Planejamento manualmente nesta versão do SMAE.\n\nTente novamente mais tarde',
+                    400,
                 );
-                return;
-            }
 
             throw error;
         }

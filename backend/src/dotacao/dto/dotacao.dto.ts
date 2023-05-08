@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, Validate, ValidateIf, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, isInt } from 'class-validator';
 
 export const PROCESSO_REGEXP = /^(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)$/;
 export const PROCESSO_MESSAGE = 'Processo não está no formato esperado: DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)';
@@ -10,6 +10,29 @@ export const PROCESSO_DESCRIPTION = `há dois tipos de processo:
 - processo SINPROC (12 dígitos) esperado: "AAAA-D.DDD.DDD-D" ou "201601234567"
 
 no banco será normalizado para o valor o número sozinho`;
+
+@ValidatorConstraint({ name: 'EitherPdmOrPortfolio', async: false })
+class EitherPdmOrPortfolio implements ValidatorConstraintInterface {
+    validate(value: any, args: ValidationArguments) {
+
+        const { pdm_id, portfolio_id } = args.object as any;
+
+        // verifica se tem um ou o outro, mas não ambos ao mesmo tempo
+        // não temos ID 0, então pode enviar 0 no que não for usar
+        let ok = (pdm_id && !portfolio_id) || (!pdm_id && portfolio_id);
+
+        if (ok) {
+            if (pdm_id && !Number.isInteger(+pdm_id)) ok = false;
+            if (portfolio_id && !Number.isInteger(+portfolio_id)) ok = false;
+        }
+
+        return ok;
+    }
+
+    defaultMessage(args: ValidationArguments) {
+        return '$property| É necessário obrigatoriamente enviar pdm_id ou portfolio_id.';
+    }
+}
 
 export class AnoDto {
     /**
@@ -21,6 +44,16 @@ export class AnoDto {
     @Max(2050)
     @Type(() => Number)
     ano: number;
+
+    @ApiProperty({ example: 0 })
+    @Validate(EitherPdmOrPortfolio)
+    @Type(() => Number)
+    pdm_id: number | undefined;
+
+    @ApiProperty({ example: 0 })
+    @Validate(EitherPdmOrPortfolio)
+    @Type(() => Number)
+    portfolio_id: number | undefined;
 }
 
 export class AnoDotacaoDto extends AnoDto {

@@ -117,10 +117,9 @@ export class FilterOrcamentoRealizadoDto {
      * Filtrar por meta_id: eg: 205
      * @example ""
      */
-    @IsOptional()
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
-    meta_id?: number;
+    meta_id: number;
 
     /**
      * Filtrar por dotacao: eg: 00.00.00.000.0000.0.000.00000000.00

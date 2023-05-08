@@ -167,9 +167,9 @@ model Pessoa {
     MetaCicloFisicoAnaliseDocumentoCriador   MetaCicloFisicoAnaliseDocumento[] @relation("criador")
     MetaCicloFisicoAnaliseDocumentoRemovedor MetaCicloFisicoAnaliseDocumento[] @relation("removedor")
     EtapaResponsavel                         EtapaResponsavel[]
-    MetaOrcamentoCriados                     OrcamentoPrevisto[]                   @relation("criador")
-    MetaOrcamentoRemovidos                   OrcamentoPrevisto[]                   @relation("removedor")
-    MetaOrcamentoAtualizados                 OrcamentoPrevisto[]                   @relation("atualizador")
+    MetaOrcamentoCriados                     OrcamentoPrevisto[]               @relation("criador")
+    MetaOrcamentoRemovidos                   OrcamentoPrevisto[]               @relation("removedor")
+    MetaOrcamentoAtualizados                 OrcamentoPrevisto[]               @relation("atualizador")
     OrcamentoPlanejadoCriados                OrcamentoPlanejado[]              @relation("criador")
     OrcamentoPlanejadoRemovidos              OrcamentoPlanejado[]              @relation("removedor")
     OrcamentoRealizadoCriados                OrcamentoRealizado[]              @relation("criador")
@@ -441,13 +441,17 @@ model Pdm {
 
     paineis_de_meta Painel[]
 
-    logo                String?
-    arquivo_logo_id     Int?
-    ArquivoLogo         Arquivo?              @relation(fields: [arquivo_logo_id], references: [id])
-    CicloFasesPdmConfig CicloFasesPdmConfig[]
-    CicloFisico         CicloFisico[]
-    PdmOrcamentoConfig  PdmOrcamentoConfig[]
-    Relatorio           Relatorio[]
+    logo                   String?
+    arquivo_logo_id        Int?
+    ArquivoLogo            Arquivo?                 @relation(fields: [arquivo_logo_id], references: [id])
+    CicloFasesPdmConfig    CicloFasesPdmConfig[]
+    CicloFisico            CicloFisico[]
+    PdmOrcamentoConfig     PdmOrcamentoConfig[]
+    Relatorio              Relatorio[]
+    PdmDotacaoPlanejado    PdmDotacaoPlanejado[]
+    PdmDotacaoRealizado    PdmDotacaoRealizado[]
+    PdmDotacaoProcesso     PdmDotacaoProcesso[]
+    PdmDotacaoProcessoNota PdmDotacaoProcessoNota[]
 
     @@index([ativo])
     @@map("pdm")
@@ -1857,18 +1861,45 @@ model DotacaoPlanejado {
     ano_referencia Int
     mes_utilizado  Int
 
-    dotacao                   String
-    val_orcado_inicial        Float   @db.DoublePrecision
-    val_orcado_atualizado     Float   @db.DoublePrecision
-    saldo_disponivel          Float   @db.DoublePrecision
-    pressao_orcamentaria      Boolean
-    smae_soma_valor_planejado Float
-
-    pp_pressao_orcamentaria Boolean @default(false)
-    pp_soma_valor_planejado Float   @default(0)
+    dotacao               String
+    val_orcado_inicial    Decimal @db.Decimal(15, 2)
+    val_orcado_atualizado Decimal @db.Decimal(15, 2)
+    saldo_disponivel      Decimal @db.Decimal(15, 2)
 
     @@unique([ano_referencia, dotacao])
     @@map("dotacao_planejado")
+}
+
+model PdmDotacaoPlanejado {
+    id Int @id @default(autoincrement())
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ano_referencia Int
+    dotacao        String
+
+    pressao_orcamentaria Boolean
+    soma_valor_planejado Decimal @db.Decimal(15, 2)
+
+    @@unique([pdm_id, ano_referencia, dotacao])
+    @@map("pdm_dotacao_planejado")
+}
+
+model PortfolioDotacaoPlanejado {
+    id Int @id @default(autoincrement())
+
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    ano_referencia Int
+    dotacao        String
+
+    pressao_orcamentaria Boolean
+    soma_valor_planejado Decimal @db.Decimal(15, 2)
+
+    @@unique([portfolio_id, ano_referencia, dotacao])
+    @@map("portfolio_dotacao_planejado")
 }
 
 model DotacaoRealizado {
@@ -1881,17 +1912,43 @@ model DotacaoRealizado {
     mes_utilizado  Int
 
     dotacao         String
-    empenho_liquido Float  @db.DoublePrecision
-    valor_liquidado Float  @db.DoublePrecision
-
-    smae_soma_valor_empenho   Float @default(0)
-    smae_soma_valor_liquidado Float @default(0)
-
-    pp_soma_valor_empenho   Float @default(0)
-    pp_soma_valor_liquidado Float @default(0)
+    empenho_liquido Decimal @db.Decimal(15, 2)
+    valor_liquidado Decimal @db.Decimal(15, 2)
 
     @@unique([ano_referencia, dotacao])
     @@map("dotacao_realizado")
+}
+
+model PdmDotacaoRealizado {
+    id Int @id @default(autoincrement())
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ano_referencia Int
+    dotacao        String
+
+    soma_valor_empenho   Decimal @default(0) @db.Decimal(15, 2)
+    soma_valor_liquidado Decimal @default(0) @db.Decimal(15, 2)
+
+    @@unique([pdm_id, ano_referencia, dotacao])
+    @@map("pdm_dotacao_realizado")
+}
+
+model PortfolioDotacaoRealizado {
+    id Int @id @default(autoincrement())
+
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    ano_referencia Int
+    dotacao        String
+
+    soma_valor_empenho   Decimal @default(0) @db.Decimal(15, 2)
+    soma_valor_liquidado Decimal @default(0) @db.Decimal(15, 2)
+
+    @@unique([portfolio_id, ano_referencia, dotacao])
+    @@map("portfolio_dotacao_realizado")
 }
 
 model DotacaoProcesso {
@@ -1905,17 +1962,45 @@ model DotacaoProcesso {
 
     dotacao          String
     dotacao_processo String
-    empenho_liquido  Float  @db.DoublePrecision
-    valor_liquidado  Float  @db.DoublePrecision
-
-    smae_soma_valor_empenho   Float @default(0)
-    smae_soma_valor_liquidado Float @default(0)
-
-    pp_soma_valor_empenho   Float @default(0)
-    pp_soma_valor_liquidado Float @default(0)
+    empenho_liquido  Decimal @db.Decimal(15, 2)
+    valor_liquidado  Decimal @db.Decimal(15, 2)
 
     @@unique([ano_referencia, dotacao, dotacao_processo])
     @@map("dotacao_processo")
+}
+
+model PdmDotacaoProcesso {
+    id Int @id @default(autoincrement())
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ano_referencia   Int
+    dotacao          String
+    dotacao_processo String
+
+    soma_valor_empenho   Decimal @default(0) @db.Decimal(15, 2)
+    soma_valor_liquidado Decimal @default(0) @db.Decimal(15, 2)
+
+    @@unique([pdm_id, ano_referencia, dotacao, dotacao_processo])
+    @@map("pdm_dotacao_processo")
+}
+
+model PortfolioDotacaoProcesso {
+    id Int @id @default(autoincrement())
+
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    ano_referencia   Int
+    dotacao          String
+    dotacao_processo String
+
+    soma_valor_empenho   Decimal @default(0) @db.Decimal(15, 2)
+    soma_valor_liquidado Decimal @default(0) @db.Decimal(15, 2)
+
+    @@unique([portfolio_id, ano_referencia, dotacao, dotacao_processo])
+    @@map("portfolio_dotacao_processo")
 }
 
 model DotacaoProcessoNota {
@@ -1931,16 +2016,49 @@ model DotacaoProcessoNota {
     dotacao_processo      String
     dotacao_processo_nota String
 
-    empenho_liquido           Float @db.DoublePrecision
-    valor_liquidado           Float @db.DoublePrecision
-    smae_soma_valor_empenho   Float @default(0)
-    smae_soma_valor_liquidado Float @default(0)
-
-    pp_soma_valor_empenho   Float @default(0)
-    pp_soma_valor_liquidado Float @default(0)
+    empenho_liquido Decimal @db.Decimal(15, 2)
+    valor_liquidado Decimal @db.Decimal(15, 2)
 
     @@unique([ano_referencia, dotacao, dotacao_processo, dotacao_processo_nota])
     @@map("dotacao_processo_nota")
+}
+
+model PdmDotacaoProcessoNota {
+    id Int @id @default(autoincrement())
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ano_referencia Int
+
+    dotacao               String
+    dotacao_processo      String
+    dotacao_processo_nota String
+
+    soma_valor_empenho   Decimal @default(0) @db.Decimal(15, 2)
+    soma_valor_liquidado Decimal @default(0) @db.Decimal(15, 2)
+
+    @@unique([pdm_id, ano_referencia, dotacao, dotacao_processo, dotacao_processo_nota])
+    @@map("pdm_dotacao_processo_nota")
+}
+
+model PortfolioDotacaoProcessoNota {
+    id Int @id @default(autoincrement())
+
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    ano_referencia Int
+
+    dotacao               String
+    dotacao_processo      String
+    dotacao_processo_nota String
+
+    soma_valor_empenho   Decimal @default(0) @db.Decimal(15, 2)
+    soma_valor_liquidado Decimal @default(0) @db.Decimal(15, 2)
+
+    @@unique([portfolio_id, ano_referencia, dotacao, dotacao_processo, dotacao_processo_nota])
+    @@map("portfolio_dotacao_processo_nota")
 }
 
 model OrcamentoPlanejado {
@@ -1950,7 +2068,7 @@ model OrcamentoPlanejado {
     iniciativa_id Int?
     atividade_id  Int?
 
-    valor_planejado Float  @db.DoublePrecision
+    valor_planejado Decimal @db.Decimal(15, 2)
     ano_referencia  Int
     dotacao         String
 
@@ -1968,6 +2086,7 @@ model OrcamentoPlanejado {
     removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
     @@index([meta_id])
+    @@index([projeto_id])
     @@index([ano_referencia, meta_id])
     @@index([ano_referencia, iniciativa_id])
     @@index([ano_referencia, atividade_id])
@@ -1977,8 +2096,8 @@ model OrcamentoPlanejado {
 model OrcamentoRealizadoItem {
     id Int @id @default(autoincrement())
 
-    valor_empenho   Float   @db.DoublePrecision
-    valor_liquidado Float   @db.DoublePrecision
+    valor_empenho   Decimal @db.Decimal(15, 2)
+    valor_liquidado Decimal @db.Decimal(15, 2)
     mes             Int
     mes_corrente    Boolean @default(false)
 
@@ -1993,12 +2112,14 @@ model OrcamentoRealizadoItem {
     OrcamentoRealizado     OrcamentoRealizado @relation(fields: [orcamento_realizado_id], references: [id])
     orcamento_realizado_id Int
 
+    @@index([orcamento_realizado_id])
     @@map("orcamento_realizado_item")
 }
 
 model OrcamentoRealizado {
     id            Int  @id @default(autoincrement())
-    meta_id       Int
+    projeto_id    Int?
+    meta_id       Int?
     iniciativa_id Int?
     atividade_id  Int?
 
@@ -2008,8 +2129,8 @@ model OrcamentoRealizado {
     processo       String?
     nota_empenho   String?
 
-    soma_valor_empenho   Float
-    soma_valor_liquidado Float
+    soma_valor_empenho   Decimal                  @db.Decimal(15, 2)
+    soma_valor_liquidado Decimal                  @db.Decimal(15, 2)
     itens                OrcamentoRealizadoItem[]
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
@@ -2018,16 +2139,17 @@ model OrcamentoRealizado {
     removido_em  DateTime?
     removido_por Int?
 
-    meta       Meta        @relation(fields: [meta_id], references: [id])
+    projeto    Projeto?    @relation(fields: [projeto_id], references: [id])
+    meta       Meta?       @relation(fields: [meta_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
     criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
     removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
 
     @@index([meta_id])
+    @@index([projeto_id])
+    @@index([ano_referencia, projeto_id])
     @@index([ano_referencia, meta_id])
-    @@index([ano_referencia, iniciativa_id])
-    @@index([ano_referencia, atividade_id])
     @@map("orcamento_realizado")
 }
 
@@ -2132,7 +2254,11 @@ model Portfolio {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
+    ProjetoNumerosSequenciais    ProjetoNumeroSequencial[]
+    PortfolioDotacaoPlanejado    PortfolioDotacaoPlanejado[]
+    PortfolioDotacaoRealizado    PortfolioDotacaoRealizado[]
+    PortfolioDotacaoProcesso     PortfolioDotacaoProcesso[]
+    PortfolioDotacaoProcessoNota PortfolioDotacaoProcessoNota[]
 
     @@map("portfolio")
 }
@@ -2345,6 +2471,7 @@ model Projeto {
     tarefas_proximo_recalculo DateTime             @default(now())
     MetaOrcamento             OrcamentoPrevisto[]
     OrcamentoPlanejado        OrcamentoPlanejado[]
+    OrcamentoRealizado        OrcamentoRealizado[]
 
     @@index([removido_em])
     @@map("projeto")

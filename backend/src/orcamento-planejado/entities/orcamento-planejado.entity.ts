@@ -1,10 +1,11 @@
+import { Decimal } from '@prisma/client/runtime';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 
 export class OrcamentoPlanejado {
     meta: IdCodTituloDto;
     atividade: IdCodTituloDto | null;
     iniciativa: IdCodTituloDto | null;
-    valor_planejado: number;
+    valor_planejado: number | Decimal;
     ano_referencia: number;
     dotacao: string;
     projeto_atividade: string;
