@@ -36,7 +36,27 @@ const rotasParaMenu = computed(() => {
     : route.meta?.rotasParaMenuSecundário;
 
   return listaDeRotas
-    ? limparRotas(listaDeRotas)
+    ? listaDeRotas.reduce((acc, cur) => {
+      let rotas = acc[acc.length - 1]?.rotas;
+
+      if (!Array.isArray(rotas)) {
+        acc.push({
+          títuloParaGrupoDeLinksNoMenu: route?.meta?.títuloParaGrupoDeLinksNoMenu,
+          rotas: [],
+        });
+        rotas = acc[acc.length - 1].rotas;
+      }
+
+      if (typeof cur === 'string') {
+        rotas.push(cur);
+      } else if (Array.isArray(cur.rotas)) {
+        acc.push(cur);
+      }
+
+      return acc;
+    }, [])
+      .map((x) => ({ ...x, rotas: limparRotas(x.rotas) }))
+      .filter((x) => !!x.rotas?.length)
     : [];
 });
 
@@ -74,24 +94,25 @@ const rotasParaMigalhasDePão = computed(() => {
     </div>
 
     <div
-      v-if="rotasParaMenu.length"
+      v-for="item, i in rotasParaMenu"
+      :key="i"
       class="subpadding"
     >
-      <h2 v-if="route?.meta?.títuloParaGrupoDeLinksNoMenu">
-        {{ route?.meta?.títuloParaGrupoDeLinksNoMenu }}
+      <h2 v-if="item.títuloParaGrupoDeLinksNoMenu">
+        {{ item.títuloParaGrupoDeLinksNoMenu }}
       </h2>
 
-      <div class="links-container mb2">
+      <div class="links-container">
         <router-link
-          v-for="item, k in rotasParaMenu"
+          v-for="rota, k in item.rotas"
           :key="k"
-          :to="item.href"
+          :to="rota.href"
         >
-          {{ item.meta?.títuloParaMenu
-            || (typeof item.meta?.título === 'function'
-              ? item.meta.título()
-              : item.meta?.título
-              || item.name
+          {{ rota.meta?.títuloParaMenu
+            || (typeof rota.meta?.título === 'function'
+              ? rota.meta.título()
+              : rota.meta?.título
+              || rota.name
             )
           }}
         </router-link>
