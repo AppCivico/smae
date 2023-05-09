@@ -59,15 +59,9 @@ export class OrcamentoPrevistoService {
     }
 
     async findAll(projeto_id: number, filters: FilterOrcamentoPrevistoDto, user: PessoaFromJwt): Promise<OrcamentoPrevistoDto[]> {
-        let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-        }
 
         const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
-                AND: [{ meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
                 ano_referencia: filters?.ano_referencia,
                 removido_em: null,
                 versao_anterior_id: null,

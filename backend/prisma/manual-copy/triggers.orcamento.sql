@@ -70,25 +70,11 @@ $$
 LANGUAGE plpgsql;
 
 CREATE TRIGGER tgr_dotacao_change
-AFTER INSERT OR UPDATE
+AFTER INSERT OR UPDATE -- sempre que tem um delete, tem um insert logo em seguida, que vai arrumar o banco
 ON dotacao_planejado
 FOR EACH ROW
 EXECUTE FUNCTION f_tgr_update_soma_dotacao();
 
-CREATE OR REPLACE FUNCTION f_tgr_delete_dotacao()
-RETURNS TRIGGER
-AS $$
-BEGIN
-  RAISE EXCEPTION 'Não é possível executar DELETE no DotacaoPlanejado, para fazer isso, deslige as triggers e lembre-se de limpar as tabelas dependentes corretamente.';
-END;
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER tgr_dotacao_delete
-BEFORE DELETE
-ON dotacao_planejado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_delete_dotacao();
 
 CREATE OR REPLACE FUNCTION f_tgr_update_soma_dotacao_realizado()
     RETURNS TRIGGER
@@ -313,18 +299,4 @@ ON orcamento_realizado
 FOR EACH ROW
 EXECUTE FUNCTION f_tgr_update_soma_dotacao_realizado();
 
-CREATE OR REPLACE FUNCTION f_tgr_delete_dotacao()
-RETURNS TRIGGER
-AS $$
-BEGIN
-  RAISE EXCEPTION 'Não é possível executar DELETE no DotacaoRealizado, para fazer isso, deslige as triggers e lembre-se de limpar as tabelas dependentes corretamente.';
-END;
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER tgr_dotacao_delete_realizado
-BEFORE DELETE
-ON orcamento_realizado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_delete_dotacao();
 
