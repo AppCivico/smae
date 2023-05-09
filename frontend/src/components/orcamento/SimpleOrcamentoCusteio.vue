@@ -6,11 +6,10 @@ import { storeToRefs } from 'pinia';
 import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
 
-const props = defineProps(['parentlink', 'config', 'meta_id']);
+const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
-OrcamentosStore.getOrcamentoCusteioById(props.meta_id, props.config.ano_referencia);
 
 function somaItems(items, key) {
   return items.reduce((r, x) => (x[key] && Number(x[key]) ? r + Number(x[key]) : r), 0);
@@ -24,7 +23,7 @@ function maiorData(items, key) {
 function agrupaFilhos(array) {
   const ar = { items: [], filhos: {} };
 
-  if (array.length) {
+  if (Array.isArray(array)) {
     array.forEach((x) => {
       if (x.iniciativa?.id && !ar.filhos[x.iniciativa.id]) {
         ar.filhos[x.iniciativa.id] = {
@@ -71,7 +70,7 @@ function agrupaFilhos(array) {
         </div>
       </div>
       <table
-        v-if="OrcamentoCusteio[ano].length"
+        v-if="OrcamentoCusteio[ano]?.length"
         class="tablemain fix"
       >
         <thead>
@@ -93,7 +92,7 @@ function agrupaFilhos(array) {
         </tbody>
       </table>
       <table
-        v-if="OrcamentoCusteio[ano].length"
+        v-if="OrcamentoCusteio[ano]?.length"
         class="tablemain fix"
       >
         <thead>

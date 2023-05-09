@@ -42,6 +42,19 @@ OrcamentosStore.clear();
   await MetasStore.getPdM();
   if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
   else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
+  if (Array.isArray(activePdm.value.orcamento_config)) {
+    activePdm.value.orcamento_config.forEach((x) => {
+      if (x.execucao_disponivel && props.area === 'Realizado') {
+        OrcamentosStore.getOrcamentoRealizadoById(meta_id, x.ano_referencia);
+      }
+      if (x.planejado_disponivel && props.area === 'Planejado') {
+        OrcamentosStore.getOrcamentoPlanejadoById(meta_id, x.ano_referencia);
+      }
+      if (x.previsao_custo_disponivel && props.area === 'Custo') {
+        OrcamentosStore.getOrcamentoCusteioById(meta_id, x.ano_referencia);
+      }
+    });
+  }
 })();
 
 function start() {

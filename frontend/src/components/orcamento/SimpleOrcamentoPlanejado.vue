@@ -3,11 +3,10 @@ import { default as LinhaPlanejado } from '@/components/orcamento/LinhaPlanejado
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 
-const props = defineProps(['parentlink', 'config', 'meta_id']);
+const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
-OrcamentosStore.getOrcamentoPlanejadoById(props.meta_id, props.config.ano_referencia);
 
 function dateToField(d) {
   const dd = d ? new Date(d) : false;
@@ -25,7 +24,7 @@ function somaItems(items, key) {
 function agrupaFilhos(array) {
   const ar = { items: [], filhos: {} };
 
-  if (array.length) {
+  if (Array.isArray(array)) {
     array.forEach((x) => {
       if (x.iniciativa?.id && !ar.filhos[x.iniciativa.id]) {
         ar.filhos[x.iniciativa.id] = {
@@ -67,14 +66,14 @@ function agrupaFilhos(array) {
           Orçamento Planejado
         </div>
         <div
-          v-if="OrcamentoPlanejado[ano].length"
+          v-if="OrcamentoPlanejado[ano]?.length"
           class="t12 lh1 w700"
         >
           <span class="tc300">Planejado total:</span> <span class="tvermelho">{{ formataValor(somaItems(OrcamentoPlanejado[ano], 'valor_planejado')) }}</span>
         </div>
       </div>
       <table
-        v-if="OrcamentoPlanejado[ano].length"
+        v-if="OrcamentoPlanejado[ano]?.length"
         class="tablemain fix"
       >
         <thead>
