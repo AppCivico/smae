@@ -1,34 +1,34 @@
 # SMAE - Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Este modelo deve ajudá-lo a começar a desenvolver com o Vue 3 no Vite.
 
-## Recommended IDE Setup
+## Configuração de IDE recomendada
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (e desativar Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
 
-## Customize configuration
+## Personalizar configuração
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+Ver [Vite Configuration Reference](https://vitejs.dev/config/).
 
-## Project Setup
+## Configuração do projeto
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Compilar e atualizar para desenvolvimento
 
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+### Compilar e Minificar para Produção
 
 ```sh
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Lint com [ESLint](https://eslint.org/)
 
 ```sh
 npm run lint
