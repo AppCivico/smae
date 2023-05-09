@@ -52,6 +52,7 @@ export class PlanoAcaoService {
                 removido_em: null,
                 ...filters
             },
+            orderBy: { id: 'asc' },
             select: {
                 id: true,
                 contramedida: true,
