@@ -67,7 +67,7 @@ export class DashboardService {
                         r.metabase_token,
                         { algorithm: 'HS256', expiresIn: 86400, }
                     );
-                    const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=true';
+                    const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=false';
 
                     opcoes.push({
                         titulo: pdm.nome,
@@ -91,7 +91,7 @@ export class DashboardService {
                     r.metabase_token,
                     { algorithm: 'HS256', expiresIn: 86400, }
                 );
-                const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=true';
+                const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=false';
 
                 liberados.push({
                     id: r.id,
