@@ -55,7 +55,7 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
 
       try {
-        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-planejado`, { dotacao, ano: Number(ano), ...{ extraParams } });
+        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-planejado`, { dotacao, ano: Number(ano), ...extraParams });
         return r;
       } catch (error) {
         return { error };
@@ -67,7 +67,7 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
 
       try {
-        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado`, { dotacao, ano: Number(ano), ...{ extraParams } });
+        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado`, { dotacao, ano: Number(ano), ...extraParams });
         return r.linhas.length ? r.linhas[0] : {};
       } catch (error) {
         return { error };
@@ -79,7 +79,7 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
 
       try {
-        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`, { nota_empenho, ano: Number(ano), ...{ extraParams } });
+        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`, { nota_empenho, ano: Number(ano), ...extraParams });
         return r.linhas.length ? r.linhas[0] : {};
       } catch (error) {
         return { error };
@@ -91,7 +91,7 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
 
       try {
-        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`, { processo, ano: Number(ano), ...{ extraParams } });
+        const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`, { processo, ano: Number(ano), ...extraParams });
         return r.linhas;
       } catch (error) {
         return { error };
