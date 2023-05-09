@@ -3,11 +3,10 @@ import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 
-const props = defineProps(['parentlink', 'config', 'meta_id']);
+const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
-OrcamentosStore.getOrcamentoRealizadoById(props.meta_id, props.config.ano_referencia);
 
 function formataValor(d) {
   return Number(d).toLocaleString('pt-BR', {
@@ -21,7 +20,7 @@ function somaItems(items, key) {
 function agrupaFilhos(array) {
   const ar = { items: [], filhos: {} };
 
-  if (array.length) {
+  if (Array.isArray(array)) {
     array.forEach((x) => {
       if (x.iniciativa?.id && !ar.filhos[x.iniciativa.id]) {
         ar.filhos[x.iniciativa.id] = {
@@ -63,7 +62,7 @@ function agrupaFilhos(array) {
           Execução orçamentária
         </div>
         <div
-          v-if="OrcamentoRealizado[ano].length"
+          v-if="OrcamentoRealizado[ano]?.length"
           class="t12 lh1 w700"
         >
           <span class="tc300">Empenho meta:</span>
