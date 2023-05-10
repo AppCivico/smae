@@ -239,19 +239,22 @@ export class MetaOrcamentoService {
                 removido_em: null,
             },
             select: {
-                criador: { select: { id: true, nome_exibicao: true } }
+                criador: { select: { id: true, nome_exibicao: true } },
+                criado_em: true
             }
         });
         if (opz) {
             return {
                 previsto_eh_zero: true,
-                previsto_eh_zero_criado_por: opz.criador
+                previsto_eh_zero_criado_por: opz.criador,
+                previsto_eh_zero_criado_em: opz.criado_em
             }
         }
 
         return {
             previsto_eh_zero: false,
-            previsto_eh_zero_criado_por: null
+            previsto_eh_zero_criado_por: null,
+            previsto_eh_zero_criado_em: null
         }
     }
 

@@ -75,6 +75,7 @@ export class FilterMetaOrcamentoDto {
 export class OrcamentoPrevistoEhZeroStatusDto {
     previsto_eh_zero: boolean
     previsto_eh_zero_criado_por: IdNomeExibicao | null
+    previsto_eh_zero_criado_em: Date | null
 }
 
 export class UpdateOrcamentoPrevistoZeradoDto {
