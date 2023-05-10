@@ -36,7 +36,6 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
      * ano_referencia
      * @example "2022"
      */
-    @IsOptional()
     @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
