@@ -1,49 +1,15 @@
 <script setup>
 import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado.vue';
+import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import agrupaFilhos from './helpers/agrupaFilhos';
+import somaItems from './helpers/somaItems';
 
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
-
-function formataValor(d) {
-  return Number(d).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }) ?? d;
-}
-function somaItems(items, key) {
-  return items.reduce((r, x) => (x[key] && Number(x[key]) ? r + Number(x[key]) : r), 0);
-}
-function agrupaFilhos(array) {
-  const ar = { items: [], filhos: {} };
-
-  if (Array.isArray(array)) {
-    array.forEach((x) => {
-      if (x.iniciativa?.id && !ar.filhos[x.iniciativa.id]) {
-        ar.filhos[x.iniciativa.id] = {
-          id: x.iniciativa.id, label: `${x.iniciativa.codigo} - ${x.iniciativa.titulo}`, filhos: {}, items: [],
-        };
-      }
-      if (x.atividade?.id && !ar.filhos[x.iniciativa.id].filhos[x.atividade.id]) {
-        ar.filhos[x.iniciativa.id].filhos[x.atividade.id] = {
-          id: x.atividade.id, label: `${x.atividade.codigo} - ${x.atividade.titulo}`, filhos: {}, items: [],
-        };
-      }
-
-      if (x.atividade?.id) {
-        ar.filhos[x.iniciativa.id].filhos[x.atividade.id].items.push(x);
-      } else if (x.iniciativa?.id) {
-        ar.filhos[x.iniciativa.id].items.push(x);
-      } else if (x.meta?.id) {
-        ar.items.push(x);
-      }
-    });
-  }
-  return ar;
-}
 </script>
 <template>
   <div class="board_indicador mb2">
