@@ -1,4 +1,3 @@
-import { requestS } from '@/helpers';
 import toFloat from '@/helpers/toFloat';
 import { defineStore } from 'pinia';
 
@@ -29,7 +28,7 @@ export const useOrcamentosStore = defineStore({
     async getOrcamentoCusteioById(id, ano) {
       try {
         this.OrcamentoCusteio[ano] = { loading: true };
-        const r = await requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await this.requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
 
         if (typeof r.previsto_eh_zero === 'boolean'){
@@ -48,7 +47,7 @@ export const useOrcamentosStore = defineStore({
     async getOrcamentoPlanejadoById(id, ano) {
       try {
         this.OrcamentoPlanejado[ano] = { loading: true };
-        const r = await requestS.get(`${baseUrl}/orcamento-planejado/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await this.requestS.get(`${baseUrl}/orcamento-planejado/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoPlanejado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoPlanejado[ano] = { error };
@@ -57,12 +56,14 @@ export const useOrcamentosStore = defineStore({
     async getOrcamentoRealizadoById(id, ano) {
       try {
         this.OrcamentoRealizado[ano] = { loading: true };
-        const r = await requestS.get(`${baseUrl}/orcamento-realizado/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await this.requestS.get(`${baseUrl}/orcamento-realizado/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoRealizado[ano] = { error };
       }
     },
+
+    // Metas & projetos
 
     async restringirPrevistoAZero(ano, params) {
       const parâmetrosCompletos = {
@@ -95,43 +96,43 @@ export const useOrcamentosStore = defineStore({
     },
 
     async updateOrcamentoCusteio(id, params) {
-      if (await requestS.patch(`${baseUrl}/meta-orcamento/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/meta-orcamento/${id}`, params)) return true;
       return false;
     },
     async insertOrcamentoCusteio(params) {
-      if (await requestS.post(`${baseUrl}/meta-orcamento/`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/meta-orcamento/`, params)) return true;
       return false;
     },
     async deleteOrcamentoCusteio(id) {
-      if (await requestS.delete(`${baseUrl}/meta-orcamento/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/meta-orcamento/${id}`)) return true;
       return false;
     },
 
     // Planejado
     async updateOrcamentoPlanejado(id, params) {
-      if (await requestS.patch(`${baseUrl}/orcamento-planejado/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/orcamento-planejado/${id}`, params)) return true;
       return false;
     },
     async insertOrcamentoPlanejado(params) {
-      if (await requestS.post(`${baseUrl}/orcamento-planejado/`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/orcamento-planejado/`, params)) return true;
       return false;
     },
     async deleteOrcamentoPlanejado(id) {
-      if (await requestS.delete(`${baseUrl}/orcamento-planejado/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/orcamento-planejado/${id}`)) return true;
       return false;
     },
 
     // Realizado
     async updateOrcamentoRealizado(id, params) {
-      if (await requestS.patch(`${baseUrl}/orcamento-realizado/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/orcamento-realizado/${id}`, params)) return true;
       return false;
     },
     async insertOrcamentoRealizado(params) {
-      if (await requestS.post(`${baseUrl}/orcamento-realizado/`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/orcamento-realizado/`, params)) return true;
       return false;
     },
     async deleteOrcamentoRealizado(id) {
-      if (await requestS.delete(`${baseUrl}/orcamento-realizado/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/orcamento-realizado/${id}`)) return true;
       return false;
     },
   },
