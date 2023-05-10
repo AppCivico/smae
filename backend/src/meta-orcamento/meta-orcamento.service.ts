@@ -7,7 +7,6 @@ import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-plan
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, OrcamentoPrevistoEhZeroStatusDto, UpdateMetaOrcamentoDto, UpdateOrcamentoPrevistoZeradoDto } from './dto/meta-orcamento.dto';
 import { MetaOrcamento } from './entities/meta-orcamento.entity';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 export class MetaOrcamentoUpdatedRet {
     id: number;
@@ -256,7 +255,7 @@ export class MetaOrcamentoService {
         }
     }
 
-    async patchZerado(dto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
+    async patchZerado(dto: UpdateOrcamentoPrevistoZeradoDto, user: PessoaFromJwt): Promise<void> {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // apaga/remove todas versões anteriores não removidas
