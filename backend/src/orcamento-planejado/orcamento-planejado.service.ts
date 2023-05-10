@@ -402,6 +402,16 @@ export class OrcamentoPlanejadoService {
 
             // se é pra considerar zero, cria uma nova linha
             if (dto.considerar_zero) {
+                const count = await this.prisma.orcamentoPlanejado.count({
+                    where: {
+                        meta_id: dto.meta_id,
+                        removido_em: null,
+                        ano_referencia: dto.ano_referencia,
+                    },
+                });
+                if (count > 0)
+                    throw new HttpException(`Para usar o ano ${dto.ano_referencia} como R$ 0,00, é necessário não ter nenhum registro de orçamento planejado.`, 400);
+
                 await this.prisma.orcamentoPlanejadoZerado.create({
                     data: {
                         meta_id: dto.meta_id,
