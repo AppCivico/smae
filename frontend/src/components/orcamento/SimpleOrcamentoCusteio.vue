@@ -1,17 +1,25 @@
 <script setup>
 import { default as LinhaCusteio } from '@/components/orcamento/LinhaCusteio.vue';
-import { useOrcamentosStore } from '@/stores';
-import { storeToRefs } from 'pinia';
 import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
+import { useAlertStore, useOrcamentosStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
 
+const alertStore = useAlertStore();
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
+const { OrcamentoCusteio, previstoEhZero, previstoEhZeroCriadoPor } = storeToRefs(OrcamentosStore);
+
+function restringirAzero() {
+  alertStore.confirmAction(`Deseja mesmo informar que não há orçamento reservado para o ano de ${ano}?`, () => {
+    OrcamentosStore.restringirPrevistoAZero(ano);
+  }, 'Restringir');
+}
+
 </script>
 <template>
   <div class="board_indicador mb2">
@@ -35,7 +43,7 @@ const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
         </div>
       </div>
       <table
-        v-if="OrcamentoCusteio[ano]?.length"
+        v-if="OrcamentoCusteio[ano]?.length || previstoEhZero[ano]"
         class="tablemain fix"
       >
         <thead>
@@ -50,9 +58,32 @@ const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>{{ formataValor(somaItems(OrcamentoCusteio[ano], 'custo_previsto')) }}</td>
-            <td>{{ dateToField(maiorData(OrcamentoCusteio[ano], 'atualizado_em')) }}</td>
+          <tr v-if="previstoEhZero[ano]">
+            <td class="error">
+              Restrito a
+              <strong>{{ formataValor(0) }}</strong>
+              <template v-if="previstoEhZeroCriadoPor[ano]?.nome_exibicao">
+                por {{ previstoEhZeroCriadoPor[ano].nome_exibicao }}
+              </template>
+            </td>
+            <td class="error">
+              {{ previstoEhZeroCriadoPor[ano]?.criado_em
+                ? dateToField(previstoEhZeroCriadoPor[ano].criado_em)
+                : '-' }}
+            </td>
+            <th
+              class="error"
+              style="width: 50px"
+            />
+          </tr>
+          <tr v-else>
+            <td>
+              {{ formataValor(somaItems(OrcamentoCusteio[ano], 'custo_previsto')) }}
+            </td>
+            <td>
+              {{ dateToField(maiorData(OrcamentoCusteio[ano], 'atualizado_em')) }}
+            </td>
+            <th style="width: 50px" />
           </tr>
         </tbody>
       </table>
@@ -141,15 +172,32 @@ const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
           <svg
             width="20"
             height="20"
-          ><use xlink:href="#i_+" /></svg> <span>Adicionar previsão de custo</span>
+          ><use xlink:href="#i_+" /></svg>
+          <span v-if="previstoEhZero[ano]">Liberar orçamento e adicionar previsão</span>
+          <span v-else>Adicionar previsão de custo</span>
         </router-link>
         <span
           v-else
           class="addlink disabled mt1 mb1"
         ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Adicionar previsão de custo</span></span>
+           width="20"
+           height="20"
+         ><use xlink:href="#i_+" /></svg>
+          <span>Adicionar previsão de custo</span>
+        </span>
+
+        <button
+          v-if="!OrcamentoCusteio[ano]?.length && !previstoEhZero[ano]"
+          type="button"
+          class="like-a__text addlink mt1 mb1"
+          @click="restringirAzero"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_zero" /></svg>
+          <span>restringir a R$0</span>
+        </button>
       </div>
     </div>
   </div>

@@ -10,6 +10,9 @@ export const useOrcamentosStore = defineStore({
     OrcamentoCusteio: {},
     OrcamentoPlanejado: {},
     OrcamentoRealizado: {},
+
+    previstoEhZero: {},
+    previstoEhZeroCriadoPor: {},
   }),
   actions: {
     clear() {
@@ -27,6 +30,9 @@ export const useOrcamentosStore = defineStore({
         this.OrcamentoCusteio[ano] = { loading: true };
         const r = await requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
+
+        this.previstoEhZero[ano] = r.previsto_eh_zero;
+        this.previstoEhZeroCriadoPor[ano] = r.previsto_eh_zero_criado_por;
       } catch (error) {
         this.OrcamentoCusteio[ano] = { error };
       }
@@ -47,6 +53,37 @@ export const useOrcamentosStore = defineStore({
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoRealizado[ano] = { error };
+      }
+    },
+
+    async restringirPrevistoAZero(ano, params) {
+      const parâmetrosCompletos = {
+        considerar_zero: true,
+        ano_referencia: ano,
+        ...params
+      };
+
+      if (this.route.params.meta_id && !parâmetrosCompletos.meta_id) {
+        parâmetrosCompletos.meta_id = this.route.params.meta_id;
+      } else if (this.route.params.projeto_id && !parâmetrosCompletos.projeto_id) {
+        parâmetrosCompletos.projeto_id = this.route.params.projetoId;
+      }
+
+      try {
+        const r = await this.requestS.patch(`${baseUrl}/meta-orcamento/zerado/`, parâmetrosCompletos);
+
+        console.debug('r', r);
+        this.previstoEhZero[ano] = parâmetrosCompletos.considerar_zero;
+
+        if (r.id && r.nome_exibicao) {
+          this.previstoEhZeroCriadoPor[ano] = r;
+        } else if (r.previsto_eh_zero_criado_por) {
+          this.previstoEhZeroCriadoPor[ano] = r.previsto_eh_zero_criado_por;
+        }
+
+        return true;
+      } catch (error) {
+        return false;
       }
     },
 
