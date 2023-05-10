@@ -2,51 +2,16 @@
 import { default as LinhaCusteio } from '@/components/orcamento/LinhaCusteio.vue';
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-
 import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
+import agrupaFilhos from './helpers/agrupaFilhos';
+import maiorData from './helpers/maiorData';
+import somaItems from './helpers/somaItems';
 
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
-
-function somaItems(items, key) {
-  return items.reduce((r, x) => (x[key] && Number(x[key]) ? r + Number(x[key]) : r), 0);
-}
-function maiorData(items, key) {
-  return items.reduce((r, x) => {
-    const k = x[key] ? new Date(x[key]) : 1;
-    return k > r ? k : r;
-  }, new Date(0));
-}
-function agrupaFilhos(array) {
-  const ar = { items: [], filhos: {} };
-
-  if (Array.isArray(array)) {
-    array.forEach((x) => {
-      if (x.iniciativa?.id && !ar.filhos[x.iniciativa.id]) {
-        ar.filhos[x.iniciativa.id] = {
-          id: x.iniciativa.id, label: `${x.iniciativa.codigo} - ${x.iniciativa.titulo}`, filhos: {}, items: [],
-        };
-      }
-      if (x.atividade?.id && !ar.filhos[x.iniciativa.id].filhos[x.atividade.id]) {
-        ar.filhos[x.iniciativa.id].filhos[x.atividade.id] = {
-          id: x.atividade.id, label: `${x.atividade.codigo} - ${x.atividade.titulo}`, filhos: {}, items: [],
-        };
-      }
-
-      if (x.atividade?.id) {
-        ar.filhos[x.iniciativa.id].filhos[x.atividade.id].items.push(x);
-      } else if (x.iniciativa?.id) {
-        ar.filhos[x.iniciativa.id].items.push(x);
-      } else if (x.meta?.id) {
-        ar.items.push(x);
-      }
-    });
-  }
-  return ar;
-}
 </script>
 <template>
   <div class="board_indicador mb2">
