@@ -12,7 +12,9 @@ const alertStore = useAlertStore();
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoCusteio, previstoEhZero, previstoEhZeroCriadoPor } = storeToRefs(OrcamentosStore);
+const {
+  OrcamentoCusteio, previstoEhZero, previstoEhZeroCriadoPor, previstoEhZeroCriadoEm,
+} = storeToRefs(OrcamentosStore);
 
 function restringirAzero() {
   alertStore.confirmAction(`Deseja mesmo informar que não há orçamento reservado para o ano de ${ano}?`, () => {
@@ -67,8 +69,8 @@ function restringirAzero() {
               </template>
             </td>
             <td class="error">
-              {{ previstoEhZeroCriadoPor[ano]?.criado_em
-                ? dateToField(previstoEhZeroCriadoPor[ano].criado_em)
+              {{ previstoEhZeroCriadoEm[ano]
+                ? dateToField(previstoEhZeroCriadoEm[ano])
                 : '-' }}
             </td>
             <th
