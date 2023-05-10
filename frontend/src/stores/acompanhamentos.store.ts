@@ -7,7 +7,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = ListProjetoAcompanhamentoDto['lista'];
+type Lista = ListProjetoAcompanhamentoDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
