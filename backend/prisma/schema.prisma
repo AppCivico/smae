@@ -203,6 +203,9 @@ model Pessoa {
     PlanosDeAcaoQueRemovi PlanoAcao[] @relation("Removedor")
     PlanosDeAcaoQueEditei PlanoAcao[] @relation("Atualizador")
 
+    OrcamentoPlanejadoZeradoQCriei  OrcamentoPlanejadoZerado[] @relation("Criador")
+    OrcamentoPlanejadoZeradoQRemovi OrcamentoPlanejadoZerado[] @relation("Removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -743,6 +746,7 @@ model Meta {
     OrcamentoPlanejado              OrcamentoPlanejado[]
     OrcamentoRealizado              OrcamentoRealizado[]
     projetos                        Projeto[]
+    OrcamentoPlanejadoZerado        OrcamentoPlanejadoZerado[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1056,17 +1060,18 @@ model Iniciativa {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    iniciativa_orgao       IniciativaOrgao[]
-    iniciativa_responsavel IniciativaResponsavel[]
-    iniciativa_tag         IniciativaTag[]
-    Indicador              Indicador[]
-    atividade              Atividade[]
-    Cronograma             Cronograma[]
-    PainelConteudoDetalhe  PainelConteudoDetalhe[]
-    OrcamentoPlanejado     OrcamentoPlanejado[]
-    OrcamentoRealizado     OrcamentoRealizado[]
-    MetaOrcamento          OrcamentoPrevisto[]
-    projetos               Projeto[]
+    iniciativa_orgao         IniciativaOrgao[]
+    iniciativa_responsavel   IniciativaResponsavel[]
+    iniciativa_tag           IniciativaTag[]
+    Indicador                Indicador[]
+    atividade                Atividade[]
+    Cronograma               Cronograma[]
+    PainelConteudoDetalhe    PainelConteudoDetalhe[]
+    OrcamentoPlanejado       OrcamentoPlanejado[]
+    OrcamentoRealizado       OrcamentoRealizado[]
+    MetaOrcamento            OrcamentoPrevisto[]
+    projetos                 Projeto[]
+    OrcamentoPlanejadoZerado OrcamentoPlanejadoZerado[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -1138,16 +1143,17 @@ model Atividade {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    atividade_orgao       AtividadeOrgao[]
-    atividade_responsavel AtividadeResponsavel[]
-    atividade_tag         AtividadeTag[]
-    Indicador             Indicador[]
-    Cronograma            Cronograma[]
-    PainelConteudoDetalhe PainelConteudoDetalhe[]
-    OrcamentoPlanejado    OrcamentoPlanejado[]
-    OrcamentoRealizado    OrcamentoRealizado[]
-    MetaOrcamento         OrcamentoPrevisto[]
-    projetos              Projeto[]
+    atividade_orgao          AtividadeOrgao[]
+    atividade_responsavel    AtividadeResponsavel[]
+    atividade_tag            AtividadeTag[]
+    Indicador                Indicador[]
+    Cronograma               Cronograma[]
+    PainelConteudoDetalhe    PainelConteudoDetalhe[]
+    OrcamentoPlanejado       OrcamentoPlanejado[]
+    OrcamentoRealizado       OrcamentoRealizado[]
+    MetaOrcamento            OrcamentoPrevisto[]
+    projetos                 Projeto[]
+    OrcamentoPlanejadoZerado OrcamentoPlanejadoZerado[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -2093,6 +2099,31 @@ model OrcamentoPlanejado {
     @@map("orcamento_planejado")
 }
 
+model OrcamentoPlanejadoZerado {
+    id             Int  @id @default(autoincrement())
+    projeto_id     Int?
+    meta_id        Int?
+    iniciativa_id  Int?
+    atividade_id   Int?
+    ano_referencia Int
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    projeto    Projeto?    @relation(fields: [projeto_id], references: [id])
+    meta       Meta?       @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("orcamento_planejado_zerado")
+}
+
 model OrcamentoRealizadoItem {
     id Int @id @default(autoincrement())
 
@@ -2468,10 +2499,11 @@ model Projeto {
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     // data em que o sistema deve novamente calcular os atrasos automaticamente
-    tarefas_proximo_recalculo DateTime             @default(now())
+    tarefas_proximo_recalculo DateTime                   @default(now())
     MetaOrcamento             OrcamentoPrevisto[]
     OrcamentoPlanejado        OrcamentoPlanejado[]
     OrcamentoRealizado        OrcamentoRealizado[]
+    OrcamentoPlanejadoZerado  OrcamentoPlanejadoZerado[]
 
     @@index([removido_em])
     @@map("projeto")
