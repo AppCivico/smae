@@ -13,6 +13,7 @@ export const useOrcamentosStore = defineStore({
 
     previstoEhZero: {},
     previstoEhZeroCriadoPor: {},
+    previstoEhZeroCriadoEm: {},
   }),
   actions: {
     clear() {
@@ -31,8 +32,15 @@ export const useOrcamentosStore = defineStore({
         const r = await requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
 
-        this.previstoEhZero[ano] = r.previsto_eh_zero;
-        this.previstoEhZeroCriadoPor[ano] = r.previsto_eh_zero_criado_por;
+        if (typeof r.previsto_eh_zero === 'boolean'){
+          this.previstoEhZero[ano] = r.previsto_eh_zero;
+        }
+        if (r.previsto_eh_zero_criado_por?.nome_exibicao){
+          this.previstoEhZeroCriadoPor[ano] = r.previsto_eh_zero_criado_por;
+        }
+        if (r.previsto_eh_zero_criado_em){
+          this.previstoEhZeroCriadoEm[ano] = r.previsto_eh_zero_criado_em;
+        }
       } catch (error) {
         this.OrcamentoCusteio[ano] = { error };
       }
@@ -64,21 +72,20 @@ export const useOrcamentosStore = defineStore({
       };
 
       if (this.route.params.meta_id && !parâmetrosCompletos.meta_id) {
-        parâmetrosCompletos.meta_id = this.route.params.meta_id;
+        parâmetrosCompletos.meta_id = Number(this.route.params.meta_id);
       } else if (this.route.params.projeto_id && !parâmetrosCompletos.projeto_id) {
-        parâmetrosCompletos.projeto_id = this.route.params.projetoId;
+        parâmetrosCompletos.projeto_id = Number(this.route.params.projetoId);
       }
-
+      const segmento1 = parâmetrosCompletos.meta_id
+        ? 'meta-orcamento'
+        : 'projeto-orcamento';
       try {
-        const r = await this.requestS.patch(`${baseUrl}/meta-orcamento/zerado/`, parâmetrosCompletos);
-
-        console.debug('r', r);
-        this.previstoEhZero[ano] = parâmetrosCompletos.considerar_zero;
-
-        if (r.id && r.nome_exibicao) {
-          this.previstoEhZeroCriadoPor[ano] = r;
-        } else if (r.previsto_eh_zero_criado_por) {
-          this.previstoEhZeroCriadoPor[ano] = r.previsto_eh_zero_criado_por;
+        if (await this.requestS.patch(`${baseUrl}/${segmento1}/zerado/`, parâmetrosCompletos) ) {
+          if (parâmetrosCompletos.meta_id) {
+            this.getOrcamentoCusteioById(parâmetrosCompletos.meta_id, ano);
+          } else if (parâmetrosCompletos.projeto_id) {
+            this.buscarOrçamentosPrevistosParaProjeto(parâmetrosCompletos.projeto_id, ano);
+          }
         }
 
         return true;
