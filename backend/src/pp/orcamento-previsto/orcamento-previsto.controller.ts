@@ -4,7 +4,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
-import { CreateOrcamentoPrevistoDto, FilterOrcamentoPrevistoDto, ListOrcamentoPrevistoDto, UpdateOrcamentoPrevistoDto } from './dto/create-orcamento-previsto.dto';
+import { CreateOrcamentoPrevistoDto, FilterOrcamentoPrevistoDto, ListOrcamentoPrevistoDto, ProjetoUpdateOrcamentoPrevistoZeradoDto, UpdateOrcamentoPrevistoDto } from './dto/create-orcamento-previsto.dto';
 import { OrcamentoPrevistoService } from './orcamento-previsto.service';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ProjetoService } from '../projeto/projeto.service';
@@ -27,7 +27,7 @@ export class OrcamentoPrevistoController {
             throw new HttpException("Não é possível criar o orçamento no modo apenas leitura.", 400);
         }
 
-        return await this.metaOrcamentoService.create( +params.id, createMetaDto, user);
+        return await this.metaOrcamentoService.create(+params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -36,7 +36,21 @@ export class OrcamentoPrevistoController {
     async findAll(@Param() params: FindOneParams, @Query() filters: FilterOrcamentoPrevistoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoPrevistoDto> {
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
 
-        return { linhas: await this.metaOrcamentoService.findAll(params.id, filters, user) };
+        return {
+            linhas: await this.metaOrcamentoService.findAll(params.id, filters, user),
+            ...(await this.metaOrcamentoService.orcamento_previsto_zero(+params.id, filters.ano_referencia))
+        };
+    }
+
+    @Patch(':id/orcamento-previsto/zerado')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('Projeto.orcamento')
+    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiNoContentResponse()
+    async patchZerado(@Param() params: FindOneParams, @Body() updateZeradoDto: ProjetoUpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
+        await this.metaOrcamentoService.patchZerado(+params.id, updateZeradoDto, user);
+        return '';
     }
 
     @Patch(':id/orcamento-previsto/:id2')
