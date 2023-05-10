@@ -1,8 +1,9 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 import { ParteDotacaoDto } from '../../dotacao/dto/dotacao.dto';
 import { MetaOrcamento } from '../entities/meta-orcamento.entity';
+import { IdNomeExibicao } from '../../variavel/entities/variavel.entity';
 
 export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
     /**
@@ -51,28 +52,54 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
 }
 
 // deixa mudar praticamente tudo, pois não há contas, então pode mudar a parte-dotação e etc
-export class UpdateMetaOrcamentoDto extends OmitType(PartialType(CreateMetaOrcamentoDto), ['ano_referencia']) {}
+export class UpdateMetaOrcamentoDto extends OmitType(PartialType(CreateMetaOrcamentoDto), ['ano_referencia']) { }
 
 export class FilterMetaOrcamentoDto {
     /**
      * Filtrar por meta_id
      * @example "42"
      */
-    @IsOptional()
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
-    meta_id?: number;
+    meta_id: number;
 
     /**
      * Filtrar por ano_referencia?
      * @example "2022"
      */
-    @IsOptional()
     @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
-    ano_referencia?: number;
+    ano_referencia: number;
 }
 
-export class ListMetaOrcamentoDto {
+export class OrcamentoPrevistoEhZeroStatusDto {
+    previsto_eh_zero: boolean
+    previsto_eh_zero_criado_por: IdNomeExibicao | null
+}
+
+export class UpdateOrcamentoPrevistoZeradoDto {
+
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @Type(() => Number)
+    meta_id: number;
+
+    /**
+     * ano_referencia
+     * @example "2022"
+     */
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @Type(() => Number)
+    ano_referencia: number;
+
+    /**
+     * Se o valor o valor Previsto para o ano deve ser zero
+     * @example true
+     */
+    @IsBoolean({ message: '$property| Precisa ser um booleano' })
+    @Type(() => Boolean)
+    considerar_zero: boolean;
+}
+
+export class ListMetaOrcamentoDto extends OrcamentoPrevistoEhZeroStatusDto {
     linhas: MetaOrcamento[];
 }

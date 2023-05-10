@@ -5,13 +5,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, ListMetaOrcamentoDto, UpdateMetaOrcamentoDto } from './dto/meta-orcamento.dto';
+import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, ListMetaOrcamentoDto, UpdateMetaOrcamentoDto, UpdateOrcamentoPrevistoZeradoDto } from './dto/meta-orcamento.dto';
 import { MetaOrcamentoService } from './meta-orcamento.service';
 
 @Controller('meta-orcamento')
 @ApiTags('Orçamento - Meta (Custeio e Investimento)')
 export class MetaOrcamentoController {
-    constructor(private readonly metaOrcamentoService: MetaOrcamentoService) {}
+    constructor(private readonly metaOrcamentoService: MetaOrcamentoService) { }
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -25,7 +25,21 @@ export class MetaOrcamentoController {
     @Get()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async findAll(@Query() filters: FilterMetaOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaOrcamentoDto> {
-        return { linhas: await this.metaOrcamentoService.findAll(filters, user) };
+        return {
+            linhas: await this.metaOrcamentoService.findAll(filters, user),
+            ...(await this.metaOrcamentoService.orcamento_previsto_zero(filters.meta_id, filters.ano_referencia))
+        };
+    }
+
+    @Patch('zerado')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiNoContentResponse()
+    async patchZerado(@Body() updateZeradoDto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
+        await this.metaOrcamentoService.patchZerado(updateZeradoDto, user);
+        return '';
     }
 
     @Patch(':id')

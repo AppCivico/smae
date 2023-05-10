@@ -5,7 +5,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateOrcamentoPlanejadoDto, FilterOrcamentoPlanejadoDto, ListOrcamentoPlanejadoDto, UpdateOrcamentoPlanejadoDto, UpdateOrcamentoPlanejadoZeradoDto } from './dto/orcamento-planejado.dto';
+import { CreateOrcamentoPlanejadoDto, FilterOrcamentoPlanejadoDto, ListOrcamentoPlanejadoDto, UpdateOrcamentoPlanejadoDto } from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejadoService } from './orcamento-planejado.service';
 
 @ApiTags('Orçamento - Planejado')
@@ -19,17 +19,6 @@ export class OrcamentoPlanejadoController {
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     async create(@Body() createMetaDto: CreateOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.orcamentoPlanejadoService.create(createMetaDto, user);
-    }
-
-    @Patch('zerado')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
-    @HttpCode(HttpStatus.ACCEPTED)
-    @ApiNoContentResponse()
-    async patchZerado(@Body() updateZeradoDto: UpdateOrcamentoPlanejadoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
-        await this.orcamentoPlanejadoService.patchZerado(updateZeradoDto, user);
-        return '';
     }
 
     @Patch(':id')
@@ -46,7 +35,6 @@ export class OrcamentoPlanejadoController {
     async findAll(@Query() filters: FilterOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoPlanejadoDto> {
         return {
             linhas: await this.orcamentoPlanejadoService.findAll(filters, user),
-            ...(await this.orcamentoPlanejadoService.orcamento_planejado_zero(filters.meta_id, filters.ano_referencia))
         };
     }
 

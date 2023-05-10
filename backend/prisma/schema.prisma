@@ -203,8 +203,8 @@ model Pessoa {
     PlanosDeAcaoQueRemovi PlanoAcao[] @relation("Removedor")
     PlanosDeAcaoQueEditei PlanoAcao[] @relation("Atualizador")
 
-    OrcamentoPlanejadoZeradoQCriei  OrcamentoPlanejadoZerado[] @relation("Criador")
-    OrcamentoPlanejadoZeradoQRemovi OrcamentoPlanejadoZerado[] @relation("Removedor")
+    OrcamentoPrevistoZeradoQCriei  OrcamentoPrevistoZerado[] @relation("Criador")
+    OrcamentoPrevistoZeradoQRemovi OrcamentoPrevistoZerado[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -746,7 +746,7 @@ model Meta {
     OrcamentoPlanejado              OrcamentoPlanejado[]
     OrcamentoRealizado              OrcamentoRealizado[]
     projetos                        Projeto[]
-    OrcamentoPlanejadoZerado        OrcamentoPlanejadoZerado[]
+    OrcamentoPlanejadoZerado        OrcamentoPrevistoZerado[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1071,7 +1071,7 @@ model Iniciativa {
     OrcamentoRealizado       OrcamentoRealizado[]
     MetaOrcamento            OrcamentoPrevisto[]
     projetos                 Projeto[]
-    OrcamentoPlanejadoZerado OrcamentoPlanejadoZerado[]
+    OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -1153,7 +1153,7 @@ model Atividade {
     OrcamentoRealizado       OrcamentoRealizado[]
     MetaOrcamento            OrcamentoPrevisto[]
     projetos                 Projeto[]
-    OrcamentoPlanejadoZerado OrcamentoPlanejadoZerado[]
+    OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -2099,7 +2099,7 @@ model OrcamentoPlanejado {
     @@map("orcamento_planejado")
 }
 
-model OrcamentoPlanejadoZerado {
+model OrcamentoPrevistoZerado {
     id             Int  @id @default(autoincrement())
     projeto_id     Int?
     meta_id        Int?
@@ -2121,7 +2121,7 @@ model OrcamentoPlanejadoZerado {
     criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    @@map("orcamento_planejado_zerado")
+    @@map("orcamento_previsto_zerado")
 }
 
 model OrcamentoRealizadoItem {
@@ -2499,11 +2499,11 @@ model Projeto {
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     // data em que o sistema deve novamente calcular os atrasos automaticamente
-    tarefas_proximo_recalculo DateTime                   @default(now())
+    tarefas_proximo_recalculo DateTime                  @default(now())
     MetaOrcamento             OrcamentoPrevisto[]
     OrcamentoPlanejado        OrcamentoPlanejado[]
     OrcamentoRealizado        OrcamentoRealizado[]
-    OrcamentoPlanejadoZerado  OrcamentoPlanejadoZerado[]
+    OrcamentoPlanejadoZerado  OrcamentoPrevistoZerado[]
 
     @@index([removido_em])
     @@map("projeto")

@@ -5,8 +5,9 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, UpdateMetaOrcamentoDto } from './dto/meta-orcamento.dto';
+import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, OrcamentoPrevistoEhZeroStatusDto, UpdateMetaOrcamentoDto, UpdateOrcamentoPrevistoZeradoDto } from './dto/meta-orcamento.dto';
 import { MetaOrcamento } from './entities/meta-orcamento.entity';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 export class MetaOrcamentoUpdatedRet {
     id: number;
@@ -67,6 +68,9 @@ export class MetaOrcamentoService {
                 timeout: 100000,
             },
         );
+
+        // se por acaso tiver algum boolean zerado, remove ele
+        await this.patchZerado({ ano_referencia: dto.ano_referencia, meta_id: meta.id, considerar_zero: false }, user);
 
         return created;
     }
@@ -226,4 +230,71 @@ export class MetaOrcamentoService {
             data: { removido_em: now, removido_por: user.id },
         });
     }
+
+
+    async orcamento_previsto_zero(meta_id: number, ano_referencia: number): Promise<OrcamentoPrevistoEhZeroStatusDto> {
+        const opz = await this.prisma.orcamentoPrevistoZerado.findFirst({
+            where: {
+                meta_id: meta_id,
+                ano_referencia: ano_referencia,
+                removido_em: null,
+            },
+            select: {
+                criador: { select: { id: true, nome_exibicao: true } }
+            }
+        });
+        if (opz) {
+            return {
+                previsto_eh_zero: true,
+                previsto_eh_zero_criado_por: opz.criador
+            }
+        }
+
+        return {
+            previsto_eh_zero: false,
+            previsto_eh_zero_criado_por: null
+        }
+    }
+
+    async patchZerado(dto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
+        const now = new Date(Date.now());
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            // apaga/remove todas versões anteriores não removidas
+            await this.prisma.orcamentoPrevistoZerado.updateMany({
+                where: {
+                    meta_id: dto.meta_id,
+                    ano_referencia: dto.ano_referencia,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                }
+            });
+
+            // se é pra considerar zero, cria uma nova linha
+            if (dto.considerar_zero) {
+                const count = await this.prisma.orcamentoPrevisto.count({
+                    where: {
+                        meta_id: dto.meta_id,
+                        removido_em: null,
+                        versao_anterior_id: null,
+                        ano_referencia: dto.ano_referencia,
+                    },
+                });
+                if (count > 0)
+                    throw new HttpException(`Para usar o ano ${dto.ano_referencia} como R$ 0,00, é necessário não ter nenhum registro de custo previsto.`, 400);
+
+                await this.prisma.orcamentoPrevistoZerado.create({
+                    data: {
+                        meta_id: dto.meta_id,
+                        ano_referencia: dto.ano_referencia,
+                        criado_por: user.id,
+                        criado_em: now
+                    }
+                });
+            }
+        });
+    }
+
 }
