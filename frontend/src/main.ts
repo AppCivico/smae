@@ -1,12 +1,11 @@
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
+import LabelFromYup from '@/components/LabelFromYup.vue';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
 import { createPinia } from 'pinia';
 import { createApp, markRaw } from 'vue';
-import type { RouteLocationNormalized, Router } from 'vue-router';
-import { useRoute } from 'vue-router';
+import type { Router } from 'vue-router';
 import App from './App.vue';
 import { router } from './router';
 
@@ -26,16 +25,16 @@ declare module 'pinia' {
   export interface PiniaCustomProperties {
     requestS: RequestS;
     router: Router;
-    route: RouteLocationNormalized;
+    route: Router['currentRoute'];
   }
   export interface PiniaCustomStateProperties {
-    route: RouteLocationNormalized;
+    route: Router['currentRoute'];
   }
 }
 
 pinia.use(({ store }) => {
   // eslint-disable-next-line no-param-reassign
-  store.route = useRoute();
+  store.route = router.currentRoute;
   return { requestS: markRaw(requestS) };
 });
 
