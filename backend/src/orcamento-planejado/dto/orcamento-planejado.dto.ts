@@ -1,7 +1,8 @@
 import { OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from 'class-validator';
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from 'class-validator';
 import { OrcamentoPlanejado } from '../entities/orcamento-planejado.entity';
+import { IdNomeExibicao } from '../../common/dto/IdNomeExibicao.dto';
 
 export class CreateOrcamentoPlanejadoDto {
     /**
@@ -59,7 +60,7 @@ export class CreateOrcamentoPlanejadoDto {
     dotacao: string;
 }
 
-export class UpdateOrcamentoPlanejadoDto extends OmitType(CreateOrcamentoPlanejadoDto, ['ano_referencia', 'dotacao']) {}
+export class UpdateOrcamentoPlanejadoDto extends OmitType(CreateOrcamentoPlanejadoDto, ['ano_referencia', 'dotacao']) { }
 
 export class FilterOrcamentoPlanejadoDto {
     /**
@@ -87,6 +88,34 @@ export class FilterOrcamentoPlanejadoDto {
     ano_referencia: number;
 }
 
-export class ListOrcamentoPlanejadoDto {
+export class OrcamentoPlanejadoEhZeroStatusDto {
+    planejado_eh_zero: boolean
+    planejado_eh_zero_criado_por: IdNomeExibicao | null
+}
+
+export class UpdateOrcamentoPlanejadoZeradoDto {
+
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @Type(() => Number)
+    meta_id: number;
+
+    /**
+     * ano_referencia
+     * @example "2022"
+     */
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @Type(() => Number)
+    ano_referencia: number;
+
+    /**
+     * Se o valor o valor planejado para o ano deve ser zero
+     * @example true
+     */
+    @IsBoolean({ message: '$property| Precisa ser um booleano' })
+    @Type(() => Boolean)
+    considerar_zero: boolean;
+}
+
+export class ListOrcamentoPlanejadoDto extends OrcamentoPlanejadoEhZeroStatusDto {
     linhas: OrcamentoPlanejado[];
 }
