@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -9,6 +9,7 @@ import { CreatePPOrcamentoPlanejadoDto, FilterPPOrcamentoPlanejadoDto, ListPPOrc
 import { OrcamentoPlanejadoService } from './orcamento-planejado.service';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 
+@ApiTags('Projeto - Orçamento (Planejado)')
 @Controller('projeto')
 export class OrcamentoPlanejadoController {
     constructor(
