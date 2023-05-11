@@ -1,12 +1,12 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { DotacaoService } from '../dotacao/dotacao.service';
-import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto, UpdateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
-import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { DotacaoService } from '../../dotacao/dotacao.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreatePPOrcamentoRealizadoDto, FilterPPOrcamentoRealizadoDto, UpdatePPOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
+import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
+import { PPOrcamentoRealizado } from './entities/orcamento-realizado.entity';
 
 const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
 
@@ -19,34 +19,13 @@ export class OrcamentoRealizadoService {
     liberarValoresMaioresQueSof: boolean;
     constructor(
         private readonly prisma: PrismaService,
-        private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
         private readonly dotacaoService: DotacaoService
     ) {
         // deixar desligado a verificação
         this.liberarValoresMaioresQueSof = true;
     }
 
-    async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
-
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) == false) {
-                throw new HttpException('Sem permissão para criar orçamento na meta', 400);
-            }
-        }
-
-        const meta = await this.prisma.meta.findFirstOrThrow({
-            where: { id: meta_id, removido_em: null },
-            select: { pdm_id: true, id: true },
-        });
-
-        const anoCount = await this.prisma.pdmOrcamentoConfig.count({
-            where: { pdm_id: meta.pdm_id, ano_referencia: dto.ano_referencia, execucao_disponivel: true },
-        });
-        if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
-
+    async create(projeto: ProjetoDetailDto, dto: CreatePPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
         console.log({ dotacao, processo, nota_empenho });
@@ -61,11 +40,11 @@ export class OrcamentoRealizadoService {
                 const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
-                    mes_utilizado = await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
+                    mes_utilizado = await this.atualizaNotaEmpenho(projeto.portfolio_id, prismaTxn, dotacao, processo, nota_empenho);
                 } else if (processo) {
-                    mes_utilizado = await this.atualizaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
+                    mes_utilizado = await this.atualizaProcesso(projeto.portfolio_id, prismaTxn, dto, dotacao, processo);
                 } else if (dotacao) {
-                    mes_utilizado = await this.atualizaDotacao(meta.pdm_id, prismaTxn, dto, dotacao);
+                    mes_utilizado = await this.atualizaDotacao(projeto.portfolio_id, prismaTxn, dto, dotacao);
                 } else {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
                 }
@@ -74,9 +53,7 @@ export class OrcamentoRealizadoService {
                     data: {
                         criado_por: user.id,
                         criado_em: now,
-                        meta_id: meta_id!,
-                        iniciativa_id,
-                        atividade_id,
+                        projeto_id: projeto.id,
                         mes_utilizado: mes_utilizado,
                         ano_referencia: dto.ano_referencia,
                         dotacao,
@@ -113,32 +90,13 @@ export class OrcamentoRealizadoService {
         return created;
     }
 
-    async update(id: number, dto: UpdateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(projeto: ProjetoDetailDto, id: number, dto: UpdatePPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
-            where: { id: +id, removido_em: null },
+            where: { id: +id, removido_em: null, projeto_id: projeto.id },
         });
-        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null) throw new HttpException('Orçamento realizado não encontrado', 404);
+        if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
         console.log(dto);
 
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(orcamentoRealizado.meta_id) == false) {
-                throw new HttpException('Sem permissão para editar orçamento', 400);
-            }
-        }
-
-        const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
-
-        const meta = await this.prisma.meta.findFirstOrThrow({
-            where: { id: meta_id, removido_em: null },
-            select: { pdm_id: true, id: true },
-        });
-
-        const anoCount = await this.prisma.pdmOrcamentoConfig.count({
-            where: { pdm_id: meta.pdm_id, ano_referencia: orcamentoRealizado.ano_referencia, execucao_disponivel: true },
-        });
-        if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
 
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -151,7 +109,7 @@ export class OrcamentoRealizadoService {
                 const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
                 if (orcRealizado.nota_empenho) {
                     await this.atualizaNotaEmpenho(
-                        meta.pdm_id,
+                        projeto.portfolio_id,
                         prismaTxn,
                         orcRealizado.dotacao,
                         orcRealizado.processo,
@@ -159,7 +117,7 @@ export class OrcamentoRealizadoService {
                     );
                 } else if (orcRealizado.processo) {
                     await this.atualizaProcesso(
-                        meta.pdm_id,
+                        projeto.portfolio_id,
                         prismaTxn,
                         { ano_referencia: orcRealizado.ano_referencia },
                         orcRealizado.dotacao,
@@ -167,7 +125,7 @@ export class OrcamentoRealizadoService {
                     );
                 } else if (orcRealizado.dotacao) {
                     await this.atualizaDotacao(
-                        meta.pdm_id,
+                        projeto.portfolio_id,
                         prismaTxn,
                         { ano_referencia: orcRealizado.ano_referencia },
                         orcRealizado.dotacao,
@@ -190,9 +148,6 @@ export class OrcamentoRealizadoService {
                         id: orcRealizado.id,
                     },
                     data: {
-                        meta_id: meta_id!,
-                        iniciativa_id,
-                        atividade_id,
                         soma_valor_empenho: nova_soma_valor_empenho,
                         soma_valor_liquidado: nova_soma_valor_liquidado,
                         itens: {
@@ -224,7 +179,7 @@ export class OrcamentoRealizadoService {
     }
 
     private async atualizaDotacao(
-        pdm_id: number,
+        portfolio_id: number,
         prismaTxn: Prisma.TransactionClient,
         dto: PartialOrcamentoRealizadoDto,
         dotacao: string,
@@ -251,11 +206,11 @@ export class OrcamentoRealizadoService {
             data: { id: dotacaoTx.id },
         });
 
-        const novo_valor = await prismaTxn.pdmDotacaoRealizado.findFirst({
+        const novo_valor = await prismaTxn.portfolioDotacaoRealizado.findFirst({
             where: {
                 ano_referencia: dto.ano_referencia,
                 dotacao: dotacao,
-                pdm_id: pdm_id,
+                portfolio_id: portfolio_id,
             }
         });
 
@@ -284,7 +239,7 @@ export class OrcamentoRealizadoService {
     }
 
     private async atualizaProcesso(
-        pdm_id: number,
+        portfolio_id: number,
         prismaTxn: Prisma.TransactionClient,
         dto: PartialOrcamentoRealizadoDto,
         dotacao: string,
@@ -309,12 +264,12 @@ export class OrcamentoRealizadoService {
             data: { id: processoTx.id },
         });
 
-        const novo_valor = await prismaTxn.pdmDotacaoProcesso.findFirst({
+        const novo_valor = await prismaTxn.portfolioDotacaoProcesso.findFirst({
             where: {
                 ano_referencia: dto.ano_referencia,
                 dotacao: dotacao,
                 dotacao_processo: processo,
-                pdm_id: pdm_id,
+                portfolio_id: portfolio_id
             }
         });
 
@@ -347,7 +302,7 @@ export class OrcamentoRealizadoService {
     }
 
     private async atualizaNotaEmpenho(
-        pdm_id: number,
+        projeto_id: number,
         prismaTxn: Prisma.TransactionClient,
         dotacao: string,
         processo: string | null,
@@ -377,13 +332,12 @@ export class OrcamentoRealizadoService {
             data: { id: notaEmpenhoTx.id },
         });
 
-        const novo_valor = await prismaTxn.pdmDotacaoProcessoNota.findFirst({
+        const novo_valor = await prismaTxn.portfolioDotacaoProcessoNota.findFirst({
             where: {
                 ano_referencia: this.getAnoNota(nota_empenho),
                 dotacao: dotacao,
                 dotacao_processo: processo!,
                 dotacao_processo_nota: nota_empenho,
-                pdm_id: pdm_id,
             }
         });
 
@@ -411,7 +365,7 @@ export class OrcamentoRealizadoService {
         return mes_utilizado;
     }
 
-    async validaDotProcNota(dto: CreateOrcamentoRealizadoDto): Promise<{ dotacao: string; processo: string | null; nota_empenho: string | null }> {
+    async validaDotProcNota(dto: CreatePPOrcamentoRealizadoDto): Promise<{ dotacao: string; processo: string | null; nota_empenho: string | null }> {
         const dotacao: string = dto.dotacao;
         let processo: string | null = null;
         let nota_empenho: string | null = null;
@@ -469,33 +423,20 @@ export class OrcamentoRealizadoService {
         };
     }
 
-    async findAll(filters: FilterOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<OrcamentoRealizado[]> {
-        let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-        }
-
-        const meta = await this.prisma.meta.findFirst({
-            where: { id: filters.meta_id, removido_em: null },
-            select: { pdm_id: true, id: true },
-        });
-        if (meta === null) throw new HttpException('404', 404);
+    async findAll(projeto: ProjetoDetailDto, filters: FilterPPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<PPOrcamentoRealizado[]> {
 
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
                 dotacao: filters?.dotacao,
-                AND: [{ meta_id: filters?.meta_id }, { meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
+                projeto_id: projeto.id,
                 processo: filters?.processo,
                 nota_empenho: filters?.nota_empenho,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
             },
             select: {
                 criador: { select: { nome_exibicao: true } },
-                meta: { select: { id: true, codigo: true, titulo: true } },
-                atividade: { select: { id: true, codigo: true, titulo: true } },
-                iniciativa: { select: { id: true, codigo: true, titulo: true } },
+                projeto_id: true,
                 soma_valor_empenho: true,
                 soma_valor_liquidado: true,
                 ano_referencia: true,
@@ -528,11 +469,11 @@ export class OrcamentoRealizadoService {
         }
 
         // cruza as nota-empenho
-        const notasSomaInfo = await this.prisma.pdmDotacaoProcessoNota.findMany({
+        const notasSomaInfo = await this.prisma.portfolioDotacaoProcessoNota.findMany({
             where: {
                 dotacao_processo_nota: { in: Object.keys(notaEncontradas) },
                 ano_referencia: filters.ano_referencia,
-                pdm_id: meta.pdm_id,
+                portfolio_id: projeto.portfolio_id,
             },
             select: {
                 soma_valor_empenho: true,
@@ -562,11 +503,11 @@ export class OrcamentoRealizadoService {
         }
 
         // cruza os processos
-        const processoSomaInfo = await this.prisma.pdmDotacaoProcesso.findMany({
+        const processoSomaInfo = await this.prisma.portfolioDotacaoProcesso.findMany({
             where: {
                 dotacao_processo: { in: Object.keys(processosEncontrados) },
                 ano_referencia: filters.ano_referencia,
-                pdm_id: meta.pdm_id,
+                portfolio_id: projeto.portfolio_id,
             },
             select: {
                 soma_valor_empenho: true,
@@ -597,11 +538,11 @@ export class OrcamentoRealizadoService {
         }
 
         // cruza as dotações
-        const dotacoesSomaInfo = await this.prisma.pdmDotacaoRealizado.findMany({
+        const dotacoesSomaInfo = await this.prisma.portfolioDotacaoRealizado.findMany({
             where: {
                 dotacao: { in: Object.keys(dotacoesEncontradas) },
                 ano_referencia: filters.ano_referencia,
-                pdm_id: meta.pdm_id,
+                portfolio_id: projeto.portfolio_id,
             },
             select: {
                 soma_valor_empenho: true,
@@ -630,7 +571,7 @@ export class OrcamentoRealizadoService {
             dotacoesInfoRef[dotacao.dotacao] = dotacao;
         }
 
-        const rows: OrcamentoRealizado[] = [];
+        const rows: PPOrcamentoRealizado[] = [];
 
         for (const orcaRealizado of queryRows) {
             let smae_soma_valor_empenho: string | null = null;
@@ -675,9 +616,8 @@ export class OrcamentoRealizadoService {
             rows.push({
                 id: orcaRealizado.id,
                 ano_referencia: orcaRealizado.ano_referencia,
-                meta: orcaRealizado.meta!,
-                iniciativa: orcaRealizado.iniciativa,
-                atividade: orcaRealizado.atividade,
+                projeto_id: orcaRealizado.projeto_id!,
+
                 criado_em: orcaRealizado.criado_em,
                 criador: orcaRealizado.criador,
                 dotacao: orcaRealizado.dotacao,

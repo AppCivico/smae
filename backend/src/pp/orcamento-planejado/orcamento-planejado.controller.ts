@@ -53,7 +53,6 @@ export class OrcamentoPlanejadoController {
         return await this.orcamentoPlanejadoService.update(+params.id, +params.id2, createMetaDto, user);
     }
 
-
     @Delete(':id/orcamento-planejado/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
