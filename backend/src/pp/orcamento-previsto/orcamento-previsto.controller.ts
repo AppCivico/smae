@@ -49,6 +49,11 @@ export class OrcamentoPrevistoController {
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiNoContentResponse()
     async patchZerado(@Param() params: FindOneParams, @Body() updateZeradoDto: ProjetoUpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
+        const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
+        if (projeto.permissoes.apenas_leitura_planejamento) {
+            throw new HttpException("Não é possível editar o orçamento no modo apenas leitura.", 400);
+        }
+
         await this.metaOrcamentoService.patchZerado(+params.id, updateZeradoDto, user);
         return '';
     }
@@ -59,6 +64,11 @@ export class OrcamentoPrevistoController {
     @Roles('Projeto.orcamento')
     @HttpCode(HttpStatus.ACCEPTED)
     async patch(@Param() params: FindTwoParams, @Body() updateMetaDto: UpdateOrcamentoPrevistoDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
+        const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
+        if (projeto.permissoes.apenas_leitura_planejamento) {
+            throw new HttpException("Não é possível editar o orçamento no modo apenas leitura.", 400);
+        }
+
         await this.metaOrcamentoService.update(+params.id, +params.id2, updateMetaDto, user);
     }
 

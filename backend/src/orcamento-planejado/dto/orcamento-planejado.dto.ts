@@ -1,8 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from 'class-validator';
 import { OrcamentoPlanejado } from '../entities/orcamento-planejado.entity';
-import { IdNomeExibicao } from '../../common/dto/IdNomeExibicao.dto';
 
 export class CreateOrcamentoPlanejadoDto {
     /**

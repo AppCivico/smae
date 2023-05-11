@@ -66,6 +66,7 @@ import { VariavelModule } from './variavel/variavel.module';
 import { GraphvizModule } from './graphviz/graphviz.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
+import { OrcamentoPlanejadoModule as PPOrcamentoPlanejadoModule } from './pp/orcamento-planejado/orcamento-planejado.module';
 
 @Module({
     imports: [
@@ -83,6 +84,7 @@ import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previ
         OrcamentoModule,
         SofApiModule,
         OrcamentoPlanejadoModule,
+        PPOrcamentoPlanejadoModule,
         DotacaoModule,
         OrcamentoRealizadoModule,
         MetaOrcamentoModule,
