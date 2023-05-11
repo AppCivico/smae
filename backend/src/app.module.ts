@@ -67,6 +67,7 @@ import { GraphvizModule } from './graphviz/graphviz.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
 import { OrcamentoPlanejadoModule as PPOrcamentoPlanejadoModule } from './pp/orcamento-planejado/orcamento-planejado.module';
+import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orcamento-realizado/orcamento-realizado.module';
 
 @Module({
     imports: [
@@ -87,6 +88,7 @@ import { OrcamentoPlanejadoModule as PPOrcamentoPlanejadoModule } from './pp/orc
         PPOrcamentoPlanejadoModule,
         DotacaoModule,
         OrcamentoRealizadoModule,
+        PPOrcamentoRealizadoModule,
         MetaOrcamentoModule,
         PessoaModule,
         MinhaContaModule,
