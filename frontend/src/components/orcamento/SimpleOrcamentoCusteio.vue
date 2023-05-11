@@ -19,7 +19,7 @@ const {
 function restringirAzero() {
   alertStore.confirmAction(`Deseja mesmo informar que não há orçamento reservado para o ano de ${ano}?`, () => {
     OrcamentosStore.restringirPrevistoAZero(ano);
-  }, 'Restringir');
+  }, 'Informar');
 }
 
 </script>
@@ -62,10 +62,10 @@ function restringirAzero() {
         <tbody>
           <tr v-if="previstoEhZero[ano]">
             <td class="error">
-              Restrito a
+              Custo
               <strong>{{ formataValor(0) }}</strong>
               <template v-if="previstoEhZeroCriadoPor[ano]?.nome_exibicao">
-                por {{ previstoEhZeroCriadoPor[ano].nome_exibicao }}
+                informado por {{ previstoEhZeroCriadoPor[ano].nome_exibicao }}
               </template>
             </td>
             <td class="error">
@@ -175,8 +175,7 @@ function restringirAzero() {
             width="20"
             height="20"
           ><use xlink:href="#i_+" /></svg>
-          <span v-if="previstoEhZero[ano]">Liberar orçamento e adicionar previsão</span>
-          <span v-else>Adicionar previsão de custo</span>
+          <span>Adicionar previsão de custo</span>
         </router-link>
         <span
           v-else
@@ -198,7 +197,7 @@ function restringirAzero() {
             width="20"
             height="20"
           ><use xlink:href="#i_zero" /></svg>
-          <span>restringir a R$0</span>
+          <span>informar custo de R$ 0</span>
         </button>
       </div>
     </div>
