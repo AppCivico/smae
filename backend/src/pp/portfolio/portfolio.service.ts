@@ -27,6 +27,8 @@ export class PortfolioService {
                     criado_em: new Date(Date.now()),
                     titulo: dto.titulo,
                     nivel_maximo_tarefa: dto.nivel_maximo_tarefa || undefined, // deixa o default do banco
+                    descricao: dto.descricao,
+                    data_criacao: dto.data_criacao,
                 },
                 select: { id: true },
             });
@@ -74,6 +76,8 @@ export class PortfolioService {
                         orgao_id: true
                     },
                 },
+                descricao: true,
+                data_criacao: true,
             },
         });
 
@@ -176,6 +180,8 @@ export class PortfolioService {
                     atualizado_em: new Date(Date.now()),
                     titulo: dto.titulo,
                     nivel_maximo_tarefa: dto.nivel_maximo_tarefa,
+                    descricao: dto.descricao,
+                    data_criacao: dto.data_criacao,
                 },
                 select: { id: true },
             });

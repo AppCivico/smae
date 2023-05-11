@@ -2281,6 +2281,10 @@ model Portfolio {
 
     nivel_maximo_tarefa Int @default(5) @db.SmallInt
 
+    descricao    String    @default("")
+    /// data informada pelo usuario
+    data_criacao DateTime? @db.Date
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
