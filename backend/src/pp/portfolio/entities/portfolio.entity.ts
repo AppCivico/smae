@@ -12,6 +12,8 @@ export class PortfolioOneDto {
     titulo: string;
     nivel_maximo_tarefa: number;
     orgaos: number[];
+    descricao: string
+    data_criacao: Date | null
 }
 
 

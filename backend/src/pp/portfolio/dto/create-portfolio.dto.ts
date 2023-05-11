@@ -1,4 +1,5 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 export class CreatePortfolioDto {
     /**
@@ -23,4 +24,15 @@ export class CreatePortfolioDto {
     @Min(1)
     @Max(32)
     nivel_maximo_tarefa?: number
+
+    @IsOptional()
+    @IsString({ message: '$property| Descrição precisa ser alfanumérico' })
+    @Min(0)
+    @Max(2040)
+    descricao?: string
+
+    @IsOptional()
+    @IsOnlyDate()
+    @ValidateIf((object, value) => value !== null)
+    data_criacao?: Date | null
 }
