@@ -38,7 +38,10 @@ export class MetaService {
 
                 // Verificação de código da Meta.
                 const codigoJaEmUso = await prisma.meta.count({
-                    where: { codigo: createMetaDto.codigo }
+                    where: {
+                        removido_em: null,
+                        codigo: createMetaDto.codigo
+                    }
                 });
                 if (codigoJaEmUso) throw new HttpException('codigo| Já existe Meta com este código', 400);
 
@@ -338,6 +341,7 @@ export class MetaService {
                 if (updateMetaDto.codigo) {
                     const codigoJaEmUso = await prisma.meta.count({
                         where: {
+                            removido_em: null,
                             codigo: updateMetaDto.codigo,
                             id: { not: id }
                         }
