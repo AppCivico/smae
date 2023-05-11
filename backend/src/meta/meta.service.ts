@@ -36,6 +36,12 @@ export class MetaService {
                 const tags = createMetaDto.tags!;
                 delete createMetaDto.tags;
 
+                // Verificação de código da Meta.
+                const codigoJaEmUso = await prisma.meta.count({
+                    where: { codigo: createMetaDto.codigo }
+                });
+                if (codigoJaEmUso) throw new HttpException('codigo| Já existe Meta com este código', 400);
+
                 const now = new Date(Date.now());
                 const meta = await prisma.meta.create({
                     data: {
@@ -328,6 +334,16 @@ export class MetaService {
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Verificação de código da Meta.
+                if (updateMetaDto.codigo) {
+                    const codigoJaEmUso = await prisma.meta.count({
+                        where: {
+                            codigo: updateMetaDto.codigo,
+                            id: { not: id }
+                        }
+                    });
+                    if (codigoJaEmUso) throw new HttpException('codigo| Já existe Meta com este código', 400);
+                }
                 const meta = await prisma.meta.update({
                     where: { id: id },
                     data: {

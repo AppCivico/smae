@@ -41,6 +41,11 @@ export class AtividadeService {
             const tags = createAtividadeDto.tags || [];
             delete createAtividadeDto.tags;
 
+            const codigoJaEmUso = await prisma.atividade.count({
+                where: { codigo: createAtividadeDto.codigo }
+            });
+            if (codigoJaEmUso) throw new HttpException('codigo| Já existe Atividade com este código', 400);
+
             if (createAtividadeDto.ativo) {
                 const iniciativaAtivaCount = await prisma.iniciativa.count({
                     where: {
@@ -271,6 +276,13 @@ export class AtividadeService {
 
             const tags = updateAtividadeDto.tags!;
             delete updateAtividadeDto.tags;
+
+            if (updateAtividadeDto.codigo) {
+                const codigoJaEmUso = await prismaTx.atividade.count({
+                    where: { codigo: updateAtividadeDto.codigo }
+                });
+                if (codigoJaEmUso) throw new HttpException('codigo| Já existe Atividade com este código', 400);
+            }
 
             if (updateAtividadeDto.ativo) {
                 const atividade = await prismaTx.atividade.findFirst({

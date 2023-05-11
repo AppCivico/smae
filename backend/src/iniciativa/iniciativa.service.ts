@@ -37,6 +37,11 @@ export class IniciativaService {
             delete createIniciativaDto.coordenadores_cp;
             delete createIniciativaDto.tags;
 
+            const codigoJaEmUso = await prisma.iniciativa.count({
+                where: { codigo: createIniciativaDto.codigo }
+            });
+            if (codigoJaEmUso) throw new HttpException('codigo| Já existe Iniciativa com este código', 400);
+
             const iniciativa = await prisma.iniciativa.create({
                 data: {
                     criado_por: user.id,
@@ -259,6 +264,13 @@ export class IniciativaService {
             delete updateIniciativaDto.orgaos_participantes;
             delete updateIniciativaDto.coordenadores_cp;
             delete updateIniciativaDto.tags;
+
+            if (updateIniciativaDto.codigo) {
+                const codigoJaEmUso = await prisma.iniciativa.count({
+                    where: { codigo: updateIniciativaDto.codigo }
+                });
+                if (codigoJaEmUso) throw new HttpException('codigo| Já existe Iniciativa com este código', 400);
+            }
 
             const iniciativa = await prisma.iniciativa.update({
                 where: { id: id },
