@@ -628,7 +628,7 @@ export class PessoaService {
 
         const listActive = await this.prisma.pessoa.findMany({
             orderBy: {
-                atualizado_em: 'desc',
+                nome_exibicao: 'asc'
             },
             where: {
                 NOT: { pessoa_fisica_id: null },
