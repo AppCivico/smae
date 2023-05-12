@@ -35,6 +35,7 @@ export class EixoService {
                 descricao: true,
                 pdm_id: true,
             },
+            orderBy: { descricao: 'asc' }
         });
         return listActive;
     }

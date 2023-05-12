@@ -202,6 +202,7 @@ export class PainelService {
                     },
                 },
             },
+            orderBy: { criado_em: 'desc' }
         });
     }
 
@@ -499,6 +500,7 @@ export class PainelService {
                 mostrar_acumulado_periodo: true,
                 ordem: true,
             },
+            orderBy: { id: 'desc' }
         });
     }
 

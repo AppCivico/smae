@@ -309,6 +309,7 @@ export class IndicadorService {
                 acumulado_valor_base: true,
                 casas_decimais: true,
             },
+            orderBy: { criado_em: 'desc' }
         });
 
         return listActive;

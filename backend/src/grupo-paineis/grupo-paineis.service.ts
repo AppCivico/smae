@@ -66,6 +66,7 @@ export class GrupoPaineisService {
                     },
                 },
             },
+            orderBy: { criado_em: 'desc' }
         });
 
         const ret: GrupoPaineis[] = listActive.map(g => {

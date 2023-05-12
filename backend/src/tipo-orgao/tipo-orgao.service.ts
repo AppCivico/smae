@@ -35,6 +35,7 @@ export class TipoOrgaoService {
                 removido_em: null,
             },
             select: { id: true, descricao: true },
+            orderBy: { descricao: 'asc' }
         });
 
         return listActive;

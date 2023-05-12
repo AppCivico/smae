@@ -370,6 +370,7 @@ export class ProjetoService {
                     select: { id: true, titulo: true }
                 },
             },
+            orderBy: { codigo: 'asc' }
         });
 
         for (const row of rows) {
@@ -1200,6 +1201,7 @@ export class ProjetoService {
     private async findAllDocumentos(projetoId: number): Promise<ProjetoDocumentoDto[]> {
         return await this.prisma.projetoDocumento.findMany({
             where: { projeto_id: projetoId, removido_em: null },
+            orderBy: { criado_em: 'asc' },
             select: {
                 id: true,
                 arquivo: {

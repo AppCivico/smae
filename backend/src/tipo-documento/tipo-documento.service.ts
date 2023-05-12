@@ -41,6 +41,7 @@ export class TipoDocumentoService {
                 titulo: true,
                 codigo: true,
             },
+            orderBy: { criado_em: 'desc' }
         });
         return listActive;
     }

@@ -105,6 +105,7 @@ export class PdmService {
                 arquivo_logo_id: true,
                 nivel_orcamento: true,
             },
+            orderBy: { nome: 'asc' }
         });
 
         const listActiveTmp = listActive.map(pdm => {

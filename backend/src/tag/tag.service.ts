@@ -58,6 +58,7 @@ export class TagService {
                 icone: true,
                 arquivo_icone_id: true,
             },
+            orderBy: { descricao: 'asc' }
         });
 
         for (const item of listActive) {
