@@ -43,6 +43,7 @@ export class UnidadeMedidaService {
                 removido_em: null,
             },
             select: { id: true, descricao: true, sigla: true },
+            orderBy: { descricao: 'asc' }
         });
 
         return listActive;

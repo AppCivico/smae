@@ -49,6 +49,7 @@ export class FonteRecursoService {
                 fonte: true,
                 sigla: true,
             },
+            orderBy: { fonte: 'asc' }
         });
         return listActive;
     }

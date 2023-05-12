@@ -79,6 +79,7 @@ export class PortfolioService {
                 descricao: true,
                 data_criacao: true,
             },
+            orderBy: { criado_em: 'asc' }
         });
 
         return listActive.map(r => {

@@ -71,6 +71,7 @@ export class CronogramaService {
                 regionalizavel: true,
                 nivel_regionalizacao: true,
             },
+            orderBy: { criado_em: 'desc' }
         });
     }
 

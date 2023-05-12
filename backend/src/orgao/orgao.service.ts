@@ -52,6 +52,7 @@ export class OrgaoService {
                     select: { descricao: true, id: true },
                 },
             },
+            orderBy: [ {tipo_orgao_id: 'asc'}, {descricao: 'asc'} ]
         });
         return listActive;
     }
