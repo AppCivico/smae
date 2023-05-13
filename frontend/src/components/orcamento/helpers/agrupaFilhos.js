@@ -21,6 +21,10 @@ export default function agrupaFilhos(array) {
       } else if (x.meta?.id) {
         ar.items.push(x);
       }
+
+      if (!x.iniciativa?.id && !x.atividade?.id) {
+        ar.items.push(x);
+      }
     });
   }
   return ar;
