@@ -37,6 +37,13 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
           <span>{{ formataValor(somaItems(OrcamentoRealizado[ano],'soma_valor_liquidado')) }}</span>
         </div>
       </div>
+      <div
+        v-if="OrcamentoRealizado[ano]?.loading"
+        class="spinner pt1 pr2 pb1 pl1"
+      >
+        Carregando
+      </div>
+
       <table
         v-if="config.execucao_disponivel"
         class="tablemain fix"

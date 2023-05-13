@@ -44,6 +44,14 @@ function restringirAzero() {
           </div>
         </div>
       </div>
+
+      <div
+        v-if="OrcamentoCusteio[ano]?.loading"
+        class="spinner pt1 pr2 pb1 pl1"
+      >
+        Carregando
+      </div>
+
       <table
         v-if="OrcamentoCusteio[ano]?.length || previstoEhZero[ano]"
         class="tablemain fix"
