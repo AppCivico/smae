@@ -31,12 +31,13 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
           v-if="OrcamentoRealizado[ano]?.length"
           class="t12 lh1 w700"
         >
-          <span class="tc300">Empenho meta:</span>
-          <span>{{ formataValor(somaItems(OrcamentoRealizado[ano],'soma_valor_empenho')) }}</span>
-          <span class="ml1 tc300">Liquidação meta:</span>
-          <span>{{ formataValor(somaItems(OrcamentoRealizado[ano],'soma_valor_liquidado')) }}</span>
+          <span class="tc300">Empenho:</span>
+          {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_empenho')) }}
+          <span class="ml1 tc300">Liquidação:</span>
+          {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_liquidado')) }}
         </div>
       </div>
+
       <div
         v-if="OrcamentoRealizado[ano]?.loading"
         class="spinner pt1 pr2 pb1 pl1"
@@ -53,8 +54,8 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
             <th style="width: 50%">
               Dotação / Processo / Nota
             </th>
-            <th>Empenho meta</th>
-            <th>Liquidação meta</th>
+            <th>Empenho</th>
+            <th>Liquidação</th>
             <th>Registros</th>
             <th style="width: 50px" />
           </tr>
