@@ -52,7 +52,7 @@ const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
               Dotação
             </th>
             <th style="width: 30%">
-              planejado para meta
+              planejado
             </th>
             <th style="width: 210px; overflow: visible;">
               <span>pressão orçamentária</span> <div class="tipinfo right">
