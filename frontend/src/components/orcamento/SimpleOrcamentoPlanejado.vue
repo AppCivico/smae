@@ -34,6 +34,14 @@ const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
           <span class="tc300">Planejado total:</span> <span class="tvermelho">{{ formataValor(somaItems(OrcamentoPlanejado[ano], 'valor_planejado')) }}</span>
         </div>
       </div>
+
+      <div
+        v-if="OrcamentoPlanejado[ano]?.loading"
+        class="spinner pt1 pr2 pb1 pl1"
+      >
+        Carregando
+      </div>
+
       <table
         v-if="OrcamentoPlanejado[ano]?.length"
         class="tablemain fix"
