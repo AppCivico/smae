@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
 import { router } from '@/router';
 import {
@@ -164,344 +163,342 @@ function validaPartes(a) {
 
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center">
-      <h1>Empenho/Liquidação</h1>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <h3 class="mb2">
-      <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
-    </h3>
-    <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting, values }"
-        :initial-values="currentEdit"
-        @submit="onSubmit"
-      >
-        <div v-if="currentEdit.processo">
-          <label class="label">Processo</label>
-          <input
-            :value="currentEdit.processo"
-            type="text"
-            disabled
-            class="inputtext light mb1 disabled"
-          >
-        </div>
-        <div v-if="currentEdit.nota_empenho">
-          <label class="label">Nota de empenho</label>
-          <input
-            :value="currentEdit.nota_empenho"
-            type="text"
-            disabled
-            class="inputtext light mb1 disabled"
-          >
-        </div>
-        <div>
-          <label class="label">Dotação</label>
-          <input
-            v-model="dota"
-            type="text"
-            disabled
-            class="inputtext light mb1 disabled"
-          >
-        </div>
-        <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
-          <label class="label mb1">parte da dotação - por segmento</label>
-          <div class="flex g2 mb2">
-            <div class="f1">
-              <label class="label tc300">Órgão</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="(it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : ''"
-                disabled
-              >
-              <div
-                v-if="d_orgao"
-                class="t12 tc500"
-              >
-                {{ (it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : '' }}
-              </div>
-            </div>
-            <div class="f1">
-              <label class="label tc300">Unidade</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="(it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : ''"
-                disabled
-              >
-              <div
-                v-if="d_unidade"
-                class="t12 tc500"
-              >
-                {{ (it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : '' }}
-              </div>
-            </div>
-            <div class="f1">
-              <label class="label tc300">Função</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="(it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : ''"
-                disabled
-              >
-              <div
-                v-if="d_funcao"
-                class="t12 tc500"
-              >
-                {{ (it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : '' }}
-              </div>
-            </div>
-            <div class="f1">
-              <label class="label tc300">Subfunção</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="(it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : ''"
-                disabled
-              >
-              <div
-                v-if="d_subfuncao"
-                class="t12 tc500"
-              >
-                {{ (it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : '' }}
-              </div>
-            </div>
-            <div class="f1">
-              <label class="label tc300">Programa</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="(it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == d_programa))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : ''"
-                disabled
-              >
-              <div
-                v-if="d_programa"
-                class="t12 tc500"
-              >
-                {{ (it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == d_programa))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : '' }}
-              </div>
-            </div>
-          </div>
-          <!-- categorias -->
-          <!-- elementos -->
-          <!-- grupos -->
-          <!-- modalidades -->
-
-          <div class="flex g2 mb2">
-            <div class="f1">
-              <label class="label tc300">Projeto/atividade</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="(it = DotaçãoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : ''"
-                disabled
-              >
-              <div
-                v-if="d_projetoatividade"
-                class="t12 tc500"
-              >
-                {{ (it = DotaçãoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : '' }}
-              </div>
-            </div>
-            <div class="f1">
-              <label class="label tc300">Conta despesa</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="d_contadespesa"
-                disabled
-              >
-            </div>
-            <div class="f1">
-              <label class="label tc300">Fonte</label>
-              <input
-                class="inputtext light mb1 disabled"
-                type="text"
-                :value="(it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : ''"
-                disabled
-              >
-              <div
-                v-if="d_fonte"
-                class="t12 tc500"
-              >
-                {{ (it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
-                  ? `${it.codigo} - ${it.descricao}`
-                  : '' }}
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <table
-          v-if="respostasof.projeto_atividade != undefined"
-          class="tablemain mb4"
+  <div class="flex spacebetween center">
+    <h1>Empenho/Liquidação</h1>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <h3 class="mb2">
+    <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
+  </h3>
+  <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting, values }"
+      :initial-values="currentEdit"
+      @submit="onSubmit"
+    >
+      <div v-if="currentEdit.processo">
+        <label class="label">Processo</label>
+        <input
+          :value="currentEdit.processo"
+          type="text"
+          disabled
+          class="inputtext light mb1 disabled"
         >
-          <thead>
-            <tr>
-              <th style="width: 25%">
-                Nome do projeto/atividade
-              </th>
-              <th style="width: 25%">
-                Empenho SOF
-              </th>
-              <th style="width: 25%">
-                Liquidação SOF
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="w700">
-                {{ respostasof.projeto_atividade }}
-              </td>
-              <td>
-                R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}
-              </td>
-              <td>
-                R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div>
-          <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
-
-          <div
-            v-for="m in singleMeta.children"
-            :key="m.id"
-          >
-            <div class="label tc300">
-              Meta
+      </div>
+      <div v-if="currentEdit.nota_empenho">
+        <label class="label">Nota de empenho</label>
+        <input
+          :value="currentEdit.nota_empenho"
+          type="text"
+          disabled
+          class="inputtext light mb1 disabled"
+        >
+      </div>
+      <div>
+        <label class="label">Dotação</label>
+        <input
+          v-model="dota"
+          type="text"
+          disabled
+          class="inputtext light mb1 disabled"
+        >
+      </div>
+      <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
+        <label class="label mb1">parte da dotação - por segmento</label>
+        <div class="flex g2 mb2">
+          <div class="f1">
+            <label class="label tc300">Órgão</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="(it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
+                ? `${it.codigo} - ${it.descricao}`
+                : ''"
+              disabled
+            >
+            <div
+              v-if="d_orgao"
+              class="t12 tc500"
+            >
+              {{ (it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
+                ? `${it.codigo} - ${it.descricao}`
+                : '' }}
             </div>
-            <label class="block mb1">
-              <Field
-                name="location"
-                type="radio"
-                :value="'m' + m.id"
-                class="inputcheckbox"
-              />
-              <span>{{ m.codigo }} - {{ m.titulo }}</span>
-            </label>
-            <template v-if="['Iniciativa', 'Atividade'].indexOf(activePdm.nivel_orcamento) != -1">
-              <div
-                v-if="m?.iniciativas?.length"
-                class="label tc300"
-              >
-                {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
-                  ? ' e ' + activePdm.rotulo_atividade
-                  : '' }}
-              </div>
-              <div
-                v-for="i in m.iniciativas"
-                :key="i.id"
-                class=""
-              >
-                <label class="block mb1">
-                  <Field
-                    name="location"
-                    type="radio"
-                    :value="'i' + i.id"
-                    class="inputcheckbox"
-                  />
-                  <span>{{ i.codigo }} - {{ i.titulo }}</span>
-                </label>
-                <template v-if="activePdm.nivel_orcamento == 'Atividade'">
-                  <div
-                    v-for="a in i.atividades"
-                    :key="a.id"
-                    class="pl2"
-                  >
-                    <label class="block mb1">
-                      <Field
-                        name="location"
-                        type="radio"
-                        :value="'a' + a.id"
-                        class="inputcheckbox"
-                      />
-                      <span>{{ a.codigo }} - {{ a.titulo }}</span>
-                    </label>
-                  </div>
-                </template>
-              </div>
-            </template>
           </div>
-          <div class="error-msg">
-            {{ errors.location }}
+          <div class="f1">
+            <label class="label tc300">Unidade</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="(it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
+                ? `${it.codigo} - ${it.descricao}`
+                : ''"
+              disabled
+            >
+            <div
+              v-if="d_unidade"
+              class="t12 tc500"
+            >
+              {{ (it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
+                ? `${it.codigo} - ${it.descricao}`
+                : '' }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label tc300">Função</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="(it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
+                ? `${it.codigo} - ${it.descricao}`
+                : ''"
+              disabled
+            >
+            <div
+              v-if="d_funcao"
+              class="t12 tc500"
+            >
+              {{ (it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
+                ? `${it.codigo} - ${it.descricao}`
+                : '' }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label tc300">Subfunção</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="(it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
+                ? `${it.codigo} - ${it.descricao}`
+                : ''"
+              disabled
+            >
+            <div
+              v-if="d_subfuncao"
+              class="t12 tc500"
+            >
+              {{ (it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
+                ? `${it.codigo} - ${it.descricao}`
+                : '' }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label tc300">Programa</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="(it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == d_programa))
+                ? `${it.codigo} - ${it.descricao}`
+                : ''"
+              disabled
+            >
+            <div
+              v-if="d_programa"
+              class="t12 tc500"
+            >
+              {{ (it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == d_programa))
+                ? `${it.codigo} - ${it.descricao}`
+                : '' }}
+            </div>
           </div>
         </div>
+        <!-- categorias -->
+        <!-- elementos -->
+        <!-- grupos -->
+        <!-- modalidades -->
 
-        <ItensRealizado
-          :controlador="itens"
-          :respostasof="respostasof"
-        />
-
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
+        <div class="flex g2 mb2">
+          <div class="f1">
+            <label class="label tc300">Projeto/atividade</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="(it = DotaçãoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+                ? `${it.codigo} - ${it.descricao}`
+                : ''"
+              disabled
+            >
+            <div
+              v-if="d_projetoatividade"
+              class="t12 tc500"
+            >
+              {{ (it = DotaçãoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+                ? `${it.codigo} - ${it.descricao}`
+                : '' }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label tc300">Conta despesa</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="d_contadespesa"
+              disabled
+            >
+          </div>
+          <div class="f1">
+            <label class="label tc300">Fonte</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="(it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
+                ? `${it.codigo} - ${it.descricao}`
+                : ''"
+              disabled
+            >
+            <div
+              v-if="d_fonte"
+              class="t12 tc500"
+            >
+              {{ (it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
+                ? `${it.codigo} - ${it.descricao}`
+                : '' }}
+            </div>
+          </div>
         </div>
-      </Form>
-    </template>
-    <template v-if="currentEdit && currentEdit?.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(currentEdit.id)"
+      </template>
+
+      <table
+        v-if="respostasof.projeto_atividade != undefined"
+        class="tablemain mb4"
       >
-        Remover item
-      </button>
-    </template>
-    <template v-if="OrcamentoRealizado[ano]?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="OrcamentoRealizado[ano]?.error || error">
-      <div class="error p1">
+        <thead>
+          <tr>
+            <th style="width: 25%">
+              Nome do projeto/atividade
+            </th>
+            <th style="width: 25%">
+              Empenho SOF
+            </th>
+            <th style="width: 25%">
+              Liquidação SOF
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="w700">
+              {{ respostasof.projeto_atividade }}
+            </td>
+            <td>
+              R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}
+            </td>
+            <td>
+              R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div>
+        <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
+
+        <div
+          v-for="m in singleMeta.children"
+          :key="m.id"
+        >
+          <div class="label tc300">
+            Meta
+          </div>
+          <label class="block mb1">
+            <Field
+              name="location"
+              type="radio"
+              :value="'m' + m.id"
+              class="inputcheckbox"
+            />
+            <span>{{ m.codigo }} - {{ m.titulo }}</span>
+          </label>
+          <template v-if="['Iniciativa', 'Atividade'].indexOf(activePdm.nivel_orcamento) != -1">
+            <div
+              v-if="m?.iniciativas?.length"
+              class="label tc300"
+            >
+              {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
+                ? ' e ' + activePdm.rotulo_atividade
+                : '' }}
+            </div>
+            <div
+              v-for="i in m.iniciativas"
+              :key="i.id"
+              class=""
+            >
+              <label class="block mb1">
+                <Field
+                  name="location"
+                  type="radio"
+                  :value="'i' + i.id"
+                  class="inputcheckbox"
+                />
+                <span>{{ i.codigo }} - {{ i.titulo }}</span>
+              </label>
+              <template v-if="activePdm.nivel_orcamento == 'Atividade'">
+                <div
+                  v-for="a in i.atividades"
+                  :key="a.id"
+                  class="pl2"
+                >
+                  <label class="block mb1">
+                    <Field
+                      name="location"
+                      type="radio"
+                      :value="'a' + a.id"
+                      class="inputcheckbox"
+                    />
+                    <span>{{ a.codigo }} - {{ a.titulo }}</span>
+                  </label>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
         <div class="error-msg">
-          {{ OrcamentoRealizado[ano].error ?? error }}
+          {{ errors.location }}
         </div>
       </div>
-    </template>
-  </Dashboard>
+
+      <ItensRealizado
+        :controlador="itens"
+        :respostasof="respostasof"
+      />
+
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+  <template v-if="currentEdit && currentEdit?.id">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(currentEdit.id)"
+    >
+      Remover item
+    </button>
+  </template>
+  <template v-if="OrcamentoRealizado[ano]?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="OrcamentoRealizado[ano]?.error || error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ OrcamentoRealizado[ano].error ?? error }}
+      </div>
+    </div>
+  </template>
 </template>
