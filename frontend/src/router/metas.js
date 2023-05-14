@@ -22,6 +22,7 @@ import {
   EditRealizado,
   MetaOrcamento,
 } from '@/views/orcamento';
+import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 
 export default {
   path: '/metas',
@@ -72,20 +73,23 @@ export default {
     {
       path: ':meta_id/orcamento',
       redirect: (to) => `${to.path}/custo`,
+      component: MetaOrçamentoRaiz,
+      props: { submenu: SubmenuMetas },
+      children: [
+        { path: 'custo', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Custo', title: 'Previsão de Custo' } },
+        { path: 'custo/:ano', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
+        { path: 'custo/:ano/:id', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
+        { path: 'planejado', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Planejado', title: 'Orçamento Planejado' } },
+        { path: 'planejado/:ano', component: AddEditPlanejado, props: { submenu: SubmenuMetas } },
+        { path: 'planejado/:ano/:id', component: AddEditPlanejado, props: { submenu: SubmenuMetas } },
+        { path: 'realizado', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Realizado', title: 'Orçamento Realizado' } },
+        { path: 'realizado/:ano/dotacao', component: AddRealizado, props: { submenu: SubmenuMetas } },
+        { path: 'realizado/:ano/processo', component: AddRealizadoProcesso, props: { submenu: SubmenuMetas } },
+        { path: 'realizado/:ano/nota', component: AddRealizadoNota, props: { submenu: SubmenuMetas } },
+        { path: 'realizado/:ano/:id', component: EditRealizado, props: { submenu: SubmenuMetas } },
+        { path: 'realizado/:ano/dotacao/:id', component: EditRealizado, props: { submenu: SubmenuMetas } },
+      ],
     },
-
-    { path: ':meta_id/orcamento/custo', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Custo', title: 'Previsão de Custo' } },
-    { path: ':meta_id/orcamento/custo/:ano', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/custo/:ano/:id', component: AddEditCusteio, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/planejado', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Planejado', title: 'Orçamento Planejado' } },
-    { path: ':meta_id/orcamento/planejado/:ano', component: AddEditPlanejado, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/planejado/:ano/:id', component: AddEditPlanejado, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/realizado', component: MetaOrcamento, props: { submenu: SubmenuMetas, area: 'Realizado', title: 'Orçamento Realizado' } },
-    { path: ':meta_id/orcamento/realizado/:ano/dotacao', component: AddRealizado, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/realizado/:ano/processo', component: AddRealizadoProcesso, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/realizado/:ano/nota', component: AddRealizadoNota, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/realizado/:ano/:id', component: EditRealizado, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/orcamento/realizado/:ano/dotacao/:id', component: EditRealizado, props: { submenu: SubmenuMetas } },
 
     {
       path: ':meta_id/iniciativas',

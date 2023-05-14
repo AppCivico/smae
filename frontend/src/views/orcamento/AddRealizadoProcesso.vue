@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
 import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';
@@ -120,223 +119,221 @@ async function validarDota() {
 }
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center">
-      <h1>Empenho/Liquidação</h1>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <h3 class="mb2">
-      <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
-    </h3>
-    <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting, values }"
-        :validation-schema="schema"
-        :initial-values="currentEdit"
-        @submit="onSubmit"
-      >
-        <div class="flex center g2 mb2">
-          <div class="f1">
-            <label class="label">Processo SEI ou SINPROC <span class="tvermelho">*</span></label>
-            <Field
-              v-model="dota"
-              name="processo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{
-                'error': errors.processo, 'loading':
-                  respostasof.loading
-              }"
-              placeholder="DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)"
-              @keyup="maskProcesso"
-            />
-            <div class="error-msg">
-              {{ errors.processo }}
-            </div>
-            <div
-              v-if="respostasof.loading"
-              class="t13 mb1 tc300"
-            >
-              Aguardando resposta do SOF
-            </div>
-          </div>
-          <div class="f0">
-            <a
-              class="btn outline bgnone tcprimary"
-              @click="validarDota()"
-            >Validar via SOF</a>
-          </div>
-        </div>
-        <div
-          v-if="respostasof.length"
-          class="mb2"
-        >
-          <label class="label mb2">Dotação vinculada* <span class="tvermelho">*</span></label>
-
-          <div class="flex g2">
-            <div
-              class="f0"
-              style="flex-basis:30px"
-            />
-            <div class="f1">
-              <label class="label tc300">Dotação</label>
-            </div>
-            <div class="f1">
-              <label class="label tc300">Nome do Projeto/Atividade</label>
-            </div>
-            <div
-              class="f0"
-              style="flex-basis:90px"
-            >
-              <label class="label tc300">Valor Empenho</label>
-            </div>
-            <div
-              class="f0"
-              style="flex-basis:90px"
-            >
-              <label class="label tc300">Valor Liquidação</label>
-            </div>
-          </div>
-          <hr class="mb05">
-          <label
-            v-for="(d, i) in respostasof"
-            :key="d.id"
-            class="flex g2 center mb1"
-          >
-            <div
-              class="f0"
-              style="flex-basis:30px"
-            ><Field
-              name="dotacao"
-              type="radio"
-              :value="d.dotacao"
-              class="inputcheckbox"
-            /><span /></div>
-            <div class="f1">{{ d.dotacao }}</div>
-            <div class="f1">{{ d.projeto_atividade }}</div>
-            <div
-              class="f0"
-              style="flex-basis:90px"
-            >{{ dinheiro(d.empenho_liquido) }}</div>
-            <div
-              class="f0"
-              style="flex-basis:90px"
-            >{{ dinheiro(d.valor_liquidado) }}</div>
-          </label>
-        </div>
-
-        <template v-if="respostasof.length && values.dotacao">
-          <div>
-            <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
-
-            <div
-              v-for="m in singleMeta.children"
-              :key="m.id"
-            >
-              <div class="label tc300">
-                Meta
-              </div>
-              <label class="block mb1">
-                <Field
-                  name="location"
-                  type="radio"
-                  :value="'m' + m.id"
-                  class="inputcheckbox"
-                />
-                <span>{{ m.codigo }} - {{ m.titulo }}</span>
-              </label>
-              <template v-if="['Iniciativa', 'Atividade'].indexOf(activePdm.nivel_orcamento) != -1">
-                <div
-                  v-if="m?.iniciativas?.length"
-                  class="label tc300"
-                >
-                  {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
-                    ? ' e ' + activePdm.rotulo_atividade
-                    : '' }}
-                </div>
-                <div
-                  v-for="i in m.iniciativas"
-                  :key="i.id"
-                  class=""
-                >
-                  <label class="block mb1">
-                    <Field
-                      name="location"
-                      type="radio"
-                      :value="'i' + i.id"
-                      class="inputcheckbox"
-                    />
-                    <span>{{ i.codigo }} - {{ i.titulo }}</span>
-                  </label>
-                  <template v-if="activePdm.nivel_orcamento == 'Atividade'">
-                    <div
-                      v-for="a in i.atividades"
-                      :key="a.id"
-                      class="pl2"
-                    >
-                      <label class="block mb1">
-                        <Field
-                          name="location"
-                          type="radio"
-                          :value="'a' + a.id"
-                          class="inputcheckbox"
-                        />
-                        <span>{{ a.codigo }} - {{ a.titulo }}</span>
-                      </label>
-                    </div>
-                  </template>
-                </div>
-              </template>
-            </div>
-            <div class="error-msg">
-              {{ errors.location }}
-            </div>
-          </div>
-
-          <ItensRealizado
-            :controlador="itens"
-            :respostasof="respostasof.find(x => x.dotacao == values.dotacao)"
+  <div class="flex spacebetween center">
+    <h1>Empenho/Liquidação</h1>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <h3 class="mb2">
+    <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
+  </h3>
+  <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting, values }"
+      :validation-schema="schema"
+      :initial-values="currentEdit"
+      @submit="onSubmit"
+    >
+      <div class="flex center g2 mb2">
+        <div class="f1">
+          <label class="label">Processo SEI ou SINPROC <span class="tvermelho">*</span></label>
+          <Field
+            v-model="dota"
+            name="processo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{
+              'error': errors.processo, 'loading':
+                respostasof.loading
+            }"
+            placeholder="DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)"
+            @keyup="maskProcesso"
           />
-
-          <div class="flex spacebetween center mb2">
-            <hr class="mr2 f1">
-            <button
-              class="btn big"
-              :disabled="isSubmitting"
-            >
-              Salvar
-            </button>
-            <hr class="ml2 f1">
+          <div class="error-msg">
+            {{ errors.processo }}
           </div>
-        </template>
-      </Form>
-    </template>
-    <template v-if="currentEdit && currentEdit?.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(currentEdit.id)"
-      >
-        Remover item
-      </button>
-    </template>
-    <template v-if="OrcamentoRealizado[ano]?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="OrcamentoRealizado[ano]?.error || error">
-      <div class="error p1">
-        <div class="error-msg">
-          {{ OrcamentoRealizado[ano].error ?? error }}
+          <div
+            v-if="respostasof.loading"
+            class="t13 mb1 tc300"
+          >
+            Aguardando resposta do SOF
+          </div>
+        </div>
+        <div class="f0">
+          <a
+            class="btn outline bgnone tcprimary"
+            @click="validarDota()"
+          >Validar via SOF</a>
         </div>
       </div>
-    </template>
-  </Dashboard>
+      <div
+        v-if="respostasof.length"
+        class="mb2"
+      >
+        <label class="label mb2">Dotação vinculada* <span class="tvermelho">*</span></label>
+
+        <div class="flex g2">
+          <div
+            class="f0"
+            style="flex-basis:30px"
+          />
+          <div class="f1">
+            <label class="label tc300">Dotação</label>
+          </div>
+          <div class="f1">
+            <label class="label tc300">Nome do Projeto/Atividade</label>
+          </div>
+          <div
+            class="f0"
+            style="flex-basis:90px"
+          >
+            <label class="label tc300">Valor Empenho</label>
+          </div>
+          <div
+            class="f0"
+            style="flex-basis:90px"
+          >
+            <label class="label tc300">Valor Liquidação</label>
+          </div>
+        </div>
+        <hr class="mb05">
+        <label
+          v-for="(d, i) in respostasof"
+          :key="d.id"
+          class="flex g2 center mb1"
+        >
+          <div
+            class="f0"
+            style="flex-basis:30px"
+          ><Field
+            name="dotacao"
+            type="radio"
+            :value="d.dotacao"
+            class="inputcheckbox"
+          /><span /></div>
+          <div class="f1">{{ d.dotacao }}</div>
+          <div class="f1">{{ d.projeto_atividade }}</div>
+          <div
+            class="f0"
+            style="flex-basis:90px"
+          >{{ dinheiro(d.empenho_liquido) }}</div>
+          <div
+            class="f0"
+            style="flex-basis:90px"
+          >{{ dinheiro(d.valor_liquidado) }}</div>
+        </label>
+      </div>
+
+      <template v-if="respostasof.length && values.dotacao">
+        <div>
+          <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
+
+          <div
+            v-for="m in singleMeta.children"
+            :key="m.id"
+          >
+            <div class="label tc300">
+              Meta
+            </div>
+            <label class="block mb1">
+              <Field
+                name="location"
+                type="radio"
+                :value="'m' + m.id"
+                class="inputcheckbox"
+              />
+              <span>{{ m.codigo }} - {{ m.titulo }}</span>
+            </label>
+            <template v-if="['Iniciativa', 'Atividade'].indexOf(activePdm.nivel_orcamento) != -1">
+              <div
+                v-if="m?.iniciativas?.length"
+                class="label tc300"
+              >
+                {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
+                  ? ' e ' + activePdm.rotulo_atividade
+                  : '' }}
+              </div>
+              <div
+                v-for="i in m.iniciativas"
+                :key="i.id"
+                class=""
+              >
+                <label class="block mb1">
+                  <Field
+                    name="location"
+                    type="radio"
+                    :value="'i' + i.id"
+                    class="inputcheckbox"
+                  />
+                  <span>{{ i.codigo }} - {{ i.titulo }}</span>
+                </label>
+                <template v-if="activePdm.nivel_orcamento == 'Atividade'">
+                  <div
+                    v-for="a in i.atividades"
+                    :key="a.id"
+                    class="pl2"
+                  >
+                    <label class="block mb1">
+                      <Field
+                        name="location"
+                        type="radio"
+                        :value="'a' + a.id"
+                        class="inputcheckbox"
+                      />
+                      <span>{{ a.codigo }} - {{ a.titulo }}</span>
+                    </label>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+          <div class="error-msg">
+            {{ errors.location }}
+          </div>
+        </div>
+
+        <ItensRealizado
+          :controlador="itens"
+          :respostasof="respostasof.find(x => x.dotacao == values.dotacao)"
+        />
+
+        <div class="flex spacebetween center mb2">
+          <hr class="mr2 f1">
+          <button
+            class="btn big"
+            :disabled="isSubmitting"
+          >
+            Salvar
+          </button>
+          <hr class="ml2 f1">
+        </div>
+      </template>
+    </Form>
+  </template>
+  <template v-if="currentEdit && currentEdit?.id">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(currentEdit.id)"
+    >
+      Remover item
+    </button>
+  </template>
+  <template v-if="OrcamentoRealizado[ano]?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="OrcamentoRealizado[ano]?.error || error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ OrcamentoRealizado[ano].error ?? error }}
+      </div>
+    </div>
+  </template>
 </template>
