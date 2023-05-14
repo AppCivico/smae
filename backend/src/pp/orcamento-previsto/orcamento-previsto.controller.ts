@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Logger, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -12,6 +12,8 @@ import { ProjetoService } from '../projeto/projeto.service';
 @Controller('projeto')
 @ApiTags('Projeto - Orçamento (Custeio e Investimento)')
 export class OrcamentoPrevistoController {
+    private readonly logger = new Logger(OrcamentoPrevistoController.name);
+
     constructor(
         private readonly metaOrcamentoService: OrcamentoPrevistoService,
         private readonly projetoService: ProjetoService,
@@ -22,6 +24,8 @@ export class OrcamentoPrevistoController {
     @ApiUnauthorizedResponse()
     @Roles('Projeto.orcamento')
     async create(@Param() params: FindOneParams, @Body() createMetaDto: CreateOrcamentoPrevistoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        this.logger.debug('create orçamento previsto projeto');
+
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento) {
             throw new HttpException("Não é possível criar o orçamento no modo apenas leitura.", 400);
@@ -34,6 +38,8 @@ export class OrcamentoPrevistoController {
     @Get(':id/orcamento-previsto')
     @Roles('Projeto.orcamento')
     async findAll(@Param() params: FindOneParams, @Query() filters: FilterOrcamentoPrevistoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoPrevistoDto> {
+        this.logger.debug('findAll orçamento previsto projeto');
+
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
 
         return {
@@ -49,6 +55,8 @@ export class OrcamentoPrevistoController {
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiNoContentResponse()
     async patchZerado(@Param() params: FindOneParams, @Body() updateZeradoDto: ProjetoUpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
+        this.logger.debug('zerado orçamento previsto projeto');
+
         const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento) {
             throw new HttpException("Não é possível editar o orçamento no modo apenas leitura.", 400);
@@ -64,6 +72,8 @@ export class OrcamentoPrevistoController {
     @Roles('Projeto.orcamento')
     @HttpCode(HttpStatus.ACCEPTED)
     async patch(@Param() params: FindTwoParams, @Body() updateMetaDto: UpdateOrcamentoPrevistoDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
+        this.logger.debug('patch orçamento previsto projeto');
+
         const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento) {
             throw new HttpException("Não é possível editar o orçamento no modo apenas leitura.", 400);
@@ -79,6 +89,8 @@ export class OrcamentoPrevistoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        this.logger.debug('remove orçamento previsto projeto');
+
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento) {
             throw new HttpException("Não é possível editar o orçamento no modo apenas leitura.", 400);
