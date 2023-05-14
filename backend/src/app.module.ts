@@ -85,7 +85,6 @@ import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orc
         OrcamentoModule,
         SofApiModule,
         OrcamentoPlanejadoModule,
-        PPOrcamentoPlanejadoModule,
         DotacaoModule,
         OrcamentoRealizadoModule,
         PPOrcamentoRealizadoModule,
@@ -139,7 +138,8 @@ import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orc
         LicoesAprendidasModule,
         GraphvizModule,
         DashboardModule,
-        OrcamentoPrevistoModule
+        OrcamentoPrevistoModule,
+        PPOrcamentoPlanejadoModule, // carregar depois do OrcamentoPrevistoModule
     ],
     controllers: [AppController],
     providers: [
