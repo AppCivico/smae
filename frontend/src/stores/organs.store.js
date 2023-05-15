@@ -147,7 +147,6 @@ export const useOrgansStore = defineStore({
             o.responsible = usersStore.users.length
               ? usersStore.users
                 .filter((u) => u.orgao_id == o.id)
-                .sort((a, b) => a.nome_completo.localeCompare(b.nome_completo))
               : null;
             return o;
           })
