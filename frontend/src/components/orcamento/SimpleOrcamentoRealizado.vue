@@ -133,7 +133,7 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
       </table>
       <div class="flex center justifycenter">
         <div
-          v-if="config.execucao_disponivel"
+          v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
           class="ml2 dropbtn"
         >
           <span class="addlink mt1 mb1"><svg
@@ -141,21 +141,33 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
             height="20"
           ><use xlink:href="#i_+" /></svg> <span>Adicionar Empenho/Liquidação</span></span>
           <ul class="tl">
-            <li>
-              <router-link :to="`${parentlink}/orcamento/realizado/${ano}/dotacao`">
-                Dotação
-              </router-link>
-            </li>
-            <li>
-              <router-link :to="`${parentlink}/orcamento/realizado/${ano}/processo`">
-                Processo
-              </router-link>
-            </li>
-            <li>
-              <router-link :to="`${parentlink}/orcamento/realizado/${ano}/nota`">
-                Nota de empenho
-              </router-link>
-            </li>
+            <template v-if="$route.meta?.rotasParaAdição?.length">
+              <li
+                v-for="item, i in $route.meta.rotasParaAdição"
+                :key="i"
+              >
+                <router-link :to="{ name: item.nome, params: { ano } }">
+                  {{ item.texto }}
+                </router-link>
+              </li>
+            </template>
+            <template v-else>
+              <li>
+                <router-link :to="`${parentlink}/orcamento/realizado/${ano}/dotacao`">
+                  Dotação
+                </router-link>
+              </li>
+              <li>
+                <router-link :to="`${parentlink}/orcamento/realizado/${ano}/processo`">
+                  Processo
+                </router-link>
+              </li>
+              <li>
+                <router-link :to="`${parentlink}/orcamento/realizado/${ano}/nota`">
+                  Nota de empenho
+                </router-link>
+              </li>
+            </template>
           </ul>
         </div>
         <span
