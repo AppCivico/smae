@@ -194,6 +194,8 @@ BEGIN
     WHERE id = pProjetoId
     AND ano_orcamento is DISTINCT from v_anos;
 
+    return '';
+
 END
 $$
 LANGUAGE plpgsql;
