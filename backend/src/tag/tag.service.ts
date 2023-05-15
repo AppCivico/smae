@@ -13,7 +13,7 @@ export class TagService {
     async create(createTagDto: CreateTagDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.tag.count({
             where: {
-                descricao: { endsWith: createTagDto.descricao, mode: 'insensitive' },
+                descricao: { equals: createTagDto.descricao, mode: 'insensitive' },
                 removido_em: null,
                 pdm_id: createTagDto.pdm_id,
             },
@@ -84,7 +84,7 @@ export class TagService {
         if (updateTagDto.descricao !== undefined) {
             const similarExists = await this.prisma.tag.count({
                 where: {
-                    descricao: { endsWith: updateTagDto.descricao, mode: 'insensitive' },
+                    descricao: { equals: updateTagDto.descricao, mode: 'insensitive' },
                     removido_em: null,
                     pdm_id: self.pdm_id,
                     NOT: { id: id },

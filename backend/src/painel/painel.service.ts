@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PainelConteudoTipoDetalhe, Periodicidade, Periodo, Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime';
 import { DateTime } from 'luxon';
@@ -43,6 +43,15 @@ export class PainelService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createPainelDto: CreatePainelDto, user: PessoaFromJwt) {
+        const similarExists = await this.prisma.painel.count({
+            where: {
+                nome: { equals: createPainelDto.nome, mode: 'insensitive' },
+                removido_em: null,
+            },
+        });
+
+        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const grupos_to_assign = [];
             if (createPainelDto.grupos) {
@@ -375,6 +384,16 @@ export class PainelService {
     }
 
     async update(id: number, updatePainelDto: UpdatePainelDto, user: PessoaFromJwt) {
+        const similarExists = await this.prisma.painel.count({
+            where: {
+                nome: { equals: updatePainelDto.nome, mode: 'insensitive' },
+                removido_em: null,
+                NOT: { id: +id }
+            },
+        });
+
+        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const grupos_to_assign = [];
             if (updatePainelDto.grupos) {
