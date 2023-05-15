@@ -73,9 +73,9 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
           </router-link>
           <router-link
             v-if="perm?.CadastroOds"
-            to="/ods"
+            to="/categorias"
           >
-            ODS
+            Categorias
           </router-link>
           <router-link
             v-if="perm?.CadastroRegiao"

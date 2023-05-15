@@ -25,14 +25,14 @@ function filterItems() {
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
-      <h1>ODS</h1>
+      <h1>Categorias</h1>
       <hr class="ml2 f1">
       <router-link
         v-if="perm?.CadastroOds?.inserir"
-        to="/ods/novo"
+        to="/categorias/nova"
         class="btn big ml2"
       >
-        Nova ODS
+        Nova categoria
       </router-link>
     </div>
     <div class="flex center mb2">
@@ -74,7 +74,7 @@ function filterItems() {
             <td style="white-space: nowrap; text-align: right;">
               <template v-if="perm?.CadastroOds?.editar">
                 <router-link
-                  :to="`/ods/editar/${item.id}`"
+                  :to="`/categorias/editar/${item.id}`"
                   class="tprimary"
                 >
                   <svg

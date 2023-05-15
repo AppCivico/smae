@@ -163,7 +163,7 @@ async function uploadshape(e) {
       </div>
       <div class="flex g2">
         <div class="f1">
-          <label class="label">ODS&nbsp;<span class="tvermelho">*</span></label>
+          <label class="label">Categoria&nbsp;<span class="tvermelho">*</span></label>
           <Field
             name="ods_id"
             as="select"
