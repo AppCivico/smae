@@ -90,7 +90,7 @@ async function checkClose() {
                 type="checkbox"
                 value="1"
                 :checked="desativado"
-              /><span>Inativar cadastro</span>
+              /><span>Inativar usuário</span>
             </label>
           </div>
           <div class="f1">
