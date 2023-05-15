@@ -271,7 +271,7 @@ function maskDate(el) {
             <label class="label">Ordem</label>
             <Field
               name="ordem"
-              type="text"
+              type="number"
               class="inputtext light mb1"
               :class="{ 'error': errors.ordem }"
             />
