@@ -104,7 +104,7 @@ function restringirAzero() {
         <thead>
           <tr>
             <th style="width: 50%">
-              Parte da dotação
+              Dotação orcamentária
             </th>
             <th style="width: 25%">
               Previsão de custo
