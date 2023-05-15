@@ -116,7 +116,14 @@ async function onSubmit(values) {
 
     if (r == true) {
       alertStore.success(msg);
-      await router.push(`${parentlink}/orcamento/planejado`);
+      if (route.meta?.rotaDeEscape) {
+        console.debug('rota de escaps', route.meta.rotaDeEscape);
+        router.push({
+          name: route.meta.rotaDeEscape,
+        });
+      } else {
+        await router.push(`${parentlink}/orcamento/planejado`);
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -128,7 +135,15 @@ async function checkClose() {
 }
 
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoPlanejado(id)) router.push(`${parentlink}/orcamento`); }, 'Remover');
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await OrcamentosStore.deleteOrcamentoPlanejado(id, route.params.projetoId)) {
+      if (parentlink) {
+        router.push(`${parentlink}/orcamento`);
+      } else if (route.meta?.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      }
+    }
+  }, 'Remover');
 }
 function maskFloat(el) {
   el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);

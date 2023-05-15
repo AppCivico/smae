@@ -21,8 +21,10 @@ function formataValor(d) {
     </td>
     <td style="white-space: nowrap; text-align: right">
       <router-link
-        v-if="permissao"
-        :to="`${parentlink}/orcamento/planejado/${item.ano_referencia}/${item.id}`"
+        v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
+        :to="$route.meta?.rotaParaEdição
+          ? { name: $route.meta.rotaParaEdição, params: { ano: item.ano_referencia, id: item.id } }
+          : `${parentlink}/orcamento/planejado/${item.ano_referencia}/${item.id}`"
         class="tprimary"
       >
         <svg

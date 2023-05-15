@@ -126,7 +126,11 @@ async function onSubmit(values) {
 
     if (r == true) {
       alertStore.success(msg);
-      await router.push(`${parentlink}/orcamento/realizado`);
+      if (route.meta?.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else {
+        await router.push(`${parentlink}/orcamento/realizado`);
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -138,7 +142,15 @@ async function checkClose() {
 }
 
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento/realizado`); }, 'Remover');
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+      if (parentlink) {
+        router.push(`${parentlink}/orcamento/realizado`);
+      } else if (route.meta?.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      }
+    }
+  }, 'Remover');
 }
 
 function dinheiro(v) {

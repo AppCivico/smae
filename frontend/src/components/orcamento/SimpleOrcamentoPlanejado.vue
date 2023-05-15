@@ -120,8 +120,10 @@ const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
       </table>
       <div class="tc">
         <router-link
-          v-if="config.planejado_disponivel"
-          :to="`${parentlink}/orcamento/planejado/${ano}`"
+          v-if="config.planejado_disponivel && ($route.meta?.rotaParaAdição || parentlink)"
+          :to="$route.meta?.rotaParaAdição
+            ? { name: $route.meta.rotaParaAdição, params: { ano } }
+            : `${parentlink}/orcamento/planejado/${ano}`"
           class="addlink mt1 mb1"
         >
           <svg

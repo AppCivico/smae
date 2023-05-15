@@ -78,7 +78,11 @@ async function onSubmit(values) {
 
     if (r == true) {
       alertStore.success(msg);
-      await router.push(`${parentlink}/orcamento/realizado`);
+      if (route.meta?.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      } else {
+        await router.push(`${parentlink}/orcamento/realizado`);
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -89,7 +93,15 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/orcamento/realizado`);
 }
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await OrcamentosStore.deleteOrcamentoRealizado(id)) router.push(`${parentlink}/orcamento`); }, 'Remover');
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+      if (parentlink) {
+        router.push(`${parentlink}/orcamento`);
+      } else if (route.meta?.rotaDeEscape) {
+        router.push({ name: route.meta.rotaDeEscape });
+      }
+    }
+  }, 'Remover');
 }
 function maskFloat(el) {
   el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);

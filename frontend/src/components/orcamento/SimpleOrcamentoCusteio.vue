@@ -173,10 +173,13 @@ function restringirAzero() {
           </template>
         </template>
       </table>
+
       <div class="tc">
         <router-link
-          v-if="config.previsao_custo_disponivel"
-          :to="`${parentlink}/orcamento/custo/${ano}`"
+          v-if="config.previsao_custo_disponivel && ($route.meta?.rotaParaAdição || parentlink)"
+          :to="$route.meta?.rotaParaAdição
+            ? { name: $route.meta.rotaParaAdição, params: { ano } }
+            : `${parentlink}/orcamento/custo/${ano}`"
           class="addlink mt1 mb1"
         >
           <svg
