@@ -65,7 +65,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
           </div>
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              Órgão(s) participante(s)
+              Órgão participante
             </div>
             <div class="t13">
               {{ singleIniciativa.orgaos_participantes.map(x=>x.orgao.descricao).join(', ') }}
@@ -73,7 +73,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
           </div>
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              Responsável(eis) na Coordenadoria
+              Responsável na Coordenadoria
             </div>
             <div class="t13">
               {{ singleIniciativa.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
@@ -175,7 +175,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
                     </div>
                     <div class="mr1 f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Órgão(s) participante(s)
+                        Órgão participante
                       </div>
                       <div class="t13">
                         {{ ini?.orgaos_participantes?.map(x=>x.orgao.descricao).join(', ') }}
@@ -183,7 +183,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
                     </div>
                     <div class="f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Responsável(eis) na Coordenadoria
+                        Responsável na Coordenadoria
                       </div>
                       <div class="t13">
                         {{ ini?.coordenadores_cp?.map(x=>x.nome_exibicao).join(', ') }}

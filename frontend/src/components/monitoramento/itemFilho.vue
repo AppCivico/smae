@@ -47,7 +47,7 @@ const { activePdm } = storeToRefs(PdMStore);
           </div>
           <div class="mr1 f1">
             <div class="t12 uc w700 mb05 tc300">
-              Órgão(s) responsável(eis)
+              Órgão responsável
             </div>
             <div class="t13">
               {{ v[chave]?.orgaos_responsaveis?.join(', ') }}
@@ -55,7 +55,7 @@ const { activePdm } = storeToRefs(PdMStore);
           </div>
           <div class="mr1 f1">
             <div class="t12 uc w700 mb05 tc300">
-              Órgão(s) participante(s)
+              Órgão participante
             </div>
             <div class="t13">
               {{ v[chave]?.orgaos_participantes?.join(', ') }}
@@ -63,7 +63,7 @@ const { activePdm } = storeToRefs(PdMStore);
           </div>
           <div class="f1">
             <div class="t12 uc w700 mb05 tc300">
-              Responsável(eis) na Coordenadoria
+              Responsável na coordenadoria
             </div>
             <div class="t13">
               {{ v[chave]?.responsaveis_na_cp?.join(', ') }}

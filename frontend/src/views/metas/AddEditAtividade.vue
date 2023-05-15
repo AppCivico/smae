@@ -273,7 +273,7 @@ function filterResponsible(orgao_id) {
         <label class="label">Órgãos participantes <span class="tvermelho">*</span></label>
         <div class="flex center g2">
           <label class="f1 label tc300">Órgão</label>
-          <label class="f1 label tc300">Responsável(eis)</label>
+          <label class="f1 label tc300">Responsável</label>
           <div style="flex-basis: 30px;" />
         </div>
         <template
@@ -326,7 +326,7 @@ function filterResponsible(orgao_id) {
 
         <hr class="mt2 mb2">
 
-        <label class="label">Responsável(eis) na coordenadoria de planejamento da Meta <span class="tvermelho">*</span></label>
+        <label class="label">Responsável na coordenadoria de planejamento da Meta <span class="tvermelho">*</span></label>
         <div class="flex">
           <div
             v-if="coordsAvailable.length"

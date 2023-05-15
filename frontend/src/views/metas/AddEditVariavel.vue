@@ -480,7 +480,7 @@ function fieldToDate(d) {
           {{ errors.orgao_id }}
         </div>
 
-        <label class="label">Responsável(eis) <span class="tvermelho">*</span></label>
+        <label class="label">Responsável <span class="tvermelho">*</span></label>
         <div
           v-if="lastParent?.orgaos_participantes?.length&&orgao_id"
           class="mb1"

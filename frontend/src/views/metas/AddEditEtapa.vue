@@ -319,7 +319,7 @@ function maskDate(el) {
 
       <hr class="mt2 mb2">
 
-      <label class="label">Responsável(eis)<span class="tvermelho">*</span></label>
+      <label class="label">Responsável<span class="tvermelho">*</span></label>
       <div class="flex">
         <div class="f1">
           <AutocompleteField
