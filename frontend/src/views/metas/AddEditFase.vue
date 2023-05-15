@@ -3,7 +3,7 @@ import { default as AutocompleteField } from '@/components/AutocompleteField.vue
 import { fase as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
-  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore
+  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
