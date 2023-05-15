@@ -23,7 +23,7 @@ if (id) {
 
 const schema = Yup.object().shape({
   codigo: Yup.string().required('Preencha o código'),
-  titulo: Yup.string().required('Preencha o título'),
+  titulo: Yup.string().required('Preencha o tipo'),
   descricao: Yup.string().required('Preencha a descrição'),
   extensoes: Yup.string().required('Preencha a extensões').matches(/^[a-zA-Z0-9,]*$/, 'Somente letras, números e vírgula.'),
 });
@@ -96,7 +96,7 @@ function removeChars(x) {
             </div>
           </div>
           <div class="f1">
-            <label class="label">Título <span class="tvermelho">*</span></label>
+            <label class="label">Tipo <span class="tvermelho">*</span></label>
             <Field
               name="titulo"
               type="text"
