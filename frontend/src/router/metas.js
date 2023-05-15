@@ -117,7 +117,7 @@ export default {
           path: 'realizado',
           name: 'MetaOrcamentoRealizado',
           component: MetaOrcamento,
-          props: { submenu: SubmenuMetas, area: 'Realizado', title: 'Orçamento Realizado' },
+          props: { submenu: SubmenuMetas, area: 'Realizado', title: 'Execução orçamentária' },
         },
         {
           path: 'realizado/:ano/dotacao',
