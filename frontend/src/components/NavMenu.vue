@@ -21,8 +21,6 @@ const primeiroSegmento = route.matched?.[0]?.path;
 const menuFiltrado = router.options.routes
   .filter((x) => x.meta?.presenteNoMenu
     && (!x.meta?.restringirÀsPermissões || temPermissãoPara.value(x.meta?.restringirÀsPermissões)));
-
-authStore.getDados();
 </script>
 
 <template>
