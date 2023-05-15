@@ -182,12 +182,12 @@ async function uploadshape(e) {
             </option>
             <template v-if="ODS.length">
               <option
-                v-for="type in ODS"
-                :key="type.id"
-                :value="type.id"
-                :selected="ods_id && type.id == ods_id"
+                v-for="tipo in ODS"
+                :key="tipo.id"
+                :value="tipo.id"
+                :selected="ods_id && tipo.id == ods_id"
               >
-                {{ type.titulo }}
+                {{ tipo.titulo }}
               </option>
             </template>
           </Field>
