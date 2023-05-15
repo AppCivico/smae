@@ -864,6 +864,14 @@ export const tarefa = object()
       .typeError('Data inválida'),
   });
 
+export const tag = object().shape({
+  descricao: string().required('Preencha a descrição'),
+  ods_id: string()
+    .required(),
+  pdm_id: string(),
+  upload_icone: string().nullable(),
+});
+
 export const usuário = object()
   .shape({
     desativado: string()
