@@ -220,7 +220,7 @@ function montaDotacao(a) {
     >
       <div class="flex center g2 mb2">
         <div class="f1">
-          <label class="label">Parte da dotação <span class="tvermelho">*</span></label>
+          <label class="label">Dotação orcamentária <span class="tvermelho">*</span></label>
           <Field
             v-model="dota"
             name="parte_dotacao"
@@ -232,10 +232,17 @@ function montaDotacao(a) {
           <div class="error-msg">
             {{ errors.parte_dotacao }}
           </div>
+          <div class="t13 tc500">
+            Obrigatório informar os campos <strong>Órgão</strong>,
+            <strong>Unidade</strong>, <strong>Função</strong>,
+            <strong>Projeto/Atividade</strong> e <strong>Fonte</strong>, os
+            demais são opcionais, por exemplo,
+            <var>98.22.15.122.****.5.287.********.08</var>
+          </div>
         </div>
       </div>
       <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
-        <label class="label mb1">parte da dotação - por segmento</label>
+        <label class="label mb1">Dotação orcamentária - por segmento</label>
         <div class="flex g2 mb2">
           <div class="f1">
             <label class="label tc300">Órgão <span class="tvermelho">*</span></label>

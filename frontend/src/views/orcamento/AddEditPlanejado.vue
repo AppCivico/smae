@@ -278,7 +278,7 @@ async function validarDota() {
         </div>
       </div>
       <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
-        <label class="label mb1">parte da dotação - por segmento</label>
+        <label class="label mb1">Dotação orcamentária - por segmento</label>
         <div class="flex g2 mb2">
           <div class="f1">
             <label class="label tc300">Órgão <span class="tvermelho">*</span></label>
