@@ -7,6 +7,7 @@ import { CreateMetaDto, DadosCodTituloIniciativaDto, DadosCodTituloMetaDto, Meta
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
+import { error } from 'console';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -40,6 +41,7 @@ export class MetaService {
                 const codigoJaEmUso = await prisma.meta.count({
                     where: {
                         removido_em: null,
+                        pdm_id: createMetaDto.pdm_id,
                         codigo: createMetaDto.codigo
                     }
                 });
@@ -339,15 +341,23 @@ export class MetaService {
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Verificação de código da Meta.
                 if (updateMetaDto.codigo) {
+                    const metaPdmId = await prisma.meta.findFirst({
+                        where: { id },
+                        select: { pdm_id: true }
+                    });
+                    if (!metaPdmId) throw new Error('Erro interno ao buscar Meta');
+
                     const codigoJaEmUso = await prisma.meta.count({
                         where: {
                             removido_em: null,
+                            pdm_id: metaPdmId.pdm_id,
                             codigo: updateMetaDto.codigo,
                             id: { not: id }
                         }
                     });
                     if (codigoJaEmUso) throw new HttpException('codigo| Já existe Meta com este código', 400);
                 }
+
                 const meta = await prisma.meta.update({
                     where: { id: id },
                     data: {
