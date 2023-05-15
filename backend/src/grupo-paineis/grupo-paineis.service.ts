@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGrupoPaineisDto } from './dto/create-grupo-paineis.dto';
@@ -9,9 +9,18 @@ import { GrupoPaineis } from './entities/grupo-paineis.entity';
 
 @Injectable()
 export class GrupoPaineisService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(createGrupoPaineisDto: CreateGrupoPaineisDto, user: PessoaFromJwt) {
+        const similarExists = await this.prisma.grupoPainel.count({
+            where: {
+                nome: { equals: createGrupoPaineisDto.nome, mode: 'insensitive' },
+                removido_em: null,
+            },
+        });
+
+        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+
         const created = await this.prisma.grupoPainel.create({
             data: {
                 criado_por: user.id,
@@ -99,6 +108,16 @@ export class GrupoPaineisService {
     }
 
     async update(id: number, updateGrupoPaineisDto: UpdateGrupoPaineisDto, user: PessoaFromJwt) {
+        const similarExists = await this.prisma.grupoPainel.count({
+            where: {
+                nome: { equals: updateGrupoPaineisDto.nome, mode: 'insensitive' },
+                removido_em: null,
+                NOT: { id: id },
+            },
+        });
+
+        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+
         await this.prisma.grupoPainel.update({
             where: { id: id },
             data: {
