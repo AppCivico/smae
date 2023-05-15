@@ -24,8 +24,11 @@ const { ano } = route.params;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-MetasStore.getPdM();
-MetasStore.getChildren(meta_id);
+
+if (!route.params.projetoId) {
+  MetasStore.getPdM();
+  MetasStore.getChildren(meta_id);
+}
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
 const AtividadesStore = useAtividadesStore();
@@ -52,7 +55,11 @@ const caret = ref(0);
 
 (async () => {
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
-  await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+  if (route.params.projetoId) {
+    await OrcamentosStore.buscarOrçamentosPrevistosParaProjeto();
+  } else {
+    await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+  }
 
   OrcamentoCusteio.value[ano].map((x) => {
     x.custo_previsto = dinheiro(x.custo_previsto);
@@ -94,16 +101,18 @@ async function onSubmit(values) {
 
     values.parte_dotacao = values.parte_dotacao.split('.').map((x) => (x.indexOf('*') != -1 ? '*' : x)).join('.');
 
-    values.atividade_id = null;
-    values.iniciativa_id = null;
-    values.meta_id = null;
+    if (values.location) {
+      values.atividade_id = null;
+      values.iniciativa_id = null;
+      values.meta_id = null;
 
-    if (values.location[0] == 'a') {
-      values.atividade_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'i') {
-      values.iniciativa_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'm') {
-      values.meta_id = Number(values.location.slice(1));
+      if (values.location[0] == 'a') {
+        values.atividade_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'i') {
+        values.iniciativa_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'm') {
+        values.meta_id = Number(values.location.slice(1));
+      }
     }
 
     if (id) {
@@ -452,8 +461,14 @@ function montaDotacao(a) {
         </div>
       </template>
 
-      <hr class="mt2 mb2">
-      <div>
+      <Field
+        v-if="$route.params.projetoId"
+        name="projeto_id"
+        type="hidden"
+        :value="$route.params.projetoId"
+      />
+      <div v-else>
+        <hr class="mt2 mb2">
         <label class="label">Vincular dotação <span class="tvermelho">*</span></label>
 
         <div

@@ -5,6 +5,7 @@ import {
   useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
@@ -13,6 +14,7 @@ import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const DotaçãoStore = useDotaçãoStore();
+const ProjetoStore = useProjetosStore();
 const route = useRoute();
 const { meta_id } = route.params;
 const { ano } = route.params;
@@ -20,8 +22,11 @@ const { id } = route.params;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-MetasStore.getPdM();
-MetasStore.getChildren(meta_id);
+
+if (!route.params.projetoId) {
+  MetasStore.getPdM();
+  MetasStore.getChildren(meta_id);
+}
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
@@ -61,16 +66,18 @@ async function onSubmit(values = {}) {
 
     values.ano_referencia = Number(ano);
 
-    values.atividade_id = null;
-    values.iniciativa_id = null;
-    values.meta_id = null;
+    if (values.location) {
+      values.atividade_id = null;
+      values.iniciativa_id = null;
+      values.meta_id = null;
 
-    if (values.location[0] == 'a') {
-      values.atividade_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'i') {
-      values.iniciativa_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'm') {
-      values.meta_id = Number(values.location.slice(1));
+      if (values.location[0] == 'a') {
+        values.atividade_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'i') {
+        values.iniciativa_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'm') {
+        values.meta_id = Number(values.location.slice(1));
+      }
     }
 
     values.itens = itens.value.map((x) => {
@@ -135,10 +142,21 @@ async function validarDota(evt) {
 
   try {
     respostasof.value = { loading: true };
-    const val = await schema.validate({ nota_empenho: dota.value, valor_empenho: 1, valor_liquidado: 1 });
+    const val = await schema.validate({
+      nota_empenho: dota.value,
+      valor_empenho: 1,
+      valor_liquidado: 1,
+    });
     if (val) {
+      const params = route.params.projetoId
+        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
+        : { pdm_id: activePdm.value.id };
       const r = await DotaçãoStore
-        .getDotaçãoRealizadoNota(`${dota.value}/${dotaAno.value}`, dotaAno.value, { pdm_id: activePdm.value.id });
+        .getDotaçãoRealizadoNota(
+          `${dota.value}/${dotaAno.value}`,
+          dotaAno.value,
+          params,
+        );
       respostasof.value = r;
     }
   } catch (error) {
@@ -297,8 +315,15 @@ async function validarDota(evt) {
         </table>
       </template>
 
+      <Field
+        v-if="$route.params.projetoId"
+        name="projeto_id"
+        type="hidden"
+        :value="$route.params.projetoId"
+      />
+
       <template v-if="respostasof.dotacao">
-        <div>
+        <div v-if="!$route.params.projetoId">
           <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
           <div
