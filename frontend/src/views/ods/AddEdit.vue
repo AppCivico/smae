@@ -16,9 +16,9 @@ const ODSStore = useODSStore();
 const { tempODS } = storeToRefs(ODSStore);
 ODSStore.clear();
 
-let title = 'Cadastro de ODS';
+let title = 'Cadastro de categoria';
 if (id) {
-  title = 'Editar ODS';
+  title = 'Editar categoria';
   ODSStore.getById(id);
 }
 
@@ -40,7 +40,7 @@ async function onSubmit(values) {
       msg = 'Item adicionado com sucesso!';
     }
     if (r == true) {
-      await router.push('/ods');
+      await router.push('/categorias');
       alertStore.success(msg);
     }
   } catch (error) {
@@ -49,10 +49,10 @@ async function onSubmit(values) {
 }
 
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/ods');
+  alertStore.confirm('Deseja sair sem salvar as alterações?', '/categorias');
 }
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await ODSStore.delete(id)) router.push('/ods'); }, 'Remover');
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await ODSStore.delete(id)) router.push('/categorias'); }, 'Remover');
 }
 
 </script>

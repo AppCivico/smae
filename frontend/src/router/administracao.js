@@ -172,7 +172,7 @@ export default [
     ],
   },
   {
-    path: '/ods',
+    path: '/categorias',
     children: [
       {
         path: '',
@@ -182,7 +182,7 @@ export default [
         },
       },
       {
-        path: 'novo',
+        path: 'nova',
         component: AddEditODS,
         props: {
           submenu: SubmenuConfig,
