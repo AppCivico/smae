@@ -13,6 +13,7 @@ import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
 import acompanhamentos from './acompanhamentos';
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
+import projetosOrcamentos from './projetos.orcamentos';
 import riscos from './riscos';
 import tarefas from './tarefas';
 
@@ -111,6 +112,15 @@ export default {
       }),
       meta: {
         rotasParaMenuSecundário: () => {
+          const orçamentos = {
+            títuloParaGrupoDeLinksNoMenu: 'Visão orçamentária',
+            rotas: [
+              'ProjetoOrçamentoCusto',
+              'ProjetoOrçamentoPlanejado',
+              'ProjetoOrçamentoRealizado',
+            ],
+          };
+
           const base = [
             'projetosResumo',
             'projetosDocumentos',
@@ -129,7 +139,14 @@ export default {
               'liçõesAprendidasListar',
             );
           }
-          return base;
+
+          return [
+            {
+              títuloParaGrupoDeLinksNoMenu: 'Plano do projeto',
+              rotas: base,
+            },
+            orçamentos,
+          ];
         },
 
         rotasParaMigalhasDePão: [
@@ -137,7 +154,6 @@ export default {
           'projetosResumo',
         ],
 
-        títuloParaGrupoDeLinksNoMenu: 'Plano do projeto',
       },
 
       children: [
@@ -237,6 +253,8 @@ export default {
         },
 
         processos,
+
+        projetosOrcamentos,
       ],
     },
   ],
