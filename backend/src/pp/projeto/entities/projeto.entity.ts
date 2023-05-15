@@ -178,6 +178,8 @@ export class ProjetoDetailDto {
 
     responsaveis_no_orgao_gestor: IdNomeExibicao[]
     permissoes: ProjetoPermissoesDto
+
+    ano_orcamento: number[]
 }
 
 export class ProjetoPremissa {

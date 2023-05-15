@@ -2381,6 +2381,8 @@ model Projeto {
     realizado_duracao Int?
     realizado_custo   Float?
 
+    ano_orcamento Int[] @default([])
+
     projecao_termino DateTime? @db.Date()
 
     tolerancia_atraso Int     @default(0) // em dias
