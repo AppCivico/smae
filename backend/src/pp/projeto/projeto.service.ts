@@ -630,6 +630,7 @@ export class ProjetoService {
                 em_planejamento_em: true,
                 percentual_atraso: true,
                 status_cronograma: true,
+                ano_orcamento: true,
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
