@@ -2,6 +2,7 @@
 import { router } from '@/router';
 import { useAlertStore, useMetasStore, useOrcamentosStore } from '@/stores';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
@@ -9,6 +10,7 @@ import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
 const DotaçãoStore = useDotaçãoStore();
+const ProjetoStore = useProjetosStore();
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -18,8 +20,11 @@ const { id } = route.params;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-MetasStore.getPdM();
-MetasStore.getChildren(meta_id);
+
+if (!route.params.projetoId) {
+  MetasStore.getPdM();
+  MetasStore.getChildren(meta_id);
+}
 
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
@@ -43,7 +48,11 @@ const d_fonte = ref('');
 (async () => {
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
-    await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+    if (route.params.projetoId) {
+      await OrcamentosStore.buscarOrçamentosPlanejadosParaProjeto();
+    } else {
+      await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+    }
     currentEdit.value = OrcamentoPlanejado.value[ano].find((x) => x.id == id);
     currentEdit.value.valor_planejado = dinheiro(currentEdit.value.valor_planejado);
 
@@ -94,16 +103,18 @@ async function onSubmit(values) {
 
     values.dotacao = values.dotacao.split('.').map((x) => (x.indexOf('*') != -1 ? '*' : x)).join('.');
 
-    values.atividade_id = null;
-    values.iniciativa_id = null;
-    values.meta_id = null;
+    if (values.location) {
+      values.atividade_id = null;
+      values.iniciativa_id = null;
+      values.meta_id = null;
 
-    if (values.location[0] == 'a') {
-      values.atividade_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'i') {
-      values.iniciativa_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'm') {
-      values.meta_id = Number(values.location.slice(1));
+      if (values.location[0] == 'a') {
+        values.atividade_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'i') {
+        values.iniciativa_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'm') {
+        values.meta_id = Number(values.location.slice(1));
+      }
     }
 
     if (id) {
@@ -117,7 +128,6 @@ async function onSubmit(values) {
     if (r == true) {
       alertStore.success(msg);
       if (route.meta?.rotaDeEscape) {
-        console.debug('rota de escaps', route.meta.rotaDeEscape);
         router.push({
           name: route.meta.rotaDeEscape,
         });
@@ -207,8 +217,11 @@ async function validarDota() {
     respostasof.value = { loading: true };
     const val = await schema.validate({ dotacao: dota.value, valor_planejado: 1 });
     if (val) {
+      const params = route.params.projetoId
+        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
+        : { pdm_id: activePdm.value.id };
       const r = await DotaçãoStore
-        .getDotaçãoPlanejado(dota.value, ano, { pdm_id: activePdm.value.id });
+        .getDotaçãoPlanejado(dota.value, ano, params);
       respostasof.value = r;
       if (id) {
         respostasof.value.smae_soma_valor_planejado -= toFloat(currentEdit.value.valor_planejado);
@@ -527,7 +540,13 @@ async function validarDota() {
         </tbody>
       </table>
 
-      <div>
+      <Field
+        v-if="$route.params.projetoId"
+        name="projeto_id"
+        type="hidden"
+        :value="$route.params.projetoId"
+      />
+      <div v-else>
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <div

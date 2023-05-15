@@ -19,8 +19,11 @@ const { id } = route.params;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-MetasStore.getPdM();
-MetasStore.getChildren(meta_id);
+
+if (!route.params.projetoId) {
+  MetasStore.getPdM();
+  MetasStore.getChildren(meta_id);
+}
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
@@ -54,7 +57,11 @@ const itens = ref([]);
 (async () => {
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
-    await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+    if (route.params.projetoId) {
+      await OrcamentosStore.buscarOrçamentosRealizadosParaProjeto();
+    } else {
+      await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+    }
     currentEdit.value = OrcamentoRealizado.value[ano].find((x) => x.id == id);
 
     currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x, i) => {
@@ -105,16 +112,19 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    values.atividade_id = null;
-    values.iniciativa_id = null;
-    values.meta_id = null;
-    if (values.location[0] == 'a') {
-      values.atividade_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'i') {
-      values.iniciativa_id = Number(values.location.slice(1));
-    } else if (values.location[0] == 'm') {
-      values.meta_id = Number(values.location.slice(1));
+    if (values.location) {
+      values.atividade_id = null;
+      values.iniciativa_id = null;
+      values.meta_id = null;
+      if (values.location[0] == 'a') {
+        values.atividade_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'i') {
+        values.iniciativa_id = Number(values.location.slice(1));
+      } else if (values.location[0] == 'm') {
+        values.meta_id = Number(values.location.slice(1));
+      }
     }
+
     values.itens = itens.value.map((x) => {
       x.valor_empenho = toFloat(x.valor_empenho);
       x.valor_liquidado = toFloat(x.valor_liquidado);
@@ -411,7 +421,13 @@ function validaPartes(a) {
         </tbody>
       </table>
 
-      <div>
+      <Field
+        v-if="$route.params.projetoId"
+        name="projeto_id"
+        type="hidden"
+        :value="$route.params.projetoId"
+      />
+      <div v-else>
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <div
