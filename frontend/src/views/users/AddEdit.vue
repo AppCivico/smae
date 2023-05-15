@@ -3,7 +3,7 @@ import { Dashboard } from '@/components';
 import { usuário as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
-  useAlertStore, useOrgansStore, usePaineisGruposStore, useUsersStore
+  useAlertStore, useOrgansStore, usePaineisGruposStore, useUsersStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';

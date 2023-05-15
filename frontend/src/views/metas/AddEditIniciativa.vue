@@ -10,7 +10,7 @@ import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
 import {
-  useAlertStore, useIniciativasStore, useMetasStore, useTagsStore
+  useAlertStore, useIniciativasStore, useMetasStore, useTagsStore,
 } from '@/stores';
 
 IniciativaAtiva();
