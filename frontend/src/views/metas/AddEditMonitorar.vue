@@ -185,7 +185,7 @@ lastlevel();
             <label class="label">Ordem</label>
             <Field
               name="ordem"
-              type="text"
+              type="number"
               class="inputtext light mb1"
               :class="{ 'error': errors.ordem }"
             />
@@ -316,7 +316,7 @@ lastlevel();
           <label class="label">Ordem <span class="tvermelho">*</span></label>
           <Field
             name="ordem"
-            type="text"
+            type="number"
             class="inputtext light mb1"
             :class="{ 'error': errors.ordem }"
           />
