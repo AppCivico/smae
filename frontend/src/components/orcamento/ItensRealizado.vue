@@ -109,7 +109,7 @@ function attVar(g, i, n) {
     <a
       class="btn outline bgnone tcprimary"
       @click="addItem(itens)"
-    >Adicionar novo empenho/liquidação</a>
+    >Informar execução orçamentária</a>
   </div>
 
   <div class="flex g2 mb2">
