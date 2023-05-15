@@ -298,7 +298,7 @@ export const planoDeAção = object()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .typeError('${label} inválida'),
     data_termino: date()
-      .label('Término efetivo')
+      .label('Data de término efetivo')
       .nullable()
       .typeError('Data inválida'),
     medidas_de_contingencia: string()
@@ -309,7 +309,7 @@ export const planoDeAção = object()
       .min(1, 'Selecione um órgão responsável')
       .required(),
     prazo_contramedida: date()
-      .label('Término previsto')
+      .label('Data de término previsto')
       .required()
       .typeError('Data inválida'),
     responsavel: string()

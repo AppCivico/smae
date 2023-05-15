@@ -10,7 +10,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
-  Form
+  Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -225,10 +225,10 @@ iniciar();
 
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <LabelFromYup>
-          Prazo
-          <small>(Data de término previsto)</small>&nbsp;<span class="tvermelho">*</span>
-        </LabelFromYup>
+        <LabelFromYup
+          name="prazo_contramedida"
+          :schema="schema"
+        />
         <Field
           name="prazo_contramedida"
           required
