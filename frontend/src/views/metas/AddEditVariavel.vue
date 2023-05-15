@@ -2,7 +2,7 @@
 import { variável } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
-  useAlertStore, useAtividadesStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useRegionsStore, useVariaveisStore
+  useAlertStore, useAtividadesStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useRegionsStore, useVariaveisStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';

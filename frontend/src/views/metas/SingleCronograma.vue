@@ -1,14 +1,14 @@
 <script setup>
 import { Dashboard } from '@/components';
 import {
-  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useEtapasStore, useMetasStore
+  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useEtapasStore, useMetasStore,
 } from '@/stores';
 import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
 import { storeToRefs } from 'pinia';
 import {
-  onMounted, onUpdated, reactive, ref
+  onMounted, onUpdated, reactive, ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 

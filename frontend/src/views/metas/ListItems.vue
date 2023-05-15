@@ -7,7 +7,7 @@ import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { storeToRefs } from 'pinia';
 import {
-  onMounted, onUpdated, reactive, ref
+  onMounted, onUpdated, reactive, ref,
 } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

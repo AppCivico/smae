@@ -9,7 +9,7 @@ import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
 import {
-  useAlertStore, useMacrotemasStore, useMetasStore, useOrgansStore, useSubtemasStore, useTagsStore, useTemasStore, useUsersStore
+  useAlertStore, useMacrotemasStore, useMetasStore, useOrgansStore, useSubtemasStore, useTagsStore, useTemasStore, useUsersStore,
 } from '@/stores';
 
 const alertStore = useAlertStore();
