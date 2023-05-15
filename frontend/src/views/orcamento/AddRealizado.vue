@@ -1,4 +1,5 @@
 <script setup>
+import CheckClose from '@/components/CheckClose.vue';
 import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
 import { router } from '@/router';
 import {
@@ -105,10 +106,6 @@ async function onSubmit(values) {
   }
 }
 
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', `${parentlink}/orcamento/realizado`);
-}
-
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
@@ -199,15 +196,8 @@ async function validarDota() {
   <div class="flex spacebetween center">
     <h1>Empenho/Liquidação</h1>
     <hr class="ml2 f1">
-    <button
-      class="btn round ml2"
-      @click="checkClose"
-    >
-      <svg
-        width="12"
-        height="12"
-      ><use xlink:href="#i_x" /></svg>
-    </button>
+
+    <CheckClose />
   </div>
   <h3 class="mb2">
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
