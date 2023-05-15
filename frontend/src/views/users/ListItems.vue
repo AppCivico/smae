@@ -44,7 +44,7 @@ function filterPerfil(ids) {
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
-      <h1>Gerenciamento de usuários</h1>
+      <h1>Gerenciar usuários</h1>
       <hr class="ml2 f1">
       <router-link
         v-if="perm?.CadastroPessoa?.inserir"
