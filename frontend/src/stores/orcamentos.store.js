@@ -20,6 +20,8 @@ export const useOrcamentosStore = defineStore({
       this.OrcamentoPlanejado = {};
       this.OrcamentoRealizado = {};
     },
+
+    // metas
     async getById(id, ano) {
       this.getOrcamentoCusteioById(id, ano);
       this.getOrcamentoPlanejadoById(id, ano);
@@ -44,27 +46,85 @@ export const useOrcamentosStore = defineStore({
         this.OrcamentoCusteio[ano] = { error };
       }
     },
-    async getOrcamentoPlanejadoById(id, ano) {
+    async getOrcamentoPlanejadoById(idOrParams, ano) {
+      const params = typeof idOrParams === 'object'
+        ? idOrParams
+        : {
+          meta_id: idOrParams,
+          ano_referencia: ano,
+        };
+
+      if (ano) {
+        params.ano_referencia = ano;
+      }
+
       try {
         this.OrcamentoPlanejado[ano] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/orcamento-planejado/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await this.requestS.get(`${baseUrl}/orcamento-planejado/`, params);
         this.OrcamentoPlanejado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoPlanejado[ano] = { error };
       }
     },
-    async getOrcamentoRealizadoById(id, ano) {
+    async getOrcamentoRealizadoById(idOrParams, ano) {
+      const params = typeof idOrParams === 'object'
+        ? idOrParams
+        : {
+          meta_id: idOrParams,
+          ano_referencia: ano,
+        };
+
+      if (ano) {
+        params.ano_referencia = ano;
+      }
+
       try {
         this.OrcamentoRealizado[ano] = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/orcamento-realizado/?meta_id=${id}&ano_referencia=${ano}`);
+        const r = await this.requestS.get(`${baseUrl}/orcamento-realizado/`, params);
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
         this.OrcamentoRealizado[ano] = { error };
       }
     },
 
-    // Metas & projetos
+    // projetos
+    async buscarOrçamentosPrevistosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
+      try {
+        this.OrcamentoCusteio[ano] = { loading: true };
 
+        const r = await this.requestS.get(`${baseUrl}/projeto/${projetoId}/orcamento-previsto`, { ...extraParams, ano_referencia: ano });
+
+        this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
+      } catch (error) {
+        this.OrcamentoCusteio[ano] = { error };
+      }
+    },
+
+    async buscarOrçamentosPlanejadosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
+      try {
+        this.OrcamentoPlanejado[ano] = { loading: true };
+
+        const r = await this.requestS.get(`${baseUrl}/projeto/${projetoId}/orcamento-planejado`, { ...extraParams, ano_referencia: ano });
+
+        this.OrcamentoPlanejado[ano] = r.linhas ? r.linhas : r;
+      } catch (error) {
+        this.OrcamentoPlanejado[ano] = { error };
+      }
+    },
+
+    async buscarOrçamentosRealizadosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
+      try {
+        this.OrcamentoRealizado[ano] = { loading: true };
+
+        const r = await this.requestS.get(`${baseUrl}/projeto/${projetoId}/orcamento-realizado`, { ...extraParams, ano_referencia: ano });
+
+        this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
+      } catch (error) {
+        this.OrcamentoRealizado[ano] = { error };
+      }
+    },
+
+    // METAS & PROJETOS
     async restringirPrevistoAZero(ano, params) {
       const parâmetrosCompletos = {
         considerar_zero: true,
@@ -85,7 +145,7 @@ export const useOrcamentosStore = defineStore({
           if (parâmetrosCompletos.meta_id) {
             this.getOrcamentoCusteioById(parâmetrosCompletos.meta_id, ano);
           } else if (parâmetrosCompletos.projeto_id) {
-            this.buscarOrçamentosPrevistosParaProjeto(parâmetrosCompletos.projeto_id, ano);
+            this.buscarOrçamentosPrevistosParaProjeto(ano, parâmetrosCompletos.projeto_id);
           }
         }
 
@@ -95,44 +155,81 @@ export const useOrcamentosStore = defineStore({
       }
     },
 
+    // Custeio
     async updateOrcamentoCusteio(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/meta-orcamento/${id}`, params)) return true;
+      const segmento1 = params.projeto_id
+        ? `projeto/${params.projeto_id}/orcamento-previsto`
+        : 'meta-orcamento';
+
+      if (await this.requestS.patch(`${baseUrl}/${segmento1}/${id}`, params)) return true;
       return false;
     },
     async insertOrcamentoCusteio(params) {
-      if (await this.requestS.post(`${baseUrl}/meta-orcamento/`, params)) return true;
+      const segmento1 = params.projeto_id
+        ? `projeto/${params.projeto_id}/orcamento-previsto`
+        : 'meta-orcamento';
+
+      if (await this.requestS.post(`${baseUrl}/${segmento1}/`, params)) return true;
       return false;
     },
-    async deleteOrcamentoCusteio(id) {
-      if (await this.requestS.delete(`${baseUrl}/meta-orcamento/${id}`)) return true;
+    async deleteOrcamentoCusteio(id, projetoId = 0) {
+      const segmento1 = projetoId
+        ? `projeto/${projetoId}/orcamento-previsto`
+        : 'meta-orcamento';
+
+      if (await this.requestS.delete(`${baseUrl}/${segmento1}/${id}`)) return true;
       return false;
     },
 
     // Planejado
     async updateOrcamentoPlanejado(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/orcamento-planejado/${id}`, params)) return true;
+      const segmento1 = params.projeto_id
+        ? `projeto/${params.projeto_id}/orcamento-planejado`
+        : 'orcamento-planejado';
+
+      if (await this.requestS.patch(`${baseUrl}/${segmento1}/${id}`, params)) return true;
       return false;
     },
     async insertOrcamentoPlanejado(params) {
-      if (await this.requestS.post(`${baseUrl}/orcamento-planejado/`, params)) return true;
+      const segmento1 = params.projeto_id
+        ? `projeto/${params.projeto_id}/orcamento-planejado`
+        : 'orcamento-planejado';
+
+      if (await this.requestS.post(`${baseUrl}/${segmento1}/`, params)) return true;
       return false;
     },
-    async deleteOrcamentoPlanejado(id) {
-      if (await this.requestS.delete(`${baseUrl}/orcamento-planejado/${id}`)) return true;
+    async deleteOrcamentoPlanejado(id, projetoId) {
+      const segmento1 = projetoId
+        ? `projeto/${projetoId}/orcamento-planejado`
+        : 'orcamento-planejado';
+
+      if (await this.requestS.delete(`${baseUrl}/${segmento1}/${id}`)) return true;
       return false;
     },
 
     // Realizado
     async updateOrcamentoRealizado(id, params) {
-      if (await this.requestS.patch(`${baseUrl}/orcamento-realizado/${id}`, params)) return true;
+      const segmento1 = params.projeto_id
+        ? `projeto/${params.projeto_id}/orcamento-realizado`
+        : 'orcamento-realizado';
+
+      if (await this.requestS.patch(`${baseUrl}/${segmento1}/${id}`, params)) return true;
       return false;
     },
     async insertOrcamentoRealizado(params) {
-      if (await this.requestS.post(`${baseUrl}/orcamento-realizado/`, params)) return true;
+      const segmento1 = params.projeto_id
+        ? `projeto/${params.projeto_id}/orcamento-realizado`
+        : 'orcamento-realizado';
+
+      if (await this.requestS.post(`${baseUrl}/${segmento1}/`, params)) return true;
       return false;
     },
-    async deleteOrcamentoRealizado(id) {
-      if (await this.requestS.delete(`${baseUrl}/orcamento-realizado/${id}`)) return true;
+    async deleteOrcamentoRealizado(id, projetoId = 0) {
+      const segmento1 = projetoId
+        ? `projeto/${projetoId}/orcamento-realizado`
+        : 'orcamento-realizado';
+
+      if (await this.requestS.delete(`${baseUrl}/${segmento1}/${id}`)) return true;
       return false;
     },
   },
