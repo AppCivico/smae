@@ -328,3 +328,10 @@ AFTER INSERT OR UPDATE
 ON orcamento_planejado
 FOR EACH ROW
 EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
+
+CREATE TRIGGER tgr_ano_orcamento_projeto_tarefa
+AFTER INSERT OR UPDATE
+ON tarefa
+FOR EACH ROW
+EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
+
