@@ -44,7 +44,8 @@ export class AtividadeService {
             const codigoJaEmUso = await prisma.atividade.count({
                 where: {
                     removido_em: null,
-                    codigo: createAtividadeDto.codigo
+                    codigo: createAtividadeDto.codigo,
+                    iniciativa_id: createAtividadeDto.iniciativa_id
                 }
             });
             if (codigoJaEmUso) throw new HttpException('codigo| Já existe Atividade com este código', 400);
@@ -281,11 +282,18 @@ export class AtividadeService {
             delete updateAtividadeDto.tags;
 
             if (updateAtividadeDto.codigo) {
+                const atividadeIniciativaId = await prismaTx.atividade.findFirst({
+                    where: { id },
+                    select: { iniciativa_id: true }
+                });
+                if (!atividadeIniciativaId) throw new Error('Erro interno ao buscar Atividade');
+
                 const codigoJaEmUso = await prismaTx.atividade.count({
                     where: {
                         codigo: updateAtividadeDto.codigo,
                         id: { not: id },
-                        removido_em: null
+                        removido_em: null,
+                        iniciativa_id: atividadeIniciativaId.iniciativa_id
                     }
                 });
                 if (codigoJaEmUso) throw new HttpException('codigo| Já existe Atividade com este código', 400);
