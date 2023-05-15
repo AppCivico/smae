@@ -2,7 +2,7 @@
 import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
 
-const props = defineProps(['group', 'permissao', 'parentlink']);
+defineProps(['group', 'permissao', 'parentlink']);
 </script>
 
 <template>

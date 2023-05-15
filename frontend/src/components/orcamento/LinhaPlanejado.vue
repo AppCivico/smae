@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps(['group', 'permissao', 'parentlink']);
+defineProps(['group', 'permissao', 'parentlink']);
 function formataValor(d) {
   return Number(d).toLocaleString('pt-BR', {
     style: 'currency',
