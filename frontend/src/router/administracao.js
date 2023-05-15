@@ -2,27 +2,27 @@ import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { Administracao } from '@/views';
 import {
   AddEditDocumentTypes,
-  ListDocumentTypes
+  ListDocumentTypes,
 } from '@/views/documentTypes';
 import {
   AddEditODS,
-  ListODS
+  ListODS,
 } from '@/views/ods';
 import {
-  AddEditOrgans,
   AddEditOrganTypes,
+  AddEditOrgans,
+  ListOrganTypes,
   ListOrgans,
-  ListOrganTypes
 } from '@/views/organs';
 import {
   AddEditGrupo,
   AddEditPainel,
   ListGrupos,
-  ListPainel
+  ListPainel,
 } from '@/views/paineis';
 import {
   AddEditPdM,
-  ListPdM
+  ListPdM,
 } from '@/views/pdm';
 import PortfoliosCriarEditar from '@/views/portfolios/PortfoliosCriarEditar.vue';
 import PortfoliosLista from '@/views/portfolios/PortfoliosLista.vue';
@@ -30,11 +30,11 @@ import PortfoliosRaiz from '@/views/portfolios/PortfoliosRaiz.vue';
 import { ListRegions } from '@/views/regions';
 import {
   AddEditResources,
-  ListResources
+  ListResources,
 } from '@/views/resources';
 import {
   AddEditUsers,
-  ListUsers
+  ListUsers,
 } from '@/views/users';
 
 export default [
