@@ -1,22 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
 import { FilterObjetivoEstrategicoDto } from './dto/filter-objetivo-estrategico.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
+import { Prisma } from '@prisma/client';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @Injectable()
 export class ObjetivoEstrategicoService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, user: PessoaFromJwt) {
-        const created = await this.prisma.tema.create({
-            data: {
-                criado_por: user.id,
-                criado_em: new Date(Date.now()),
-                ...createObjetivoEstrategicoDto,
-            },
-            select: { id: true, descricao: true },
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const descricaoExists = await prismaTx.tema.count({
+                where: { 
+                    pdm_id: createObjetivoEstrategicoDto.pdm_id,
+                    descricao: {
+                        equals: createObjetivoEstrategicoDto.descricao,
+                        mode: 'insensitive'   
+                    }
+                }
+            });
+            if (descricaoExists) throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+
+            const tema = await prismaTx.tema.create({
+                data: {
+                    criado_por: user.id,
+                    criado_em: new Date(Date.now()),
+                    ...createObjetivoEstrategicoDto,
+                },
+                select: { id: true, descricao: true },
+            });
+
+            return tema;
         });
 
         return created;
@@ -42,16 +59,40 @@ export class ObjetivoEstrategicoService {
 
     async update(id: number, updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, user: PessoaFromJwt) {
         delete updateObjetivoEstrategicoDto.pdm_id; // nao deixa editar o PDM
-        await this.prisma.tema.update({
-            where: { id: id },
-            data: {
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-                ...updateObjetivoEstrategicoDto,
-            },
+
+        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            if (updateObjetivoEstrategicoDto.descricao) {
+                const self = await prismaTx.tema.findFirstOrThrow({
+                    where: { id },
+                    select: { pdm_id: true }
+                });
+
+                const descricaoExists = await prismaTx.tema.count({
+                    where: { 
+                        pdm_id: self.pdm_id,
+                        descricao: {
+                            equals: updateObjetivoEstrategicoDto.descricao,
+                            mode: 'insensitive'   
+                        }
+                    }
+                });
+                if (descricaoExists) throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+            }
+
+            const tema = await this.prisma.tema.update({
+                where: { id: id },
+                data: {
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                    ...updateObjetivoEstrategicoDto,
+                },
+                select: { id: true }
+            });
+
+            return tema;
         });
 
-        return { id };
+        return updated;
     }
 
     async remove(id: number, user: PessoaFromJwt) {
