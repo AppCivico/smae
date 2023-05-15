@@ -79,7 +79,7 @@ async function onSubmit(values) {
 function submeter(e) {
   const item = e.target;
   alertStore.confirmAction(
-    'Deseja enviar variável para conferência? Os dados só poderão ser editados pela coordenadoria, ou em caso de solicitação de complementação.',
+    'Deseja submeter as informações? Após o envio, os dados só poderão ser editados pela coordenadoria de planejamento ou em caso de solicitação de complementação.',
     () => { enviaCP.value = true; submitBt.value.click(); alertStore.clear(); },
     'Enviar',
   );
