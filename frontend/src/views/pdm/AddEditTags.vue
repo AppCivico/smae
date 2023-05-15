@@ -1,11 +1,11 @@
 <script setup>
+import { tag as schema } from '@/consts/formSchemas';
 import { requestS } from '@/helpers';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 import {
   useAlertStore, useEditModalStore,
@@ -63,13 +63,6 @@ if (id) {
     if (tempTags.value.icone) curfile.name = tempTags.value.icone;
   })();
 }
-
-const schema = Yup.object().shape({
-  descricao: Yup.string().required('Preencha a descrição'),
-  pdm_id: Yup.string(),
-  ods_id: Yup.string().nullable(),
-  upload_icone: Yup.string().nullable(),
-});
 
 async function onSubmit(values) {
   try {
@@ -170,7 +163,7 @@ async function uploadshape(e) {
       </div>
       <div class="flex g2">
         <div class="f1">
-          <label class="label">ODS</label>
+          <label class="label">ODS&nbsp;<span class="tvermelho">*</span></label>
           <Field
             name="ods_id"
             as="select"
