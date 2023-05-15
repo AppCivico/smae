@@ -87,7 +87,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
             class="mr2"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Órgão(s) responsável(eis)
+              Órgão responsável
             </div>
             <div class="t13">
               {{
@@ -101,7 +101,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
             class="mr2"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Órgão(s) participante(s)
+              Órgão participante
             </div>
             <div class="t13">
               {{
@@ -215,7 +215,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
                   </div>
                   <div class="mr1 f1">
                     <div class="t12 uc w700 mb05 tc300">
-                      Órgão(s) participante(s)
+                      Órgão participante
                     </div>
                     <div class="t13">
                       {{ ini?.orgaos_participantes?.map(x=>x.orgao.descricao).join(', ') }}
@@ -223,7 +223,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
                   </div>
                   <div class="f1">
                     <div class="t12 uc w700 mb05 tc300">
-                      Responsável(eis) na Coordenadoria
+                      Responsável na Coordenadoria
                     </div>
                     <div class="t13">
                       {{ ini?.coordenadores_cp?.map(x=>x.nome_exibicao).join(', ') }}

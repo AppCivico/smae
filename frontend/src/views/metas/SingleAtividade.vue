@@ -60,7 +60,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
           </div>
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              Órgão(s) participante(s)
+              Órgão participante
             </div>
             <div class="t13">
               {{ singleAtividade.orgaos_participantes.map(x=>x.orgao.descricao).join(', ') }}
@@ -68,7 +68,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
           </div>
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              Responsável(eis) na Coordenadoria
+              Responsável na Coordenadoria
             </div>
             <div class="t13">
               {{ singleAtividade.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
