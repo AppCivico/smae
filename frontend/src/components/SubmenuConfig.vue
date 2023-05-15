@@ -34,7 +34,7 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             to="/pdm"
             :class="{active: parentPage=='pdm'}"
           >
-            Programa de Metas
+            Programa de metas
           </router-link>
           <router-link
             v-if="perm?.Projeto?.administrador"
@@ -63,13 +63,13 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             v-if="perm?.CadastroUnidadeMedida"
             to="/unidade-medida"
           >
-            Unidades de Medida
+            Unidades de medida
           </router-link>
           <router-link
             v-if="perm?.CadastroTipoDocumento"
             to="/tipo-documento"
           >
-            Tipos de Documento
+            Tipos de documento
           </router-link>
           <router-link
             v-if="perm?.CadastroOds"
@@ -81,7 +81,7 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             v-if="perm?.CadastroRegiao"
             to="/regioes"
           >
-            Regiões, Subprefeituras e Distritos
+            Regiões, subprefeituras e distritos
           </router-link>
         </div>
       </template>
