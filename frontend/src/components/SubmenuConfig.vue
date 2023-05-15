@@ -30,12 +30,6 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             Gerenciar usuários
           </router-link>
           <router-link
-            v-if="perm?.CadastroRegiao"
-            to="/regioes"
-          >
-            Regiões, Subprefeituras e Distritos
-          </router-link>
-          <router-link
             v-if="perm?.CadastroPdm"
             to="/pdm"
             :class="{active: parentPage=='pdm'}"
@@ -82,6 +76,12 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             to="/ods"
           >
             ODS
+          </router-link>
+          <router-link
+            v-if="perm?.CadastroRegiao"
+            to="/regioes"
+          >
+            Regiões, Subprefeituras e Distritos
           </router-link>
         </div>
       </template>
