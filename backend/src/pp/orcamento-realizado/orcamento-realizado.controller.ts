@@ -38,7 +38,7 @@ export class OrcamentoRealizadoController {
         return { linhas: await this.orcamentoRealizadoService.findAll(projeto, filters, user) };
     }
 
-    @Patch(':id/orcamento-previsto/:id2')
+    @Patch(':id/orcamento-realizado/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.orcamento')
