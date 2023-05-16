@@ -2218,6 +2218,7 @@ enum FonteRelatorio {
     Projeto
     Projetos
     ProjetoStatus
+    ProjetoPrevisaoCusto
 }
 
 model Relatorio {

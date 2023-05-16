@@ -142,6 +142,7 @@ export class ReportsService {
                 service = this.mmService;
                 break;
             case 'PrevisaoCusto':
+            case 'ProjetoPrevisaoCusto':
                 service = this.previsaoCustoService;
                 break;
             case 'Projeto':
