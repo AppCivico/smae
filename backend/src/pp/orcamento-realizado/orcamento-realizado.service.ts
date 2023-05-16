@@ -14,6 +14,14 @@ type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
 };
 
+const fk_nota = (row: {
+    dotacao: string,
+    dotacao_processo: string,
+    dotacao_processo_nota: string,
+}): string => {
+    return row.dotacao + '_' + row.dotacao_processo + '_' + row.dotacao_processo_nota;
+};
+
 @Injectable()
 export class OrcamentoRealizadoService {
     liberarValoresMaioresQueSof: boolean;
@@ -455,12 +463,18 @@ export class OrcamentoRealizadoService {
         });
 
         const notaEncontradas: Record<string, boolean> = {};
+        const anoNotas: Record<string, boolean> = {};
+        const notaEncontradasSemAno: Record<string, boolean> = {};
+
         const processosEncontrados: Record<string, boolean> = {};
         const dotacoesEncontradas: Record<string, boolean> = {};
         // levantando os dados para o 'poor's mans join'
         for (const op of queryRows) {
             if (op.nota_empenho) {
+                const notaAno = op.nota_empenho.split('/');
                 if (notaEncontradas[op.dotacao] == undefined) notaEncontradas[op.nota_empenho] = true;
+                if (notaEncontradasSemAno[notaAno[0]] == undefined) notaEncontradasSemAno[notaAno[0]] = true;
+                if (anoNotas[notaAno[1]] == undefined) anoNotas[notaAno[1]] = true;
             } else if (op.processo) {
                 if (processosEncontrados[op.dotacao] == undefined) processosEncontrados[op.processo] = true;
             } else {
@@ -478,28 +492,33 @@ export class OrcamentoRealizadoService {
             select: {
                 soma_valor_empenho: true,
                 soma_valor_liquidado: true,
-                dotacao_processo_nota: true
+                dotacao: true,
+                dotacao_processo: true,
+                dotacao_processo_nota: true,
             }
         });
         const notasInfoSomaRef: Record<string, (typeof notasSomaInfo)[0]> = {};
         for (const nota of notasSomaInfo) {
-            notasInfoSomaRef[nota.dotacao_processo_nota] = nota;
+            notasInfoSomaRef[fk_nota(nota)] = nota;
         }
         const notasInfo = await this.prisma.dotacaoProcessoNota.findMany({
             where: {
-                dotacao_processo_nota: { in: Object.keys(notaEncontradas) },
-                ano_referencia: filters.ano_referencia,
+                OR: Object.keys(notaEncontradasSemAno).map((nota_prefixo: string) => {
+                    return { dotacao_processo_nota: { startsWith: nota_prefixo } }
+                }),
+                ano_referencia: { in: Object.keys(anoNotas).map(ano => +ano) },
             },
             select: {
-
                 dotacao_processo_nota: true,
+                dotacao: true,
+                dotacao_processo: true,
                 empenho_liquido: true,
                 valor_liquidado: true,
             },
         });
         const notasInfoRef: Record<string, (typeof notasInfo)[0]> = {};
         for (const nota of notasInfo) {
-            notasInfoRef[nota.dotacao_processo_nota] = nota;
+            notasInfoRef[fk_nota(nota)] = nota;
         }
 
         // cruza os processos
@@ -579,15 +598,25 @@ export class OrcamentoRealizadoService {
             let empenho_liquido: string | null = null;
             let valor_liquidado: string | null = null;
 
-            if (orcaRealizado.nota_empenho && notasInfoRef[orcaRealizado.nota_empenho]) {
-                const notaInfo = notasInfoRef[orcaRealizado.nota_empenho];
-                const notaSomaInfo = notasInfoSomaRef[orcaRealizado.nota_empenho];
+            if (orcaRealizado.nota_empenho) {
+                const notaInfo = notasInfoRef[fk_nota({
+                    dotacao: orcaRealizado.dotacao,
+                    dotacao_processo: orcaRealizado.processo!,
+                    dotacao_processo_nota: orcaRealizado.nota_empenho
+                })];
+                const notaSomaInfo = notasInfoSomaRef[fk_nota({
+                    dotacao: orcaRealizado.dotacao,
+                    dotacao_processo: orcaRealizado.processo!,
+                    dotacao_processo_nota: orcaRealizado.nota_empenho
+                })];
 
                 smae_soma_valor_empenho = notaSomaInfo?.soma_valor_empenho.toFixed(2) ?? '0.00'
                 smae_soma_valor_liquidado = notaSomaInfo?.soma_valor_liquidado.toFixed(2) ?? '0.00';
 
-                empenho_liquido = notaInfo.empenho_liquido.toFixed(2);
-                valor_liquidado = notaInfo.valor_liquidado.toFixed(2);
+                if (notaInfo) {
+                    empenho_liquido = notaInfo.empenho_liquido.toFixed(2);
+                    valor_liquidado = notaInfo.valor_liquidado.toFixed(2);
+                }
             } else if (orcaRealizado.processo && processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo]) {
                 const processoInfo = processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
                 const processoSomaInfo = processoInfoSomaRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
