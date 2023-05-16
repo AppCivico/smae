@@ -13,7 +13,7 @@ import { Atividade, AtividadeOrgao, IdNomeExibicao } from './entities/atividade.
 @Injectable()
 export class AtividadeService {
     private readonly logger = new Logger(AtividadeService.name);
-    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) {}
+    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) { }
 
     async create(createAtividadeDto: CreateAtividadeDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -44,11 +44,21 @@ export class AtividadeService {
             const codigoJaEmUso = await prisma.atividade.count({
                 where: {
                     removido_em: null,
-                    codigo: createAtividadeDto.codigo,
+                    codigo: { equals: createAtividadeDto.codigo, mode: 'insensitive' },
                     iniciativa_id: createAtividadeDto.iniciativa_id
                 }
             });
-            if (codigoJaEmUso) throw new HttpException('codigo| Já existe Atividade com este código', 400);
+            if (codigoJaEmUso > 0) throw new HttpException('codigo| Já existe atividade com este código nesta iniciativa', 400);
+
+            const tituloJaEmUso = await prisma.atividade.count({
+                where: {
+                    removido_em: null,
+                    titulo: { equals: createAtividadeDto.titulo, mode: 'insensitive' },
+                    iniciativa_id: createAtividadeDto.iniciativa_id
+                }
+            });
+            if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe atividade com este título nesta iniciativa', 400);
+
 
             if (createAtividadeDto.ativo) {
                 const iniciativaAtivaCount = await prisma.iniciativa.count({
@@ -282,21 +292,27 @@ export class AtividadeService {
             delete updateAtividadeDto.tags;
 
             if (updateAtividadeDto.codigo) {
-                const atividadeIniciativaId = await prismaTx.atividade.findFirst({
-                    where: { id },
-                    select: { iniciativa_id: true }
-                });
-                if (!atividadeIniciativaId) throw new Error('Erro interno ao buscar Atividade');
-
                 const codigoJaEmUso = await prismaTx.atividade.count({
                     where: {
-                        codigo: updateAtividadeDto.codigo,
+                        codigo: { equals: updateAtividadeDto.codigo, mode: 'insensitive' },
                         id: { not: id },
                         removido_em: null,
-                        iniciativa_id: atividadeIniciativaId.iniciativa_id
+                        iniciativa_id: self.iniciativa_id
                     }
                 });
-                if (codigoJaEmUso) throw new HttpException('codigo| Já existe Atividade com este código', 400);
+                if (codigoJaEmUso) throw new HttpException('codigo| Já existe outra atividade com este código nesta iniciativa', 400);
+            }
+
+            if (updateAtividadeDto.titulo) {
+                const tituloJaEmUso = await prismaTx.atividade.count({
+                    where: {
+                        id: { not: id },
+                        removido_em: null,
+                        titulo: { equals: updateAtividadeDto.titulo, mode: 'insensitive' },
+                        iniciativa_id: self.iniciativa_id,
+                    }
+                });
+                if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe outra atividade com este título nesta iniciativa', 400);
             }
 
             if (updateAtividadeDto.ativo) {
@@ -383,8 +399,8 @@ export class AtividadeService {
                 Indicador: {
                     select: {
                         IndicadorVariavel: {
-                            where: {desativado: false},
-                            select: {id: true}
+                            where: { desativado: false },
+                            select: { id: true }
                         }
                     }
                 }

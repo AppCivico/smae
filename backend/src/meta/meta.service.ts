@@ -42,10 +42,19 @@ export class MetaService {
                     where: {
                         removido_em: null,
                         pdm_id: createMetaDto.pdm_id,
-                        codigo: createMetaDto.codigo
+                        codigo: { equals: createMetaDto.codigo, mode: 'insensitive' }
                     }
                 });
-                if (codigoJaEmUso) throw new HttpException('codigo| Já existe Meta com este código', 400);
+                if (codigoJaEmUso > 0) throw new HttpException('codigo| Já existe meta com este código', 400);
+
+                const tituloJaEmUso = await prisma.meta.count({
+                    where: {
+                        removido_em: null,
+                        pdm_id: createMetaDto.pdm_id,
+                        titulo: { equals: createMetaDto.titulo, mode: 'insensitive' }
+                    }
+                });
+                if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe meta com este título', 400);
 
                 const now = new Date(Date.now());
                 const meta = await prisma.meta.create({
@@ -329,6 +338,11 @@ export class MetaService {
             await user.assertHasMetaRespAccess(id, this.prisma.pessoaAcessoPdm);
         }
 
+        const loadMeta = await this.prisma.meta.findFirstOrThrow({
+            where: { id, removido_em: null },
+            select: { pdm_id: true }
+        });
+
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
         const tags = updateMetaDto.tags;
@@ -341,21 +355,29 @@ export class MetaService {
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Verificação de código da Meta.
                 if (updateMetaDto.codigo) {
-                    const metaPdmId = await prisma.meta.findFirst({
-                        where: { id },
-                        select: { pdm_id: true }
-                    });
-                    if (!metaPdmId) throw new Error('Erro interno ao buscar Meta');
+
 
                     const codigoJaEmUso = await prisma.meta.count({
                         where: {
                             removido_em: null,
-                            pdm_id: metaPdmId.pdm_id,
+                            pdm_id: loadMeta.pdm_id,
                             codigo: updateMetaDto.codigo,
                             id: { not: id }
                         }
                     });
-                    if (codigoJaEmUso) throw new HttpException('codigo| Já existe Meta com este código', 400);
+                    if (codigoJaEmUso) throw new HttpException('codigo| Já existe outra meta com este código', 400);
+                }
+
+                if (updateMetaDto.titulo) {
+                    const tituloJaEmUso = await prisma.meta.count({
+                        where: {
+                            removido_em: null,
+                            pdm_id: loadMeta.pdm_id,
+                            titulo: { equals: updateMetaDto.titulo, mode: 'insensitive' },
+                            id: { not: id }
+                        }
+                    });
+                    if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe outra meta com este título', 400);
                 }
 
                 const meta = await prisma.meta.update({
