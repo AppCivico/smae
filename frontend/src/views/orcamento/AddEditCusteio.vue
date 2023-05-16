@@ -3,7 +3,6 @@ import CheckClose from '@/components/CheckClose.vue';
 import { custeio as schema } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
-import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
@@ -11,12 +10,13 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const DotaçãoStore = useDotaçãoStore();
 
 const alertStore = useAlertStore();
 const route = useRoute();
+const router = useRouter();
 const { meta_id } = route.params;
 const { iniciativa_id } = route.params;
 const { atividade_id } = route.params;

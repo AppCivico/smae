@@ -1,9 +1,8 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
-import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
+import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import { execuçãoOrçamentária as schema } from '@/consts/formSchemas';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
-import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
@@ -11,11 +10,12 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const DotaçãoStore = useDotaçãoStore();
 const route = useRoute();
+const router = useRouter();
 const { meta_id } = route.params;
 const { ano } = route.params;
 const { id } = route.params;

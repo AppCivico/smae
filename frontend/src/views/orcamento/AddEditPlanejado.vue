@@ -1,13 +1,12 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
-import { router } from '@/router';
 import { useAlertStore, useMetasStore, useOrcamentosStore } from '@/stores';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
 
 const DotaçãoStore = useDotaçãoStore();
@@ -15,6 +14,7 @@ const ProjetoStore = useProjetosStore();
 
 const alertStore = useAlertStore();
 const route = useRoute();
+const router = useRouter();
 const { meta_id } = route.params;
 const { ano } = route.params;
 const { id } = route.params;
