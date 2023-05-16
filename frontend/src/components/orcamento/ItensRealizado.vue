@@ -1,17 +1,48 @@
 <script setup>
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
+import toFloat from '@/helpers/toFloat';
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import { useField } from 'vee-validate';
 import {
-  computed, onMounted, onUpdated, ref,
+  computed, onMounted, onUpdated, ref, toRef, watch,
 } from 'vue';
 
-import months from '@/consts/months';
-
 const { totaisQueSuperamSOF, maioresDosItens } = storeToRefs(useOrcamentosStore());
-const props = defineProps(['controlador', 'respostasof']);
+const props = defineProps({
+  controlador: {
+    type: Array,
+    default: () => [],
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  respostasof: {
+    type: Object,
+    required: true,
+  },
+});
+
 const itens = ref(props.controlador);
+const emit = defineEmits(['change']);
+const name = toRef(props, 'name');
+const { handleChange } = useField(name, undefined, {
+  initialValue: props.controlador,
+});
 const mesesSelecionados = computed(() => itens.value?.map((x) => x.mes) || []);
+
+watch(itens.value, (newValue) => {
+  const valorLimpo = newValue.map((x) => ({
+    mes: x.mes,
+    valor_empenho: toFloat(x.valor_empenho),
+    valor_liquidado: toFloat(x.valor_liquidado),
+  }));
+
+  handleChange(valorLimpo);
+});
 
 function start() {
   itens.value = props.controlador;
@@ -21,19 +52,13 @@ start();
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
 
-function maskFloat(el) {
-  el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
-  if (el.target?._vei?.onChange) el.target?._vei?.onChange(el);
-}
-
 function removeItem(g, i) {
   g = g.splice(i, 1);
+  emit('change', g);
 }
 function addItem(g) {
   g = g.push({ mes: null, valor_empenho: null, valor_liquidado: null });
-}
-function attVar(g, i, n) {
-  g[i][n] = event.target.value;
+  emit('change', g);
 }
 </script>
 <template>
@@ -78,22 +103,22 @@ function attVar(g, i, n) {
       </select>
     </div>
     <div class="f1">
-      <input
+      <MaskedFloatInput
         v-model="item.valor_empenho"
+        :value="item.valor_empenho"
+        :name="`itens[${i}].valor_empenho`"
         type="text"
         class="inputtext light"
-        @keyup="maskFloat"
-        @change="attVar(itens, i, 'valor_empenho')"
-      >
+      />
     </div>
     <div class="f1">
-      <input
+      <MaskedFloatInput
         v-model="item.valor_liquidado"
+        :value="item.valor_liquidado"
+        :name="`itens[${i}].valor_liquidado`"
         type="text"
         class="inputtext light"
-        @keyup="maskFloat"
-        @change="attVar(itens, i, 'valor_liquidado')"
-      >
+      />
     </div>
     <div style="flex-basis: 30px;">
       <a

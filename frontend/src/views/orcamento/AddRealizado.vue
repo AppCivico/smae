@@ -54,8 +54,6 @@ const d_projetoatividade = ref('');
 const d_contadespesa = ref('');
 const d_fonte = ref('');
 
-const itens = ref([{ mes: null, valor_empenho: null, valor_liquidado: null }]);
-
 const regdota = /^(\d{2}(\.\d{2}(\.\d{2}(\.\d{3}(\.\d{4}((?:\.\d\.\d{3})(\.\d{8}(\.\d{2})?)?)?)?)?)?)?)?$/;
 
 const schema = Yup.object().shape({
@@ -83,12 +81,6 @@ async function onSubmit(values) {
         values.meta_id = Number(values.location.slice(1));
       }
     }
-
-    values.itens = itens.value.map((x) => {
-      x.valor_empenho = toFloat(x.valor_empenho);
-      x.valor_liquidado = toFloat(x.valor_liquidado);
-      return { mes: x.mes, valor_empenho: x.valor_empenho, valor_liquidado: x.valor_liquidado };
-    });
 
     r = await OrcamentosStore.insertOrcamentoRealizado(values);
     msg = 'Dados salvos com sucesso!';
@@ -564,8 +556,9 @@ async function validarDota() {
       </div>
 
       <ItensRealizado
-        :controlador="itens"
+        :controlador="values.itens"
         :respostasof="respostasof"
+        name="itens"
       />
 
       <div class="flex spacebetween center mb2">
