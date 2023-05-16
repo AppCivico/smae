@@ -44,8 +44,6 @@ const dota = ref('');
 const dotaAno = ref(ano);
 const respostasof = ref({});
 
-const itens = ref([{ mes: null, valor_empenho: null, valor_liquidado: null }]);
-
 const regdota = /^\d{1,5}$/;
 const schema = Yup.object().shape({
   nota_empenho: Yup.string().required('Preencha o nota_empenho.').matches(regdota, 'Formato inválido'),
@@ -80,12 +78,6 @@ async function onSubmit(values = {}) {
         values.meta_id = Number(values.location.slice(1));
       }
     }
-
-    values.itens = itens.value.map((x) => {
-      x.valor_empenho = toFloat(x.valor_empenho);
-      x.valor_liquidado = toFloat(x.valor_liquidado);
-      return { mes: x.mes, valor_empenho: x.valor_empenho, valor_liquidado: x.valor_liquidado };
-    });
 
     // sobrescrever propriedade `nota_empenho`
     r = await OrcamentosStore.insertOrcamentoRealizado({ ...values, nota_empenho: nota_empenho_e_ano });
@@ -381,8 +373,9 @@ async function validarDota(evt) {
         </div>
 
         <ItensRealizado
-          :controlador="itens"
+          :controlador="values.itens"
           :respostasof="respostasof"
+          name="itens"
         />
 
         <div class="flex spacebetween center mb2">
