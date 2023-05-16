@@ -172,8 +172,8 @@ export class DotacaoProcessoNotaService {
                     pdm_id_ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
                         ano_referencia: dto.ano,
                         dotacao: dotacao,
-                        dotacao_processo_nota: processo,
-                        dotacao_processo: dto.nota_empenho,
+                        dotacao_processo: processo,
+                        dotacao_processo_nota: dto.nota_empenho,
                         pdm_id: dto.pdm_id,
                     }
                 },
