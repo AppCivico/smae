@@ -13,7 +13,7 @@ import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciati
 @Injectable()
 export class IniciativaService {
     private readonly logger = new Logger(IniciativaService.name);
-    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) {}
+    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) { }
 
     async create(createIniciativaDto: CreateIniciativaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -39,12 +39,21 @@ export class IniciativaService {
 
             const codigoJaEmUso = await prisma.iniciativa.count({
                 where: {
-                    codigo: createIniciativaDto.codigo,
+                    codigo: { equals: createIniciativaDto.codigo, mode: 'insensitive' },
                     meta_id: createIniciativaDto.meta_id,
                     removido_em: null,
                 }
             });
-            if (codigoJaEmUso) throw new HttpException('codigo| Já existe Iniciativa com este código', 400);
+            if (codigoJaEmUso > 0) throw new HttpException('codigo| Já existe iniciativa com este código nesta meta', 400);
+
+            const tituloJaEmUso = await prisma.iniciativa.count({
+                where: {
+                    titulo: { equals: createIniciativaDto.titulo, mode: 'insensitive' },
+                    meta_id: createIniciativaDto.meta_id,
+                    removido_em: null,
+                }
+            });
+            if (tituloJaEmUso > 0) throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
 
             const iniciativa = await prisma.iniciativa.create({
                 data: {
@@ -270,21 +279,27 @@ export class IniciativaService {
             delete updateIniciativaDto.tags;
 
             if (updateIniciativaDto.codigo) {
-                const iniciativaMetaId = await prisma.iniciativa.findFirst({
-                    where: { id },
-                    select: { meta_id: true }
-                });
-                if (!iniciativaMetaId) throw new Error('Erro interno ao buscar Iniciativa');
-
                 const codigoJaEmUso = await prisma.iniciativa.count({
                     where: {
                         id: { not: id },
                         removido_em: null,
-                        codigo: updateIniciativaDto.codigo,
-                        meta_id: iniciativaMetaId.meta_id
+                        codigo: { equals: updateIniciativaDto.codigo, mode: 'insensitive' },
+                        meta_id: self.meta_id
                     }
                 });
-                if (codigoJaEmUso) throw new HttpException('codigo| Já existe Iniciativa com este código', 400);
+                if (codigoJaEmUso) throw new HttpException('codigo| Já existe iniciativa com este código nesta meta', 400);
+            }
+
+            if (updateIniciativaDto.titulo) {
+                const codigoJaEmUso = await prisma.iniciativa.count({
+                    where: {
+                        id: { not: id },
+                        removido_em: null,
+                        titulo: { equals: updateIniciativaDto.titulo, mode: 'insensitive' },
+                        meta_id: self.meta_id
+                    }
+                });
+                if (codigoJaEmUso) throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
             }
 
             const iniciativa = await prisma.iniciativa.update({
@@ -356,7 +371,7 @@ export class IniciativaService {
                 Indicador: {
                     select: {
                         IndicadorVariavel: {
-                            where: {desativado: false},
+                            where: { desativado: false },
                             select: { id: true }
                         }
                     }
@@ -382,7 +397,7 @@ export class IniciativaService {
                         throw new HttpException('Iniciativa possui variáveis em uso pela Meta, desative o campo de "Compõe indicador da Meta" para remover a Iniciativa', 400);
                 }
             }
-            
+
             const removed = await this.prisma.iniciativa.updateMany({
                 where: { id: id },
                 data: {
