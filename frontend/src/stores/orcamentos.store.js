@@ -237,7 +237,9 @@ export const useOrcamentosStore = defineStore({
   getters: {
     orcamentoEmFoco({ OrcamentoRealizado }) {
       const { ano, id } = this.route.params;
-      const anoEmFoco = OrcamentoRealizado[ano] || [];
+      const anoEmFoco = Array.isArray(OrcamentoRealizado?.[ano])
+        ? OrcamentoRealizado[ano]
+        : [];
 
       return anoEmFoco.find((x) => x.id == id);
     },
