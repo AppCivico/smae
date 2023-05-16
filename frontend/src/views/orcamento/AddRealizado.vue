@@ -1,7 +1,6 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
-import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
-import { router } from '@/router';
+import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import {
 useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
 } from '@/stores';
@@ -10,12 +9,13 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const DotaçãoStore = useDotaçãoStore();
 const route = useRoute();
+const router = useRouter();
 const ProjetoStore = useProjetosStore();
 const { meta_id } = route.params;
 const { ano } = route.params;
