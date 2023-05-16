@@ -106,10 +106,13 @@ function attVar(g, i, n) {
     </div>
   </div>
   <div class="tc mb2">
-    <a
+    <button
+      type="button"
       class="btn outline bgnone tcprimary"
       @click="addItem(itens)"
-    >Informar execução orçamentária</a>
+    >
+      Informar execução orçamentária
+    </button>
   </div>
 
   <div class="flex g2 mb2">
