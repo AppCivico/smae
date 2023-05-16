@@ -21,9 +21,10 @@ export class PrevisaoCustoService implements ReportableService {
     async create(dto: SuperCreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
         let ano: number;
 
-        let filtroMetas: number[] = [];
+        let filtroMetas: number[] | undefined = undefined;
 
-        if (dto.portfolio_id === undefined) {
+        // sem portfolio_id e sem projeto_id = filtra por meta
+        if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
             const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
 
             filtroMetas = metas.map(r => r.id);
@@ -110,7 +111,8 @@ export class PrevisaoCustoService implements ReportableService {
         ];
 
         let campos = camposMetaIniAtv;
-        if (params.portfolio_id === undefined) {
+
+        if (params.portfolio_id === undefined && params.projeto_id === undefined) {
             campos = camposProjeto;
         }
 
@@ -118,7 +120,17 @@ export class PrevisaoCustoService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: [...campos, 'id', 'id_versao_anterior', 'projeto_atividade', 'criado_em', 'ano_referencia', 'custo_previsto', 'parte_dotacao', 'atualizado_em'],
+                fields: [
+                    ...campos,
+                    'id',
+                    'id_versao_anterior',
+                    'projeto_atividade',
+                    'criado_em',
+                    'ano_referencia',
+                    'custo_previsto',
+                    'parte_dotacao',
+                    'atualizado_em'
+                ],
             });
             const linhas = json2csvParser.parse(
                 dados.linhas.map(r => {
