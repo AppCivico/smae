@@ -1,6 +1,7 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
 import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
+import { execuçãoOrçamentária as schema } from '@/consts/formSchemas';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { router } from '@/router';
 import {
@@ -208,6 +209,7 @@ function validaPartes(a) {
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <Form
       v-slot="{ errors, isSubmitting, values }"
+      :validation-schema="schema"
       :initial-values="currentEdit"
       @submit="beforeSubmit"
     >
@@ -504,11 +506,13 @@ function validaPartes(a) {
         name="itens"
       />
 
+      <FormErrorsList :errors="errors" />
+
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
         <button
           class="btn big"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || Object.keys(errors)?.length"
         >
           Salvar
         </button>

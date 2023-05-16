@@ -6,7 +6,11 @@ import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecent
 import toFloat from '@/helpers/toFloat';
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { useField } from 'vee-validate';
+import {
+  ErrorMessage,
+  Field,
+  useField,
+} from 'vee-validate';
 import {
   computed, onMounted, onUpdated, ref, toRef, watch,
 } from 'vue';
@@ -74,7 +78,7 @@ function removeItem(g, i) {
   emit('change', g);
 }
 function addItem(g) {
-  g = g.push({ mes: null, valor_empenho: null, valor_liquidado: null });
+  g = g.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
   emit('change', g);
 }
 </script>
@@ -99,12 +103,14 @@ function addItem(g) {
     class="flex center g2 mb1"
   >
     <div class="f1">
-      <select
+      <Field
         v-model.number="item.mes"
+        :name="`itens[${i}].mes`"
         class="inputtext light"
+        as="select"
       >
         <option
-          :value="null"
+          :value="0"
           disabled
         >
           Selecionar
@@ -117,7 +123,11 @@ function addItem(g) {
         >
           {{ month }}
         </option>
-      </select>
+      </Field>
+      <ErrorMessage
+        class="error-msg mb1"
+        :name="`itens[${i}].mes`"
+      />
     </div>
     <div class="f1">
       <MaskedFloatInput
@@ -127,6 +137,10 @@ function addItem(g) {
         type="text"
         class="inputtext light"
       />
+      <ErrorMessage
+        class="error-msg mb1"
+        :name="`itens[${i}].valor_empenho`"
+      />
     </div>
     <div class="f1">
       <MaskedFloatInput
@@ -135,6 +149,10 @@ function addItem(g) {
         :name="`itens[${i}].valor_liquidado`"
         type="text"
         class="inputtext light"
+      />
+      <ErrorMessage
+        class="error-msg mb1"
+        :name="`itens[${i}].valor_liquidado`"
       />
     </div>
     <div style="flex-basis: 30px;">

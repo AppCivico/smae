@@ -168,6 +168,34 @@ export const etapaDeMonitoramento = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
   });
 
+export const execuçãoOrçamentária = object()
+  .shape({
+    itens: array()
+      .label('Execução orçamentária')
+      .nullable()
+      .of(
+        object()
+          .shape({
+            mes: number()
+              .label('Mês Ref.')
+              .max(12)
+              .min(1)
+              .required()
+              .typeError('${label} inválido'),
+            valor_empenho: number()
+              .label('Valor empenho')
+              .min(0)
+              .required()
+              .typeError('${label} inválido'),
+            valor_liquidado: number()
+              .label('Valor liquidado')
+              .min(0)
+              .required()
+              .typeError('${label} inválido'),
+          }),
+      ),
+  });
+
 export const fase = object()
   .shape({
     descricao: string()
