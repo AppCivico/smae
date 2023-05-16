@@ -3,5 +3,5 @@ import { SuperCreateRelPrevisaoCustoDto } from "src/reports/previsao-custo/dto/c
 
 export class CreateRelProjetoPrevisaoCustoDto extends OmitType(
     SuperCreateRelPrevisaoCustoDto,
-    ['atividade_id', 'iniciativa_id', 'meta_id', 'pdm_id'] as const
+    ['atividade_id', 'iniciativa_id', 'meta_id', 'pdm_id', 'tags'] as const
 ) { }
