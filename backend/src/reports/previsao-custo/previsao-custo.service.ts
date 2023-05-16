@@ -5,7 +5,7 @@ import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
-import { CreateRelPrevisaoCustoDto, PeriodoRelatorioPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
+import { CreateRelPrevisaoCustoDto, PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
 const {
@@ -18,10 +18,16 @@ const defaultTransform = [flatten({ paths: [] })];
 export class PrevisaoCustoService implements ReportableService {
     constructor(private readonly utils: UtilsService, private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) { }
 
-    async create(dto: CreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
+    async create(dto: SuperCreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
         let ano: number;
 
-        const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+        let filtroMetas: number[] = [];
+
+        if (dto.portfolio_id === undefined) {
+            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+
+            filtroMetas = metas.map(r => r.id);
+        }
 
         if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente) {
             ano = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
@@ -33,7 +39,9 @@ export class PrevisaoCustoService implements ReportableService {
 
         const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
-                meta_id: { in: metas.map(r => r.id) },
+                meta_id: filtroMetas ? { in: filtroMetas } : undefined,
+                projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
+                ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
                 ano_referencia: ano,
                 removido_em: null,
             },
@@ -43,6 +51,7 @@ export class PrevisaoCustoService implements ReportableService {
                 meta: { select: { id: true, codigo: true, titulo: true } },
                 atividade: { select: { id: true, codigo: true, titulo: true } },
                 iniciativa: { select: { id: true, codigo: true, titulo: true } },
+                projeto: { select: { id: true, codigo: true, nome: true } },
                 versao_anterior_id: true,
                 criado_em: true,
                 ano_referencia: true,
@@ -94,12 +103,22 @@ export class PrevisaoCustoService implements ReportableService {
             { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
             { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
         ];
+        const camposProjeto = [
+            { value: 'projeto.codigo', label: 'Código Projeto' },
+            { value: 'projeto.nome', label: 'Nome do Projeto' },
+            { value: 'projeto.id', label: 'ID do Projeto' },
+        ];
+
+        let campos = camposMetaIniAtv;
+        if (params.portfolio_id === undefined) {
+            campos = camposProjeto;
+        }
 
         if (dados.linhas.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: [...camposMetaIniAtv, 'id', 'id_versao_anterior', 'projeto_atividade', 'criado_em', 'ano_referencia', 'custo_previsto', 'parte_dotacao', 'atualizado_em'],
+                fields: [...campos, 'id', 'id_versao_anterior', 'projeto_atividade', 'criado_em', 'ano_referencia', 'custo_previsto', 'parte_dotacao', 'atualizado_em'],
             });
             const linhas = json2csvParser.parse(
                 dados.linhas.map(r => {

@@ -68,6 +68,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
 import { OrcamentoPlanejadoModule as PPOrcamentoPlanejadoModule } from './pp/orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orcamento-realizado/orcamento-realizado.module';
+import { ProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/projeto-previsao-custo.module';
 
 @Module({
     imports: [
@@ -139,7 +140,8 @@ import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orc
         GraphvizModule,
         DashboardModule,
         OrcamentoPrevistoModule,
-        PPOrcamentoPlanejadoModule, // carregar depois do OrcamentoPrevistoModule
+        PPOrcamentoPlanejadoModule,
+        ProjetoPrevisaoCustoModule, // carregar depois do OrcamentoPrevistoModule
     ],
     controllers: [AppController],
     providers: [

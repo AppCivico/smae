@@ -9,6 +9,7 @@ import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.
 import { ReportValidatorOf } from '../report-validator-of';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
 import { CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-projeto-status.dto';
+import { CreateRelProjetoPrevisaoCustoDto } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
 
 export class CreateReportDto {
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
@@ -31,7 +32,8 @@ export class CreateReportDto {
             CreateRelPrevisaoCustoDto,
             CreateRelProjetoDto,
             CreateRelProjetosDto,
-            CreateRelProjetoStatusDto
+            CreateRelProjetoStatusDto,
+            CreateRelProjetoPrevisaoCustoDto,
         )
     })
     parametros: any;

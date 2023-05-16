@@ -10,6 +10,7 @@ import { CreateRelPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 import { CreateRelProjetosDto } from '../pp-projetos/dto/create-projetos.dto';
 import { CreateRelProjetoStatusDto } from '../pp-status/dto/create-projeto-status.dto';
+import { CreateRelProjetoPrevisaoCustoDto } from '../projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
 
 @Injectable()
 export class UtilsService {
@@ -86,6 +87,9 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'PrevisaoCusto':
             theClass = CreateRelPrevisaoCustoDto;
+            break;
+        case 'ProjetoPrevisaoCusto':
+            theClass = CreateRelProjetoPrevisaoCustoDto;
             break;
         case 'Projeto':
             theClass = CreateRelProjetoDto;
