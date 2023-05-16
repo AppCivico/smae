@@ -2,6 +2,7 @@
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
+import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import toFloat from '@/helpers/toFloat';
 import { useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
@@ -10,7 +11,7 @@ import {
   computed, onMounted, onUpdated, ref, toRef, watch,
 } from 'vue';
 
-const { totaisQueSuperamSOF, maioresDosItens } = storeToRefs(useOrcamentosStore());
+const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore());
 const props = defineProps({
   controlador: {
     type: Array,
@@ -32,7 +33,23 @@ const name = toRef(props, 'name');
 const { handleChange } = useField(name, undefined, {
   initialValue: props.controlador,
 });
+const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(itens.value));
 const mesesSelecionados = computed(() => itens.value?.map((x) => x.mes) || []);
+const totais = computed(() => ({
+  empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.value.empenho,
+  liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.value.liquidação,
+}));
+
+const totaisQueSuperamSOF = computed(() => ({
+  empenho: orçamentoEmFoco?.value?.empenho_liquido !== null
+    && typeof orçamentoEmFoco?.value?.empenho_liquido !== 'undefined'
+    ? totais.value.empenho > Number(orçamentoEmFoco.value.empenho_liquido)
+    : false,
+  liquidação: orçamentoEmFoco?.value?.valor_liquidado !== null
+    && typeof orçamentoEmFoco?.value?.valor_liquidado !== 'undefined'
+    ? totais.value.liquidação > Number(orçamentoEmFoco.value.valor_liquidado)
+    : false,
+}));
 
 watch(itens.value, (newValue) => {
   const valorLimpo = newValue.map((x) => ({
@@ -149,9 +166,9 @@ function addItem(g) {
         class="flex center flexwrap"
       >
         <span class="label mb0 tc300 mr1">Total Empenho SMAE</span>
-        <span class="t14">R$ {{ dinheiro(maioresDosItens.empenho) }}</span>
+        <span class="t14">R$ {{ dinheiro(totais.empenho) }}</span>
         <span
-          v-if="totaisQueSuperamSOF.includes('empenho')"
+          v-if="totaisQueSuperamSOF.empenho"
           class="tvermelho w700 block"
         >(valor supera empenho SOF)</span>
       </div>
@@ -163,9 +180,9 @@ function addItem(g) {
         class="flex center flexwrap"
       >
         <span class="label mb0 tc300 mr1">Total liquidação SMAE</span>
-        <span class="t14">R$ {{ dinheiro(maioresDosItens.liquidacao) }}</span>
+        <span class="t14">R$ {{ dinheiro(totais.liquidação) }}</span>
         <span
-          v-if="totaisQueSuperamSOF.includes('liquidacao')"
+          v-if="totaisQueSuperamSOF.liquidação"
           class="tvermelho w700 block"
         >(valor supera liquidação SOF)</span>
       </div>

@@ -1,6 +1,7 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
 import { default as ItensRealizado } from '@/components/orcamento/ItensRealizado.vue';
+import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
@@ -36,7 +37,7 @@ const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
 const {
-  OrcamentoRealizado, totaisQueSuperamSOF, maioresDosItens,
+  líquidoDosItens, OrcamentoRealizado, orçamentoEmFoco,
 } = storeToRefs(OrcamentosStore);
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 
@@ -91,7 +92,30 @@ const d_fonte = ref('');
 })();
 
 function beforeSubmit(values) {
-  if (totaisQueSuperamSOF.value.some((x) => ['empenho', 'liquidacao'].includes(x))) {
+  const maisRecentesDosItens = Array.isArray(values.itens)
+    ? retornarQuaisOsRecentesDosItens(values.itens)
+    : {
+      valor_empenho: 0,
+      valor_liquidado: 0,
+    };
+
+  const totais = {
+    empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.empenho,
+    liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.liquidação,
+  };
+
+  const totaisQueSuperamSOF = {
+    empenho: orçamentoEmFoco?.value?.empenho_liquido !== null
+      && typeof orçamentoEmFoco?.value?.empenho_liquido !== 'undefined'
+      ? totais.empenho > Number(orçamentoEmFoco.value.empenho_liquido)
+      : false,
+    liquidação: orçamentoEmFoco?.value?.valor_liquidado !== null
+      && typeof orçamentoEmFoco?.value?.valor_liquidado !== 'undefined'
+      ? totais.liquidação > Number(orçamentoEmFoco.value.valor_liquidado)
+      : false,
+  };
+
+  if (totaisQueSuperamSOF.empenho || totaisQueSuperamSOF.liquidacao) {
     useAlertStore().confirmAction('Valores superioes ao SOF', async () => {
       try {
         onSubmit(values);
@@ -185,7 +209,7 @@ function validaPartes(a) {
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :initial-values="currentEdit"
-      @submit="onSubmit"
+      @submit="beforeSubmit"
     >
       <div v-if="currentEdit.processo">
         <label class="label">Processo</label>

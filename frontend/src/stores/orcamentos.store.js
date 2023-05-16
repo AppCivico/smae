@@ -235,72 +235,27 @@ export const useOrcamentosStore = defineStore({
   },
 
   getters: {
-    orcamentoEmFoco({ OrcamentoRealizado }) {
+    orçamentoEmFoco({ OrcamentoRealizado }) {
       const { ano, id } = this.route.params;
       const anoEmFoco = Array.isArray(OrcamentoRealizado?.[ano])
         ? OrcamentoRealizado[ano]
         : [];
 
-      return anoEmFoco.find((x) => x.id == id);
+        return anoEmFoco.find((x) => x.id == id);
     },
 
-    totaisDosItens() {
+    líquidoDosItens() {
       const {
-        itens = [],
         smae_soma_valor_empenho = '0',
         smae_soma_valor_liquidado = '0',
-      } = this.orcamentoEmFoco || {};
-
-      const empenho = toFloat(smae_soma_valor_empenho)
-        + itens.reduce((r, x) => r + toFloat(x.valor_empenho), 0)
-        ?? 0;
-      const liquidacao = toFloat(smae_soma_valor_liquidado)
-        + itens.reduce((r, x) => r + toFloat(x.valor_liquidado), 0)
-        ?? 0;
+        soma_valor_empenho = '0',
+        soma_valor_liquidado = '0',
+      } = this.orçamentoEmFoco || {};
 
       return {
-        empenho,
-        liquidacao,
+        empenho: toFloat(smae_soma_valor_empenho) - toFloat(soma_valor_empenho),
+        liquidação: toFloat(smae_soma_valor_liquidado) - toFloat(soma_valor_liquidado),
       };
-    },
-
-    maioresDosItens() {
-      const { itens = [] } = this.orcamentoEmFoco || {};
-
-      const itensComValoresConvertidosEmNúmeros = itens.map((x) => ({
-        ...x,
-        valor_empenho: x.valor_empenho !== null && typeof x.valor_empenho !== 'undefined'
-          ? toFloat(x.valor_empenho) : null,
-        valor_liquidado: x.valor_liquidado !== null && typeof x.valor_liquidado !== 'undefined'
-          ? toFloat(x.valor_liquidado) : null,
-      }));
-
-      return {
-        empenho: itensComValoresConvertidosEmNúmeros
-          .filter((x) => x.valor_empenho !== null)
-          .sort((a, b) => b.mes - a.mes)?.[0]?.valor_empenho || 0,
-        liquidacao: itensComValoresConvertidosEmNúmeros
-          .filter((x) => x.valor_liquidado !== null)
-          .sort((a, b) => b.mes - a.mes)?.[0]?.valor_liquidado || 0,
-      };
-    },
-
-    totaisQueSuperamSOF() {
-      const { orcamentoEmFoco = {}, maioresDosItens = {} } = this;
-      const { empenho_liquido = '0', valor_liquidado = '0' } = orcamentoEmFoco;
-      const { empenho = 0, liquidacao = 0 } = maioresDosItens;
-
-      const resp = [];
-
-      if (empenho > toFloat(empenho_liquido)) {
-        resp.push('empenho');
-      }
-
-      if (liquidacao > toFloat(valor_liquidado)) {
-        resp.push('liquidacao');
-      }
-
-      return resp;
     },
   },
 });
