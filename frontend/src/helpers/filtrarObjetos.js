@@ -7,7 +7,7 @@ function filtrar(item, termo = '') {
       return String(item).indexOf(termo) > -1;
 
     case typeof item === 'string':
-      return item.toLowerCase().indexOf(termo) > -1;
+      return item.toLowerCase().indexOf(termo.toLowerCase()) > -1;
 
     case Array.isArray(item):
       return item.some((y) => filtrar(y, termo));
