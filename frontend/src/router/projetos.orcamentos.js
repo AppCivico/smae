@@ -18,6 +18,7 @@ export default {
   }),
   redirect: () => ({ name: 'ProjetoOrçamentoCusto' }),
   meta: {
+    título: 'Orçamentos',
     rotasParaMigalhasDePão: [
       'projetosListar',
       'projetosResumo',
@@ -37,6 +38,11 @@ export default {
         area: 'Custo',
         rotaParaAdição: 'ProjetoOrçamentoCustoPorAno',
         rotaParaEdição: 'ProjetoOrçamentoCustoPorAnoPorId',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoCusto',
+        ],
       },
     },
     {
@@ -46,6 +52,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoCusto',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoCusto',
+        ],
       },
     },
     {
@@ -55,6 +66,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoCusto',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoCusto',
+        ],
       },
     },
 
@@ -68,6 +84,11 @@ export default {
         area: 'Planejado',
         rotaParaAdição: 'ProjetoOrçamentoPlanejadoPorAno',
         rotaParaEdição: 'ProjetoOrçamentoPlanejadoPorAnoPorId',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoPlanejado',
+        ],
       },
     },
     {
@@ -77,6 +98,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoPlanejado',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoPlanejado',
+        ],
       },
     },
     {
@@ -86,6 +112,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoPlanejado',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoPlanejado',
+        ],
       },
     },
 
@@ -112,6 +143,11 @@ export default {
             nome: 'ProjetoOrçamentoRealizadoPorAnoPorNota',
           },
         ],
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoRealizado',
+        ],
       },
     },
     {
@@ -121,6 +157,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoRealizado',
+        ],
       },
     },
     {
@@ -130,6 +171,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoRealizado',
+        ],
       },
     },
     {
@@ -139,6 +185,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoRealizado',
+        ],
       },
     },
     {
@@ -148,6 +199,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoRealizado',
+        ],
       },
     },
     {
@@ -156,6 +212,11 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'ProjetoOrçamentoRealizado',
+        ],
       },
     },
 
