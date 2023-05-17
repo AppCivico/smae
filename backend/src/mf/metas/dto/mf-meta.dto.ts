@@ -107,7 +107,7 @@ export class VariavelComSeries {
     series: MfSeriesAgrupadas[];
 }
 
-export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) {}
+export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) { }
 
 export class MfSeriesAgrupadas {
     eh_corrente: boolean;
@@ -247,16 +247,20 @@ export class VariavelAnaliseQualitativaDto {
     variavel_id: number;
 
     @IsOptional()
+    // maxDecimalPlaces: 30 nao existe isso nesse cara, só tem no IsNumber, mas se usar o transform,
+    // o javascript vai perder a precisao na hora do casting pra float
     @IsNumberString(
-        { maxDecimalPlaces: 30 },
+        {},
         { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
     )
     @ValidateIf((object, value) => value !== '')
     valor_realizado?: string;
 
     @IsOptional()
+    // maxDecimalPlaces: 30 nao existe isso nesse cara, só tem no IsNumber, mas se usar o transform,
+    // o javascript vai perder a precisao na hora do casting pra float
     @IsNumberString(
-        { maxDecimalPlaces: 30 },
+        {},
         { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
     )
     @ValidateIf((object, value) => value !== '')

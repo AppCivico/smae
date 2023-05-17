@@ -20,14 +20,14 @@ export class ListPdm {
     /**
      * Data de inicio
      */
-    @IsISO8601({ strict: true, message: '$property| data_inicio: Precisa ser uma data' })
+    @IsISO8601({ strict: true }, { message: '$property| data_inicio: Precisa ser uma data' })
     @Length(10, 10)
     data_inicio?: string | null;
 
     /**
      * Data de fim
      */
-    @IsISO8601({ strict: true, message: '$property| data_fim: Precisa ser uma data' })
+    @IsISO8601({ strict: true }, { message: '$property| data_fim: Precisa ser uma data' })
     @Length(10, 10)
     data_fim?: string | null;
 
