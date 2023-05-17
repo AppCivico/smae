@@ -25,37 +25,29 @@ BEGIN
         FROM (
             SELECT
                 x.*,
-                (SELECT data_inicio FROM ciclo_fisico_fase inn WHERE inn.id = x.cf_cff_id) AS data_cf_cff_id,
-                (SELECT data_inicio FROM ciclo_fisico_fase inn WHERE inn.id = x.meta_ciclo_fase_id
-                    AND inn.ciclo_fisico_id = x.ciclo_fisico_id -- se a fase for de outro ciclo, vai ser atualizado
+                (
+                    SELECT data_inicio FROM ciclo_fisico_fase inn WHERE inn.id = x.meta_ciclo_fase_id
+                    AND inn.ciclo_fisico_id = x.ciclo_fisico_id
+                    -- se a fase for de outro ciclo, vai ser atualizado
                     -- mesmo que seja de uma data mais avançada
-                ) AS data_meta_ciclo_fase_id
+                )
+                    AS data_meta_ciclo_fase_id
                 FROM (
                     SELECT
                         m.id as meta_id,
                         cf.id as ciclo_fisico_id,
-                        (
-                            SELECT
-                                id
-                            FROM
-                                ciclo_fisico_fase cff
-                            WHERE
-                                cff.ciclo_fisico_id = cf.id
-                                AND data_inicio <= timezone('America/Sao_Paulo', now()::timestamp with time zone)::date
-                            ORDER BY
-                                data_inicio DESC
-                            LIMIT 1
-                            )
-                            AS cf_cff_id,
+                        cff.id AS cf_cff_id,
+                        cff.data_inicio as data_cf_cff_id,
                         ciclo_fase_id AS meta_ciclo_fase_id
                     FROM
                         meta m
                     CROSS JOIN ciclo_fisico cf
+                    JOIN ciclo_fisico_fase cff ON cf.ciclo_fase_atual_id = cff.id
                     WHERE
                     m.pdm_id = pPdmId
                     AND cf.id = pCicloFisicoId
-                )
-            x)
+                ) AS x
+            )
         x) subq
     WHERE m.id = subq.meta_id
     AND (
