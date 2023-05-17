@@ -2,7 +2,7 @@
 import { router } from '@/router';
 import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { ref, toRaw } from 'vue';
+import { nextTick, ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
 
 const editModalStore = useEditModalStore();
@@ -25,6 +25,7 @@ const RealizadoAcumulado = ref(null);
 const decimais = ref(0);
 
 const envelopeDeValores = ref(null);
+const modoDePreenchimento = ref('valor_nominal'); // ou `valor_acumulado`
 const valorPadrão = ref(0);
 
 (async () => {
@@ -76,7 +77,9 @@ function acumular(períodoAComparar) {
 
   VariaveisStore.valoresEmFoco.every((x) => {
     const v = x.series[Realizado.value]?.valor_nominal ?? '0';
-    const n = !isNaN(parseFloat(v)) ? parseFloat(v.replace(',', '.')) : 0;
+    const n = !isNaN(parseFloat(v))
+      ? parseFloat(String(v).replace(',', '.'))
+      : 0;
     if (n) s += n;
 
     return períodoAComparar !== x.periodo;
@@ -84,10 +87,25 @@ function acumular(períodoAComparar) {
 
   return s.toFixed(decimais.value);
 }
-function soma(a, j) {
+async function soma(event, a, j) {
   const x = event.target.value;
-  a[j].series[Realizado.value].valor_nominal = x;
+
+  if (modoDePreenchimento.value === 'valor_nominal') {
+    a[j].series[Realizado.value].valor_nominal = x;
+  } else {
+    const diferença = a[j].series[RealizadoAcumulado.value].valor_nominal
+      - a[j].series[Realizado.value].valor_nominal;
+
+    a[j].series[Realizado.value].valor_nominal = x - diferença;
+
+    // necessário para prevenir o cálculo do acúmulo antes da redefinição do valor
+    await nextTick();
+    // necessário porque não há reatividade real em uso
+    event.target.value = x;
+    a[j].series[RealizadoAcumulado.value].valor_nominal = x;
+  }
 }
+
 function nestLinhas(l) {
   const a = {};
   l.forEach((x) => {
@@ -153,34 +171,57 @@ function limparFormulário() {
         ><use xlink:href="#i_down" /></svg></span> Auxiliar de preenchimento
       </div>
       <div
-        class="content flex g2 end mt1"
+        class="content mt1"
       >
-        <div class="f1">
-          <label class="label">Valor a aplicar</label>
-          <input
-            v-model="valorPadrão"
-            type="number"
-            min="0"
-            class="inputtext light mb1"
+        <div class="flex g2 end mb1">
+          <div class="f1">
+            <label class="label">Valor a aplicar</label>
+            <input
+              v-model="valorPadrão"
+              type="number"
+              min="0"
+              class="inputtext light mb1"
+            >
+          </div>
+          <button
+            type="button"
+            class="f0 mb1 btn bgnone outline tcprimary"
+            :disabled="valorPadrão === ''"
+            @click="preencherVaziosCom"
           >
-        </div>
-        <button
-          type="button"
-          class="f0 mb1 btn bgnone outline tcprimary"
-          :disabled="valorPadrão === ''"
-          @click="preencherVaziosCom"
-        >
-          Preencher vazios
-        </button>
+            Preencher vazios
+          </button>
 
-        <button
-          type="reset"
-          form="form"
-          class="f0 mb1 pl0 pr0 btn bgnone"
-          @click="limparFormulário"
-        >
-          &times; limpar tudo
-        </button>
+          <button
+            type="reset"
+            form="form"
+            class="f0 mb1 pl0 pr0 btn bgnone"
+            @click="limparFormulário"
+          >
+            &times; limpar tudo
+          </button>
+        </div>
+
+        <hr class="mb2 f1">
+
+        <div class="flex">
+          <label class="f1">
+            <input
+              v-model="modoDePreenchimento"
+              type="radio"
+              class="inputcheckbox"
+              value="valor_nominal"
+              :disabled="!singleVariaveis.acumulativa"
+            ><span>Preencher por valor nominal</span></label>
+          <label class="f1">
+            <input
+              v-model="modoDePreenchimento"
+              type="radio"
+              class="inputcheckbox"
+              value="valor_acumulado"
+              :disabled="!singleVariaveis.acumulativa"
+            ><span>Preencher por valor acumulado</span></label>
+        </div>
       </div>
     </div>
 
@@ -230,10 +271,12 @@ function limparFormulário() {
                   type="number"
                   :step="'0'+(decimais? '.'+('0'.repeat(decimais-1))+'1' : '')"
                   :name="v.series[Realizado]?.referencia"
-                  :disabled="!v.series[Realizado]?.referencia"
+                  :disabled="!v.series[Realizado]?.referencia || modoDePreenchimento !== 'valor_nominal'"
                   :value="v.series[Realizado]?.valor_nominal"
                   class="inputtext light mb1"
-                  @input="singleVariaveis.acumulativa && soma(k[1],i)"
+                  @input="singleVariaveis.acumulativa
+                    && modoDePreenchimento === 'valor_nominal'
+                    && soma($event, k[1], i)"
                 >
               </div>
               <div class="f1">
@@ -248,8 +291,12 @@ function limparFormulário() {
                       : v.series[RealizadoAcumulado]?.valor_nominal
                   "
                   :disabled="singleVariaveis.acumulativa
+                    && modoDePreenchimento === 'valor_nominal'
                     || !v.series[RealizadoAcumulado]?.referencia"
                   class="inputtext light mb1"
+                  @input="singleVariaveis.acumulativa
+                    && modoDePreenchimento !== 'valor_nominal'
+                    && soma($event, k[1], i)"
                 >
               </div>
             </div>
@@ -299,7 +346,7 @@ function limparFormulário() {
     &:after {
       background-attachment: fixed;
       background-image:
-        linear-gradient(to bottom, white 0, white 135px, fade(black, 3.5) 135px, transparent 155px);
+        linear-gradient(to bottom, white 0, white 195px, fade(black, 3.5) 195px, transparent 215px);
       content: '';
       position: absolute;
       pointer-events: none;
