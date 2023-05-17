@@ -35,4 +35,10 @@ export class CreatePortfolioDto {
     @IsOnlyDate()
     @ValidateIf((object, value) => value !== null)
     data_criacao?: Date | null
+
+    @IsOptional()
+    @ArrayMinSize(1, { message: '$property| precisa ter pelo menos um item' })
+    @ArrayMaxSize(12, { message: '$property| precisa ter no máximo 12 items' })
+    @IsInt({ each: true, message: '$property| valor inválido' })
+    orcamento_execucao_disponivel_meses?: number[];
 }

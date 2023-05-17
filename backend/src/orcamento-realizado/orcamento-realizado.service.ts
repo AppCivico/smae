@@ -700,6 +700,11 @@ export class OrcamentoRealizadoService {
                 orcaRealizado.nota_empenho = orcaRealizado.nota_empenho.substring(0, 5);
             }
 
+            const orc_config = await this.prisma.pdmOrcamentoConfig.findFirst({
+                where: { pdm_id: meta.pdm_id, ano_referencia: filters.ano_referencia },
+                select: { execucao_disponivel_meses: true }
+            });
+
             rows.push({
                 id: orcaRealizado.id,
                 ano_referencia: orcaRealizado.ano_referencia,
@@ -718,6 +723,7 @@ export class OrcamentoRealizadoService {
                 empenho_liquido,
                 valor_liquidado,
                 projeto_atividade: '',
+                execucao_disponivel_meses: orc_config?.execucao_disponivel_meses ?? [],
                 itens: orcaRealizado.itens.map(item => {
                     return {
                         ...item,

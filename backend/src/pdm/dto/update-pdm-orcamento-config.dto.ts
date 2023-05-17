@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNumber, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsNumber, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 
 export class UpdatePdmOrcamentoConfigDto {
     @IsArray()
@@ -14,16 +14,19 @@ export class PdmOrcamentoConfig {
 
     @IsOptional()
     @IsBoolean({ message: '$property| valor inválido' })
-    @ValidateIf((object, value) => value !== null)
     previsao_custo_disponivel?: boolean;
 
     @IsOptional()
     @IsBoolean({ message: '$property| valor inválido' })
-    @ValidateIf((object, value) => value !== null)
     planejado_disponivel?: boolean;
 
     @IsOptional()
     @IsBoolean({ message: '$property| valor inválido' })
-    @ValidateIf((object, value) => value !== null)
     execucao_disponivel?: boolean;
+
+    @IsOptional()
+    @ArrayMinSize(1, { message: '$property| precisa ter pelo menos um item' })
+    @ArrayMaxSize(12, { message: '$property| precisa ter no máximo 12 items' })
+    @IsInt({ each: true, message: '$property| valor inválido' })
+    execucao_disponivel_meses?: number[];
 }

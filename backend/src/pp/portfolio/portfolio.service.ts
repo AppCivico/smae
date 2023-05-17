@@ -78,6 +78,7 @@ export class PortfolioService {
                 },
                 descricao: true,
                 data_criacao: true,
+                orcamento_execucao_disponivel_meses: true,
             },
             orderBy: { criado_em: 'asc' }
         });

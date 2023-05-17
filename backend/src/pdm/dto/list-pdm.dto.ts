@@ -24,6 +24,7 @@ export class OrcamentoConfig {
     previsao_custo_disponivel: boolean;
     planejado_disponivel: boolean;
     execucao_disponivel: boolean;
+    execucao_disponivel_meses: number[];
 }
 
 export class ListPdmDto {
