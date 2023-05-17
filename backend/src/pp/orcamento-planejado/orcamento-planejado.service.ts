@@ -7,7 +7,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CreatePPOrcamentoPlanejadoDto, FilterPPOrcamentoPlanejadoDto, UpdatePPOrcamentoPlanejadoDto } from './dto/create-orcamento-planejado.dto';
 import { PPOrcamentoPlanejadoDto } from './entities/orcamento-planejado.entity';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
-import { Decimal } from '@prisma/client/runtime';
+import { Decimal } from '@prisma/client/runtime/library';
 
 
 @Injectable()
