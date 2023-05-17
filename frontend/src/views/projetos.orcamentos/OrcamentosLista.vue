@@ -100,6 +100,13 @@ iniciar();
 
   <div class="boards">
     <template v-if="portfolioId">
+      <p
+        v-if="!anosNaDuraçãoDoProjeto.length"
+        class="error p1"
+      >
+        Esse projeto <strong>não</strong> tem duração definida.
+      </p>
+
       <template v-if="orçamentosDoAnoCorrente.length">
         <h2 class="mb2">
           Ano corrente
