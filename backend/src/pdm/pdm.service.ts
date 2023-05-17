@@ -665,6 +665,7 @@ export class PdmService {
             previsao_custo_disponivel: boolean;
             planejado_disponivel: boolean;
             execucao_disponivel: boolean;
+            execucao_disponivel_meses: number[]
         }[] = await this.prisma.$queryRaw`
             select
                 extract('year' from x.x)::int as ano_referencia,
@@ -672,6 +673,7 @@ export class PdmService {
                 coalesce(previsao_custo_disponivel, true) as previsao_custo_disponivel,
                 coalesce(planejado_disponivel, false) as planejado_disponivel,
                 coalesce(execucao_disponivel, false) as execucao_disponivel,
+                coalesce(execucao_disponivel_meses, '{3,6,9,12}'::int[]) as execucao_disponivel_meses,
                 oc.id as id
             FROM generate_series(${pdm.data_inicio}, ${pdm.data_fim}, '1 year'::interval) x
             LEFT JOIN meta_orcamento_config oc ON oc.pdm_id = ${pdm_id}::int AND oc.ano_referencia = extract('year' from x.x)
@@ -738,6 +740,7 @@ export class PdmService {
                             previsao_custo_disponivel: orcamentoConfig.previsao_custo_disponivel,
                             planejado_disponivel: orcamentoConfig.planejado_disponivel,
                             execucao_disponivel: orcamentoConfig.execucao_disponivel,
+                            execucao_disponivel_meses: orcamentoConfig.execucao_disponivel_meses,
                         },
                         select: { id: true },
                     }),
