@@ -1,5 +1,5 @@
 import { Periodicidade, Polaridade } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime';
+import { Decimal } from '@prisma/client/runtime/library';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
 
 export class Indicador {

@@ -1,4 +1,4 @@
-import { Decimal } from '@prisma/client/runtime';
+import { Decimal } from '@prisma/client/runtime/library';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 
 export class OrcamentoPlanejado {

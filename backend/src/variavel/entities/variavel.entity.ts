@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, refs } from '@nestjs/swagger';
 import { Periodicidade, Serie } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime';
+import { Decimal } from '@prisma/client/runtime/library';
 import { IsString } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
