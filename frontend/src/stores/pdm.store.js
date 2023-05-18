@@ -109,8 +109,6 @@ export const usePdMStore = defineStore({
             x.pdm.possui_iniciativa = x.pdm.possui_iniciativa ? '1' : false;
             x.pdm.possui_atividade = x.pdm.possui_atividade ? '1' : false;
 
-            x.pdm.orcamento_config = x.pdm.orcamento_config;
-
             x.pdm.eixo = x.eixo;
             x.pdm.orcamento_config = x.orcamento_config;
             x.pdm.sub_tema = x.sub_tema;
