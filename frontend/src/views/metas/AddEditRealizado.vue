@@ -72,7 +72,11 @@ async function checkClose() {
     router.go(-1);
   });
 }
-function acumular(períodoAComparar) {
+function acumular(períodoAComparar, valorDoMês) {
+  if (valorDoMês === '') {
+    return '';
+  }
+
   let s = Number.parseFloat(singleVariaveis?.value?.valor_base) || 0;
 
   VariaveisStore.valoresEmFoco.every((x) => {
@@ -287,7 +291,7 @@ function limparFormulário() {
                   :name="v.series[RealizadoAcumulado]?.referencia"
                   :value="
                     singleVariaveis.acumulativa
-                      ? acumular(v.periodo)
+                      ? acumular(v.periodo, v.series[Previsto]?.valor_nominal)
                       : v.series[RealizadoAcumulado]?.valor_nominal
                   "
                   :disabled="singleVariaveis.acumulativa
