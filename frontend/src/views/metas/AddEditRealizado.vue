@@ -98,7 +98,9 @@ async function soma(event, a, j) {
     a[j].series[Realizado.value].valor_nominal = x;
   } else {
     const acumuladoAnterior = a[j - 1]?.series[RealizadoAcumulado.value];
-    const valorDoAcumuladoAnterior = acumular(acumuladoAnterior.data_valor.substring(0, 7)) || 0;
+    const valorDoAcumuladoAnterior = !acumuladoAnterior?.data_valor
+      ? 0
+      : acumular(acumuladoAnterior.data_valor.substring(0, 7)) || 0;
 
     a[j].series[Realizado.value].valor_nominal = x - valorDoAcumuladoAnterior;
 
