@@ -92,10 +92,9 @@ async function soma(event, a, j) {
   if (modoDePreenchimento.value === 'valor_nominal') {
     a[j].series[Previsto.value].valor_nominal = x;
   } else {
-    const diferença = a[j].series[PrevistoAcumulado.value].valor_nominal
-      - a[j].series[Previsto.value].valor_nominal;
+    const acumuladoAnterior = a[j - 1]?.series[PrevistoAcumulado.value]?.valor_nominal || 0;
 
-    a[j].series[Previsto.value].valor_nominal = x - diferença;
+    a[j].series[Previsto.value].valor_nominal = x - acumuladoAnterior;
 
     // necessário para prevenir o cálculo do acúmulo antes da redefinição do valor
     await nextTick();
