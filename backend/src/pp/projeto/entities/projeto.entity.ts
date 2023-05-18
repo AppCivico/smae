@@ -102,6 +102,7 @@ export class IdTituloNivelMaxDto {
     id: number;
     titulo: string;
     nivel_maximo_tarefa: number
+    orcamento_execucao_disponivel_meses: number[]
 }
 
 export class ProjetoDetailDto {

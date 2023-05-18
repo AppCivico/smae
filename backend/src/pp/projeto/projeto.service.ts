@@ -556,7 +556,8 @@ export class ProjetoService {
                     select: {
                         id: true,
                         titulo: true,
-                        nivel_maximo_tarefa: true
+                        nivel_maximo_tarefa: true,
+                        orcamento_execucao_disponivel_meses: true
                     }
                 },
                 orgao_gestor: {
