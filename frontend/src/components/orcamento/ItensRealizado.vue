@@ -5,6 +5,9 @@ import dinheiro from '@/helpers/dinheiro';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import toFloat from '@/helpers/toFloat';
 import { useOrcamentosStore } from '@/stores';
+import { useMetasStore } from '@/stores/metas.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { range } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,7 +17,9 @@ import {
 import {
   computed, onMounted, onUpdated, ref, toRef, watch,
 } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore());
 const props = defineProps({
   controlador: {
@@ -31,6 +36,9 @@ const props = defineProps({
   },
 });
 
+let MetasStore;
+let projetosStore;
+
 const itens = ref(props.controlador);
 const emit = defineEmits(['change']);
 const name = toRef(props, 'name');
@@ -39,6 +47,31 @@ const { handleChange } = useField(name, undefined, {
 });
 const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(itens.value));
 const mesesSelecionados = computed(() => itens.value?.map((x) => x.mes) || []);
+const mesesDisponíveis = computed(() => {
+  let mesesPermitidos = range(1, 13);
+
+  if (route.params.projetoId) {
+    if (!projetosStore) {
+      projetosStore = useProjetosStore();
+    }
+
+    if (Array.isArray(projetosStore.emFoco?.portfolio?.orcamento_execucao_disponivel_meses)) {
+      mesesPermitidos = projetosStore.emFoco.portfolio.orcamento_execucao_disponivel_meses;
+    }
+  } else {
+    if (!MetasStore) {
+      MetasStore = useMetasStore();
+    }
+    if (Array.isArray(MetasStore.activePdm?.orcamento_config)) {
+      const configuraçõesParaEsseAno = MetasStore.activePdm.orcamento_config
+        .find((x) => x.ano_referencia === Number(route.params.ano));
+
+      mesesPermitidos = configuraçõesParaEsseAno.execucao_disponivel_meses;
+    }
+  }
+
+  return mesesPermitidos.filter((x) => !mesesSelecionados.value.includes(x));
+});
 const totais = computed(() => ({
   empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.value.empenho,
   liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.value.liquidação,
@@ -119,7 +152,7 @@ function addItem(g) {
           v-for="month, k in months"
           :key="k"
           :value="k + 1"
-          :disabled="k + 1 != item.mes && mesesSelecionados.includes(k + 1)"
+          :disabled="k + 1 != item.mes && !mesesDisponíveis.includes(k + 1)"
         >
           {{ month }}
         </option>
