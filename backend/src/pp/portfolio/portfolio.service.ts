@@ -58,6 +58,7 @@ export class PortfolioService {
 
         const listActive = await this.prisma.portfolio.findMany({
             where: {
+                id: +id,
                 removido_em: null,
                 orgaos: orgao_id
                     ? {
