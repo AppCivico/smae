@@ -252,3 +252,6 @@ volumes:
 
   minio_data:
     name: "${DATA_PREFIX}smae_minio_data"
+
+  backup_smae_pg:
+    name: "${DATA_PREFIX}smae_backup_smae_pg"
