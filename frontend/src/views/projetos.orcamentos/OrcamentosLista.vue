@@ -35,7 +35,7 @@ const anosNaDuraçãoDoProjeto = computed(() => ProjetosStore.emFoco?.ano_orcame
 
 const configuraçãoDeOrçamentosPorAno = computed(() => anosNaDuraçãoDoProjeto.value.map((x) => ({
   ano_referencia: x,
-  portfolio_id: portfolioId,
+  portfolio_id: portfolioId.value,
   parent_link: '',
   // rotaParaEdição: { name: '' }, // SOBRAL, AQUI!
   previsao_custo_disponivel: true,
