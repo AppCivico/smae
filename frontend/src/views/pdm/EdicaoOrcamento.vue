@@ -1,4 +1,6 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import months from '@/consts/months';
 import { useAlertStore, useEditModalStore, usePdMStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Form } from 'vee-validate';
@@ -13,8 +15,10 @@ const editModalStore = useEditModalStore();
 
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
-
 const anosOrcamento = ref({});
+
+const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
+
 (async () => {
   await PdMStore.getById(pdm_id);
   anosOrcamento.value = singlePdm.value.orcamento_config;
@@ -58,7 +62,7 @@ async function onSubmit(values) {
   <hr class="mt2 mb2">
   <template v-if="!(singlePdm?.loading || singlePdm?.error)">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ isSubmitting }"
       @submit="onSubmit"
     >
       <div
@@ -85,6 +89,24 @@ async function onSubmit(values) {
           type="checkbox"
           value="true"
         ><span>Execução orçamentária</span></label>
+
+        <div class="f1 mt1 mb2">
+          <label class="label">
+            Meses disponíveis
+          </label>
+
+          <AutocompleteField
+            name="execucao_disponivel_meses"
+            :controlador="{ busca: '', participantes: y.execucao_disponivel_meses }"
+            :v-model="y.execucao_disponivel_meses"
+            :grupo="mesesDisponíveis"
+            label="nome"
+          />
+          <ErrorMessage
+            name="execucao_disponivel_meses"
+            class="error-msg"
+          />
+        </div>
       </div>
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
