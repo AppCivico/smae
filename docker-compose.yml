@@ -44,6 +44,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+
   metadb_postgres:
     image: postgres:latest
     restart: unless-stopped
@@ -213,7 +214,7 @@ services:
 
   pgbackups:
     image: prodrigestivill/postgres-backup-local
-    restart: always
+    restart: unless-stopped
     volumes:
       - backup_smae_pg:/backups
     networks:
@@ -232,6 +233,30 @@ services:
       - BACKUP_KEEP_WEEKS=4
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
+
+
+  metabase_pgbackups:
+    image: prodrigestivill/postgres-backup-local
+    restart: unless-stopped
+    volumes:
+      - backup_metabase_pg:/backups
+    networks:
+      - postgres
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=metadb_postgres
+      - POSTGRES_DB=metabase
+      - POSTGRES_USER=metabase
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=12
+      - HEALTHCHECK_PORT=8080
+
+
 networks:
   postgres:
   minio:
@@ -239,9 +264,7 @@ networks:
   api_orcamento:
   smtp:
   metadb_postgres:
-  backup_smae_pg:
   api_sei:
-
 
 volumes:
   pgdata:
@@ -255,3 +278,6 @@ volumes:
 
   backup_smae_pg:
     name: "${DATA_PREFIX}smae_backup_smae_pg"
+
+  backup_metabase_pg:
+    name: "${DATA_PREFIX}smae_backup_metabase_pg"
