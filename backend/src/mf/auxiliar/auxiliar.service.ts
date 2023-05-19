@@ -47,7 +47,7 @@ export class AuxiliarService {
                 const ref = mes_serie.series.at(ordem_series.Realizado);
 
                 if (ref && ref.valor_nominal === "")
-                    saves.push(cria_auto_preencher(dto.valor_realizado, v.variavel.id, ref, enviar_cp));
+                    saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
             }
         }
 
@@ -58,7 +58,7 @@ export class AuxiliarService {
                     if (!mes_serie.eh_corrente) continue;
                     const ref = mes_serie.series.at(ordem_series.Realizado);
                     if (ref && ref.valor_nominal === "")
-                        saves.push(cria_auto_preencher(dto.valor_realizado, v.variavel.id, ref, enviar_cp));
+                        saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
                 }
             }
 
@@ -71,7 +71,7 @@ export class AuxiliarService {
                         const ref = mes_serie.series.at(ordem_series.Realizado);
 
                         if (ref && ref.valor_nominal === "")
-                            saves.push(cria_auto_preencher(dto.valor_realizado, v.variavel.id, ref, enviar_cp));
+                            saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
                     }
                 }
             }
@@ -188,11 +188,18 @@ export class AuxiliarService {
 
 }
 
-function cria_auto_preencher(valor_realizado: string, variavel_id: number, ref: MfSerieValorNomimal, enviar_cp: boolean): VariavelAnaliseQualitativaDto {
+function cria_auto_preencher(
+    valor_realizado: string,
+    valor_realizado_acumulado: string | undefined,
+    variavel_id: number,
+    ref: MfSerieValorNomimal,
+    enviar_cp: boolean
+): VariavelAnaliseQualitativaDto {
     return {
         data_valor: Date2YMD.fromString(ref.data_valor),
         simular_ponto_focal: false,
         valor_realizado: valor_realizado,
+        valor_realizado_acumulado: valor_realizado_acumulado,
         variavel_id,
         enviar_para_cp: enviar_cp
     }
