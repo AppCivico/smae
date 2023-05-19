@@ -3,15 +3,14 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { AuxiliarService } from './auxiliar.service';
 import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/utilitario.dto';
-import { UtilitarioService } from './utilitario.service';
-
 
 @ApiTags('Monitoramento Fisico - Metas e variáveis')
-@Controller('mf/utilitario')
-export class UtilitarioController {
+@Controller('mf/auxiliar')
+export class AuxiliarController {
     constructor(
-        private readonly utilitarioService: UtilitarioService,
+        private readonly utilitarioService: AuxiliarService,
     ) { }
 
     @ApiBearerAuth('access-token')
