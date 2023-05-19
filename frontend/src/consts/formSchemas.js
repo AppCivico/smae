@@ -347,10 +347,30 @@ export const planoDeAção = object()
   }, [['orgao_id', 'responsavel']]);
 
 export const portfolio = object({
+  data_criacao: date()
+    .label('Data de criação')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .typeError('Data inválida'),
+  descricao: string()
+    .label('Descrição')
+    .min(0)
+    .max(2040)
+    .required(),
+  nivel_maximo_tarefa: number()
+    .label('Nível máximo de aninhamento de tarefas')
+    .min(1)
+    .max(32)
+    .required(),
+  orcamento_execucao_disponivel_meses: array()
+    .label('Meses disponíveis para orçamento')
+    .required(),
   orgaos: array()
+    .label('Órgãos')
     .min(1, 'Selecione ao menos um órgão')
     .required(),
   titulo: string()
+    .label('Nome')
     .required('Um portfolio requer um título'),
 });
 
