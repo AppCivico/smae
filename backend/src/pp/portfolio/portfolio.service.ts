@@ -56,7 +56,7 @@ export class PortfolioService {
             orgao_id = user.orgao_id!;
         }
 
-        const listActive = await this.prisma.portfolio.findMany({
+        const r = await this.prisma.portfolio.findFirstOrThrow({
             where: {
                 id: +id,
                 removido_em: null,
@@ -83,12 +83,11 @@ export class PortfolioService {
             },
         });
 
-        return listActive.map(r => {
-            return {
-                ...r,
-                orgaos: r.orgaos.map(rr => rr.orgao_id),
-            };
-        })[0];
+
+        return {
+            ...r,
+            orgaos: r.orgaos.map(rr => rr.orgao_id),
+        };
     }
 
     async findAll(user: PessoaFromJwt): Promise<PortfolioDto[]> {
