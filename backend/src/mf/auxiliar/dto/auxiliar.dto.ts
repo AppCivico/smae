@@ -8,8 +8,15 @@ export class AutoPreencherValorDto {
         {},
         { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
     )
-    @ValidateIf((object, value) => value !== '')
     valor_realizado: string;
+
+    @IsOptional()
+    @IsNumberString(
+        {},
+        { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
+    )
+    @ValidateIf((object, value) => value !== '')
+    valor_realizado_acumulado: string;
 
     @IsOptional()
     @IsBoolean()
