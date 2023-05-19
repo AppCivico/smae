@@ -1028,6 +1028,18 @@ export class MetasService {
         }
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+
+            await prismaTxn.pedidoComplementacao.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    ultima_revisao: true,
+                },
+                data: {
+                    ultima_revisao: false,
+                },
+            });
+
             await prismaTxn.pedidoComplementacao.create({
                 data: {
                     ciclo_fisico_id: dadosCiclo.id,
