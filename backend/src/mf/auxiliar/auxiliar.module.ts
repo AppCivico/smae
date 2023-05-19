@@ -1,15 +1,15 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { UtilitarioService } from './utilitario.service';
-import { UtilitarioController } from './utilitario.controller';
 import { MetasModule } from '../metas/metas.module';
 import { MfModule } from '../mf.module';
+import { AuxiliarController } from './auxiliar.controller';
+import { AuxiliarService } from './auxiliar.service';
 
 @Module({
     imports: [
         forwardRef(() => MetasModule),
         forwardRef(() => MfModule),
     ],
-    controllers: [UtilitarioController],
-    providers: [UtilitarioService]
+    controllers: [AuxiliarController],
+    providers: [AuxiliarService]
 })
-export class UtilitarioModule { }
+export class AuxiliarModule { }

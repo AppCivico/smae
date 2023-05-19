@@ -1,11 +1,11 @@
 import { HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
-import { MetasService } from '../metas/metas.service';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/utilitario.dto';
-import { MfService } from '../mf.service';
 import { Serie } from '@prisma/client';
-import { MfSerieValorNomimal, VariavelAnaliseQualitativaDto } from '../metas/dto/mf-meta.dto';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
+import { MfSerieValorNomimal, VariavelAnaliseQualitativaDto } from '../metas/dto/mf-meta.dto';
+import { MetasService } from '../metas/metas.service';
+import { MfService } from '../mf.service';
+import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/utilitario.dto';
 
 type VariavelParaEnviar = {
     data_valor: Date,
@@ -13,7 +13,7 @@ type VariavelParaEnviar = {
 };
 
 @Injectable()
-export class UtilitarioService {
+export class AuxiliarService {
 
     constructor(
         @Inject(forwardRef(() => MetasService)) private readonly metasService: MetasService,
