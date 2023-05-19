@@ -71,7 +71,7 @@ export class MetasService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly mfService: MfService,
-    ) {}
+    ) { }
 
     async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
         const rows = await this.prisma.meta.findMany({
@@ -547,9 +547,9 @@ export class MetasService {
         // verifica apenas se existe valor
         const existeSerieValorRealizado =
             porVariavelIdDataSerie[idVariavel] &&
-            porVariavelIdDataSerie[idVariavel][dataReferencia] &&
-            porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado &&
-            porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
+                porVariavelIdDataSerie[idVariavel][dataReferencia] &&
+                porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado &&
+                porVariavelIdDataSerie[idVariavel][dataReferencia].Realizado.valor_nominal !== ''
                 ? true
                 : false;
 
@@ -1263,12 +1263,16 @@ export class MetasService {
         return { id: id };
     }
 
-    async getMetaVariavelAnaliseQualitativa(dto: FilterVariavelAnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<MfListVariavelAnaliseQualitativaDto> {
+    async getMetaVariavelAnaliseQualitativa(
+        dto: FilterVariavelAnaliseQualitativaDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt,
+        apenasSV: boolean = false
+    ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
-        console.log(dadosCiclo);
 
         const variavel = await this.prisma.variavel.findFirstOrThrow({
             where: {
@@ -1354,7 +1358,7 @@ export class MetasService {
             },
         });
 
-        const arquivosResult = await this.prisma.variavelCicloFisicoDocumento.findMany({
+        const arquivosResult = apenasSV ? [] : await this.prisma.variavelCicloFisicoDocumento.findMany({
             where: {
                 ciclo_fisico_id: dadosCiclo.id,
                 variavel_id: dto.variavel_id,
@@ -1381,7 +1385,7 @@ export class MetasService {
             },
         });
 
-        const pedido = await this.prisma.pedidoComplementacao.findFirst({
+        const pedido = apenasSV ? null : await this.prisma.pedidoComplementacao.findFirst({
             where: {
                 ciclo_fisico_id: dadosCiclo.id,
                 variavel_id: dto.variavel_id,
@@ -1402,12 +1406,12 @@ export class MetasService {
         return {
             ultimoPedidoComplementacao: pedido
                 ? {
-                      pedido: pedido.pedido || '',
-                      criado_em: pedido.criado_em,
-                      id: pedido.id,
-                      criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
-                      atendido: pedido.atendido,
-                  }
+                    pedido: pedido.pedido || '',
+                    criado_em: pedido.criado_em,
+                    id: pedido.id,
+                    criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
+                    atendido: pedido.atendido,
+                }
                 : null,
             arquivos: arquivosResult.map(r => {
                 return {
