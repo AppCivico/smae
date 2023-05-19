@@ -80,7 +80,7 @@ export class PortfolioService {
                 data_criacao: true,
                 orcamento_execucao_disponivel_meses: true,
             },
-            orderBy: { criado_em: 'asc' }
+            orderBy: { titulo: 'asc' }
         });
 
         return listActive.map(r => {
