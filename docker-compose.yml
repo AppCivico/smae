@@ -126,7 +126,6 @@ services:
         max-file: "2"
         max-size: 100MB
 
-
   email_service:
     container_name: "${EMAILDB_CONTAINER_NAME}"
     build:
@@ -212,6 +211,27 @@ services:
         max-file: "2"
         max-size: 1MB
 
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local
+    restart: always
+    volumes:
+      - backup_smae_pg:/backups
+    networks:
+      - postgres
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=smae_dev_persistent
+      - POSTGRES_USER=smae
+      - POSTGRES_PASSWORD=smae
+      - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
+      - SCHEDULE=@hourly
+      - BACKUP_KEEP_MINS=1440
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
 networks:
   postgres:
   minio:
@@ -219,6 +239,7 @@ networks:
   api_orcamento:
   smtp:
   metadb_postgres:
+  backup_smae_pg:
   api_sei:
 
 
