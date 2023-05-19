@@ -1,5 +1,6 @@
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { range } from 'lodash';
 import { defineStore } from 'pinia';
-
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ListPortfolioDto, PortfolioDto, PortfolioOneDto } from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
 
@@ -31,9 +32,21 @@ export const usePortfolioStore = defineStore('portfolios', {
     erro: null,
   }),
   actions: {
+    async buscarItem(id = 0, params = {}): Promise<void> {
+      this.chamadasPendentes.emFoco = true;
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/portfolio/${id}`, params);
+        this.emFoco = {
+          ...resposta,
+        };
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.emFoco = false;
+    },
+
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
-      this.chamadasPendentes.emFoco = true;
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/portfolio`, params);
         this.lista = linhas;
@@ -41,7 +54,6 @@ export const usePortfolioStore = defineStore('portfolios', {
         this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
-      this.chamadasPendentes.emFoco = false;
     },
 
     async excluirItem(id: Number): Promise<boolean> {
@@ -80,6 +92,15 @@ export const usePortfolioStore = defineStore('portfolios', {
   },
 
   getters: {
+    itemParaEdição: ({ emFoco }) => ({
+      ...emFoco,
+      nivel_maximo_tarefa: emFoco?.nivel_maximo_tarefa || 5,
+      data_criacao: emFoco?.data_criacao ? dateTimeToDate(emFoco?.data_criacao) : null,
+      orcamento_execucao_disponivel_meses: Array.isArray(emFoco?.orcamento_execucao_disponivel_meses)
+        ? emFoco.orcamento_execucao_disponivel_meses
+        : range(1, 13),
+    }),
+
     portfoliosPorId: ({ lista }: Estado): { [k: number | string]: PortfolioDto } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
