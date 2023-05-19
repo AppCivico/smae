@@ -29,6 +29,7 @@ export class PortfolioService {
                     nivel_maximo_tarefa: dto.nivel_maximo_tarefa || undefined, // deixa o default do banco
                     descricao: dto.descricao,
                     data_criacao: dto.data_criacao,
+                    orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
                 },
                 select: { id: true },
             });
@@ -184,6 +185,7 @@ export class PortfolioService {
                     nivel_maximo_tarefa: dto.nivel_maximo_tarefa,
                     descricao: dto.descricao,
                     data_criacao: dto.data_criacao,
+                    orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
                 },
                 select: { id: true },
             });
