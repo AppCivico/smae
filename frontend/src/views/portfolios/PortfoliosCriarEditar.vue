@@ -2,12 +2,12 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import { portfolio as schema } from '@/consts/formSchemas';
-import {
-  useAlertStore, useOrgansStore, usePortfolioStore
-} from '@/stores';
+import months from '@/consts/months';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -20,47 +20,40 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-
-const portfolioStore = usePortfolioStore();
-const { chamadasPendentes, erro, portfoliosPorId } = storeToRefs(portfolioStore);
-
 const ÓrgãosStore = useOrgansStore();
+const portfolioStore = usePortfolioStore();
+const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
+const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(portfolioStore);
 const { órgãosOrdenados } = storeToRefs(ÓrgãosStore);
-
-const itemParaEdição = computed(() => (props?.portfolioId
-  && portfoliosPorId.value?.[props.portfolioId]
-  ? {
-    ...portfoliosPorId.value[props.portfolioId],
-    id: undefined,
-    orgaos: portfoliosPorId.value[props.portfolioId].orgaos.map((x) => x.id),
-  }
-  : null));
 
 portfolioStore.$reset();
 
 async function onSubmit(values) {
   try {
+    let r;
     const msg = props.portfolioId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
     if (props.portfolioId) {
-      await portfolioStore.salvarItem(values, props.portfolioId);
+      r = await portfolioStore.salvarItem(values, props.portfolioId);
     } else {
-      await portfolioStore.salvarItem(values);
+      r = await portfolioStore.salvarItem(values);
     }
-
-    alertStore.success(msg);
-    portfolioStore.$reset();
-    router.push({ name: 'portfoliosListar' });
+    if (r) {
+      alertStore.success(msg);
+      portfolioStore.$reset();
+      router.push({ name: 'portfoliosListar' });
+    }
   } catch (error) {
     alertStore.error(error);
   }
 }
 
-if (props.portfolioId && !itemParaEdição.value) {
-  portfolioStore.buscarTudo();
+if (props.portfolioId) {
+  portfolioStore.buscarItem(props.portfolioId);
 }
+
 ÓrgãosStore.getAll().finally(() => {
   chamadasPendentes.value.emFoco = false;
 });
@@ -74,7 +67,7 @@ if (props.portfolioId && !itemParaEdição.value) {
   </div>
 
   <Form
-    v-if="!erro && órgãosOrdenados?.length"
+    v-if="órgãosOrdenados?.length"
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
@@ -82,9 +75,10 @@ if (props.portfolioId && !itemParaEdição.value) {
   >
     <div class="flex g2 mb1">
       <div class="f1">
-        <label class="label">
-          Título <span class="tvermelho">*</span>
-        </label>
+        <LabelFromYup
+          name="titulo"
+          :schema="schema"
+        />
         <Field
           name="titulo"
           type="text"
@@ -97,10 +91,74 @@ if (props.portfolioId && !itemParaEdição.value) {
       </div>
     </div>
 
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
+        <Field
+          name="descricao"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.descricao }"
+        />
+        <ErrorMessage
+          name="descricao"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="data_criacao"
+          :schema="schema"
+        />
+        <Field
+          name="data_criacao"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.data_criacao }"
+          maxlength="10"
+          @update:model-value="values.data_criacao === ''
+            ? values.data_criacao = null
+            : null"
+        />
+        <ErrorMessage
+          name="data_criacao"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="nivel_maximo_tarefa"
+          :schema="schema"
+        />
+        <Field
+          name="nivel_maximo_tarefa"
+          type="number"
+          min="1"
+          max="32"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.nivel_maximo_tarefa }"
+        />
+        <ErrorMessage
+          name="nivel_maximo_tarefa"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
     <div class="f1 mb2">
-      <label class="label">
-        Órgãos <span class="tvermelho">*</span>
-      </label>
+      <LabelFromYup
+        :schema="schema"
+        name="orgaos"
+      />
 
       <AutocompleteField
         name="orgaos"
@@ -119,6 +177,28 @@ if (props.portfolioId && !itemParaEdição.value) {
         Carregando
       </div>
     </div>
+
+    <div class="f1 mb2">
+      <LabelFromYup
+        :schema="schema"
+        name="orcamento_execucao_disponivel_meses"
+      />
+      <AutocompleteField
+        name="orcamento_execucao_disponivel_meses"
+        :controlador="{
+          busca: '',
+          participantes: values.orcamento_execucao_disponivel_meses || []
+        }"
+        :grupo="mesesDisponíveis"
+        label="nome"
+      />
+      <ErrorMessage
+        name="orcamento_execucao_disponivel_meses"
+        class="error-msg"
+      />
+    </div>
+
+    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
