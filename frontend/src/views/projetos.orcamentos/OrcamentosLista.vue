@@ -5,8 +5,7 @@ import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoReal
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { range } from 'lodash';
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -32,14 +31,7 @@ const SimpleOrcamento = area === 'Realizado'
     ? SimpleOrcamentoPlanejado
     : SimpleOrcamentoCusteio;
 
-const anosNaDuraçãoDoProjeto = computed(() => {
-  const inicío = Number((ProjetosStore.emFoco?.previsao_inicio || '').split('-')[0] ?? null);
-  const término = Number((ProjetosStore.emFoco?.realizado_termino || ProjetosStore.emFoco?.previsao_termino || '').split('-')[0] ?? null);
-
-  return inicío && término
-    ? range(inicío, término + 1)
-    : [];
-});
+const anosNaDuraçãoDoProjeto = computed(() => ProjetosStore.emFoco?.ano_orcamento || []);
 
 const configuraçãoDeOrçamentosPorAno = computed(() => anosNaDuraçãoDoProjeto.value.map((x) => ({
   ano_referencia: x,
@@ -82,10 +74,6 @@ function iniciar() {
   });
 }
 
-watch(anosNaDuraçãoDoProjeto, () => {
-  iniciar();
-});
-
 iniciar();
 </script>
 <template>
@@ -104,7 +92,7 @@ iniciar();
         v-if="!anosNaDuraçãoDoProjeto.length"
         class="error p1"
       >
-        Esse projeto <strong>não</strong> tem duração definida.
+        <strong>Não</strong> há anos disponíveis para preenchimento do orçamento.
       </p>
 
       <template v-if="orçamentosDoAnoCorrente.length">
