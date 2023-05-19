@@ -30,6 +30,7 @@ export class OdsService {
                 removido_em: null,
             },
             select: { id: true, descricao: true, titulo: true, numero: true },
+            orderBy: { titulo: 'asc' }
         });
 
         return listActive;
