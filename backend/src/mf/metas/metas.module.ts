@@ -23,6 +23,6 @@ import { MfModule } from './../mf.module';
     imports: [PrismaModule, MfModule, VariavelModule, UploadModule, CronogramaModule, CronogramaEtapaModule, EtapaModule],
     controllers: [MetasController, MetasAnaliseQualiController, MetasRiscoController, MetasFechamentoController, MetasCronogramaController],
     providers: [MetasService, MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService, CronogramaService, CronogramaEtapaService, MetasCronogramaService],
-    exports: [MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService],
+    exports: [MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService, MetasService],
 })
 export class MetasModule {}
