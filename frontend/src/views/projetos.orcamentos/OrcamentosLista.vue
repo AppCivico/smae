@@ -37,7 +37,6 @@ const configuraçãoDeOrçamentosPorAno = computed(() => anosNaDuraçãoDoProjet
   ano_referencia: x,
   portfolio_id: portfolioId.value,
   parent_link: '',
-  // rotaParaEdição: { name: '' }, // SOBRAL, AQUI!
   previsao_custo_disponivel: true,
   planejado_disponivel: true,
   execucao_disponivel: true,
