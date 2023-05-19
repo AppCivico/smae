@@ -5,7 +5,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { MfSerieValorNomimal, VariavelAnaliseQualitativaDto } from '../metas/dto/mf-meta.dto';
 import { MetasService } from '../metas/metas.service';
 import { MfService } from '../mf.service';
-import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/utilitario.dto';
+import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/auxiliar.dto';
 
 type VariavelParaEnviar = {
     data_valor: Date,
