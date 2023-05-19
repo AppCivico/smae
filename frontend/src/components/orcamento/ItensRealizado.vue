@@ -117,15 +117,27 @@ function addItem(g) {
 </script>
 <template>
   <hr class="mt2 mb2">
-  <div class="flex g2">
+
+  <legend class="label mt2 mb1">
+    Ciclo de monitoramento
+  </legend>
+
+  <p class="t300 tc500 mb2">
+    No quadro abaixo, informar o mês correspondente a etapa do ciclo e os
+    valores acumulados realizados até o período. A cada novo ciclo, uma nova
+    linha deve ser inserida com a informação dos valores acumulados, ou seja, o
+    total realizado a partir de janeiro até o período de referência.
+  </p>
+
+  <div class="flex g2 mb1">
     <div class="f1">
-      <label class="label">Mês Ref. <span class="tvermelho">*</span></label>
+      <label class="label tc300">Mês Ref. <span class="tvermelho">*</span></label>
     </div>
     <div class="f1">
-      <label class="label">Valor empenho <span class="tvermelho">*</span></label>
+      <label class="label tc300">Valor empenho <span class="tvermelho">*</span></label>
     </div>
     <div class="f1">
-      <label class="label">Valor liquidação <span class="tvermelho">*</span></label>
+      <label class="label tc300">Valor liquidação <span class="tvermelho">*</span></label>
     </div>
     <div style="flex-basis: 30px;" />
   </div>
