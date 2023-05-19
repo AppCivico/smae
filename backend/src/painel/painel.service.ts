@@ -211,7 +211,7 @@ export class PainelService {
                     },
                 },
             },
-            orderBy: { criado_em: 'desc' }
+            orderBy: { nome: 'asc' }
         });
     }
 
