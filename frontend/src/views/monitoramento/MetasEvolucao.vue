@@ -248,7 +248,7 @@ iniciar();
           <hr class="mr2 f1">
           <button
             type="button"
-            class="f0 mr2 btn bgnone outline"
+            class="f0 mr1 btn bgnone outline"
             :disabled="isSubmitting || Object.keys(errors)?.length"
             :title="Object.keys(errors)?.length
               ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
