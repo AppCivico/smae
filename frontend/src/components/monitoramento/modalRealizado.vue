@@ -58,8 +58,14 @@ async function onSubmit(values) {
     const v = {
       variavel_id: props.var_id,
       data_valor: props.periodo,
-      valor_realizado: !isNaN(parseFloat(values.valor_realizado)) ? String(parseFloat(values.valor_realizado.replace(',', '.'))) : '',
-      valor_realizado_acumulado: !SingleAnalise.value.variavel.acumulativa ? !isNaN(parseFloat(values.valor_realizado_acumulado)) ? String(parseFloat(values.valor_realizado_acumulado.replace(',', '.'))) : '' : null,
+      valor_realizado: !isNaN(parseFloat(values.valor_realizado))
+        ? String(parseFloat(String(values.valor_realizado).replace(',', '.')))
+        : '',
+      valor_realizado_acumulado: !SingleAnalise.value.variavel.acumulativa
+        ? !isNaN(parseFloat(values.valor_realizado_acumulado))
+          ? String(parseFloat(String(values.valor_realizado_acumulado).replace(',', '.')))
+          : ''
+        : null,
       analise_qualitativa: values.analise_qualitativa,
       enviar_para_cp: enviaCP.value,
     };

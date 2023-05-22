@@ -1,9 +1,9 @@
 {
-        "extensions": [
-          ".js",
-          ".ts",
-          ".vue"
-        ],
+  "extensions": [
+    ".js",
+    ".ts",
+    ".vue"
+  ],
   "rules": {
     "import/prefer-default-export": "off"
   }
