@@ -45,22 +45,16 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
               {{ ind.titulo }}
             </h2>
           </router-link>
-          <div
+          <router-link
             v-if="perm?.CadastroIndicador?.editar"
-            class="f0 dropbtn right"
+            :to="`${parentlink}/indicadores/${ind.id}`"
+            title="Editar indicador"
           >
-            <span class="tamarelo"><svg
+            <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_more" /></svg></span>
-            <ul>
-              <li>
-                <router-link :to="`${parentlink}/indicadores/${ind.id}`">
-                  Editar indicador
-                </router-link>
-              </li>
-            </ul>
-          </div>
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
         </div>
         <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
         <div class="tc">
