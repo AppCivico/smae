@@ -33,13 +33,13 @@ export const useOrcamentosStore = defineStore({
         const r = await this.requestS.get(`${baseUrl}/meta-orcamento/?meta_id=${id}&ano_referencia=${ano}`);
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
 
-        if (typeof r.previsto_eh_zero === 'boolean'){
+        if (typeof r.previsto_eh_zero === 'boolean') {
           this.previstoEhZero[ano] = r.previsto_eh_zero;
         }
-        if (r.previsto_eh_zero_criado_por?.nome_exibicao){
+        if (r.previsto_eh_zero_criado_por?.nome_exibicao) {
           this.previstoEhZeroCriadoPor[ano] = r.previsto_eh_zero_criado_por;
         }
-        if (r.previsto_eh_zero_criado_em){
+        if (r.previsto_eh_zero_criado_em) {
           this.previstoEhZeroCriadoEm[ano] = r.previsto_eh_zero_criado_em;
         }
       } catch (error) {
@@ -129,7 +129,7 @@ export const useOrcamentosStore = defineStore({
       const parâmetrosCompletos = {
         considerar_zero: true,
         ano_referencia: ano,
-        ...params
+        ...params,
       };
 
       if (this.route.params.meta_id && !parâmetrosCompletos.meta_id) {
@@ -141,7 +141,7 @@ export const useOrcamentosStore = defineStore({
         ? 'meta-orcamento'
         : 'projeto-orcamento';
       try {
-        if (await this.requestS.patch(`${baseUrl}/${segmento1}/zerado/`, parâmetrosCompletos) ) {
+        if (await this.requestS.patch(`${baseUrl}/${segmento1}/zerado/`, parâmetrosCompletos)) {
           if (parâmetrosCompletos.meta_id) {
             this.getOrcamentoCusteioById(parâmetrosCompletos.meta_id, ano);
           } else if (parâmetrosCompletos.projeto_id) {
@@ -241,7 +241,7 @@ export const useOrcamentosStore = defineStore({
         ? OrcamentoRealizado[ano]
         : [];
 
-        return anoEmFoco.find((x) => x.id == id);
+      return anoEmFoco.find((x) => x.id == id);
     },
 
     líquidoDosItens() {
