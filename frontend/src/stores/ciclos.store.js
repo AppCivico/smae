@@ -120,6 +120,13 @@ export const useCiclosStore = defineStore({
       return false;
     },
 
+    async submeterACoordenadoriaDeProjetos(params) {
+      if (await requestS.patch(`${baseUrl}/mf/auxiliar/enviar-para-cp/`, params)) {
+        return true;
+      }
+      return false;
+    },
+
     // Metas
     async getMetas() {
       this.MetasCiclos = { loading: true };
