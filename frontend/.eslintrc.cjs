@@ -44,5 +44,11 @@ module.exports = {
         '@typescript-eslint/member-delimiter-style': 'warn',
       },
     },
+    {
+      files: ['*.store.js'],
+      rules: {
+        'import/prefer-default-export': 'off',
+      },
+    },
   ],
 };
