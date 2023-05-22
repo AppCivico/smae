@@ -158,8 +158,9 @@ export const useOrgansStore = defineStore({
     },
   },
   getters: {
+    // código legado. Originalmente os órgãos não eram ordenados
     órgãosOrdenados: ({ organs }) => (Array.isArray(organs)
-      ? [...organs]
+      ? organs
       : []),
     órgãosPorId: ({ organs }) => (Array.isArray(organs)
       ? organs.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
