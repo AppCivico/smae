@@ -33,7 +33,7 @@ export class DotacaoCrontabService {
 
     // durante todos os minutos da madrugada, vai ficar tentando
     // buscar o lock e tbm a lista de dotações que faltam atualizar
-    @Cron('* * * * *')
+    @Cron('* 3-8 * * *')
     async handleDotacaoCron() {
         if (Boolean(process.env['DISABLE_DOTACAO_CRONTAB'])) return;
 
