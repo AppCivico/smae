@@ -123,6 +123,24 @@ async function onSubmit(values) {
   }
 }
 
+async function submeterACoordenadoriaDeProjetos() {
+  try {
+    const msg = 'Dados salvos com sucesso!';
+    const r = await CiclosStore.submeterACoordenadoriaDeProjetos({
+      meta_id: Number(meta_id),
+      simular_ponto_focal: true,
+    });
+
+    if (r) {
+      alertStore.success(msg);
+      CiclosStore.$reset();
+      iniciar();
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
 function preencherVaziosCom(values) {
   if (values.valor_realizado !== null) {
     CiclosStore.valoresNovos.valorRealizado = values.valor_realizado;
@@ -180,6 +198,14 @@ iniciar();
             </li>
           </ul>
         </div>
+        <button
+          v-else-if="perm.PDM?.ponto_focal"
+          class="btn big ml2"
+          :class="{ spinner: chamadasPendentes.submeterACoordenadoriaDeProjetos }"
+          @click="submeterACoordenadoriaDeProjetos()"
+        >
+          Submeter à coordenadoria de projetos
+        </button>
       </div>
     </div>
 
