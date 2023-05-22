@@ -493,6 +493,13 @@ export class DotacaoService {
                                     valor_liquidado: dotacao.val_liquidado,
                                 },
                             });
+                        } else if (jaExiste) {
+                            // já existe, mas tava tudo igual, ainda precisa atualizar o sincronizado_em
+                            // pro crontab n ficar em loop
+                            await prisma.dotacaoRealizado.update({
+                                where: { id: jaExiste.id },
+                                data: { sincronizado_em: now },
+                            });
                         }
 
                         if (!jaExiste) {
@@ -569,6 +576,13 @@ export class DotacaoService {
                                     val_orcado_inicial: dotacao.val_orcado_inicial,
                                     saldo_disponivel: dotacao.saldo_disponivel,
                                 },
+                            });
+                        } else if (jaExiste) {
+                            // já existe, mas tava tudo igual, ainda precisa atualizar o sincronizado_em
+                            // pro crontab n ficar em loop
+                            await prisma.dotacaoPlanejado.update({
+                                where: { id: jaExiste.id },
+                                data: { sincronizado_em: now },
                             });
                         }
 

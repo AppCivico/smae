@@ -80,6 +80,13 @@ export class DotacaoProcessoNotaService {
                                     valor_liquidado: dotacaoProcesso.val_liquidado,
                                 },
                             });
+                        } else if (jaExiste) {
+                            // já existe, mas tava tudo igual, ainda precisa atualizar o sincronizado_em
+                            // pro crontab n ficar em loop
+                            await prisma.dotacaoProcessoNota.update({
+                                where: { id: jaExiste.id },
+                                data: { sincronizado_em: now },
+                            });
                         }
 
                         if (!jaExiste) {
