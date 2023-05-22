@@ -151,7 +151,6 @@ export const useOrgansStore = defineStore({
             return o;
           })
             .filter((a) => a.responsible.length)
-            .sort((a, b) => a.descricao.localeCompare(b.descricao))
           : this.organs;
       } catch (error) {
         this.organResponsibles = { error };
@@ -160,7 +159,7 @@ export const useOrgansStore = defineStore({
   },
   getters: {
     órgãosOrdenados: ({ organs }) => (Array.isArray(organs)
-      ? [...organs].sort((a, b) => a.sigla?.localeCompare(b.sigla))
+      ? [...organs]
       : []),
     órgãosPorId: ({ organs }) => (Array.isArray(organs)
       ? organs.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
