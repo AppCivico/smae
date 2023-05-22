@@ -43,10 +43,11 @@ const {
   SingleRisco,
   SingleFechamento,
 } = storeToRefs(CiclosStore);
-CiclosStore.getMetaById(meta_id);
-CiclosStore.getMetaVars(meta_id);
 
 async function iniciar() {
+  CiclosStore.getMetaById(meta_id);
+  CiclosStore.getMetaVars(meta_id);
+
   if (!activePdm.value.id) await PdMStore.getActive();
   CiclosStore.getMetaAnalise(activePdm.value.ciclo_fisico_ativo.id, meta_id);
   CiclosStore.getMetaRisco(activePdm.value.ciclo_fisico_ativo.id, meta_id);
