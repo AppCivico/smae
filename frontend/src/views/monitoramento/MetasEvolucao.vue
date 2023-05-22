@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { default as countVars } from '@/components/monitoramento/countVars.vue';
 import { default as listVars } from '@/components/monitoramento/listVars.vue';
 import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
@@ -7,12 +8,14 @@ import { default as modalFechamento } from '@/components/monitoramento/modalFech
 import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
 import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
 import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
+import { auxiliarDePreenchimentoDeEvoluçãoDeMeta as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { router } from '@/router';
 import {
   useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, usePdMStore, useSideBarStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -33,17 +36,24 @@ const { activePdm } = storeToRefs(PdMStore);
 
 const CiclosStore = useCiclosStore();
 const {
-  SingleMeta, MetaVars, SingleMetaAnalise, SingleMetaAnaliseDocs, SingleRisco, SingleFechamento,
+  SingleMeta,
+  MetaVars,
+  SingleMetaAnalise,
+  SingleMetaAnaliseDocs,
+  SingleRisco,
+  SingleFechamento,
+  valoresNovos,
 } = storeToRefs(CiclosStore);
 CiclosStore.getMetaById(meta_id);
 CiclosStore.getMetaVars(meta_id);
 
-(async () => {
+async function iniciar() {
   if (!activePdm.value.id) await PdMStore.getActive();
   CiclosStore.getMetaAnalise(activePdm.value.ciclo_fisico_ativo.id, meta_id);
   CiclosStore.getMetaRisco(activePdm.value.ciclo_fisico_ativo.id, meta_id);
   CiclosStore.getMetaFechamento(activePdm.value.ciclo_fisico_ativo.id, meta_id);
-})();
+}
+
 function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.clear();
@@ -97,6 +107,33 @@ function qualificar(ciclo_id, meta_id, parent) {
 function vazio(s) {
   return s || '-';
 }
+
+async function onSubmit(values) {
+  console.debug('values', values);
+  try {
+    const msg = 'Dados salvos com sucesso!';
+    const r = await CiclosStore.preencherValoresVazios(values);
+
+    if (r) {
+      alertStore.success(msg);
+      CiclosStore.$reset();
+      iniciar();
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+function preencherVaziosCom(values) {
+  if (values.valor_realizado !== null) {
+    CiclosStore.valoresNovos.valorRealizado = values.valor_realizado;
+  }
+
+  if (values.valor_realizado_acumulado !== null) {
+    CiclosStore.valoresNovos.valorRealizadoAcumulado = values.valor_realizado_acumulado;
+  }
+}
+iniciar();
 </script>
 <template>
   <Dashboard>
@@ -146,6 +183,111 @@ function vazio(s) {
         </div>
       </div>
     </div>
+
+    <auxiliarDePreenchimento>
+      <Form
+        v-slot="{ errors, isSubmitting, values }"
+        :validation-schema="schema"
+        @submit="onSubmit"
+      >
+        <Field
+          name="meta_id"
+          type="hidden"
+          :value="Number($route.params.meta_id)"
+        />
+
+        <Field
+          name="enviar_cp"
+          type="hidden"
+          :value="false"
+        />
+
+        <legend class="label mt2 mb1">
+          Valores a aplicar
+        </legend>
+
+        <div class="flex g2 end mb1">
+          <div class="f1">
+            <LabelFromYup
+              :schema="schema"
+              name="valor_realizado"
+              class="label tc300"
+            />
+            <Field
+              name="valor_realizado"
+              type="number"
+              min="0"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              name="valor_realizado"
+              class="error-msg mb1"
+            />
+          </div>
+          <div class="f1">
+            <LabelFromYup
+              :schema="schema"
+              name="valor_realizado_acumulado"
+              class="label tc300"
+            />
+            <Field
+              name="valor_realizado_acumulado"
+              type="number"
+              min="0"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              name="valor_realizado_acumulado"
+              class="error-msg mb1"
+            />
+          </div>
+        </div>
+
+        <FormErrorsList :errors="errors" />
+
+        <div class="flex spacebetween center mb2">
+          <hr class="mr2 f1">
+          <button
+            type="button"
+            class="f0 mr2 btn bgnone outline"
+            :disabled="isSubmitting || Object.keys(errors)?.length"
+            :title="Object.keys(errors)?.length
+              ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+              : null"
+            name="enviar_cp"
+            :value="false"
+            @click="preencherVaziosCom(values)"
+          >
+            Preencher vazios
+          </button>
+          <button
+            type="submit"
+            class="btn outline bgnone tcprimary mr1"
+            :disabled="isSubmitting || Object.keys(errors)?.length"
+            :title="Object.keys(errors)?.length
+              ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+              : null"
+          >
+            Salvar
+          </button>
+          <button
+            class="btn"
+            type="button"
+            :disabled="isSubmitting || Object.keys(errors)?.length"
+            :title="Object.keys(errors)?.length
+              ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+              : null"
+            @click="onSubmit({ ...values, enviar_cp: true })"
+          >
+            Salvar e submeter
+          </button>
+          <hr class="ml2 f1">
+        </div>
+
+        <div class="flex g2 end" />
+      </Form>
+    </auxiliarDePreenchimento>
+
     <div
       v-if="SingleFechamento?.id"
       class="mb2"
