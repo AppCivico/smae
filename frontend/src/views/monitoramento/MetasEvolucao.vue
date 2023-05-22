@@ -2,19 +2,17 @@
 import { Dashboard } from '@/components';
 import { default as countVars } from '@/components/monitoramento/countVars.vue';
 import { default as listVars } from '@/components/monitoramento/listVars.vue';
-import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
-import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
-import dateToField from '@/helpers/dateToField';
-import { storeToRefs } from 'pinia';
-
 import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
 import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
 import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
-
+import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
+import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
+import dateToField from '@/helpers/dateToField';
 import { router } from '@/router';
 import {
-  useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, usePdMStore, useSideBarStore
+  useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, usePdMStore, useSideBarStore,
 } from '@/stores';
+import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -121,7 +119,7 @@ function vazio(s) {
               <button
                 type="button"
                 class="like-a__link"
-                @click="confirmFase(SingleMeta.id,'Analise')"
+                @click="confirmFase(SingleMeta.id, 'Analise')"
               >
                 Qualificação
               </button>
@@ -130,7 +128,7 @@ function vazio(s) {
               <button
                 type="button"
                 class="like-a__link"
-                @click="confirmFase(SingleMeta.id,'Risco')"
+                @click="confirmFase(SingleMeta.id, 'Risco')"
               >
                 Análise de Risco
               </button>
@@ -139,7 +137,7 @@ function vazio(s) {
               <button
                 type="button"
                 class="like-a__link"
-                @click="confirmFase(SingleMeta.id,'Fechamento')"
+                @click="confirmFase(SingleMeta.id, 'Fechamento')"
               >
                 Fechamento
               </button>
