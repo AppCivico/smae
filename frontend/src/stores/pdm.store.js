@@ -264,12 +264,6 @@ export const usePdMStore = defineStore({
           : this.PdM;
         if (this.tempPdM.length) {
           this.tempPdM
-            .sort((a, b) => {
-              if (!a.ativo && !b.ativo) {
-                return a.descricao.localeCompare(b.descricao);
-              }
-              return b.ativo - a.ativo;
-            })
             .forEach((u) => {
               this.carregaArquivos(u.id);
             });
