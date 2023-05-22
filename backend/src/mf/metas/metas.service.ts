@@ -1448,7 +1448,7 @@ export class MetasService {
                     select (
                         select cff.ciclo_fase
                         from meta m
-                        join ciclo_fisico_fase cff on cff.id = m.ciclo_fisico_id
+                        join ciclo_fisico_fase cff on cff.id = m.ciclo_fase_id
                         where m.id = ${meta_id}
                     )
                 ) = 'Coleta'::"CicloFase" as meta_esta_na_coleta
