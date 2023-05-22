@@ -271,6 +271,7 @@ iniciar();
             Salvar
           </button>
           <button
+            v-if="perm.PDM?.ponto_focal"
             class="btn"
             type="button"
             :disabled="isSubmitting || Object.keys(errors)?.length"
