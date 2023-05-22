@@ -42,7 +42,6 @@ const {
   SingleMetaAnaliseDocs,
   SingleRisco,
   SingleFechamento,
-  valoresNovos,
 } = storeToRefs(CiclosStore);
 CiclosStore.getMetaById(meta_id);
 CiclosStore.getMetaVars(meta_id);
@@ -109,7 +108,6 @@ function vazio(s) {
 }
 
 async function onSubmit(values) {
-  console.debug('values', values);
   try {
     const msg = 'Dados salvos com sucesso!';
     const r = await CiclosStore.preencherValoresVazios(values);
