@@ -1,4 +1,5 @@
 <script setup>
+import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { router } from '@/router';
 import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
 import { storeToRefs } from 'pinia';
@@ -164,71 +165,57 @@ function limparFormulário() {
       Valores previstos e previstos acumulados para cada período <span class="tvermelho">*</span>
     </div>
     <hr class="mb2">
-    <div class="auxiliar-de-preenchimento accordeon mb1 pb1">
-      <div
-        class="flex center pt1"
-        @click="openParent"
-      >
-        <span class="t0"><svg
-          class="arrow"
-          width="13"
-          height="8"
-        ><use xlink:href="#i_down" /></svg></span> Auxiliar de preenchimento
-      </div>
-      <div
-        class="content mt1"
-      >
-        <div class="flex g2 end mb1">
-          <div class="f1">
-            <label class="label">Valor a aplicar</label>
-            <input
-              v-model="valorPadrão"
-              type="number"
-              min="0"
-              class="inputtext light mb1"
-            >
-          </div>
-          <button
-            type="button"
-            class="f0 mb1 btn bgnone outline tcprimary"
-            :disabled="valorPadrão === ''"
-            @click="preencherVaziosCom"
+    <auxiliarDePreenchimento>
+      <div class="flex g2 end mb1">
+        <div class="f1">
+          <label class="label">Valor a aplicar</label>
+          <input
+            v-model="valorPadrão"
+            type="number"
+            min="0"
+            class="inputtext light mb1"
           >
-            Preencher vazios
-          </button>
-
-          <button
-            type="reset"
-            form="form"
-            class="f0 mb1 pl0 pr0 btn bgnone"
-            @click="limparFormulário"
-          >
-            &times; limpar tudo
-          </button>
         </div>
+        <button
+          type="button"
+          class="f0 mb1 btn bgnone outline tcprimary"
+          :disabled="valorPadrão === ''"
+          @click="preencherVaziosCom"
+        >
+          Preencher vazios
+        </button>
 
-        <hr class="mb2 f1">
-
-        <div class="flex">
-          <label class="f1">
-            <input
-              v-model="modoDePreenchimento"
-              type="radio"
-              class="inputcheckbox"
-              value="valor_nominal"
-              :disabled="!singleVariaveis.acumulativa"
-            ><span>Preencher por valor nominal</span></label>
-          <label class="f1">
-            <input
-              v-model="modoDePreenchimento"
-              type="radio"
-              class="inputcheckbox"
-              value="valor_acumulado"
-              :disabled="!singleVariaveis.acumulativa"
-            ><span>Preencher por valor acumulado</span></label>
-        </div>
+        <button
+          type="reset"
+          form="form"
+          class="f0 mb1 pl0 pr0 btn bgnone"
+          @click="limparFormulário"
+        >
+          &times; limpar tudo
+        </button>
       </div>
-    </div>
+
+      <hr class="mb2 f1">
+
+      <div class="flex">
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_nominal"
+            :disabled="!singleVariaveis.acumulativa"
+          ><span>Preencher por valor nominal</span></label>
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_acumulado"
+            :disabled="!singleVariaveis.acumulativa"
+          ><span>Preencher por valor acumulado</span></label>
+      </div>
+    </auxiliarDePreenchimento>
 
     <hr class="mb2 f1">
 
@@ -329,39 +316,3 @@ function limparFormulário() {
     </div>
   </template>
 </template>
-
-<style lang="less" scoped>
-@import '@/_less/variables.less';
-
-.auxiliar-de-preenchimento {
-  color: @c400;
-  transition-property: color;
-  transition-duration: 300ms;
-  background-color: white;
-  z-index: 1;
-
-  &.active {
-    position: sticky;
-    top: -3rem;
-    color: inherit;
-
-    &:after {
-      background-attachment: fixed;
-      background-image:
-        linear-gradient(to bottom, white 0, white 195px, fade(black, 3.5) 195px, transparent 215px);
-      content: '';
-      position: absolute;
-      pointer-events: none;
-      border-radius: 6px 6px 0 0;
-      top: 100%;
-      left: -6px;
-      right: -6px;
-      height: 20px;
-    }
-
-    +hr {
-      display: none;
-    }
-  }
-}
-</style>
