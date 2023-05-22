@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { JOB_LOCK_NUMBER_REPORT } from '../../common/dto/locks';
+import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -239,7 +239,7 @@ export class ReportsService {
         return this.jwtService.sign(opt);
     }
 
-    @Cron('0 * * * * *')
+    @Cron('0 * * * *')
     async handleCron() {
         if (Boolean(process.env['DISABLE_REPORT_CRONTAB'])) return;
 
@@ -249,7 +249,7 @@ export class ReportsService {
                 const locked: {
                     locked: boolean;
                 }[] = await prisma.$queryRaw`SELECT
-                pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER_REPORT}) as locked
+                pg_try_advisory_xact_lock(${JOB_PP_REPORT_LOCK}) as locked
             `;
                 if (!locked[0].locked) {
                     this.logger.debug(`Já está em processamento...`);

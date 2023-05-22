@@ -1,3 +1,8 @@
-export const JOB_LOCK_NUMBER = 65656565;
-export const JOB_LOCK_NUMBER_REPORT = JOB_LOCK_NUMBER + 1;
-export const JOB_LOCK_NUMBER_TAREFA = JOB_LOCK_NUMBER_REPORT + 1;
+// numero aleatorio 'fixo'
+let id = 65656564;
+
+export const JOB_LISTA_SOF_LOCK = id++;
+export const JOB_PDM_CICLO_LOCK = id++;
+export const JOB_PP_REPORT_LOCK = id++;
+export const JOB_PP_TAREFA_ATRASO_LOCK = id++;
+export const JOB_DOTACAO_SOF_LOCK = id++;

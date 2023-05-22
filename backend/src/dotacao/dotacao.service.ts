@@ -452,7 +452,7 @@ export class DotacaoService {
     }
 
 
-    private async sincronizarDotacaoRealizado(dto: AnoDotacaoDto, mes: number) {
+    async sincronizarDotacaoRealizado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
         try {
             const r = await this.sof.empenhoDotacao({
@@ -529,7 +529,7 @@ export class DotacaoService {
         }
     }
 
-    private async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto, mes: number) {
+    async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
         try {
             const r = await this.sof.orcadoProjeto({

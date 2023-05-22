@@ -4,7 +4,7 @@ import { CicloFisicoFase, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
-import { JOB_LOCK_NUMBER } from '../common/dto/locks';
+import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -370,7 +370,7 @@ export class PdmService {
         });
     }
 
-    @Cron('0 * * * * *')
+    @Cron('0 * * * *')
     async handleCron() {
         if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
 
@@ -381,7 +381,7 @@ export class PdmService {
                     locked: boolean;
                     now_ymd: DateYMD;
                 }[] = await prisma.$queryRaw`SELECT
-                pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked,
+                pg_try_advisory_xact_lock(${JOB_PDM_CICLO_LOCK}) as locked,
                 (now() at time zone ${SYSTEM_TIMEZONE}::varchar)::date::text as now_ymd
             `;
                 if (!locked[0].locked) {

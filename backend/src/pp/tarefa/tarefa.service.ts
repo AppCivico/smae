@@ -17,7 +17,7 @@ import { Graph } from 'graphlib';
 import { DateTime } from 'luxon';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { JOB_LOCK_NUMBER_TAREFA } from '../../common/dto/locks';
+import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
 import { ProjetoService } from '../projeto/projeto.service';
 import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
 import { TarefaDotTemplate } from './tarefa.dot.template';
@@ -1215,7 +1215,7 @@ export class TarefaService {
         return (graphlib.alg.topsort(grafo) as string[]).map(n => +n);
     }
 
-    @Cron('15 * * * * *')
+    @Cron('15 * * * *')
     async handleCron() {
         if (Boolean(process.env['DISABLE_TAREFA_CRONTAB'])) return;
 
@@ -1225,7 +1225,7 @@ export class TarefaService {
                 const locked: {
                     locked: boolean;
                 }[] = await prisma.$queryRaw`SELECT
-                pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER_TAREFA}) as locked
+                pg_try_advisory_xact_lock(${JOB_PP_TAREFA_ATRASO_LOCK}) as locked
             `;
                 if (!locked[0].locked) {
                     this.logger.debug(`Já está em processamento...`);

@@ -9,7 +9,11 @@ import { ValorRealizadoNotaEmpenhoDto } from './entities/dotacao.entity';
 @Injectable()
 export class DotacaoProcessoNotaService {
     private readonly logger = new Logger(DotacaoProcessoNotaService.name);
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService, private readonly dotacaoService: DotacaoService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly sof: SofApiService,
+        private readonly dotacaoService: DotacaoService
+    ) { }
 
     async valorRealizadoNotaEmpenho(dto: AnoDotacaoNotaEmpenhoDto): Promise<ValorRealizadoNotaEmpenhoDto[]> {
         this.logger.debug(`valorRealizadoNotaEmpenho: ${JSON.stringify(dto)}`);
