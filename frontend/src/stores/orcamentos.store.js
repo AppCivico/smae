@@ -139,7 +139,7 @@ export const useOrcamentosStore = defineStore({
       }
       const segmento1 = parâmetrosCompletos.meta_id
         ? 'meta-orcamento'
-        : 'projeto-orcamento';
+        : `projeto/${parâmetrosCompletos.projeto_id}`;
       try {
         if (await this.requestS.patch(`${baseUrl}/${segmento1}/zerado/`, parâmetrosCompletos)) {
           if (parâmetrosCompletos.meta_id) {
