@@ -48,7 +48,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
         <div class="flex g2">
           <div
             v-if="activePdm.possui_macro_tema"
-            class="mr2"
+            class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
               {{ activePdm.rotulo_macro_tema }}
@@ -59,7 +59,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
           </div>
           <div
             v-if="activePdm.possui_tema"
-            class="mr2"
+            class="mr2 f2"
           >
             <div class="t12 uc w700 mb05 tamarelo">
               {{ activePdm.rotulo_tema }}
@@ -70,7 +70,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
           </div>
           <div
             v-if="activePdm.possui_sub_tema"
-            class="mr2"
+            class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
               {{ activePdm.rotulo_sub_tema }}
@@ -84,7 +84,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
         <div class="flex g2">
           <div
             v-if="singleMeta.orgaos_participantes.filter(x=>x.responsavel)"
-            class="mr2"
+            class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
               Órgão responsável
@@ -98,7 +98,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
           </div>
           <div
             v-if="singleMeta.orgaos_participantes.filter(x=>!x.responsavel).length"
-            class="mr2"
+            class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
               Órgão participante
@@ -112,10 +112,10 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
           </div>
           <div
             v-if="singleMeta.coordenadores_cp"
-            class="mr2"
+            class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Responsável na coordenadoria de Planejamento
+              Responsável na coordenadoria de planejamento
             </div>
             <div class="t13">
               {{ singleMeta.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
