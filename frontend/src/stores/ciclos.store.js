@@ -23,6 +23,11 @@ export const useCiclosStore = defineStore({
     SingleEtapa: {},
     Etapas: {},
     activePdm: null,
+
+    valoresNovos: {
+      valorRealizado: null,
+      valorRealizadoAcumulado: null,
+    },
   }),
   actions: {
     dateToField(d) {
@@ -105,6 +110,13 @@ export const useCiclosStore = defineStore({
     },
     async updateCiclos(id, params) {
       if (await requestS.patch(`${baseUrl}/pdm-ciclo/${id}`, params)) return true;
+      return false;
+    },
+
+    async preencherValoresVazios(params) {
+      if (await requestS.patch(`${baseUrl}/mf/auxiliar/auto-preencher/`, params)) {
+        return true;
+      }
       return false;
     },
 

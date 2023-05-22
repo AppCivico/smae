@@ -1,4 +1,7 @@
 <script setup>
+import { useCiclosStore } from '@/stores';
+
+const CiclosStore = useCiclosStore();
 const props = defineProps(['parent', 'list', 'indexes', 'editPeriodo', 'abrePeriodo']);
 function openParent(e) {
   e.target.closest('.accordeon').classList.toggle('active');
@@ -82,14 +85,30 @@ function dateToTitle(d) {
           <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
             {{ val.series[indexes.indexOf('Previsto')]?.valor_nominal ?? '-' }}
           </td>
-          <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
-            {{ val.series[indexes.indexOf('Realizado')]?.valor_nominal ?? '-' }}
+          <td
+            :class="{
+              'tamarelo': val.nao_preenchida && CiclosStore.valoresNovos.valorRealizado,
+            }"
+            @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
+          >
+            {{ !val.nao_preenchida
+              ? val.series[indexes.indexOf('Realizado')]?.valor_nominal
+              : (CiclosStore.valoresNovos.valorRealizado ?? '-') }}
           </td>
-          <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
+          <td
+            @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
+          >
             {{ val.series[indexes.indexOf('PrevistoAcumulado')]?.valor_nominal ?? '-' }}
           </td>
-          <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
-            {{ val.series[indexes.indexOf('RealizadoAcumulado')]?.valor_nominal ?? '-' }}
+          <td
+            :class="{
+              'tamarelo': val.nao_preenchida && CiclosStore.valoresNovos.valorRealizadoAcumulado
+            }"
+            @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
+          >
+            {{ !val.nao_preenchida
+              ? val.series[indexes.indexOf('RealizadoAcumulado')]?.valor_nominal
+              : (CiclosStore.valoresNovos.valorRealizadoAcumulado ?? '-') }}
           </td>
           <td style="white-space: nowrap; text-align: right;">
             <a
