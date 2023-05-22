@@ -4,12 +4,12 @@ import { Prisma } from '@prisma/client';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService } from '../sof-api/sof-api.service';
-const JOB_LOCK_NUMBER = 65656564;
+import { JOB_LISTA_SOF_LOCK } from 'src/common/dto/locks';
 
 @Injectable()
 export class SofEntidadeService {
     private readonly logger = new Logger(SofEntidadeService.name);
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
+    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) { }
 
     async findByYear(ano: number) {
         const dados = await this.prisma.sofEntidade.findFirst({ where: { ano: ano } });
@@ -21,8 +21,8 @@ export class SofEntidadeService {
         };
     }
 
-    @Cron('5 0 * * * *')
-    async handleCron() {
+    @Cron('5 0 * * *')
+    async handleListaSofCron() {
         if (Boolean(process.env['DISABLE_SOF_CRONTAB'])) return;
 
         await this.prisma.$transaction(
@@ -50,7 +50,7 @@ export class SofEntidadeService {
                     locked: boolean;
                     now_ymd: DateYMD;
                 }[] = await prisma.$queryRaw`SELECT
-                pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked,
+                pg_try_advisory_xact_lock(${JOB_LISTA_SOF_LOCK}) as locked,
                 (now() at time zone ${SYSTEM_TIMEZONE}::varchar)::date::text as now_ymd
             `;
                 if (!locked[0].locked) {
@@ -59,7 +59,7 @@ export class SofEntidadeService {
 
                 // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
                 for (const job of jobs) {
-                    await this.atualizaSof(job.ano);
+                    await this.atualizaListasSof(job.ano);
                 }
             },
             {
@@ -70,7 +70,7 @@ export class SofEntidadeService {
         );
     }
 
-    async atualizaSof(ano: number) {
+    async atualizaListasSof(ano: number) {
         ano = Number(ano);
         const before = Date.now();
         this.logger.log(`Atualizando SOF -- ${ano}`);
