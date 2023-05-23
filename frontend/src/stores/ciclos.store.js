@@ -30,7 +30,7 @@ export const useCiclosStore = defineStore({
     },
 
     chamadasPendentes: {
-      submeterACoordenadoriaDeProjetos: false,
+      submeterACoordenadoriaDePlanejamento: false,
     },
   }),
   actions: {
@@ -124,15 +124,15 @@ export const useCiclosStore = defineStore({
       return false;
     },
 
-    async submeterACoordenadoriaDeProjetos(params) {
-      this.chamadasPendentes.submeterACoordenadoriaDeProjetos = true;
+    async submeterACoordenadoriaDePlanejamento(params) {
+      this.chamadasPendentes.submeterACoordenadoriaDePlanejamento = true;
 
       if (await requestS.patch(`${baseUrl}/mf/auxiliar/enviar-para-cp/`, params)) {
-        this.chamadasPendentes.submeterACoordenadoriaDeProjetos = false;
+        this.chamadasPendentes.submeterACoordenadoriaDePlanejamento = false;
         return true;
       }
 
-      this.chamadasPendentes.submeterACoordenadoriaDeProjetos = false;
+      this.chamadasPendentes.submeterACoordenadoriaDePlanejamento = false;
       return false;
     },
 
