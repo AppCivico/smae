@@ -53,7 +53,8 @@ export class PortfolioService {
 
     async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
         let orgao_id: undefined | number = undefined;
-        if (user != null && !user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+        if (user != null && !user.hasSomeRoles(['Projeto.administrar_portfolios']) &&
+            (user != null && user.hasSomeRoles(['Projeto.administrador_no_orgao']))) {
             orgao_id = user.orgao_id!;
         }
 
@@ -96,7 +97,8 @@ export class PortfolioService {
 
         // só pra manter mais ou menos uma retrocompatibilidade com o frontend
         // preciso pensar melhor nesse filtro
-        if (!user.hasSomeRoles(['Projeto.administrador']) && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+        if (!user.hasSomeRoles(['Projeto.administrador', 'Projeto.administrar_portfolios'])
+            && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
             orgao_id = user.orgao_id!;
         }
 
