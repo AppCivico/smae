@@ -28,6 +28,10 @@ export const useCiclosStore = defineStore({
       valorRealizado: null,
       valorRealizadoAcumulado: null,
     },
+
+    chamadasPendentes: {
+      submeterACoordenadoriaDeProjetos: false,
+    },
   }),
   actions: {
     dateToField(d) {
@@ -121,9 +125,14 @@ export const useCiclosStore = defineStore({
     },
 
     async submeterACoordenadoriaDeProjetos(params) {
+      this.chamadasPendentes.submeterACoordenadoriaDeProjetos = true;
+
       if (await requestS.patch(`${baseUrl}/mf/auxiliar/enviar-para-cp/`, params)) {
+        this.chamadasPendentes.submeterACoordenadoriaDeProjetos = false;
         return true;
       }
+
+      this.chamadasPendentes.submeterACoordenadoriaDeProjetos = false;
       return false;
     },
 
