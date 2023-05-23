@@ -24,7 +24,7 @@ MetasStore.getPdM();
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
 
 const AtividadesStore = useAtividadesStore();
-const { singleAtividade } = storeToRefs(AtividadesStore);
+const { singleAtividade, órgãosResponsáveisNaAtividadeEmFoco } = storeToRefs(AtividadesStore);
 if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa_id, atividade_id);
 
 </script>
@@ -56,6 +56,14 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
             </div>
             <div class="t13">
               {{ singleAtividade.codigo }}
+            </div>
+          </div>
+          <div class="mr2">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgãos responsáveis
+            </div>
+            <div class="t13">
+              {{ órgãosResponsáveisNaAtividadeEmFoco.map(x => x.orgao.descricao).join(', ') }}
             </div>
           </div>
           <div class="mr2">
