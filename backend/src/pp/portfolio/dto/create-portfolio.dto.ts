@@ -1,5 +1,6 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { Transform } from 'class-transformer';
 
 export class CreatePortfolioDto {
     /**
@@ -23,6 +24,7 @@ export class CreatePortfolioDto {
     @IsInt({ message: '$property| Precisa ser um número inteiro' })
     @Min(1)
     @Max(32)
+    @Transform(({ value }: any) => +value)
     nivel_maximo_tarefa?: number
 
     @IsOptional()
