@@ -201,7 +201,6 @@ iniciar();
         <button
           v-else-if="perm.PDM?.ponto_focal"
           class="btn big ml2"
-          :class="{ spinner: chamadasPendentes.submeterACoordenadoriaDeProjetos }"
           @click="submeterACoordenadoriaDeProjetos()"
         >
           Submeter à coordenadoria de projetos
@@ -299,7 +298,8 @@ iniciar();
             v-if="perm.PDM?.ponto_focal"
             class="btn"
             type="button"
-            :disabled="isSubmitting || Object.keys(errors)?.length"
+            :disabled="isSubmitting
+              || Object.keys(errors)?.length"
             :title="Object.keys(errors)?.length
               ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
               : null"
