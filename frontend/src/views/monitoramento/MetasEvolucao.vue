@@ -42,6 +42,7 @@ const {
   SingleMetaAnaliseDocs,
   SingleRisco,
   SingleFechamento,
+  chamadasPendentes,
 } = storeToRefs(CiclosStore);
 
 async function iniciar() {
@@ -201,6 +202,7 @@ iniciar();
         <button
           v-if="perm.PDM?.ponto_focal"
           class="btn big ml2"
+          :disabled="chamadasPendentes.submeterACoordenadoriaDeProjetos"
           @click="submeterACoordenadoriaDeProjetos()"
         >
           Submeter à coordenadoria de projetos
