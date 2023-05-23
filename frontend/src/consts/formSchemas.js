@@ -125,6 +125,19 @@ export const autenticação = object()
       .required('Preencha sua senha'),
   });
 
+export const auxiliarDePreenchimentoDeEvoluçãoDeMeta = object()
+  .shape({
+    meta_id: number()
+      .label('Meta')
+      .required(),
+    valor_realizado: string()
+      .label('Realizado mensal'),
+    valor_realizado_acumulado: string()
+      .label('Realizado acumulado'),
+    enviar_cp: boolean()
+      .label('Envio ao CP'),
+  });
+
 export const custeio = object()
   .shape({
     custo_previsto: string()
