@@ -124,10 +124,10 @@ async function onSubmit(values) {
   }
 }
 
-async function submeterACoordenadoriaDeProjetos() {
+async function submeterACoordenadoriaDePlanejamento() {
   try {
     const msg = 'Dados salvos com sucesso!';
-    const r = await CiclosStore.submeterACoordenadoriaDeProjetos({
+    const r = await CiclosStore.submeterACoordenadoriaDePlanejamento({
       meta_id: Number(meta_id),
       simular_ponto_focal: true,
     });
@@ -202,10 +202,10 @@ iniciar();
         <button
           v-if="perm.PDM?.ponto_focal"
           class="btn big ml2"
-          :disabled="chamadasPendentes.submeterACoordenadoriaDeProjetos"
-          @click="submeterACoordenadoriaDeProjetos()"
+          :disabled="chamadasPendentes.submeterACoordenadoriaDePlanejamento"
+          @click="submeterACoordenadoriaDePlanejamento()"
         >
-          Submeter à coordenadoria de projetos
+          Submeter à coordenadoria de planejamento
         </button>
       </div>
     </div>
