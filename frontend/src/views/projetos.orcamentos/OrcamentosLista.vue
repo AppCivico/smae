@@ -5,7 +5,7 @@ import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoReal
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -72,6 +72,9 @@ function iniciar() {
     }
   });
 }
+// caso a rota seja carregada diretamente, é possível que ainda não tenhamos os
+// dados de projetos prontos. Portanto, vamos ficar de olho neles.
+watch(() => ProjetosStore?.emFoco, iniciar);
 
 iniciar();
 </script>
