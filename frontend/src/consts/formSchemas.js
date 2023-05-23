@@ -646,12 +646,17 @@ export const relatórioDeProjeto = object({
   fonte: string()
     .required(),
   parametros: object({
+    portfolio_id: number()
+      .label('Portfolio')
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .typeError('${label} inválido'),
     projeto_id: number()
       .label('Projeto')
       .min(1, '${label} é obrigatório')
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('Valor inválido'),
+      .typeError('${label} inválido'),
   }),
   salvar_arquivo: boolean(),
 });
