@@ -11,7 +11,7 @@ BEGIN
     WITH _int AS (
         SELECT
             extract('year' FROM previsao_inicio) AS ini,
-            extract('year' FROM coalesce(realizado_termino, previsao_termino)) AS fim
+            extract('year' FROM coalesce(realizado_termino, previsao_termino, previsao_inicio)) AS fim
         FROM
             projeto
         WHERE
