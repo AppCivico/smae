@@ -31,7 +31,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
         <div class="t12 uc w700 tamarelo">
           Meta
         </div>
-        <h1>{{ singleMeta.titulo }}</h1>
+        <h1>{{ singleMeta.codigo }} - {{ singleMeta.titulo }}</h1>
       </div>
       <hr class="ml2 f1">
       <router-link
