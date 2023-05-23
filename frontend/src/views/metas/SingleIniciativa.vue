@@ -3,7 +3,7 @@ import { Dashboard } from '@/components';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { IniciativaAtiva } from '@/helpers/IniciativaAtiva.js';
 import {
-  useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore
+  useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
@@ -25,7 +25,7 @@ const { activePdm } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
-const { singleIniciativa } = storeToRefs(IniciativasStore);
+const { singleIniciativa, órgãosResponsáveisNaIniciativaEmFoco } = storeToRefs(IniciativasStore);
 if (singleIniciativa.value.id != iniciativa_id) IniciativasStore.getById(meta_id, iniciativa_id);
 
 const AtividadesStore = useAtividadesStore();
@@ -63,6 +63,16 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
               {{ singleIniciativa.codigo }}
             </div>
           </div>
+
+          <div class="mr2">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgãos responsáveis
+            </div>
+            <div class="t13">
+              {{ órgãosResponsáveisNaIniciativaEmFoco.map(x => x.orgao.descricao).join(', ') }}
+            </div>
+          </div>
+
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
               Órgão participante
