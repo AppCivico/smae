@@ -32,10 +32,6 @@ async function onSubmit(values) {
       carga.salvar_arquivo = false;
     }
 
-    if (carga.portfolio_id) {
-      delete carga.portfolio_id;
-    }
-
     const msg = 'Dados salvos com sucesso!';
     const r = await relatóriosStore.insert(carga);
 
@@ -70,10 +66,10 @@ projetosStore.buscarTudo();
   >
     <div class="flex g2 mb2">
       <div class="f1">
-        <label class="label">
-          Portfolio
-          <small>(filtro)</small>
-        </label>
+        <LabelFromYup
+          name="portfolio_id"
+          :schema="schema.fields.parametros"
+        />
         <Field
           name="parametros.portfolio_id"
           as="select"
