@@ -199,7 +199,7 @@ iniciar();
           </ul>
         </div>
         <button
-          v-else-if="perm.PDM?.ponto_focal"
+          v-if="perm.PDM?.ponto_focal"
           class="btn big ml2"
           @click="submeterACoordenadoriaDeProjetos()"
         >
