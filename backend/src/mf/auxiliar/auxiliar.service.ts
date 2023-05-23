@@ -46,7 +46,7 @@ export class AuxiliarService {
 
                 const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                if (ref && ref.valor_nominal === "")
+                if (ref && mes_serie.nao_preenchida)
                     saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
             }
         }
@@ -57,7 +57,7 @@ export class AuxiliarService {
                 for (const mes_serie of v.series) {
                     if (!mes_serie.eh_corrente) continue;
                     const ref = mes_serie.series.at(ordem_series.Realizado);
-                    if (ref && ref.valor_nominal === "")
+                    if (ref && mes_serie.nao_preenchida)
                         saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
                 }
             }
@@ -70,7 +70,7 @@ export class AuxiliarService {
 
                         const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                        if (ref && ref.valor_nominal === "")
+                        if (ref && mes_serie.nao_preenchida)
                             saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
                     }
                 }
