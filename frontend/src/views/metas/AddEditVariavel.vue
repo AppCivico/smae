@@ -4,10 +4,14 @@ import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useRegionsStore, useVariaveisStore,
 } from '@/stores';
+import { useResourcesStore } from '@/stores/resources.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+const resourcesStore = useResourcesStore();
+const { resources } = storeToRefs(resourcesStore);
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -44,6 +48,10 @@ VariaveisStore.clearEdit();
 const RegionsStore = useRegionsStore();
 const { regions, tempRegions } = storeToRefs(RegionsStore);
 if (!regions.length) RegionsStore.getAll();
+
+if (!resources.length) {
+  resourcesStore.getAll();
+}
 
 let title = var_id ? 'Editar variável' : 'Adicionar variável';
 const responsaveisArr = ref({ participantes: [], busca: '' });
@@ -381,32 +389,12 @@ function fieldToDate(d) {
             <option value="">
               Selecione
             </option>
-            <option value="1">
-              un - unidades
-            </option>
-            <option value="2">
-              º - Ordinal
-            </option>
-            <option value="3">
-              dias - Dias
-            </option>
-            <option value="4">
-              eventos - Eventos
-            </option>
-            <option value="5">
-              acidentes - Acidentes
-            </option>
-            <option value="6">
-              crianças - Crianças
-            </option>
-            <option value="7">
-              m² - Metros quadrados
-            </option>
-            <option value="8">
-              hab - Habitantes
-            </option>
-            <option value="9">
-              nº - Posição nº
+            <option
+              v-for="unidade in resources"
+              :key="unidade.id"
+              :value="unidade.id"
+            >
+              {{ unidade.sigla }} - {{ unidade.descricao }}
             </option>
           </Field>
           <div class="error-msg">
