@@ -70,4 +70,11 @@ export const useAtividadesStore = defineStore({
       return false;
     },
   },
+  getters: {
+    órgãosResponsáveisNaAtividadeEmFoco: ({ singleAtividade }) => (
+      Array.isArray(singleAtividade?.orgaos_participantes)
+        ? singleAtividade.orgaos_participantes.filter((x) => x.responsavel)
+        : []
+    ),
+  },
 });
