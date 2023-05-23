@@ -235,27 +235,17 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
           </div>
 
           <div
-            v-if="!Iniciativas[meta_id].length"
+            v-if="Iniciativas[meta_id].loading"
             class="board_vazio"
           >
             <div class="tc">
-              <div
-                v-if="Iniciativas[meta_id].loading"
-                class="p1"
-              >
+              <div class="p1">
                 <span>Carregando</span> <svg
                   class="ml1 ib"
                   width="20"
                   height="20"
                 ><use xlink:href="#i_spin" /></svg>
               </div>
-              <router-link
-                v-if="perm?.CadastroIniciativa?.inserir"
-                :to="`${parentlink}/iniciativas/novo`"
-                class="btn mt1 mb1"
-              >
-                <span>Adicionar {{ activePdm.rotulo_iniciativa }}</span>
-              </router-link>
             </div>
           </div>
         </template>

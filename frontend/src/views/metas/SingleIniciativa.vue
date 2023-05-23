@@ -206,27 +206,17 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
           </template>
 
           <div
-            v-if="!Atividades[iniciativa_id].length"
+            v-if="Atividades[iniciativa_id].loading"
             class="board_vazio"
           >
             <div class="tc">
-              <div
-                v-if="Atividades[iniciativa_id].loading"
-                class="p1"
-              >
+              <div class="p1">
                 <span>Carregando</span> <svg
                   class="ml1 ib"
                   width="20"
                   height="20"
                 ><use xlink:href="#i_spin" /></svg>
               </div>
-              <router-link
-                v-if="perm?.CadastroAtividade?.inserir"
-                :to="`${parentlink}/atividades/novo`"
-                class="btn mt1 mb1"
-              >
-                <span>Adicionar {{ activePdm.rotulo_atividade }}</span>
-              </router-link>
             </div>
           </div>
         </template>
