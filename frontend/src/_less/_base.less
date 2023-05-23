@@ -1117,7 +1117,7 @@ p {
       .t20;
       .w700;
       color: white;
-      .bgc300;
+      .bgc600;
     }
 
     &:before {
@@ -1127,23 +1127,24 @@ p {
       top: 0;
       bottom: 0;
       width: 4px;
-      .bgc300;
+      .bgc600;
     }
   }
 
   &.sub {
     padding: 0;
     margin-top: 3rem;
+    position: relative;
 
     .title {}
 
     .status {
-      left: .5rem;
+      position: static;
       bottom: inherit;
 
       span {
         position: absolute;
-        left: -1.75rem;
+        left: -1.25rem;
         width: 2.5rem;
         top: -1.8rem;
         width: 2.5rem;
@@ -1153,9 +1154,18 @@ p {
         .t14;
         .w700;
         color: white;
-        .bgc300;
+        .bgc400;
       }
 
+      &:before {
+        content: "";
+        position: absolute;
+        left: -2px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background-image: linear-gradient(to bottom, @c400, hsla(215, 20%, 62%, 0));
+      }
     }
 
     .list {
