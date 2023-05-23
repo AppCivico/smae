@@ -88,6 +88,7 @@ export const useOrcamentosStore = defineStore({
     },
 
     // projetos
+    // eslint-disable-next-line max-len, default-param-last
     async buscarOrçamentosPrevistosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
       try {
         this.OrcamentoCusteio[ano] = { loading: true };
@@ -95,11 +96,22 @@ export const useOrcamentosStore = defineStore({
         const r = await this.requestS.get(`${baseUrl}/projeto/${projetoId}/orcamento-previsto`, { ...extraParams, ano_referencia: ano });
 
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
+
+        if (typeof r.previsto_eh_zero === 'boolean') {
+          this.previstoEhZero[ano] = r.previsto_eh_zero;
+        }
+        if (r.previsto_eh_zero_criado_por?.nome_exibicao) {
+          this.previstoEhZeroCriadoPor[ano] = r.previsto_eh_zero_criado_por;
+        }
+        if (r.previsto_eh_zero_criado_em) {
+          this.previstoEhZeroCriadoEm[ano] = r.previsto_eh_zero_criado_em;
+        }
       } catch (error) {
         this.OrcamentoCusteio[ano] = { error };
       }
     },
 
+    // eslint-disable-next-line max-len, default-param-last
     async buscarOrçamentosPlanejadosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
       try {
         this.OrcamentoPlanejado[ano] = { loading: true };
@@ -112,6 +124,7 @@ export const useOrcamentosStore = defineStore({
       }
     },
 
+    // eslint-disable-next-line max-len, default-param-last
     async buscarOrçamentosRealizadosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
       try {
         this.OrcamentoRealizado[ano] = { loading: true };
