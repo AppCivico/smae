@@ -16,7 +16,7 @@ const {
   OrcamentoCusteio, previstoEhZero, previstoEhZeroCriadoPor, previstoEhZeroCriadoEm,
 } = storeToRefs(OrcamentosStore);
 
-function restringirAzero() {
+function restringirAZero() {
   alertStore.confirmAction(`Deseja mesmo informar que não há orçamento reservado para o ano de ${ano}?`, () => {
     OrcamentosStore.restringirPrevistoAZero(ano);
   }, 'Informar');
@@ -202,7 +202,7 @@ function restringirAzero() {
           v-if="!OrcamentoCusteio[ano]?.length && !previstoEhZero[ano]"
           type="button"
           class="like-a__text addlink mt1 mb1"
-          @click="restringirAzero"
+          @click="restringirAZero"
         >
           <svg
             width="20"
