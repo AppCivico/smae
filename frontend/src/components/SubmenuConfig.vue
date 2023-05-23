@@ -19,7 +19,7 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
         v-if="perm?.CadastroPessoa
           || perm?.CadastroRegiao
           || perm?.CadastroPdm
-          || perm?.Projeto?.administrador"
+          || perm?.Projeto?.administrar_portfolios"
       >
         <h2>Entrada de dados</h2>
         <div class="links-container mb2">
@@ -37,7 +37,7 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
             Programa de metas
           </router-link>
           <router-link
-            v-if="perm?.Projeto?.administrador"
+            v-if="perm?.Projeto?.administrar_portfolios"
             :to="{ name: 'portfoliosListar' }"
             :class="{ active: parentPage == 'portfolio' }"
           >
