@@ -79,4 +79,11 @@ export const useIniciativasStore = defineStore({
       return false;
     },
   },
+  getters: {
+    órgãosResponsáveisNaIniciativaEmFoco: ({ singleIniciativa }) => (
+      Array.isArray(singleIniciativa?.orgaos_participantes)
+        ? singleIniciativa.orgaos_participantes.filter((x) => x.responsavel)
+        : []
+    ),
+  },
 });
