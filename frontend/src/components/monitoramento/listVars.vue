@@ -75,7 +75,10 @@ function dateToTitle(d) {
         <tr
           v-for="val in v.series"
           :key="val.periodo"
-          :class="{ 'bgs2': val.aguarda_cp }"
+          :class="{
+            bgs2: val.aguarda_cp,
+            bgs1: val.aguarda_complementacao,
+          }"
         >
           <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
             <div class="flex center">
