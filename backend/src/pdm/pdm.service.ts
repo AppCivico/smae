@@ -107,8 +107,8 @@ export class PdmService {
             },
             orderBy: [
                 { ativo: 'desc', },
-                { data_inicio: 'asc' },
-                { data_fim: 'asc' }
+                { data_inicio: 'desc' },
+                { data_fim: 'desc' }
             ]
         });
 
