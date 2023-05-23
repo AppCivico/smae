@@ -134,7 +134,7 @@ export const useOrcamentosStore = defineStore({
 
       if (this.route.params.meta_id && !parâmetrosCompletos.meta_id) {
         parâmetrosCompletos.meta_id = Number(this.route.params.meta_id);
-      } else if (this.route.params.projeto_id && !parâmetrosCompletos.projeto_id) {
+      } else if (this.route.params.projetoId && !parâmetrosCompletos.projeto_id) {
         parâmetrosCompletos.projeto_id = Number(this.route.params.projetoId);
       }
       const segmento1 = parâmetrosCompletos.meta_id
