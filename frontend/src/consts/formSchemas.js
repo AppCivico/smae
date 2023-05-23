@@ -786,8 +786,10 @@ export const risco = object()
       .nullable(),
     codigo: number()
       .label('Código')
+      .default(1)
       .min(1)
-      .required(),
+      .required()
+      .typeError('${label} inválido'),
     consequencia: string()
       .label('Consequências')
       .nullable(),

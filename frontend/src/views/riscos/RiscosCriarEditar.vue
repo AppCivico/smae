@@ -114,7 +114,10 @@ iniciar();
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
-      <div class="f1 mb1">
+      <div
+        v-if="riscoId"
+        class="f1 mb1"
+      >
         <LabelFromYup
           name="codigo"
           :schema="schema"
