@@ -10,6 +10,7 @@ import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { RiscoService } from 'src/pp/risco/risco.service';
 import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
 
 const {
     Parser,
@@ -29,7 +30,7 @@ export class PPProjetoService implements ReportableService {
 
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
         const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(dto.projeto_id, undefined, 'ReadOnly');
-    
+
         const detail: RelProjetoRelatorioDto = {
             id: projetoRow.id,
             arquivado: projetoRow.arquivado,
@@ -138,7 +139,7 @@ export class PPProjetoService implements ReportableService {
             }
         });
 
-        const planoAcaoRows = await this.planoAcaoService.findAll(dto.projeto_id, {risco_id: undefined}, undefined);
+        const planoAcaoRows = await this.planoAcaoService.findAll(dto.projeto_id, { risco_id: undefined }, undefined);
         const planoAcaoOut: RelProjetoPlanoAcaoDto[] = planoAcaoRows.map(e => {
             return {
                 codigo_risco: e.projeto_risco.codigo,
@@ -191,11 +192,11 @@ export class PPProjetoService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
                 fields: [
-                    { value: 'codigo_risco', label: 'codigo_risco'},
-                    { value: 'contramedida', label: 'contramedida'},
-                    { value: 'prazo_contramedida', label: 'prazo_contramedida'},
-                    { value: 'responsavel', label: 'responsavel'},
-                    { value: 'medidas_de_contingencia', label: 'medidas_de_contingencia'},
+                    { value: 'codigo_risco', label: 'codigo_risco' },
+                    { value: 'contramedida', label: 'contramedida' },
+                    { value: 'prazo_contramedida', label: 'prazo_contramedida' },
+                    { value: 'responsavel', label: 'responsavel' },
+                    { value: 'medidas_de_contingencia', label: 'medidas_de_contingencia' },
                 ]
             });
             const linhas = json2csvParser.parse(dados.planos_acao);
@@ -261,7 +262,17 @@ export class PPProjetoService implements ReportableService {
             });
         }
 
+        if (dados.detail && dados.detail.id) {
+            const eap = await this.tarefaService.getEap({
+                id: dados.detail.id,
+                nome: dados.detail.nome!
+            }, 'svg');
 
+            out.push({
+                name: 'eap.svg',
+                buffer: await Stream2Buffer(eap)
+            });
+        }
         return [
             {
                 name: 'info.json',
@@ -278,3 +289,4 @@ export class PPProjetoService implements ReportableService {
         ];
     }
 }
+

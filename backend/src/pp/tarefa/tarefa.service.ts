@@ -236,7 +236,7 @@ export class TarefaService {
         return ret
     }
 
-    private async findAllRows(projeto: ProjetoDetailDto) {
+    private async findAllRows(projeto: {id: number}) {
         return await this.prisma.tarefa.findMany({
             where: {
                 projeto_id: projeto.id,
@@ -1263,7 +1263,7 @@ export class TarefaService {
 
     }
 
-    async getEap(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt, format: GraphvizServiceFormat): Promise<NodeJS.ReadableStream> {
+    async getEap(projeto: {id: number; nome: string}, format: GraphvizServiceFormat): Promise<NodeJS.ReadableStream> {
         const rows = await this.findAllRows(projeto);
 
         const graphvizString = this.dotTemplate.buildGraphvizString(projeto.nome, rows);
