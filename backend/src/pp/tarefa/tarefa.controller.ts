@@ -62,7 +62,7 @@ export class TarefaController {
         const formato = filter.formato ?? 'png';
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
 
-        const imgStream = await this.tarefaService.getEap(projeto, params.id, user, formato);
+        const imgStream = await this.tarefaService.getEap(projeto, formato);
         res.type(GraphvizContentTypeMap[formato]);
 
         if (formato == 'pdf' || formato == 'svg')
