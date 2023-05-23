@@ -35,7 +35,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
         <div class="t12 uc w700 tamarelo">
           {{ activePdm.rotulo_atividade }}
         </div>
-        <h1>{{ singleAtividade.titulo }}</h1>
+        <h1>{{ singleAtividade.codigo }} - {{ singleAtividade.titulo }}</h1>
       </div>
       <hr class="ml2 f1">
       <router-link
