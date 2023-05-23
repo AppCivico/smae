@@ -52,7 +52,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
         <div class="flex g2">
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              ID
+              Código
             </div>
             <div class="t13">
               {{ singleAtividade.codigo }}

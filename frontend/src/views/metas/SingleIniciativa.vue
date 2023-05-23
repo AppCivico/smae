@@ -57,7 +57,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
         <div class="flex g2">
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              ID
+              Código
             </div>
             <div class="t13">
               {{ singleIniciativa.codigo }}
