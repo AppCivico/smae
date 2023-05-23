@@ -3,9 +3,6 @@ import { IsArray, IsInt, IsNumber, IsOptional, IsString, ValidateIf } from "clas
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
 
 export class CreateRiscoDto {
-    @IsNumber()
-    codigo: number
-
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
