@@ -12,7 +12,7 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const RegionsStore = useRegionsStore();
-const { tempRegions } = storeToRefs(RegionsStore);
+const { tempRegions, regions } = storeToRefs(RegionsStore);
 RegionsStore.filterRegions();
 
 const props = defineProps(['type']);
@@ -41,8 +41,9 @@ onUpdated(() => { start(); });
     <div class="flex spacebetween center mb2">
       <h1>Regiões, Subprefeituras e Distritos</h1>
       <hr class="ml2 f1">
+
       <router-link
-        v-if="perm?.CadastroRegiao?.inserir"
+        v-if="perm?.CadastroRegiao?.inserir && Array.isArray(regions) && !regions.length"
         to="/regioes/novo"
         class="btn big ml2"
       >
