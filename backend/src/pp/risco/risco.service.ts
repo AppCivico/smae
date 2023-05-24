@@ -64,7 +64,7 @@ export class RiscoService {
             });
     
             if (dto.tarefa_id) {
-                await this.prisma.riscoTarefa.createMany({
+                await prismaTx.riscoTarefa.createMany({
                     data: dto.tarefa_id.map(t => {
                         return {
                             projeto_risco_id: risco.id,
