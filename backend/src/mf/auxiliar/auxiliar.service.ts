@@ -165,9 +165,9 @@ export class AuxiliarService {
         for (const quali of analisesQuali) {
             const analise = quali.analises[0];
             if (!analise) continue;
-            console.log({ analise });
+            console.log({ analise }, { series: quali.series, ordem_series: quali.ordem_series });
 
-            const ordem_series = Object.fromEntries(dados.ordem_series.map((k, i) => [k, i])) as Record<Serie, number>;
+            const ordem_series = Object.fromEntries(quali.ordem_series.map((k, i) => [k, i])) as Record<Serie, number>;
 
             const serie_realizado = quali.series.at(ordem_series.Realizado);
             const serie_realizadoAcc = quali.series.at(ordem_series.RealizadoAcumulado);
