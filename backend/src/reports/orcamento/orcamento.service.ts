@@ -6,7 +6,7 @@ import { CreateRelPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
-import { CreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
+import { SuperCreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto, OrcamentoExecutadoSaidaDto, OrcamentoPlanejadoSaidaDto } from './entities/orcamento-executado.entity';
 
 const {
@@ -38,6 +38,9 @@ class RetornoRealizadoDb {
     atividade_id: string;
     atividade_codigo: string;
     atividade_titulo: string;
+    projeto_id: string | null;
+    projeto_codigo: string | null;
+    projeto_nome: string | null;
     ano: string;
     mes: string;
     mes_corrente: boolean;
@@ -54,7 +57,6 @@ class RetornoPlanejadoDb {
     plan_valor_planejado: string;
     plan_dotacao_sincronizado_em: Date | null;
     dotacao: string;
-
     meta_id: string;
     meta_codigo: string;
     meta_titulo: string;
@@ -66,6 +68,11 @@ class RetornoPlanejadoDb {
     atividade_id: string;
     atividade_codigo: string;
     atividade_titulo: string;
+
+    projeto_id: string | null;
+    projeto_codigo: string | null;
+    projeto_nome: string | null;
+
     ano: string;
 
     total_registros?: number;
@@ -81,11 +88,17 @@ export class OrcamentoService implements ReportableService {
         private readonly prevCustoService: PrevisaoCustoService,
     ) { }
 
-    async create(dto: CreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
+    async create(dto: SuperCreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
         const anoIni = Date2YMD.toString(dto.inicio).substring(0, 4);
         const anoFim = Date2YMD.toString(dto.fim).substring(0, 4);
 
-        const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+        let filtroMetas: number[] | undefined = undefined;
+
+        // sem portfolio_id e sem projeto_id = filtra por meta
+        if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
+            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+            filtroMetas = metas.map(r => r.id);
+        }
 
         const orgaoMatch: any[] = [];
         if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0)
@@ -101,7 +114,9 @@ export class OrcamentoService implements ReportableService {
             where: {
                 sobrescrito_em: null,
                 OrcamentoRealizado: {
-                    meta_id: { in: metas.map(r => r.id) },
+                    meta_id: filtroMetas ? { in: filtroMetas } : undefined,
+                    projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
+                    ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
                     removido_em: null,
                     OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
                 },
@@ -166,12 +181,17 @@ export class OrcamentoService implements ReportableService {
 
                     op.atividade_id,
                     ma.codigo as atividade_codigo,
-                    ma.titulo as atividade_titulo
+                    ma.titulo as atividade_titulo,
+
+                    p.id as projeto_id,
+                    p.codigo as projeto_nome,
+                    p.nome as projeto_nome
 
                 from orcamento_planejado op
                 left join meta m on m.id = meta_id
                 left join iniciativa mi on mi.id = iniciativa_id
                 left join atividade ma on ma.id = atividade_id
+                left join projeto p on p.id = op.projeto_id
 
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
@@ -194,6 +214,10 @@ export class OrcamentoService implements ReportableService {
                 previsoes.atividade_id,
                 previsoes.atividade_codigo,
                 previsoes.atividade_titulo,
+
+                previsoes.projeto_id,
+                previsoes.projeto_nome,
+                previsoes.projeto_nome,
 
                 to_char_numeric(sum(previsoes.plan_valor_planejado)::numeric) as plan_valor_planejado,
                 count(1) as total_registros
@@ -224,8 +248,14 @@ export class OrcamentoService implements ReportableService {
                     ma.codigo as atividade_codigo,
                     ma.titulo as atividade_titulo,
 
-                    op.id as orcamento_planejado_id
+                    op.id as orcamento_planejado_id,
+
+                    p.id as projeto_id,
+                    p.codigo as projeto_nome,
+                    p.nome as projeto_nome
+
                 from orcamento_planejado op
+                left join projeto p on p.id = op.projeto_id
                 left join meta m on m.id = meta_id
                 left join iniciativa mi on mi.id = iniciativa_id
                 left join atividade ma on ma.id = atividade_id
@@ -272,9 +302,15 @@ export class OrcamentoService implements ReportableService {
                     ma.codigo as atividade_codigo,
                     ma.titulo as atividade_titulo,
 
-                    i.id as orcamento_realizado_item_id
+                    i.id as orcamento_realizado_item_id,
+
+                    p.id as projeto_id,
+                    p.codigo as projeto_nome,
+                    p.nome as projeto_nome
+
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
+                left join projeto p on p.id = o.projeto_id
                 left join meta m on m.id = meta_id
                 left join iniciativa mi on mi.id = iniciativa_id
                 left join atividade ma on ma.id = atividade_id
@@ -335,6 +371,9 @@ export class OrcamentoService implements ReportableService {
                 atividade_id,
                 atividade_codigo,
                 atividade_titulo,
+                projeto_id,
+                projeto_codigo,
+                projeto_titulo,
                 '' as ano,
                 '' as mes,
                 to_char_numeric(sum (smae_valor_empenhado)::numeric) as smae_valor_empenhado,
@@ -371,9 +410,15 @@ export class OrcamentoService implements ReportableService {
                     ma.titulo as atividade_titulo,
 
                     i.id as orcamento_realizado_item_id,
-                    i.mes_corrente
+                    i.mes_corrente,
+
+                    p.id as projeto_id,
+                    p.codigo as projeto_nome,
+                    p.nome as projeto_nome
+
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
+                left join projeto p on p.id = o.projeto_id
                 left join meta m on m.id = meta_id
                 left join iniciativa mi on mi.id = iniciativa_id
                 left join atividade ma on ma.id = atividade_id
@@ -427,6 +472,7 @@ export class OrcamentoService implements ReportableService {
             meta: { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id },
             iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
             atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
+            projeto: db.projeto_id ? { codigo: db.projeto_codigo, nome: db.projeto_nome!, id: +db.projeto_id } : null,
 
             acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
             dotacao: db.dotacao,
@@ -462,6 +508,7 @@ export class OrcamentoService implements ReportableService {
             meta: { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id },
             iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
             atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
+            projeto: db.projeto_id ? { codigo: db.projeto_codigo, nome: db.projeto_nome!, id: +db.projeto_id } : null,
 
             acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
             dotacao: db.dotacao,
@@ -494,11 +541,11 @@ export class OrcamentoService implements ReportableService {
         };
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
+    async getFiles(myInput: any, pdm_id: number | null, params: any): Promise<FileOutput[]> {
         const dados = myInput as ListOrcamentoExecutadoDto;
-        const dto = params as CreateOrcamentoExecutadoDto;
+        const dto = params as SuperCreateOrcamentoExecutadoDto;
 
-        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
+        const pdm = pdm_id ? await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } }) : null;
 
         const out: FileOutput[] = [];
 
@@ -518,7 +565,13 @@ export class OrcamentoService implements ReportableService {
             camposAno[0] = camposAnoMes[0];
         }
 
-        const camposMetaIniAtv = [
+        const camposProjeto = [
+            { value: 'projeto.codigo', label: 'Código Projeto' },
+            { value: 'projeto.nome', label: 'Nome do Projeto' },
+            { value: 'projeto.id', label: 'ID do Projeto' },
+        ];
+
+        const campos = pdm ? [
             { value: 'meta.codigo', label: 'Código da Meta' },
             { value: 'meta.titulo', label: 'Título da Meta' },
             { value: 'meta.id', label: 'ID da Meta' },
@@ -528,7 +581,7 @@ export class OrcamentoService implements ReportableService {
             { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
             { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
             { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-        ];
+        ] : camposProjeto;
 
         if (dados.linhas.length) {
             const json2csvParser = new Parser({
@@ -536,7 +589,7 @@ export class OrcamentoService implements ReportableService {
                 transforms: defaultTransform,
                 fields: [
                     ...camposAnoMes,
-                    ...camposMetaIniAtv,
+                    ...campos,
                     'dotacao',
                     'processo',
                     'nota_empenho',
@@ -579,7 +632,7 @@ export class OrcamentoService implements ReportableService {
                 transforms: defaultTransform,
                 fields: [
                     ...camposAno,
-                    ...camposMetaIniAtv,
+                    ...campos,
                     'dotacao',
                     'orgao.codigo',
                     'orgao.nome',

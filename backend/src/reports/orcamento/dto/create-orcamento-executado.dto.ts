@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
 import { TipoRelatorio } from '@prisma/client';
-import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 
@@ -44,4 +44,38 @@ export class OrcamentoExecutadoParams {
 
 // excluindo o atividade/iniciativa pq nunca tem resultados pra orçamento
 // logo n faz sentido ir buscar
-export class CreateOrcamentoExecutadoDto extends IntersectionType(OmitType(FiltroMetasIniAtividadeDto, ['atividade_id', 'iniciativa_id'] as const), OrcamentoExecutadoParams) {}
+export class SuperCreateOrcamentoExecutadoDto
+    extends IntersectionType(
+        OmitType(
+            FiltroMetasIniAtividadeDto, ['atividade_id', 'iniciativa_id'] as const
+        ),
+        OrcamentoExecutadoParams
+    ) {
+
+    /**
+    * @example "21"
+    */
+    @IsInt()
+    @Transform(({ value }: any) => +value)
+    @IsOptional()
+    projeto_id?: number;
+
+    /**
+     * @example "21"
+     */
+    @IsInt()
+    @Transform(({ value }: any) => +value)
+    @IsOptional()
+    portfolio_id?: number;
+}
+
+// aqui remove os filtros do projeto
+export class PdmCreateOrcamentoExecutadoDto extends OmitType(
+    SuperCreateOrcamentoExecutadoDto,
+    [
+        'projeto_id',
+        'portfolio_id'
+    ] as const
+)
+{ }
+

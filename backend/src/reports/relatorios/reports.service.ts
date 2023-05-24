@@ -133,6 +133,7 @@ export class ReportsService {
         let service: ReportableService | null = null;
         switch (dto.fonte) {
             case 'Orcamento':
+            case 'ProjetoOrcamento':
                 service = this.orcamentoService;
                 break;
             case 'Indicadores':

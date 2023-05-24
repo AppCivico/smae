@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadore.dto';
 import { CreateRelMonitoramentoMensalDto } from '../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
-import { CreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
+import { SuperCreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { CreateRelPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao-custo.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
@@ -77,7 +77,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
 
     switch (fonte) {
         case 'Orcamento':
-            theClass = CreateOrcamentoExecutadoDto;
+            theClass = SuperCreateOrcamentoExecutadoDto;
             break;
         case 'Indicadores':
             theClass = CreateRelIndicadorDto;
