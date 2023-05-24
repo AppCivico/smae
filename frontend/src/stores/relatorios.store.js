@@ -23,6 +23,7 @@ export const useRelatoriosStore = defineStore('relatorios', {
       } catch (error) {
         this.error = error;
       }
+      this.loading = false;
     },
     async getById(id) {
     },
