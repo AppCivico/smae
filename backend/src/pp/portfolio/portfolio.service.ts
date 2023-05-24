@@ -218,7 +218,8 @@ export class PortfolioService {
 
         const count = await this.prisma.projeto.count({
             where: {
-                removido_em: null
+                removido_em: null,
+                portfolio_id: +id
             }
         });
         if (count > 0) throw new HttpException('Não é possível mais apagar o portfólio, há projetos dependentes.', 400);
