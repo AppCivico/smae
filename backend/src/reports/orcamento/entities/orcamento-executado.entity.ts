@@ -1,3 +1,4 @@
+import { IdCodNome } from 'src/common/dto/IdCodNome.dto';
 import { CodigoNome } from '../../../common/dto/CodigoNome.dto';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 
@@ -5,6 +6,7 @@ export class OrcamentoExecutadoSaidaDto {
     meta: IdCodTituloDto;
     iniciativa: IdCodTituloDto | null;
     atividade: IdCodTituloDto | null;
+    projeto: IdCodNome | null;
 
     dotacao: string;
     processo: string | null;
@@ -94,6 +96,7 @@ export class OrcamentoPlanejadoSaidaDto {
     meta: IdCodTituloDto;
     iniciativa: IdCodTituloDto | null;
     atividade: IdCodTituloDto | null;
+    projeto: IdCodNome | null;
 
     dotacao: string;
     acao_orcamentaria: string;

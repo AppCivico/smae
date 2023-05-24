@@ -69,6 +69,7 @@ import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previ
 import { OrcamentoPlanejadoModule as PPOrcamentoPlanejadoModule } from './pp/orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orcamento-realizado/orcamento-realizado.module';
 import { ProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/projeto-previsao-custo.module';
+import { ProjetoOrcamentoModule } from './reports/projeto-orcamento/projeto-orcamento.module';
 
 @Module({
     imports: [
@@ -141,7 +142,8 @@ import { ProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/pro
         DashboardModule,
         OrcamentoPrevistoModule,
         PPOrcamentoPlanejadoModule,
-        ProjetoPrevisaoCustoModule, // carregar depois do OrcamentoPrevistoModule
+        ProjetoPrevisaoCustoModule,
+        ProjetoOrcamentoModule, // carregar depois do OrcamentoPrevistoModule
     ],
     controllers: [AppController],
     providers: [

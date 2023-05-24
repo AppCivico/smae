@@ -1,12 +1,14 @@
 import { OmitType } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsInt } from "class-validator";
-import { SuperCreateRelPrevisaoCustoDto } from "src/reports/previsao-custo/dto/create-previsao-custo.dto";
+import { SuperCreateOrcamentoExecutadoDto } from "src/reports/orcamento/dto/create-orcamento-executado.dto";
 
-export class CreateRelProjetoPrevisaoCustoDto extends OmitType(
-    SuperCreateRelPrevisaoCustoDto,
+export class CreateRelProjetoOrcamentoDto extends OmitType(
+    SuperCreateOrcamentoExecutadoDto,
     [
-        'atividade_id', 'iniciativa_id', 'meta_id', 'pdm_id', 'tags',
+        'meta_id',
+        'tags',
+        'pdm_id',
         'portfolio_id'// excluindo pra recriar com sem o decorator poluir
     ] as const
 ) {

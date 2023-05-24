@@ -4,7 +4,7 @@ import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { CreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
 import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadore.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
-import { CreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
+import { SuperCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
 import { ReportValidatorOf } from '../report-validator-of';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
@@ -26,7 +26,7 @@ export class CreateReportDto {
     @ReportValidatorOf('fonte')
     @ApiProperty({
         oneOf: refs(
-            CreateOrcamentoExecutadoDto,
+            SuperCreateOrcamentoExecutadoDto,
             CreateRelIndicadorDto,
             CreateRelMonitoramentoMensalDto,
             CreateRelPrevisaoCustoDto,

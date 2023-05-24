@@ -14,7 +14,6 @@ import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-proj
 import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
-import { Date2YMD } from 'src/common/date2ymd';
 
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
 
@@ -43,7 +42,8 @@ export class ProjetoController {
         return { linhas: await this.projetoService.findAll(filters, user) };
     }
 
-    @IsPublic()
+    //@IsPublic()
+    @ApiBearerAuth('access-token')
     @Get(':id/html-unidade-entrega')
     async getHtmlUnidadeEntrega(
         @Param() params: FindOneParams,

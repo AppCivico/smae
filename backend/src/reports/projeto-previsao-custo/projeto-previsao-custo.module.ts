@@ -1,14 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DotacaoModule } from 'src/dotacao/dotacao.module';
-import { MetaOrcamentoModule } from 'src/meta-orcamento/meta-orcamento.module';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { UtilsService } from '../utils/utils.service';
-import { ProjetoPrevisaoCustoController } from './projeto-previsao-custo.controller';
 import { PrevisaoCustoModule } from '../previsao-custo/previsao-custo.module';
+import { ProjetoPrevisaoCustoController } from './projeto-previsao-custo.controller';
 
 @Module({
-    imports: [PrismaModule, MetaOrcamentoModule, DotacaoModule, PrevisaoCustoModule],
+    imports: [PrevisaoCustoModule],
     controllers: [ProjetoPrevisaoCustoController],
-    providers: [UtilsService],
 })
 export class ProjetoPrevisaoCustoModule { }
