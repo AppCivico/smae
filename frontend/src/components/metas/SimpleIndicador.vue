@@ -21,6 +21,10 @@ const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 </script>
 <template>
   <template v-if="tempIndicadores.length">
+    <div class="t12 uc w700 mb05 tc300 mb1">
+      Indicador
+    </div>
+
     <div
       v-for="ind in tempIndicadores"
       :key="ind.id"
