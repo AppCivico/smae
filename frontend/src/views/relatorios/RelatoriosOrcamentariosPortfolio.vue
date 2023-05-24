@@ -12,7 +12,7 @@ const relatóriosStore = useRelatoriosStore();
 
 onMounted(() => {
   relatóriosStore.clear();
-  relatóriosStore.getAll({ fonte: 'Orcamento' });
+  relatóriosStore.getAll({ fonte: 'ProjetoOrcamento' });
 });
 </script>
 <template>
