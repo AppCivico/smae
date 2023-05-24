@@ -200,7 +200,7 @@ iniciar();
           </ul>
         </div>
         <button
-          v-if="perm.PDM?.ponto_focal"
+          v-if="perm.PDM?.ponto_focal && MetaVars.botao_enviar_cp"
           class="btn big ml2"
           :disabled="chamadasPendentes.submeterACoordenadoriaDePlanejamento"
           @click="submeterACoordenadoriaDePlanejamento()"
