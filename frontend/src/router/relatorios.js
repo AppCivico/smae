@@ -120,7 +120,7 @@ export default {
         {
           component: NovoOrcamentarioPdM,
           path: 'novo',
-          name: 'novoRelatórioOrçamentário',
+          name: 'novoRelatórioOrçamentárioPdM',
           meta: {
             título: 'Novo relatório orçamentário de PdM',
             rotaDeEscape: 'RelatóriosOrçamentáriosPdM',
