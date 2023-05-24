@@ -16,7 +16,7 @@ relatóriosStore.getAll({ fonte: 'PrevisaoCusto' });
     <hr class="ml2 f1">
     <router-link
       v-if="temPermissãoPara('Reports.executar')"
-      :to="{ name: 'novoRelatórioDePrevisãoECusto' }"
+      :to="{ name: 'novoRelatórioDePrevisãoDeCustoPdM' }"
       class="btn big ml2"
     >
       Novo relatório
