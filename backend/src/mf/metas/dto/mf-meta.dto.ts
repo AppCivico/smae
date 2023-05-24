@@ -166,6 +166,7 @@ export class RetornoMetaVariaveisDto {
 
     permissoes: MfFasesPermissoesDto;
     avancarFases: MfAvancarFasesDto;
+    botao_enviar_cp: boolean
 
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro das series
