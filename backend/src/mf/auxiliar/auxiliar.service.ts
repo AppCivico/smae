@@ -46,7 +46,7 @@ export class AuxiliarService {
 
                 const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                if (ref && mes_serie.nao_preenchida)
+                if (ref && mes_serie.nao_preenchida && mes_serie.pode_editar)
                     saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
             }
         }
@@ -57,7 +57,7 @@ export class AuxiliarService {
                 for (const mes_serie of v.series) {
                     if (!mes_serie.eh_corrente) continue;
                     const ref = mes_serie.series.at(ordem_series.Realizado);
-                    if (ref && mes_serie.nao_preenchida)
+                    if (ref && mes_serie.nao_preenchida && mes_serie.pode_editar)
                         saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
                 }
             }
@@ -70,7 +70,7 @@ export class AuxiliarService {
 
                         const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                        if (ref && mes_serie.nao_preenchida)
+                        if (ref && mes_serie.nao_preenchida && mes_serie.pode_editar)
                             saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
                     }
                 }
@@ -117,7 +117,7 @@ export class AuxiliarService {
 
                 const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                if (ref && ref.valor_nominal !== "")
+                if (ref && ref.valor_nominal !== "" && mes_serie.pode_editar)
                     variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
             }
         }
@@ -130,7 +130,7 @@ export class AuxiliarService {
                     if (!mes_serie.nao_enviada) continue;
 
                     const ref = mes_serie.series.at(ordem_series.Realizado);
-                    if (ref && ref.valor_nominal !== "")
+                    if (ref && ref.valor_nominal !== "" && mes_serie.pode_editar)
                         variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
                 }
             }
@@ -144,12 +144,14 @@ export class AuxiliarService {
 
                         const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                        if (ref && ref.valor_nominal !== "")
+                        if (ref && ref.valor_nominal !== "" && mes_serie.pode_editar)
                             variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
                     }
                 }
             }
         }
+
+        console.log({ variaveisParaEnviar });
 
         const analisesQuali = await Promise.all(variaveisParaEnviar.map((envio) => {
             return retryPromise(() => this.metasService.getMetaVariavelAnaliseQualitativa({
@@ -163,6 +165,7 @@ export class AuxiliarService {
         for (const quali of analisesQuali) {
             const analise = quali.analises[0];
             if (!analise) continue;
+            console.log({ analise });
 
             const ordem_series = Object.fromEntries(dados.ordem_series.map((k, i) => [k, i])) as Record<Serie, number>;
 
