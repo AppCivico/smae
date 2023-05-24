@@ -310,8 +310,12 @@ export class MetasService {
             },
             permissoes: this.calculaPermissoesFase(cicloFase as CicloFase, config.perfil),
             avancarFases: this.avancarFases(cicloFase as CicloFase, config.perfil),
+            botao_enviar_cp: false,
         };
         delete (indicadorMeta as any).meta;
+
+        if (retorno.meta.totais.nao_enviadas > 0 && config.perfil === 'ponto_focal')
+            retorno.botao_enviar_cp = true;
 
         // busca apenas iniciativas que tem nas variaveis
         const iniciativas = await this.getIniciativas(meta_id, dadosMetas);
@@ -330,11 +334,14 @@ export class MetasService {
                 ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'iniciativa_id', iniciativa.id, cicloFisicoAtivo),
             };
 
+            if (retornoIniciativa.totais.nao_enviadas > 0 && config.perfil === 'ponto_focal')
+                retorno.botao_enviar_cp = true;
+
             let atividadesComVarCount = retornoIniciativa.variaveis.length;
             for (const atividade of atividades) {
                 if (+atividade.iniciativa_id != +iniciativa.id) continue;
 
-                const tmp: (typeof retornoIniciativa.atividades)[0] = {
+                const atv: (typeof retornoIniciativa.atividades)[0] = {
                     indicador: { ...atividade.Indicador[0] },
                     atividade: {
                         id: atividade.id,
@@ -345,9 +352,12 @@ export class MetasService {
                     ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'atividade_id', atividade.id, cicloFisicoAtivo),
                 };
 
-                if (tmp.variaveis.length > 0) {
-                    retornoIniciativa.atividades.push(tmp);
+                if (atv.variaveis.length > 0) {
+                    retornoIniciativa.atividades.push(atv);
                     atividadesComVarCount++;
+
+                    if (atv.totais.nao_enviadas > 0 && config.perfil === 'ponto_focal')
+                        retorno.botao_enviar_cp = true;
                 }
             }
 
