@@ -1,5 +1,5 @@
 <script setup>
-import { relatórioOrçamentário as schema } from '@/consts/formSchemas';
+import { relatórioOrçamentárioPdM as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore, usePdMStore, useRelatoriosStore } from '@/stores';

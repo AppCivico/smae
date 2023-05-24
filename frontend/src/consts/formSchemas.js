@@ -613,7 +613,7 @@ export const região = object()
       .nullable(),
   });
 
-export const relatórioDePrevisãoDeCusto = object()
+export const relatórioDePrevisãoDeCustoPdM = object()
   .shape({
     fonte: string()
       .required(),
@@ -732,7 +732,7 @@ export const relatórioMensal = object({
   salvar_arquivo: boolean(),
 });
 
-export const relatórioOrçamentário = object({
+export const relatórioOrçamentárioPdM = object({
   fonte: string()
     .required(),
   salvar_arquivo: boolean(),
