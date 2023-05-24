@@ -1,6 +1,6 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { relatórioDePrevisãoDeCusto as schema } from '@/consts/formSchemas';
+import { relatórioDePrevisãoDeCustoPdM as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';
