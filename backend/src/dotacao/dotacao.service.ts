@@ -231,8 +231,6 @@ export class DotacaoService {
             const r = srcDestList[i];
 
             const ano: string = ('plan_dotacao_ano_utilizado' in r) && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
-            console.log({ r, ano, x: (r as any).plan_dotacao_ano_utilizado });
-
             if (!ano) continue;
 
             const orgao = (r as any).__orgao as string | undefined;

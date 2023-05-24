@@ -4,12 +4,13 @@ import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { CreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
 import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadore.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
-import { SuperCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
+import { PdmCreateOrcamentoExecutadoDto, SuperCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
 import { ReportValidatorOf } from '../report-validator-of';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
 import { CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-projeto-status.dto';
 import { CreateRelProjetoPrevisaoCustoDto } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
+import { CreateRelProjetoOrcamentoDto } from 'src/reports/projeto-orcamento/dto/create-projeto-orcamento.dto';
 
 export class CreateReportDto {
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
@@ -26,7 +27,8 @@ export class CreateReportDto {
     @ReportValidatorOf('fonte')
     @ApiProperty({
         oneOf: refs(
-            SuperCreateOrcamentoExecutadoDto,
+            PdmCreateOrcamentoExecutadoDto,
+            CreateRelProjetoOrcamentoDto,
             CreateRelIndicadorDto,
             CreateRelMonitoramentoMensalDto,
             CreateRelPrevisaoCustoDto,
