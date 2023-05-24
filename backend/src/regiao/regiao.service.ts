@@ -7,7 +7,7 @@ import { UpdateRegiaoDto } from './dto/update-regiao.dto';
 
 @Injectable()
 export class RegiaoService {
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
+    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) { }
 
     async create(createRegiaoDto: CreateRegiaoDto, user: PessoaFromJwt) {
         if (!createRegiaoDto.parente_id) {
@@ -23,10 +23,20 @@ export class RegiaoService {
             if (upper.nivel != createRegiaoDto.nivel - 1) {
                 throw new HttpException(
                     'Região acima precisa ser do nível menor que a nova região' +
-                        ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != nova região (nível ${createRegiaoDto.nivel}) - 1)`,
+                    ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != nova região (nível ${createRegiaoDto.nivel}) - 1)`,
                     400,
                 );
             }
+        }
+
+        if (createRegiaoDto.nivel === 1) {
+            const nivel1exists = await this.prisma.regiao.count({
+                where: {
+                    removido_em: null,
+                    nivel: 1
+                },
+            });
+            if (nivel1exists > 0) throw new HttpException('nivel| Já existe uma região nivel 1 no SMAE, só é suportado um município por vez.', 400);
         }
 
         const similarExists = await this.prisma.regiao.count({
@@ -92,7 +102,7 @@ export class RegiaoService {
             if (upper.nivel != self.nivel - 1) {
                 throw new HttpException(
                     'Região acima precisa ser do nível menor que região atual' +
-                        ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != região "${self.descricao}" (nível ${self.nivel}) - 1)`,
+                    ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != região "${self.descricao}" (nível ${self.nivel}) - 1)`,
                     400,
                 );
             }
