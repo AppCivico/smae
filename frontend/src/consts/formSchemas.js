@@ -642,6 +642,31 @@ export const relatórioDePrevisãoDeCustoPdM = object()
     salvar_arquivo: boolean(),
   });
 
+export const relatórioDePrevisãoDeCustoPortfolio = object()
+  .shape({
+    fonte: string()
+      .required(),
+    parametros: object({
+      portfolio_id: number()
+        .label('Portfolio')
+        .min(1, '${label} é obrigatório')
+        .required()
+        .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+        .typeError('${label} inválido'),
+      projeto_id: number()
+        .label('Projeto')
+        .min(1, '${label} é obrigatório')
+        .nullable()
+        .transform((v) => (v === null || Number.isNaN(v) ? null : v))
+        .typeError('${label} inválido'),
+      periodo_ano: mixed()
+        .label('Período')
+        .oneOf(['Corrente', 'Anterior'])
+        .required(),
+    }),
+    salvar_arquivo: boolean(),
+  });
+
 export const relatórioDeProjeto = object({
   fonte: string()
     .required(),
@@ -752,6 +777,35 @@ export const relatórioOrçamentárioPdM = object({
         'Consolidado',
       ])
       .required('Escolha o tipo'),
+  }),
+});
+
+export const relatórioOrçamentárioPortfolio = object({
+  fonte: string()
+    .required(),
+  salvar_arquivo: boolean(),
+  parametros: object({
+    portfolio_id: number()
+      .label('Portfolio')
+      .min(1, '${label} é obrigatório')
+      .required()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .typeError('${label} inválido'),
+    inicio: string()
+      .label('Início')
+      .required()
+      .matches(regEx['month/year'], 'Formato inválido'),
+    fim: string()
+      .label('Fim')
+      .required()
+      .matches(regEx['month/year'], 'Formato inválido'),
+    tipo: mixed()
+      .label('Tipo')
+      .oneOf([
+        'Analitico',
+        'Consolidado',
+      ])
+      .required(),
   }),
 });
 

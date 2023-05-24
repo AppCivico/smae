@@ -1,17 +1,21 @@
 import MenuSecundario from '@/components/MenuSecundario.vue';
 import NovoMensal from '@/views/relatorios/NovoMensal.vue';
 import NovoOrcamentarioPdM from '@/views/relatorios/NovoOrcamentarioPdM.vue';
+import NovoOrçamentárioPortfolio from '@/views/relatorios/NovoOrcamentarioPortfolio.vue';
 import NovoRelatórioDePortfolio from '@/views/relatorios/NovoRelatorioDePortfolio.vue';
 import NovoRelatórioDePrevisãoDeCustoPdM from '@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPdM.vue';
+import NovoRelatórioDePrevisãoDeCustoPortfolio from '@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolio.vue';
 import NovoRelatórioDeProjeto from '@/views/relatorios/NovoRelatorioDeProjeto.vue';
 import NovoRelatórioDeStatus from '@/views/relatorios/NovoRelatorioDeStatus.vue';
 import NovoSemestralOuAnual from '@/views/relatorios/NovoSemestralOuAnual.vue';
 import RelatóriosDePortfolio from '@/views/relatorios/RelatoriosDePortfolio.vue';
 import RelatóriosDePrevisãoDeCustoPdM from '@/views/relatorios/RelatoriosDePrevisaoDeCustoPdM.vue';
+import RelatóriosDePrevisãoDeCustoPortfolio from '@/views/relatorios/RelatoriosDePrevisaoDeCustoPortfolio.vue';
 import RelatoriosDeProjeto from '@/views/relatorios/RelatoriosDeProjeto.vue';
 import RelatóriosDeStatus from '@/views/relatorios/RelatoriosDeStatus.vue';
 import RelatoriosMensais from '@/views/relatorios/RelatoriosMensais.vue';
 import RelatoriosOrcamentariosPdM from '@/views/relatorios/RelatoriosOrcamentariosPdM.vue';
+import RelatóriosOrçamentáriosPortfolio from '@/views/relatorios/RelatoriosOrcamentariosPortfolio.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
 import RelatoriosSemestraisOuAnuais from '@/views/relatorios/RelatoriosSemestraisOuAnuais.vue';
 
@@ -35,19 +39,22 @@ export default {
     ],
     rotasParaMenuSecundário: [
       {
+        títuloParaGrupoDeLinksNoMenu: 'Plano de metas',
         rotas: [
           'RelatóriosMensais',
           'RelatóriosSemestraisOuAnuais',
-          'RelatóriosDeProjeto',
-          'RelatóriosDePortfolio',
           'RelatóriosDeStatus',
+          'RelatóriosDePrevisãoDeCustoPdM',
+          'RelatóriosOrçamentáriosPdM',
         ],
       },
       {
-        títuloParaGrupoDeLinksNoMenu: 'Orçamentários',
+        títuloParaGrupoDeLinksNoMenu: 'Portfolios',
         rotas: [
-          'RelatóriosDePrevisãoDeCustoPdM',
-          'RelatóriosOrçamentáriosPdM',
+          'RelatóriosDeProjeto',
+          'RelatóriosDePortfolio',
+          'RelatóriosDePrevisãoDeCustoPortfolio',
+          'RelatóriosOrçamentáriosPortfolio',
         ],
       },
 
@@ -109,7 +116,7 @@ export default {
       path: 'orcamentarios-pdm',
       meta: {
         título: 'Relatórios orçamentários de PdM',
-        títuloParaMenu: 'Execução de PdM',
+        títuloParaMenu: 'Execução orçamentária',
       },
       children: [
         {
@@ -124,6 +131,30 @@ export default {
           meta: {
             título: 'Novo relatório orçamentário de PdM',
             rotaDeEscape: 'RelatóriosOrçamentáriosPdM',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'orcamentarios-portfolio',
+      meta: {
+        título: 'Relatórios orçamentários de portfolio',
+        títuloParaMenu: 'Execução orçamentária',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosOrçamentáriosPortfolio',
+          component: RelatóriosOrçamentáriosPortfolio,
+        },
+        {
+          component: NovoOrçamentárioPortfolio,
+          path: 'novo',
+          name: 'novoRelatórioOrçamentárioPortfolio',
+          meta: {
+            título: 'Novo relatório orçamentário de portfolio',
+            rotaDeEscape: 'RelatóriosOrçamentáriosPortfolio',
           },
         },
       ],
@@ -157,7 +188,7 @@ export default {
       path: 'previsao-de-custo-pdm',
       meta: {
         título: 'Relatórios de previsão de custo de PdM',
-        títuloParaMenu: 'Previsão de custo de PdM',
+        títuloParaMenu: 'Previsão de custo',
       },
       children: [
         {
@@ -171,6 +202,30 @@ export default {
           component: NovoRelatórioDePrevisãoDeCustoPdM,
           meta: {
             título: 'Novo relatório de previsão de custo de PdM',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'previsao-de-custo-portfolio',
+      meta: {
+        título: 'Relatórios de previsão de custo de portfolio',
+        títuloParaMenu: 'Previsão de custo',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDePrevisãoDeCustoPortfolio',
+          component: RelatóriosDePrevisãoDeCustoPortfolio,
+        },
+        {
+          path: 'novo',
+          name: 'novoRelatórioDePrevisãoDeCustoPortfolio',
+          component: NovoRelatórioDePrevisãoDeCustoPortfolio,
+          meta: {
+            título: 'Novo relatório de previsão de custo de portfolio',
+            rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPortfolio',
           },
         },
       ],
