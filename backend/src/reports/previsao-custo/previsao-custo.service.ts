@@ -93,7 +93,13 @@ export class PrevisaoCustoService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        const camposMetaIniAtv = pdm ? [
+        const camposProjeto = [
+            { value: 'projeto.codigo', label: 'Código Projeto' },
+            { value: 'projeto.nome', label: 'Nome do Projeto' },
+            { value: 'projeto.id', label: 'ID do Projeto' },
+        ];
+
+        const campos = pdm ? [
             { value: 'meta.codigo', label: 'Código da Meta' },
             { value: 'meta.titulo', label: 'Título da Meta' },
             { value: 'meta.id', label: 'ID da Meta' },
@@ -103,19 +109,7 @@ export class PrevisaoCustoService implements ReportableService {
             { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
             { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
             { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-        ] : [];
-
-        const camposProjeto = [
-            { value: 'projeto.codigo', label: 'Código Projeto' },
-            { value: 'projeto.nome', label: 'Nome do Projeto' },
-            { value: 'projeto.id', label: 'ID do Projeto' },
-        ];
-
-        let campos = camposMetaIniAtv;
-
-        if (params.portfolio_id === undefined && params.projeto_id === undefined) {
-            campos = camposProjeto;
-        }
+        ] : camposProjeto;
 
         if (dados.linhas.length) {
             const json2csvParser = new Parser({
