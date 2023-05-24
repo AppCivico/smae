@@ -86,14 +86,14 @@ export class PrevisaoCustoService implements ReportableService {
         return partes.join('.');
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
+    async getFiles(myInput: any, pdm_id: number | null, params: any): Promise<FileOutput[]> {
         const dados = myInput as ListPrevisaoCustoDto;
 
-        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
+        const pdm = pdm_id ? await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } }) : null;
 
         const out: FileOutput[] = [];
 
-        const camposMetaIniAtv = [
+        const camposMetaIniAtv = pdm ? [
             { value: 'meta.codigo', label: 'Código da Meta' },
             { value: 'meta.titulo', label: 'Título da Meta' },
             { value: 'meta.id', label: 'ID da Meta' },
@@ -103,7 +103,8 @@ export class PrevisaoCustoService implements ReportableService {
             { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
             { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
             { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-        ];
+        ] : [];
+
         const camposProjeto = [
             { value: 'projeto.codigo', label: 'Código Projeto' },
             { value: 'projeto.nome', label: 'Nome do Projeto' },
