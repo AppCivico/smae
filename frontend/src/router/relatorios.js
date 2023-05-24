@@ -34,13 +34,23 @@ export default {
       'Reports.remover',
     ],
     rotasParaMenuSecundário: [
-      'RelatóriosMensais',
-      'RelatóriosSemestraisOuAnuais',
-      'RelatóriosOrçamentários',
-      'RelatóriosDePrevisãoDeCusto',
-      'RelatóriosDeProjeto',
-      'RelatóriosDePortfolio',
-      'RelatóriosDeStatus',
+      {
+        rotas: [
+          'RelatóriosMensais',
+          'RelatóriosSemestraisOuAnuais',
+          'RelatóriosDePrevisãoDeCusto',
+          'RelatóriosDeProjeto',
+          'RelatóriosDePortfolio',
+          'RelatóriosDeStatus',
+        ],
+      },
+      {
+        títuloParaGrupoDeLinksNoMenu: 'Orçamentários',
+        rotas: [
+          'RelatóriosOrçamentáriosPdM',
+        ],
+      },
+
     ],
   },
 
@@ -96,15 +106,15 @@ export default {
       ],
     },
     {
-      path: 'orcamentarios',
+      path: 'orcamentarios-pdm',
       meta: {
-        título: 'Relatórios orçamentários',
-        títuloParaMenu: 'Relatório Orçamento',
+        título: 'Relatórios orçamentários de PdM',
+        títuloParaMenu: 'PdM',
       },
       children: [
         {
           path: '',
-          name: 'RelatóriosOrçamentários',
+          name: 'RelatóriosOrçamentáriosPdM',
           component: RelatoriosOrcamentarios,
         },
         {
@@ -112,8 +122,8 @@ export default {
           path: 'novo',
           name: 'novoRelatórioOrçamentário',
           meta: {
-            título: 'Novo relatório de orçamentos',
-            rotaDeEscape: 'RelatóriosOrçamentários',
+            título: 'Novo relatório orçamentário de PdM',
+            rotaDeEscape: 'RelatóriosOrçamentáriosPdM',
           },
         },
       ],
