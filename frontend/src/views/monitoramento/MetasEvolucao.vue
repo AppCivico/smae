@@ -205,7 +205,7 @@ iniciar();
           :disabled="chamadasPendentes.submeterACoordenadoriaDePlanejamento"
           @click="submeterACoordenadoriaDePlanejamento()"
         >
-          Submeter à coordenadoria de planejamento
+          Submeter
         </button>
       </div>
     </div>
