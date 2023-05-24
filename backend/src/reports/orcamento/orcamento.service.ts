@@ -89,6 +89,8 @@ export class OrcamentoService implements ReportableService {
     ) { }
 
     async create(dto: SuperCreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
+        console.log(dto);
+
         const anoIni = Date2YMD.toString(dto.inicio).substring(0, 4);
         const anoFim = Date2YMD.toString(dto.fim).substring(0, 4);
 
@@ -184,13 +186,13 @@ export class OrcamentoService implements ReportableService {
                     ma.titulo as atividade_titulo,
 
                     p.id as projeto_id,
-                    p.codigo as projeto_nome,
+                    p.codigo as projeto_codigo,
                     p.nome as projeto_nome
 
                 from orcamento_planejado op
-                left join meta m on m.id = meta_id
-                left join iniciativa mi on mi.id = iniciativa_id
-                left join atividade ma on ma.id = atividade_id
+                left join meta m on m.id = op.meta_id
+                left join iniciativa mi on mi.id = op.iniciativa_id
+                left join atividade ma on ma.id = op.atividade_id
                 left join projeto p on p.id = op.projeto_id
 
                 where op.ano_referencia >= ${ano_ini}::int
@@ -223,7 +225,7 @@ export class OrcamentoService implements ReportableService {
                 count(1) as total_registros
             from previsoes
             left join dotacao_planejado dp ON previsoes.dotacao = dp.dotacao AND previsoes.ano = dp.ano_referencia
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
             order by previsoes.dotacao, 1, 2
             `;
     }
@@ -251,14 +253,14 @@ export class OrcamentoService implements ReportableService {
                     op.id as orcamento_planejado_id,
 
                     p.id as projeto_id,
-                    p.codigo as projeto_nome,
+                    p.codigo as projeto_codigo,
                     p.nome as projeto_nome
 
                 from orcamento_planejado op
+                left join meta m on m.id = op.meta_id
+                left join iniciativa mi on mi.id = op.iniciativa_id
+                left join atividade ma on ma.id = op.atividade_id
                 left join projeto p on p.id = op.projeto_id
-                left join meta m on m.id = meta_id
-                left join iniciativa mi on mi.id = iniciativa_id
-                left join atividade ma on ma.id = atividade_id
 
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
@@ -305,15 +307,15 @@ export class OrcamentoService implements ReportableService {
                     i.id as orcamento_realizado_item_id,
 
                     p.id as projeto_id,
-                    p.codigo as projeto_nome,
+                    p.codigo as projeto_codigo,
                     p.nome as projeto_nome
 
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
+                left join meta m on m.id = o.meta_id
+                left join iniciativa mi on mi.id = o.iniciativa_id
+                left join atividade ma on ma.id = o.atividade_id
                 left join projeto p on p.id = o.projeto_id
-                left join meta m on m.id = meta_id
-                left join iniciativa mi on mi.id = iniciativa_id
-                left join atividade ma on ma.id = atividade_id
 
                 where i.id = ANY(${search.map(r => r.id)}::int[])
                 and i.mes_corrente = TRUE
@@ -373,14 +375,14 @@ export class OrcamentoService implements ReportableService {
                 atividade_titulo,
                 projeto_id,
                 projeto_codigo,
-                projeto_titulo,
+                projeto_nome,
                 '' as ano,
                 '' as mes,
                 to_char_numeric(sum (smae_valor_empenhado)::numeric) as smae_valor_empenhado,
                 to_char_numeric(sum (smae_valor_liquidado)::numeric) as smae_valor_liquidado,
                 count(1) as total_registros
             FROM analitico
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
             order by analitico.dotacao, analitico.processo, analitico.nota_empenho, 1, 2
             `;
     }
@@ -413,15 +415,15 @@ export class OrcamentoService implements ReportableService {
                     i.mes_corrente,
 
                     p.id as projeto_id,
-                    p.codigo as projeto_nome,
+                    p.codigo as projeto_codigo,
                     p.nome as projeto_nome
 
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
+                left join meta m on m.id = o.meta_id
+                left join iniciativa mi on mi.id = o.iniciativa_id
+                left join atividade ma on ma.id = o.atividade_id
                 left join projeto p on p.id = o.projeto_id
-                left join meta m on m.id = meta_id
-                left join iniciativa mi on mi.id = iniciativa_id
-                left join atividade ma on ma.id = atividade_id
 
                 where i.id = ANY(${search.map(r => r.id)}::int[])
             )

@@ -4,13 +4,14 @@ import { plainToInstance } from 'class-transformer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadore.dto';
 import { CreateRelMonitoramentoMensalDto } from '../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
-import { SuperCreateOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
+import { PdmCreateOrcamentoExecutadoDto as CreateRelPdmOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
-import { CreateRelPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao-custo.dto';
-import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 import { CreateRelProjetosDto } from '../pp-projetos/dto/create-projetos.dto';
 import { CreateRelProjetoStatusDto } from '../pp-status/dto/create-projeto-status.dto';
+import { CreateRelPrevisaoCustoDto as CreateRelPdmPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao-custo.dto';
+import { CreateRelProjetoOrcamentoDto } from '../projeto-orcamento/dto/create-projeto-orcamento.dto';
 import { CreateRelProjetoPrevisaoCustoDto } from '../projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
+import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 
 @Injectable()
 export class UtilsService {
@@ -77,7 +78,10 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
 
     switch (fonte) {
         case 'Orcamento':
-            theClass = SuperCreateOrcamentoExecutadoDto;
+            theClass = CreateRelPdmOrcamentoExecutadoDto;
+            break;
+        case 'ProjetoOrcamento':
+            theClass = CreateRelProjetoOrcamentoDto;
             break;
         case 'Indicadores':
             theClass = CreateRelIndicadorDto;
@@ -86,7 +90,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             theClass = CreateRelMonitoramentoMensalDto;
             break;
         case 'PrevisaoCusto':
-            theClass = CreateRelPrevisaoCustoDto;
+            theClass = CreateRelPdmPrevisaoCustoDto;
             break;
         case 'ProjetoPrevisaoCusto':
             theClass = CreateRelProjetoPrevisaoCustoDto;
