@@ -783,6 +783,8 @@ if (indicador_id) {
             @click="trackClickFormula"
           />
 
+          <pre v-ScrollLockDebug="'formula'">{{ formula }}</pre>
+
           <p
             v-if="errFormula"
             class="error-msg"
