@@ -662,32 +662,33 @@ export class OrcamentoService implements ReportableService {
             });
         }
 
-        // o dto foi encoded como json, perdeu os tipos
-        let anoCorrente = new Date(dto.inicio).getFullYear();
-        const anoCorrenteFim = new Date(dto.fim).getFullYear();
-
+        // n precisa mais pq já tem o report no front da
         // gambiarra pra puxar o relatório de previsao-custo aqui dentro do export
-        while (anoCorrente <= anoCorrenteFim) {
-            this.logger.debug(`Adicionando relatório de previsão de custo para o ano ${anoCorrente}`);
 
-            const p: CreateRelPrevisaoCustoDto = {
-                periodo_ano: 'Anterior',
-                ano: anoCorrente,
-            };
-            const r = await this.prevCustoService.create(p);
-
-            this.logger.debug(`Gerando arquivos relatório de previsão de custo para o ano ${anoCorrente}`);
-            const reportFiles = await this.prevCustoService.getFiles(r, pdm_id, r);
-
-            for (const file of reportFiles) {
-                out.push({
-                    name: `${anoCorrente}-${file.name}`,
-                    buffer: file.buffer
-                });
-            }
-
-            anoCorrente++;
-        }
+        // let anoCorrente = new Date(dto.inicio).getFullYear();
+        // const anoCorrenteFim = new Date(dto.fim).getFullYear();
+        // o dto foi encoded como json, perdeu os tipos
+        //        while (anoCorrente <= anoCorrenteFim) {
+        //            this.logger.debug(`Adicionando relatório de previsão de custo para o ano ${anoCorrente}`);
+        //
+        //            const p: CreateRelPrevisaoCustoDto = {
+        //                periodo_ano: 'Anterior',
+        //                ano: anoCorrente,
+        //            };
+        //            const r = await this.prevCustoService.create(p);
+        //
+        //            this.logger.debug(`Gerando arquivos relatório de previsão de custo para o ano ${anoCorrente}`);
+        //            const reportFiles = await this.prevCustoService.getFiles(r, pdm_id, r);
+        //
+        //            for (const file of reportFiles) {
+        //                out.push({
+        //                    name: `${anoCorrente}-${file.name}`,
+        //                    buffer: file.buffer
+        //                });
+        //            }
+        //
+        //            anoCorrente++;
+        //}
 
         return [
             {
