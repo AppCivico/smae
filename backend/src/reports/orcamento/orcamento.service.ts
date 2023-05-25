@@ -130,6 +130,22 @@ export class OrcamentoService implements ReportableService {
             select: { id: true },
         });
 
+        const searchPlanejado = await this.prisma.orcamentoPlanejado.findMany({
+            where: {
+                meta_id: filtroMetas ? { in: filtroMetas } : undefined,
+                projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
+                ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
+                removido_em: null,
+                OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
+
+                ano_referencia: {
+                    gte: dto.inicio.getFullYear(),
+                    lte: dto.fim.getFullYear(),
+                },
+            },
+            select: { id: true },
+        });
+
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
         const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
 
@@ -139,7 +155,7 @@ export class OrcamentoService implements ReportableService {
                 retExecutado.push(this.convertRealizadoRow(r));
             }
 
-            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim);
+            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, searchPlanejado);
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r));
             }
@@ -150,7 +166,7 @@ export class OrcamentoService implements ReportableService {
                 retExecutado.push(this.convertRealizadoRow(r));
             }
 
-            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim);
+            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, searchPlanejado);
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r));
             }
@@ -165,7 +181,7 @@ export class OrcamentoService implements ReportableService {
         };
     }
 
-    private async queryConsolidadoPlanejado(ano_ini: string, ano_fim: string): Promise<RetornoPlanejadoDb[]> {
+    private async queryConsolidadoPlanejado(ano_ini: string, ano_fim: string, search: { id: number }[]): Promise<RetornoPlanejadoDb[]> {
         return await this.prisma.$queryRaw`
             with previsoes as (
                 select
@@ -198,6 +214,7 @@ export class OrcamentoService implements ReportableService {
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.removido_em is null
+                and op.id = ANY(${search.map(r => r.id)}::int[])
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -225,12 +242,13 @@ export class OrcamentoService implements ReportableService {
                 count(1) as total_registros
             from previsoes
             left join dotacao_planejado dp ON previsoes.dotacao = dp.dotacao AND previsoes.ano = dp.ano_referencia
+
             GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
             order by previsoes.dotacao, 1, 2
             `;
     }
 
-    private async queryAnaliticoPlanejado(ano_ini: string, ano_fim: string): Promise<RetornoPlanejadoDb[]> {
+    private async queryAnaliticoPlanejado(ano_ini: string, ano_fim: string, search: { id: number }[]): Promise<RetornoPlanejadoDb[]> {
         return await this.prisma.$queryRaw`
             with previsoes as (
                 select
@@ -265,6 +283,7 @@ export class OrcamentoService implements ReportableService {
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.removido_em is null
+                and op.id = ANY(${search.map(r => r.id)}::int[])
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
