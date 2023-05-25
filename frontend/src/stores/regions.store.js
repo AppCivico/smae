@@ -1,5 +1,5 @@
 import { requestS } from '@/helpers';
-import createDataTree from '@/helpers/createDataTree';
+import createDataTree from '@/helpers/createDataTree.ts';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
