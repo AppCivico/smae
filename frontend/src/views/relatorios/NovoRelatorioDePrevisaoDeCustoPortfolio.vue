@@ -125,7 +125,8 @@ iniciar();
             error: errors['parametros.projeto_id'],
             loading: projetosStore.chamadasPendentes.lista
           }"
-          :disabled="projetosStore.chamadasPendentes.lista"
+          :disabled="projetosStore.chamadasPendentes.lista
+            || !projetosStore.projetosPorPortfolio?.[values.parametros.portfolio_id]?.length"
         >
           <option :value="null">
             Selecionar
