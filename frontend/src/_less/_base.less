@@ -2223,3 +2223,15 @@ caption {
 .etiqueta--alerta__peso-5 {
   background-color: @alerta__peso-5;
 }
+
+.debug {
+  outline: 2px solid fuchsia;
+  border-radius: 1px;
+  outline-offset: 3px;
+
+  &[data-debug] {
+    &::before {
+      content: attr(data-debug)': ';
+    }
+  }
+}

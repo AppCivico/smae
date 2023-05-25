@@ -38,6 +38,24 @@ pinia.use(({ store }) => {
   return { requestS: markRaw(requestS) };
 });
 
+app.directive('ScrollLockDebug', {
+  beforeMount: (el, binding) => {
+    el.classList.add('debug');
+    el.setAttribute('hidden', '');
+
+    if (binding.value) {
+      el.setAttribute('data-debug', binding.value);
+    }
+    window.addEventListener('keydown', (event) => {
+      if (event.getModifierState && event.getModifierState('ScrollLock')) {
+        el.removeAttribute('hidden', '');
+      } else if (event.key === 'ScrollLock') {
+        el.setAttribute('hidden', '');
+      }
+    });
+  },
+});
+
 app.component('FormErrorsList', FormErrorsList);
 app.component('LabelFromYup', LabelFromYup);
 
