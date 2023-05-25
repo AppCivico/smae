@@ -39,11 +39,10 @@ export default {
     ],
     rotasParaMenuSecundário: [
       {
-        títuloParaGrupoDeLinksNoMenu: 'Plano de metas',
+        títuloParaGrupoDeLinksNoMenu: 'Programa de metas',
         rotas: [
           'RelatóriosMensais',
           'RelatóriosSemestraisOuAnuais',
-          'RelatóriosDeStatus',
           'RelatóriosDePrevisãoDeCustoPdM',
           'RelatóriosOrçamentáriosPdM',
         ],
@@ -53,6 +52,7 @@ export default {
         rotas: [
           'RelatóriosDeProjeto',
           'RelatóriosDePortfolio',
+          'RelatóriosDeStatus',
           'RelatóriosDePrevisãoDeCustoPortfolio',
           'RelatóriosOrçamentáriosPortfolio',
         ],
