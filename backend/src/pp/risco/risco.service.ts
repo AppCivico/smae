@@ -232,7 +232,7 @@ export class RiscoService {
 
         // Flag para informar se o código pode ser atualizado.
         const valoresStatusAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
-        const codigoAtualizavel: boolean = valoresStatusAceitaveis.includes(projetoRisco.projeto.status) ? true : false;
+        const edicaoLimitada: boolean = valoresStatusAceitaveis.includes(projetoRisco.projeto.status) ? true : false;
 
         return {
             ...projetoRisco,
@@ -242,7 +242,7 @@ export class RiscoService {
             grau: calcResult ? calcResult.grau_valor : null,
             grau_descricao: calcResult ? calcResult.grau_descricao : null,
             resposta: calcResult ? calcResult.resposta_descricao : null,
-            codigo_atualizavel: codigoAtualizavel,
+            edicao_limitada: edicaoLimitada,
 
             tarefas_afetadas: projetoRisco?.RiscoTarefa.map(r => {
                 return {
@@ -373,16 +373,37 @@ export class RiscoService {
     }
 
     async remove(projeto_id: number, projeto_risco_id: number, user: PessoaFromJwt) {
-        return await this.prisma.projetoRisco.updateMany({
-            where: {
-                id: projeto_risco_id,
-                projeto_id: projeto_id
-            },
-            data: {
-                removido_em: new Date(Date.now()),
-                removido_por: user.id
+        const deleted = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            // Deve ser verificado o status
+            const valoresAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+
+            const self = await prismaTx.projetoRisco.findFirstOrThrow({
+                where: {
+                    id: projeto_risco_id,
+                    projeto_id: projeto_id
+                },
+                select: {
+                    projeto: {
+                        select: { status: true }
+                    }
+                }
+            });
+
+            if (valoresAceitaveis.includes(self.projeto.status)) {
+                return await this.prisma.projetoRisco.updateMany({
+                    where: {
+                        id: projeto_risco_id,
+                        projeto_id: projeto_id
+                    },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                        removido_por: user.id
+                    }
+                })
+            } else {
+                throw new HttpException('Status do Projeto não permite deleção de Risco.', 400);
             }
-        })
+        });
     }
 
 }

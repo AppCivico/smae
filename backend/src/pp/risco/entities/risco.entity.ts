@@ -23,7 +23,7 @@ export class ProjetoRisco {
      */
     planos_de_acao_sem_dt_term: number[] | null
     status_risco: StatusRisco
-    codigo_atualizavel?: boolean
+    edicao_limitada?: boolean
 }
 
 export class ListProjetoRiscoDto {
