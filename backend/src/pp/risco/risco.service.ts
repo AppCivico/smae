@@ -216,6 +216,12 @@ export class RiscoService {
                             }
                         }
                     }
+                },
+
+                projeto: {
+                    select: {
+                        status: true
+                    }
                 }
             }
         });
@@ -223,6 +229,10 @@ export class RiscoService {
 
         let calcResult;
         if (projetoRisco.probabilidade && projetoRisco.impacto) calcResult = RiscoCalc.getResult(projetoRisco.probabilidade, projetoRisco.impacto);
+
+        // Flag para informar se o código pode ser atualizado.
+        const valoresStatusAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+        const codigoAtualizavel: boolean = valoresStatusAceitaveis.includes(projetoRisco.projeto.status) ? true : false;
 
         return {
             ...projetoRisco,
@@ -232,6 +242,7 @@ export class RiscoService {
             grau: calcResult ? calcResult.grau_valor : null,
             grau_descricao: calcResult ? calcResult.grau_descricao : null,
             resposta: calcResult ? calcResult.resposta_descricao : null,
+            codigo_atualizavel: codigoAtualizavel,
 
             tarefas_afetadas: projetoRisco?.RiscoTarefa.map(r => {
                 return {
