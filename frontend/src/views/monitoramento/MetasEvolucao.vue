@@ -46,6 +46,7 @@ const {
 } = storeToRefs(CiclosStore);
 
 async function iniciar() {
+  CiclosStore.$reset();
   CiclosStore.getMetaById(meta_id);
   CiclosStore.getMetaVars(meta_id);
 
