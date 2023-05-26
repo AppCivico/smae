@@ -250,6 +250,11 @@ export class RiscoService {
 
     async update(projeto_risco_id: number, dto: UpdateRiscoDto, user: PessoaFromJwt) {
         const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const self = await prismaTx.projetoRisco.findFirstOrThrow({
+                where: { id: projeto_risco_id },
+                select: { codigo: true }
+            });
+            
             if (dto.tarefa_id) {
                 const tarefa_id = dto.tarefa_id;
                 delete dto.tarefa_id;
@@ -265,7 +270,7 @@ export class RiscoService {
                 });
             }
 
-            if (dto.codigo) {
+            if (dto.codigo && dto.codigo != self.codigo) {
                 // O código só pode ser modificado caso o status do Projeto for diferente de ['Planejado','Validado ','EmAcompanhamento','Suspenso','Fechado ']
                 const valoresAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
 
@@ -303,7 +308,6 @@ export class RiscoService {
                         }
                     });
 
-                    console.dir(riscosAbaixo, {depth: 2});
                     const updates = [];
                     let primeiraRow: boolean = true;
                     for (const row of riscosAbaixo) {
