@@ -8,7 +8,10 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
 export class TagService {
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService,
+    ) { }
 
     async create(createTagDto: CreateTagDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.tag.count({
