@@ -7,7 +7,7 @@ function filtrar(item, termo = '') {
       return String(item).indexOf(termo) > -1;
 
     case typeof item === 'string':
-      return item.toLowerCase().indexOf(termo.toLowerCase()) > -1;
+      return item.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().indexOf(termo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()) > -1;
 
     case Array.isArray(item):
       return item.some((y) => filtrar(y, termo));
