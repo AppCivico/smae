@@ -21,6 +21,8 @@ RUN npm --loglevel=error install -g npm@9.6.4
 COPY --chown=1000:1000 package.json ./
 COPY --chown=1000:1000 package-lock.json ./
 
+COPY  --chown=1000:1000 vendor ./
+
 RUN npm ci
 
 COPY prisma/schema.prisma ./prisma/
