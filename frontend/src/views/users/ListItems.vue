@@ -1,8 +1,9 @@
 <script setup>
 import { Dashboard } from '@/components';
+import LocalFilter from '@/components/LocalFilter.vue';
 import { useAuthStore, useOrgansStore, useUsersStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
@@ -10,7 +11,7 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const usersStore = useUsersStore();
-const { temp, accessProfiles } = storeToRefs(usersStore);
+const { accessProfiles } = storeToRefs(usersStore);
 usersStore.clear();
 usersStore.getProfiles();
 usersStore.filterUsers();
@@ -19,15 +20,11 @@ const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
 organsStore.getAll();
 
-const filters = {};
 const orgao = ref('');
-const nomeemail = ref('');
-const usersFiltered = ref(temp);
-function filterUsers() {
-  filters.orgao = orgao.value;
-  filters.nomeemail = nomeemail.value;
-  usersStore.filterUsers(filters);
-}
+const termoDeBusca = ref('');
+const usersFiltered = computed(() => usersStore
+  .listaFiltradaPor(termoDeBusca.value)
+  .filter((x) => (!orgao.value ? true : x.orgao_id === orgao.value)));
 function filterOrgan(orgao_id) {
   return organs.value.length ? organs.value.find((o) => o.id == orgao_id) : '-';
 }
@@ -54,15 +51,15 @@ function filterPerfil(ids) {
         Novo usuário
       </router-link>
     </div>
-    <div class="flex center mb2">
+    <div class="flex mb2">
       <div class="f1">
+        <label class="label tc300">Órgãos</label>
         <select
-          v-model="orgao"
+          v-model.number="orgao"
           class="inputtext"
-          @change="filterUsers"
         >
-          <option value="">
-            Todos os órgãos
+          <option :value="0">
+            Todos
           </option>
           <template v-if="organs.length">
             <option
@@ -75,21 +72,11 @@ function filterPerfil(ids) {
           </template>
         </select>
       </div>
-      <div class="f2 search ml2">
-        <input
-          v-model="nomeemail"
-          placeholder="Buscar por nome ou e-mail"
-          type="text"
-          class="inputtext"
-          @input="filterUsers"
-        >
-      </div>
-      <button
-        class="btn ml2"
-        @click="filterUsers"
-      >
-        Filtrar
-      </button>
+
+      <LocalFilter
+        v-model="termoDeBusca"
+        class="f2 search ml2"
+      />
     </div>
     <table class="tablemain fix">
       <thead>

@@ -1,5 +1,6 @@
 import { requestS } from '@/helpers';
 import { useAlertStore, useAuthStore } from '@/stores';
+import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -131,5 +132,11 @@ export const useUsersStore = defineStore({
         this.accessProfiles = { error };
       }
     },
+  },
+  getters: {
+    // eslint-disable-next-line max-len
+    listaFiltradaPor: ({ users: lista }) => (termo) => (Array.isArray(lista)
+      ? filtrarObjetos(lista, termo)
+      : []),
   },
 });
