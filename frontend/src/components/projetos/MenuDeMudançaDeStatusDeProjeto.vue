@@ -1,5 +1,6 @@
 <script setup>
 import { useProjetosStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
@@ -57,11 +58,14 @@ const ações = [
 
 const açõesPermitidas = computed(() => ações.filter((x) => !!permissões?.value?.[`acao_${x.ação}`]));
 
-async function mudarStatus(id, ação) {
-  const resposta = await projetosStore.mudarStatus(id, ação);
-  if (resposta) {
-    projetosStore.buscarItem(id);
-  }
+async function mudarStatus(id, { nome, ação }) {
+  useAlertStore()
+    .confirmAction(`Deseja mesmo mudar o status para ${nome}?`, async () => {
+      const resposta = await projetosStore.mudarStatus(id, ação);
+      if (resposta) {
+        projetosStore.buscarItem(id);
+      }
+    });
 }
 </script>
 <template>
@@ -79,7 +83,7 @@ async function mudarStatus(id, ação) {
           type="button"
           class="like-a__link"
           :disabled="chamadasPendentes.mudarStatus"
-          @click="mudarStatus(emFoco.id, item.ação)"
+          @click="mudarStatus(emFoco.id, item)"
         >
           {{ item.nome }}
         </button>
