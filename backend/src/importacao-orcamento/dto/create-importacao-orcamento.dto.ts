@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsOptional, IsString, Validate, ValidateIf } from "class-validator";
+import { IsInt, IsOptional, IsString, Validate, ValidateIf } from "class-validator";
 import { EitherPdmOrPortfolio } from "src/common/dto/EitherPdmOrPortfolio";
 
 export class CreateImportacaoOrcamentoDto {
@@ -24,4 +24,18 @@ export class CreateImportacaoOrcamentoDto {
     @Type(() => Number)
     portfolio_id: number | undefined;
 
+}
+
+export class FilterImportacaoOrcamentoDto {
+    @IsOptional()
+    @IsInt()
+    @ApiProperty({ example: 0 })
+    @Type(() => Number)
+    pdm_id: number | undefined;
+
+    @IsOptional()
+    @IsInt()
+    @ApiProperty({ example: 0 })
+    @Type(() => Number)
+    portfolio_id: number | undefined;
 }
