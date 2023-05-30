@@ -12,6 +12,7 @@ export default {
   props: ({ params }) => ({
     ...params,
     projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+    riscoId: Number.parseInt(params.riscoId, 10) || undefined,
   }),
 
   meta: {
