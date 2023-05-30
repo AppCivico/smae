@@ -109,7 +109,10 @@ function filterPerfil(ids) {
             <td>{{ user.nome_completo }}</td>
             <td>{{ user.lotacao ?? '-' }}</td>
             <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
-            <td>{{ user.perfil_acesso_ids ? filterPerfil(user.perfil_acesso_ids) : '-' }}</td>
+            <td>
+              {{ user.perfil_acesso_ids?.length
+                ? filterPerfil(user.perfil_acesso_ids) : '-' }}
+            </td>
             <td style="white-space: nowrap; text-align: right;">
               <template
                 v-if="temPermissãoPara('CadastroPessoa.administrador') ||
