@@ -1,18 +1,19 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UploadService } from 'src/upload/upload.service';
+import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { JOB_IMPORTACAO_ORCAMENTO_LOCK } from 'src/common/dto/locks';
-import { Cron } from '@nestjs/schedule';
-import { DateTime } from 'luxon';
-import { SYSTEM_TIMEZONE } from 'src/common/date2ymd';
-import { ImportacaoOrcamentoDto, ListImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
-import { ProjetoService } from 'src/pp/projeto/projeto.service';
+import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { MetaService } from 'src/meta/meta.service';
-
+import { ProjetoService } from 'src/pp/projeto/projeto.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { UploadService } from 'src/upload/upload.service';
+import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
+import { ImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
+import { read, utils, writeFile } from "xlsx";
+import { ColunasNecessarias, OutrasColumns } from './importacao-orcamento.common';
 
 @Injectable()
 export class ImportacaoOrcamentoService {
@@ -44,6 +45,8 @@ export class ImportacaoOrcamentoService {
                 return importacao;
             }
         );
+
+        this.executaImportacaoOrcamento(created.id);
 
         return { id: created.id }
     }
@@ -128,13 +131,13 @@ export class ImportacaoOrcamentoService {
     }
 
 
-    @Cron('5 * * * *')
+    @Cron('* * * * *')
     async handleCron() {
         if (Boolean(process.env['DISABLE_IMPORTACAO_ORCAMENTO_CRONTAB'])) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
-                this.logger.debug(`Adquirindo lock para verificação de relatórios`);
+                this.logger.debug(`Adquirindo lock para verificação de upload do orçamento`);
                 const locked: {
                     locked: boolean;
                 }[] = await prisma.$queryRaw`SELECT
@@ -165,10 +168,8 @@ export class ImportacaoOrcamentoService {
     }
 
     private async verificaImportacaoOrcamento(filtroId?: number | undefined) {
-
         const pending = await this.prisma.importacaoOrcamento.findMany({
             where: {
-
                 processado_em: null,
                 AND: [
                     {
@@ -183,6 +184,9 @@ export class ImportacaoOrcamentoService {
                         ]
                     }
                 ]
+            },
+            select: {
+                id: true
             }
         });
 
@@ -195,9 +199,112 @@ export class ImportacaoOrcamentoService {
                 }
             });
 
+            try {
 
+                await this.processaArquivo(job.id)
+            } catch (error) {
+                console.log(error);
+                this.logger.error(error);
+
+                await this.prisma.importacaoOrcamento.update({
+                    where: { id: job.id },
+                    data: {
+                        linhas_importadas: 0,
+                        processado_errmsg: `Erro ao processar arquivo: ${error}`,
+                        processado_em: new Date(Date.now())
+                    }
+                });
+
+            }
         }
     }
 
+    private async processaArquivo(id: number) {
+
+        const job = await this.prisma.importacaoOrcamento.findUniqueOrThrow({
+            where: { id: +id }
+        });
+
+        const inputBuffer = await Stream2Buffer((await this.uploadService.getReadableStreamById(job.arquivo_id)).stream);
+
+        const inputXLSX = read(inputBuffer, {
+            type: 'buffer'
+
+        });
+
+        // Write the output file
+        writeFile(inputXLSX, '/tmp/tes.xlsx');
+
+        const sheetName = inputXLSX.SheetNames[0];
+        const sheet = inputXLSX.Sheets[sheetName];
+        const range = utils.decode_range(sheet['!ref']!);
+
+        const colunaHeaderIndex = this.createColumnHeaderIndex(sheet, [...ColunasNecessarias, ...OutrasColumns]);
+
+        console.log(colunaHeaderIndex)
+
+        const outputXLSX = utils.book_new();
+        const outputSheet = utils.aoa_to_sheet([[...ColunasNecessarias, ...OutrasColumns, 'erros']]);
+        utils.book_append_sheet(outputXLSX, outputSheet, sheetName);
+
+
+        console.log(range.s.r)
+        for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
+            const row = [];
+            let erro = "";
+
+            [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
+
+                const colIndex = colunaHeaderIndex[columnName];
+                console.log(columnName, colIndex)
+
+                if (colIndex >= 0) {
+                    const cellAddress = utils.encode_cell({ c: colIndex, r: rowIndex });
+                    const cellValue = sheet[cellAddress]?.v;
+
+                    if (columnName === 'ano' && cellValue > 2030) {
+                        erro = "ano n pode ser maior que 2030";
+                    }
+
+                    row.push(cellValue);
+                } else {
+                    row.push(undefined); // If the optional column does not exist, push undefined
+                }
+            });
+
+            // Add the error message to the row
+            row.push(erro);
+
+            const newRow = [row];
+            console.log(newRow)
+            utils.sheet_add_aoa(outputSheet, newRow, { origin: 'A' + (rowIndex + 1) });
+        }
+
+
+        // Write the output file
+        writeFile(outputXLSX, '/tmp/output_file.xlsx');
+
+    }
+
+    private createColumnHeaderIndex(sheet: any, columns: string[]): { [key: string]: number } {
+        const index: { [key: string]: number } = {};
+        const primeiraLinha = utils.decode_range(sheet['!ref']).s;
+
+        console.log(primeiraLinha)
+
+        columns.forEach((columnName) => {
+            for (let colIndex = primeiraLinha.c; colIndex <= 25; colIndex++) {
+                const position = utils.encode_cell({ c: colIndex, r: primeiraLinha.r });
+                const cellValue = sheet[position]?.v.trim();
+
+                if (cellValue === columnName) {
+                    index[columnName] = colIndex;
+                    break;
+                }
+            }
+        });
+
+        return index;
+    }
 
 }
