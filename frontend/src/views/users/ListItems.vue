@@ -104,8 +104,22 @@ function filterPerfil(ids) {
           <tr
             v-for="user in usersFiltered"
             :key="user.id"
+            :class="{
+              tc400: user.desativado
+            }"
           >
-            <td>{{ user.email }}</td>
+            <td class="cell--minimum">
+              {{ user.email }}
+              <span
+                v-if="user.desativado"
+                class="tipinfo ml05"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_i" /></svg><div>Usuário desativado</div>
+              </span>
+            </td>
             <td>{{ user.nome_completo }}</td>
             <td>{{ user.lotacao ?? '-' }}</td>
             <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
