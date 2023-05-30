@@ -308,7 +308,7 @@ export class UploadService {
         return decoded.arquivo_id;
     }
 
-    async getBufferByToken(downloadToken: string): Promise<TokenResponse> {
+    async getReadableStreamByToken(downloadToken: string): Promise<TokenResponse> {
         const arquivo = await this.prisma.arquivo.findFirst({
             where: { id: this.checkDownloadToken(downloadToken) },
             select: { caminho: true, nome_original: true, mime_type: true },
@@ -322,4 +322,18 @@ export class UploadService {
             mime_type: arquivo.mime_type || 'application/octet-stream',
         };
     }
+
+    async getReadableStreamById(id: number): Promise<TokenResponse> {
+        const arquivo = await this.prisma.arquivo.findFirstOrThrow({
+            where: { id: id },
+            select: { caminho: true, nome_original: true, mime_type: true },
+        });
+
+        return {
+            stream: await this.storage.getStream(arquivo.caminho),
+            nome: arquivo.nome_original,
+            mime_type: arquivo.mime_type || 'application/octet-stream',
+        };
+    }
+
 }
