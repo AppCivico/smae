@@ -31,6 +31,12 @@ async function iniciar() {
 
 iniciar();
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="t12 uc w700 tamarelo">
     <small class="lc">Portfolio</small>

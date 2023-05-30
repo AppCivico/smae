@@ -80,6 +80,12 @@ function buscar(e, item, g, label) {
   }
 }
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <template v-if="grupo?.length">
     <div class="suggestion search">
