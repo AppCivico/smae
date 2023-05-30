@@ -60,7 +60,7 @@ const açõesPermitidas = computed(() => ações.filter((x) => !!permissões?.va
 
 async function mudarStatus(id, { nome, ação }) {
   useAlertStore()
-    .confirmAction(`Deseja mesmo mudar o status para ${nome}?`, async () => {
+    .confirmAction(`${nome}. Você confirma essa mudança de status?`, async () => {
       const resposta = await projetosStore.mudarStatus(id, ação);
       if (resposta) {
         projetosStore.buscarItem(id);
