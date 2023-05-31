@@ -21,10 +21,11 @@ const { organs } = storeToRefs(organsStore);
 organsStore.getAll();
 
 const orgao = ref('');
-const termoDeBusca = ref('');
-const usersFiltered = computed(() => usersStore
-  .listaFiltradaPor(termoDeBusca.value)
+const listaFiltradaPorTermoDeBusca = ref([]);
+
+const usersFiltered = computed(() => listaFiltradaPorTermoDeBusca.value
   .filter((x) => (!orgao.value ? true : x.orgao_id === orgao.value)));
+
 function filterOrgan(orgao_id) {
   return organs.value.length ? organs.value.find((o) => o.id == orgao_id) : '-';
 }
@@ -37,6 +38,14 @@ function filterPerfil(ids) {
 
   return vs ?? '-';
 }
+
+const listaDeUsuáriosComNomesAoInvésDeIds = computed(() => (!Array.isArray(usersStore.users)
+  ? []
+  : usersStore.users.map((x) => ({
+    ...x,
+    siglaDoÓrgão: filterOrgan(x.orgao_id).sigla,
+    nomesDosPerfis: filterPerfil(x.perfil_acesso_ids),
+  }))));
 </script>
 <template>
   <Dashboard>
@@ -74,10 +83,12 @@ function filterPerfil(ids) {
       </div>
 
       <LocalFilter
-        v-model="termoDeBusca"
+        v-model="listaFiltradaPorTermoDeBusca"
+        :lista="listaDeUsuáriosComNomesAoInvésDeIds"
         class="f2 search ml2"
       />
     </div>
+
     <table class="tablemain fix">
       <thead>
         <tr>

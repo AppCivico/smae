@@ -12,13 +12,12 @@ const riscosStore = useRiscosStore();
 
 const acompanhamentosStore = useAcompanhamentosStore();
 const {
-  chamadasPendentes, erro,
+  chamadasPendentes, erro, lista,
 } = storeToRefs(acompanhamentosStore);
 
 const route = useRoute();
 const projetoId = route?.params?.projetoId;
-
-const termoDeBusca = ref('');
+const listaFiltradaPorTermoDeBusca = ref([]);
 const grauVisível = ref(0);
 const statusVisível = ref(0);
 
@@ -29,8 +28,8 @@ async function iniciar() {
 }
 
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
-  ? acompanhamentosStore.listaFiltradaPor(termoDeBusca.value)
-  : acompanhamentosStore.listaFiltradaPor(termoDeBusca.value)
+  ? listaFiltradaPorTermoDeBusca.value
+  : listaFiltradaPorTermoDeBusca.value
     .filter((x) => (!grauVisível.value || x.grau === grauVisível.value)
       && (!statusVisível.value || x.status_acompanhamento === statusVisível.value))
 ));
@@ -62,7 +61,8 @@ vue/singleline-html-element-content-newline -->
 
   <div class="flex center mb1 spacebetween">
     <LocalFilter
-      v-model="termoDeBusca"
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="lista"
       class="f1"
     />
   </div>
