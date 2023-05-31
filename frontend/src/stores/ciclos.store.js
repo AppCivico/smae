@@ -1,5 +1,4 @@
-import { requestS } from '@/helpers';
-import { usePdMStore } from '@/stores';
+import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -82,7 +81,7 @@ export const useCiclosStore = defineStore({
       try {
         this.Ciclos = { loading: true };
         if (!this.activePdm) await this.getPdM();
-        const r = await requestS.get(`${baseUrl}/pdm-ciclo/v2?pdm_id=${this.activePdm.id}`);
+        const r = await this.requestS.get(`${baseUrl}/pdm-ciclo/v2?pdm_id=${this.activePdm.id}`);
         this.Ciclos = r.linhas.map((x) => {
           x.inicio_coleta = this.dateToField(x.inicio_coleta);
           x.inicio_qualificacao = this.dateToField(x.inicio_qualificacao);
@@ -113,12 +112,12 @@ export const useCiclosStore = defineStore({
       else setTimeout(this.waitForLoad.bind(this, resolve, reject), 300);
     },
     async updateCiclos(id, params) {
-      if (await requestS.patch(`${baseUrl}/pdm-ciclo/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/pdm-ciclo/${id}`, params)) return true;
       return false;
     },
 
     async preencherValoresVazios(params) {
-      if (await requestS.patch(`${baseUrl}/mf/auxiliar/auto-preencher/`, params)) {
+      if (await this.requestS.patch(`${baseUrl}/mf/auxiliar/auto-preencher/`, params)) {
         return true;
       }
       return false;
@@ -127,7 +126,7 @@ export const useCiclosStore = defineStore({
     async submeterACoordenadoriaDePlanejamento(params) {
       this.chamadasPendentes.submeterACoordenadoriaDePlanejamento = true;
 
-      if (await requestS.patch(`${baseUrl}/mf/auxiliar/enviar-para-cp/`, params)) {
+      if (await this.requestS.patch(`${baseUrl}/mf/auxiliar/enviar-para-cp/`, params)) {
         this.chamadasPendentes.submeterACoordenadoriaDePlanejamento = false;
         return true;
       }
@@ -140,7 +139,7 @@ export const useCiclosStore = defineStore({
     async getMetas() {
       this.MetasCiclos = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/mf/metas/`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/`);
         this.MetasCiclos = r.linhas;
       } catch (error) {
         this.MetasCiclos = { error };
@@ -150,7 +149,7 @@ export const useCiclosStore = defineStore({
       this.SingleMeta = { loading: true };
       try {
         this.SingleMeta = { loading: true };
-        const r = await requestS.get(`${baseUrl}/mf/metas/${meta_id}/iniciativas-e-atividades`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/${meta_id}/iniciativas-e-atividades`);
         this.SingleMeta = r.meta ? r : {};
       } catch (error) {
         this.SingleMeta = { error };
@@ -160,7 +159,7 @@ export const useCiclosStore = defineStore({
       this.SingleMeta = { loading: true };
       try {
         this.SingleMeta = { loading: true };
-        const r = await requestS.get(`${baseUrl}/meta/iniciativas-atividades?meta_ids=${meta_id}`);
+        const r = await this.requestS.get(`${baseUrl}/meta/iniciativas-atividades?meta_ids=${meta_id}`);
         this.SingleMeta = r.linhas.length ? r.linhas[0] : {};
       } catch (error) {
         this.SingleMeta = { error };
@@ -169,7 +168,7 @@ export const useCiclosStore = defineStore({
     async getMetaVars(id) {
       this.MetaVars = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/mf/metas/${id}/variaveis`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/${id}/variaveis`);
         this.MetaVars = r;
       } catch (error) {
         this.MetaVars = { error };
@@ -178,22 +177,22 @@ export const useCiclosStore = defineStore({
     async getAnalise(id, periodo) {
       this.SingleAnalise = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa?data_valor=${periodo}&variavel_id=${id}&apenas_ultima_revisao=true`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/variaveis/analise-qualitativa?data_valor=${periodo}&variavel_id=${id}&apenas_ultima_revisao=true`);
         this.SingleAnalise = r;
       } catch (error) {
         this.SingleAnalise = { error };
       }
     },
     async updateAnalise(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa`, params)) return true;
       return false;
     },
     async updateFase(id, params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/${id}/fase`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/${id}/fase`, params)) return true;
       return false;
     },
     async deleteArquivo(id) {
-      if (await requestS.delete(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/${id}`)) {
         this.SingleAnalise.arquivos = this.SingleAnalise.arquivos.filter((x) => x.id !== id);
         return true;
       }
@@ -201,7 +200,7 @@ export const useCiclosStore = defineStore({
     },
     async addArquivo(params, dadosParaEnvio) {
       try {
-        const { id = 0, download_token: downloadToken } = await requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/`, params);
+        const { id = 0, download_token: downloadToken } = await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa/documento/`, params);
 
         if (id) {
           const dadosDoArquivo = {
@@ -222,11 +221,11 @@ export const useCiclosStore = defineStore({
       }
     },
     async conferir(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/variaveis/conferida`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/conferida`, params)) return true;
       return false;
     },
     async complemento(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/variaveis/complemento`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/complemento`, params)) return true;
       return false;
     },
 
@@ -236,7 +235,7 @@ export const useCiclosStore = defineStore({
       this.SingleMetaAnaliseDocs = { loading: true };
 
       try {
-        const r = await requestS.get(`${baseUrl}/mf/metas/analise-qualitativa?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/analise-qualitativa?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
         this.SingleMetaAnalise = r.analises[0] ? r.analises[0] : {};
         this.SingleMetaAnaliseDocs = r.arquivos;
       } catch (error) {
@@ -245,11 +244,11 @@ export const useCiclosStore = defineStore({
       }
     },
     async updateMetaAnalise(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa`, params)) return true;
       return false;
     },
     async deleteMetaArquivo(id) {
-      if (await requestS.delete(`${baseUrl}/mf/metas/analise-qualitativa/documento/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/mf/metas/analise-qualitativa/documento/${id}`)) {
         this.SingleMetaAnaliseDocs = this.SingleMetaAnaliseDocs.filter((x) => x.id !== id);
         return true;
       }
@@ -257,7 +256,7 @@ export const useCiclosStore = defineStore({
     },
     async addMetaArquivo(params, dadosParaEnvio) {
       try {
-        const { id = 0, download_token: downloadToken } = await requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa/documento/`, params);
+        const { id = 0, download_token: downloadToken } = await this.requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa/documento/`, params);
 
         if (id) {
           const dadosDoArquivo = {
@@ -282,7 +281,7 @@ export const useCiclosStore = defineStore({
     async getMetaRisco(ciclo_id, meta_id) {
       this.SingleRisco = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/mf/metas/risco?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/risco?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
         this.SingleRisco = r;
         this.SingleRisco = r.riscos[0] ? r.riscos[0] : {};
       } catch (error) {
@@ -290,7 +289,7 @@ export const useCiclosStore = defineStore({
       }
     },
     async updateMetaRisco(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/risco`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/risco`, params)) return true;
       return false;
     },
 
@@ -298,14 +297,14 @@ export const useCiclosStore = defineStore({
     async getMetaFechamento(ciclo_id, meta_id) {
       this.SingleFechamento = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/mf/metas/fechamento?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/fechamento?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
         this.SingleFechamento = r.fechamentos[0] ? r.fechamentos[0] : {};
       } catch (error) {
         this.SingleFechamento = { error };
       }
     },
     async updateMetaFechamento(params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/fechamento`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/fechamento`, params)) return true;
       return false;
     },
 
@@ -315,7 +314,7 @@ export const useCiclosStore = defineStore({
         if (!this.Cronogramas[parent_field]) this.Cronogramas[parent_field] = [];
         if (!this.Cronogramas[parent_field][p_id]) {
           this.Cronogramas[parent_field][p_id] = { loading: true };
-          const r = await requestS.get(`${baseUrl}/mf/metas/cronograma?${parent_field}=${p_id}`);
+          const r = await this.requestS.get(`${baseUrl}/mf/metas/cronograma?${parent_field}=${p_id}`);
           this.Cronogramas[parent_field][p_id] = r.linhas.map((x) => {
             x.inicio_previsto = this.dateToField(x.inicio_previsto);
             x.termino_previsto = this.dateToField(x.termino_previsto);
@@ -370,7 +369,7 @@ export const useCiclosStore = defineStore({
       try {
         if (!this.Etapas[cronograma_id]) {
           this.Etapas[cronograma_id] = { loading: true };
-          const r = await requestS.get(`${baseUrl}/mf/metas/cronograma-etapa?cronograma_id=${cronograma_id}`);
+          const r = await this.requestS.get(`${baseUrl}/mf/metas/cronograma-etapa?cronograma_id=${cronograma_id}`);
           this.Etapas[cronograma_id] = r.linhas.length ? r.linhas.map((x) => {
             if (x.cronograma_origem_etapa && x.cronograma_origem_etapa.id == cronograma_id) delete x.cronograma_origem_etapa;
             x.etapa.inicio_previsto = this.dateToField(x.etapa.inicio_previsto);
@@ -409,7 +408,7 @@ export const useCiclosStore = defineStore({
     async getEtapaById(cronograma_id, etapa_id) {
       try {
         this.SingleEtapa = { loading: true };
-        const r = await requestS.get(`${baseUrl}/mf/metas/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);
         this.SingleEtapa = r.linhas.length ? r.linhas.map((x) => {
           if (x.etapa.inicio_previsto) x.etapa.inicio_previsto = this.dateToField(x.etapa.inicio_previsto);
           if (x.etapa.termino_previsto) x.etapa.termino_previsto = this.dateToField(x.etapa.termino_previsto);
@@ -423,7 +422,7 @@ export const useCiclosStore = defineStore({
       }
     },
     async updateEtapa(id, params) {
-      if (await requestS.patch(`${baseUrl}/mf/metas/cronograma/etapa/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/cronograma/etapa/${id}`, params)) return true;
       return false;
     },
   },

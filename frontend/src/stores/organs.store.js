@@ -1,4 +1,3 @@
-import { requestS } from '@/helpers';
 import { useUsersStore } from '@/stores';
 import { defineStore } from 'pinia';
 
@@ -25,7 +24,7 @@ export const useOrgansStore = defineStore({
       try {
         if (this.organs.loading) return;
         this.organs = { loading: true };
-        const r = await requestS.get(`${baseUrl}/orgao`);
+        const r = await this.requestS.get(`${baseUrl}/orgao`);
         this.organs = r.linhas;
       } catch (error) {
         this.organs = { error };
@@ -47,7 +46,7 @@ export const useOrgansStore = defineStore({
       }
     },
     async insert(params) {
-      if (await requestS.post(`${baseUrl}/orgao`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/orgao`, params)) return true;
       return false;
     },
     async update(id, params) {
@@ -56,11 +55,11 @@ export const useOrgansStore = defineStore({
         descricao: params.descricao,
         tipo_orgao_id: params.tipo_orgao_id,
       };
-      if (await requestS.patch(`${baseUrl}/orgao/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/orgao/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/orgao/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/orgao/${id}`)) return true;
       return false;
     },
     async filterOrgans(f) {
@@ -83,7 +82,7 @@ export const useOrgansStore = defineStore({
     async getAllTypes() {
       this.organTypes = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/tipo-orgao`);
+        const r = await this.requestS.get(`${baseUrl}/tipo-orgao`);
         this.organTypes = r.linhas;
       } catch (error) {
         this.organTypes = { error };
@@ -104,18 +103,18 @@ export const useOrgansStore = defineStore({
       }
     },
     async insertType(params) {
-      if (await requestS.post(`${baseUrl}/tipo-orgao`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/tipo-orgao`, params)) return true;
       return false;
     },
     async updateType(id, params) {
       const m = {
         descricao: params.descricao,
       };
-      if (await requestS.patch(`${baseUrl}/tipo-orgao/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/tipo-orgao/${id}`, m)) return true;
       return false;
     },
     async deleteType(id) {
-      if (await requestS.delete(`${baseUrl}/tipo-orgao/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/tipo-orgao/${id}`)) return true;
       return false;
     },
     async filterOrganTypes(f) {

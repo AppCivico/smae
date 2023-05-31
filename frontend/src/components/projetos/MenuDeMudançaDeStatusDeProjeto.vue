@@ -1,6 +1,6 @@
 <script setup>
-import { useProjetosStore } from '@/stores';
 import { useAlertStore } from '@/stores/alert.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
