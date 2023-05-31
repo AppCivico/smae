@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { usuário as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -8,6 +9,7 @@ import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
 import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const usersStore = useUsersStore();
@@ -25,6 +27,7 @@ const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
 PaineisGruposStore.getAll();
 
 let title = 'Cadastro de Usuário';
+const editarNomeParaExibição = ref(false);
 const { user, accessProfiles } = storeToRefs(usersStore);
 usersStore.getProfiles();
 if (id) {
@@ -74,13 +77,13 @@ async function checkClose() {
     </div>
     <template v-if="!(user?.loading || user?.error)">
       <Form
-        v-slot="{ errors, isSubmitting }"
+        v-slot="{ errors, isSubmitting, setFieldValue, values }"
         :validation-schema="schema"
         :initial-values="user"
         @submit="onSubmit"
       >
         <div
-          v-if="user&&id"
+          v-if="user && id"
           class="flex g2 mb2"
         >
           <div class="">
@@ -128,6 +131,9 @@ async function checkClose() {
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_completo }"
+              @change="!values.nome_exibicao && !editarNomeParaExibição
+                ? setFieldValue('nome_exibicao', truncate(values.nome_completo, 20, ''))
+                : null"
             />
             <div class="error-msg">
               {{ errors.nome_completo }}
@@ -136,13 +142,29 @@ async function checkClose() {
         </div>
 
         <div class="flex g2 mb2">
-          <div class="f1">
-            <label class="label">Nome Social <span class="tvermelho">*</span></label>
+          <div class="mt2">
+            <label class="block">
+              <input
+                v-model="editarNomeParaExibição"
+                class="inputcheckbox"
+                type="checkbox"
+              ><span>Personalizar nome para exibição</span>
+            </label>
+          </div>
+
+          <div
+            v-show="editarNomeParaExibição"
+            class="f1"
+          >
+            <label class="label">Nome para exibição <span class="tvermelho">*</span></label>
             <Field
               name="nome_exibicao"
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_exibicao }"
+              @change="!values.nome_exibicao && !editarNomeParaExibição
+                ? setFieldValue('nome_exibicao', truncate(values.nome_completo, 20, ''))
+                : null"
             />
             <div class="error-msg">
               {{ errors.nome_exibicao }}
