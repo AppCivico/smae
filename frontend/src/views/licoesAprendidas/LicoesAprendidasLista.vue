@@ -9,13 +9,13 @@ import { useRoute } from 'vue-router';
 
 const licoesaprendidasStore = useLiçõesAprendidasStore();
 const {
-  chamadasPendentes, erro,
+  chamadasPendentes, erro, lista,
 } = storeToRefs(licoesaprendidasStore);
 
 const route = useRoute();
 const projetoId = route?.params?.projetoId;
 
-const termoDeBusca = ref('');
+const listaFiltradaPorTermoDeBusca = ref([]);
 const grauVisível = ref(0);
 const statusVisível = ref(0);
 
@@ -26,8 +26,8 @@ async function iniciar() {
 }
 
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
-  ? licoesaprendidasStore.listaFiltradaPor(termoDeBusca.value)
-  : licoesaprendidasStore.listaFiltradaPor(termoDeBusca.value)
+  ? listaFiltradaPorTermoDeBusca.value
+  : listaFiltradaPorTermoDeBusca.value
     .filter((x) => (!grauVisível.value || x.grau === grauVisível.value)
       && (!statusVisível.value || x.status_licoesaprendida === statusVisível.value))
 ));
@@ -56,7 +56,8 @@ iniciar();
 
   <div class="flex center mb1 spacebetween">
     <LocalFilter
-      v-model="termoDeBusca"
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="lista"
       class="f1"
     />
   </div>

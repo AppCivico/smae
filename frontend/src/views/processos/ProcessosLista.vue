@@ -9,13 +9,12 @@ import { useRoute } from 'vue-router';
 
 const processosStore = useProcessosStore();
 const {
-  chamadasPendentes, erro,
+  chamadasPendentes, erro, lista,
 } = storeToRefs(processosStore);
 
 const route = useRoute();
 const projetoId = route?.params?.projetoId;
-
-const termoDeBusca = ref('');
+const listaFiltradaPorTermoDeBusca = ref([]);
 const grauVisível = ref(0);
 const statusVisível = ref(0);
 
@@ -26,8 +25,8 @@ async function iniciar() {
 }
 
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
-  ? processosStore.listaFiltradaPor(termoDeBusca.value)
-  : processosStore.listaFiltradaPor(termoDeBusca.value)
+  ? listaFiltradaPorTermoDeBusca.value
+  : listaFiltradaPorTermoDeBusca.value
     .filter((x) => (!grauVisível.value || x.grau === grauVisível.value)
       && (!statusVisível.value || x.status_processo === statusVisível.value))
 ));
@@ -56,7 +55,8 @@ iniciar();
 
   <div class="flex center mb1 spacebetween">
     <LocalFilter
-      v-model="termoDeBusca"
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="lista"
       class="f1"
     />
   </div>
