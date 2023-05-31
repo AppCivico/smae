@@ -2,9 +2,10 @@
 import { Dashboard } from '@/components';
 import { usuário as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
-import {
-  useAlertStore, useOrgansStore, usePaineisGruposStore, useUsersStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';

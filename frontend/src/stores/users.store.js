@@ -1,6 +1,6 @@
-import { requestS } from '@/helpers';
-import { useAlertStore, useAuthStore } from '@/stores';
 import filtrarObjetos from '@/helpers/filtrarObjetos';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -23,14 +23,14 @@ export const useUsersStore = defineStore({
       this.usersCoord = {};
     },
     async register(user) {
-      await requestS.post(`${baseUrl}/pessoa`, user);
+      await this.requestS.post(`${baseUrl}/pessoa`, user);
       return true;
     },
     async getAll() {
       try {
         if (this.users.loading) return;
         this.users = { loading: true };
-        const r = await requestS.get(`${baseUrl}/pessoa`);
+        const r = await this.requestS.get(`${baseUrl}/pessoa`);
         this.users = r.linhas;
       } catch (error) {
         this.users = { error };
@@ -39,7 +39,7 @@ export const useUsersStore = defineStore({
     async getById(id) {
       this.user = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/pessoa/${id}`);
+        const r = await this.requestS.get(`${baseUrl}/pessoa/${id}`);
         if (!r.id) throw 'Usuário não encontrado';
         r.desativado = r.desativado ? '1' : false;
         if (r.grupos) r.grupos = r.grupos.map((g) => g.id);
@@ -52,7 +52,7 @@ export const useUsersStore = defineStore({
       try {
         if (this.usersCoord.loading) return;
         this.usersCoord = { loading: true };
-        const r = await requestS.get(`${baseUrl}/pessoa?coorderandor_responsavel_cp=true`);
+        const r = await this.requestS.get(`${baseUrl}/pessoa?coorderandor_responsavel_cp=true`);
         this.usersCoord = r.linhas;
       } catch (error) {
         this.usersCoord = { error };
@@ -84,7 +84,7 @@ export const useUsersStore = defineStore({
           m.desativado = false;
         }
 
-        await requestS.patch(`${baseUrl}/pessoa/${id}`, m);
+        await this.requestS.patch(`${baseUrl}/pessoa/${id}`, m);
         if (id === authStore.user.id) {
           const user = { ...authStore.user, ...params };
           localStorage.setItem('user', JSON.stringify(user));
@@ -100,7 +100,7 @@ export const useUsersStore = defineStore({
             const authStore = useAuthStore();
             if(id !== authStore.user.id){
                 this.users.find(x => x.id === id).isDeleting = true;
-                await requestS.delete(`${baseUrl}/deletar-usuario/${id}`);
+                await this.requestS.delete(`${baseUrl}/deletar-usuario/${id}`);
                 this.users = this.users.filter(x => x.id !== id);
             }
         } */
@@ -126,7 +126,7 @@ export const useUsersStore = defineStore({
     async getProfiles() {
       this.accessProfiles = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/perfil-de-acesso`);
+        const r = await this.requestS.get(`${baseUrl}/perfil-de-acesso`);
         this.accessProfiles = r.linhas;
       } catch (error) {
         this.accessProfiles = { error };
