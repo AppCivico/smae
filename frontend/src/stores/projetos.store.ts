@@ -245,9 +245,6 @@ export const useProjetosStore = defineStore('projetos', {
       responsaveis_no_orgao_gestor: emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.id) || null,
     }),
 
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
-
     pdmsPorId: ({ pdmsSimplificados }: Estado) => pdmsSimplificados
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 

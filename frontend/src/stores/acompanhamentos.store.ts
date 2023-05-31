@@ -105,8 +105,5 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
       prazo_realizado: dateTimeToDate(emFoco?.prazo_realizado) || null,
       risco: emFoco?.risco?.map((x: RiscoIdCod) => x.id) || null,
     }),
-
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
   },
 });
