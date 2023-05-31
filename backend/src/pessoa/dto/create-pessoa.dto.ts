@@ -16,8 +16,8 @@ export class CreatePessoaDto {
      * @example Fulano
      */
     @IsString({ message: '$property| Nome Social: Precisa ser alfanumérico' })
-    @MinLength(4, { message: '$property| Nome Social: Mínimo de 4 caracteres' })
-    @MaxLength(30, { message: '$property| Nome Social: Máximo 30 caracteres' })
+    @MinLength(1, { message: '$property| Nome Social: Mínimo de 1 caracteres' })
+    @MaxLength(250, { message: '$property| Nome Social: Máximo 250 caracteres' })
     nome_exibicao: string;
 
     /**
