@@ -133,10 +133,4 @@ export const useUsersStore = defineStore({
       }
     },
   },
-  getters: {
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ users: lista }) => (termo) => (Array.isArray(lista)
-      ? filtrarObjetos(lista, termo)
-      : []),
-  },
 });

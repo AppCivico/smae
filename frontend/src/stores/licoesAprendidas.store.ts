@@ -102,8 +102,5 @@ export const useLiçõesAprendidasStore = defineStore('liçõesAprendidas', {
       ...emFoco,
       data_registro: dateTimeToDate(emFoco?.data_registro) || null,
     }),
-
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
   },
 });
