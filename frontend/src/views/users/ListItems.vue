@@ -21,11 +21,13 @@ const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
 organsStore.getAll();
 
-const orgao = ref('');
+const orgao = ref(0);
+const perfil = ref(0);
 const listaFiltradaPorTermoDeBusca = ref([]);
 
 const usersFiltered = computed(() => listaFiltradaPorTermoDeBusca.value
-  .filter((x) => (!orgao.value ? true : x.orgao_id === orgao.value)));
+  .filter((x) => (!orgao.value ? true : x.orgao_id === orgao.value))
+  .filter((x) => (!perfil.value ? true : x.perfil_acesso_ids.includes(perfil.value))));
 
 function filterOrgan(orgao_id) {
   return organs.value.length ? organs.value.find((o) => o.id == orgao_id) : '-';
@@ -78,6 +80,27 @@ const listaDeUsuáriosComNomesAoInvésDeIds = computed(() => (!Array.isArray(use
               :value="organ.id"
             >
               {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
+            </option>
+          </template>
+        </select>
+      </div>
+
+      <div class="f1 mr1">
+        <label class="label tc300">Perfil</label>
+        <select
+          v-model.number="perfil"
+          class="inputtext"
+        >
+          <option :value="0">
+            Todos
+          </option>
+          <template v-if="accessProfiles.length">
+            <option
+              v-for="perfil in accessProfiles"
+              :key="perfil.id"
+              :value="perfil.id"
+            >
+              {{ perfil.nome }}
             </option>
           </template>
         </select>
