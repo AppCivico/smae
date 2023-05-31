@@ -61,9 +61,9 @@ const listaDeUsuáriosComNomesAoInvésDeIds = computed(() => (!Array.isArray(use
         Novo usuário
       </router-link>
     </div>
-    <div class="flex mb2">
-      <div class="f1">
-        <label class="label tc300">Órgãos</label>
+    <div class="flex flexwrap mb2">
+      <div class="f1 mr1">
+        <label class="label tc300">Órgão</label>
         <select
           v-model.number="orgao"
           class="inputtext"
@@ -86,7 +86,7 @@ const listaDeUsuáriosComNomesAoInvésDeIds = computed(() => (!Array.isArray(use
       <LocalFilter
         v-model="listaFiltradaPorTermoDeBusca"
         :lista="listaDeUsuáriosComNomesAoInvésDeIds"
-        class="f2 search ml2"
+        class="f2 search"
       />
     </div>
 
