@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import LocalFilter from '@/components/LocalFilter.vue';
+import truncate from '@/helpers/truncate';
 import { useAuthStore, useOrgansStore, useUsersStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -76,7 +77,7 @@ const listaDeUsuáriosComNomesAoInvésDeIds = computed(() => (!Array.isArray(use
               :key="organ.id"
               :value="organ.id"
             >
-              {{ organ.sigla }}
+              {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
             </option>
           </template>
         </select>
