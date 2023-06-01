@@ -114,32 +114,39 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     objeto?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     objetivo?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     publico_alvo?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     nao_escopo?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     secretario_executivo?: string | null
 
     @IsOptional()
     @IsString()
+    @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     secretario_responsavel?: string | null
 
     @IsOptional()
     @IsString()
+    @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     coordenador_ue?: string | null
 
