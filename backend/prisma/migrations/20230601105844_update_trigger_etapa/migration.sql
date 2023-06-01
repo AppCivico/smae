@@ -1,3 +1,7 @@
+-- AlterTable
+ALTER TABLE "etapa" ADD COLUMN     "n_filhos_imediatos" INTEGER,
+ADD COLUMN     "percentual_execucao" INTEGER;
+
 CREATE OR REPLACE FUNCTION atualiza_inicio_fim_cronograma (pCronoId int)
     RETURNS varchar
     AS $$
@@ -171,34 +175,3 @@ BEGIN
     RETURN NEW;
 END;
 $emp_stamp$ LANGUAGE plpgsql;
-
-
-CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT ON etapa
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
-
-CREATE TRIGGER trg_estapa_esticar_datas_do_pai_update AFTER  UPDATE ON etapa
-    FOR EACH ROW
-    WHEN (
-        (OLD.inicio_previsto IS DISTINCT FROM NEW.inicio_previsto)
-        OR
-        (OLD.termino_previsto IS DISTINCT FROM NEW.termino_previsto)
-        OR
-        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
-        OR
-        (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
-        OR
-        (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
-    )
-    EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
-
-CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$
-BEGIN
-    PERFORM  atualiza_inicio_fim_cronograma(NEW.cronograma_id);
-    RETURN NEW;
-END;
-$emp_stamp$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
-    FOR EACH ROW
-    EXECUTE FUNCTION f_trg_crono_estapa_resync();
