@@ -3,6 +3,7 @@ export class Cronograma {
     iniciativa_id: number | null;
     meta_id: number | null;
     atividade_id: number | null;
+    percentual_execucao: number | null
 
     descricao: string | null;
     observacao: string | null;
