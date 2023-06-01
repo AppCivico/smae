@@ -3,7 +3,6 @@ import { utils } from "xlsx";
 // digitar tudo em lowercase
 // o espaço no excel tbm é ignorado e vira _ depois do trim
 export const ColunasNecessarias = [
-    'dotacao',
     'ano',
     'mes', // caso especial, aceita mês lá no decode do header
     'valor_empenho',
@@ -11,6 +10,7 @@ export const ColunasNecessarias = [
 ];
 
 export const OutrasColumns = [
+    'dotacao',
     'meta_id',
     'atividade_id',
     'iniciativa_id',

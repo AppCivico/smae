@@ -123,8 +123,6 @@ export class ImportacaoOrcamentoService {
             filtros.push({ pdm_id: null })
         }
 
-        console.log(filtros[0], filtros[1], filtros[2])
-
         const registros = await this.prisma.importacaoOrcamento.findMany({
             where: {
                 portfolio_id: filters.portfolio_id,
