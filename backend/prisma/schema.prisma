@@ -205,6 +205,7 @@ model Pessoa {
 
     OrcamentoPrevistoZeradoQCriei  OrcamentoPrevistoZerado[] @relation("Criador")
     OrcamentoPrevistoZeradoQRemovi OrcamentoPrevistoZerado[] @relation("Removedor")
+    ImportacaoLog                  ImportacaoOrcamento[]
 
     @@index([email])
     @@map("pessoa")
@@ -455,6 +456,7 @@ model Pdm {
     PdmDotacaoRealizado    PdmDotacaoRealizado[]
     PdmDotacaoProcesso     PdmDotacaoProcesso[]
     PdmDotacaoProcessoNota PdmDotacaoProcessoNota[]
+    ImportacaoLog          ImportacaoOrcamento[]
 
     @@index([ativo])
     @@map("pdm")
@@ -660,6 +662,9 @@ model Arquivo {
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
     Relatorio                       Relatorio[]
     projeto_documentos              ProjetoDocumento[]
+
+    ImportacaoLogInput  ImportacaoOrcamento[] @relation("input")
+    ImportacaoLogOutput ImportacaoOrcamento[] @relation("output")
 
     @@map("arquivo")
 }
@@ -2309,6 +2314,7 @@ model Portfolio {
     PortfolioDotacaoRealizado    PortfolioDotacaoRealizado[]
     PortfolioDotacaoProcesso     PortfolioDotacaoProcesso[]
     PortfolioDotacaoProcessoNota PortfolioDotacaoProcessoNota[]
+    ImportacaoLog                ImportacaoOrcamento[]
 
     @@map("portfolio")
 }
@@ -2970,4 +2976,36 @@ model MetabasePermissao {
     titulo         String
 
     @@map("metabase_permissao")
+}
+
+model ImportacaoOrcamento {
+    id Int @id @default(autoincrement())
+
+    arquivo_id Int
+    arquivo    Arquivo @relation("input", fields: [arquivo_id], references: [id])
+
+    saida_arquivo_id Int?
+    saida_arquivo    Arquivo? @relation("output", fields: [saida_arquivo_id], references: [id])
+
+    pdm_id Int?
+    pdm    Pdm? @relation(fields: [pdm_id], references: [id])
+
+    portfolio_id Int?
+    portfolio    Portfolio? @relation(fields: [portfolio_id], references: [id])
+
+    criado_por Int?
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    congelado_em  DateTime? @db.Timestamptz(6)
+    processado_em DateTime? @db.Timestamptz(6)
+
+    processado_errmsg String?
+
+    linhas_importadas Int?
+
+    criador Pessoa? @relation(fields: [criado_por], references: [id])
+
+    @@index([criado_em, pdm_id])
+    @@index([criado_em, portfolio_id])
+    @@map("importacao_orcamento")
 }

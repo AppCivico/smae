@@ -1,6 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import AdmZip from 'adm-zip';
+import { read, utils } from "xlsx";
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
@@ -10,6 +11,8 @@ import { TipoUpload } from './entities/tipo-upload';
 import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
+import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
+
 const AdmZipLib = require("adm-zip");
 
 interface TokenResponse {
@@ -63,6 +66,15 @@ export class UploadService {
             } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
             }
+        } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_ORCAMENTO) {
+            if (file.size > 1048576 * 10) {
+                throw new HttpException('O arquivo de importação precisa ser menor que 10 megabytes.', 400);
+            } else if (/\.(xls|xlsx|csv)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo de ícone precisa ser xls, XLSX ou CSV.', 400);
+            }
+
+            await this.checkOrcamentoFile(file);
+
         } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
             if (/(\.png|svg)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
@@ -159,6 +171,34 @@ export class UploadService {
             throw new HttpException(errorMessage, 400);
         }
 
+    }
+
+    private async checkOrcamentoFile(file: Express.Multer.File) {
+        try {
+            const planilia = read(file.buffer, {
+                type: 'buffer',
+                sheetRows: 2,
+            });
+
+            if (planilia.SheetNames.length !== 1)
+                throw new Error(`deve ter apenas uma página (planilla), recebidas ${planilia.SheetNames.length}: ${planilia.SheetNames.join(', ')}`);
+
+            const folha = planilia.Sheets[planilia.SheetNames[0]];
+            if (!folha['!ref']) throw new Error('primeira folha não definida');
+
+            const colunasIdx = OrcamentoImportacaoHelpers.createColumnHeaderIndex(folha, [...ColunasNecessarias]);
+
+            const colunas: string[] = Object.keys(colunasIdx);
+
+            const missingColumns = ColunasNecessarias.filter(column => !colunas.includes(column));
+            if (missingColumns.length > 0) {
+                throw new Error(`Colunas não encontradas: ${missingColumns.join(', ')}`);
+            }
+
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(`Não foi possivel efetuar a leitura do arquivo: ${error}`, 400);
+        }
     }
 
     async uploadReport(category: string, filename: string, buffer: Buffer, mimetype: string | undefined, user: PessoaFromJwt | null) {
@@ -261,7 +301,7 @@ export class UploadService {
         return decoded.arquivo_id;
     }
 
-    async getBufferByToken(downloadToken: string): Promise<TokenResponse> {
+    async getReadableStreamByToken(downloadToken: string): Promise<TokenResponse> {
         const arquivo = await this.prisma.arquivo.findFirst({
             where: { id: this.checkDownloadToken(downloadToken) },
             select: { caminho: true, nome_original: true, mime_type: true },
@@ -275,4 +315,18 @@ export class UploadService {
             mime_type: arquivo.mime_type || 'application/octet-stream',
         };
     }
+
+    async getReadableStreamById(id: number): Promise<TokenResponse> {
+        const arquivo = await this.prisma.arquivo.findFirstOrThrow({
+            where: { id: id },
+            select: { caminho: true, nome_original: true, mime_type: true },
+        });
+
+        return {
+            stream: await this.storage.getStream(arquivo.caminho),
+            nome: arquivo.nome_original,
+            mime_type: arquivo.mime_type || 'application/octet-stream',
+        };
+    }
+
 }

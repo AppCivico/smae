@@ -102,8 +102,5 @@ export const useProcessosStore = defineStore('processos', {
       ...emFoco,
       processo_sei: formatProcesso(emFoco?.processo_sei) || '',
     }),
-
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
   },
 });

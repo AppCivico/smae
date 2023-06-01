@@ -45,7 +45,7 @@ module.exports = {
       },
     },
     {
-      files: ['*.store.js'],
+      files: ['*.store.js', '*.store.ts'],
       rules: {
         'import/prefer-default-export': 'off',
       },

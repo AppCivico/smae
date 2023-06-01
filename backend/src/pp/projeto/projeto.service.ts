@@ -284,7 +284,7 @@ export class ProjetoService {
         return created;
     }
 
-    async findAllIds(user: PessoaFromJwt): Promise<{ id: number }[]> {
+    async findAllIds(user: PessoaFromJwt | undefined): Promise<{ id: number }[]> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, true);
         return await this.prisma.projeto.findMany({
             where: {

@@ -41,7 +41,6 @@ const initialValues = computed(() => ({
     periodo_ano: 'Corrente',
     iniciativa_id: null,
     atividade_id: null,
-    ano: 0,
     pdm_id: null,
     meta_id: null,
     tags: [],

@@ -104,9 +104,6 @@ export const useRiscosStore = defineStore('riscos', {
       registrado_em: dateTimeToDate(emFoco?.registrado_em),
     }),
 
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
-
     riscosPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },

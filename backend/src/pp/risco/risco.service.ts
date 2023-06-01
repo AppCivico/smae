@@ -216,6 +216,12 @@ export class RiscoService {
                             }
                         }
                     }
+                },
+
+                projeto: {
+                    select: {
+                        status: true
+                    }
                 }
             }
         });
@@ -223,6 +229,10 @@ export class RiscoService {
 
         let calcResult;
         if (projetoRisco.probabilidade && projetoRisco.impacto) calcResult = RiscoCalc.getResult(projetoRisco.probabilidade, projetoRisco.impacto);
+
+        // Flag para informar se o código pode ser atualizado.
+        const valoresStatusAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+        const edicaoLimitada: boolean = valoresStatusAceitaveis.includes(projetoRisco.projeto.status) ? true : false;
 
         return {
             ...projetoRisco,
@@ -232,6 +242,7 @@ export class RiscoService {
             grau: calcResult ? calcResult.grau_valor : null,
             grau_descricao: calcResult ? calcResult.grau_descricao : null,
             resposta: calcResult ? calcResult.resposta_descricao : null,
+            edicao_limitada: edicaoLimitada,
 
             tarefas_afetadas: projetoRisco?.RiscoTarefa.map(r => {
                 return {
@@ -250,6 +261,11 @@ export class RiscoService {
 
     async update(projeto_risco_id: number, dto: UpdateRiscoDto, user: PessoaFromJwt) {
         const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const self = await prismaTx.projetoRisco.findFirstOrThrow({
+                where: { id: projeto_risco_id },
+                select: { codigo: true }
+            });
+            
             if (dto.tarefa_id) {
                 const tarefa_id = dto.tarefa_id;
                 delete dto.tarefa_id;
@@ -265,7 +281,7 @@ export class RiscoService {
                 });
             }
 
-            if (dto.codigo) {
+            if (dto.codigo && dto.codigo != self.codigo) {
                 // O código só pode ser modificado caso o status do Projeto for diferente de ['Planejado','Validado ','EmAcompanhamento','Suspenso','Fechado ']
                 const valoresAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
 
@@ -303,7 +319,6 @@ export class RiscoService {
                         }
                     });
 
-                    console.dir(riscosAbaixo, {depth: 2});
                     const updates = [];
                     let primeiraRow: boolean = true;
                     for (const row of riscosAbaixo) {
@@ -358,16 +373,37 @@ export class RiscoService {
     }
 
     async remove(projeto_id: number, projeto_risco_id: number, user: PessoaFromJwt) {
-        return await this.prisma.projetoRisco.updateMany({
-            where: {
-                id: projeto_risco_id,
-                projeto_id: projeto_id
-            },
-            data: {
-                removido_em: new Date(Date.now()),
-                removido_por: user.id
+        const deleted = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            // Deve ser verificado o status
+            const valoresAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+
+            const self = await prismaTx.projetoRisco.findFirstOrThrow({
+                where: {
+                    id: projeto_risco_id,
+                    projeto_id: projeto_id
+                },
+                select: {
+                    projeto: {
+                        select: { status: true }
+                    }
+                }
+            });
+
+            if (valoresAceitaveis.includes(self.projeto.status)) {
+                return await this.prisma.projetoRisco.updateMany({
+                    where: {
+                        id: projeto_risco_id,
+                        projeto_id: projeto_id
+                    },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                        removido_por: user.id
+                    }
+                })
+            } else {
+                throw new HttpException('Status do Projeto não permite deleção de Risco.', 400);
             }
-        })
+        });
     }
 
 }

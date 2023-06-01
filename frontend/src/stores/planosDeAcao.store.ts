@@ -111,8 +111,5 @@ export const usePlanosDeAçãoStore = defineStore('planosDeAção', {
       prazo_contramedida: emFoco?.prazo_contramedida ? dateTimeToDate(emFoco.prazo_contramedida) : null,
       projeto_risco_id: Number(route?.params?.riscoId),
     }),
-
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ lista }: Estado) => (termo: string | number) => filtrarObjetos(lista, termo),
   },
 });

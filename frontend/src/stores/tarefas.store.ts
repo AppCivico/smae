@@ -204,9 +204,6 @@ export const useTarefasStore = defineStore('tarefas', {
       };
     },
 
-    // eslint-disable-next-line max-len
-    listaFiltradaPor: ({ lista }) => (termo: string | number) => filtrarObjetos(lista, termo),
-
     tarefasPorId: ({ lista }): { [k: number | string]: TarefaComHierarquia } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 

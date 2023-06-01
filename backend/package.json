@@ -68,7 +68,7 @@
     "swagger-ui-express": "^4.5.0",
     "ts-graphviz": "^1.5.5",
     "winston": "^3.8.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "file:vendor/xlsx-0.19.3.tgz"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.4.0",

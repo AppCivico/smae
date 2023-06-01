@@ -1,8 +1,10 @@
 <script setup>
 import { Dashboard } from '@/components';
+import LocalFilter from '@/components/LocalFilter.vue';
+import truncate from '@/helpers/truncate';
 import { useAuthStore, useOrgansStore, useUsersStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
@@ -10,7 +12,7 @@ const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const usersStore = useUsersStore();
-const { temp, accessProfiles } = storeToRefs(usersStore);
+const { accessProfiles } = storeToRefs(usersStore);
 usersStore.clear();
 usersStore.getProfiles();
 usersStore.filterUsers();
@@ -19,15 +21,14 @@ const organsStore = useOrgansStore();
 const { organs } = storeToRefs(organsStore);
 organsStore.getAll();
 
-const filters = {};
-const orgao = ref('');
-const nomeemail = ref('');
-const usersFiltered = ref(temp);
-function filterUsers() {
-  filters.orgao = orgao.value;
-  filters.nomeemail = nomeemail.value;
-  usersStore.filterUsers(filters);
-}
+const orgao = ref(0);
+const perfil = ref(0);
+const listaFiltradaPorTermoDeBusca = ref([]);
+
+const usersFiltered = computed(() => listaFiltradaPorTermoDeBusca.value
+  .filter((x) => (!orgao.value ? true : x.orgao_id === orgao.value))
+  .filter((x) => (!perfil.value ? true : x.perfil_acesso_ids.includes(perfil.value))));
+
 function filterOrgan(orgao_id) {
   return organs.value.length ? organs.value.find((o) => o.id == orgao_id) : '-';
 }
@@ -40,6 +41,16 @@ function filterPerfil(ids) {
 
   return vs ?? '-';
 }
+
+const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersStore.users)
+  ? []
+  : usersStore.users.map((x) => ({
+    ...x,
+    // TODO: usar esses valores na própria tabela para poupar recursos
+    siglaDoÓrgãoParaBuscaLivre: filterOrgan(x.orgao_id).sigla,
+    // TODO: usar esses valores na própria tabela para poupar recursos
+    nomesDosPerfisParaBuscaLivre: filterPerfil(x.perfil_acesso_ids),
+  }))));
 </script>
 <template>
   <Dashboard>
@@ -54,15 +65,15 @@ function filterPerfil(ids) {
         Novo usuário
       </router-link>
     </div>
-    <div class="flex center mb2">
-      <div class="f1">
+    <div class="flex flexwrap mb2">
+      <div class="f1 mr1">
+        <label class="label tc300">Órgão</label>
         <select
-          v-model="orgao"
+          v-model.number="orgao"
           class="inputtext"
-          @change="filterUsers"
         >
-          <option value="">
-            Todos os órgãos
+          <option :value="0">
+            Todos
           </option>
           <template v-if="organs.length">
             <option
@@ -70,27 +81,40 @@ function filterPerfil(ids) {
               :key="organ.id"
               :value="organ.id"
             >
-              {{ organ.sigla }}
+              {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
             </option>
           </template>
         </select>
       </div>
-      <div class="f2 search ml2">
-        <input
-          v-model="nomeemail"
-          placeholder="Buscar por nome ou e-mail"
-          type="text"
+
+      <div class="f1 mr1">
+        <label class="label tc300">Perfil</label>
+        <select
+          v-model.number="perfil"
           class="inputtext"
-          @input="filterUsers"
         >
+          <option :value="0">
+            Todos
+          </option>
+          <template v-if="accessProfiles.length">
+            <option
+              v-for="perfil in accessProfiles"
+              :key="perfil.id"
+              :value="perfil.id"
+            >
+              {{ perfil.nome }}
+            </option>
+          </template>
+        </select>
       </div>
-      <button
-        class="btn ml2"
-        @click="filterUsers"
-      >
-        Filtrar
-      </button>
+
+      <LocalFilter
+        v-model="listaFiltradaPorTermoDeBusca"
+        :lista="listaDeUsuáriosComNomesAlémDeIds"
+        class="f2 search"
+      />
     </div>
+
     <table class="tablemain fix">
       <thead>
         <tr>
@@ -117,12 +141,29 @@ function filterPerfil(ids) {
           <tr
             v-for="user in usersFiltered"
             :key="user.id"
+            :class="{
+              tc400: user.desativado
+            }"
           >
-            <td>{{ user.email }}</td>
+            <td class="cell--minimum">
+              {{ user.email }}
+              <span
+                v-if="user.desativado"
+                class="tipinfo ml05"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_i" /></svg><div>Usuário desativado</div>
+              </span>
+            </td>
             <td>{{ user.nome_completo }}</td>
             <td>{{ user.lotacao ?? '-' }}</td>
             <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
-            <td>{{ user.perfil_acesso_ids ? filterPerfil(user.perfil_acesso_ids) : '-' }}</td>
+            <td>
+              {{ user.perfil_acesso_ids?.length
+                ? filterPerfil(user.perfil_acesso_ids) : '-' }}
+            </td>
             <td style="white-space: nowrap; text-align: right;">
               <template
                 v-if="temPermissãoPara('CadastroPessoa.administrador') ||

@@ -21,7 +21,6 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
           || perm?.CadastroPdm
           || perm?.Projeto?.administrar_portfolios"
       >
-        <h2>Entrada de dados</h2>
         <div class="links-container mb2">
           <router-link
             v-if="perm?.CadastroPessoa"
