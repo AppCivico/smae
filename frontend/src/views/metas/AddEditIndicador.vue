@@ -351,7 +351,7 @@ function newVariavel() {
   const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
     .keys(variaveisFormula)
     .map((x) => Number(x.replace('$_', '')))
-    .sort((a, b) => b - a)?.[0] || 0;
+    .reduce((a, b) => Math.max(a, b), -Infinity) || 0;
 
   const next = `$_${últimoÍndiceDisponívelParaVariávelEmFórmula + 1}`;
   fieldsVariaveis.value = {
