@@ -272,6 +272,7 @@ async function uploadshape(e) {
               class="inputtext light mb1"
               :class="{ 'error': errors.data_inicio }"
               maxlength="10"
+              placeholder="dd/mm/aaaa"
               @keyup="maskDate"
             />
             <div class="error-msg">
@@ -286,6 +287,7 @@ async function uploadshape(e) {
               class="inputtext light mb1"
               :class="{ 'error': errors.data_fim }"
               maxlength="10"
+              placeholder="dd/mm/aaaa"
               @keyup="maskDate"
             />
             <div class="error-msg">
@@ -300,6 +302,7 @@ async function uploadshape(e) {
               class="inputtext light mb1"
               :class="{ 'error': errors.data_publicacao }"
               maxlength="10"
+              placeholder="dd/mm/aaaa"
               @keyup="maskDate"
             />
             <div class="error-msg">
@@ -316,6 +319,7 @@ async function uploadshape(e) {
               class="inputtext light mb1"
               :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }"
               maxlength="10"
+              placeholder="dd/mm/aaaa"
               @keyup="maskDate"
             />
             <div class="error-msg">
@@ -330,6 +334,7 @@ async function uploadshape(e) {
               class="inputtext light mb1"
               :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }"
               maxlength="10"
+              placeholder="dd/mm/aaaa"
               @keyup="maskDate"
             />
             <div class="error-msg">

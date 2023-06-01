@@ -611,6 +611,7 @@ if (indicador_id) {
               class="inputtext light mb1"
               :class="{ 'error': errors.inicio_medicao }"
               maxlength="7"
+              placeholder="mm/aaaa"
               @keyup="maskMonth"
             />
             <div class="error-msg">
@@ -625,6 +626,7 @@ if (indicador_id) {
               class="inputtext light mb1"
               :class="{ 'error': errors.fim_medicao }"
               maxlength="7"
+              placeholder="mm/aaaa"
               @keyup="maskMonth"
             />
             <div class="error-msg">
