@@ -1228,6 +1228,7 @@ model Cronograma {
     CronogramaEtapa      CronogramaEtapa[]
 
     // percentual_execucao // calculado a partir dos filhos (todos, incluindo as etapas (nivel 1/reais) herdadas)
+    percentual_execucao Int?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -1269,16 +1270,15 @@ model Etapa {
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
     prazo            Int?
-    peso             Int?
     status           String?
     CronogramaEtapa  CronogramaEtapa[]
 
-    // percentual_execucao Int
-    // ponderador Int
+    peso                Int?
+    percentual_execucao Int?
+    n_filhos_imediatos  Int?
     // quando o n_filhos_imediatos===0 entao, os dois acima sao informados
     // se não, são calculados pela trigger, usando a formula
     // %execucao pai = round( (%execucao * nvl(peso) )/(soma ponderadores dos filhos) )
-    // n_filhos_imediatos Int
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
