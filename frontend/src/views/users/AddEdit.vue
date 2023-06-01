@@ -31,7 +31,11 @@ const { user, accessProfiles } = storeToRefs(usersStore);
 usersStore.getProfiles();
 if (id) {
   title = 'Editar Usuário';
-  usersStore.getById(id);
+  usersStore.getById(id).then(() => {
+    if (user.value?.nome_completo !== user.value?.nome_exibicao) {
+      editarNomeParaExibição.value = true;
+    }
+  });
 }
 
 async function onSubmit(values) {
@@ -130,7 +134,7 @@ async function checkClose() {
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_completo }"
-              @change="!values.nome_exibicao && !editarNomeParaExibição
+              @change="!editarNomeParaExibição
                 ? setFieldValue('nome_exibicao', values.nome_completo)
                 : null"
             />
@@ -161,7 +165,7 @@ async function checkClose() {
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_exibicao }"
-              @change="!values.nome_exibicao && !editarNomeParaExibição
+              @change="!editarNomeParaExibição
                 ? setFieldValue('nome_exibicao', values.nome_completo)
                 : null"
             />
