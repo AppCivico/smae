@@ -9,12 +9,14 @@ import { DotacaoModule } from 'src/dotacao/dotacao.module';
 import { UploadModule } from 'src/upload/upload.module';
 import { ProjetoModule } from 'src/pp/projeto/projeto.module';
 import { MetaModule } from 'src/meta/meta.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
     imports: [
         PrismaModule,
         DotacaoModule,
         UploadModule,
+        forwardRef(() => AuthModule),
         forwardRef(() => ProjetoModule),
         forwardRef(() => MetaModule),
         forwardRef(() => ProjetoOrcamentoRealizadoModule),

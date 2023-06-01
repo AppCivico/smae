@@ -21,6 +21,7 @@ import { LocalStrategy } from './strategies/local.strategy';
     ],
     controllers: [AuthController],
     providers: [AuthService, LocalStrategy, JwtStrategy],
+    exports: [AuthService],
 })
 export class AuthModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
