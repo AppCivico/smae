@@ -17,6 +17,18 @@ import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from '.
 import { AuthService } from 'src/auth/auth.service';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { PrismaHelpers } from 'src/common/PrismaHelpers';
+
+type ProcessaLinhaParams = {
+    metasIds: number[]
+    iniciativasIds: number[]
+    atividadesIds: number[]
+    projetosIds: number[]
+    metasCodigos2Ids: Record<string, number>
+    projetosCodigos2Ids: Record<string, number>
+    iniciativasCodigos2Ids: Record<string, number>
+    atividadesCodigos2Ids: Record<string, number>
+};
 
 @Injectable()
 export class ImportacaoOrcamentoService {
@@ -266,6 +278,11 @@ export class ImportacaoOrcamentoService {
             metasIds.push(...metasDoUser.map(r => r.id));
         }
 
+        const projetosCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'projeto', projetosIds, true);
+        const metasCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'projeto', metasIds, false);
+
+        let { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids }: { iniciativasIds: number[]; atividadesIds: number[]; iniciativasCodigos2Ids: Record<string, number>; atividadesCodigos2Ids: Record<string, number>; } = await this.carregaIniciativaAtiv(metasIds);
+
         for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
             const row = [];
             let col2row: any = {};
@@ -292,7 +309,19 @@ export class ImportacaoOrcamentoService {
                 }
             });
 
-            const feedback = await this.processaRow(col2row, metasIds, projetosIds);
+            const feedback = await this.processaRow(
+                col2row,
+                {
+                    metasIds,
+                    iniciativasIds,
+                    atividadesIds,
+                    projetosIds,
+                    metasCodigos2Ids,
+                    projetosCodigos2Ids,
+                    iniciativasCodigos2Ids,
+                    atividadesCodigos2Ids,
+                }
+            );
             console.log(col2row)
 
             row.push(feedback);
@@ -308,7 +337,58 @@ export class ImportacaoOrcamentoService {
 
     }
 
-    async processaRow(col2row: any, metasIds: number[], projetosIds: number[]): Promise<string> {
+    private async carregaIniciativaAtiv(metasIds: number[]) {
+        let iniciativasIds: number[] = [];
+        let atividadesIds: number[] = [];
+        let iniciativasCodigos2Ids: Record<string, number> = {};
+        let atividadesCodigos2Ids: Record<string, number> = {};
+        if (metasIds.length > 0) {
+            const iniciativas = await this.prisma.iniciativa.findMany({
+                where: {
+                    meta_id: { in: metasIds },
+                    removido_em: null
+                },
+                select: {
+                    id: true,
+                    codigo: true,
+                    atividade: {
+                        select: {
+                            id: true,
+                            codigo: true,
+                        },
+                        where: { removido_em: null }
+                    }
+                },
+            });
+
+            for (const iniciativa of iniciativas) {
+                iniciativasCodigos2Ids[iniciativa.codigo] = iniciativa.id;
+                iniciativasIds.push(iniciativa.id);
+
+                for (const atividade of iniciativa.atividade) {
+                    atividadesCodigos2Ids[atividade.codigo] = atividade.id;
+                    atividadesIds.push(atividade.id);
+                }
+            }
+        }
+        return { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids };
+    }
+
+    async getMetaCodigoMap(metasIds: number[]): Promise<Record<string, number>> {
+        if (metasIds.length === 0) return {};
+        const rows = await this.prisma.meta.findMany({
+            where: { id: { in: metasIds } },
+            select: { id: true, codigo: true }
+        });
+        return rows.reduce((p, c) => {
+            if (!c.codigo) return p;
+            return { ...p, [c.codigo]: c.id }
+        }, {})
+    }
+
+
+
+    async processaRow(col2row: any, params: ProcessaLinhaParams): Promise<string> {
 
         const validatorObject = plainToInstance(LinhaCsvInputDto, col2row);
         const validations = await validate(validatorObject);
@@ -317,6 +397,8 @@ export class ImportacaoOrcamentoService {
                 return [...acc, ...Object.values(curr.constraints as any)];
             }, []);
         }
+
+
 
         return '';
     }
