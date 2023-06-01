@@ -80,7 +80,9 @@ export class ProjetoController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     async update(@Param() params: FindOneParams, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.projetoService.update(params.id, updateProjetoDto, user);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+
+        return await this.projetoService.update(projeto.id, updateProjetoDto, user);
     }
 
     @Delete(':id')
@@ -90,7 +92,9 @@ export class ProjetoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.remove(params.id, user);
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+
+        await this.projetoService.remove(projeto.id, user);
         return '';
     }
 
