@@ -1278,7 +1278,7 @@ model Etapa {
     n_filhos_imediatos  Int?
     // quando o n_filhos_imediatos===0 entao, os dois acima sao informados
     // se não, são calculados pela trigger, usando a formula
-    // %execucao pai = round( (%execucao * nvl(peso) )/(soma ponderadores dos filhos) )
+    // %execucao pai = round( (%execucao * nvl(peso) )/(soma dos pesos dos filhos) )
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)

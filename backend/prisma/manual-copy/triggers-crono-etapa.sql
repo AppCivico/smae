@@ -109,26 +109,28 @@ BEGIN
             UPDATE etapa e
             SET inicio_previsto = NEW.inicio_previsto
             WHERE e.id = NEW.etapa_pai_id
-            AND NOT EXISTS (
-                SELECT 1
-                FROM etapa ef
-                WHERE ef.etapa_pai_id = NEW.etapa_pai_id
-                  AND ef.inicio_previsto < NEW.inicio_previsto
-                  AND ef.removido_em IS NOT NULL
-            );
+              AND OLD.inicio_previsto > NEW.inicio_previsto;
+            -- AND NOT EXISTS (
+            --     SELECT 1
+            --     FROM etapa ef
+            --     WHERE ef.etapa_pai_id = NEW.etapa_pai_id
+            --       AND ef.inicio_previsto < NEW.inicio_previsto
+            --       AND ef.removido_em IS NOT NULL
+            -- );
         END IF;
 
         IF  NEW.inicio_real IS NOT NULL THEN
             UPDATE etapa e
             SET inicio_real = NEW.inicio_real
             WHERE e.id = NEW.etapa_pai_id
-            AND NOT EXISTS (
-                SELECT 1
-                FROM etapa ef
-                WHERE ef.etapa_pai_id = NEW.etapa_pai_id
-                  AND ef.inicio_real < NEW.inicio_real
-                  AND ef.removido_em IS NOT NULL
-            );
+              AND OLD.inicio_previsto > NEW.inicio_previsto;
+            -- AND NOT EXISTS (
+            --     SELECT 1
+            --     FROM etapa ef
+            --     WHERE ef.etapa_pai_id = NEW.etapa_pai_id
+            --       AND ef.inicio_real < NEW.inicio_real
+            --       AND ef.removido_em IS NOT NULL
+            -- );
         END IF;
 
 
