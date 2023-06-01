@@ -40,7 +40,7 @@ export class UploadController {
         type: '',
     })
     async get(@Query() filters: DownloadOptions, @Param('token') dlToken: string, @Res() res: Response) {
-        const data = await this.uploadService.getBufferByToken(dlToken);
+        const data = await this.uploadService.getReadableStreamByToken(dlToken);
 
         if (!filters.inline) {
             res.set({

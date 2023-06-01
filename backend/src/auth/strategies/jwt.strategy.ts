@@ -17,17 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPessoaPayload): Promise<PessoaFromJwt> {
-        const pessoa = await this.authService.pessoaPeloSessionId(payload.sid);
-
-        const modPriv = await this.authService.listaPrivilegiosPessoa(pessoa.id as number);
-
-        return new PessoaFromJwt({
-            id: pessoa.id as number,
-            nome_exibicao: pessoa.nome_exibicao,
-            session_id: payload.sid,
-            modulos: modPriv.modulos,
-            privilegios: modPriv.privilegios,
-            orgao_id: pessoa.pessoa_fisica?.orgao_id,
-        });
+        return await this.authService.pessoaJwtFromSessionId(payload.sid);
     }
 }

@@ -1,8 +1,9 @@
-import { requestS } from '@/helpers';
 import { router } from '@/router';
-import {
-  useAlertStore, useMacrotemasStore, useSubtemasStore, useTagsStore, useTemasStore
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMacrotemasStore } from '@/stores/macrotemas.store';
+import { useSubtemasStore } from '@/stores/subtemas.store';
+import { useTagsStore } from '@/stores/tags.store';
+import { useTemasStore } from '@/stores/temas.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -54,7 +55,7 @@ export const usePdMStore = defineStore({
       try {
         if (this.PdM.loading) return;
         this.PdM = { loading: true };
-        const r = await requestS.get(`${baseUrl}/pdm`);
+        const r = await this.requestS.get(`${baseUrl}/pdm`);
         if (r.linhas.length) {
           const macrotemasStore = useMacrotemasStore();
           const subtemasStore = useSubtemasStore();
@@ -91,7 +92,7 @@ export const usePdMStore = defineStore({
     async getById(id) {
       this.singlePdm = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/pdm/${id}?incluir_auxiliares=true`);
+        const r = await this.requestS.get(`${baseUrl}/pdm/${id}?incluir_auxiliares=true`);
         if (r.pdm) {
           this.singlePdm = ((x) => {
             x.pdm.data_inicio = this.dateToField(x.pdm.data_inicio);
@@ -127,7 +128,7 @@ export const usePdMStore = defineStore({
       try {
         if (!this.activePdm.id && !this.activePdm.loading) {
           this.activePdm = { loading: true };
-          const r = await requestS.get(`${baseUrl}/pdm?ativo=true`);
+          const r = await this.requestS.get(`${baseUrl}/pdm?ativo=true`);
           if (r.linhas.length) {
             this.activePdm = ((x) => {
               x.data_inicio = this.dateToField(x.data_inicio);
@@ -197,7 +198,7 @@ export const usePdMStore = defineStore({
 
         nivel_orcamento: params.nivel_orcamento,
       };
-      if (await requestS.post(`${baseUrl}/pdm`, m)) {
+      if (await this.requestS.post(`${baseUrl}/pdm`, m)) {
         this.activePdm = {};
         return true;
       }
@@ -238,14 +239,14 @@ export const usePdMStore = defineStore({
 
         nivel_orcamento: params.nivel_orcamento,
       };
-      if (await requestS.patch(`${baseUrl}/pdm/${id}`, m)) {
+      if (await this.requestS.patch(`${baseUrl}/pdm/${id}`, m)) {
         this.activePdm = {};
         return true;
       }
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/pdm/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/pdm/${id}`)) {
         this.activePdm = {};
         return true;
       }
@@ -273,13 +274,13 @@ export const usePdMStore = defineStore({
       }
     },
     async insertArquivo(pdm_id, params) {
-      if (await requestS.post(`${baseUrl}/pdm/${pdm_id}/documento`, params)) {
+      if (await this.requestS.post(`${baseUrl}/pdm/${pdm_id}/documento`, params)) {
         return true;
       }
       return false;
     },
     async deleteArquivo(pdm_id, id) {
-      if (await requestS.delete(`${baseUrl}/pdm/${pdm_id}/documento/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/pdm/${pdm_id}/documento/${id}`)) {
         this.arquivos[pdm_id] = {};
         this.carregaArquivos(pdm_id);
         return true;
@@ -289,7 +290,7 @@ export const usePdMStore = defineStore({
     async carregaArquivos(pdm_id) {
       if (!this.arquivos[pdm_id]?.length) this.arquivos[pdm_id] = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/pdm/${pdm_id}/documento`);
+        const r = await this.requestS.get(`${baseUrl}/pdm/${pdm_id}/documento`);
         this.arquivos[pdm_id] = r.linhas;
       } catch (error) {
         this.arquivos[pdm_id] = { error };
@@ -297,7 +298,7 @@ export const usePdMStore = defineStore({
     },
 
     async updatePermissoesOrcamento(id, params) {
-      if (await requestS.patch(`${baseUrl}/pdm/${id}/orcamento-config`, params)) {
+      if (await this.requestS.patch(`${baseUrl}/pdm/${id}/orcamento-config`, params)) {
         this.activePdm = {};
         return true;
       }

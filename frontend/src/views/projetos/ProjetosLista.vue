@@ -11,7 +11,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const projetosStore = useProjetosStore();
 const {
-  chamadasPendentes, erro,
+  chamadasPendentes, erro, lista,
 } = storeToRefs(projetosStore);
 const route = useRoute();
 const router = useRouter();
@@ -40,7 +40,7 @@ const props = defineProps({
 });
 
 const parâmetros = ref({});
-const termoDeBusca = ref('');
+const listaFiltradaPorTermoDeBusca = ref([]);
 
 const status = props.status.map((x) => statusesPorChaveCaixaBaixa[x]?.valor);
 
@@ -58,9 +58,7 @@ if (props.apenasPrioritários) {
 projetosStore.$reset();
 projetosStore.buscarTudo(parâmetros.value);
 
-const listaFiltrada = computed(() => projetosStore.listaFiltradaPor(termoDeBusca.value));
-
-const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) => {
+const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduce((acc, cur) => {
   if (!acc[cur.portfolio.id]) {
     acc[cur.portfolio.id] = { ...cur.portfolio, lista: [] };
   }
@@ -134,7 +132,8 @@ const listasAgrupadas = computed(() => listaFiltrada.value?.reduce((acc, cur) =>
 
   <div class="flex center mb2 spacebetween">
     <LocalFilter
-      v-model="termoDeBusca"
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="lista"
       class="mr1"
     />
     <hr class="ml2 f1">

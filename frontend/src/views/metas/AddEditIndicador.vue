@@ -348,8 +348,12 @@ function chamarInserçãoDeVariável() {
   newVariavel();
 }
 function newVariavel() {
-  const vs = variaveisFormula ? Object.keys(variaveisFormula) : [];
-  const next = vs.length ? `$_${Number(vs[vs.length - 1].replace('$_', '')) + 1}` : '$_1';
+  const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
+    .keys(variaveisFormula)
+    .map((x) => Number(x.replace('$_', '')))
+    .reduce((a, b) => Math.max(a, b), -Infinity) || 0;
+
+  const next = `$_${últimoÍndiceDisponívelParaVariávelEmFórmula + 1}`;
   fieldsVariaveis.value = {
     id: next,
   };
@@ -782,6 +786,8 @@ if (indicador_id) {
             @keydown="monitorarSetas"
             @click="trackClickFormula"
           />
+
+          <pre v-ScrollLockDebug="'formula'">{{ formula }}</pre>
 
           <p
             v-if="errFormula"

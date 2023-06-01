@@ -126,6 +126,7 @@ iniciar();
           name="codigo"
           type="number"
           class="inputtext light mb1"
+          :disabled="emFoco?.edicao_limitada"
           @update:model-value="values.codigo = Number(values.codigo)"
         />
         <ErrorMessage
@@ -423,6 +424,7 @@ iniciar();
 
   <button
     v-if="emFoco?.id"
+    :disabled="emFoco?.edicao_limitada"
     class="btn amarelo big"
     @click="excluirRisco(emFoco.id)"
   >

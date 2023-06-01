@@ -1,6 +1,5 @@
-import { requestS } from '@/helpers';
 import { router } from '@/router';
-import { useAlertStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -17,7 +16,7 @@ export const useAuthStore = defineStore({
   actions: {
     async login(username, password) {
       try {
-        const token = await requestS.post(`${baseUrl}/login`, { email: username, senha: password });
+        const token = await this.requestS.post(`${baseUrl}/login`, { email: username, senha: password });
 
         if (token.reduced_access_token) {
           this.reducedtoken = token.reduced_access_token;
@@ -41,7 +40,7 @@ export const useAuthStore = defineStore({
     },
     async getDados() {
       try {
-        const user = await requestS.get(`${baseUrl}/minha-conta`);
+        const user = await this.requestS.get(`${baseUrl}/minha-conta`);
         this.user = user.sessao;
         localStorage.setItem('user', JSON.stringify(user.sessao));
 
@@ -53,7 +52,7 @@ export const useAuthStore = defineStore({
     },
     async passwordRecover(username) {
       try {
-        await requestS.post(`${baseUrl}/solicitar-nova-senha`, { email: username });
+        await this.requestS.post(`${baseUrl}/solicitar-nova-senha`, { email: username });
         const alertStore = useAlertStore();
         alertStore.success('Uma senha temporária foi enviada para o seu e-mail.');
         router.push('/login');
@@ -68,12 +67,12 @@ export const useAuthStore = defineStore({
           router.push('/login');
           return;
         }
-        const token = await requestS.post(`${baseUrl}/escrever-nova-senha`, { reduced_access_token: this.reducedtoken, senha: password });
+        const token = await this.requestS.post(`${baseUrl}/escrever-nova-senha`, { reduced_access_token: this.reducedtoken, senha: password });
         this.reducedtoken = null;
         this.token = token.access_token;
         localStorage.setItem('token', JSON.stringify(token.access_token));
 
-        const user = await requestS.get(`${baseUrl}/minha-conta`);
+        const user = await this.requestS.get(`${baseUrl}/minha-conta`);
         this.user = user.sessao;
         localStorage.setItem('user', JSON.stringify(user.sessao));
 
@@ -88,7 +87,7 @@ export const useAuthStore = defineStore({
       }
     },
     logout() {
-      requestS.post(`${baseUrl}/sair`);
+      this.requestS.post(`${baseUrl}/sair`);
       this.user = null;
       this.token = null;
       this.permissions = null;

@@ -88,6 +88,7 @@ projetosStore.buscarTudo();
             v-for="item in portfolioStore.lista"
             :key="item.id"
             :value="item.id"
+            :disabled="!projetosStore.projetosPorPortfolio?.[item.id]?.length"
           >
             {{ item.id }} - {{ item.titulo }}
           </option>

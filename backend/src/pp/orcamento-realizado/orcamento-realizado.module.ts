@@ -8,6 +8,7 @@ import { OrcamentoRealizadoService } from './orcamento-realizado.service';
 @Module({
     imports: [PrismaModule, DotacaoModule, ProjetoModule],
     controllers: [OrcamentoRealizadoController],
-    providers: [OrcamentoRealizadoService]
+    providers: [OrcamentoRealizadoService],
+    exports: [OrcamentoRealizadoService],
 })
 export class OrcamentoRealizadoModule { }

@@ -1,6 +1,9 @@
 <template>
-  <div class="flex center mb2 spacebetween">
-    <div class="f1 mr1">
+  <div class="flex flexwrap center mb2 spacebetween">
+    <div
+      class="f1 mr1 mb1"
+      style="min-width: 7.5em;"
+    >
       <label class="label tc300">Exibir por</label>
       <select
         v-model="tipoDeGantt"
@@ -16,8 +19,11 @@
         </option>
       </select>
     </div>
-    <hr class="ml1 mr1 f1">
-    <div class="f1 mr1">
+    <hr class="mr1 f1">
+    <div
+      class="f1 mr1 mb1"
+      style="min-width: 10em;"
+    >
       <label class="label tc300">Filtrar por</label>
       <select
         v-model="filtroAtivo"
@@ -33,8 +39,8 @@
         </option>
       </select>
     </div>
-    <hr class="ml1 mr1 f1">
-    <div class="f1 mr1">
+    <hr class="mr1 f1">
+    <div class="f1 mr1 mb1">
       <label class="label tc300">Ano</label>
       <select
         v-model="anoEmFoco"
@@ -52,7 +58,28 @@
         </option>
       </select>
     </div>
-    <hr class="ml1 mr1 f1">
+    <hr class="mr1 f1">
+    <div class="mb2 f1">
+      <label class="label tc300">
+        Exibir tarefas até nível
+      </label>
+      <div class="flex center">
+        <input
+          id="nivel"
+          v-model.number="nívelMáximoVisível"
+          type="range"
+          name="nivel"
+          min="1"
+          :max="nívelMáximoPermitido"
+          class="f1"
+        >
+        <output
+          class="f1 ml1"
+        >
+          {{ nívelMáximoVisível }}
+        </output>
+      </div>
+    </div>
   </div>
 
   <div class="flex mb2 spacebetween t13">
@@ -232,6 +259,7 @@ const tiposDeGráfico = [
 const tipoDeGantt = ref('overall');
 const anoEmFoco = ref(null);
 const filtroAtivo = ref('projeção');
+const nívelMáximoVisível = ref(0);
 const svgElementContainer = ref(null);
 const projetoId = route?.params?.projetoId;
 
@@ -249,6 +277,7 @@ const qualPropriedadeDeData = (términoOuInício) => {
 };
 
 const dadosParaGantt = computed(() => props.data
+  .filter((x) => (!nívelMáximoVisível.value ? true : x.nivel <= nívelMáximoVisível.value))
   .map((x) => ({
     ...x,
     end_date: x[qualPropriedadeDeData('término')],
@@ -258,6 +287,9 @@ const dadosParaGantt = computed(() => props.data
   }))
   // eslint-disable-next-line max-len
   .filter((x) => x.start_date && x.end_date));
+
+const nívelMáximoPermitido = props.data
+  .reduce((max, obj) => (obj.nivel > max.nivel ? obj : max))?.nivel || 0;
 
 const intervalo = computed(() => dadosParaGantt.value.reduce((acc, cur) => {
   ['end_date', 'start_date'].forEach((propriedade) => {
@@ -371,6 +403,10 @@ watch(() => props.data, async () => {
   renderChart(config.value);
 });
 
+watch(() => nívelMáximoVisível.value, () => {
+  renderChart(config.value);
+});
+
 onMounted(async () => {
   if (props.data.length) {
     anoEmFoco.value = intervalo.value.início;
@@ -378,6 +414,7 @@ onMounted(async () => {
     if (intervalo.value.início === intervalo.value.fim) {
       tipoDeGantt.value = 'yearly';
     }
+    nívelMáximoVisível.value = nívelMáximoPermitido;
     await nextTick();
     renderChart(config.value);
   }

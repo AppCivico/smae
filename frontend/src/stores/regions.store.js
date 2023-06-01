@@ -1,4 +1,4 @@
-import { requestS } from '@/helpers';
+import createDataTree from '@/helpers/createDataTree.ts';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -29,39 +29,10 @@ export const useRegionsStore = defineStore({
     async getAll() {
       this.regions = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/regiao`);
+        const r = await this.requestS.get(`${baseUrl}/regiao`);
         this.listregions = r.linhas;
-        if (r.linhas.length) {
-          const h = {};
-          const g = {};
-          r.linhas.forEach((z) => {
-            h[z.id] = z;
-            if (!z.children) z.children = {};
-            if (!z.parente_id) {
-              if (!g[z.id]) g[z.id] = z;
-            } else if (!g[z.parente_id]) {
-              if (!g[h[z.parente_id].parente_id]) { // Se for neto
-                g[h[h[z.parente_id].parente_id].parente_id].children[h[z.parente_id].parente_id].children[z.parente_id].children[z.id] = z;
-              } else {
-                g[h[z.parente_id].parente_id].children[z.parente_id].children[z.id] = z;
-              }
-            } else {
-              g[z.parente_id].children[z.id] = z;
-            }
-          });
-          Object.values(g).forEach((x) => {
-            x.children = Object.values(x.children);
-            x.children.forEach((xx) => {
-              xx.children = Object.values(xx.children);
-              xx.children.forEach((xxx) => {
-                xxx.children = Object.values(xxx.children);
-                xxx.children.forEach((xxxx) => {
-                  if (xxxx.children)xxxx.children = Object.values(xxxx.children);
-                });
-              });
-            });
-          });
-          this.regions = Object.values(g);
+        if (Array.isArray(r.linhas)) {
+          this.regions = createDataTree(r.linhas, 'parente_id');
         } else {
           this.regions = r.linhas;
         }
@@ -88,7 +59,7 @@ export const useRegionsStore = defineStore({
         descricao: params.descricao,
       };
       if (params.upload_shapefile)m.upload_shapefile = params.upload_shapefile;
-      if (await requestS.post(`${baseUrl}/regiao`, m)) {
+      if (await this.requestS.post(`${baseUrl}/regiao`, m)) {
         this.getAll();
         return true;
       }
@@ -105,7 +76,7 @@ export const useRegionsStore = defineStore({
       }
 
       try {
-        await requestS.patch(`${baseUrl}/regiao/${id}`, m);
+        await this.requestS.patch(`${baseUrl}/regiao/${id}`, m);
 
         // devido a inconsistências no envio, é mais seguro não usar a carga
         // da requisição para atualizar o objeto
@@ -116,7 +87,7 @@ export const useRegionsStore = defineStore({
       }
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/regiao/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/regiao/${id}`)) {
         this.$patch({
           regions: this.regions.filter(function removerRegião(x) {
             if (x.id == id) {

@@ -10,10 +10,11 @@ import { JwtPessoaPayload } from './models/JwtPessoaPayload';
 import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
+import { PessoaFromJwt } from './models/PessoaFromJwt';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly jwtService: JwtService, private readonly pessoaService: PessoaService) {}
+    constructor(private readonly jwtService: JwtService, private readonly pessoaService: PessoaService) { }
 
     async login(pessoa: Pessoa): Promise<AccessToken | ReducedAccessToken> {
         if (pessoa.senha_bloqueada) {
@@ -67,12 +68,51 @@ export class AuthService {
         return pessoa as Pessoa;
     }
 
+    async pessoaJwtFromId(pessoa_id: number): Promise<PessoaFromJwt> {
+        const pessoa = await this.pessoaPeloId(pessoa_id);
+
+        const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number);
+
+        return new PessoaFromJwt({
+            id: pessoa.id as number,
+            nome_exibicao: pessoa.nome_exibicao,
+            session_id: 0,
+            modulos: modPriv.modulos,
+            privilegios: modPriv.privilegios,
+            orgao_id: pessoa.pessoa_fisica?.orgao_id,
+        });
+    }
+
+    async pessoaJwtFromSessionId(session_id: number): Promise<PessoaFromJwt> {
+        const pessoa = await this.pessoaPeloSessionId(session_id);
+
+        const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number);
+
+        return new PessoaFromJwt({
+            id: pessoa.id as number,
+            nome_exibicao: pessoa.nome_exibicao,
+            session_id: session_id,
+            modulos: modPriv.modulos,
+            privilegios: modPriv.privilegios,
+            orgao_id: pessoa.pessoa_fisica?.orgao_id,
+        });
+    }
+
+
     async pessoaPeloSessionId(id: number): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findBySessionId(id);
         if (pessoa) {
             return pessoa;
         }
         throw new UnauthorizedError('Sessão não está mais ativa');
+    }
+
+    async pessoaPeloId(id: number): Promise<Pessoa> {
+        const pessoa = await this.pessoaService.findById(id);
+        if (pessoa) {
+            return pessoa;
+        }
+        throw new UnauthorizedError('Pessoa não está mais ativa');
     }
 
     async listaPrivilegiosPessoa(pessoaId: number) {

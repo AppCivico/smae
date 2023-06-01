@@ -112,6 +112,28 @@ export default {
       }),
       meta: {
         rotasParaMenuSecundário: () => {
+          const rotasDePlanoDeProjeto = {
+            títuloParaGrupoDeLinksNoMenu: 'Plano de projeto',
+            rotas: [
+              'projetosResumo',
+            ],
+          };
+
+          const rotasDeAcompanhamento = {
+            títuloParaGrupoDeLinksNoMenu: 'Acompanhamento',
+            rotas: [
+              'projetosDocumentos',
+              'processosListar',
+            ],
+          };
+
+          const rotasDeEncerramento = {
+            títuloParaGrupoDeLinksNoMenu: 'Encerramento',
+            rotas: [
+              'liçõesAprendidasListar',
+            ],
+          };
+
           const orçamentos = {
             títuloParaGrupoDeLinksNoMenu: 'Visão orçamentária',
             rotas: [
@@ -121,30 +143,33 @@ export default {
             ],
           };
 
-          const base = [
-            'projetosResumo',
-            'projetosDocumentos',
-            'processosListar',
-          ];
-
           if (useProjetosStore()?.emFoco?.eh_prioritario) {
-            base.splice(
-              1,
+            rotasDeAcompanhamento.rotas.splice(
               0,
-              'projetosEAP',
-              'projetosGantt',
-              'tarefasListar',
+              0,
               'acompanhamentosListar',
               'riscosListar',
-              'liçõesAprendidasListar',
             );
+            rotasDePlanoDeProjeto.rotas.splice(
+              1,
+              0,
+              'tarefasListar',
+              'projetosEAP',
+              'projetosGantt',
+
+            );
+
+            return [
+              rotasDePlanoDeProjeto,
+              rotasDeAcompanhamento,
+              rotasDeEncerramento,
+              orçamentos,
+            ];
           }
 
           return [
-            {
-              títuloParaGrupoDeLinksNoMenu: 'Plano do projeto',
-              rotas: base,
-            },
+            rotasDePlanoDeProjeto,
+            rotasDeAcompanhamento,
             orçamentos,
           ];
         },

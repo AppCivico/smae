@@ -1739,10 +1739,8 @@ p {
   position: relative;
 
   >div {
-    position: absolute;
-    bottom: ~"calc(100% + .5rem)";
-    right: 50%;
-    transform: translateX(50%);
+    position: fixed;
+    transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(calc(-50% + 10px));
     width: max-content;
     max-width: 200px;
     background: @primary;
@@ -1762,9 +1760,9 @@ p {
     &:before {
       content: "";
       position: absolute;
-      left: 50%;
+      left: calc(50% - 0.5rem);
       bottom: 0;
-      margin: -0.5rem;
+      margin: 0 0 -0.5rem 0;
       border: .5rem solid transparent;
       border-bottom-color: @primary;
       border-left-color: @primary;
@@ -2222,4 +2220,17 @@ caption {
 
 .etiqueta--alerta__peso-5 {
   background-color: @alerta__peso-5;
+}
+
+.debug {
+  outline: 2px solid fuchsia;
+  border-radius: 1px;
+  outline-offset: 3px;
+  white-space: pre-wrap;
+
+  &[data-debug] {
+    &::before {
+      content: attr(data-debug)': ';
+    }
+  }
 }
