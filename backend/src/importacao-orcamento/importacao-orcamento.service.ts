@@ -11,9 +11,12 @@ import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
-import { ImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
+import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { read, utils, writeFile } from "xlsx";
-import { ColunasNecessarias, OutrasColumns } from './importacao-orcamento.common';
+import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
+import { AuthService } from 'src/auth/auth.service';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class ImportacaoOrcamentoService {
@@ -23,6 +26,7 @@ export class ImportacaoOrcamentoService {
         private readonly uploadService: UploadService,
 
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
+        @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
         @Inject(forwardRef(() => MetaService)) private readonly metaService: MetaService,
     ) { }
 
@@ -232,26 +236,39 @@ export class ImportacaoOrcamentoService {
 
         });
 
-        // Write the output file
-        writeFile(inputXLSX, '/tmp/tes.xlsx');
-
         const sheetName = inputXLSX.SheetNames[0];
         const sheet = inputXLSX.Sheets[sheetName];
         const range = utils.decode_range(sheet['!ref']!);
 
-        const colunaHeaderIndex = this.createColumnHeaderIndex(sheet, [...ColunasNecessarias, ...OutrasColumns]);
+        const colunaHeaderIndex = OrcamentoImportacaoHelpers.createColumnHeaderIndex(sheet, [...ColunasNecessarias, ...OutrasColumns]);
 
         console.log(colunaHeaderIndex)
 
         const outputXLSX = utils.book_new();
-        const outputSheet = utils.aoa_to_sheet([[...ColunasNecessarias, ...OutrasColumns, 'erros']]);
+        const outputSheet = utils.aoa_to_sheet([[...ColunasNecessarias, ...OutrasColumns, 'feedback']]);
         utils.book_append_sheet(outputXLSX, outputSheet, sheetName);
 
+        let projetosIds: number[] = [];
+        let metasIds: number[] = [];
 
-        console.log(range.s.r)
+        // se foi criado sem dono, pode todos Meta|Projeto, os metodos foram findAllIds
+        // foram adaptados pra retornar todos os ids dos items não removidos
+        const user = job.criado_por ? await this.authService.pessoaJwtFromId(job.criado_por) : undefined;
+
+        if (job.pdm_id) {
+            const projetosDoUser = await this.projetoService.findAllIds(user);
+            projetosIds.push(...projetosDoUser.map(r => r.id));
+        }
+
+        if (job.portfolio_id) {
+            const metasDoUser = await this.metaService.findAllIds(user);
+
+            metasIds.push(...metasDoUser.map(r => r.id));
+        }
+
         for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
             const row = [];
-            let erro = "";
+            let col2row: any = {};
 
             [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
 
@@ -262,18 +279,23 @@ export class ImportacaoOrcamentoService {
                     const cellAddress = utils.encode_cell({ c: colIndex, r: rowIndex });
                     const cellValue = sheet[cellAddress]?.v;
 
-                    if (columnName === 'ano' && cellValue > 2030) {
-                        erro = "ano n pode ser maior que 2030";
+                    // traduzindo algumas colunas do excel pro DTO
+                    if (columnName === 'ano') {
+                        col2row['ano_referencia'] = cellValue;
+                    } else {
+                        col2row[columnName] = cellValue;
                     }
 
                     row.push(cellValue);
                 } else {
-                    row.push(undefined); // If the optional column does not exist, push undefined
+                    row.push(undefined);
                 }
             });
 
-            // Add the error message to the row
-            row.push(erro);
+            const feedback = await this.processaRow(col2row, metasIds, projetosIds);
+            console.log(col2row)
+
+            row.push(feedback);
 
             const newRow = [row];
             console.log(newRow)
@@ -286,25 +308,19 @@ export class ImportacaoOrcamentoService {
 
     }
 
-    private createColumnHeaderIndex(sheet: any, columns: string[]): { [key: string]: number } {
-        const index: { [key: string]: number } = {};
-        const primeiraLinha = utils.decode_range(sheet['!ref']).s;
+    async processaRow(col2row: any, metasIds: number[], projetosIds: number[]): Promise<string> {
 
-        console.log(primeiraLinha)
+        const validatorObject = plainToInstance(LinhaCsvInputDto, col2row);
+        const validations = await validate(validatorObject);
+        if (validations.length) {
+            return 'Linha inválida: ' + validations.reduce((acc, curr) => {
+                return [...acc, ...Object.values(curr.constraints as any)];
+            }, []);
+        }
 
-        columns.forEach((columnName) => {
-            for (let colIndex = primeiraLinha.c; colIndex <= 25; colIndex++) {
-                const position = utils.encode_cell({ c: colIndex, r: primeiraLinha.r });
-                const cellValue = sheet[position]?.v.trim();
-
-                if (cellValue === columnName) {
-                    index[columnName] = colIndex;
-                    break;
-                }
-            }
-        });
-
-        return index;
+        return '';
     }
+
+
 
 }

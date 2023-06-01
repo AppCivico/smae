@@ -205,7 +205,7 @@ export class MetaService {
         return permissionsSet;
     }
 
-    async findAllIds(user: PessoaFromJwt): Promise<{ id: number }[]> {
+    async findAllIds(user: PessoaFromJwt | undefined): Promise<{ id: number }[]> {
         const permissionsSet = await this.getMetasPermissionSet(user, true);
 
         return await this.prisma.meta.findMany({

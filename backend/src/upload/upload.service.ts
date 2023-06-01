@@ -11,7 +11,7 @@ import { TipoUpload } from './entities/tipo-upload';
 import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
-import { ColunasNecessarias } from 'src/importacao-orcamento/importacao-orcamento.common';
+import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
 
 const AdmZipLib = require("adm-zip");
 
@@ -186,16 +186,9 @@ export class UploadService {
             const folha = planilia.Sheets[planilia.SheetNames[0]];
             if (!folha['!ref']) throw new Error('primeira folha não definida');
 
-            const primeiraLinha = utils.decode_range(folha['!ref']).s;
-            const colunas: string[] = [];
-            for (let colIndex = primeiraLinha.c; colIndex <= 25; colIndex++) {
-                const posicao = utils.encode_cell({ c: colIndex, r: primeiraLinha.r });
-                const valor = folha[posicao]?.v.trim();
+            const colunasIdx = OrcamentoImportacaoHelpers.createColumnHeaderIndex(folha, [...ColunasNecessarias]);
 
-                if (!valor) break;
-
-                colunas.push(valor);
-            }
+            const colunas: string[] = Object.keys(colunasIdx);
 
             const missingColumns = ColunasNecessarias.filter(column => !colunas.includes(column));
             if (missingColumns.length > 0) {
