@@ -54,7 +54,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(500)
+    @MaxLength(2048)
     @ValidateIf((object, value) => value !== null)
     origem_outro?: string | null;
 
@@ -130,7 +130,7 @@ export class CreateProjetoDto {
      * @example "lorem..."
      */
     @IsString()
-    @MaxLength(500)
+    @MaxLength(50000)
     resumo: string;
 
     /**
@@ -167,7 +167,7 @@ export class CreateProjetoDto {
 
     /**
      * escopo
-     * @'ex'ample "..."
+     * @example "..."
      */
     @IsString()
     @MaxLength(50000)
@@ -206,7 +206,7 @@ export class CreateProjetoSeiDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(2000)
+    @MaxLength(50000)
     descricao: string
 
     @IsOptional()
