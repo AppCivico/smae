@@ -1118,7 +1118,6 @@ export class ProjetoService {
             const valor_nominal = fr.valor_nominal !== undefined ? fr.valor_nominal : null;
             const valor_percentual = fr.valor_percentual !== undefined ? fr.valor_percentual : null;
             if (valor_nominal == null && valor_percentual == null) throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400);
-            if (valor_nominal !== null && valor_percentual !== null) throw new HttpException('Valor Percentual e Valor Nominal são mutuamente exclusivos', 400);
 
             if (resultsFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof] == undefined) {
                 throw new HttpException(`Fonte de recurso ${fr.fonte_recurso_cod_sof} não foi encontrada para o ano ${fr.fonte_recurso_ano}.`, 400);
