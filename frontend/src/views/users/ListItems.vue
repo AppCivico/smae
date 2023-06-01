@@ -42,12 +42,14 @@ function filterPerfil(ids) {
   return vs ?? '-';
 }
 
-const listaDeUsuáriosComNomesAoInvésDeIds = computed(() => (!Array.isArray(usersStore.users)
+const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersStore.users)
   ? []
   : usersStore.users.map((x) => ({
     ...x,
-    siglaDoÓrgão: filterOrgan(x.orgao_id).sigla,
-    nomesDosPerfis: filterPerfil(x.perfil_acesso_ids),
+    // TODO: usar esses valores na própria tabela para poupar recursos
+    siglaDoÓrgãoParaBuscaLivre: filterOrgan(x.orgao_id).sigla,
+    // TODO: usar esses valores na própria tabela para poupar recursos
+    nomesDosPerfisParaBuscaLivre: filterPerfil(x.perfil_acesso_ids),
   }))));
 </script>
 <template>
@@ -108,7 +110,7 @@ const listaDeUsuáriosComNomesAoInvésDeIds = computed(() => (!Array.isArray(use
 
       <LocalFilter
         v-model="listaFiltradaPorTermoDeBusca"
-        :lista="listaDeUsuáriosComNomesAoInvésDeIds"
+        :lista="listaDeUsuáriosComNomesAlémDeIds"
         class="f2 search"
       />
     </div>
