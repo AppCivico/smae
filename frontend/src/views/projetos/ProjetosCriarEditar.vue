@@ -786,7 +786,6 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.meta_codigo }"
           maxlength="10"
-          @keyup="maskDate"
         />
         <ErrorMessage
           name="meta_codigo"
