@@ -28,6 +28,8 @@ type ProcessaLinhaParams = {
     projetosCodigos2Ids: Record<string, number>
     iniciativasCodigos2Ids: Record<string, number>
     atividadesCodigos2Ids: Record<string, number>
+    eh_projeto: boolean
+    eh_metas: boolean
 };
 
 @Injectable()
@@ -336,6 +338,8 @@ export class ImportacaoOrcamentoService {
                     projetosCodigos2Ids,
                     iniciativasCodigos2Ids,
                     atividadesCodigos2Ids,
+                    eh_metas: job.pdm_id !== null,
+                    eh_projeto: job.portfolio_id !== null,
                 }
             );
             console.log(col2row)
@@ -367,6 +371,7 @@ export class ImportacaoOrcamentoService {
                 select: {
                     id: true,
                     codigo: true,
+                    meta_id: true,
                     atividade: {
                         select: {
                             id: true,
@@ -378,11 +383,11 @@ export class ImportacaoOrcamentoService {
             });
 
             for (const iniciativa of iniciativas) {
-                iniciativasCodigos2Ids[iniciativa.codigo] = iniciativa.id;
+                iniciativasCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.codigo}`] = iniciativa.id;
                 iniciativasIds.push(iniciativa.id);
 
                 for (const atividade of iniciativa.atividade) {
-                    atividadesCodigos2Ids[atividade.codigo] = atividade.id;
+                    atividadesCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.id}-${atividade.codigo}`] = atividade.id;
                     atividadesIds.push(atividade.id);
                 }
             }
@@ -390,32 +395,66 @@ export class ImportacaoOrcamentoService {
         return { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids };
     }
 
-    async getMetaCodigoMap(metasIds: number[]): Promise<Record<string, number>> {
-        if (metasIds.length === 0) return {};
-        const rows = await this.prisma.meta.findMany({
-            where: { id: { in: metasIds } },
-            select: { id: true, codigo: true }
-        });
-        return rows.reduce((p, c) => {
-            if (!c.codigo) return p;
-            return { ...p, [c.codigo]: c.id }
-        }, {})
-    }
-
-
 
     async processaRow(col2row: any, params: ProcessaLinhaParams): Promise<string> {
 
         console.log(params)
-        const validatorObject = plainToInstance(LinhaCsvInputDto, col2row);
-        const validations = await validate(validatorObject);
+        const row = plainToInstance(LinhaCsvInputDto, col2row);
+        const validations = await validate(row);
         if (validations.length) {
             return 'Linha inválida: ' + validations.reduce((acc, curr) => {
                 return [...acc, ...Object.values(curr.constraints as any)];
             }, []);
         }
 
+        let projeto_id: number | undefined = undefined;
+        let meta_id: number | undefined = undefined;
+        let iniciativa_id: number | undefined = undefined;
+        let atividade_id: number | undefined = undefined;
 
+        if (!row.dotacao && !row.processo && !row.nota_empenho) return 'Linhas inválida: é necessário pelo menos dotação, processo ou nota de empenho';
+
+        if (params.eh_metas) {
+            if (row.meta_codigo && row.meta_id) return 'Linha inválida: meta código e meta id são de uso exclusivo';
+            if (row.iniciativa_codigo && row.iniciativa_id) return 'Linha inválida: iniciativa código e iniciativa id são de uso exclusivo';
+            if (row.atividade_codigo && row.atividade_id) return 'Linha inválida: atividade código e atividade id são de uso exclusivo';
+
+            if (row.iniciativa_codigo && !(row.meta_codigo || row.meta_id)) return 'Linha inválida: não há como buscar iniciativa por código sem saber a meta';
+            if (row.atividade_codigo && !(row.iniciativa_codigo || row.iniciativa_id)) return 'Linha inválida: não há como buscar atividade por código sem saber a iniciativa';
+
+            if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto não pode ser usado em importações do PDM';
+
+            // valida a meta
+            if (row.meta_codigo) meta_id = params.metasCodigos2Ids[row.meta_codigo];
+            if (!meta_id) return `Linha inválida: meta não encontrada, código ${row.meta_codigo}`;
+
+            // valida a iniciativa
+            if (row.iniciativa_codigo) iniciativa_id = params.metasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`];
+            if (row.iniciativa_codigo && !iniciativa_id) return `Linha inválida: iniciativa não encontrada, código ${row.meta_codigo} na meta ID ${meta_id}`;
+
+            // valida a atividade
+            if (row.atividade_codigo) atividade_id = params.atividadesCodigos2Ids[`${meta_id}-${iniciativa_id}-${row.atividade_codigo}`];
+            if (row.atividade_codigo && !atividade_id) return `Linha inválida: atividade não encontrada, código ${row.atividade_codigo} na iniciativa ID ${iniciativa_id}}`;
+
+            // valida se tem permissão de fato pra ver tudo
+            if (!params.metasIds.includes(meta_id)) return `Linha inválida: sem permissão na meta ID ${meta_id}`;
+            if (iniciativa_id && !params.iniciativasIds.includes(iniciativa_id)) return `Linha inválida: sem permissão na iniciativa ID ${iniciativa_id}`;
+            if (atividade_id && !params.atividadesIds.includes(atividade_id)) return `Linha inválida: sem permissão na atividade ID ${atividade_id}`;
+
+        } else if (params.eh_projeto) {
+            if (row.meta_codigo && row.meta_id) return 'Linha inválida: meta não pode ser usado em importações de projetos';
+            if (row.iniciativa_codigo && row.iniciativa_id) return 'Linha inválida: iniciativa não pode ser usado em importações de projetos';
+            if (row.atividade_codigo && row.atividade_id) return 'Linha inválida: atividade meta não pode ser usado em importações de projetos';
+
+            if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto código e projeto id são de uso exclusivo';
+
+            if (row.projeto_codigo) projeto_id = params.projetosCodigos2Ids[row.projeto_codigo];
+
+            if (!projeto_id) return `Linha inválida: projeto não encontrado, código ${row.projeto_codigo}`;
+
+            if (!params.metasIds.includes(projeto_id)) return `Linha inválida: sem permissão no projeto ID ${projeto_id}`;
+
+        }
 
         return '';
     }
