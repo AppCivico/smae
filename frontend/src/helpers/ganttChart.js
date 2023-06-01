@@ -214,10 +214,10 @@ export default function ganttChart(config) {
 
     y.domain(data.map((d, i) => i + 1));
 
-    const xAxis = axisBottom(x)
+    /* const xAxis =  */axisBottom(x)
       .tickFormat(timeFormat('%d/%m/%Y'));
 
-    const yAxis = axisLeft(y)
+    /* const yAxis = */ axisLeft(y)
       .tickSize(0)
       .tickPadding(6);
 
@@ -286,7 +286,7 @@ export default function ganttChart(config) {
 
     const lines = svg.append('g').attr('transform', 'translate(0,0)');
 
-    const currentDayArea = svg.append('line')
+    /* const currentDayArea = */ svg.append('line')
       .attr('width', getActualWidth(currentDay))
       .attr('class', 'CurrentDay-Area')
       .attr('x1', x(new Date(currentDay.start_date)))
@@ -294,7 +294,7 @@ export default function ganttChart(config) {
       .attr('y1', 0)
       .attr('y2', height);
 
-    const leftClickableArea = svg.append('rect')
+    /* const leftClickableArea =  */svg.append('rect')
       .attr('width', (width) / 2)
       .attr('height', height)
       .attr('fill', 'transparent')
@@ -305,7 +305,7 @@ export default function ganttChart(config) {
         }
       });
 
-    const rightClickableArea = svg.append('rect')
+    /* const rightClickableArea =  */svg.append('rect')
       .attr('width', (width) / 2)
       .attr('transform', `translate(${(width) / 2} ,0)`)
       .attr('height', height)
@@ -557,7 +557,7 @@ export default function ganttChart(config) {
     }
 
     function appendFooter(d, i) {
-      const footer = d.append('g')
+      /* const footer =  */d.append('g')
         .attr('transform', (d, i) => {
           let position = config.box_padding;
           if (position < 10) {
