@@ -104,7 +104,7 @@ export class ImportacaoOrcamentoService {
                 }
             });
         } else {
-            filtros.push({ portfolio_id: null })
+            filtros.push({ pdm_id: null })
         }
 
         const registros = await this.prisma.importacaoOrcamento.findMany({
@@ -267,19 +267,19 @@ export class ImportacaoOrcamentoService {
         // foram adaptados pra retornar todos os ids dos items não removidos
         const user = job.criado_por ? await this.authService.pessoaJwtFromId(job.criado_por) : undefined;
 
-        if (job.pdm_id) {
+        if (job.portfolio_id) {
             const projetosDoUser = await this.projetoService.findAllIds(user);
             projetosIds.push(...projetosDoUser.map(r => r.id));
-        }
-
-        if (job.portfolio_id) {
+        }else if (job.pdm_id) {
             const metasDoUser = await this.metaService.findAllIds(user);
 
             metasIds.push(...metasDoUser.map(r => r.id));
         }
 
+        console.log({ job, metasIds, projetosIds });
+
         const projetosCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'projeto', projetosIds, true);
-        const metasCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'projeto', metasIds, false);
+        const metasCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'meta', metasIds, false);
 
         let { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids }: { iniciativasIds: number[]; atividadesIds: number[]; iniciativasCodigos2Ids: Record<string, number>; atividadesCodigos2Ids: Record<string, number>; } = await this.carregaIniciativaAtiv(metasIds);
 
@@ -390,6 +390,7 @@ export class ImportacaoOrcamentoService {
 
     async processaRow(col2row: any, params: ProcessaLinhaParams): Promise<string> {
 
+        console.log(params)
         const validatorObject = plainToInstance(LinhaCsvInputDto, col2row);
         const validations = await validate(validatorObject);
         if (validations.length) {
