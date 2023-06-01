@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
@@ -9,6 +9,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { ListImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
 
 @Controller('importacao-orcamento')
+@ApiTags('Importação')
 export class ImportacaoOrcamentoController {
     constructor(private readonly importacaoOrcamentoService: ImportacaoOrcamentoService) { }
 
