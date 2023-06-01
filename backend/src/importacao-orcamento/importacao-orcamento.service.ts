@@ -452,7 +452,7 @@ export class ImportacaoOrcamentoService {
 
             if (!projeto_id) return `Linha inválida: projeto não encontrado, código ${row.projeto_codigo}`;
 
-            if (!params.metasIds.includes(projeto_id)) return `Linha inválida: sem permissão no projeto ID ${projeto_id}`;
+            if (!params.projetosIds.includes(projeto_id)) return `Linha inválida: sem permissão no projeto ID ${projeto_id}`;
 
         }
 
