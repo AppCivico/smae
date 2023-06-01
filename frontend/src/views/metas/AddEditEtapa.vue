@@ -447,6 +447,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_previsto }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -461,6 +462,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.termino_previsto }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -477,6 +479,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_real }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -491,6 +494,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.termino_real }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">

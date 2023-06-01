@@ -235,6 +235,7 @@ function fieldToDate(d) {
             type="text"
             class="inputtext light mb1"
             :class="{ 'error': errors.periodo_inicio }"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -251,6 +252,7 @@ function fieldToDate(d) {
             type="text"
             class="inputtext light mb1"
             :class="{ 'error': errors.periodo_fim }"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">

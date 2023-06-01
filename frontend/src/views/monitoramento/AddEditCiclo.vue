@@ -118,6 +118,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_coleta }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -132,6 +133,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_qualificacao }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -148,6 +150,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_analise_risco }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -162,6 +165,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_fechamento }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
@@ -178,6 +182,7 @@ function maskDate(el) {
             class="inputtext light mb1"
             :class="{ 'error': errors.fechamento }"
             maxlength="10"
+            placeholder="dd/mm/aaaa"
             @keyup="maskDate"
           />
           <div class="error-msg">
