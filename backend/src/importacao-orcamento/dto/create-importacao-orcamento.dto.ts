@@ -29,13 +29,11 @@ export class CreateImportacaoOrcamentoDto {
 export class FilterImportacaoOrcamentoDto {
     @IsOptional()
     @IsInt()
-    @ApiProperty({ example: 0 })
     @Type(() => Number)
-    pdm_id: number | undefined;
+    pdm_id?: number;
 
     @IsOptional()
     @IsInt()
-    @ApiProperty({ example: 0 })
     @Type(() => Number)
-    portfolio_id: number | undefined;
+    portfolio_id?: number;
 }

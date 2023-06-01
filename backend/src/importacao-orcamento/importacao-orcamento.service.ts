@@ -71,19 +71,30 @@ export class ImportacaoOrcamentoService {
 
         const filtros: Prisma.Enumerable<Prisma.ImportacaoOrcamentoWhereInput> = [];
 
+        // a logica aqui em baixo é a seguinte
+        // se a pessoa tem permissão, então ela pode ver todos os registros onde
+        // ela tem acesso OU não é do tipo desse filtro (eg: se é filtro do projeto, esse OR vai trazer todos as linhas de metas)
+        // quando chegar no IF da meta, se ela não tiver a permissão, vai entrar outro filtro pra excluir os registros onde a meta é nulo
+        // e vice versa para o projeto/portfolio
+
         if (user.hasSomeRoles(['Projeto.orcamento'])) {
             const projetos = await this.projetoService.findAllIds(user);
 
             filtros.push({
-                portfolio: {
-                    Projeto: {
-                        some: {
-                            id: {
-                                in: projetos.map(r => r.id)
+                OR: [
+                    { pdm_id: { not: null } },
+                    {
+                        portfolio: {
+                            Projeto: {
+                                some: {
+                                    id: {
+                                        in: projetos.map(r => r.id)
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                ]
             });
         } else {
             filtros.push({ portfolio_id: null })
@@ -93,19 +104,26 @@ export class ImportacaoOrcamentoService {
             const metas = await this.metaService.findAllIds(user);
 
             filtros.push({
-                pdm: {
-                    Meta: {
-                        some: {
-                            id: {
-                                in: metas.map(r => r.id)
+                OR: [
+                    { portfolio_id: { not: null } },
+                    {
+                        pdm: {
+                            Meta: {
+                                some: {
+                                    id: {
+                                        in: metas.map(r => r.id)
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                ]
             });
         } else {
             filtros.push({ pdm_id: null })
         }
+
+        console.log(filtros[0], filtros[1], filtros[2])
 
         const registros = await this.prisma.importacaoOrcamento.findMany({
             where: {
@@ -270,7 +288,7 @@ export class ImportacaoOrcamentoService {
         if (job.portfolio_id) {
             const projetosDoUser = await this.projetoService.findAllIds(user);
             projetosIds.push(...projetosDoUser.map(r => r.id));
-        }else if (job.pdm_id) {
+        } else if (job.pdm_id) {
             const metasDoUser = await this.metaService.findAllIds(user);
 
             metasIds.push(...metasDoUser.map(r => r.id));
