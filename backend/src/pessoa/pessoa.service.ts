@@ -316,6 +316,15 @@ export class PessoaService {
         });
         if (!pessoa) throw new HttpException('Pessoa não encontrada', 404);
 
+        const responsavel_pelos_projetos = await this.prisma.projeto.findMany({
+            where: {
+                responsavel_id: pessoa.id,
+                removido_em: null
+            },
+            orderBy: { nome: 'asc' },
+            select: { id: true, codigo: true, nome: true },
+        });
+
         const listFixed = {
             id: pessoa.id,
             nome_completo: pessoa.nome_completo,
@@ -332,6 +341,7 @@ export class PessoaService {
             cpf: pessoa.pessoa_fisica?.cpf || null,
             perfil_acesso_ids: pessoa.PessoaPerfil.map(e => e.perfil_acesso_id),
             grupos: pessoa.GruposDePaineisQueParticipo.map(e => e.grupo_painel),
+            responsavel_pelos_projetos,
         };
 
         return listFixed;
