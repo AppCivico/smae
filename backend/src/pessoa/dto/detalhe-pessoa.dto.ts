@@ -1,3 +1,9 @@
+export class ProjetosResponsavelDto {
+    id: number
+    codigo: string | null
+    nome: string
+}
+
 export class DetalhePessoaDto {
     atualizado_em?: Date;
     desativado: boolean;
@@ -11,4 +17,5 @@ export class DetalhePessoaDto {
 
     orgao_id?: number | undefined;
     perfil_acesso_ids: number[];
+    responsavel_pelos_projetos: ProjetosResponsavelDto[];
 }
