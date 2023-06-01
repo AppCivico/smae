@@ -1000,24 +1000,30 @@ export const usuário = object()
     desativado: string()
       .nullable(),
     desativado_motivo: string()
+      .label('Motivo para desativação')
       .nullable()
       .when('desativado', (desativado, field) => (desativado === '1'
         ? field.required('Escreva um motivo para a inativação')
         : field)),
     email: string()
+      .label('E-mail')
       .required('Preencha o e-mail')
       .email('E-mail inválido'),
     grupos: array(),
     lotacao: string()
+      .label('Lotação')
       .required('Preencha a lotação'),
     nome_completo: string()
+      .label('Nome completo')
       .required('Preencha o nome'),
     nome_exibicao: string()
-      .required('Preencha o nome social')
-      .max(20, 'Máximo de 20 caracteres'),
+      .label('Nome para exibição')
+      .required('Preencha o nome social'),
     orgao_id: string()
+      .label('Órgão')
       .required('Selecione um órgão'),
     perfil_acesso_ids: array()
+      .label('Perfil de acesso')
       .required('Selecione ao menos uma permissão'),
   });
 

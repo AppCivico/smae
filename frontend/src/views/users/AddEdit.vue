@@ -1,7 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { usuário as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -132,7 +131,7 @@ async function checkClose() {
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_completo }"
               @change="!values.nome_exibicao && !editarNomeParaExibição
-                ? setFieldValue('nome_exibicao', truncate(values.nome_completo, 20, ''))
+                ? setFieldValue('nome_exibicao', values.nome_completo)
                 : null"
             />
             <div class="error-msg">
@@ -163,7 +162,7 @@ async function checkClose() {
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_exibicao }"
               @change="!values.nome_exibicao && !editarNomeParaExibição
-                ? setFieldValue('nome_exibicao', truncate(values.nome_completo, 20, ''))
+                ? setFieldValue('nome_exibicao', values.nome_completo)
                 : null"
             />
             <div class="error-msg">
@@ -279,6 +278,8 @@ async function checkClose() {
             </div>
           </template>
         </div>
+
+        <FormErrorsList :errors="errors" />
 
         <div class="flex spacebetween center mb2">
           <hr class="mr2 f1">
