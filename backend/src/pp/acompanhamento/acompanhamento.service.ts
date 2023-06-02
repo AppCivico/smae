@@ -197,8 +197,9 @@ export class AcompanhamentoService {
                     ...{
                         ...dto,
                         risco: undefined,
-                        atualizado: now,
                     },
+                    atualizado_em: now,
+                    atualizado_por: user.id,
                 },
                 select: { id: true }
             });

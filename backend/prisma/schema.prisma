@@ -2944,6 +2944,9 @@ model ProjetoAcompanhamento {
     criado_em  DateTime
     criado_por Int
 
+    atualizado_em  DateTime @default(now())
+    atualizado_por Int?
+
     removido_em                DateTime?
     removido_por               Int?
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
