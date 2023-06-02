@@ -20,11 +20,12 @@ import { OrcamentoRealizadoService as ProjetoOrcamentoRealizadoService } from 's
 import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
-import { read, utils, writeFile } from "xlsx";
+import { read, utils, writeXLSX } from "xlsx";
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
 import { RetryPromise } from 'src/common/retryPromise';
+const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 type ProcessaLinhaParams = {
     metasIds: number[]
@@ -151,6 +152,9 @@ export class ImportacaoOrcamentoService {
                 arquivo: {
                     select: { tamanho_bytes: true }
                 },
+                saida_arquivo: {
+                    select: { tamanho_bytes: true }
+                },
                 criador: { select: { id: true, nome_exibicao: true } },
                 pdm: { select: { id: true, nome: true } },
                 portfolio: { select: { id: true, titulo: true } },
@@ -166,7 +170,11 @@ export class ImportacaoOrcamentoService {
                     tamanho_bytes: r.arquivo.tamanho_bytes,
                     token: (this.uploadService.getDownloadToken(r.arquivo_id, '1d')).download_token,
                 },
-                saida_arquivo: null,
+                saida_arquivo: r.saida_arquivo_id && r.saida_arquivo ? {
+                    id: r.saida_arquivo_id,
+                    tamanho_bytes: r.saida_arquivo.tamanho_bytes,
+                    token: (this.uploadService.getDownloadToken(r.saida_arquivo_id, '1d')).download_token,
+                } : null,
                 pdm: r.pdm,
                 portfolio: r.portfolio,
                 criado_por: r.criador,
@@ -250,7 +258,6 @@ export class ImportacaoOrcamentoService {
             });
 
             try {
-
                 await this.processaArquivo(job.id)
             } catch (error) {
                 console.log(error);
@@ -316,6 +323,9 @@ export class ImportacaoOrcamentoService {
         const metasCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'meta', metasIds, false);
 
         let { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids }: { iniciativasIds: number[]; atividadesIds: number[]; iniciativasCodigos2Ids: Record<string, number>; atividadesCodigos2Ids: Record<string, number>; } = await this.carregaIniciativaAtiv(metasIds);
+
+        let linhas_importadas: number = 0;
+        let linhas_com_erro: number = 0;
 
         for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
             const row = [];
@@ -383,6 +393,11 @@ export class ImportacaoOrcamentoService {
                 user,
             );
             console.log(col2row)
+            if (feedback) {
+                linhas_com_erro++;
+            } else {
+                linhas_importadas++;
+            }
 
             row.push(feedback);
 
@@ -391,9 +406,29 @@ export class ImportacaoOrcamentoService {
             utils.sheet_add_aoa(outputSheet, newRow, { origin: 'A' + (rowIndex + 1) });
         }
 
+        const buffer = writeXLSX(outputXLSX, {
+            type: 'buffer',
+            bookType: 'xlsx',
+            numbers: XLSX_ZAHL_PAYLOAD,
+            compression: true,
+        });
 
-        // Write the output file
-        writeFile(outputXLSX, '/tmp/output_file.xlsx');
+        const upload_id = await this.uploadService.upload({
+            tipo: 'IMPORTACAO_ORCAMENTO',
+            arquivo: buffer,
+            descricao: `saida-${job.id}.xlsx`
+        }, user, { buffer }, '');
+
+        await this.prisma.importacaoOrcamento.update({
+            where: {
+                id: job.id
+            },
+            data: {
+                saida_arquivo_id: upload_id,
+                processado_em: new Date(Date.now()),
+                linhas_importadas,
+            }
+        });
 
     }
 

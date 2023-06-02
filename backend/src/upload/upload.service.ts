@@ -36,58 +36,66 @@ const ZipContentTypes = [
 export class UploadService {
     constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService, private readonly storage: StorageService) { }
 
-    async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File, ip: string) {
-        if (file.size < 1) {
-            throw new HttpException('O arquivo precisa ter pelo menos 1 byte!', 400);
-        }
+    async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File | { buffer: Buffer }, ip: string) {
 
-        if (createUploadDto.tipo_documento_id) {
-            const tipoDoc = await this.prisma.tipoDocumento.findFirst({
-                where: { id: createUploadDto.tipo_documento_id },
-                select: { extensoes: true },
-            });
-            if (!tipoDoc) throw new HttpException('Tipo de Documento não encontrado', 404);
+        let originalname: string = '';
 
-            const tipoDocExtensoes = tipoDoc.extensoes ? tipoDoc.extensoes.toLowerCase().split(',') || [] : [];
-            if (tipoDocExtensoes.length > 0) {
-                // TODO adicionar inteligência para verificar mimetype por ext?
-                const extSomeExtExists = tipoDocExtensoes.some(ext => {
-                    return file.originalname.toLocaleLowerCase().endsWith('.' + ext.trim());
+        if ("size" in file) {
+            if (file.size < 1) {
+                throw new HttpException('O arquivo precisa ter pelo menos 1 byte!', 400);
+            }
+
+            if ("originalname" in file && createUploadDto.tipo_documento_id) {
+                const tipoDoc = await this.prisma.tipoDocumento.findFirst({
+                    where: { id: createUploadDto.tipo_documento_id },
+                    select: { extensoes: true },
                 });
+                if (!tipoDoc) throw new HttpException('Tipo de Documento não encontrado', 404);
 
-                if (!extSomeExtExists) throw new HttpException(`Arquivo deve contem um das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`, 400);
-            }
-        }
-        if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
-            this.checkShapeFile(file);
-        } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
-            if (file.size > 204800) {
-                throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
-            } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
-                throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
-            }
-        } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_ORCAMENTO) {
-            if (file.size > 1048576 * 10) {
-                throw new HttpException('O arquivo de importação precisa ser menor que 10 megabytes.', 400);
-            } else if (/\.(xls|xlsx|csv)$/i.test(file.originalname) == false) {
-                throw new HttpException('O arquivo de ícone precisa ser xls, XLSX ou CSV.', 400);
+                const tipoDocExtensoes = tipoDoc.extensoes ? tipoDoc.extensoes.toLowerCase().split(',') || [] : [];
+                if (tipoDocExtensoes.length > 0) {
+                    // TODO adicionar inteligência para verificar mimetype por ext?
+                    const extSomeExtExists = tipoDocExtensoes.some(ext => {
+                        return file.originalname.toLocaleLowerCase().endsWith('.' + ext.trim());
+                    });
+
+                    if (!extSomeExtExists) throw new HttpException(`Arquivo deve contem um das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`, 400);
+                }
             }
 
-            await this.checkOrcamentoFile(file);
+            if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
+                this.checkShapeFile(file);
+            } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
+                if (file.size > 204800) {
+                    throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
+                } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
+                    throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
+                }
+            } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_ORCAMENTO) {
+                if (file.size > 1048576 * 10) {
+                    throw new HttpException('O arquivo de importação precisa ser menor que 10 megabytes.', 400);
+                } else if (/\.(xls|xlsx|csv)$/i.test(file.originalname) == false) {
+                    throw new HttpException('O arquivo de ícone precisa ser xls, XLSX ou CSV.', 400);
+                }
 
-        } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
-            if (/(\.png|svg)$/i.test(file.originalname) == false) {
-                throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
-            } else if (file.size > 1048576) {
-                throw new HttpException('O arquivo de Logo do PDM precisa ser menor que 1 Megabyte', 400);
+                await this.checkOrcamentoFile(file);
+
+            } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
+                if (/(\.png|svg)$/i.test(file.originalname) == false) {
+                    throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
+                } else if (file.size > 1048576) {
+                    throw new HttpException('O arquivo de Logo do PDM precisa ser menor que 1 Megabyte', 400);
+                }
             }
-        }
 
-        let originalname = file.originalname;
-        // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
-        // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
-        if (!/[^\u0000-\u00ff]/.test(originalname)) {
-            originalname = Buffer.from(originalname, 'latin1').toString('utf8');
+            originalname = file.originalname;
+            // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
+            // ou bug do chrome, https://stackoverflow.com/questions/72909624/multer-corrupts-utf8-filename-when-uploading-files
+            if (!/[^\u0000-\u00ff]/.test(originalname)) {
+                originalname = Buffer.from(originalname, 'latin1').toString('utf8');
+            }
+        } else {
+            originalname = createUploadDto.descricao ?? 'upload.bin';
         }
 
         const arquivoId = await this.nextSequence();
@@ -104,8 +112,9 @@ export class UploadService {
 
         createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id && createUploadDto.tipo_documento_id > 0 ? createUploadDto.tipo_documento_id : null;
 
+        const ct = "mimetype" in file && file.mimetype ? file.mimetype : 'application/octet-stream';
         await this.storage.putBlob(key, file.buffer, {
-            'Content-Type': file.mimetype || 'application/octet-stream',
+            'Content-Type': ct,
             'x-user-id': user.id,
             'x-orgao-id': user.orgao_id || 'sem-orgao',
             'x-tipo': createUploadDto.tipo,
@@ -120,8 +129,8 @@ export class UploadService {
                 criado_em: new Date(Date.now()),
                 caminho: key,
                 nome_original: originalname,
-                mime_type: file.mimetype || 'application/octet-stream',
-                tamanho_bytes: file.size,
+                mime_type: ct,
+                tamanho_bytes: "size" in file ? file.size : file.buffer.length,
                 descricao: createUploadDto.descricao,
                 tipo: String(createUploadDto.tipo),
                 tipo_documento_id: createUploadDto.tipo_documento_id,
