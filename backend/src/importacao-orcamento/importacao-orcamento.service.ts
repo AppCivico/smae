@@ -30,6 +30,8 @@ type ProcessaLinhaParams = {
     atividadesCodigos2Ids: Record<string, number>
     eh_projeto: boolean
     eh_metas: boolean
+    anosPort: number[]
+    anosPdm: Record<string, number[]>
 };
 
 @Injectable()
@@ -327,6 +329,26 @@ export class ImportacaoOrcamentoService {
                 }
             });
 
+            const anosPort: number[] = [];
+            const anosPdm: Record<string, typeof anosPort> = {};
+            if (job.portfolio_id) {
+                anosPort.push(...(await this.prisma.portfolio.findFirstOrThrow({
+                    where: { id: job.portfolio_id },
+                    select: { orcamento_execucao_disponivel_meses: true }
+                })).orcamento_execucao_disponivel_meses);
+            } else if (job.pdm_id) {
+
+                const anosPdmRows = await this.prisma.pdmOrcamentoConfig.findMany({
+                    where: { pdm_id: job.pdm_id },
+                    select: { ano_referencia: true, execucao_disponivel_meses: true }
+                });
+
+                for (const r of anosPdmRows) {
+                    anosPdm[r.ano_referencia] = r.execucao_disponivel_meses;
+                }
+            }
+
+
             const feedback = await this.processaRow(
                 col2row,
                 {
@@ -340,6 +362,8 @@ export class ImportacaoOrcamentoService {
                     atividadesCodigos2Ids,
                     eh_metas: job.pdm_id !== null,
                     eh_projeto: job.portfolio_id !== null,
+                    anosPort,
+                    anosPdm,
                 }
             );
             console.log(col2row)
@@ -441,6 +465,11 @@ export class ImportacaoOrcamentoService {
             if (iniciativa_id && !params.iniciativasIds.includes(iniciativa_id)) return `Linha inválida: sem permissão na iniciativa ID ${iniciativa_id}`;
             if (atividade_id && !params.atividadesIds.includes(atividade_id)) return `Linha inválida: sem permissão na atividade ID ${atividade_id}`;
 
+            const mes_ref = params.anosPdm[row.ano_referencia];
+            if (!mes_ref) return `Linha inválida: ano ${row.ano_referencia} não está configurado`;
+
+            if (!mes_ref.includes(row.mes)) return `Linha inválida: mês ${row.mes} não está liberado no ano ${row.ano_referencia}`;
+
         } else if (params.eh_projeto) {
             if (row.meta_codigo && row.meta_id) return 'Linha inválida: meta não pode ser usado em importações de projetos';
             if (row.iniciativa_codigo && row.iniciativa_id) return 'Linha inválida: iniciativa não pode ser usado em importações de projetos';
@@ -453,6 +482,15 @@ export class ImportacaoOrcamentoService {
             if (!projeto_id) return `Linha inválida: projeto não encontrado, código ${row.projeto_codigo}`;
 
             if (!params.projetosIds.includes(projeto_id)) return `Linha inválida: sem permissão no projeto ID ${projeto_id}`;
+
+            if (!params.anosPort.includes(row.mes)) return `Linha inválida: mês ${row.mes} não está liberado no portfólio`;
+
+        }
+
+
+        if (params.eh_metas) {
+
+            //const existeNaMeta = await
 
         }
 
