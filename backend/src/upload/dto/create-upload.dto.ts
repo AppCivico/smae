@@ -33,5 +33,5 @@ export class CreateUploadDto {
     descricao?: string;
 
     @ApiProperty({ type: 'string', format: 'binary', required: true })
-    arquivo: Express.Multer.File;
+    arquivo: Express.Multer.File | Buffer;
 }
