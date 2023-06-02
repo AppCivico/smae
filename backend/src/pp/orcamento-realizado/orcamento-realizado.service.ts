@@ -5,7 +5,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePPOrcamentoRealizadoDto, FilterPPOrcamentoRealizadoDto, UpdatePPOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
-import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoMVPDto } from '../projeto/entities/projeto.entity';
 import { PPOrcamentoRealizado } from './entities/orcamento-realizado.entity';
 
 const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
@@ -33,7 +33,7 @@ export class OrcamentoRealizadoService {
         this.liberarValoresMaioresQueSof = true;
     }
 
-    async create(projeto: ProjetoDetailDto, dto: CreatePPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(projeto: ProjetoMVPDto, dto: CreatePPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
         console.log({ dotacao, processo, nota_empenho });
@@ -98,13 +98,12 @@ export class OrcamentoRealizadoService {
         return created;
     }
 
-    async update(projeto: ProjetoDetailDto, id: number, dto: UpdatePPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(projeto: ProjetoMVPDto, id: number, dto: UpdatePPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null, projeto_id: projeto.id },
         });
         if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
         console.log(dto);
-
 
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -431,7 +430,7 @@ export class OrcamentoRealizadoService {
         };
     }
 
-    async findAll(projeto: ProjetoDetailDto, filters: FilterPPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<PPOrcamentoRealizado[]> {
+    async findAll(projeto: ProjetoMVPDto, filters: FilterPPOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<PPOrcamentoRealizado[]> {
 
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
@@ -643,7 +642,7 @@ export class OrcamentoRealizadoService {
             }
 
             const orc_config = await this.prisma.portfolio.findFirst({
-                where: { id: projeto.portfolio_id},
+                where: { id: projeto.portfolio_id },
                 select: { orcamento_execucao_disponivel_meses: true }
             });
 

@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
 import { DotacaoService } from './dotacao.service';
+import { RetryPromise } from 'src/common/retryPromise';
 
 @Injectable()
 export class DotacaoCrontabService {
@@ -82,7 +83,7 @@ export class DotacaoCrontabService {
 
             for (let i = 0; i < dotacaoRealizadoLength; i += this.simultaneidade) {
                 const promises = dotacaoRealizadoAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
-                    return retryPromise(() => this.dotacao.sincronizarDotacaoRealizado({
+                    return RetryPromise(() => this.dotacao.sincronizarDotacaoRealizado({
                         ano: dotacao.ano_referencia,
                         dotacao: dotacao.dotacao,
                         pdm_id: undefined,
@@ -110,7 +111,7 @@ export class DotacaoCrontabService {
 
             for (let i = 0; i < dotacaoProcessoLength; i += this.simultaneidade) {
                 const promises = dotacaoProcessoAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
-                    return retryPromise(() => this.dotacaoProcessoService.valorRealizadoProcesso({
+                    return RetryPromise(() => this.dotacaoProcessoService.valorRealizadoProcesso({
                         ano: dotacao.ano_referencia,
                         processo: dotacao.dotacao_processo,
                         pdm_id: undefined,
@@ -138,7 +139,7 @@ export class DotacaoCrontabService {
 
             for (let i = 0; i < dotacaoNotasLength; i += this.simultaneidade) {
                 const promises = dotacaoNotasAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
-                    return retryPromise(() => this.dotacaoProcessoNotaService.valorRealizadoNotaEmpenho({
+                    return RetryPromise(() => this.dotacaoProcessoNotaService.valorRealizadoNotaEmpenho({
                         ano: dotacao.ano_referencia,
                         nota_empenho: dotacao.dotacao_processo_nota,
                         pdm_id: undefined,
@@ -167,7 +168,7 @@ export class DotacaoCrontabService {
 
             for (let i = 0; i < dotacaoPlanLength; i += this.simultaneidade) {
                 const promises = dotacaoPlanejadoAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
-                    return retryPromise(() => this.dotacao.sincronizarDotacaoPlanejado({
+                    return RetryPromise(() => this.dotacao.sincronizarDotacaoPlanejado({
                         ano: dotacao.ano_referencia,
                         dotacao: dotacao.dotacao,
                         pdm_id: undefined,
@@ -183,22 +184,3 @@ export class DotacaoCrontabService {
 
     }
 }
-
-async function retryPromise<T>(promiseFn: () => Promise<T>, maxRetries = 100, delay = 25, jitter = 0.2): Promise<T> {
-    if (maxRetries <= 1) {
-        return await promiseFn();
-    }
-
-    try {
-        return await promiseFn();
-    } catch (error) {
-        if (error && error?.code === 'P2034') {
-            const jitterDelay = Math.floor(Math.random() * delay * jitter * 2 - delay * jitter + delay);
-            await new Promise((resolve) => setTimeout(resolve, jitterDelay));
-            return retryPromise(promiseFn, maxRetries - 1, delay);
-        } else {
-            throw error;
-        }
-    }
-}
-

@@ -1,5 +1,5 @@
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
@@ -181,6 +181,10 @@ export class ProjetoDetailDto {
     permissoes: ProjetoPermissoesDto
 
     ano_orcamento: number[]
+}
+
+export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {
+
 }
 
 export class ProjetoPremissa {
