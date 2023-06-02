@@ -1,5 +1,5 @@
 import { Type } from "class-transformer"
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, ValidateIf } from "class-validator"
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator"
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
 
 export class CreateProjetoAcompanhamentoDto {
@@ -21,30 +21,37 @@ export class CreateProjetoAcompanhamentoDto {
     prazo_realizado?: Date
 
     @IsString()
+    @MaxLength(2048)
     participantes: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     detalhamento?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     encaminhamento?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(250)
     responsavel?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     observacao?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     detalhamento_status?: string
 
     @IsOptional()
     @IsString()
+    @MaxLength(50000)
     pontos_atencao?: string
 
     @IsOptional()
