@@ -1,4 +1,4 @@
-import { IntersectionType, PickType } from "@nestjs/swagger"
+import { IntersectionType, PartialType, PickType } from "@nestjs/swagger"
 import { IsInt, IsOptional, IsString } from "class-validator"
 import { IdNomeDto } from "src/common/dto/IdNome.dto"
 import { IdTituloDto } from "src/common/dto/IdTitulo.dto"
@@ -31,7 +31,6 @@ export class ListImportacaoOrcamentoDto {
 export class LinhaCsvInputDto extends IntersectionType(
     PickType(CreateOrcamentoRealizadoDto,
         [
-            'dotacao',
             'ano_referencia',
             'meta_id',
             'iniciativa_id',
@@ -39,6 +38,13 @@ export class LinhaCsvInputDto extends IntersectionType(
             'processo',
             'nota_empenho'
         ]
+    ),
+    PartialType(
+        PickType(CreateOrcamentoRealizadoDto,
+            [
+                'dotacao',
+            ]
+        )
     ),
     PickType(CreateOrcamentoRealizadoItemDto,
         [
