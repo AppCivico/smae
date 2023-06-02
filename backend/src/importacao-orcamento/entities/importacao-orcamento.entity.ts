@@ -1,4 +1,5 @@
 import { IntersectionType, PartialType, PickType } from "@nestjs/swagger"
+import { Type } from "class-transformer"
 import { IsInt, IsOptional, IsString } from "class-validator"
 import { IdNomeDto } from "src/common/dto/IdNome.dto"
 import { IdTituloDto } from "src/common/dto/IdTitulo.dto"
@@ -55,22 +56,26 @@ export class LinhaCsvInputDto extends IntersectionType(
     )
 ) {
     @IsOptional()
-    @IsInt()
+    @IsInt({ message: 'ID do projeot precisa ser um número' })
     projeto_id?: number
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'código do projeto precisa ser um texto' })
+    @Type(() => String) // XLSX fica maluco e manda number se for digitado só um digito
     projeto_codigo?: string
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'código da meta precisa ser um texto' })
+    @Type(() => String) // XLSX fica maluco e manda number se for digitado só um digito
     meta_codigo?: string
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'código do iniciativa precisa ser um texto' })
+    @Type(() => String) // XLSX fica maluco e manda number se for digitado só um digito
     iniciativa_codigo?: string
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'código do atividiade precisa ser um texto' })
+    @Type(() => String) // XLSX fica maluco e manda number se for digitado só um digito
     atividade_codigo?: string
 }
