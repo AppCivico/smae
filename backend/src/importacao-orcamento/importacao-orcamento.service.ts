@@ -503,14 +503,17 @@ export class ImportacaoOrcamentoService {
 
             if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto não pode ser usado em importações do PDM';
 
+            if (row.meta_id) meta_id = row.meta_id;
             // valida a meta
             if (row.meta_codigo) meta_id = params.metasCodigos2Ids[row.meta_codigo.toLowerCase()];
             if (!meta_id) return `Linha inválida: meta não encontrada, código ${row.meta_codigo}`;
 
+            if (row.iniciativa_id) iniciativa_id = row.iniciativa_id;
             // valida a iniciativa
             if (row.iniciativa_codigo) iniciativa_id = params.metasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`.toLowerCase()];
             if (row.iniciativa_codigo && !iniciativa_id) return `Linha inválida: iniciativa não encontrada, código ${row.meta_codigo} na meta ID ${meta_id}`;
 
+            if (row.atividade_id) atividade_id = row.atividade_id;
             // valida a atividade
             if (row.atividade_codigo) atividade_id = params.atividadesCodigos2Ids[`${meta_id}-${iniciativa_id}-${row.atividade_codigo}`.toLowerCase()];
             if (row.atividade_codigo && !atividade_id) return `Linha inválida: atividade não encontrada, código ${row.atividade_codigo} na iniciativa ID ${iniciativa_id}}`;
@@ -532,6 +535,7 @@ export class ImportacaoOrcamentoService {
 
             if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto código e projeto id são de uso exclusivo';
 
+            if (row.projeto_id) projeto_id = row.projeto_id;
             if (row.projeto_codigo) projeto_id = params.projetosCodigos2Ids[row.projeto_codigo.toLowerCase()];
 
             if (!projeto_id) return `Linha inválida: projeto não encontrado, código ${row.projeto_codigo}`;

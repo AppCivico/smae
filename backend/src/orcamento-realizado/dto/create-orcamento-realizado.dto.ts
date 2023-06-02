@@ -88,7 +88,7 @@ export class CreateOrcamentoRealizadoDto {
     processo?: string | null;
 
     /**
-     * dotacao: esperado exatamente 5 dígitos seguido de barra e o ano da nota
+     * nota_empenho: esperado exatamente 5 dígitos seguido de barra e o ano da nota
      * @example "00000/2022"
      */
     @IsOptional()

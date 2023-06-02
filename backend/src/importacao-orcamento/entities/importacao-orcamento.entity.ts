@@ -56,7 +56,7 @@ export class LinhaCsvInputDto extends IntersectionType(
 ) {
     @IsOptional()
     @IsInt()
-    projeto_id?: string
+    projeto_id?: number
 
     @IsOptional()
     @IsString()
