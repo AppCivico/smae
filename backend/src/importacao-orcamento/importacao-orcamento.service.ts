@@ -458,11 +458,11 @@ export class ImportacaoOrcamentoService {
             });
 
             for (const iniciativa of iniciativas) {
-                iniciativasCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.codigo}`] = iniciativa.id;
+                iniciativasCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.codigo}`.toLowerCase()] = iniciativa.id;
                 iniciativasIds.push(iniciativa.id);
 
                 for (const atividade of iniciativa.atividade) {
-                    atividadesCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.id}-${atividade.codigo}`] = atividade.id;
+                    atividadesCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.id}-${atividade.codigo}`.toLowerCase()] = atividade.id;
                     atividadesIds.push(atividade.id);
                 }
             }
@@ -504,15 +504,15 @@ export class ImportacaoOrcamentoService {
             if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto não pode ser usado em importações do PDM';
 
             // valida a meta
-            if (row.meta_codigo) meta_id = params.metasCodigos2Ids[row.meta_codigo];
+            if (row.meta_codigo) meta_id = params.metasCodigos2Ids[row.meta_codigo.toLowerCase()];
             if (!meta_id) return `Linha inválida: meta não encontrada, código ${row.meta_codigo}`;
 
             // valida a iniciativa
-            if (row.iniciativa_codigo) iniciativa_id = params.metasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`];
+            if (row.iniciativa_codigo) iniciativa_id = params.metasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`.toLowerCase()];
             if (row.iniciativa_codigo && !iniciativa_id) return `Linha inválida: iniciativa não encontrada, código ${row.meta_codigo} na meta ID ${meta_id}`;
 
             // valida a atividade
-            if (row.atividade_codigo) atividade_id = params.atividadesCodigos2Ids[`${meta_id}-${iniciativa_id}-${row.atividade_codigo}`];
+            if (row.atividade_codigo) atividade_id = params.atividadesCodigos2Ids[`${meta_id}-${iniciativa_id}-${row.atividade_codigo}`.toLowerCase()];
             if (row.atividade_codigo && !atividade_id) return `Linha inválida: atividade não encontrada, código ${row.atividade_codigo} na iniciativa ID ${iniciativa_id}}`;
 
             // valida se tem permissão de fato pra ver tudo
@@ -532,7 +532,7 @@ export class ImportacaoOrcamentoService {
 
             if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto código e projeto id são de uso exclusivo';
 
-            if (row.projeto_codigo) projeto_id = params.projetosCodigos2Ids[row.projeto_codigo];
+            if (row.projeto_codigo) projeto_id = params.projetosCodigos2Ids[row.projeto_codigo.toLowerCase()];
 
             if (!projeto_id) return `Linha inválida: projeto não encontrado, código ${row.projeto_codigo}`;
 

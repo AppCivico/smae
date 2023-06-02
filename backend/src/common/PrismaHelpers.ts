@@ -23,7 +23,7 @@ export class PrismaHelpers {
 
         return rows.reduce((p: any, c: any) => {
             if (!c.codigo) return p;
-            return { ...p, [c.codigo]: c.id };
+            return { ...p, [c.codigo.toLowerCase()]: c.id };
         }, {});
     }
 
