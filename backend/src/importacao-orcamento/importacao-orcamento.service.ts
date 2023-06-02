@@ -158,7 +158,10 @@ export class ImportacaoOrcamentoService {
                 criador: { select: { id: true, nome_exibicao: true } },
                 pdm: { select: { id: true, nome: true } },
                 portfolio: { select: { id: true, titulo: true } },
-            }
+            },
+            orderBy: [
+                { criado_em: 'desc' }
+            ]
         });
 
         return registros.map((r) => {
@@ -182,6 +185,7 @@ export class ImportacaoOrcamentoService {
                 processado_em: r.processado_em ?? null,
                 processado_errmsg: r.processado_errmsg,
                 linhas_importadas: r.linhas_importadas,
+                linhas_recusadas: r.linhas_recusadas,
             }
 
         });
@@ -323,7 +327,7 @@ export class ImportacaoOrcamentoService {
         let { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids }: { iniciativasIds: number[]; atividadesIds: number[]; iniciativasCodigos2Ids: Record<string, number>; atividadesCodigos2Ids: Record<string, number>; } = await this.carregaIniciativaAtiv(metasIds);
 
         let linhas_importadas: number = 0;
-        let linhas_com_erro: number = 0;
+        let linhas_recusadas: number = 0;
 
         for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
             const row = [];
@@ -391,7 +395,7 @@ export class ImportacaoOrcamentoService {
             );
 
             if (feedback) {
-                linhas_com_erro++;
+                linhas_recusadas++;
             } else {
                 feedback = 'Importado com sucesso';
                 linhas_importadas++;
@@ -426,6 +430,7 @@ export class ImportacaoOrcamentoService {
                 saida_arquivo_id: upload_id,
                 processado_em: new Date(Date.now()),
                 linhas_importadas,
+                linhas_recusadas,
             }
         }));
 

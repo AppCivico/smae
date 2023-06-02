@@ -23,6 +23,7 @@ export class ImportacaoOrcamentoDto {
     processado_em: Date | null
     processado_errmsg: string | null
     linhas_importadas: number | null
+    linhas_recusadas: number | null
 }
 
 export class ListImportacaoOrcamentoDto {
