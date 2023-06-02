@@ -3006,6 +3006,7 @@ model ImportacaoOrcamento {
     processado_errmsg String?
 
     linhas_importadas Int?
+    linhas_recusadas Int?
 
     criador Pessoa @relation(fields: [criado_por], references: [id])
 
