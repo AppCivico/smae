@@ -6,6 +6,7 @@ import { MfSerieValorNomimal, VariavelAnaliseQualitativaDto } from '../metas/dto
 import { MetasService } from '../metas/metas.service';
 import { MfService } from '../mf.service';
 import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/auxiliar.dto';
+import { RetryPromise } from 'src/common/retryPromise';
 
 type VariavelParaEnviar = {
     data_valor: Date,
@@ -80,7 +81,7 @@ export class AuxiliarService {
         // quando fiz em chama tudo em paralelo, deu muito erro de lock, pq a tx é serialize
         // então vamos só 1x e fazer os retry sozinho
         for (const save of saves) {
-            await retryPromise(() => this.metasService.addMetaVariavelAnaliseQualitativa(save, config, user))
+            await RetryPromise(() => this.metasService.addMetaVariavelAnaliseQualitativa(save, config, user))
         }
 
     }
@@ -154,7 +155,7 @@ export class AuxiliarService {
         console.log({ variaveisParaEnviar });
 
         const analisesQuali = await Promise.all(variaveisParaEnviar.map((envio) => {
-            return retryPromise(() => this.metasService.getMetaVariavelAnaliseQualitativa({
+            return RetryPromise(() => this.metasService.getMetaVariavelAnaliseQualitativa({
                 data_valor: envio.data_valor,
                 variavel_id: envio.variavel_id,
                 apenas_ultima_revisao: true,
@@ -174,7 +175,7 @@ export class AuxiliarService {
 
             if (!serie_realizado || !serie_realizadoAcc) continue;
 
-            await retryPromise(() => this.metasService.addMetaVariavelAnaliseQualitativa({
+            await RetryPromise(() => this.metasService.addMetaVariavelAnaliseQualitativa({
                 data_valor: Date2YMD.fromString(serie_realizado.data_valor),
                 simular_ponto_focal: dto.simular_ponto_focal,
                 variavel_id: quali.variavel.id,
@@ -214,21 +215,3 @@ function cria_enviar_cp(variavel_id: number, simular_ponto_focal: boolean, ref: 
         variavel_id,
     }
 }
-
-async function retryPromise<T>(promiseFn: () => Promise<T>, maxRetries = 100, delay = 15): Promise<T> {
-    if (maxRetries <= 0) {
-        throw new HttpException('Falha após o máximo de tentativas atingido, verifique o resultado da atualização recarregando a página.', 500);
-    }
-
-    try {
-        return await promiseFn();
-    } catch (error) {
-        if (error && error?.code === 'P2034') {
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            return retryPromise(promiseFn, maxRetries - 1, delay);
-        } else {
-            throw error;
-        }
-    }
-}
-

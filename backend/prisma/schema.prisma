@@ -2996,7 +2996,8 @@ model ImportacaoOrcamento {
     portfolio_id Int?
     portfolio    Portfolio? @relation(fields: [portfolio_id], references: [id])
 
-    criado_por Int?
+    // required ter um criador, pq é required saber quem subiu os dados
+    criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
     congelado_em  DateTime? @db.Timestamptz(6)
@@ -3006,7 +3007,7 @@ model ImportacaoOrcamento {
 
     linhas_importadas Int?
 
-    criador Pessoa? @relation(fields: [criado_por], references: [id])
+    criador Pessoa @relation(fields: [criado_por], references: [id])
 
     @@index([criado_em, pdm_id])
     @@index([criado_em, portfolio_id])

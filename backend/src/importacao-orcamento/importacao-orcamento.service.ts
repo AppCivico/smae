@@ -10,7 +10,11 @@ import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { JOB_IMPORTACAO_ORCAMENTO_LOCK } from 'src/common/dto/locks';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
+import { DotacaoProcessoNotaService } from 'src/dotacao/dotacao-processo-nota.service';
+import { DotacaoProcessoService } from 'src/dotacao/dotacao-processo.service';
+import { DotacaoService } from 'src/dotacao/dotacao.service';
 import { MetaService } from 'src/meta/meta.service';
+import { CreateOrcamentoRealizadoItemDto } from 'src/orcamento-realizado/dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizadoService as PdmOrcamentoRealizadoService } from 'src/orcamento-realizado/orcamento-realizado.service';
 import { OrcamentoRealizadoService as ProjetoOrcamentoRealizadoService } from 'src/pp/orcamento-realizado/orcamento-realizado.service';
 import { ProjetoService } from 'src/pp/projeto/projeto.service';
@@ -20,9 +24,7 @@ import { read, utils, writeFile } from "xlsx";
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
-import { DotacaoProcessoNotaService } from 'src/dotacao/dotacao-processo-nota.service';
-import { DotacaoProcessoService } from 'src/dotacao/dotacao-processo.service';
-import { DotacaoService } from 'src/dotacao/dotacao.service';
+import { RetryPromise } from 'src/common/retryPromise';
 
 type ProcessaLinhaParams = {
     metasIds: number[]
@@ -37,6 +39,7 @@ type ProcessaLinhaParams = {
     eh_metas: boolean
     anosPort: number[]
     anosPdm: Record<string, number[]>
+    portfolio_id: number | null
 };
 
 @Injectable()
@@ -296,7 +299,7 @@ export class ImportacaoOrcamentoService {
 
         // se foi criado sem dono, pode todos Meta|Projeto, os metodos foram findAllIds
         // foram adaptados pra retornar todos os ids dos items não removidos
-        const user = job.criado_por ? await this.authService.pessoaJwtFromId(job.criado_por) : undefined;
+        const user = await this.authService.pessoaJwtFromId(job.criado_por);
 
         if (job.portfolio_id) {
             const projetosDoUser = await this.projetoService.findAllIds(user);
@@ -375,7 +378,9 @@ export class ImportacaoOrcamentoService {
                     eh_projeto: job.portfolio_id !== null,
                     anosPort,
                     anosPdm,
-                }
+                    portfolio_id: job.portfolio_id,
+                },
+                user,
             );
             console.log(col2row)
 
@@ -431,7 +436,7 @@ export class ImportacaoOrcamentoService {
     }
 
 
-    async processaRow(col2row: any, params: ProcessaLinhaParams): Promise<string> {
+    async processaRow(col2row: any, params: ProcessaLinhaParams, user: PessoaFromJwt): Promise<string> {
 
         console.log(params)
         const row = plainToInstance(LinhaCsvInputDto, col2row);
@@ -574,11 +579,145 @@ export class ImportacaoOrcamentoService {
             return 'Erro: código não implementado'
         }
 
+        if (!dotacao) return 'Erro: faltando dotacao';
 
+        let id: number | undefined = undefined;
+        let itens: CreateOrcamentoRealizadoItemDto[] = [];
+
+        let adicionar_item_mes: boolean = true;
         if (params.eh_metas) {
+            if (!meta_id) return 'Linha inválida: faltando meta_id';
+
+            const existeNaMeta = await this.pdmOrcResService.findAll({
+                ano_referencia: row.ano_referencia,
+                meta_id,
+                dotacao,
+                nota_empenho: dotacao_processo_nota,
+                processo: dotacao_processo,
+            }, user);
+
+            const maisRecente = existeNaMeta.at(-1);
+            if (maisRecente) {
+                id = maisRecente.id;
+                itens = maisRecente.itens.map(r => {
+                    return {
+                        mes: r.mes,
+                        valor_empenho: +r.valor_empenho,
+                        valor_liquidado: +r.valor_liquidado
+                    }
+                });
+            }
+
+            for (const item of itens) {
+                if (item.mes === row.mes) {
+                    adicionar_item_mes = false;
+                    item.valor_empenho = row.valor_empenho;
+                    item.valor_liquidado = row.valor_liquidado;
+                }
+            }
+
+        } else if (params.eh_projeto) {
+            if (!projeto_id) return 'Linha inválida: faltando projeto_id';
+
+            const existeNaMeta = await this.ppOrcResService.findAll(
+                {
+                    id: projeto_id,
+                    portfolio_id: params.portfolio_id!,
+                },
+                {
+                    ano_referencia: row.ano_referencia,
+                    dotacao,
+                    nota_empenho: dotacao_processo_nota,
+                    processo: dotacao_processo,
+                }, user);
+
+            const maisRecente = existeNaMeta.at(-1);
+            if (maisRecente) {
+                id = maisRecente.id;
+                itens = maisRecente.itens.map(r => {
+                    return {
+                        mes: r.mes,
+                        valor_empenho: +r.valor_empenho,
+                        valor_liquidado: +r.valor_liquidado
+                    }
+                });
+            }
+
+            for (const item of itens) {
+                if (item.mes === row.mes) {
+                    adicionar_item_mes = false;
+                    item.valor_empenho = row.valor_empenho;
+                    item.valor_liquidado = row.valor_liquidado;
+                }
+            }
+        }
+
+        if (adicionar_item_mes)
+            itens.push({
+                mes: row.mes,
+                valor_empenho: row.valor_empenho,
+                valor_liquidado: row.valor_liquidado,
+            })
+
+        try {
+            const upsertPromise = new Promise<void>(async (resolve, reject) => {
+                if (params.eh_metas) {
+
+                    if (id) {
+                        await this.pdmOrcResService.update(id, {
+                            itens,
+                            meta_id,
+                            atividade_id,
+                            iniciativa_id
+                        }, user);
+                    } else {
+                        await this.pdmOrcResService.create({
+                            ano_referencia: row.ano_referencia,
+                            dotacao: dotacao!,
+                            processo: dotacao_processo,
+                            nota_empenho: dotacao_processo_nota,
+                            itens,
+                            meta_id,
+                            atividade_id,
+                            iniciativa_id
+                        }, user);
+                    }
+
+                } else if (params.eh_projeto) {
+
+                    if (id) {
+                        await this.ppOrcResService.update({
+                            id: projeto_id!,
+                            portfolio_id: params.portfolio_id!,
+                        }, id, {
+                            itens,
 
 
+                        }, user);
+                    } else {
+                        await this.ppOrcResService.create({
+                            id: projeto_id!,
+                            portfolio_id: params.portfolio_id!,
+                        }, {
+                            ano_referencia: row.ano_referencia,
+                            dotacao: dotacao!,
+                            processo: dotacao_processo,
+                            nota_empenho: dotacao_processo_nota,
+                            itens,
+                        }, user);
+                    }
+                }
 
+                resolve();
+            });
+
+            await RetryPromise(() => upsertPromise, 5, 2000, 100);
+
+        } catch (error) {
+            if (error instanceof HttpException)
+                return `Linha inválida: ${error}`;
+
+            return `Erro no processamento do processo: ${error}`;
         }
 
         return '';
