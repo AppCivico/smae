@@ -71,15 +71,18 @@ export const acompanhamento = object()
       .nullable(),
     encaminhamento: string()
       .label('Encaminhamento')
+      .max(50000)
       .nullable(),
     observacao: string()
       .label('Observação')
       .nullable(),
     participantes: string()
       .label('Participantes')
+      .max(2048)
       .required(),
     pontos_atencao: string()
       .label('Pontos de atenção')
+      .max(50000)
       .nullable(),
     prazo_encaminhamento: date()
       .label('Prazo para encaminhamento')
