@@ -248,18 +248,38 @@ export class ImportacaoOrcamentoService {
                 ]
             },
             select: {
-                id: true
+                id: true,
+                congelado_em: true
             }
         });
 
         for (const job of pending) {
 
-            await this.prisma.importacaoOrcamento.update({
-                where: { id: job.id },
-                data: {
-                    congelado_em: new Date(Date.now())
+            if (job.congelado_em && Math.abs(DateTime.fromJSDate(job.congelado_em).diffNow().as('seconds')) < 120) {
+                this.logger.warn(`Job ${job.id} já foi congelado há pouco tempo`);
+                continue;
+            } else if (job.congelado_em === null) {
+
+                const updated = await this.prisma.importacaoOrcamento.updateMany({
+                    where: { id: job.id, congelado_em: null },
+                    data: {
+                        congelado_em: new Date(Date.now())
+                    }
+                });
+
+                if (updated.count === 0) {
+                    this.logger.warn(`Job ${job.id} já foi iniciado`);
+                    continue;
                 }
-            });
+            } else {
+                // atualiza o timestamp da ultima vez que foi congelado pra processar
+                await this.prisma.importacaoOrcamento.update({
+                    where: { id: job.id },
+                    data: {
+                        congelado_em: new Date(Date.now())
+                    }
+                });
+            }
 
             try {
                 await this.processaArquivo(job.id)
@@ -319,7 +339,7 @@ export class ImportacaoOrcamentoService {
             metasIds.push(...metasDoUser.map(r => r.id));
         }
 
-        console.log({ job, metasIds, projetosIds });
+        this.logger.log(JSON.stringify({ job, metasIds, projetosIds }));
 
         const projetosCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'projeto', projetosIds, true);
         const metasCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'meta', metasIds, false);
@@ -471,13 +491,12 @@ export class ImportacaoOrcamentoService {
                 }
             }
         }
+
         return { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids };
     }
 
 
     async processaRow(col2row: any, params: ProcessaLinhaParams, user: PessoaFromJwt): Promise<string> {
-
-        console.log(params)
         const row = plainToInstance(LinhaCsvInputDto, col2row);
         const validations = await validate(row);
         if (validations.length) {
@@ -514,8 +533,8 @@ export class ImportacaoOrcamentoService {
 
             if (row.iniciativa_id) iniciativa_id = row.iniciativa_id;
             // valida a iniciativa
-            if (row.iniciativa_codigo) iniciativa_id = params.metasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`.toLowerCase()];
-            if (row.iniciativa_codigo && !iniciativa_id) return `Linha inválida: iniciativa não encontrada, código ${row.meta_codigo} na meta ID ${meta_id}`;
+            if (row.iniciativa_codigo) iniciativa_id = params.iniciativasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`.toLowerCase()];
+            if (row.iniciativa_codigo && !iniciativa_id) return `Linha inválida: iniciativa não encontrada, código ${row.iniciativa_codigo} na meta ID ${meta_id}`;
 
             if (row.atividade_id) atividade_id = row.atividade_id;
             // valida a atividade
