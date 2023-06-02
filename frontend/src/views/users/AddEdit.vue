@@ -26,19 +26,25 @@ const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
 PaineisGruposStore.getAll();
 
 let title = 'Cadastro de Usuário';
-const editarNomeParaExibição = ref(false);
+const personalizarNomeParaExibição = ref(false);
 const { user, accessProfiles } = storeToRefs(usersStore);
 usersStore.getProfiles();
 if (id) {
   title = 'Editar Usuário';
   usersStore.getById(id).then(() => {
     if (user.value?.nome_completo !== user.value?.nome_exibicao) {
-      editarNomeParaExibição.value = true;
+      personalizarNomeParaExibição.value = true;
     }
   });
 }
 
-async function onSubmit(values) {
+async function onSubmit(payload) {
+  const values = payload;
+
+  if (!personalizarNomeParaExibição.value) {
+    values.nome_exibicao = values.nome_completo;
+  }
+
   try {
     let msg;
     let r;
@@ -134,7 +140,7 @@ async function checkClose() {
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_completo }"
-              @change="!editarNomeParaExibição
+              @change="!personalizarNomeParaExibição
                 ? setFieldValue('nome_exibicao', values.nome_completo)
                 : null"
             />
@@ -148,7 +154,7 @@ async function checkClose() {
           <div class="mt2">
             <label class="block">
               <input
-                v-model="editarNomeParaExibição"
+                v-model="personalizarNomeParaExibição"
                 class="inputcheckbox"
                 type="checkbox"
               ><span>Personalizar nome para exibição</span>
@@ -156,7 +162,7 @@ async function checkClose() {
           </div>
 
           <div
-            v-show="editarNomeParaExibição"
+            v-show="personalizarNomeParaExibição"
             class="f1"
           >
             <label class="label">Nome para exibição <span class="tvermelho">*</span></label>
@@ -165,7 +171,7 @@ async function checkClose() {
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.nome_exibicao }"
-              @change="!editarNomeParaExibição
+              @change="!personalizarNomeParaExibição
                 ? setFieldValue('nome_exibicao', values.nome_completo)
                 : null"
             />
