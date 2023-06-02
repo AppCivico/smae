@@ -94,7 +94,7 @@ export class CreateOrcamentoRealizadoDto {
     @IsOptional()
     @IsString()
     @MaxLength(11)
-    @Matches(/^\d{5}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 00000/2AAA' })
+    @Matches(/^\d{5}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 00000/' + new Date(Date.now()).getFullYear() })
     @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
 
@@ -110,7 +110,7 @@ export class CreateOrcamentoRealizadoDto {
     itens: CreateOrcamentoRealizadoItemDto[];
 }
 
-export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, ['ano_referencia', 'dotacao', 'processo', 'nota_empenho']) {}
+export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, ['ano_referencia', 'dotacao', 'processo', 'nota_empenho']) { }
 
 export class FilterOrcamentoRealizadoDto {
     /**

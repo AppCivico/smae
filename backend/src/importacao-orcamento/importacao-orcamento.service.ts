@@ -1,23 +1,28 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { DateTime } from 'luxon';
+import { AuthService } from 'src/auth/auth.service';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { JOB_IMPORTACAO_ORCAMENTO_LOCK } from 'src/common/dto/locks';
-import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
 import { MetaService } from 'src/meta/meta.service';
+import { OrcamentoRealizadoService as PdmOrcamentoRealizadoService } from 'src/orcamento-realizado/orcamento-realizado.service';
+import { OrcamentoRealizadoService as ProjetoOrcamentoRealizadoService } from 'src/pp/orcamento-realizado/orcamento-realizado.service';
 import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
+import { read, utils, writeFile } from "xlsx";
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
-import { read, utils, writeFile } from "xlsx";
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
-import { AuthService } from 'src/auth/auth.service';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
-import { PrismaHelpers } from 'src/common/PrismaHelpers';
+import { DotacaoProcessoNotaService } from 'src/dotacao/dotacao-processo-nota.service';
+import { DotacaoProcessoService } from 'src/dotacao/dotacao-processo.service';
+import { DotacaoService } from 'src/dotacao/dotacao.service';
 
 type ProcessaLinhaParams = {
     metasIds: number[]
@@ -40,10 +45,16 @@ export class ImportacaoOrcamentoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
+        private readonly dotacaoService: DotacaoService,
+        private readonly dotacaoProcessoService: DotacaoProcessoService,
+        private readonly dotacaoProcessoNotaService: DotacaoProcessoNotaService,
 
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
         @Inject(forwardRef(() => MetaService)) private readonly metaService: MetaService,
+
+        @Inject(forwardRef(() => PdmOrcamentoRealizadoService)) private readonly pdmOrcResService: PdmOrcamentoRealizadoService,
+        @Inject(forwardRef(() => ProjetoOrcamentoRealizadoService)) private readonly ppOrcResService: ProjetoOrcamentoRealizadoService,
     ) { }
 
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -436,6 +447,10 @@ export class ImportacaoOrcamentoService {
         let iniciativa_id: number | undefined = undefined;
         let atividade_id: number | undefined = undefined;
 
+        if (row.nota_empenho && row.processo) return 'Linhas inválida: nota empenho ou enviar processo';
+        if (row.nota_empenho && row.dotacao) return 'Linhas inválida: nota empenho ou enviar dotação';
+        if (row.processo && row.dotacao) return 'Linhas inválida: enviar processo ou dotação';
+
         if (!row.dotacao && !row.processo && !row.nota_empenho) return 'Linhas inválida: é necessário pelo menos dotação, processo ou nota de empenho';
 
         if (params.eh_metas) {
@@ -487,10 +502,82 @@ export class ImportacaoOrcamentoService {
 
         }
 
+        let dotacao: string | undefined = undefined;
+        let dotacao_processo: string | undefined = undefined;
+        let dotacao_processo_nota: string | undefined = undefined;
+
+        if (row.nota_empenho) {
+            try {
+                const ano_nota = +row.nota_empenho.split('/')[1];
+
+                const ne = await this.dotacaoProcessoNotaService.valorRealizadoNotaEmpenho({
+                    ano: ano_nota,
+                    nota_empenho: row.nota_empenho,
+                    pdm_id: undefined,
+                    portfolio_id: undefined,
+                });
+
+                if (ne.length === 0) return 'Linha inválida: nota empenho não encontrada';
+
+                dotacao = ne[0].dotacao;
+                dotacao_processo = ne[0].processo;
+                dotacao_processo_nota = ne[0].nota_empenho;
+
+            } catch (error) {
+                if (error instanceof HttpException)
+                    return `Linha inválida: ${error}`;
+
+                return `Erro no processamento da nota-empenho: ${error}`;
+            }
+        } else if (row.processo) {
+            try {
+                const processo = await this.dotacaoProcessoService.valorRealizadoProcesso({
+                    ano: row.ano_referencia,
+                    processo: row.processo,
+                    pdm_id: undefined,
+                    portfolio_id: undefined,
+                });
+
+                if (processo.length === 0) return 'Linha inválida: processo não encontrado';
+                if (processo.length !== 1) return `Linha inválida: ${processo.length} dotações encontradas pelo processo, cadastre pelo sistema`;
+
+                dotacao = processo[0].dotacao;
+                dotacao_processo = processo[0].processo;
+
+            } catch (error) {
+                if (error instanceof HttpException)
+                    return `Linha inválida: ${error}`;
+
+                return `Erro no processamento do processo: ${error}`;
+            }
+        } else if (row.dotacao) {
+            try {
+
+                const dotacaoRet = await this.dotacaoService.valorRealizadoDotacao({
+                    ano: row.ano_referencia,
+                    dotacao: row.dotacao,
+                    pdm_id: undefined,
+                    portfolio_id: undefined,
+                });
+
+                if (dotacaoRet.length === 0) return 'Linha inválida: dotação não encontrada';
+
+                dotacao = dotacaoRet[0].dotacao;
+
+            } catch (error) {
+                if (error instanceof HttpException)
+                    return `Linha inválida: ${error}`;
+
+                return `Erro no processamento do processo: ${error}`;
+            }
+        } else {
+            return 'Erro: código não implementado'
+        }
+
 
         if (params.eh_metas) {
 
-            //const existeNaMeta = await
+
 
         }
 
