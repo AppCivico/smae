@@ -295,10 +295,8 @@ export class ImportacaoOrcamentoService {
 
         const colunaHeaderIndex = OrcamentoImportacaoHelpers.createColumnHeaderIndex(sheet, [...ColunasNecessarias, ...OutrasColumns]);
 
-        console.log(colunaHeaderIndex)
-
         const outputXLSX = utils.book_new();
-        const outputSheet = utils.aoa_to_sheet([[...ColunasNecessarias, ...OutrasColumns, 'feedback']]);
+        const outputSheet = utils.aoa_to_sheet([[...ColunasNecessarias, ...OutrasColumns, 'Status']]);
         utils.book_append_sheet(outputXLSX, outputSheet, sheetName);
 
         let projetosIds: number[] = [];
@@ -334,7 +332,6 @@ export class ImportacaoOrcamentoService {
             [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
 
                 const colIndex = colunaHeaderIndex[columnName];
-                console.log(columnName, colIndex)
 
                 if (colIndex >= 0) {
                     const cellAddress = utils.encode_cell({ c: colIndex, r: rowIndex });
@@ -373,7 +370,7 @@ export class ImportacaoOrcamentoService {
             }
 
 
-            const feedback = await this.processaRow(
+            let feedback = await this.processaRow(
                 col2row,
                 {
                     metasIds,
@@ -392,17 +389,17 @@ export class ImportacaoOrcamentoService {
                 },
                 user,
             );
-            console.log(col2row)
+
             if (feedback) {
                 linhas_com_erro++;
             } else {
+                feedback = 'Importado com sucesso';
                 linhas_importadas++;
             }
 
             row.push(feedback);
 
             const newRow = [row];
-            console.log(newRow)
             utils.sheet_add_aoa(outputSheet, newRow, { origin: 'A' + (rowIndex + 1) });
         }
 
@@ -413,13 +410,15 @@ export class ImportacaoOrcamentoService {
             compression: true,
         });
 
-        const upload_id = await this.uploadService.upload({
-            tipo: 'IMPORTACAO_ORCAMENTO',
-            arquivo: buffer,
-            descricao: `saida-${job.id}.xlsx`
-        }, user, { buffer }, '');
+        const upload_id = await RetryPromise(() => {
+            return this.uploadService.upload({
+                tipo: 'IMPORTACAO_ORCAMENTO',
+                arquivo: buffer,
+                descricao: `saida-${job.id}.xlsx`
+            }, user, { buffer }, '')
+        }, 50, 1000, 100);
 
-        await this.prisma.importacaoOrcamento.update({
+        await RetryPromise(() => this.prisma.importacaoOrcamento.update({
             where: {
                 id: job.id
             },
@@ -428,7 +427,7 @@ export class ImportacaoOrcamentoService {
                 processado_em: new Date(Date.now()),
                 linhas_importadas,
             }
-        });
+        }));
 
     }
 
