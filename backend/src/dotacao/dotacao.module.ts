@@ -11,6 +11,6 @@ import { DotacaoCrontabService } from './dotacao.crontab.service';
     imports: [PrismaModule, SofApiModule],
     controllers: [DotacaoController],
     providers: [DotacaoService, DotacaoProcessoService, DotacaoProcessoNotaService, DotacaoCrontabService],
-    exports: [DotacaoService],
+    exports: [DotacaoService, DotacaoProcessoService, DotacaoProcessoNotaService],
 })
 export class DotacaoModule {}
