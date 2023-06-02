@@ -84,6 +84,48 @@ async function checkClose() {
         ><use xlink:href="#i_x" /></svg>
       </button>
     </div>
+
+    <div
+      v-if="user.responsavel_pelos_projetos?.length"
+      class="g2 mb1"
+    >
+      <hr class="mb1">
+      <details
+        class="f100 mb1"
+        :open="user.responsavel_pelos_projetos?.length === 1 ? true : null"
+      >
+        <summary>
+          <h2
+            class="label mb0"
+            style="line-height: 1.5rem;"
+          >
+            <svg
+              class="ib"
+              width="20"
+              height="20"
+            ><use xlink:href="#i_valores" /></svg>
+            {{ user.responsavel_pelos_projetos.length === 1
+              ? 'Projeto pelo qual é responsável'
+              : 'Projetos pelos quais é responsável' }}
+          </h2>
+        </summary>
+        <ol class="pl0 mt1 mb0">
+          <li
+            v-for="item in user.responsavel_pelos_projetos"
+            :key="item.id"
+            class="mb05"
+          >
+            <strong v-if="item.codigo">
+              {{ item.codigo }}
+            </strong>
+
+            {{ item.nome }}
+          </li>
+        </ol>
+      </details>
+      <hr class="mb1">
+    </div>
+
     <template v-if="!(user?.loading || user?.error)">
       <Form
         v-slot="{ errors, isSubmitting, setFieldValue, values }"
