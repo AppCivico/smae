@@ -17,7 +17,7 @@ BEGIN
         WHERE
             id = pProjetoId
     ),
-    _anos AS ( SELECT ano.ano FROM _int, generate_series(ini, fim, 1) ano ),
+    _anos AS ( SELECT ano.ano FROM _int, generate_series(ini::int, fim::int, 1) ano ),
     _prev_custo AS (
         SELECT DISTINCT ano_referencia
         FROM meta_orcamento
