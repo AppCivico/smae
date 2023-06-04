@@ -1,12 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
 import { IsPublic } from './auth/decorators/is-public.decorator';
 
-import { Res } from '@nestjs/common';
-import { Response } from 'express';
-
-import { join } from 'path';
-import * as ejs from 'ejs';
-
+//import { Res } from '@nestjs/common';
+//import { Response } from 'express';
+//
+//import { join } from 'path';
+//import * as ejs from 'ejs';
 
 @Controller()
 export class AppController {
