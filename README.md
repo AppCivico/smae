@@ -12,7 +12,6 @@ Senha do usuário padrão:
 Acesse [o README do frontend](frontend/README.md) para instruções de desenvolvimento do backend!
 
 # Deploy com docker-compose
-=========================
 
 Copie o arquivo `.env.example` para `.env` e faça as modificações das chaves e portas.
 
@@ -30,8 +29,15 @@ Isso irá criar e executar todos os contêineres e serviços especificados no ar
 
 Para fazer as atualizações de código, repita o processo executando `git pull` e conferindo se há novas configurações no .env.example para entrarem no ambiente de produção.
 
-Configurando o postgres-backup-local
-------------------------------------
+## Usando o serviço email_service
+
+O `email_service` é responsável por enviar e-mails. Ele acessa as templates dos e-mails na intranet ou pela internet via HTTP ou HTTPS e dispara o envio via SMTP, de acordo com as configurações na tabela. Mais informações podem ser encontradas no arquivo [email-service/README.md](email-service/README.md).
+
+## Usando o serviço smtp_web
+
+O serviço de `smtp_web` é um servidor SMTP fake usado apenas para desenvolvimento. Ele possui uma interface web para que o administrador possa visualizar todos os e-mails "enviados" pelo sistema. Para o ambiente de produção, é necessário um servidor SMTP verdadeiro e a importação das configurações DKIM e SPF. O deploy deste container não é necessário no ambiente de produção.
+
+## Configurando o postgres-backup-local
 
 Caso deseje personalizar as configurações de backup do banco de dados, edite o docker-compose.yaml de acordo
 
@@ -50,17 +56,6 @@ Existem diversas variáveis que podem ser personalizadas:
 *   `BACKUP_KEEP_WEEKS`: Número de semanas que os backups semanais serão armazenados.
 *   `BACKUP_KEEP_MONTHS`: Número de meses que os backups mensais serão armazenados.
 *   `HEALTHCHECK_PORT`: Porta que verifica a saúde do container.
-
-Usando o serviço smtp_web
---------------------------
-
-O serviço de `smtp_web` é um servidor SMTP fake usado apenas para desenvolvimento. Ele possui uma interface web para que o administrador possa visualizar todos os e-mails "enviados" pelo sistema. Para o ambiente de produção, é necessário um servidor SMTP verdadeiro e a importação das configurações DKIM e SPF. O deploy deste container não é necessário no ambiente de produção.
-
-Usando o serviço email_service
--------------------------------
-
-O `email_service` é responsável por enviar e-mails. Ele acessa as templates dos e-mails na intranet ou pela internet via HTTP ou HTTPS e dispara o envio via SMTP, de acordo com as configurações na tabela. Mais informações podem ser encontradas no arquivo `email-service/README.md`.
-
 
 ## Configuração de painéis incorporados do Metabase
 
