@@ -129,6 +129,10 @@ export class ImportacaoOrcamentoService {
         // quando chegar no IF da meta, se ela não tiver a permissão, vai entrar outro filtro pra excluir os registros onde a meta é nulo
         // e vice versa para o projeto/portfolio
 
+        if (filters.apenas_com_portfolio) {
+            filtros.push({ portfolio_id: { not: null } })
+        }
+
         if (user.hasSomeRoles(['Projeto.orcamento'])) {
             const projetos = await this.projetoService.findAllIds(user);
 
