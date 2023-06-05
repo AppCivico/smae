@@ -303,8 +303,15 @@ export class ImportacaoOrcamentoService {
     private async processaArquivo(id: number) {
 
         const job = await this.prisma.importacaoOrcamento.findUniqueOrThrow({
-            where: { id: +id }
+            where: { id: +id },
+            include: {
+                arquivo: {
+                    select: { nome_original: true },
+                }
+            }
         });
+
+        const nome_arquivo = job.arquivo.nome_original.replace(/[A-Za-z0-9]/g, '-');
 
         const inputBuffer = await Stream2Buffer((await this.uploadService.getReadableStreamById(job.arquivo_id)).stream);
 
@@ -438,7 +445,7 @@ export class ImportacaoOrcamentoService {
             return this.uploadService.upload({
                 tipo: 'IMPORTACAO_ORCAMENTO',
                 arquivo: buffer,
-                descricao: `saida-${job.id}.xlsx`
+                descricao: `${nome_arquivo}-processado.xlsx`
             }, user, { buffer }, '')
         }, 50, 1000, 100);
 
