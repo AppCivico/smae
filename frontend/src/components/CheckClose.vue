@@ -30,7 +30,7 @@ async function checkClose() {
       query: route.query,
     };
 
-    caminhoParaSaída = router.resolve(propriedadesDaRota)?.path
+    caminhoParaSaída = router.resolve(propriedadesDaRota)?.fullPath
       || route.matched[parentRoutePosition].path;
   } else {
     // Note: params are ignored if a path is provided, which is not the case for
