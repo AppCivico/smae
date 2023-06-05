@@ -19,6 +19,7 @@ import {
 } from '@/views/monitoramento';
 import administracao from './administracao';
 import análise from './analise';
+import envios from './envios';
 import metas from './metas';
 import projetos from './projetos';
 import relatorios from './relatorios';
@@ -60,6 +61,7 @@ export const router = createRouter({
     projetos,
     análise,
     relatorios,
+    envios,
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
