@@ -1,22 +1,21 @@
 # EmailDB
 
-EmailDB usa um banco de dados Pg como uma fila para e-mails transacionais,
-então, se você reverter uma transação, você não enviará nenhum e-mail!
+EmailDB usa um banco de dados Pg como uma fila para e-mails transacionais, então, se você reverter uma transação, você não enviará nenhum e-mail!
 
 Ele também separa os modelos de e-mail do seu back-end, você pode hospedar seus modelos em qualquer lugar com HTTP/HTTPS.
 
-# dependências remotas
+## TLDR
 
-- PostgreSQL >= 9.5 - usado como fila (requer o recurso SKIP LOCKED)
+Configuração do email fica na tabela `emaildb_config`, a cada mudança reinicie os containers. A fila fica na tabela `emaildb_queue`, para tentar novamente ou **reenviar um email**, defina `errmsg` e `sent` como NULL, então rode `NOTIFY newemail` ou espere o próximo minuto para que o serviço tente automaticamente.
 
-Fora isso, você precisa de um servidor SMTP
 
-# Visão geral do back-end
+# Visão geral
 
-- Escrito em perl, usa cpanfile para controlar deps perl
-- Text::Xslate para análise/template
-- Email::Sender::Transporte:** para *enviar* e-mails
-- Shypper::TemplateResolvers::* para obter textos para passar para Text::Xslate
+O emaildb irá baixar a template de um serviço HTTP(s) e irá executar a transposição das varáveis para formar o HTML para o disparo do email, que então será encaminhado para o SMTP server configurado.
+
+O parser das templates é o `Text::Xslate` e as regras são das da [Template-Toolkit](http://template-toolkit.org/docs/manual/Intro.html), que suportam loop, ifs, escaping do html, etc.
+
+As classes para download e envio sao customizáveis, mas as que estão inclusas no container são as seguintes:
 
 ## Shypper::TemplateResolvers
 
@@ -40,11 +39,9 @@ Todas as configurações de operações são definidas por meio de variáveis �
 
 As configurações dinâmicas são definidas por meio de tabelas, veja abaixo:
 
-Use `$ sqitch deploy` para implantar as tabelas necessárias em seu banco de dados. Ou copie/cole de [email-db-service/deploy_db/deploy/0000-firstversion.sql](email-db-service/deploy_db/deploy/0000-firstversion.sql) e execute em seu postgres.
+No caso do SMAE, está já integrado no migrations do próprio Prisma, não é necessário nenhum migration para o serviço do emaildb.
 
-> No caso do SMAE, está já integrado no migrations do pŕoprio ORM
-
-Insira em `public.emaildb_config` de acordo com suas necessidades.
+O [seed.ts](../backend/prisma/seed.ts) já insere no `public.emaildb_config` os valores fake para o STMP fake.
 
 Quando uma inserção ocorre em `emaildb_queue` este serviço irá enviá-la.
 
@@ -53,13 +50,12 @@ Quando uma inserção ocorre em `emaildb_queue` este serviço irá enviá-la.
 O docker-compose.yml da raiz já está configurado com o deploy,
 para outros exemplos, veja [no repositório original](https://github.com/eokoe/email-db-service)
 
-Para tentar novamente ou reenviar, defina `errmsg` e `sent` como NULL, então acione `NOTIFY newemail` ou espere o próximo minuto
 
-#configuração ENV
+# configuração via ENV
 
-- $ENV{EMAILDB_MAX_WORKERS}=1 # max workers para Parallel::Prefork
+*   $ENV{EMAILDB_MAX_WORKERS}=1 # max workers para Parallel::Prefork
 
-- $ENV{EMAILDB_FETCH_ROWS}=100 # número de linhas que cada trabalho tenta bloquear cada vez que consulta o banco de dados
+*   $ENV{EMAILDB_FETCH_ROWS}=100 # número de linhas que cada trabalho tenta bloquear cada vez que consulta o banco de dados
 
 **AVISO**
 
