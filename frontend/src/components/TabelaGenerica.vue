@@ -44,7 +44,7 @@ defineProps({
           :key="item.id"
         >
           <component
-          :is="coluna.éCabeçalho ? 'th' : 'td'"
+            :is="coluna.éCabeçalho ? 'th' : 'td'"
             v-for="coluna, i in colunas"
             :key="`cel__${i}--${item.id}`"
           >
@@ -78,7 +78,7 @@ defineProps({
       </tr>
       <tr v-else-if="erro">
         <td :colspan="colunas.length">
-          erro: {{ erro }}
+          {{ erro }}
         </td>
       </tr>
     </tbody>
