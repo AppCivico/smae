@@ -1,0 +1,70 @@
+<script setup>
+import { usePdMStore } from '@/stores';
+import { useRoute, useRouter } from 'vue-router';
+
+const route = useRoute();
+const router = useRouter();
+const PdMStore = usePdMStore();
+
+PdMStore.getAll().then(() => {
+  const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
+  if (currentPdM?.id && !route.query.pdm_id) {
+    router.replace({
+      name: route.name,
+      query: { pdm_id: currentPdM?.id },
+    });
+  }
+});
+</script>
+<template>
+  <div class="flex spacebetween center mb2">
+    <h1>
+      {{ typeof $route?.meta?.título === 'function'
+        ? $route.meta.título()
+        : $route?.meta?.título || 'Projetos' }}
+    </h1>
+    <hr class="ml2 f1">
+  </div>
+
+  <div class="flex center mb2 spacebetween">
+    <div class="f1">
+      <label
+        for="pdm_id"
+        class="label"
+      >
+        <abbr title="Programa de metas">PdM</abbr>&nbsp;<span
+          class="tvermelho"
+        >*</span>
+      </label>
+      <select
+        id="pdm_id"
+        name="pdm_id"
+        class="inputtext light mb1"
+        :value="$route.query.pdm_id"
+        :class="{
+          loading: PdMStore.PdM?.loading
+        }"
+        :disabled="PdMStore.PdM?.loading"
+        @change="($event) => $router.push({
+          name: $route.name,
+          query: { pdm_id: $event.target.value || undefined }
+        })"
+      >
+        <option :value="undefined">
+          Selecionar
+        </option>
+        <option
+          v-for="item in PdMStore.PdM"
+          :key="item.id"
+          :value="item.id"
+        >
+          {{ item.nome }}
+        </option>
+      </select>
+    </div>
+
+    <hr class="ml1 f1">
+  </div>
+
+  <router-view />
+</template>
