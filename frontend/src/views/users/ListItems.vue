@@ -157,7 +157,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
                 ><use xlink:href="#i_i" /></svg><div>Usuário desativado</div>
               </span>
             </td>
-            <td>{{ user.nome_completo }}</td>
+            <td>{{ user.nome_exibicao }}</td>
             <td>{{ user.lotacao ?? '-' }}</td>
             <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
             <td>
