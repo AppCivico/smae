@@ -8,6 +8,7 @@ import { IdNomeExibicao } from "src/variavel/entities/variavel.entity"
 
 export class InOutArquivoDto {
     token: string
+    nome_original: string
     tamanho_bytes: number
     id: number
 }

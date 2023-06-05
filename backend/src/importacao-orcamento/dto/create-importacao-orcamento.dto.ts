@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsString, Validate, ValidateIf } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min, Validate, ValidateIf } from "class-validator";
 import { EitherPdmOrPortfolio } from "src/common/dto/EitherPdmOrPortfolio";
 
 export class CreateImportacaoOrcamentoDto {
@@ -36,4 +36,23 @@ export class FilterImportacaoOrcamentoDto {
     @IsInt()
     @Type(() => Number)
     portfolio_id?: number;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000)
+    /**
+     * token pra buscar proxima pagina
+     */
+    token_proxima_pagina?: string;
+
+    /**
+     * itens por pagina, padrão 25
+     * @example "25"
+     */
+    @IsOptional()
+    @IsInt()
+    @Max(500)
+    @Min(1)
+    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    ipp?: number;
 }
