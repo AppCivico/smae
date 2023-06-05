@@ -8,7 +8,7 @@ import { useRoute } from 'vue-router';
 
 const importaçõesStore = useImportaçõesStore();
 const {
-  chamadasPendentes, erro, lista, listaPreparada,
+  chamadasPendentes, erro, lista, listaPreparada, paginação,
 } = storeToRefs(importaçõesStore);
 const route = useRoute();
 const colunas = [
@@ -79,5 +79,15 @@ iniciar(route.query);
     :colunas="colunas"
     :erro="erro"
     :chamadas-pendentes="chamadasPendentes"
+    class="mb1"
   />
+
+  <button
+    v-if="paginação.temMais"
+    :disabled="chamadasPendentes.lista"
+    class="btn bgnone outline center"
+    @click="iniciar({ ...route.query, token_proxima_pagina: paginação.tokenDaPróximaPágina })"
+  >
+    carregar mais
+  </button>
 </template>

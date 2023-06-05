@@ -18,7 +18,7 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
   paginação: {
-    háMais: Boolean;
+    temMais: Boolean;
     tokenDaPróximaPágina: String;
   };
 }
@@ -33,7 +33,7 @@ export const useImportaçõesStore = defineStore('importações', {
     },
 
     paginação: {
-      háMais: false,
+      temMais: false,
       tokenDaPróximaPágina: 'String',
     },
 
@@ -41,12 +41,22 @@ export const useImportaçõesStore = defineStore('importações', {
   }),
 
   actions: {
-    async buscarTudo(params = {}): Promise<void> {
+    async buscarTudo(params: { token_proxima_pagina?: String } = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, params);
+        const {
+          linhas,
+          tem_mais: temMais,
+          token_proxima_pagina: tokenDaPróximaPágina,
+        } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, { ...params, ipp: 5 });
+
         if (Array.isArray(linhas)) {
-          this.lista = linhas;
+          this.lista = params.token_proxima_pagina
+            ? this.lista.concat(linhas)
+            : linhas;
+
+          this.paginação.temMais = temMais || false;
+          this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
         }
       } catch (erro: unknown) {
         this.erro = erro;
