@@ -10,6 +10,7 @@ import { UploadModule } from 'src/upload/upload.module';
 import { ProjetoModule } from 'src/pp/projeto/projeto.module';
 import { MetaModule } from 'src/meta/meta.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
     imports: [
@@ -21,6 +22,10 @@ import { AuthModule } from 'src/auth/auth.module';
         forwardRef(() => MetaModule),
         forwardRef(() => ProjetoOrcamentoRealizadoModule),
         forwardRef(() => PdmOrcamentoRealizadoModule),
+        JwtModule.register({
+            secret: process.env.SESSION_JWT_SECRET + ':pagination',
+            signOptions: { expiresIn: '30d' },
+        }),
     ],
     controllers: [ImportacaoOrcamentoController],
     providers: [ImportacaoOrcamentoService]

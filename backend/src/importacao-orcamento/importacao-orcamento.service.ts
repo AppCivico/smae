@@ -25,7 +25,14 @@ import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dt
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
 import { RetryPromise } from 'src/common/retryPromise';
+import { PaginatedDto } from '../common/dto/paginated.dto';
+import { JwtService } from '@nestjs/jwt';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
+
+class NextPageTokenJwtBody {
+    offset: number;
+    ipp: number;
+}
 
 type ProcessaLinhaParams = {
     metasIds: number[]
@@ -47,6 +54,7 @@ type ProcessaLinhaParams = {
 export class ImportacaoOrcamentoService {
     private readonly logger = new Logger(ImportacaoOrcamentoService.name);
     constructor(
+        private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly dotacaoService: DotacaoService,
@@ -86,7 +94,32 @@ export class ImportacaoOrcamentoService {
         return { id: created.id }
     }
 
-    async findAll(filters: FilterImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<ImportacaoOrcamentoDto[]> {
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.decode(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400);
+        }
+        return tmp;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
+    }
+
+    async findAll(filters: FilterImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<PaginatedDto<ImportacaoOrcamentoDto>> {
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
+
+        let ipp = filters.ipp ? filters.ipp : 25;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
+        }
 
         const filtros: Prisma.Enumerable<Prisma.ImportacaoOrcamentoWhereInput> = [];
 
@@ -150,10 +183,10 @@ export class ImportacaoOrcamentoService {
             },
             include: {
                 arquivo: {
-                    select: { tamanho_bytes: true }
+                    select: { tamanho_bytes: true, nome_original: true }
                 },
                 saida_arquivo: {
-                    select: { tamanho_bytes: true }
+                    select: { tamanho_bytes: true, nome_original: true }
                 },
                 criador: { select: { id: true, nome_exibicao: true } },
                 pdm: { select: { id: true, nome: true } },
@@ -161,34 +194,43 @@ export class ImportacaoOrcamentoService {
             },
             orderBy: [
                 { criado_em: 'desc' }
-            ]
+            ],
+            skip: offset,
+            take: ipp + 1,
         });
 
-        return registros.map((r) => {
+        return {
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina,
+            linhas: registros.map((r) => {
 
-            return {
-                id: r.id,
-                arquivo: {
-                    id: r.arquivo_id,
-                    tamanho_bytes: r.arquivo.tamanho_bytes,
-                    token: (this.uploadService.getDownloadToken(r.arquivo_id, '1d')).download_token,
-                },
-                saida_arquivo: r.saida_arquivo_id && r.saida_arquivo ? {
-                    id: r.saida_arquivo_id,
-                    tamanho_bytes: r.saida_arquivo.tamanho_bytes,
-                    token: (this.uploadService.getDownloadToken(r.saida_arquivo_id, '1d')).download_token,
-                } : null,
-                pdm: r.pdm,
-                portfolio: r.portfolio,
-                criado_por: r.criador,
-                criado_em: r.criado_em,
-                processado_em: r.processado_em ?? null,
-                processado_errmsg: r.processado_errmsg,
-                linhas_importadas: r.linhas_importadas,
-                linhas_recusadas: r.linhas_recusadas,
-            }
+                return {
+                    id: r.id,
+                    arquivo: {
+                        id: r.arquivo_id,
+                        tamanho_bytes: r.arquivo.tamanho_bytes,
+                        nome_original: r.arquivo.nome_original,
+                        token: (this.uploadService.getDownloadToken(r.arquivo_id, '1d')).download_token,
+                    },
+                    saida_arquivo: r.saida_arquivo_id && r.saida_arquivo ? {
+                        id: r.saida_arquivo_id,
+                        tamanho_bytes: r.saida_arquivo.tamanho_bytes,
+                        nome_original: r.saida_arquivo.nome_original,
+                        token: (this.uploadService.getDownloadToken(r.saida_arquivo_id, '1d')).download_token,
+                    } : null,
+                    pdm: r.pdm,
+                    portfolio: r.portfolio,
+                    criado_por: r.criador,
+                    criado_em: r.criado_em,
+                    processado_em: r.processado_em ?? null,
+                    processado_errmsg: r.processado_errmsg,
+                    linhas_importadas: r.linhas_importadas,
+                    linhas_recusadas: r.linhas_recusadas,
+                }
 
-        });
+            })
+
+        };
 
     }
 

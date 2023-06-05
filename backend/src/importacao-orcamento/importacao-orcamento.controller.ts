@@ -6,7 +6,9 @@ import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dt
 import { ImportacaoOrcamentoService } from './importacao-orcamento.service';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { ListImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
+import { ImportacaoOrcamentoDto, ListImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
+import { ApiPaginatedResponse } from '../auth/decorators/paginated.decorator';
+import { PaginatedDto } from '../common/dto/paginated.dto';
 
 @Controller('importacao-orcamento')
 @ApiTags('Importação')
@@ -25,10 +27,9 @@ export class ImportacaoOrcamentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.orcamento', 'Projeto.orcamento')
-    async findAll(@Query() filters: FilterImportacaoOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListImportacaoOrcamentoDto> {
-        return {
-            linhas: await this.importacaoOrcamentoService.findAll(filters, user)
-        };
+    @ApiPaginatedResponse(ImportacaoOrcamentoDto)
+    async findAll(@Query() filters: FilterImportacaoOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<PaginatedDto<ImportacaoOrcamentoDto>> {
+        return await this.importacaoOrcamentoService.findAll(filters, user);
     }
 
 
