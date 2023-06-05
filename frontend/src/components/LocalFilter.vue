@@ -24,7 +24,7 @@ watch(() => termoDeBusca.value, debounce((newValue) => {
 }, 400));
 
 watch(() => props.lista, (newValue) => {
-  emit('update:modelValue', newValue);
+  emit('update:modelValue', filtrarObjetos(newValue, termoDeBusca.value));
 });
 
 emit('update:modelValue', props.lista);
