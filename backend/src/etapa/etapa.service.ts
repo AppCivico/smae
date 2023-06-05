@@ -108,6 +108,7 @@ export class EtapaService {
                 nivel: etapa.nivel,
                 prazo: etapa.prazo,
                 peso: etapa.peso,
+                percentual_execucao: etapa.percentual_execucao,
                 inicio_previsto: etapa.inicio_previsto,
                 termino_previsto: etapa.termino_previsto,
                 inicio_real: etapa.inicio_real,
@@ -124,6 +125,16 @@ export class EtapaService {
         const responsaveis = updateEtapaDto.responsaveis === null ? [] : updateEtapaDto.responsaveis;
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const self = await prisma.etapa.findFirstOrThrow({
+                where: { id },
+                select: {
+                    n_filhos_imediatos: true
+                }
+            });
+
+            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao)
+              throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
+            
             const etapa = await prisma.etapa.update({
                 where: { id: id },
                 data: {
