@@ -57,6 +57,12 @@ importaçõesStore.$reset();
 
 iniciar(route.query);
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="flex center mb2 spacebetween">
     <LocalFilter
