@@ -203,37 +203,43 @@ export class ImportacaoOrcamentoService {
             take: ipp + 1,
         });
 
+        const linhas = registros.map((r) => {
+
+            return {
+                id: r.id,
+                arquivo: {
+                    id: r.arquivo_id,
+                    tamanho_bytes: r.arquivo.tamanho_bytes,
+                    nome_original: r.arquivo.nome_original,
+                    token: (this.uploadService.getDownloadToken(r.arquivo_id, '1d')).download_token,
+                },
+                saida_arquivo: r.saida_arquivo_id && r.saida_arquivo ? {
+                    id: r.saida_arquivo_id,
+                    tamanho_bytes: r.saida_arquivo.tamanho_bytes,
+                    nome_original: r.saida_arquivo.nome_original,
+                    token: (this.uploadService.getDownloadToken(r.saida_arquivo_id, '1d')).download_token,
+                } : null,
+                pdm: r.pdm,
+                portfolio: r.portfolio,
+                criado_por: r.criador,
+                criado_em: r.criado_em,
+                processado_em: r.processado_em ?? null,
+                processado_errmsg: r.processado_errmsg,
+                linhas_importadas: r.linhas_importadas,
+                linhas_recusadas: r.linhas_recusadas,
+            }
+        });
+
+        if (linhas.length > ipp) {
+            tem_mais = true;
+            linhas.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
+        }
+
         return {
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
-            linhas: registros.map((r) => {
-
-                return {
-                    id: r.id,
-                    arquivo: {
-                        id: r.arquivo_id,
-                        tamanho_bytes: r.arquivo.tamanho_bytes,
-                        nome_original: r.arquivo.nome_original,
-                        token: (this.uploadService.getDownloadToken(r.arquivo_id, '1d')).download_token,
-                    },
-                    saida_arquivo: r.saida_arquivo_id && r.saida_arquivo ? {
-                        id: r.saida_arquivo_id,
-                        tamanho_bytes: r.saida_arquivo.tamanho_bytes,
-                        nome_original: r.saida_arquivo.nome_original,
-                        token: (this.uploadService.getDownloadToken(r.saida_arquivo_id, '1d')).download_token,
-                    } : null,
-                    pdm: r.pdm,
-                    portfolio: r.portfolio,
-                    criado_por: r.criador,
-                    criado_em: r.criado_em,
-                    processado_em: r.processado_em ?? null,
-                    processado_errmsg: r.processado_errmsg,
-                    linhas_importadas: r.linhas_importadas,
-                    linhas_recusadas: r.linhas_recusadas,
-                }
-
-            })
-
+            linhas,
         };
 
     }
