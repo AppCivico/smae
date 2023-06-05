@@ -378,6 +378,8 @@ model Ods {
     titulo    String
     descricao String
 
+    eh_status_pdm Boolean @default(false)
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -3006,7 +3008,7 @@ model ImportacaoOrcamento {
     processado_errmsg String?
 
     linhas_importadas Int?
-    linhas_recusadas Int?
+    linhas_recusadas  Int?
 
     criador Pessoa @relation(fields: [criado_por], references: [id])
 
