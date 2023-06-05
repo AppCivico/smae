@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class CreateEtapaDto {
@@ -104,4 +104,11 @@ export class CreateEtapaDto {
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     peso?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @ValidateIf((object, value) => value !== null)
+    @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
+    @Max(100, { message: '$property| Valor Empenhado precisa até 100' })
+    percentual_execucao?: number
 }
