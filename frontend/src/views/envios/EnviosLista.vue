@@ -41,7 +41,7 @@ const colunas = [
 ];
 const listaFiltradaPorTermoDeBusca = ref([]);
 
-function iniciar(parâmetros) {
+function carregar(parâmetros) {
   if (!parâmetros.portfolio_id && !parâmetros.pdm_id) {
     importaçõesStore.$reset();
   } else {
@@ -49,13 +49,11 @@ function iniciar(parâmetros) {
   }
 }
 
-watch(route.query, () => {
-  iniciar(route.query);
-});
+watch(() => route.query, () => {
+  carregar(route.query);
+}, { immediate: true });
 
 importaçõesStore.$reset();
-
-iniciar(route.query);
 </script>
 <script>
 // use normal <script> to declare options
@@ -92,7 +90,7 @@ export default {
     v-if="paginação.temMais"
     :disabled="chamadasPendentes.lista"
     class="btn bgnone outline center"
-    @click="iniciar({ ...route.query, token_proxima_pagina: paginação.tokenDaPróximaPágina })"
+    @click="carregar({ ...route.query, token_proxima_pagina: paginação.tokenDaPróximaPágina })"
   >
     carregar mais
   </button>
