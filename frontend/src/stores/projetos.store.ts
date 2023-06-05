@@ -6,11 +6,10 @@ import {
   ListProjetoDto,
   ProjetoDetailDto,
   ProjetoDto,
-  ProjetoPermissoesDto
+  ProjetoPermissoesDto,
 } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -190,7 +189,7 @@ export const useProjetosStore = defineStore('projetos', {
       try {
         await this.requestS.delete(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento/${id}`);
 
-        this.arquivos = this.arquivos.filter(x => x.id !== id);
+        this.arquivos = this.arquivos.filter((x) => x.id !== id);
         this.chamadasPendentes.arquivos = false;
 
         console.debug('this.chamadasPendentes.arquivos', this.chamadasPendentes.arquivos);
