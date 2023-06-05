@@ -16,7 +16,6 @@ BEGIN
     JOIN etapa e ON
         e.id = ce.etapa_id
         and e.removido_em is null
-        and e.etapa_pai_id is null -- apenas etapas (e nao fases e subfases)
     WHERE ce.cronograma_id = pCronoId
     and ce.inativo = false; -- conferir com o Lucas
 
