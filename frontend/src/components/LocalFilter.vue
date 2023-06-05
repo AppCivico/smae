@@ -31,13 +31,34 @@ emit('update:modelValue', props.lista);
 </script>
 
 <template>
-  <div class="f1 search">
+  <form class="f1 search busca-livre">
     <label class="label tc300">Busca livre</label>
     <input
       v-model="termoDeBusca"
       type="search"
       class="inputtext"
     >
+    <button
+      type="reset"
+      class="busca-livre__botão-de-limpeza btn bgnone"
+      @click="termoDeBusca = ''"
+    >
+      &times;
+    </button>
     <small class="tc200 t13">ocorre nos dados já baixados</small>
-  </div>
+  </form>
 </template>
+<style lang="less">
+@import '@/_less/variables.less';
+
+.busca-livre {
+  position: relative;
+}
+
+.busca-livre__botão-de-limpeza {
+  position: absolute;
+  top: calc(1.5rem + 0.75em / 2);
+  right: 0;
+  color: @c400;
+}
+</style>
