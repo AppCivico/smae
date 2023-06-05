@@ -12,51 +12,62 @@ Senha do usuário padrão:
 Acesse [o README do frontend](frontend/README.md) para instruções de desenvolvimento do backend!
 
 # Deploy com docker-compose
+=========================
 
 Copie o arquivo `.env.example` para `.env` e faça as modificações das chaves e portas.
 
 A configuração do MinIO pode ser trocada pelo S3 ou outro serviço equivalente (e então remover o serviço do MinIO do docker-compose.yaml)
 
+Na primeira vez que subir o sistema com gerenciamento de arquivos via MinIO, será necessário subir o MinIO, criar um bucket, e configurar um usuário e senha para os uploads, e então atualizar o `.env` com as configurações realizadas. Todas essas tarefas podem ser feitas pelo console web, https://min.io/docs/minio/linux/administration/minio-console.html
+
+Para realizar o deploy, execute os seguintes comandos:
+
+    git clone https://github.com/\[SEU\_USUARIO\_GIT\]/smae.git
+    cd smae
+    docker-compose up --build
+
+Isso irá criar e executar todos os contêineres e serviços especificados no arquivo `docker-compose.yaml`.
+
+Para fazer as atualizações de código, repita o processo executando `git pull` e conferindo se há novas configurações no .env.example para entrarem no ambiente de produção.
+
+Configurando o postgres-backup-local
+------------------------------------
+
+Caso deseje personalizar as configurações de backup do banco de dados, edite o docker-compose.yaml de acordo
+
+Para cada container com a imagem `postgres:14-bullseye`, existe um outro container com a imagem `prodrigestivill/postgres-backup-local`. Este é responsável por fazer backup do PostgreSQL local no sistema de arquivos.
+
+Existem diversas variáveis que podem ser personalizadas:
+
+*   `POSTGRES_HOST`: Nome do host onde se encontra o banco de dados PostgreSQL que você deseja fazer backup.
+*   `POSTGRES_DB`: Nome do banco de dados PostgreSQL que será feito o backup.
+*   `POSTGRES_USER`: Nome do usuário utilizado para se conectar ao banco de dados PostgreSQL.
+*   `POSTGRES_PASSWORD`: Senha do usuário utilizado para se conectar ao banco de dados PostgreSQL.
+*   `POSTGRES_EXTRA_OPTS`: Opções adicionais para o comando `pg_dump`, que será utilizado para fazer o backup.
+*   `SCHEDULE`: Cronograma do backup. Use o formato cron para especificar intervalos, como `@hourly`, `@daily` etc.
+*   `BACKUP_KEEP_MINS`: Número de minutos que os backups serão armazenados na pasta "last".
+*   `BACKUP_KEEP_DAYS`: Número de dias que os backups diários serão armazenados.
+*   `BACKUP_KEEP_WEEKS`: Número de semanas que os backups semanais serão armazenados.
+*   `BACKUP_KEEP_MONTHS`: Número de meses que os backups mensais serão armazenados.
+*   `HEALTHCHECK_PORT`: Porta que verifica a saúde do container.
+
+Usando o serviço smtp_web
+--------------------------
+
+O serviço de `smtp_web` é um servidor SMTP fake usado apenas para desenvolvimento. Ele possui uma interface web para que o administrador possa visualizar todos os e-mails "enviados" pelo sistema. Para o ambiente de produção, é necessário um servidor SMTP verdadeiro e a importação das configurações DKIM e SPF. O deploy deste container não é necessário no ambiente de produção.
+
+Usando o serviço email_service
+-------------------------------
+
+O `email_service` é responsável por enviar e-mails. Ele acessa as templates dos e-mails na intranet ou pela internet via HTTP ou HTTPS e dispara o envio via SMTP, de acordo com as configurações na tabela. Mais informações podem ser encontradas no arquivo `email-service/README.md`.
+
 
 ## Configuração de painéis incorporados do Metabase
 
-Disponível na versão open-source do metabase, é possível configurar embed via token signed dentro do smae, abrindo um menu lateral de analises.
+Disponível na versão open-source do metabase, é possível configurar embed via token signed dentro do SMAE, abrindo um menu lateral de analises.
 
-> documentação (metabase): https://www.metabase.com/docs/latest/embedding/introduction#signed-embedding
+Veja os detalhes do metabase+SMAE em [metabase.md](metabase.md) ou a documentação completa em https://www.metabase.com/docs/latest/embedding/introduction#signed-embedding
 
-Para que o usuário veja o menu lateral, é necessário que tenha pelo menos 1 das seguinte permissões:
+# Licença
 
-    - Reports.dashboard_pdm
-    - Reports.dashboard_portfolios
-
-Para que os sub-menus sejam carregados, insira na tabela `metabase_permissao` de acordo com as preferências e painéis criados no metabase:
-
-    - permissão: qual permissão o usuário (do SMAE) precisa ter para visualizar esse painel
-    - configuração: JSON com que o metabase fornece para incorporação do painel.
-    - metabase_url: url (pura) do metabase (sem path)
-    - metabase_token: token para assinar o JWT (pegar da configuração do metabase)
-    - ordem: qual ordem apresentar os botões
-    - titulo: título do botão dentro do metabase
-
-    Caso exista o `params.projetos_ids` será substituído pelo ids dos projetos que o usuário logado pode visualizar
-    Caso exista o `params.metas_ids` será substituído pelo ids das metas que o usuário logado pode visualizar
-    Caso exista o `params.pdm_id` será gerado um link de embed para cada PDM que existe registrado no sistema
-
-Exemplo de configuração da tabela:
-
-    -[ RECORD 1 ]--+------------------------------------------------------------------------------
-    id             | 1
-    permissao      | Reports.dashboard_portfolios
-    configuracao   | {"resource": { "dashboard": 6 }, "params": { "projetos_ids": {}}}
-    metabase_url   | https://subdomain.dominio-do-metabase.tld:443
-    metabase_token | metabase-secret-token
-    ordem          | 1
-    titulo         | Gestão de projetos
-    -[ RECORD 2 ]--+------------------------------------------------------------------------------
-    id             | 2
-    permissao      | Reports.dashboard_pdm
-    configuracao   |  {"resource": { "dashboard": 5 }, "params": {"metas_ids": {}, "pdm_id": {} }}
-    metabase_url   | https://subdomain.dominio-do-metabase.tld:443
-    metabase_token | metabase-secret-token
-    ordem          | 2
-    titulo         | Programa de Metas
+[Licença Pública Geral Affero GNU](LICENSE)
