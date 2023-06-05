@@ -369,7 +369,15 @@ export class ImportacaoOrcamentoService {
         const colunaHeaderIndex = OrcamentoImportacaoHelpers.createColumnHeaderIndex(sheet, [...ColunasNecessarias, ...OutrasColumns]);
 
         const outputXLSX = utils.book_new();
-        const outputSheet = utils.aoa_to_sheet([[...ColunasNecessarias, ...OutrasColumns, 'Status']]);
+        const outputSheet = utils.aoa_to_sheet([]);
+        const row = [];
+        [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
+            const colIndex = colunaHeaderIndex[columnName];
+            if (colIndex >= 0)
+                row.push(columnName);
+        });
+        row.push('Status');
+
         utils.book_append_sheet(outputXLSX, outputSheet, sheetName);
 
         let projetosIds: number[] = [];
@@ -418,8 +426,6 @@ export class ImportacaoOrcamentoService {
                     }
 
                     row.push(cellValue);
-                } else {
-                    row.push(undefined);
                 }
             });
 
