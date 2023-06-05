@@ -18,7 +18,7 @@ export class ImportacaoOrcamentoDto {
     saida_arquivo: InOutArquivoDto | null
     pdm: IdNomeDto | null
     portfolio: IdTituloDto | null
-    criado_por: IdNomeExibicao | null
+    criado_por: IdNomeExibicao
     criado_em: Date
     processado_em: Date | null
     processado_errmsg: string | null
