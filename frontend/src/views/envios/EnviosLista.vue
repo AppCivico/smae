@@ -44,6 +44,9 @@ const listaFiltradaPorTermoDeBusca = ref([]);
 function carregar(parâmetros) {
   if (!parâmetros.portfolio_id && !parâmetros.pdm_id) {
     importaçõesStore.$reset();
+    if (route.meta.entidadeMãe === 'portfolio') {
+      importaçõesStore.buscarTudo({ apenas_com_portfolio: true });
+    }
   } else {
     importaçõesStore.buscarTudo(parâmetros);
   }
