@@ -48,13 +48,12 @@ portfolioStore.buscarTudo();
           query: { portfolio_id: $event.target.value || undefined }
         })"
       >
-        <option :value="null">
-          Selecionar
-        </option>
+        <option :value="null" />
         <option
           v-for="item in portfolioStore.lista"
           :key="item.id"
           :value="item.id"
+          :selected="item.id == $route.query.portfolio_id"
         >
           {{ item.id }} - {{ item.titulo }}
         </option>

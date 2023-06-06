@@ -64,6 +64,7 @@ export default {
       meta: {
         título: 'Envio de orçamento para metas',
         títuloParaMenu: 'Metas',
+        entidadeMãe: 'pdm',
       },
       children: [
         {
@@ -84,7 +85,6 @@ export default {
               component: EnviarArquivo,
               meta: {
                 rotaDeEscape: 'EnviosOrçamentosMetas',
-                entidadeMãe: 'pdm',
               },
             },
           ],
@@ -97,6 +97,7 @@ export default {
       meta: {
         título: 'Envio de orçamento para projetos',
         títuloParaMenu: 'Projetos',
+        entidadeMãe: 'portfolio',
       },
       children: [
         {
@@ -117,7 +118,6 @@ export default {
               component: EnviarArquivo,
               meta: {
                 rotaDeEscape: 'EnviosOrçamentosProjetos',
-                entidadeMãe: 'portfolio',
               },
             },
           ],
