@@ -181,12 +181,14 @@ BEGIN
         OLD.termino_previsto <> NEW.termino_real OR
         OLD.termino_real <> NEW.termino_real)
     THEN
+        SET session_replication_role = replica;
         UPDATE etapa e
         SET inicio_previsto = COALESCE(v_inicio_previsto, OLD.inicio_previsto),
             inicio_real = COALESCE(v_inicio_real, OLD.inicio_real),
             termino_previsto = COALESCE(v_termino_previsto, OLD.termino_previsto),
             termino_real = COALESCE(v_termino_real, OLD.termino_real)
         WHERE id = NEW.id;
+        SET session_replication_role = DEFAULT;
     END IF;
 
     RETURN NEW;
