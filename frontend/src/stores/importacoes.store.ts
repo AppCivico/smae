@@ -85,11 +85,13 @@ export const useImportaçõesStore = defineStore('importações', {
       arquivo: {
         href: `${baseUrl}/download/${x.arquivo.token}`,
         texto: x.arquivo.nome_original,
+        download: true,
       },
       saida_arquivo: x.saida_arquivo
         ? {
           href: `${baseUrl}/download/${x.saida_arquivo.token}`,
           texto: x.saida_arquivo.nome_original,
+          download: true,
         }
         : null,
       status: x.saida_arquivo
