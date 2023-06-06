@@ -181,10 +181,12 @@ BEGIN
         OLD.termino_previsto <> NEW.termino_real OR
         OLD.termino_real <> NEW.termino_real)
     THEN
-        NEW.inicio_previsto := COALESCE(v_inicio_previsto, OLD.inicio_previsto);
-        NEW.inicio_real := COALESCE(v_inicio_real, OLD.inicio_real);
-        NEW.termino_previsto := COALESCE(v_termino_previsto, OLD.termino_previsto);
-        NEW.termino_real := COALESCE(v_termino_real, OLD.termino_real);
+        UPDATE etapa e
+        SET inicio_previsto = COALESCE(v_inicio_previsto, OLD.inicio_previsto),
+            inicio_real = COALESCE(v_inicio_real, OLD.inicio_real),
+            termino_previsto = COALESCE(v_termino_previsto, OLD.termino_previsto),
+            termino_rea = COALESCE(v_termino_real, OLD.termino_real)
+        WHERE id = NEW.id;
     END IF;
 
     RETURN NEW;
