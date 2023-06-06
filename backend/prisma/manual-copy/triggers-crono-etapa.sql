@@ -87,6 +87,8 @@ CREATE OR REPLACE FUNCTION f_trg_estapa_esticar_datas_do_pai() RETURNS trigger A
 DECLARE
     v_termino_previsto date;
     v_termino_real date;
+    v_inicio_previsto date;
+    v_inicio_real date;
 BEGIN
 
     -- apenas em modificações de etapas (e nao fases e subfases)
@@ -104,32 +106,55 @@ BEGIN
     -- fase e subfases
     IF NEW.etapa_pai_id IS NOT NULL THEN
 
-        if (NEW.inicio_previsto IS NOT NULL) then
-            UPDATE etapa e
-            SET inicio_previsto = NEW.inicio_previsto
-            WHERE e.id = NEW.etapa_pai_id
-              AND NOT EXISTS (
-                SELECT 1
-                FROM etapa e2
-                WHERE e2.etapa_pai_id = NEW.etapa_pai_id
-                  AND e2.inicio_previsto < NEW.inicio_previsto
-                  AND e2.removido_em IS NULL
-              );
-        END IF;
+        SELECT MIN(ef.inicio_previsto) INTO v_inicio_previsto
+        FROM etapa ef
+        WHERE ef.etapa_pai_id = NEW.etapa_pai_id
+          AND ef.removido_em IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM etapa ef2
+            WHERE ef2.etapa_pai_id = NEW.etapa_pai_id
+              AND ef2.termino_previsto IS NULL
+              AND ef2.removido_em IS NULL
+        );
 
-        IF  NEW.inicio_real IS NOT NULL THEN
-            UPDATE etapa e
-            SET inicio_real = NEW.inicio_real
-            WHERE e.id = NEW.etapa_pai_id
-              AND NOT EXISTS (
-                SELECT 1
-                FROM etapa e2
-                WHERE e2.etapa_pai_id = NEW.etapa_pai_id
-                  AND e2.inicio_real < NEW.inicio_real
-                  AND e2.removido_em IS NULL
-              );
-        END IF;
+        SELECT MIN(ef.inicio_real) INTO v_inicio_real
+        FROM etapa ef
+        WHERE ef.etapa_pai_id = NEW.etapa_pai_id
+          AND ef.removido_em IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM etapa ef2
+            WHERE ef2.etapa_pai_id = NEW.etapa_pai_id
+              AND ef2.inicio_real IS NULL
+              AND ef2.removido_em IS NULL
+        );
 
+        -- if (NEW.inicio_previsto IS NOT NULL) then
+        --     UPDATE etapa e
+        --     SET inicio_previsto = NEW.inicio_previsto
+        --     WHERE e.id = NEW.etapa_pai_id
+        --       AND NOT EXISTS (
+        --         SELECT 1
+        --         FROM etapa e2
+        --         WHERE e2.etapa_pai_id = NEW.etapa_pai_id
+        --           AND e2.inicio_previsto < NEW.inicio_previsto
+        --           AND e2.removido_em IS NULL
+        --       );
+        -- END IF;
+
+        -- IF  NEW.inicio_real IS NOT NULL THEN
+        --     UPDATE etapa e
+        --     SET inicio_real = NEW.inicio_real
+        --     WHERE e.id = NEW.etapa_pai_id
+        --       AND NOT EXISTS (
+        --         SELECT 1
+        --         FROM etapa e2
+        --         WHERE e2.etapa_pai_id = NEW.etapa_pai_id
+        --           AND e2.inicio_real < NEW.inicio_real
+        --           AND e2.removido_em IS NULL
+        --       );
+        -- END IF;
 
         -- sempre recalcula o termino_previsto de acordo com a situacao atual
         SELECT MAX(ef.termino_previsto) INTO v_termino_previsto
@@ -158,11 +183,15 @@ BEGIN
 
         UPDATE etapa e
         SET termino_previsto = v_termino_previsto,
-            termino_real = v_termino_real
+            termino_real = v_termino_real,
+            inicio_real = v_inicio_real,
+            inicio_previsto = v_inicio_previsto
         WHERE e.id = NEW.etapa_pai_id
         AND (
             (termino_previsto IS DISTINCT FROM v_termino_previsto) OR
-            (termino_real IS DISTINCT FROM v_termino_real)
+            (termino_real IS DISTINCT FROM v_termino_real) OR
+            (inicio_real IS DISTINCT FROM v_inicio_real) OR
+            (inicio_previsto IS DISTINCT FROM v_inicio_previsto)
         );
 
     END IF;
