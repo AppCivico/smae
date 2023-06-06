@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProjetoAcompanhamentoItem } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -7,7 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
-import { DetailProjetoAcompanhamentoDto, ProjetoAcompanhamento } from './entities/acompanhamento.entity';
+import { DetailProjetoAcompanhamentoDto, ProjetoAcompanhamento, ProjetoAcompanhamentoRowDto } from './entities/acompanhamento.entity';
 
 @Injectable()
 export class AcompanhamentoService {
@@ -25,7 +25,11 @@ export class AcompanhamentoService {
             const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                 data: {
                     projeto_id: projeto_id,
-                    ...{ ...dto, risco: undefined },
+                    ...{
+                        ...dto,
+                        risco: undefined,
+                        acompanhamentos: undefined,
+                    },
 
                     criado_em: now,
                     criado_por: user.id
@@ -39,6 +43,22 @@ export class AcompanhamentoService {
                         return {
                             projeto_acompanhamento_id: acompanhamento.id,
                             projeto_risco_id: r,
+                        }
+                    })
+                });
+            }
+
+            if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
+                await prismaTx.projetoAcompanhamentoItem.createMany({
+                    data: dto.acompanhamentos.map((r, i) => {
+                        return {
+                            encaminhamento: r.encaminhamento,
+                            pauta: r.pauta,
+                            prazo_encaminhamento: r.prazo_encaminhamento,
+                            prazo_realizado: r.prazo_realizado,
+                            responsavel: r.responsavel,
+                            projeto_acompanhamento_id: acompanhamento.id,
+                            ordem: i + 1,
                         }
                     })
                 });
@@ -63,9 +83,12 @@ export class AcompanhamentoService {
                 id: true,
                 data_registro: true,
                 participantes: true,
-                responsavel: true,
+
                 detalhamento: true,
-                encaminhamento: true,
+
+                ProjetoAcompanhamentoItem: {
+                    orderBy: { ordem: 'asc' }
+                },
 
                 ProjetoAcompanhamentoRisco: {
                     select: {
@@ -85,9 +108,9 @@ export class AcompanhamentoService {
                 id: a.id,
                 data_registro: a.data_registro,
                 participantes: a.participantes,
-                responsavel: a.responsavel,
                 detalhamento: a.detalhamento,
-                encaminhamento: a.encaminhamento,
+
+                encaminhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
                 risco: a.ProjetoAcompanhamentoRisco.map(r => {
                     return {
@@ -97,6 +120,16 @@ export class AcompanhamentoService {
                 })
             }
         });
+    }
+
+    renderAcompanhamento(r: ProjetoAcompanhamentoItem): ProjetoAcompanhamentoRowDto {
+        return {
+            encaminhamento: r.encaminhamento,
+            pauta: r.pauta,
+            prazo_encaminhamento: r.prazo_encaminhamento ? r.prazo_encaminhamento : null,
+            prazo_realizado: r.prazo_realizado ? r.prazo_realizado : null,
+            responsavel: r.responsavel
+        }
     }
 
     async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<DetailProjetoAcompanhamentoDto> {
@@ -110,15 +143,17 @@ export class AcompanhamentoService {
                 id: true,
                 data_registro: true,
                 participantes: true,
-                responsavel: true,
-                prazo_encaminhamento: true,
                 detalhamento: true,
-                encaminhamento: true,
+
                 observacao: true,
                 detalhamento_status: true,
                 pontos_atencao: true,
-                prazo_realizado: true,
+
                 cronograma_paralisado: true,
+
+                ProjetoAcompanhamentoItem: {
+                    orderBy: { ordem: 'asc' }
+                },
 
                 ProjetoAcompanhamentoRisco: {
                     select: {
@@ -139,15 +174,17 @@ export class AcompanhamentoService {
             id: projetoAcompanhamento.id,
             data_registro: projetoAcompanhamento.data_registro,
             participantes: projetoAcompanhamento.participantes,
-            responsavel: projetoAcompanhamento.responsavel,
-            prazo_encaminhamento: projetoAcompanhamento.prazo_encaminhamento,
+
+
             detalhamento: projetoAcompanhamento.detalhamento,
-            encaminhamento: projetoAcompanhamento.encaminhamento,
+
             observacao: projetoAcompanhamento.observacao,
             detalhamento_status: projetoAcompanhamento.detalhamento_status,
             pontos_atencao: projetoAcompanhamento.pontos_atencao,
-            prazo_realizado: projetoAcompanhamento.prazo_realizado,
+
             cronograma_paralisado: projetoAcompanhamento.cronograma_paralisado,
+
+            encaminhamentos: projetoAcompanhamento.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
             risco: projetoAcompanhamento.ProjetoAcompanhamentoRisco.map(r => {
                 return {
@@ -185,6 +222,28 @@ export class AcompanhamentoService {
                             }
                         })
                     });
+            }
+
+            if (dto.acompanhamentos !== undefined) {
+                await prismaTx.projetoAcompanhamentoItem.deleteMany({
+                    where: { projeto_acompanhamento_id: self.id }
+                });
+
+                if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
+                    await prismaTx.projetoAcompanhamentoItem.createMany({
+                        data: dto.acompanhamentos.map((r, i) => {
+                            return {
+                                encaminhamento: r.encaminhamento,
+                                pauta: r.pauta,
+                                prazo_encaminhamento: r.prazo_encaminhamento,
+                                prazo_realizado: r.prazo_realizado,
+                                responsavel: r.responsavel,
+                                projeto_acompanhamento_id: self.id,
+                                ordem: i + 1,
+                            }
+                        })
+                    });
+                }
             }
 
             await this.atualizaProjeto(prismaTx, projeto_id, now);

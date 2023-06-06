@@ -1,12 +1,17 @@
 import { Type } from "class-transformer"
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator"
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
 
-export class CreateProjetoAcompanhamentoDto {
-    @IsOnlyDate()
-    @Type(() => Date)
-    @ValidateIf((object, value) => value !== null)
-    data_registro: Date
+export class ProjetoAcompanhamentoDto {
+    @IsOptional()
+    @IsString()
+    @MaxLength(50000)
+    encaminhamento?: string
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    responsavel?: string
 
     @IsOptional()
     @IsOnlyDate()
@@ -20,6 +25,18 @@ export class CreateProjetoAcompanhamentoDto {
     @ValidateIf((object, value) => value !== null)
     prazo_realizado?: Date
 
+    @IsOptional()
+    @IsString()
+    @MaxLength(50000)
+    pauta?: string
+}
+
+export class CreateProjetoAcompanhamentoDto {
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data_registro: Date
+
     @IsString()
     @MaxLength(2048)
     participantes: string
@@ -30,14 +47,11 @@ export class CreateProjetoAcompanhamentoDto {
     detalhamento?: string
 
     @IsOptional()
-    @IsString()
-    @MaxLength(50000)
-    encaminhamento?: string
-
-    @IsOptional()
-    @IsString()
-    @MaxLength(250)
-    responsavel?: string
+    @IsArray({ message: 'acompanhamentos precisa ser uma array, campo obrigatório' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @ValidateNested({ each: true })
+    @Type(() => ProjetoAcompanhamentoDto)
+    acompanhamentos?: ProjetoAcompanhamentoDto[]
 
     @IsOptional()
     @IsString()

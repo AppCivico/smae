@@ -2923,6 +2923,24 @@ model PlanoAcaoMonitoramento {
     @@map("plano_acao_monitoramento")
 }
 
+model ProjetoAcompanhamentoItem {
+    id Int @id @default(autoincrement())
+
+    projeto_acompanhamento_id Int
+    projeto_acompanhamento    ProjetoAcompanhamento @relation(fields: [projeto_acompanhamento_id], references: [id])
+
+    encaminhamento       String?
+    responsavel          String?
+    prazo_encaminhamento DateTime? @db.Date()
+    prazo_realizado      DateTime? @db.Date()
+    pauta                String?
+
+    ordem Int @db.SmallInt
+
+    @@index([projeto_acompanhamento_id])
+    @@map("projeto_acompanhamento_item")
+}
+
 // durante a fase de EmExecução, a cada 15 dias eles criam esse acompanhamento
 model ProjetoAcompanhamento {
     id Int @id @default(autoincrement())
@@ -2930,16 +2948,13 @@ model ProjetoAcompanhamento {
     projeto_id Int
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    data_registro        DateTime  @db.Date()
-    participantes        String
-    detalhamento         String?
-    encaminhamento       String?
-    prazo_encaminhamento DateTime? @db.Date()
-    prazo_realizado      DateTime? @db.Date()
-    responsavel          String?
-    observacao           String?
-    detalhamento_status  String?
-    pontos_atencao       String?
+    data_registro DateTime @db.Date()
+    participantes String
+    detalhamento  String?
+
+    observacao          String?
+    detalhamento_status String?
+    pontos_atencao      String?
 
     cronograma_paralisado Boolean @default(false)
 
@@ -2952,6 +2967,7 @@ model ProjetoAcompanhamento {
     removido_em                DateTime?
     removido_por               Int?
     ProjetoAcompanhamentoRisco ProjetoAcompanhamentoRisco[]
+    ProjetoAcompanhamentoItem  ProjetoAcompanhamentoItem[]
 
     @@index([projeto_id, data_registro])
     @@map("projeto_acompanhamento")
