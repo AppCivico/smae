@@ -59,7 +59,6 @@ PdMStore.getAll().then(() => {
           query: { pdm_id: $event.target.value || undefined }
         })"
       >
-        <option :value="null" />
         <option
           v-for="item in PdMStore.PdM"
           :key="item.id"
