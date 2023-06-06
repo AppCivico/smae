@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -16,7 +16,7 @@ import { VariavelService } from './variavel.service';
 @ApiTags('Indicador')
 @Controller('')
 export class VariavelController {
-    constructor(private readonly variavelService: VariavelService) {}
+    constructor(private readonly variavelService: VariavelService) { }
 
     @Post('indicador-variavel')
     @ApiBearerAuth('access-token')
@@ -40,6 +40,17 @@ export class VariavelController {
     @Roles('CadastroIndicador.editar')
     async update(@Param() params: FindOneParams, @Body() updateUnidadeMedidaDto: UpdateVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.variavelService.update(+params.id, updateUnidadeMedidaDto, user);
+    }
+
+    @Delete('indicador-variavel/:id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.editar')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.variavelService.remove(+params.id, user);
+        return '';
     }
 
     // patch precisa ficar antes da rota do :id/serie-previsto

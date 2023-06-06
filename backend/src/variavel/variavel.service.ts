@@ -17,7 +17,7 @@ const InicioFimErrMsg = 'Inicio/Fim da medição da variável não pode ser nulo
 @Injectable()
 export class VariavelService {
     private readonly logger = new Logger(VariavelService.name);
-    constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) {}
+    constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) { }
 
     async buildVarResponsaveis(variableId: number, responsaveis: number[]): Promise<Prisma.VariavelResponsavelCreateManyInput[]> {
         const arr: Prisma.VariavelResponsavelCreateManyInput[] = [];
@@ -438,9 +438,10 @@ export class VariavelService {
             where: { variavel_id: variavelId, indicador_origem_id: null },
             select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true } } },
         });
-        if (!selfIdicadorVariavel) throw new HttpException('Variavel não encontrada', 400);
+        if (!selfIdicadorVariavel) throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
 
         const meta_id = await this.getMetaIdDoIndicador(selfIdicadorVariavel.indicador_id, this.prisma);
+        // OBS: como que chega aqui sem ser pela controller? na controller pede pelo [CadastroIndicador.editar]
         if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
             if (filterIdIn.includes(meta_id) === false) throw new HttpException('Sem permissão para criar variável nesta meta', 400);
@@ -502,6 +503,47 @@ export class VariavelService {
             if (Number(oldValorBase).toString() !== Number(updated.valor_base).toString()) {
                 await this.recalc_variaveis_acumulada([variavelId], prismaTxn);
             }
+        });
+
+        return { id: variavelId };
+    }
+
+    async remove(variavelId: number, user: PessoaFromJwt) {
+
+        // buscando apenas pelo indicador pai verdadeiro desta variavel
+        const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
+            where: { variavel_id: variavelId, indicador_origem_id: null },
+            select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true } } },
+        });
+        if (!selfIdicadorVariavel) throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
+
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+
+            const refEmUso = await prismaTxn.indicadorFormulaVariavel.findMany({
+                where: { variavel_id: +variavelId },
+                select: {
+                    indicador: { select: { codigo: true, titulo: true } }
+                }
+            });
+
+            for (const ref of refEmUso) {
+                throw new HttpException(`Não é possível remover a variável: em uso no indicador ${ref.indicador.codigo}, ${ref.indicador.titulo}`, 400);
+            }
+
+            await prismaTxn.variavel.update({
+                where: { id: variavelId },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id
+                },
+                select: { id: true },
+            });
+
+        }, {
+            isolationLevel: 'Serializable',
+            maxWait: 15000,
+            timeout: 25000,
         });
 
         return { id: variavelId };
