@@ -134,7 +134,7 @@ export class ImportacaoOrcamentoService {
             filtros.push({ portfolio_id: { not: null } })
         }
 
-        if (user.hasSomeRoles(['Projeto.orcamento'])) {
+        if (user.hasSomeRoles(['Projeto.orcamento']) && !filters.portfolio_id) {
             const projetos = await this.projetoService.findAllIds(user);
             this.logger.warn(`só pode ver os projetos ${projetos.map(r => r.id).join(',')}`);
 
@@ -159,7 +159,7 @@ export class ImportacaoOrcamentoService {
             filtros.push({ portfolio_id: null })
         }
 
-        if (user.hasSomeRoles(['CadastroMeta.orcamento'])) {
+        if (user.hasSomeRoles(['CadastroMeta.orcamento']) && !filters.pdm_id) {
             const metas = await this.metaService.findAllIds(user);
             this.logger.warn(`só pode as metas ${metas.map(r => r.id)}`);
 
