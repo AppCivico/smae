@@ -65,9 +65,11 @@ export const acompanhamento = object()
       .typeError('${label} inválida'),
     detalhamento_status: string()
       .label('Detalhamento do status')
+      .max(50000)
       .nullable(),
     detalhamento: string()
       .label('Detalhamento')
+      .max(50000)
       .nullable(),
     encaminhamento: string()
       .label('Encaminhamento')
@@ -75,6 +77,7 @@ export const acompanhamento = object()
       .nullable(),
     observacao: string()
       .label('Observação')
+      .max(50000)
       .nullable(),
     participantes: string()
       .label('Participantes')

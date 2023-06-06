@@ -171,7 +171,7 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          maxlength="50000"
           :class="{ 'error': errors.detalhamento }"
         />
         <ErrorMessage
@@ -275,7 +275,7 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          maxlength="50000"
           :class="{ 'error': errors.observacao }"
         />
         <ErrorMessage
@@ -297,7 +297,7 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          maxlength="50000"
           :class="{ 'error': errors.detalhamento_status }"
         />
         <ErrorMessage
