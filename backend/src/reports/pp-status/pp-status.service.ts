@@ -66,7 +66,7 @@ export class PPStatusService implements ReportableService {
                         detalhamento_status: true,
                         pontos_atencao: true,
                         cronograma_paralisado: true,
-                        prazo_realizado: true,
+                        //prazo_realizado: true,
                     }
                 }
             }
@@ -97,7 +97,7 @@ export class PPStatusService implements ReportableService {
 
                 detalhamento_status: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].detalhamento_status : null,
                 pontos_atencao: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].pontos_atencao : null,
-                
+
                 tarefas: p.tarefas.length ? p.tarefas.map(t => {
                     let status: string;
 
