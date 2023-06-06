@@ -27,6 +27,7 @@ import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from '.
 import { RetryPromise } from 'src/common/retryPromise';
 import { PaginatedDto } from '../common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
+import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 class NextPageTokenJwtBody {
@@ -106,6 +107,65 @@ export class ImportacaoOrcamentoService {
 
     private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
         return this.jwtService.sign(opt);
+    }
+
+    async findAll_portfolio(user: PessoaFromJwt): Promise<PortfolioDto[]> {
+
+        const filtros: Prisma.Enumerable<Prisma.PortfolioWhereInput> = [];
+
+        if (user.hasSomeRoles(['Projeto.orcamento'])) {
+            const projetos = await this.projetoService.findAllIds(user);
+            this.logger.warn(`só pode ver os projetos ${projetos.map(r => r.id).join(',')}`);
+
+            filtros.push({
+                OR: [
+                    {
+                        Projeto: {
+                            some: {
+                                id: {
+                                    in: projetos.map(r => r.id)
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        } else {
+            // nao retorna nenhum
+            filtros.push({ id: -1 })
+        }
+
+        const listActive = await this.prisma.portfolio.findMany({
+            where: {
+                removido_em: null,
+                AND: filtros
+            },
+            select: {
+                id: true,
+                titulo: true,
+                nivel_maximo_tarefa: true,
+                orgaos: {
+                    select: {
+                        orgao: {
+                            select: {
+                                sigla: true,
+                                descricao: true,
+                                id: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: { titulo: 'asc' }
+        });
+
+        return listActive.map(r => {
+            return {
+                ...r,
+                orgaos: r.orgaos.map(rr => rr.orgao),
+            };
+        });
+
     }
 
     async findAll(filters: FilterImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<PaginatedDto<ImportacaoOrcamentoDto>> {

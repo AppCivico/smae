@@ -9,6 +9,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { ImportacaoOrcamentoDto, ListImportacaoOrcamentoDto } from './entities/importacao-orcamento.entity';
 import { ApiPaginatedResponse } from '../auth/decorators/paginated.decorator';
 import { PaginatedDto } from '../common/dto/paginated.dto';
+import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
 
 @Controller('importacao-orcamento')
 @ApiTags('Importação')
@@ -30,6 +31,15 @@ export class ImportacaoOrcamentoController {
     @ApiPaginatedResponse(ImportacaoOrcamentoDto)
     async findAll(@Query() filters: FilterImportacaoOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<PaginatedDto<ImportacaoOrcamentoDto>> {
         return await this.importacaoOrcamentoService.findAll(filters, user);
+    }
+
+    @Get('portfolio')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.orcamento', 'Projeto.orcamento')
+    @ApiPaginatedResponse(ImportacaoOrcamentoDto)
+    async findAll_portfolio(@CurrentUser() user: PessoaFromJwt): Promise<PortfolioDto[]> {
+        return await this.importacaoOrcamentoService.findAll_portfolio(user);
     }
 
 
