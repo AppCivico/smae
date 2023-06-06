@@ -97,7 +97,9 @@ export const useImportaçõesStore = defineStore('importações', {
       status: x.saida_arquivo
         ? `${x.linhas_importadas}/${(x.linhas_importadas ?? 0) + (x.linhas_recusadas ?? 0)} linhas importadas`
         : x.processado_errmsg || 'em processamento',
-
+      nome_do_portfolio: x.portfolio?.titulo
+        ? x.portfolio.titulo
+        : null,
       criado_por: `${x.criado_por.nome_exibicao}`,
       criado_em: `${dateToDate(x.criado_em)}`,
     })) || [],
