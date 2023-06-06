@@ -35,7 +35,7 @@ export class RelProjetosDto {
     premissa: ProjetoPremissa | null;
     restricao: ProjetoRestricoes | null;
     fonte_recurso: ProjetoRecursos | null;
-    
+
     versao: string | null
 }
 
@@ -123,6 +123,7 @@ export class RelProjetosAcompanhamentosDto {
     cronograma_paralizado: boolean
     prazo_encaminhamento: string | null
     prazo_realizado: string | null
+    pauta: string | null
     detalhamento: string | null
     encaminhamento: string | null
     responsavel: string | null
