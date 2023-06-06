@@ -108,12 +108,26 @@ BEGIN
             UPDATE etapa e
             SET inicio_previsto = NEW.inicio_previsto
             WHERE e.id = NEW.etapa_pai_id
+              AND NOT EXISTS (
+                SELECT 1
+                FROM etapa e2
+                WHERE e2.etapa_pai_id = NEW.etapa_pai_id
+                  AND e2.inicio_previsto < NEW.inicio_previsto
+                  AND e2.removido_em IS NULL
+              );
         END IF;
 
         IF  NEW.inicio_real IS NOT NULL THEN
             UPDATE etapa e
             SET inicio_real = NEW.inicio_real
             WHERE e.id = NEW.etapa_pai_id
+              AND NOT EXISTS (
+                SELECT 1
+                FROM etapa e2
+                WHERE e2.etapa_pai_id = NEW.etapa_pai_id
+                  AND e2.inicio_real < NEW.inicio_real
+                  AND e2.removido_em IS NULL
+              );
         END IF;
 
 
