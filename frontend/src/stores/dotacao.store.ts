@@ -101,9 +101,8 @@ export const useDotaçãoStore = defineStore('dotação', {
   getters: {
     FontesDeRecursosPorAnoPorCódigo({ DotaçãoSegmentos }) {
       return Object.keys(DotaçãoSegmentos).reduce((acc: any, cur) => {
-        acc[cur] = DotaçãoSegmentos[cur].fonte_recursos?.reduce((acc2, cur2) => {
-          return { ...acc2, [cur2.codigo]: cur2 }
-        }, {});
+        acc[cur] = DotaçãoSegmentos[cur]
+          .fonte_recursos?.reduce((acc2, cur2) => ({ ...acc2, [cur2.codigo]: cur2 }), {});
         return acc;
       }, {});
     },
