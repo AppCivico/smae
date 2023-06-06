@@ -75,8 +75,6 @@ vue/singleline-html-element-content-newline -->
       <col class="col--data">
       <col>
       <col>
-      <col>
-      <col>
       <col class="col--botão-de-ação">
     </colgroup>
 
@@ -90,12 +88,6 @@ vue/singleline-html-element-content-newline -->
         </th>
         <th class="tl">
           {{ schema.fields['detalhamento'].spec.label }}
-        </th>
-        <th class="tl">
-          {{ schema.fields['encaminhamento'].spec.label }}
-        </th>
-        <th class="tl">
-          {{ schema.fields['responsavel'].spec.label }}
         </th>
         <th class="tl">
           {{ schema.fields['risco'].spec.label }}
@@ -118,12 +110,6 @@ vue/singleline-html-element-content-newline -->
         </td>
         <td>
           {{ linha.detalhamento }}
-        </td>
-        <td>
-          {{ linha.encaminhamento }}
-        </td>
-        <td>
-          {{ linha.responsavel }}
         </td>
         <td>
           <template
