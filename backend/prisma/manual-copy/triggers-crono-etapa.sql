@@ -89,6 +89,8 @@ DECLARE
     v_termino_real date;
     v_inicio_previsto date;
     v_inicio_real date;
+
+    count_filhos INTEGER;
 BEGIN
 
     -- apenas em modificações de etapas (e nao fases e subfases)
@@ -130,32 +132,6 @@ BEGIN
               AND ef2.removido_em IS NULL
         );
 
-        -- if (NEW.inicio_previsto IS NOT NULL) then
-        --     UPDATE etapa e
-        --     SET inicio_previsto = NEW.inicio_previsto
-        --     WHERE e.id = NEW.etapa_pai_id
-        --       AND NOT EXISTS (
-        --         SELECT 1
-        --         FROM etapa e2
-        --         WHERE e2.etapa_pai_id = NEW.etapa_pai_id
-        --           AND e2.inicio_previsto < NEW.inicio_previsto
-        --           AND e2.removido_em IS NULL
-        --       );
-        -- END IF;
-
-        -- IF  NEW.inicio_real IS NOT NULL THEN
-        --     UPDATE etapa e
-        --     SET inicio_real = NEW.inicio_real
-        --     WHERE e.id = NEW.etapa_pai_id
-        --       AND NOT EXISTS (
-        --         SELECT 1
-        --         FROM etapa e2
-        --         WHERE e2.etapa_pai_id = NEW.etapa_pai_id
-        --           AND e2.inicio_real < NEW.inicio_real
-        --           AND e2.removido_em IS NULL
-        --       );
-        -- END IF;
-
         -- sempre recalcula o termino_previsto de acordo com a situacao atual
         SELECT MAX(ef.termino_previsto) INTO v_termino_previsto
         FROM etapa ef
@@ -194,6 +170,21 @@ BEGIN
             (inicio_previsto IS DISTINCT FROM v_inicio_previsto)
         );
 
+    END IF;
+
+    SELECT count(1) INTO count_filhos
+        FROM etapa WHERE etapa_pai_id = NEW.id AND removido_em IS NULL;
+
+    IF count_filhos > 0 AND (
+        OLD.inicio_previsto <> NEW.inicio_previsto OR
+        OLD.inicio_real <> NEW.inicio_real OR
+        OLD.termino_previsto <> NEW.termino_real OR
+        OLD.termino_real <> NEW.termino_real)
+    THEN
+        NEW.inicio_previsto := COALESCE(v_inicio_previsto, OLD.inicio_previsto);
+        NEW.inicio_real := COALESCE(v_inicio_real, OLD.inicio_real);
+        NEW.termino_previsto := COALESCE(v_termino_previsto, OLD.termino_previsto);
+        NEW.termino_real := COALESCE(v_termino_real, OLD.termino_real);
     END IF;
 
     RETURN NEW;
