@@ -128,7 +128,11 @@ export class EtapaService {
             const self = await prisma.etapa.findFirstOrThrow({
                 where: { id },
                 select: {
-                    n_filhos_imediatos: true
+                    n_filhos_imediatos: true,
+                    inicio_previsto: true,
+                    inicio_real: true,
+                    termino_previsto: true,
+                    termino_real: true
                 }
             });
 
@@ -138,6 +142,22 @@ export class EtapaService {
             if (self.n_filhos_imediatos &&
                 (updateEtapaDto.inicio_previsto || updateEtapaDto.inicio_real || updateEtapaDto.termino_previsto || updateEtapaDto.termino_real)
             ) throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
+
+            const terminoPrevisto: Date | null = updateEtapaDto.termino_previsto ? updateEtapaDto.termino_previsto : self.termino_previsto;
+            if (updateEtapaDto.inicio_previsto && terminoPrevisto && updateEtapaDto.inicio_previsto > terminoPrevisto)
+                throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
+
+            const terminoReal: Date | null = updateEtapaDto.termino_real ? updateEtapaDto.termino_real : self.termino_real;
+            if (updateEtapaDto.inicio_real && terminoReal && updateEtapaDto.inicio_real > terminoReal)
+                throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
+
+            const inicioPrevisto: Date | null = updateEtapaDto.inicio_previsto ? updateEtapaDto.inicio_previsto : self.inicio_previsto;
+            if (updateEtapaDto.termino_previsto && inicioPrevisto && updateEtapaDto.termino_previsto < inicioPrevisto)
+                throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
+
+            const inicioReal: Date | null = updateEtapaDto.inicio_real ? updateEtapaDto.inicio_real : self.inicio_real;
+            if (updateEtapaDto.termino_real && inicioReal && updateEtapaDto.termino_real < inicioReal)
+                throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
             
             const etapa = await prisma.etapa.update({
                 where: { id: id },
