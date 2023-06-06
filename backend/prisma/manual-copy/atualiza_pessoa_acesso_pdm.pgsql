@@ -5,6 +5,7 @@ DECLARE
     vPdmId int;
     vCiclo date;
     vLocked boolean;
+    vInt int;
     vPerfil varchar;
 BEGIN
     --
@@ -31,6 +32,9 @@ BEGIN
         RETURN 'Erro: acesso está congelado';
     END IF;
     --
+
+    -- lock pra garantir que só ta rodando 1x por vez
+    select id into vInt from pessoa where id = pPessoa_id for update;
 
     -- prioridade pro admin
     -- se ficar sem nenhuma, mesmo tendo outras permissoes de criar ciclos, etc,
@@ -349,7 +353,8 @@ BEGIN
         (select coalesce(array_agg(distinct etapa_id), '{}'::int[]) from cronogramas_etapas) as cronogramas_etapas,
         vCiclo as ciclo,
         vPerfil as perfil,
-        false as congelado;
+        false as congelado
+    where (select count(1) from pessoa_acesso_pdm x where x.pessoa_id = pPessoa_id) = 0; -- just in case
 
     return 'ok';
 END
