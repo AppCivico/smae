@@ -24,6 +24,15 @@ PdMStore.getAll().then(() => {
         : $route?.meta?.título || 'Projetos' }}
     </h1>
     <hr class="ml2 f1">
+    <router-link
+      :to="{
+        name: 'EnviosOrçamentosMetasNovo',
+        query: $route.query
+      }"
+      class="btn big ml1"
+    >
+      Enviar arquivo
+    </router-link>
   </div>
 
   <div class="flex center mb2 spacebetween">

@@ -13,6 +13,15 @@ portfolioStore.buscarTudo();
         : $route?.meta?.título || 'Projetos' }}
     </h1>
     <hr class="ml2 f1">
+    <router-link
+      :to="{
+        name: 'EnviosOrçamentosProjetosNovo',
+        query: $route.query
+      }"
+      class="btn big ml1"
+    >
+      Enviar arquivo
+    </router-link>
   </div>
 
   <div class="flex center mb2 spacebetween">
@@ -56,4 +65,11 @@ portfolioStore.buscarTudo();
   </div>
 
   <router-view />
+
+  <router-view
+    v-slot="{ Component }"
+    name="modal"
+  >
+    <component :is="Component" />
+  </router-view>
 </template>
