@@ -10,7 +10,7 @@ type Lista = ListImportacaoOrcamentoDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
-  envio: boolean;
+  arquivos: boolean;
 }
 
 interface Estado {
@@ -29,7 +29,7 @@ export const useImportaçõesStore = defineStore('importações', {
 
     chamadasPendentes: {
       lista: false,
-      envio: false,
+      arquivos: false,
     },
 
     paginação: {
@@ -62,6 +62,20 @@ export const useImportaçõesStore = defineStore('importações', {
         this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
+    },
+
+    async enviarArquivo(params = {}): Promise<boolean> {
+      this.chamadasPendentes.arquivos = true;
+
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/importacao-orcamento/`, params);
+        this.chamadasPendentes.arquivos = false;
+        return resposta;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.arquivos = false;
+        return false;
+      }
     },
   },
 

@@ -2,6 +2,15 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import MenuSecundário from '@/components/MenuSecundario.vue';
 import EnviosRaiz from '@/views/envios/EnviosRaiz.vue';
 import { defineAsyncComponent } from 'vue';
+
+const DialogWrapper = defineAsyncComponent({
+  loader: () => import('@/views/DialogWrapper.vue'),
+  loadingComponent: LoadingComponent,
+});
+const EnviarArquivo = defineAsyncComponent({
+  loader: () => import('@/views/envios/EnviarArquivo.vue'),
+  loadingComponent: LoadingComponent,
+});
 const EnviosLista = defineAsyncComponent({
   loader: () => import('@/views/envios/EnviosLista.vue'),
   loadingComponent: LoadingComponent,
@@ -62,6 +71,24 @@ export default {
           name: 'EnviosOrçamentosMetas',
           component: EnviosLista,
         },
+        {
+          path: 'enviar',
+          components: {
+            default: EnviosLista,
+            modal: DialogWrapper,
+          },
+          children: [
+            {
+              path: '',
+              name: 'EnviosOrçamentosMetasNovo',
+              component: EnviarArquivo,
+              meta: {
+                rotaDeEscape: 'EnviosOrçamentosMetas',
+                entidadeMãe: 'pdm',
+              },
+            },
+          ],
+        },
       ],
     },
     {
@@ -76,6 +103,24 @@ export default {
           path: '',
           name: 'EnviosOrçamentosProjetos',
           component: EnviosLista,
+        },
+        {
+          path: 'enviar',
+          components: {
+            default: EnviosLista,
+            modal: DialogWrapper,
+          },
+          children: [
+            {
+              name: 'EnviosOrçamentosProjetosNovo',
+              path: '',
+              component: EnviarArquivo,
+              meta: {
+                rotaDeEscape: 'EnviosOrçamentosProjetos',
+                entidadeMãe: 'portfolio',
+              },
+            },
+          ],
         },
       ],
     },
