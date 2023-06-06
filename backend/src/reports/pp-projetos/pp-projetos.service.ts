@@ -54,9 +54,9 @@ class RetornoDbProjeto {
     orgao_responsavel_sigla: string
     orgao_responsavel_descricao: string
     orgao_gestor_id: number
-    orgao_gestor_sigla: string 
-    orgao_gestor_descricao: string 
-    gestores: string 
+    orgao_gestor_sigla: string
+    orgao_gestor_descricao: string
+    gestores: string
     responsavel_id: number
     responsavel_nome_exibicao: string
 
@@ -161,15 +161,16 @@ class RetornoDbAcompanhamentos {
     data_registro: Date
     participantes: string
     cronograma_paralizado: boolean
-    prazo_encaminhamento?: Date
-    prazo_realizado?: Date
-    detalhamento?: string
-    encaminhamento?: string
-    responsavel?: string
-    observacao?: string
-    detalhamento_status?: string
-    pontos_atencao?: string
-    riscos?: string
+    prazo_encaminhamento: Date | null
+    pauta: string | null
+    prazo_realizado: Date | null
+    detalhamento: string | null
+    encaminhamento: string | null
+    responsavel: string | null
+    observacao: string | null
+    detalhamento_status: string | null
+    pontos_atencao: string | null
+    riscos: string | null
 }
 
 @Injectable()
@@ -377,7 +378,7 @@ export class PPProjetosService implements ReportableService {
             projeto.data_revisao,
             projeto.versao,
             projeto.status,
-            orgao_responsavel.id AS orgao_responsavel_id, 
+            orgao_responsavel.id AS orgao_responsavel_id,
             orgao_responsavel.sigla AS orgao_responsavel_sigla,
             orgao_responsavel.descricao AS orgao_responsavel_descricao,
             resp.id AS responsavel_id,
@@ -528,13 +529,13 @@ export class PPProjetosService implements ReportableService {
             ) as dependencias
             FROM projeto
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-            RIGHT JOIN tarefa t ON t.projeto_id = projeto.id
+            JOIN tarefa t ON t.projeto_id = projeto.id
             ${whereCond.whereString}
         `;
 
         const data: RetornoDbCronograma[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
-        const convertedRows = await this.convertRowsCronograma(data); 
+        const convertedRows = await this.convertRowsCronograma(data);
         out.push(...convertedRows);
     }
 
@@ -610,7 +611,7 @@ export class PPProjetosService implements ReportableService {
                 WHERE rt.projeto_risco_id = projeto_risco.id
             ) as tarefas_afetadas
         FROM projeto
-          RIGHT JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
         ${whereCond.whereString}
         `;
 
@@ -663,8 +664,8 @@ export class PPProjetosService implements ReportableService {
             plano_acao.responsavel,
             plano_acao.data_termino
         FROM projeto
-          RIGHT JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
-          RIGHT JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
+          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
         ${whereCond.whereString}
         `;
 
@@ -702,9 +703,9 @@ export class PPProjetosService implements ReportableService {
             plano_acao_monitoramento.data_afericao,
             plano_acao_monitoramento.descricao
         FROM projeto
-          RIGHT JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
-          RIGHT JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
-          RIGHT JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id
+          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
+          JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id
         ${whereCond.whereString}
         `;
 
@@ -740,7 +741,7 @@ export class PPProjetosService implements ReportableService {
             projeto_licao_aprendida.contexto,
             projeto_licao_aprendida.resultado
         FROM projeto
-          RIGHT JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
+          JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
         ${whereCond.whereString}
         `;
 
@@ -774,11 +775,12 @@ export class PPProjetosService implements ReportableService {
             projeto_acompanhamento.data_registro,
             projeto_acompanhamento.participantes,
             projeto_acompanhamento.cronograma_paralisado,
-            projeto_acompanhamento.prazo_encaminhamento,
-            projeto_acompanhamento.prazo_realizado,
+            projeto_acompanhamento_item.prazo_encaminhamento,
+            projeto_acompanhamento_item.pauta,
+            projeto_acompanhamento_item.prazo_realizado,
             projeto_acompanhamento.detalhamento,
-            projeto_acompanhamento.encaminhamento,
-            projeto_acompanhamento.responsavel,
+            projeto_acompanhamento_item.encaminhamento,
+            projeto_acompanhamento_item.responsavel,
             projeto_acompanhamento.observacao,
             projeto_acompanhamento.detalhamento_status,
             projeto_acompanhamento.pontos_atencao,
@@ -789,9 +791,10 @@ export class PPProjetosService implements ReportableService {
                 WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
             ) AS riscos
         FROM projeto
-          RIGHT JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
-          RIGHT JOIN projeto_acompanhamento_risco ON projeto_acompanhamento_risco.projeto_acompanhamento_id = projeto_acompanhamento.id
-          RIGHT JOIN projeto_risco ON projeto_risco.id = projeto_acompanhamento_risco.projeto_risco_id
+          JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
+          JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
+          JOIN projeto_acompanhamento_risco ON projeto_acompanhamento_risco.projeto_acompanhamento_id = projeto_acompanhamento.id
+          JOIN projeto_risco ON projeto_risco.id = projeto_acompanhamento_risco.projeto_risco_id
         ${whereCond.whereString}
         `;
 
@@ -810,6 +813,7 @@ export class PPProjetosService implements ReportableService {
                 data_registro: Date2YMD.toString(db.data_registro),
                 participantes: db.participantes,
                 cronograma_paralizado: db.cronograma_paralizado,
+                pauta: db.pauta,
                 prazo_encaminhamento: db.prazo_encaminhamento ? Date2YMD.toString(db.prazo_encaminhamento) : null,
                 prazo_realizado: db.prazo_realizado ? Date2YMD.toString(db.prazo_realizado) : null,
                 detalhamento: db.detalhamento ? db.detalhamento : null,

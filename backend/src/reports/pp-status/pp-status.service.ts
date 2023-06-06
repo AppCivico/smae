@@ -66,7 +66,6 @@ export class PPStatusService implements ReportableService {
                         detalhamento_status: true,
                         pontos_atencao: true,
                         cronograma_paralisado: true,
-                        //prazo_realizado: true,
                     }
                 }
             }
