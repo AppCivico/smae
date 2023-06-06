@@ -793,8 +793,6 @@ export class PPProjetosService implements ReportableService {
         FROM projeto
           JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
           JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
-          JOIN projeto_acompanhamento_risco ON projeto_acompanhamento_risco.projeto_acompanhamento_id = projeto_acompanhamento.id
-          JOIN projeto_risco ON projeto_risco.id = projeto_acompanhamento_risco.projeto_risco_id
         ${whereCond.whereString}
         `;
 
