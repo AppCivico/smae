@@ -351,9 +351,11 @@ function newVariavel() {
   const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
     .keys(variaveisFormula)
     .map((x) => Number(x.replace('$_', '')))
-    .reduce((a, b) => Math.max(a, b), -Infinity) || 0;
+    .reduce((a, b) => Math.max(a, b), -Infinity);
 
-  const next = `$_${últimoÍndiceDisponívelParaVariávelEmFórmula + 1}`;
+  const next = últimoÍndiceDisponívelParaVariávelEmFórmula === -Infinity
+    ? '$_1'
+    : `$_${últimoÍndiceDisponívelParaVariávelEmFórmula + 1}`;
   fieldsVariaveis.value = {
     id: next,
   };
