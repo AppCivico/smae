@@ -48,7 +48,11 @@ defineProps({
             v-for="coluna, i in colunas"
             :key="`cel__${i}--${item.id}`"
           >
-            <a v-if="item[coluna.nome]?.href">
+            <a
+              v-if="item[coluna.nome]?.href"
+              :href="item[coluna.nome].href"
+              :download="item[coluna.nome].download || null"
+            >
               {{ item[coluna.nome].texto ?? item[coluna.nome] }}
             </a>
             <router-link
