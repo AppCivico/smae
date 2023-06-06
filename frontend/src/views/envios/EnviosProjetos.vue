@@ -48,7 +48,9 @@ portfolioStore.buscarTudo();
           query: { portfolio_id: $event.target.value || undefined }
         })"
       >
-        <option :value="null" />
+        <option :value="null">
+          Todos
+        </option>
         <option
           v-for="item in portfolioStore.lista"
           :key="item.id"

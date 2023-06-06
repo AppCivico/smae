@@ -35,7 +35,6 @@ const colunas = [
   },
   {
     nome: 'criado_em',
-
     classe: 'col--minimum',
   },
 ];
@@ -50,6 +49,14 @@ function carregar(parâmetros) {
   } else {
     importaçõesStore.buscarTudo(parâmetros);
   }
+}
+
+if (route.meta.entidadeMãe === 'portfolio' && !route.query.portfolio_id) {
+  colunas
+    .splice(2, 0, {
+      nome: 'nome_do_portfolio',
+      etiqueta: 'Portfolio',
+    });
 }
 
 watch(() => route.query, () => {
