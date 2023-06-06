@@ -294,6 +294,7 @@ export class VariavelService {
 
         const listActive = await this.prisma.variavel.findMany({
             where: {
+                removido_em: null,
                 ...filterQuery,
             },
             select: {
@@ -538,6 +539,10 @@ export class VariavelService {
                     removido_por: user.id
                 },
                 select: { id: true },
+            });
+
+            await prismaTxn.indicadorVariavel.deleteMany({
+                where: { variavel_id: variavelId }
             });
 
         }, {
@@ -865,6 +870,7 @@ export class VariavelService {
             where: {
                 id: { in: variaveis },
                 acumulativa: true,
+                removido_em: null,
             },
             select: {
                 id: true,
