@@ -1,12 +1,19 @@
+export class ProjetoAcompanhamentoRowDto {
+    encaminhamento: string | null
+    responsavel: string | null
+    prazo_encaminhamento: Date | null
+    prazo_realizado: Date | null
+    pauta: string | null
+}
+
 export class ProjetoAcompanhamento {
     id: number
     data_registro: Date
     participantes: string
-    responsavel: string | null
     detalhamento: string | null
-    encaminhamento: string | null
-
     risco: RiscoIdCod[] | null
+
+    encaminhamentos: ProjetoAcompanhamentoRowDto[]
 }
 
 export class ListProjetoAcompanhamentoDto {
@@ -17,16 +24,14 @@ export class DetailProjetoAcompanhamentoDto {
     id: number
     data_registro: Date
     participantes: string
-    responsavel: string | null
-    prazo_encaminhamento: Date | null
     detalhamento: string | null
-    encaminhamento: string | null
     observacao: string | null
     detalhamento_status: string | null
     pontos_atencao: string | null
-    prazo_realizado: Date | null
     cronograma_paralisado: boolean
     risco: RiscoIdCod[] | null
+
+    encaminhamentos: ProjetoAcompanhamentoRowDto[]
 }
 
 export class RiscoIdCod {
