@@ -874,7 +874,7 @@ export const risco = object()
     registrado_em: date()
       .label('Data de registro')
       .required()
-      .typeError('Data inválida'),
+      .typeError('${label} inválida'),
     risco_tarefa_outros: string()
       .label('Outras tarefas afetadas')
       .nullable(),
@@ -993,13 +993,14 @@ export const tarefa = object()
       .typeError('Data inválida'),
   });
 
-export const tag = object().shape({
-  descricao: string().required('Preencha a descrição'),
-  ods_id: string()
-    .required(),
-  pdm_id: string(),
-  upload_icone: string().nullable(),
-});
+export const tag = object()
+  .shape({
+    descricao: string().required('Preencha a descrição'),
+    ods_id: string()
+      .required(),
+    pdm_id: string(),
+    upload_icone: string().nullable(),
+  });
 
 export const usuário = object()
   .shape({
@@ -1048,16 +1049,16 @@ export const variável = (singleIndicadores) => object()
       .required('Preencha o código'),
     fim_medicao: string()
       .nullable()
+      .matches(regEx['month/year'], 'Formato inválido')
       .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade !== periodicidade
         ? schema.required('Selecione a data')
-        : schema))
-      .matches(regEx['month/year'], 'Formato inválido'),
+        : schema)),
     inicio_medicao: string()
       .nullable()
+      .matches(regEx['month/year'], 'Formato inválido')
       .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade !== periodicidade
         ? schema.required('Selecione a data')
-        : schema))
-      .matches(regEx['month/year'], 'Formato inválido'),
+        : schema)),
     orgao_id: string()
       .required('Selecione um orgão'),
     periodicidade: string()
