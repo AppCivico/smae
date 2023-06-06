@@ -130,11 +130,13 @@ export class ImportacaoOrcamentoService {
         // e vice versa para o projeto/portfolio
 
         if (filters.apenas_com_portfolio) {
+            this.logger.debug(`filtrando apenas_com_portfolio=true`);
             filtros.push({ portfolio_id: { not: null } })
         }
 
         if (user.hasSomeRoles(['Projeto.orcamento'])) {
             const projetos = await this.projetoService.findAllIds(user);
+            this.logger.warn(`só pode ver os projetos ${projetos.map(r => r.id).join(',')}`);
 
             filtros.push({
                 OR: [
@@ -153,11 +155,13 @@ export class ImportacaoOrcamentoService {
                 ]
             });
         } else {
+            this.logger.warn('não pode ver os projetos');
             filtros.push({ portfolio_id: null })
         }
 
         if (user.hasSomeRoles(['CadastroMeta.orcamento'])) {
             const metas = await this.metaService.findAllIds(user);
+            this.logger.warn(`só pode as metas ${metas.map(r => r.id)}`);
 
             filtros.push({
                 OR: [
@@ -176,6 +180,7 @@ export class ImportacaoOrcamentoService {
                 ]
             });
         } else {
+            this.logger.warn('não pode ver as metas');
             filtros.push({ pdm_id: null })
         }
 
@@ -363,7 +368,7 @@ export class ImportacaoOrcamentoService {
             }
         });
 
-        const nome_arquivo = job.arquivo.nome_original.replace(/[A-Za-z0-9]/g, '-');
+        const nome_arquivo = job.arquivo.nome_original.replace(/[^A-Za-z0-9\.]/g, '-');
 
         const inputBuffer = await Stream2Buffer((await this.uploadService.getReadableStreamById(job.arquivo_id)).stream);
 
