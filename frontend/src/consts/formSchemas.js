@@ -241,6 +241,10 @@ export const fase = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     ordem: string()
       .nullable(),
+    peso: number()
+      .label('Ponderador')
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     regiao_id: string()
       .nullable(),
     termino_previsto: string()
