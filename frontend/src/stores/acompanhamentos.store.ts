@@ -100,9 +100,14 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
       data_registro: dateTimeToDate(emFoco?.data_registro) || null,
-      prazo_encaminhamento: dateTimeToDate(emFoco?.prazo_encaminhamento) || null,
-      prazo_realizado: dateTimeToDate(emFoco?.prazo_realizado) || null,
       risco: emFoco?.risco?.map((x: RiscoIdCod) => x.id) || null,
+      acompanhamentos: !Array.isArray(emFoco?.acompanhamentos)
+        ? null
+        : emFoco?.acompanhamentos.map((x) => ({
+          ...x,
+          prazo_encaminhamento: dateTimeToDate(x.prazo_encaminhamento) || null,
+          prazo_realizado: dateTimeToDate(x.prazo_realizado) || null,
+        })) || null,
     }),
   },
 });
