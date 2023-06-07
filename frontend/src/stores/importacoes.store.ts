@@ -3,6 +3,8 @@ import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ListImportacaoOrcamentoDto } from '@/../../backend/src/importacao-orcamento/entities/importacao-orcamento.entity';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { PortfolioDto } from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -10,11 +12,13 @@ type Lista = ListImportacaoOrcamentoDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
+  portfoliosPermitidos: boolean;
   arquivos: boolean;
 }
 
 interface Estado {
   lista: Lista;
+  portfoliosPermitidos: PortfolioDto[];
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
   paginação: {
@@ -26,9 +30,11 @@ interface Estado {
 export const useImportaçõesStore = defineStore('importações', {
   state: (): Estado => ({
     lista: [],
+    portfoliosPermitidos: [],
 
     chamadasPendentes: {
       lista: false,
+      portfoliosPermitidos: false,
       arquivos: false,
     },
 
@@ -62,6 +68,21 @@ export const useImportaçõesStore = defineStore('importações', {
         this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
+    },
+
+    async buscarPortfolios(params = {}): Promise<void> {
+      this.chamadasPendentes.portfoliosPermitidos = true;
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/importacao-orcamento/portfolio`, params);
+        if (Array.isArray(resposta)) {
+          this.portfoliosPermitidos = resposta;
+        } else {
+          throw new Error('Resposta fora do padrão esperado');
+        }
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.portfoliosPermitidos = false;
     },
 
     async enviarArquivo(params = {}): Promise<boolean> {
