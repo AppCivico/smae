@@ -2933,7 +2933,6 @@ model ProjetoAcompanhamentoItem {
     responsavel          String?
     prazo_encaminhamento DateTime? @db.Date()
     prazo_realizado      DateTime? @db.Date()
-    pauta                String?
 
     ordem Int @db.SmallInt
 
@@ -2955,6 +2954,7 @@ model ProjetoAcompanhamento {
     observacao          String?
     detalhamento_status String?
     pontos_atencao      String?
+    pauta               String?
 
     cronograma_paralisado Boolean @default(false)
 

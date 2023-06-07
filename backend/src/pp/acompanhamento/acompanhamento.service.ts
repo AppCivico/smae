@@ -53,7 +53,6 @@ export class AcompanhamentoService {
                     data: dto.acompanhamentos.map((r, i) => {
                         return {
                             encaminhamento: r.encaminhamento,
-                            pauta: r.pauta,
                             prazo_encaminhamento: r.prazo_encaminhamento,
                             prazo_realizado: r.prazo_realizado,
                             responsavel: r.responsavel,
@@ -85,6 +84,7 @@ export class AcompanhamentoService {
                 participantes: true,
 
                 detalhamento: true,
+                pauta: true,
 
                 ProjetoAcompanhamentoItem: {
                     orderBy: { ordem: 'asc' }
@@ -109,6 +109,7 @@ export class AcompanhamentoService {
                 data_registro: a.data_registro,
                 participantes: a.participantes,
                 detalhamento: a.detalhamento,
+                pauta: a.pauta,
 
                 encaminhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
@@ -125,7 +126,6 @@ export class AcompanhamentoService {
     renderAcompanhamento(r: ProjetoAcompanhamentoItem): ProjetoAcompanhamentoRowDto {
         return {
             encaminhamento: r.encaminhamento,
-            pauta: r.pauta,
             prazo_encaminhamento: r.prazo_encaminhamento ? r.prazo_encaminhamento : null,
             prazo_realizado: r.prazo_realizado ? r.prazo_realizado : null,
             responsavel: r.responsavel
@@ -148,6 +148,7 @@ export class AcompanhamentoService {
                 observacao: true,
                 detalhamento_status: true,
                 pontos_atencao: true,
+                pauta: true,
 
                 cronograma_paralisado: true,
 
@@ -177,6 +178,7 @@ export class AcompanhamentoService {
 
 
             detalhamento: projetoAcompanhamento.detalhamento,
+            pauta: projetoAcompanhamento.pauta,
 
             observacao: projetoAcompanhamento.observacao,
             detalhamento_status: projetoAcompanhamento.detalhamento_status,
@@ -234,7 +236,6 @@ export class AcompanhamentoService {
                         data: dto.acompanhamentos.map((r, i) => {
                             return {
                                 encaminhamento: r.encaminhamento,
-                                pauta: r.pauta,
                                 prazo_encaminhamento: r.prazo_encaminhamento,
                                 prazo_realizado: r.prazo_realizado,
                                 responsavel: r.responsavel,
