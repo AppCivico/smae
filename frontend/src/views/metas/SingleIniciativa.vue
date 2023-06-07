@@ -83,7 +83,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
           </div>
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              Responsável na coordenadoria
+              Responsável na coordenadoria de planejamento
             </div>
             <div class="t13">
               {{ singleIniciativa.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
@@ -193,7 +193,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
                     </div>
                     <div class="f1">
                       <div class="t12 uc w700 mb05 tc300">
-                        Responsável na Coordenadoria
+                        Responsável na coordenadoria de planejamento
                       </div>
                       <div class="t13">
                         {{ ini?.coordenadores_cp?.map(x=>x.nome_exibicao).join(', ') }}

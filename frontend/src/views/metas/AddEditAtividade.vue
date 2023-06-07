@@ -326,7 +326,11 @@ function filterResponsible(orgao_id) {
 
         <hr class="mt2 mb2">
 
-        <label class="label">Responsável na coordenadoria de planejamento da Meta <span class="tvermelho">*</span></label>
+        <label class="label">
+          Responsável na coordenadoria de planejamento&nbsp;<span
+            class="tvermelho"
+          >*</span>
+        </label>
         <div class="flex">
           <div
             v-if="coordsAvailable.length"

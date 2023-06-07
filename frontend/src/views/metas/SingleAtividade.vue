@@ -76,7 +76,7 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
           </div>
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              Responsável na Coordenadoria
+              Responsável na coordenadoria de planejamento
             </div>
             <div class="t13">
               {{ singleAtividade.coordenadores_cp.map(x=>x.nome_exibicao).join(', ') }}
