@@ -256,6 +256,7 @@ export class AcompanhamentoService {
                     ...{
                         ...dto,
                         risco: undefined,
+                        acompanhamentos: undefined,
                     },
                     atualizado_em: now,
                     atualizado_por: user.id,
