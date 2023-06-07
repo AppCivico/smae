@@ -36,9 +36,11 @@ emit('update:modelValue', props.lista);
     <input
       v-model="termoDeBusca"
       type="search"
-      class="inputtext"
+      class="inputtext light"
+      :disabled="!lista.length"
     >
     <button
+      v-if="termoDeBusca"
       type="reset"
       class="busca-livre__botão-de-limpeza btn bgnone"
       @click="termoDeBusca = ''"
