@@ -478,6 +478,8 @@ const chart = new smaeChart();
 
 function start() {
   if (props.dataserie?.linhas?.length && evolucao.value) {
+    const casasDecimais = props.dataserie.variavel?.casas_decimais || 0;
+
     const data = {};
 
     const iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
@@ -485,12 +487,18 @@ function start() {
     data.projetado = props.dataserie.linhas
       .map((x) => ({
         date: x.series[iPrevistoAcumulado].data_valor,
-        value: x.series[iPrevistoAcumulado].valor_nominal,
+        value: x.series[iPrevistoAcumulado].valor_nominal
+          && !isNaN(x.series[iPrevistoAcumulado].valor_nominal)
+          ? Number.parseFloat(x.series[iPrevistoAcumulado].valor_nominal).toFixed(casasDecimais)
+          : x.series[iPrevistoAcumulado].valor_nominal,
       }));
     data.realizado = props.dataserie.linhas
       .map((x) => ({
         date: x.series[iRealizadoAcumulado].data_valor,
-        value: x.series[iRealizadoAcumulado].valor_nominal,
+        value: x.series[iRealizadoAcumulado].valor_nominal
+          && !isNaN(x.series[iRealizadoAcumulado].valor_nominal)
+          ? Number.parseFloat(x.series[iRealizadoAcumulado].valor_nominal).toFixed(casasDecimais)
+          : x.series[iRealizadoAcumulado].valor_nominal,
       }));
     chart.drawChart(data, evolucao.value);
   }
