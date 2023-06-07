@@ -162,6 +162,28 @@ function excluirAcompanhamento(id) {
     <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
+          name="pauta"
+          :schema="schema"
+        />
+        <Field
+          id="pauta"
+          name="pauta"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="50000"
+          :class="{ 'error': errors.pauta }"
+        />
+        <ErrorMessage
+          name="pauta"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
           name="detalhamento"
           :schema="schema"
         />
@@ -177,88 +199,6 @@ function excluirAcompanhamento(id) {
         <ErrorMessage
           name="detalhamento"
           class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="encaminhamento"
-          :schema="schema"
-        />
-        <Field
-          id="encaminhamento"
-          name="encaminhamento"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="50000"
-          :class="{ 'error': errors.encaminhamento }"
-        />
-        <ErrorMessage
-          name="encaminhamento"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="f2 mb1">
-        <LabelFromYup
-          name="responsavel"
-          :schema="schema"
-        />
-        <Field
-          id="responsavel"
-          name="responsavel"
-          required
-          type="text"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.responsavel,
-            loading: chamadasPendentes.validaçãoDeDependências
-          }"
-        />
-        <ErrorMessage
-          name="responsavel"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="prazo_encaminhamento"
-          :schema="schema"
-        />
-        <Field
-          id="prazo_encaminhamento"
-          name="prazo_encaminhamento"
-          type="date"
-          required
-          class="inputtext light mb1"
-          :class="{ 'error': errors.prazo_encaminhamento }"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="prazo_encaminhamento"
-        />
-      </div>
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="prazo_realizado"
-          :schema="schema"
-        />
-        <Field
-          id="prazo_realizado"
-          name="prazo_realizado"
-          type="date"
-          required
-          class="inputtext light mb1"
-          :class="{ 'error': errors.prazo_realizado }"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="prazo_realizado"
         />
       </div>
     </div>
@@ -343,7 +283,142 @@ function excluirAcompanhamento(id) {
         </label>
       </div>
     </div>
+
     <div class="g2 mb2">
+      <legend class="label mt2 mb1">
+        {{ schema.fields.acompanhamentos.spec.label }}
+      </legend>
+
+      <FieldArray
+        v-slot="{ fields, push, remove }"
+        name="acompanhamentos"
+      >
+        <div
+          v-for="(field, idx) in fields"
+          :key="`acompanhamentos--${field.key}`"
+          class="mb2"
+        >
+          <div class="flex g2 mb1">
+            <div class="f1 mb1">
+              <LabelFromYup
+                name="encaminhamento"
+                :for="`acompanhamentos[${idx}].encaminhamento`"
+                class="tc300"
+                :schema="schema.fields.acompanhamentos.innerType"
+              />
+              <Field
+                :id="`acompanhamentos[${idx}].encaminhamento`"
+                :name="`acompanhamentos[${idx}].encaminhamento`"
+                as="textarea"
+                rows="5"
+                class="inputtext light mb1"
+                maxlength="50000"
+                :class="{ 'error': errors[`acompanhamentos[${idx}].encaminhamento`] }"
+              />
+              <ErrorMessage
+                :name="`acompanhamentos[${idx}].encaminhamento`"
+                class="error-msg"
+              />
+            </div>
+          </div>
+
+          <div class="flex g2 mb1">
+            <div class="f2 mb1">
+              <LabelFromYup
+                name="responsavel"
+                :for="`acompanhamentos[${idx}].responsavel`"
+                class="tc300"
+                :schema="schema.fields.acompanhamentos.innerType"
+              />
+              <Field
+                :id="`acompanhamentos[${idx}].responsavel`"
+                :name="`acompanhamentos[${idx}].responsavel`"
+                required
+                type="text"
+                class="inputtext light mb1"
+                :class="{
+                  error: errors[`acompanhamentos[${idx}].responsavel`],
+                }"
+              />
+              <ErrorMessage
+                :name="`acompanhamentos[${idx}].responsavel`"
+                class="error-msg"
+              />
+            </div>
+            <div class="f1 mb1">
+              <LabelFromYup
+                name="prazo_encaminhamento"
+                :for="`acompanhamentos[${idx}].prazo_encaminhamento`"
+                class="tc300"
+                :schema="schema.fields.acompanhamentos.innerType"
+              />
+              <Field
+                :id="`acompanhamentos[${idx}].prazo_encaminhamento`"
+                :name="`acompanhamentos[${idx}].prazo_encaminhamento`"
+                type="date"
+                required
+                class="inputtext light mb1"
+                :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_encaminhamento`] }"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`acompanhamentos[${idx}].prazo_encaminhamento`"
+              />
+            </div>
+            <div class="f1 mb1">
+              <LabelFromYup
+                name="prazo_realizado"
+                :for="`acompanhamentos[${idx}].prazo_realizado`"
+                class="tc300"
+                :schema="schema.fields.acompanhamentos.innerType"
+              />
+              <Field
+                :id="`acompanhamentos[${idx}].prazo_realizado`"
+                :name="`acompanhamentos[${idx}].prazo_realizado`"
+                type="date"
+                required
+                class="inputtext light mb1"
+                :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_realizado`] }"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`acompanhamentos[${idx}].prazo_realizado`"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink mb2"
+              arial-label="excluir"
+              title="excluir"
+              type="button"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <button
+          class="like-a__text addlink"
+          type="button"
+          @click="push(null)"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>Adicionar encaminhamento
+        </button>
+      </FieldArray>
+    </div>
+
+    <div class="g2 mb2">
+      <legend class="label mt2 mb1">
+        {{ schema.fields.risco.spec.label }}
+      </legend>
+
       <FieldArray
         v-slot="{ fields, push, remove }"
         name="risco"
@@ -354,14 +429,10 @@ function excluirAcompanhamento(id) {
           class="flex g2"
         >
           <div class="f1 mb1">
-            <LabelFromYup
-              name="risco"
-              :schema="schema"
-            />
             <Field
               :id="`risco[${idx}]`"
               :name="`risco[${idx}]`"
-
+              :arial-label="schema.fields.risco.innerType.spec.label"
               maxlength="2"
               class="inputtext light mb1"
               as="select"
@@ -389,7 +460,7 @@ function excluirAcompanhamento(id) {
             />
           </div>
           <button
-            class="like-a__text addlink"
+            class="like-a__text addlink mb2"
             arial-label="excluir"
             title="excluir"
             type="button"
