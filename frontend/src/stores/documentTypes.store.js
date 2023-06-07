@@ -1,4 +1,3 @@
-import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -17,7 +16,7 @@ export const useDocumentTypesStore = defineStore({
     async getAll() {
       this.documentTypes = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/tipo-documento`);
+        const r = await this.requestS.get(`${baseUrl}/tipo-documento`);
         this.documentTypes = r.linhas;
       } catch (error) {
         this.documentTypes = { error };
@@ -36,7 +35,7 @@ export const useDocumentTypesStore = defineStore({
       }
     },
     async insert(params) {
-      if (await requestS.post(`${baseUrl}/tipo-documento`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/tipo-documento`, params)) return true;
       return false;
     },
     async update(id, params) {
@@ -46,11 +45,11 @@ export const useDocumentTypesStore = defineStore({
         titulo: params.titulo,
         codigo: params.codigo,
       };
-      if (await requestS.patch(`${baseUrl}/tipo-documento/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/tipo-documento/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/tipo-documento/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/tipo-documento/${id}`)) return true;
       return false;
     },
     async filterDocumentTypes(f) {

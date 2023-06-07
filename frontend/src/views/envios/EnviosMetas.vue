@@ -1,5 +1,5 @@
 <script setup>
-import { usePdMStore } from '@/stores';
+import { usePdMStore } from '@/stores/pdm.store';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
