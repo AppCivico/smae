@@ -2,7 +2,7 @@ import qs from 'qs';
 import { createRouter, createWebHistory } from 'vue-router';
 
 // Stores
-import { useAuthStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
 
 // Views
 import { default as SubmenuMonitoramento } from '@/components/SubmenuMonitoramento.vue';
