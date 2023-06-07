@@ -149,7 +149,6 @@ function excluirAcompanhamento(id) {
           class="inputtext light mb1"
           :class="{
             error: errors.participantes,
-            loading: chamadasPendentes.validaçãoDeDependências
           }"
         />
         <ErrorMessage
@@ -451,7 +450,7 @@ function excluirAcompanhamento(id) {
                 :value="item.id"
                 :title="item.titulo"
               >
-                {{ item.titulo || (item.descricao ? truncate(item.descricao, 36) : item.descricao) }}
+                {{ item.titulo || (item.descricao ? truncate(item.descricao, 36) : null) }}
               </option>
             </Field>
             <ErrorMessage
