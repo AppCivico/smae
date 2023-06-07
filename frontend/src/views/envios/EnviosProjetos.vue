@@ -1,9 +1,9 @@
 <script setup>
-import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 
-const portfolioStore = usePortfolioStore();
+const importaçõesStore = useImportaçõesStore();
 
-portfolioStore.buscarTudo();
+importaçõesStore.buscarPortfolios();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -40,9 +40,9 @@ portfolioStore.buscarTudo();
         class="inputtext light mb1"
         :value="$route.query.portfolio_id"
         :class="{
-          loading: portfolioStore.chamadasPendentes.lista
+          loading: importaçõesStore.chamadasPendentes.portfoliosPermitidos
         }"
-        :disabled="portfolioStore.chamadasPendentes.lista"
+        :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
         @change="($event) => $router.push({
           name: $route.name,
           query: { portfolio_id: $event.target.value || undefined }
@@ -52,7 +52,7 @@ portfolioStore.buscarTudo();
           Todos
         </option>
         <option
-          v-for="item in portfolioStore.lista"
+          v-for="item in importaçõesStore.portfoliosPermitidos"
           :key="item.id"
           :value="item.id"
           :selected="item.id == $route.query.portfolio_id"

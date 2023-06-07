@@ -5,7 +5,6 @@ import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
-import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -19,7 +18,6 @@ const route = useRoute();
 const router = useRouter();
 const importaçõesStore = useImportaçõesStore();
 const PdMStore = usePdMStore();
-const portfolioStore = usePortfolioStore();
 const alertStore = useAlertStore();
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -95,8 +93,8 @@ switch (route.meta.entidadeMãe) {
         .label('Portfólio')
         .required(),
     });
-    if (!portfolioStore.lista?.length) {
-      portfolioStore.buscarTudo();
+    if (!importaçõesStore.portfoliosPermitidos?.length) {
+      importaçõesStore.buscarPortfolios();
     }
     break;
 
@@ -185,15 +183,15 @@ export default {
             as="select"
             class="inputtext light mb1"
             :class="{
-              loading: portfolioStore.chamadasPendentes.lista
+              loading: importaçõesStore.chamadasPendentes.portfoliosPermitidos
             }"
-            :disabled="portfolioStore.chamadasPendentes.lista"
+            :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
           >
             <option :value="null">
               Selecionar
             </option>
             <option
-              v-for="item in portfolioStore.lista"
+              v-for="item in importaçõesStore.portfoliosPermitidos"
               :key="item.id"
               :value="item.id"
               :selected="item.id == $route.query.portfolio_id"
