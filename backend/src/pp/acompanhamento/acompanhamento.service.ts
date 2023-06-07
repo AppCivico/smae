@@ -111,7 +111,7 @@ export class AcompanhamentoService {
                 detalhamento: a.detalhamento,
                 pauta: a.pauta,
 
-                encaminhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
+                acompanhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
                 risco: a.ProjetoAcompanhamentoRisco.map(r => {
                     return {
@@ -186,7 +186,7 @@ export class AcompanhamentoService {
 
             cronograma_paralisado: projetoAcompanhamento.cronograma_paralisado,
 
-            encaminhamentos: projetoAcompanhamento.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
+            acompanhamentos: projetoAcompanhamento.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
             risco: projetoAcompanhamento.ProjetoAcompanhamentoRisco.map(r => {
                 return {
