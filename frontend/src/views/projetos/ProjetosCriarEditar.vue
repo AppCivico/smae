@@ -190,6 +190,21 @@ function iniciar() {
   }
 }
 
+function excluirProjeto(id) {
+  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await projetosStore.excluirItem(id)) {
+      projetosStore.$reset();
+      projetosStore.buscarTudo();
+      useAlertStore().success('Projeto removido.');
+
+      // essa é uma exceção. Há duas rotas de escape possíveis:
+      // - após a criaação / edição de um projeto
+      // - após a sua exclusão
+      router.push({ name: 'projetosListar' });
+    }
+  }, 'Remover');
+}
+
 watch(emFoco, () => {
   iniciar();
 });
@@ -1407,6 +1422,14 @@ iniciar();
   >
     Carregando
   </div>
+
+  <button
+    v-if="emFoco?.id"
+    class="btn amarelo big"
+    @click="excluirProjeto(emFoco.id)"
+  >
+    Remover item
+  </button>
 
   <div
     v-if="erro"
