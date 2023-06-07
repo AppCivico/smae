@@ -1432,7 +1432,7 @@ iniciar();
   </div>
 
   <button
-    v-if="emFoco?.id"
+    v-if="emFoco?.id && !permissões?.apenas_leitura_planejamento"
     class="btn amarelo big"
     @click="excluirProjeto(emFoco.id)"
   >
