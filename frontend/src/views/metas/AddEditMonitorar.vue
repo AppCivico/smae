@@ -63,7 +63,9 @@ if (iniciativa_id) { level_ini.value = iniciativa_id; }
 
 let title = 'Monitorar etapa';
 const inativo = ref(singleMonitoramento.value.inativo);
-const virtualParent = ref({});
+const virtualParent = ref({
+  ponderador: 1,
+});
 if (etapa_id) {
   title = 'Editar monitoramento de etapa';
   subtitle.value = '';
@@ -77,6 +79,7 @@ if (etapa_id) {
 const schema = Yup.object().shape({
   inativo: Yup.string().nullable(),
   ordem: Yup.string().nullable(),
+  peso: Yup.number().nullable().transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
 });
 
 async function onSubmit(values) {
@@ -90,6 +93,7 @@ async function onSubmit(values) {
       etapa_id: values.etapa_id ? Number(values.etapa_id) : Number(etapa_sel.value),
       inativo: !!values.inativo,
       ordem: Number(values.ordem) ?? null,
+      peso: Number(values.peso) ?? null,
     };
 
     if (!newvalues.cronograma_id) throw 'Nenhum cronograma encontrado';
@@ -322,6 +326,19 @@ lastlevel();
           />
           <div class="error-msg">
             {{ errors.ordem }}
+          </div>
+        </div>
+
+        <div class="f1">
+          <label class="label">Ponderador <span class="tvermelho">*</span></label>
+          <Field
+            name="peso"
+            type="number"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.peso }"
+          />
+          <div class="error-msg">
+            {{ errors.peso }}
           </div>
         </div>
       </div>

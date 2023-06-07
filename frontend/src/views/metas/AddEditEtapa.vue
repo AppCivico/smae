@@ -68,7 +68,9 @@ const acumulativa_meta_o = ref(0);
 const lastParent = ref({});
 const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
-const virtualParent = ref({});
+const virtualParent = ref({
+  peso: 1,
+});
 
 if (etapa_id) {
   title = 'Editar etapa';
@@ -167,6 +169,7 @@ async function onSubmit(values) {
             etapa_id: Number(etapa_id_gen),
             inativo: false,
             ordem: Number(values.ordem) ?? null,
+            peso: Number(values.peso) ?? null,
           });
         }
       }
@@ -299,6 +302,20 @@ function maskDate(el) {
           />
           <div class="error-msg">
             {{ errors.ordem }}
+          </div>
+        </div>
+
+        <div class="f1">
+          <label class="label">Ponderador</label>
+          <Field
+            name="peso"
+            type="number"
+            class="inputtext light mb1"
+            :value="etapa_id ? singleEtapa?.peso : peso"
+            :class="{ 'error': errors.peso }"
+          />
+          <div class="error-msg">
+            {{ errors.peso }}
           </div>
         </div>
       </div>
