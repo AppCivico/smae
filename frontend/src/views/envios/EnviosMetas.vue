@@ -74,4 +74,11 @@ PdMStore.getAll().then(() => {
   </div>
 
   <router-view />
+
+  <router-view
+    v-slot="{ Component }"
+    name="modal"
+  >
+    <component :is="Component" />
+  </router-view>
 </template>
