@@ -3,7 +3,6 @@ export class ProjetoAcompanhamentoRowDto {
     responsavel: string | null
     prazo_encaminhamento: Date | null
     prazo_realizado: Date | null
-    pauta: string | null
 }
 
 export class ProjetoAcompanhamento {
@@ -13,6 +12,7 @@ export class ProjetoAcompanhamento {
     detalhamento: string | null
     risco: RiscoIdCod[] | null
 
+    pauta: string | null
     encaminhamentos: ProjetoAcompanhamentoRowDto[]
 }
 
@@ -30,6 +30,7 @@ export class DetailProjetoAcompanhamentoDto {
     pontos_atencao: string | null
     cronograma_paralisado: boolean
     risco: RiscoIdCod[] | null
+    pauta: string | null
 
     encaminhamentos: ProjetoAcompanhamentoRowDto[]
 }

@@ -1,12 +1,12 @@
 import { Type } from "class-transformer"
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf, ValidateNested } from "class-validator"
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator"
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
 
 export class ProjetoAcompanhamentoDto {
-    @IsOptional()
     @IsString()
+    @MinLength(1)
     @MaxLength(50000)
-    encaminhamento?: string
+    encaminhamento: string
 
     @IsOptional()
     @IsString()
@@ -24,14 +24,14 @@ export class ProjetoAcompanhamentoDto {
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
     prazo_realizado?: Date
+}
 
+export class CreateProjetoAcompanhamentoDto {
     @IsOptional()
     @IsString()
     @MaxLength(50000)
     pauta?: string
-}
 
-export class CreateProjetoAcompanhamentoDto {
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
