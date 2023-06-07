@@ -1004,7 +1004,7 @@ iniciar();
 
       <div class="g2 mb2">
         <legend class="label mt2 mb1">
-          Fontes de recursos
+          {{ schema.fields.fonte_recursos.spec.label }}
         </legend>
 
         <FieldArray
@@ -1022,9 +1022,13 @@ iniciar();
             />
 
             <div class="f1 mb1">
-              <label class="label tc300">
-                Ano&nbsp;<span class="tvermelho">*</span>
-              </label>
+              <LabelFromYup
+                name="fonte_recurso_ano"
+                :for="`fonte_recursos[${idx}].fonte_recurso_ano`"
+                class="tc300"
+                :schema="schema.fields.fonte_recursos.innerType"
+              />
+
               <Field
                 :name="`fonte_recursos[${idx}].fonte_recurso_ano`"
                 type="number"
@@ -1041,9 +1045,13 @@ iniciar();
             </div>
 
             <div class="f1 mb1">
-              <label class="label tc300">
-                Fonte de recursos&nbsp;<span class="tvermelho">*</span>
-              </label>
+              <LabelFromYup
+                name="fonte_recurso_cod_sof"
+                :for="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+                class="tc300"
+                :schema="schema.fields.fonte_recursos.innerType"
+              />
+
               <Field
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
                 maxlength="2"
@@ -1071,7 +1079,7 @@ iniciar();
 
             <div class="f1 mb1">
               <label class="label tc300">
-                Valor nominal&nbsp;<span
+                Previsão de custo&nbsp;<span
                   v-if="!fields[idx].value.valor_percentual"
                   class="tvermelho"
                 >*</span>

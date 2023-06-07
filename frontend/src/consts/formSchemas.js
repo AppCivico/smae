@@ -466,7 +466,7 @@ export const projeto = object()
             id: number()
               .nullable(),
             valor_nominal: mixed()
-              .label('Valor nominal')
+              .label('Previsão de custo')
               .when('valor_percentual', {
                 is: (valorPercentual) => !valorPercentual,
                 then: number()
