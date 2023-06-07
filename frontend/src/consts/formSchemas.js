@@ -56,6 +56,30 @@ addMethod(mixed, 'inArray', function _(arrayValue, message = '${path} not found 
 
 export const acompanhamento = object()
   .shape({
+    acompanhamentos: array()
+      .label('Encaminhamentos')
+      .of(
+        object()
+          .shape({
+            encaminhamento: string()
+              .label('Encaminhamento')
+              .max(50000)
+              .min(1)
+              .required()
+              .typeError('${label} inválido'),
+            responsavel: string()
+              .label('Responsável')
+              .nullable(),
+            prazo_encaminhamento: date()
+              .label('Prazo para encaminhamento')
+              .nullable()
+              .typeError('${label} inválido'),
+            prazo_realizado: date()
+              .label('Data de realização')
+              .nullable()
+              .typeError('${label} inválido'),
+          }),
+      ),
     cronograma_paralisado: boolean()
       .label('Cronograma paralisado')
       .nullable(),
@@ -71,10 +95,6 @@ export const acompanhamento = object()
       .label('Detalhamento')
       .max(50000)
       .nullable(),
-    encaminhamento: string()
-      .label('Encaminhamento')
-      .max(50000)
-      .nullable(),
     observacao: string()
       .label('Observação')
       .max(50000)
@@ -83,20 +103,13 @@ export const acompanhamento = object()
       .label('Participantes')
       .max(2048)
       .required(),
+    pauta: string()
+      .label('Pauta')
+      .max(50000)
+      .nullable(),
     pontos_atencao: string()
       .label('Pontos de atenção')
       .max(50000)
-      .nullable(),
-    prazo_encaminhamento: date()
-      .label('Prazo para encaminhamento')
-      .nullable()
-      .typeError('${label} inválido'),
-    prazo_realizado: date()
-      .label('Data de realização')
-      .nullable()
-      .typeError('${label} inválido'),
-    responsavel: string()
-      .label('Responsável')
       .nullable(),
     risco: array()
       .label('Riscos associados')
