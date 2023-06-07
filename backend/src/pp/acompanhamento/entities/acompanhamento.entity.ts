@@ -13,7 +13,7 @@ export class ProjetoAcompanhamento {
     risco: RiscoIdCod[] | null
 
     pauta: string | null
-    encaminhamentos: ProjetoAcompanhamentoRowDto[]
+    acompanhamentos: ProjetoAcompanhamentoRowDto[]
 }
 
 export class ListProjetoAcompanhamentoDto {
@@ -32,7 +32,7 @@ export class DetailProjetoAcompanhamentoDto {
     risco: RiscoIdCod[] | null
     pauta: string | null
 
-    encaminhamentos: ProjetoAcompanhamentoRowDto[]
+    acompanhamentos: ProjetoAcompanhamentoRowDto[]
 }
 
 export class RiscoIdCod {
