@@ -48,6 +48,7 @@ export class CronogramaEtapaService {
                         etapa_pai_id: true,
                         peso: true,
                         percentual_execucao: true,
+                        n_filhos_imediatos: true,
                         regiao_id: true,
                         nivel: true,
                         descricao: true,
@@ -135,6 +136,7 @@ export class CronogramaEtapaService {
                                 nivel: true,
                                 peso: true,
                                 percentual_execucao: true,
+                                n_filhos_imediatos: true,
                                 descricao: true,
                                 inicio_previsto: true,
                                 termino_previsto: true,
@@ -166,6 +168,7 @@ export class CronogramaEtapaService {
                                         regiao_id: true,
                                         peso: true,
                                         percentual_execucao: true,
+                                        n_filhos_imediatos: true,
                                         nivel: true,
                                         descricao: true,
                                         inicio_previsto: true,
@@ -242,6 +245,7 @@ export class CronogramaEtapaService {
                     peso: cronogramaEtapa.etapa.peso,
                     percentual_execucao: cronogramaEtapa.etapa.percentual_execucao,
                     ordem: first_level_ordem,
+                    n_filhos_imediatos: cronogramaEtapa.etapa.n_filhos_imediatos,
 
                     // Cálculo de duração e atraso
                     duracao: await this.getDuracao(cronogramaEtapa.etapa.inicio_real, cronogramaEtapa.etapa.termino_real),
@@ -282,9 +286,9 @@ export class CronogramaEtapaService {
                                 peso: f.peso,
                                 percentual_execucao: f.percentual_execucao,
                                 ordem: second_level_ordem,
+                                n_filhos_imediatos: f.n_filhos_imediatos,
                                 duracao: await this.getDuracao(f.inicio_real, f.termino_real),
                                 atraso: await this.getAtraso(f.termino_previsto, f.termino_real),
-
                                 responsaveis: f.responsaveis.map(r => {
                                     return {
                                         id: r.pessoa.id,
@@ -315,6 +319,7 @@ export class CronogramaEtapaService {
                                             titulo: ff.titulo,
                                             peso: ff.peso,
                                             percentual_execucao: ff.percentual_execucao,
+                                            n_filhos_imediatos: ff.n_filhos_imediatos,
                                             ordem: third_level_ordem,
                                             duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
                                             atraso: await this.getAtraso(ff.termino_previsto, ff.termino_real),
