@@ -52,6 +52,7 @@ const currentParent = group.value == 'subfase' ? fase_id : etapa_id;
 const currentId = group.value == 'subfase' ? subfase_id : fase_id;
 const currentFase = ref({
   peso: 1,
+  percentual_execucao: 0,
 });
 const oktogo = ref(0);
 const minLevel = ref(0);
@@ -104,6 +105,7 @@ async function onSubmit(values) {
     values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id) ? Number(values.regiao_id) : null;
     values.ordem = Number(values.ordem) ?? null;
     values.peso = Number(values.peso) ?? null;
+    values.percentual_execucao = Number(values.percentual_execucao) ?? null;
     values.etapa_pai_id = currentParent;
 
     let rota = false;
@@ -294,6 +296,22 @@ function maskDate(el) {
             />
             <div class="error-msg">
               {{ errors.peso }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label">Execução</label>
+            <Field
+              :disabled="values.n_filhos_imediatos"
+              name="percentual_execucao"
+              type="number"
+              step="1"
+              min="0"
+              max="100"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.percentual_execucao }"
+            />
+            <div class="error-msg">
+              {{ errors.percentual_execucao }}
             </div>
           </div>
         </div>
