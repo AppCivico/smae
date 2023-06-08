@@ -252,7 +252,7 @@ BEGIN
 
     IF is_cronograma = true THEN
         FOR child_row IN
-            SELECT * FROM etapa WHERE cronograma_id = p_id AND etapa_pai_id IS NULL
+            SELECT * FROM etapa WHERE cronograma_id = p_id AND etapa_pai_id IS NULL AND removido_em IS NULL
         LOOP
             IF child_row.peso IS NOT NULL THEN
                 total_peso := total_peso + child_row.peso;
@@ -261,7 +261,7 @@ BEGIN
         END LOOP;
     ELSE
         FOR child_row IN
-            SELECT * FROM etapa WHERE etapa_pai_id = p_id
+            SELECT * FROM etapa WHERE etapa_pai_id = p_id AND removido_em IS NULL
         LOOP
             IF child_row.peso IS NOT NULL THEN
                 total_peso := total_peso + child_row.peso;
@@ -295,7 +295,7 @@ BEGIN
         parent_id := NEW.etapa_pai_id;
         WHILE parent_id IS NOT NULL LOOP
             PERFORM calculate_percentual_execucao_for_id(parent_id);
-            parent_id := (SELECT etapa_pai_id FROM etapa WHERE id = parent_id);
+            parent_id := (SELECT etapa_pai_id FROM etapa WHERE id = parent_id AND removido_em IS NULL);
         END LOOP;
         PERFORM calculate_percentual_execucao_for_id(NEW.cronograma_id, true::BOOLEAN);
     END IF;
