@@ -35,45 +35,47 @@ PdMStore.getAll().then(() => {
     </router-link>
   </div>
 
-  <div class="flex center mb2 spacebetween">
-    <div class="f1">
-      <label
-        for="pdm_id"
-        class="label"
-      >
-        <abbr title="Programa de metas">PdM</abbr>&nbsp;<span
-          class="tvermelho"
-        >*</span>
-      </label>
-      <select
-        id="pdm_id"
-        name="pdm_id"
-        class="inputtext light mb1"
-        :value="$route.query.pdm_id"
-        :class="{
-          loading: PdMStore.PdM?.loading
-        }"
-        :disabled="PdMStore.PdM?.loading"
-        @change="($event) => $router.push({
-          name: $route.name,
-          query: { pdm_id: $event.target.value || undefined }
-        })"
-      >
-        <option
-          v-for="item in PdMStore.PdM"
-          :key="item.id"
-          :value="item.id"
-          :selected="item.id == $route.query.pdm_id"
-        >
-          {{ item.nome }}
-        </option>
-      </select>
-    </div>
+  <router-view v-slot="{ Component }">
+    <component :is="Component">
+      <template #filtro>
+        <div class="f1">
+          <label
+            for="pdm_id"
+            class="label"
+          >
+            <abbr title="Programa de metas">PdM</abbr>&nbsp;<span
+              class="tvermelho"
+            >*</span>
+          </label>
+          <select
+            id="pdm_id"
+            name="pdm_id"
+            class="inputtext light mb1"
+            :value="$route.query.pdm_id"
+            :class="{
+              loading: PdMStore.PdM?.loading
+            }"
+            :disabled="PdMStore.PdM?.loading"
+            @change="($event) => $router.push({
+              name: $route.name,
+              query: { pdm_id: $event.target.value || undefined }
+            })"
+          >
+            <option
+              v-for="item in PdMStore.PdM"
+              :key="item.id"
+              :value="item.id"
+              :selected="item.id == $route.query.pdm_id"
+            >
+              {{ item.nome }}
+            </option>
+          </select>
+        </div>
 
-    <hr class="ml1 f1">
-  </div>
-
-  <router-view />
+        <hr class="ml1 mr1 f1">
+      </template>
+    </component>
+  </router-view>
 
   <router-view
     v-slot="{ Component }"

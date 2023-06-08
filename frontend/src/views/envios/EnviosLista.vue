@@ -73,11 +73,12 @@ export default {
 </script>
 <template>
   <div class="flex center mb2 spacebetween">
+    <slot name="filtro" />
+
     <LocalFilter
       v-model="listaFiltradaPorTermoDeBusca"
       :lista="listaPreparada"
     />
-    <hr class="ml1 f1">
   </div>
 
   <div
