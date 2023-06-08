@@ -3,7 +3,9 @@ import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 
 const importaçõesStore = useImportaçõesStore();
 
-importaçõesStore.buscarPortfolios();
+if (!importaçõesStore.portfoliosPermitidos.length) {
+  importaçõesStore.buscarPortfolios();
+}
 </script>
 <template>
   <div class="flex spacebetween center mb2">

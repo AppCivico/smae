@@ -6,15 +6,17 @@ const route = useRoute();
 const router = useRouter();
 const PdMStore = usePdMStore();
 
-PdMStore.getAll().then(() => {
-  const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
-  if (currentPdM?.id && !route.query.pdm_id) {
-    router.replace({
-      name: route.name,
-      query: { pdm_id: currentPdM?.id },
-    });
-  }
-});
+if (!PdMStore.PdM.length) {
+  PdMStore.getAll().then(() => {
+    const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
+    if (currentPdM?.id && !route.query.pdm_id) {
+      router.replace({
+        name: route.name,
+        query: { pdm_id: currentPdM?.id },
+      });
+    }
+  });
+}
 </script>
 <template>
   <div class="flex spacebetween center mb2">
