@@ -59,7 +59,7 @@ if (route.meta.entidadeMãe === 'portfolio' && !route.query.portfolio_id) {
 }
 
 watch(() => route.query, () => {
-  importaçõesStore.$reset();
+  importaçõesStore.lista = [];
 
   carregar(route.query);
 }, { immediate: true });
