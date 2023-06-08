@@ -1088,7 +1088,6 @@ iniciar();
                 :name="`fonte_recursos[${idx}].valor_nominal`"
                 :value="fields[idx].value.valor_nominal"
                 class="inputtext light mb1"
-                @input="setFieldValue(`fonte_recursos[${idx}].valor_percentual`, null)"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -1107,7 +1106,6 @@ iniciar();
                 :name="`fonte_recursos[${idx}].valor_percentual`"
                 :value="fields[idx].value.valor_percentual"
                 class="inputtext light mb1"
-                @input="setFieldValue(`fonte_recursos[${idx}].valor_nominal`, null)"
               />
               <ErrorMessage
                 class="error-msg mb1"
