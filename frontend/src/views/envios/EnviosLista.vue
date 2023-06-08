@@ -42,9 +42,8 @@ const listaFiltradaPorTermoDeBusca = ref([]);
 
 function carregar(parâmetros) {
   if (!parâmetros.portfolio_id && !parâmetros.pdm_id) {
-    importaçõesStore.$reset();
     if (route.meta.entidadeMãe === 'portfolio') {
-      importaçõesStore.buscarTudo({ apenas_com_portfolio: true });
+      importaçõesStore.buscarTudo({ ...parâmetros, apenas_com_portfolio: true });
     }
   } else {
     importaçõesStore.buscarTudo(parâmetros);
@@ -60,10 +59,10 @@ if (route.meta.entidadeMãe === 'portfolio' && !route.query.portfolio_id) {
 }
 
 watch(() => route.query, () => {
+  importaçõesStore.$reset();
+
   carregar(route.query);
 }, { immediate: true });
-
-importaçõesStore.$reset();
 </script>
 <script>
 // use normal <script> to declare options
@@ -98,7 +97,7 @@ export default {
   />
 
   <button
-    v-if="paginação.temMais"
+    v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
     :disabled="chamadasPendentes.lista"
     class="btn bgnone outline center"
     @click="carregar({ ...route.query, token_proxima_pagina: paginação.tokenDaPróximaPágina })"
