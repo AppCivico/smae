@@ -140,7 +140,11 @@ export class EtapaService {
               throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
 
             if (self.n_filhos_imediatos &&
-                (updateEtapaDto.inicio_previsto || updateEtapaDto.inicio_real || updateEtapaDto.termino_previsto || updateEtapaDto.termino_real)
+                ( updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto != self.inicio_previsto ||
+                  updateEtapaDto.inicio_real  && updateEtapaDto.inicio_real != self.inicio_real ||
+                  updateEtapaDto.termino_previsto  && updateEtapaDto.termino_previsto != self.termino_previsto ||
+                  updateEtapaDto.termino_real && updateEtapaDto.termino_real != self.termino_real 
+                )
             ) throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
 
             const terminoPrevisto: Date | null = updateEtapaDto.termino_previsto ? updateEtapaDto.termino_previsto : self.termino_previsto;
