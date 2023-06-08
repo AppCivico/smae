@@ -29,6 +29,7 @@ setLocale({
     required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
   number: {
+    integer: ({ label }) => (label ? `${label} deve ser um número inteiro` : 'Deve ser um número inteiro'),
     max: ({ label, max }) => (label ? `${label} deve ser menor que ${max}` : 'Deve ser menor que ${max}'),
     min: ({ label, min }) => (label ? `${label} deve ser maior que ${min}` : 'Deve ser maior que ${min}'),
   },
