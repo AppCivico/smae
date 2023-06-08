@@ -302,6 +302,8 @@ export class ProjetoService {
         const ret: ProjetoDto[] = [];
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, false);
 
+        console.log(permissionsSet);
+
         const rows = await this.prisma.projeto.findMany({
             where: {
                 eh_prioritario: filters.eh_prioritario,
@@ -414,8 +416,10 @@ export class ProjetoService {
         if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
 
         if (user.hasSomeRoles(['Projeto.administrador'])) {
+            this.logger.debug('roles Projeto.administrador, ver todos os projetos');
             // nenhum filtro
         } else if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+            this.logger.debug(`roles Projeto.administrador_no_orgao, ver todos os projetos do portfolio. com orgao ${user.orgao_id}`);
             permissionsSet.push({
                 portfolio: {
                     orgaos: {
@@ -426,10 +430,13 @@ export class ProjetoService {
                 }
             });
         } else if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
+            this.logger.debug(`roles SMAE.gestor_de_projeto, ver todos responsaveis_no_orgao_gestor ${user.id}`);
             permissionsSet.push({
                 responsaveis_no_orgao_gestor: { has: user.id }
             });
         } else if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
+            this.logger.debug(`roles SMAE.colaborador_de_projeto, ver apenas responsavel_id ${user.id}`);
+
             permissionsSet.push({
                 responsavel_id: user.id
             });
@@ -725,7 +732,7 @@ export class ProjetoService {
                 && projeto.responsavel_id == +user.id
             ) {
                 pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(projeto.status);
-                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, do cronograma e do risco)
+                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, no cronograma)
                 permissoes.sou_responsavel = true;
                 this.logger.debug(`entrou em pessoa pode escrever pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel}`);
             } else {
