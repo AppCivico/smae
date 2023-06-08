@@ -138,7 +138,8 @@ export class EtapaService {
 
             if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao)
               throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
-
+            console.log(updateEtapaDto);
+            console.log(self);
             if (self.n_filhos_imediatos &&
                 ( updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto != self.inicio_previsto ||
                   updateEtapaDto.inicio_real  && updateEtapaDto.inicio_real != self.inicio_real ||
