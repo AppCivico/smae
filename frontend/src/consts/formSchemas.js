@@ -178,6 +178,12 @@ export const etapa = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     ordem: string()
       .nullable(),
+    peso: number()
+      .integer()
+      .label('Ponderador')
+      .min(0)
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     regiao_id: string()
       .nullable(),
     termino_previsto: string()
@@ -242,7 +248,9 @@ export const fase = object()
     ordem: string()
       .nullable(),
     peso: number()
+      .integer()
       .label('Ponderador')
+      .min(0)
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     regiao_id: string()
