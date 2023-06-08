@@ -313,7 +313,7 @@ export class ProjetoService {
                 portfolio_id: filters.portfolio_id,
                 AND: permissionsSet.length > 0 ? [
                     {
-                        OR: permissionsSet
+                        AND: permissionsSet
                     }
                 ] : undefined,
             },
