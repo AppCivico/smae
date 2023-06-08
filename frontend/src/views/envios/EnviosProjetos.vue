@@ -45,10 +45,12 @@ importaçõesStore.buscarPortfolios();
         :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
         @change="($event) => $router.push({
           name: $route.name,
-          query: { portfolio_id: $event.target.value || undefined }
+          query: {
+            portfolio_id: $event.target.value == 0 ? undefined : $event.target.value
+          }
         })"
       >
-        <option :value="null">
+        <option :value="0">
           Todos
         </option>
         <option
