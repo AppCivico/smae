@@ -55,7 +55,7 @@ function userToken(url: RequestInfo | URL): HeadersInit {
 }
 
 function request(method: Method, upload = false) {
-  return (url: RequestInfo | URL, params: URLSearchParams | undefined) => {
+  return (url: RequestInfo | URL, params: { [key: string]: any } | undefined) => {
     let urlFinal = url;
 
     const requestOptions: RequestInit = {
@@ -66,6 +66,10 @@ function request(method: Method, upload = false) {
     switch (method) {
       case 'GET':
         if (params && Object.keys(params).length) {
+          Object.keys(params)
+            // eslint-disable-next-line no-param-reassign
+            .forEach((key) => params[key] === undefined && delete params[key]);
+
           urlFinal += `?${new URLSearchParams(params).toString()}`;
         }
         break;
