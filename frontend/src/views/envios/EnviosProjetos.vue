@@ -24,50 +24,52 @@ importaçõesStore.buscarPortfolios();
     </router-link>
   </div>
 
-  <div class="flex center mb2 spacebetween">
-    <div class="f1">
-      <label
-        for="portfolio_id"
-        class="label"
-      >
-        Portfólio&nbsp;<span
-          class="tvermelho"
-        >*</span>
-      </label>
-      <select
-        id="portfolio_id"
-        name="portfolio_id"
-        class="inputtext light mb1"
-        :value="$route.query.portfolio_id"
-        :class="{
-          loading: importaçõesStore.chamadasPendentes.portfoliosPermitidos
-        }"
-        :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
-        @change="($event) => $router.push({
-          name: $route.name,
-          query: {
-            portfolio_id: $event.target.value == 0 ? undefined : $event.target.value
-          }
-        })"
-      >
-        <option :value="0">
-          Todos
-        </option>
-        <option
-          v-for="item in importaçõesStore.portfoliosPermitidos"
-          :key="item.id"
-          :value="item.id"
-          :selected="item.id == $route.query.portfolio_id"
-        >
-          {{ item.id }} - {{ item.titulo }}
-        </option>
-      </select>
-    </div>
+  <router-view v-slot="{ Component }">
+    <component :is="Component">
+      <template #filtro>
+        <div class="f1">
+          <label
+            for="portfolio_id"
+            class="label"
+          >
+            Portfólio&nbsp;<span
+              class="tvermelho"
+            >*</span>
+          </label>
+          <select
+            id="portfolio_id"
+            name="portfolio_id"
+            class="inputtext light mb1"
+            :value="$route.query.portfolio_id"
+            :class="{
+              loading: importaçõesStore.chamadasPendentes.portfoliosPermitidos
+            }"
+            :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
+            @change="($event) => $router.push({
+              name: $route.name,
+              query: {
+                portfolio_id: $event.target.value == 0 ? undefined : $event.target.value
+              }
+            })"
+          >
+            <option :value="0">
+              Todos
+            </option>
+            <option
+              v-for="item in importaçõesStore.portfoliosPermitidos"
+              :key="item.id"
+              :value="item.id"
+              :selected="item.id == $route.query.portfolio_id"
+            >
+              {{ item.id }} - {{ item.titulo }}
+            </option>
+          </select>
+        </div>
 
-    <hr class="ml1 f1">
-  </div>
-
-  <router-view />
+        <hr class="ml1 mr1 f1">
+      </template>
+    </component>
+  </router-view>
 
   <router-view
     v-slot="{ Component }"
