@@ -14,6 +14,7 @@ export class Etapa {
     prazo: number | null;
     etapa_filha: any | null;
     peso: number | null;
-    percentual_execucao: number | null
+    percentual_execucao: number | null;
     ordem: number | null;
+    n_filhos_imediatos: number | null;
 }

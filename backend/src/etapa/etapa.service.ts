@@ -109,6 +109,7 @@ export class EtapaService {
                 prazo: etapa.prazo,
                 peso: etapa.peso,
                 percentual_execucao: etapa.percentual_execucao,
+                n_filhos_imediatos: etapa.n_filhos_imediatos,
                 inicio_previsto: etapa.inicio_previsto,
                 termino_previsto: etapa.termino_previsto,
                 inicio_real: etapa.inicio_real,
