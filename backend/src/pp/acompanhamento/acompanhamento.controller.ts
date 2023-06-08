@@ -60,9 +60,6 @@ export class AcompanhamentoController {
     @Roles(...roles)
     async update(@Param() params: FindTwoParams, @Body() dto: UpdateProjetoAcompanhamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
-            throw new HttpException("Não é possível editar o acompanhamento, pois o seu acesso é apenas leitura e você não é o responsável do projeto.", 400);
-        }
         return await this.acompanhamentoService.update(params.id, params.id2, dto, user)
     }
 
@@ -74,9 +71,6 @@ export class AcompanhamentoController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
-            throw new HttpException("Não é possível remover o acompanhamento, pois o seu acesso é apenas leitura e você não é o responsável do projeto.", 400);
-        }
         await this.acompanhamentoService.remove(params.id, params.id2, user);
         return ''
     }
