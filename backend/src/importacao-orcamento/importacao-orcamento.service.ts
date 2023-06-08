@@ -194,7 +194,7 @@ export class ImportacaoOrcamentoService {
             filtros.push({ portfolio_id: { not: null } })
         }
 
-        if (user.hasSomeRoles(['Projeto.orcamento']) && filters.portfolio_id) {
+        if (user.hasSomeRoles(['Projeto.orcamento']) && (filters.portfolio_id || filters.apenas_com_portfolio)) {
             const projetos = await this.projetoService.findAllIds(user);
             this.logger.warn(`só pode ver os projetos ${projetos.map(r => r.id).join(',')}`);
 
