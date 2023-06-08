@@ -39,6 +39,7 @@ export class OrcamentoImportacaoHelpers {
 
                 if (cellValue !== undefined) {
                     cellValue = cellValue.replace(/\s/g, '_');
+                    cellValue = cellValue.replace(/c[óo]d$/g, 'codigo');
                     cellValue = cellValue.replace(/código/g, 'codigo');
 
                     if (
