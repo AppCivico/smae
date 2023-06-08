@@ -174,6 +174,16 @@ onUpdated(() => { start(); });
               {{ singleCronograma.termino_real ? singleCronograma.termino_real : '--/--/----' }}
             </div>
           </div>
+          <div class="mr2">
+            <div class="t12 uc w700 mb05 tamarelo tr">
+              Execução
+            </div>
+            <div class="t13 tr">
+              {{ typeof singleCronograma.percentual_execucao === 'number'
+                ? `${singleCronograma.percentual_execucao}%`
+                : '-' }}
+            </div>
+          </div>
         </div>
         <div v-if="singleCronograma.descricao">
           <hr class="mt2 mb2">
