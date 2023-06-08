@@ -283,10 +283,12 @@ function maskDate(el) {
             </div>
           </div>
           <div class="f1">
-            <label class="label">Ponderador <span class="tvermelho">*</span></label>
+            <label class="label">Ponderador</label>
             <Field
               name="peso"
               type="number"
+              step="1"
+              min="0"
               class="inputtext light mb1"
               :class="{ 'error': errors.peso }"
             />

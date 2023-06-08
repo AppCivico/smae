@@ -310,6 +310,8 @@ function maskDate(el) {
           <Field
             name="peso"
             type="number"
+            step="1"
+            min="0"
             class="inputtext light mb1"
             :value="etapa_id ? singleEtapa?.peso : peso"
             :class="{ 'error': errors.peso }"
