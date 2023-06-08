@@ -141,10 +141,10 @@ export class EtapaService {
             console.log(updateEtapaDto);
             console.log(self);
             if (self.n_filhos_imediatos &&
-                ( updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto != self.inicio_previsto ||
-                  updateEtapaDto.inicio_real  && updateEtapaDto.inicio_real != self.inicio_real ||
-                  updateEtapaDto.termino_previsto  && updateEtapaDto.termino_previsto != self.termino_previsto ||
-                  updateEtapaDto.termino_real && updateEtapaDto.termino_real != self.termino_real 
+                ( updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime() ||
+                  updateEtapaDto.inicio_real  && updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime() ||
+                  updateEtapaDto.termino_previsto  && updateEtapaDto.termino_previsto.getTime() != self.termino_previsto?.getTime() ||
+                  updateEtapaDto.termino_real && updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime() 
                 )
             ) throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
 
