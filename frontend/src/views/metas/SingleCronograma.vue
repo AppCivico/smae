@@ -219,6 +219,9 @@ onUpdated(() => { start(); });
             <div class="ml1 f1">
               Término Real
             </div>
+            <div class="ml1 f1 tr">
+              Execução
+            </div>
             <div class="ml1 f1">
               Atraso
             </div>
@@ -244,6 +247,11 @@ onUpdated(() => { start(); });
             </div>
             <div class="ml1 f1">
               {{ r.etapa.termino_real }}
+            </div>
+            <div class="ml1 f1 tr">
+              {{ typeof r.etapa.percentual_execucao === 'number'
+                ? `${r.etapa.percentual_execucao}%`
+                : '-' }}
             </div>
             <div class="ml1 f1">
               {{ r.etapa.atraso ?? '-' }}
@@ -364,6 +372,9 @@ onUpdated(() => { start(); });
               <div class="ml1 f1">
                 Término Real
               </div>
+              <div class="ml1 f1 tr">
+                Execução
+              </div>
               <div class="ml1 f1">
                 Atraso
               </div>
@@ -394,6 +405,11 @@ onUpdated(() => { start(); });
               </div>
               <div class="ml1 f1">
                 {{ rr.termino_real }}
+              </div>
+              <div class="ml1 f1 tr">
+                {{ typeof rr.percentual_execucao === 'number'
+                  ? `${rr.percentual_execucao}%`
+                  : '-' }}
               </div>
               <div class="ml1 f1">
                 {{ rr.atraso ?? '-' }}
@@ -462,6 +478,9 @@ onUpdated(() => { start(); });
                 <div class="ml1 f1">
                   Término Real
                 </div>
+                <div class="ml1 f1 tr">
+                  Execução
+                </div>
                 <div class="ml1 f1">
                   Atraso
                 </div>
@@ -502,6 +521,11 @@ onUpdated(() => { start(); });
                   </div>
                   <div class="ml1 f1">
                     {{ rrr.termino_real }}
+                  </div>
+                  <div class="ml1 f1 tr">
+                    {{ typeof rrr.percentual_execucao === 'number'
+                      ? `${rrr.percentual_execucao}%`
+                      : '-' }}
                   </div>
                   <div class="ml1 f1">
                     {{ rrr.atraso ?? '-' }}
