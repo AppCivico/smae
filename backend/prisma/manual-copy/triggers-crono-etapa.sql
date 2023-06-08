@@ -254,18 +254,18 @@ BEGIN
         FOR child_row IN
             SELECT * FROM etapa WHERE cronograma_id = p_id AND etapa_pai_id IS NULL
         LOOP
-            IF child_row.peso IS NOT NULL AND child_row.percentual_execucao IS NOT NULL THEN
+            IF child_row.peso IS NOT NULL THEN
                 total_peso := total_peso + child_row.peso;
-                total_percentual_execucao_peso := total_percentual_execucao_peso + (child_row.peso * child_row.percentual_execucao);
+                total_percentual_execucao_peso := total_percentual_execucao_peso + (child_row.peso * COALESCE(child_row.percentual_execucao, 0));
             END IF;
         END LOOP;
     ELSE
         FOR child_row IN
             SELECT * FROM etapa WHERE etapa_pai_id = p_id
         LOOP
-            IF child_row.peso IS NOT NULL AND child_row.percentual_execucao IS NOT NULL THEN
+            IF child_row.peso IS NOT NULL THEN
                 total_peso := total_peso + child_row.peso;
-                total_percentual_execucao_peso := total_percentual_execucao_peso + (child_row.peso * child_row.percentual_execucao);
+                total_percentual_execucao_peso := total_percentual_execucao_peso + (child_row.peso * COALESCE(child_row.percentual_execucao, 0));
             END IF;
         END LOOP;
     END IF;
