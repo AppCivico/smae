@@ -50,7 +50,9 @@ const regiao_id_mount = ref(null);
 
 const currentParent = group.value == 'subfase' ? fase_id : etapa_id;
 const currentId = group.value == 'subfase' ? subfase_id : fase_id;
-const currentFase = ref({});
+const currentFase = ref({
+  peso: 1,
+});
 const oktogo = ref(0);
 const minLevel = ref(0);
 
@@ -101,6 +103,7 @@ async function onSubmit(values) {
 
     values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id) ? Number(values.regiao_id) : null;
     values.ordem = Number(values.ordem) ?? null;
+    values.peso = Number(values.peso) ?? null;
     values.etapa_pai_id = currentParent;
 
     let rota = false;
@@ -277,6 +280,18 @@ function maskDate(el) {
             />
             <div class="error-msg">
               {{ errors.ordem }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label">Ponderador <span class="tvermelho">*</span></label>
+            <Field
+              name="peso"
+              type="number"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.peso }"
+            />
+            <div class="error-msg">
+              {{ errors.peso }}
             </div>
           </div>
         </div>
