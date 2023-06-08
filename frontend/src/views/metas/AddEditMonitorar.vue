@@ -79,7 +79,6 @@ if (etapa_id) {
 const schema = Yup.object().shape({
   inativo: Yup.string().nullable(),
   ordem: Yup.string().nullable(),
-  peso: Yup.number().nullable().transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
 });
 
 async function onSubmit(values) {
@@ -93,7 +92,6 @@ async function onSubmit(values) {
       etapa_id: values.etapa_id ? Number(values.etapa_id) : Number(etapa_sel.value),
       inativo: !!values.inativo,
       ordem: Number(values.ordem) ?? null,
-      peso: Number(values.peso) ?? null,
     };
 
     if (!newvalues.cronograma_id) throw 'Nenhum cronograma encontrado';
@@ -326,19 +324,6 @@ lastlevel();
           />
           <div class="error-msg">
             {{ errors.ordem }}
-          </div>
-        </div>
-
-        <div class="f1">
-          <label class="label">Ponderador <span class="tvermelho">*</span></label>
-          <Field
-            name="peso"
-            type="number"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.peso }"
-          />
-          <div class="error-msg">
-            {{ errors.peso }}
           </div>
         </div>
       </div>
