@@ -444,7 +444,6 @@ export class ImportacaoOrcamentoService {
         const colunaHeaderIndex = OrcamentoImportacaoHelpers.createColumnHeaderIndex(sheet, [...ColunasNecessarias, ...OutrasColumns]);
 
         const outputXLSX = utils.book_new();
-        const outputSheet = utils.aoa_to_sheet([]);
         const row = [];
         [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
             const colIndex = colunaHeaderIndex[columnName];
@@ -453,6 +452,8 @@ export class ImportacaoOrcamentoService {
         });
         row.push('Status');
 
+        const aoaWithHeader = [row];
+        const outputSheet = utils.aoa_to_sheet(aoaWithHeader);
         utils.book_append_sheet(outputXLSX, outputSheet, sheetName);
 
         let projetosIds: number[] = [];

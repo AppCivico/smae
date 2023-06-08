@@ -3,6 +3,8 @@ import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/c
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 
+import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
+import { FormatCurrency } from 'src/common/format-currency';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -13,9 +15,7 @@ import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto, ProjetoRecursos } from './entities/projeto.entity';
-import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
-import { FormatCurrency } from 'src/common/format-currency';
+import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
 
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Registrado: 'Registro',
