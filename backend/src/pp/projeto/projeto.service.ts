@@ -725,8 +725,9 @@ export class ProjetoService {
                 && projeto.responsavel_id == +user.id
             ) {
                 pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(projeto.status);
-                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado)
+                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, do cronograma e do risco)
                 permissoes.sou_responsavel = true;
+                this.logger.debug(`entrou em pessoa pode escrever pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${sou_responsavel}`);
             } else {
                 throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
             }
@@ -812,7 +813,7 @@ export class ProjetoService {
             }
         }
 
-        if (user && (readonly == 'ReadOnly' && pessoaPodeEscrever == false)) {
+        if (user && (readonly === 'ReadWrite' && pessoaPodeEscrever == false)) {
             throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
         }
 
