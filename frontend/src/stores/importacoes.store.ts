@@ -54,7 +54,7 @@ export const useImportaçõesStore = defineStore('importações', {
           linhas,
           tem_mais: temMais,
           token_proxima_pagina: tokenDaPróximaPágina,
-        } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, { ...params, ipp: 5 });
+        } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, params);
 
         if (Array.isArray(linhas)) {
           this.lista = params.token_proxima_pagina
