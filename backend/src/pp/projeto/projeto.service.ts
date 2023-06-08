@@ -290,7 +290,7 @@ export class ProjetoService {
             where: {
                 AND: permissionsSet.length > 0 ? [
                     {
-                        OR: permissionsSet
+                        AND: permissionsSet
                     }
                 ] : undefined,
             },
@@ -511,7 +511,7 @@ export class ProjetoService {
                 removido_em: null,
                 AND: permissionsSet.length > 0 ? [
                     {
-                        OR: permissionsSet
+                        AND: permissionsSet
                     }
                 ] : undefined,
             },
