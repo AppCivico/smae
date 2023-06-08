@@ -37,7 +37,6 @@ export class ImportacaoOrcamentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.orcamento', 'Projeto.orcamento')
-    @ApiPaginatedResponse(ImportacaoOrcamentoDto)
     async findAll_portfolio(@CurrentUser() user: PessoaFromJwt): Promise<PortfolioDto[]> {
         return await this.importacaoOrcamentoService.findAll_portfolio(user);
     }
