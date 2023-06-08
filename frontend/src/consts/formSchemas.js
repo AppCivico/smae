@@ -179,6 +179,13 @@ export const etapa = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     ordem: string()
       .nullable(),
+    percentual_execucao: number()
+      .integer()
+      .label('Execução')
+      .max(100)
+      .min(0)
+      .nullable()
+      .typeError('Formato inválido'),
     peso: number()
       .integer()
       .label('Ponderador')
@@ -248,6 +255,13 @@ export const fase = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     ordem: string()
       .nullable(),
+    percentual_execucao: number()
+      .integer()
+      .label('Execução')
+      .max(100)
+      .min(0)
+      .nullable()
+      .typeError('Formato inválido'),
     peso: number()
       .integer()
       .label('Ponderador')
