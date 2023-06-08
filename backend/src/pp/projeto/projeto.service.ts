@@ -285,7 +285,7 @@ export class ProjetoService {
     }
 
     async findAllIds(user: PessoaFromJwt | undefined): Promise<{ id: number }[]> {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, true);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, true);
         return await this.prisma.projeto.findMany({
             where: {
                 AND: permissionsSet.length > 0 ? [
@@ -300,7 +300,7 @@ export class ProjetoService {
 
     async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, false);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, false);
 
         console.log(permissionsSet);
 
@@ -404,7 +404,7 @@ export class ProjetoService {
         return ret;
     }
 
-    private getProjetoPermissionSet(user: PessoaFromJwt | undefined, isBi: boolean) {
+    private getProjetoWhereSet(user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 removido_em: null,
@@ -504,7 +504,7 @@ export class ProjetoService {
 
         console.log({ id, user, readonly });
 
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoPermissionSet(user, false);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, false);
         const projeto = await this.prisma.projeto.findFirst({
             where: {
                 id: id,
