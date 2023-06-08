@@ -40,7 +40,7 @@ export const useImportaçõesStore = defineStore('importações', {
 
     paginação: {
       temMais: false,
-      tokenDaPróximaPágina: 'String',
+      tokenDaPróximaPágina: '',
     },
 
     erro: null,
