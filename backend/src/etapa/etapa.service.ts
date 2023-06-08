@@ -129,6 +129,7 @@ export class EtapaService {
                 where: { id },
                 select: {
                     n_filhos_imediatos: true,
+                    percentual_execucao: true,
                     inicio_previsto: true,
                     inicio_real: true,
                     termino_previsto: true,
@@ -136,10 +137,9 @@ export class EtapaService {
                 }
             });
 
-            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao)
+            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao != self.percentual_execucao)
               throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
-            console.log(updateEtapaDto);
-            console.log(self);
+
             if (self.n_filhos_imediatos &&
                 ( updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime() ||
                   updateEtapaDto.inicio_real  && updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime() ||
