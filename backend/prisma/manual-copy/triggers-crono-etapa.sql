@@ -247,10 +247,6 @@ DECLARE
     total_percentual_execucao_peso NUMERIC;
     child_row RECORD;
 BEGIN
-    IF current_setting('myvars.skip_trigger')::boolean THEN
-        RETURN NEW;
-    END IF;
-
     total_peso := 0;
     total_percentual_execucao_peso := 0;
 
@@ -294,8 +290,6 @@ DECLARE
     parent_id INTEGER;
 BEGIN
 
-    SET LOCAL myvars.skip_trigger = true;
-
     IF (NEW.percentual_execucao <> OLD.percentual_execucao OR NEW.peso <> OLD.peso OR NEW.removido_em <> OLD.removido_em) OR TG_OP = 'INSERT' THEN
         parent_id := NEW.etapa_pai_id;
         WHILE parent_id IS NOT NULL LOOP
@@ -304,8 +298,6 @@ BEGIN
         END LOOP;
         PERFORM calculate_percentual_execucao_for_id(NEW.cronograma_id, true::BOOLEAN);
     END IF;
-
-    SET LOCAL myvars.skip_trigger = false;
 
     RETURN NEW;
 END;
