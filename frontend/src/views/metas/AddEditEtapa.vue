@@ -70,6 +70,7 @@ const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
 const virtualParent = ref({
   peso: 1,
+  percentual_execucao: 0,
 });
 
 if (etapa_id) {
@@ -170,6 +171,7 @@ async function onSubmit(values) {
             inativo: false,
             ordem: Number(values.ordem) ?? null,
             peso: Number(values.peso) ?? null,
+            percentual_execucao: Number(values.percentual_execucao) ?? null,
           });
         }
       }
@@ -318,6 +320,23 @@ function maskDate(el) {
           />
           <div class="error-msg">
             {{ errors.peso }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Execução</label>
+          <Field
+            :disabled="values.n_filhos_imediatos"
+            name="percentual_execucao"
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+            class="inputtext light mb1"
+            :value="etapa_id ? singleEtapa?.percentual_execucao : percentual_execucao"
+            :class="{ 'error': errors.percentual_execucao }"
+          />
+          <div class="error-msg">
+            {{ errors.percentual_execucao }}
           </div>
         </div>
       </div>
