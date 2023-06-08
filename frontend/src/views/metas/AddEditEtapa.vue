@@ -582,7 +582,7 @@ function maskDate(el) {
             </div>
           </div>
           <div class="f1">
-            <label class="label">Ordem</label>
+            <label class="label">Ordem no cronograma da meta</label>
             <Field
               v-model="acumulativa_meta_o"
               name="acumulativa_meta_o"
