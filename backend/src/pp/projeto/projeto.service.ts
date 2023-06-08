@@ -727,7 +727,7 @@ export class ProjetoService {
                 pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(projeto.status);
                 // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, do cronograma e do risco)
                 permissoes.sou_responsavel = true;
-                this.logger.debug(`entrou em pessoa pode escrever pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${sou_responsavel}`);
+                this.logger.debug(`entrou em pessoa pode escrever pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel}`);
             } else {
                 throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
             }
