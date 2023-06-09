@@ -184,6 +184,14 @@ onUpdated(() => { start(); });
                 : '-' }}
             </div>
           </div>
+          <div class="mr2">
+            <div class="t12 uc w700 mb05 tamarelo tr">
+              Ponderador
+            </div>
+            <div class="t13 tr">
+              {{ singleCronograma.peso ?? '-' }}
+            </div>
+          </div>
         </div>
         <div v-if="singleCronograma.descricao">
           <hr class="mt2 mb2">
@@ -232,6 +240,9 @@ onUpdated(() => { start(); });
             <div class="ml1 f1 tr">
               Execução
             </div>
+            <div class="ml1 f1 tr">
+              Ponderador
+            </div>
             <div class="ml1 f1">
               Atraso
             </div>
@@ -262,6 +273,9 @@ onUpdated(() => { start(); });
               {{ typeof r.etapa.percentual_execucao === 'number'
                 ? `${r.etapa.percentual_execucao}%`
                 : '-' }}
+            </div>
+            <div class="ml1 f1 tr">
+              {{ r.etapa.peso ?? '-' }}
             </div>
             <div class="ml1 f1">
               {{ r.etapa.atraso ?? '-' }}
@@ -385,6 +399,9 @@ onUpdated(() => { start(); });
               <div class="ml1 f1 tr">
                 Execução
               </div>
+              <div class="ml1 f1 tr">
+                Ponderador
+              </div>
               <div class="ml1 f1">
                 Atraso
               </div>
@@ -420,6 +437,9 @@ onUpdated(() => { start(); });
                 {{ typeof rr.percentual_execucao === 'number'
                   ? `${rr.percentual_execucao}%`
                   : '-' }}
+              </div>
+              <div class="ml1 f1 tr">
+                {{ rr.peso ?? '-' }}
               </div>
               <div class="ml1 f1">
                 {{ rr.atraso ?? '-' }}
@@ -492,6 +512,9 @@ onUpdated(() => { start(); });
                   Execução
                 </div>
                 <div class="ml1 f1">
+                  Ponderador
+                </div>
+                <div class="ml1 f1">
                   Atraso
                 </div>
                 <div
@@ -536,6 +559,9 @@ onUpdated(() => { start(); });
                     {{ typeof rrr.percentual_execucao === 'number'
                       ? `${rrr.percentual_execucao}%`
                       : '-' }}
+                  </div>
+                  <div class="ml1 f1 tr">
+                    {{ rrr.peso ?? '-' }}
                   </div>
                   <div class="ml1 f1">
                     {{ rrr.atraso ?? '-' }}
