@@ -138,7 +138,7 @@ export class EtapaService {
                 }
             });
 
-            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao != self.percentual_execucao)
+            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao && updateEtapaDto.percentual_execucao != self.percentual_execucao )
               throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
 
             if (self.n_filhos_imediatos &&
