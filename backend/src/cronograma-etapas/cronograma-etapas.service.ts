@@ -418,6 +418,8 @@ export class CronogramaEtapaService {
 
                     if (!rows.find(e => { e.ordem === novaOrdem + 1 })) break;
                 }
+
+                await Promise.all(updates);
             }
 
             // Como é upsert, sempre será necessário pegar os valores para create
