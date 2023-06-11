@@ -407,16 +407,19 @@ export class CronogramaEtapaService {
                     orderBy: { ordem: 'asc' }
                 });
                 
-                const updates = [];           
+                const updates = [];
+                let primeiraRow: boolean = true;
                 for (const row of rows) {
                     const novaOrdem = row.ordem + 1;
 
-                    if (rows.filter(e => { e.ordem === novaOrdem }).length === 0) break;
+                    if (!primeiraRow && rows.filter(e => { e.ordem === novaOrdem }).length === 0) break;
 
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
                         data: { ordem: novaOrdem }
                     }));
+
+                    primeiraRow = false;
                 }
 
                 await Promise.all(updates);
