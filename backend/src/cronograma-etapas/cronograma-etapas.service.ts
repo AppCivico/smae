@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CalculaAtraso } from '../common/CalculaAtraso';
@@ -10,6 +10,10 @@ import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto } from './entities/cronograma-etapa.entity';
 
+class NivelOrdemForCreate {
+    nivel: CronogramaEtapaNivel
+    ordem: number
+}
 @Injectable()
 export class CronogramaEtapaService {
     constructor(private readonly prisma: PrismaService) { }
@@ -378,6 +382,50 @@ export class CronogramaEtapaService {
 
         let id;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const self = await prisma.cronogramaEtapa.findFirst({
+                where: {
+                    cronograma_id: updateCronogoramaEtapaDto.cronograma_id,
+                    etapa_id: updateCronogoramaEtapaDto.etapa_id
+                },
+                select: {
+                    nivel: true,
+                    ordem: true
+                }
+            });
+
+            if (self && updateCronogoramaEtapaDto.ordem && self.ordem != updateCronogoramaEtapaDto.ordem) {
+                const rows = await prisma.cronogramaEtapa.findMany({
+                    where: {
+                        cronograma_id: updateCronogoramaEtapaDto.cronograma_id,
+                        nivel: self.nivel,
+                        ordem: { gte: updateCronogoramaEtapaDto.ordem }
+                    },
+                    select: {
+                        id: true,
+                        ordem: true
+                    },
+                    orderBy: { ordem: 'asc' }
+                });
+                
+                const updates = [];           
+                for (const row of rows) {
+                    const novaOrdem = row.ordem + 1;
+
+                    updates.push(prisma.cronogramaEtapa.update({
+                        where: { id: row.id },
+                        data: { ordem: novaOrdem }
+                    }));
+
+                    if (!rows.find(e => { e.ordem === novaOrdem + 1 })) break;
+                }
+            }
+
+            // Como é upsert, sempre será necessário pegar os valores para create
+            // Senão resulta em erro de unassigned.
+            // É enviado um boolean para avisar se o self existe, assim é possível pular as queries feitas na função e valores hardcoded são retornados.
+            const selfExiste: boolean = self ? true : false;
+            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(updateCronogoramaEtapaDto.cronograma_id, updateCronogoramaEtapaDto.etapa_id, selfExiste, prisma);
+
             const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
                 where: {
                     CronogramaEtapaUniq: {
@@ -391,6 +439,7 @@ export class CronogramaEtapaService {
                 },
                 create: {
                     ...updateCronogoramaEtapaDto,
+                    ...nivelOrdemForCreate
                 },
                 select: { id: true },
             });
@@ -400,6 +449,52 @@ export class CronogramaEtapaService {
         });
 
         return { id };
+    }
+
+    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, selfExiste: boolean, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForCreate> {
+        let nivel: CronogramaEtapaNivel;
+        let ordem: number;
+
+        if (selfExiste) {
+            nivel = CronogramaEtapaNivel.Etapa;
+            ordem = 1;
+        } else {
+            const etapa = await prismaTx.etapa.findFirstOrThrow({
+                where: { id: etapa_id },
+                select: {
+                    id: true,
+                    etapa_pai_id: true,
+                    etapa_pai: {
+                        select: {
+                            id: true,
+                            etapa_pai_id: true
+                        }
+                    }
+                }
+            });
+    
+            if (!etapa.etapa_pai_id) {
+                nivel = CronogramaEtapaNivel.Etapa;
+            } else if (etapa.etapa_pai_id && (etapa.etapa_pai && !etapa.etapa_pai.etapa_pai_id)) {
+                nivel = CronogramaEtapaNivel.Fase
+            } else {
+                nivel = CronogramaEtapaNivel.SubFase
+            }
+    
+            const ultimaRow = await prismaTx.cronogramaEtapa.findFirstOrThrow({
+                where: {
+                    cronograma_id,
+                    nivel
+                },
+                select: { ordem: true },
+                orderBy: { ordem: 'desc' },
+                take: 1
+            });
+    
+            ordem = ultimaRow.ordem + 1;
+        }
+
+        return { nivel, ordem }
     }
 
     async delete(id: number, user: PessoaFromJwt) {

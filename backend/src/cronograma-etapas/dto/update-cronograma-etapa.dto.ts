@@ -1,5 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { CronogramaEtapaNivel } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
 
 export class UpdateCronogramaEtapaDto {
     /**

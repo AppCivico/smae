@@ -7,10 +7,14 @@ import { CreateEtapaDto } from './dto/create-etapa.dto';
 import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { Etapa } from './entities/etapa.entity';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 
 @Injectable()
 export class EtapaService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly cronogramaEtapaService: CronogramaEtapaService
+    ) {}
 
     async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
@@ -39,11 +43,13 @@ export class EtapaService {
                 data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
             });
 
+            const nivelOrdem = await this.cronogramaEtapaService.getNivelOrdemForCreate(cronogramaId, etapa.id, false, prisma);
+
             await prisma.cronogramaEtapa.create({
                 data: {
                     cronograma_id: cronogramaId,
                     etapa_id: etapa.id,
-                    ordem: ordem,
+                    ...nivelOrdem
                 },
             });
 
@@ -134,7 +140,7 @@ export class EtapaService {
                     inicio_previsto: true,
                     inicio_real: true,
                     termino_previsto: true,
-                    termino_real: true
+                    termino_real: true,
                 }
             });
 
