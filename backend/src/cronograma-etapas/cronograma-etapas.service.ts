@@ -411,17 +411,12 @@ export class CronogramaEtapaService {
                 for (const row of rows) {
                     const novaOrdem = row.ordem + 1;
 
+                    if (rows.filter(e => { e.ordem === novaOrdem }).length === 0) break;
+
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
                         data: { ordem: novaOrdem }
                     }));
-
-                    console.log('=======================================');
-                    console.log(novaOrdem);
-                    if (rows.filter(e => { e.ordem === novaOrdem + 1 }).length === 0) {
-                        console.log('caiu no if do break');
-                        break
-                    };
                 }
 
                 await Promise.all(updates);
