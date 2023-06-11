@@ -416,7 +416,12 @@ export class CronogramaEtapaService {
                         data: { ordem: novaOrdem }
                     }));
 
-                    if (!rows.find(e => { e.ordem === novaOrdem + 1 })) break;
+                    console.log('=======================================');
+                    console.log(novaOrdem);
+                    if (rows.filter(e => { e.ordem === novaOrdem + 1 }).length === 0) {
+                        console.log('caiu no if do break');
+                        break
+                    };
                 }
 
                 await Promise.all(updates);
