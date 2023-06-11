@@ -1331,6 +1331,11 @@ model CronogramaOrgao {
     @@map("cronograma_orgao")
 }
 
+enum CronogramaEtapaNivel {
+    Etapa
+    Fase
+    SubFase
+}
 model CronogramaEtapa {
     id Int @id @default(autoincrement())
 
@@ -1338,7 +1343,8 @@ model CronogramaEtapa {
     cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
     etapa_id      Int
     etapa         Etapa      @relation(fields: [etapa_id], references: [id])
-    ordem         Int?
+    nivel         CronogramaEtapaNivel
+    ordem         Int
 
     inativo         Boolean   @default(false)
     data_inativacao DateTime? @db.Timestamptz(6)
