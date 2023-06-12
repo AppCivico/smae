@@ -1054,6 +1054,7 @@ if (indicador_id) {
           <td style="white-space: nowrap; text-align: right;">
             <button
               class="like-a__link tipinfo tprimary"
+              :disabled="v.indicador_variavel.indicador_origem"
               @click="apagarVariável(v.id)"
             >
               <svg
@@ -1071,6 +1072,7 @@ if (indicador_id) {
               ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
             </router-link>
             <router-link
+              v-if="!v.indicador_variavel.indicador_origem"
               :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}`"
               class="tipinfo tprimary ml1"
             >
@@ -1079,6 +1081,16 @@ if (indicador_id) {
                 height="20"
               ><use xlink:href="#i_edit" /></svg><div>Editar</div>
             </router-link>
+            <button
+              v-else
+              disabled
+              class="like-a__link tipinfo tprimary ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+            </button>
             <router-link
               :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/valores`"
               class="tipinfo tprimary ml1"
