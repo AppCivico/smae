@@ -8,6 +8,7 @@ import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { Etapa } from './entities/etapa.entity';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
+import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
 
 @Injectable()
 export class EtapaService {
@@ -22,7 +23,6 @@ export class EtapaService {
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
 
-        const ordem = createEtapaDto.ordem ? createEtapaDto.ordem : null;
         const responsaveis = createEtapaDto.responsaveis || [];
         delete createEtapaDto.ordem;
         delete createEtapaDto.responsaveis;
@@ -43,15 +43,13 @@ export class EtapaService {
                 data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
             });
 
-            const nivelOrdem = await this.cronogramaEtapaService.getNivelOrdemForCreate(cronogramaId, etapa.id, false, prisma);
+            const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
+                cronograma_id: cronogramaId,
+                etapa_id: etapa.id,
+                ordem: createEtapaDto.ordem
+            };
 
-            await prisma.cronogramaEtapa.create({
-                data: {
-                    cronograma_id: cronogramaId,
-                    etapa_id: etapa.id,
-                    ...nivelOrdem
-                },
-            });
+            await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
 
             return etapa;
         });

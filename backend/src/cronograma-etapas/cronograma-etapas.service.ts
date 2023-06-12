@@ -374,7 +374,7 @@ export class CronogramaEtapaService {
         return ret_arr;
     }
 
-    async update(updateCronogoramaEtapaDto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
+    async update(dto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
@@ -384,8 +384,8 @@ export class CronogramaEtapaService {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const self = await prisma.cronogramaEtapa.findFirst({
                 where: {
-                    cronograma_id: updateCronogoramaEtapaDto.cronograma_id,
-                    etapa_id: updateCronogoramaEtapaDto.etapa_id
+                    cronograma_id: dto.cronograma_id,
+                    etapa_id: dto.etapa_id
                 },
                 select: {
                     nivel: true,
@@ -393,12 +393,38 @@ export class CronogramaEtapaService {
                 }
             });
 
-            if (self && updateCronogoramaEtapaDto.ordem && self.ordem != updateCronogoramaEtapaDto.ordem) {
+            // Como é upsert, sempre será necessário pegar os valores para create
+            // Senão resulta em erro de unassigned.
+            // É enviado um boolean para avisar se a row já existe (sendi assim um update apenas). assim é possível pular as queries feitas na função e valores hardcoded são retornados.
+            const isCronogramaEtapaUpdate: boolean = self ? true : false;
+            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate, prisma);
+
+            const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
+                where: {
+                    CronogramaEtapaUniq: {
+                        cronograma_id: dto.cronograma_id,
+                        etapa_id: dto.etapa_id,
+                    },
+                },
+                update: {
+                    ordem: dto.ordem,
+                    inativo: dto.inativo,
+                },
+                create: {
+                    ...dto,
+                    nivel: nivelOrdemForCreate.nivel,
+                    ordem: dto.ordem ? dto.ordem : nivelOrdemForCreate.ordem
+                },
+                select: { id: true, ordem: true, nivel: true },
+            });
+
+            if ( dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem)) ) {
                 const rows = await prisma.cronogramaEtapa.findMany({
                     where: {
-                        cronograma_id: updateCronogoramaEtapaDto.cronograma_id,
-                        nivel: self.nivel,
-                        ordem: { gte: updateCronogoramaEtapaDto.ordem }
+                        cronograma_id: dto.cronograma_id,
+                        nivel: cronogramaEtapa.nivel,
+                        ordem: { gte: dto.ordem },
+                        id: { not: cronogramaEtapa.id }
                     },
                     select: {
                         id: true,
@@ -425,30 +451,6 @@ export class CronogramaEtapaService {
                 await Promise.all(updates);
             }
 
-            // Como é upsert, sempre será necessário pegar os valores para create
-            // Senão resulta em erro de unassigned.
-            // É enviado um boolean para avisar se o self existe, assim é possível pular as queries feitas na função e valores hardcoded são retornados.
-            const selfExiste: boolean = self ? true : false;
-            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(updateCronogoramaEtapaDto.cronograma_id, updateCronogoramaEtapaDto.etapa_id, selfExiste, prisma);
-
-            const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
-                where: {
-                    CronogramaEtapaUniq: {
-                        cronograma_id: updateCronogoramaEtapaDto.cronograma_id,
-                        etapa_id: updateCronogoramaEtapaDto.etapa_id,
-                    },
-                },
-                update: {
-                    ordem: updateCronogoramaEtapaDto.ordem,
-                    inativo: updateCronogoramaEtapaDto.inativo,
-                },
-                create: {
-                    ...updateCronogoramaEtapaDto,
-                    ...nivelOrdemForCreate
-                },
-                select: { id: true },
-            });
-
             id = cronogramaEtapa.id;
             return cronogramaEtapa;
         });
@@ -456,14 +458,18 @@ export class CronogramaEtapaService {
         return { id };
     }
 
-    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, selfExiste: boolean, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForCreate> {
+    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, isCronogramaEtapaUpdate: boolean, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForCreate> {
         let nivel: CronogramaEtapaNivel;
         let ordem: number;
+        let hardcoded_response: boolean;
 
-        if (selfExiste) {
+        if (isCronogramaEtapaUpdate) {
+            // Como é utilizada a função de upsert do prisma, os dados do create devem estar disponiveis.
+            // Caso seja apenas para o update, não é necessário fazer as queries abaixo, portanto fixando um retorno.
             nivel = CronogramaEtapaNivel.Etapa;
             ordem = 1;
         } else {
+
             const etapa = await prismaTx.etapa.findFirstOrThrow({
                 where: { id: etapa_id },
                 select: {
