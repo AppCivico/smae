@@ -136,7 +136,7 @@ function vazio(s) {
               {{ r.etapa.termino_real }}
             </div>
             <div class="ml1 f1">
-              {{ r.etapa.atraso??'-' }}
+              {{ r.etapa.atraso ? r.etapa.atraso + ' dias' : '-' }}
             </div>
             <div
               class="ml1 f0 flex center"
@@ -238,7 +238,7 @@ function vazio(s) {
                 {{ rr.termino_real }}
               </div>
               <div class="ml1 f1">
-                {{ rr.atraso??'-' }}
+                {{ rr.atraso ? rr.atraso + ' dias' : '-' }}
               </div>
               <div
                 class="ml1 f0 flex center"
@@ -313,7 +313,7 @@ function vazio(s) {
                     {{ rrr.termino_real }}
                   </div>
                   <div class="ml1 f1">
-                    {{ rrr.atraso??'-' }}
+                    {{ rrr.atraso ? rrr.atraso + ' dias' : '-' }}
                   </div>
                   <div
                     class="ml1 f0 flex center"
