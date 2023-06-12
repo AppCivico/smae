@@ -48,7 +48,9 @@ export class EtapaService {
                 etapa_id: etapa.id,
                 ordem: createEtapaDto.ordem
             };
-
+            console.log('======================');
+            console.log('etapa_id: ' + etapa.id);
+            console.log('======================');
             await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
 
             return etapa;
