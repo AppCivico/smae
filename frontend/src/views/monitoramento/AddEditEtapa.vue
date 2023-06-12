@@ -34,6 +34,8 @@ async function onSubmit(values) {
       values.termino_real = null;
     }
 
+    values.percentual_execucao = Number(values.percentual_execucao) ?? null;
+
     r = await CiclosStore.updateEtapa(SingleEtapa.value.id, values);
     msg = 'Dados salvos com sucesso!';
 
@@ -86,9 +88,12 @@ function maskDate(el) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <template v-if="!(SingleEtapa?.loading || SingleEtapa?.error)&&SingleEtapa?.id">
+  <template
+    v-if="!(SingleEtapa?.loading || SingleEtapa?.error) &&
+      SingleEtapa?.id"
+  >
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
       :initial-values="SingleEtapa"
       @submit="onSubmit"
@@ -136,6 +141,23 @@ function maskDate(el) {
           />
           <div class="error-msg">
             {{ errors.termino_real }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Execução</label>
+          <Field
+            :disabled="values.n_filhos_imediatos"
+            name="percentual_execucao"
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+            class="inputtext light mb1"
+            :value="etapa_id ? singleEtapa?.percentual_execucao : percentual_execucao"
+            :class="{ 'error': errors.percentual_execucao }"
+          />
+          <div class="error-msg">
+            {{ errors.percentual_execucao }}
           </div>
         </div>
       </div>
