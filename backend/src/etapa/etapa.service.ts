@@ -43,23 +43,17 @@ export class EtapaService {
                 data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
             });
 
-            const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
-                cronograma_id: cronogramaId,
-                etapa_id: etapa.id,
-                ordem: createEtapaDto.ordem
-            };
-            console.log('======================');
-            console.log('etapa_id: ' + etapa.id);
-            const etapaDebug = await prisma.etapa.findFirstOrThrow({
-                where: { id: etapa.id },
-                select: {id: true, etapa_pai_id: true}
-            });
-            console.log(etapaDebug.etapa_pai_id);
-            console.log('======================');
-            await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
-
+            
+            
             return etapa;
         });
+        
+        const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
+            cronograma_id: cronogramaId,
+            etapa_id: created.id,
+            ordem: createEtapaDto.ordem
+        };
+        await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
 
         return created;
     }
