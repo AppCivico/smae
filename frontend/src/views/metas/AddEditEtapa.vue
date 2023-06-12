@@ -153,6 +153,8 @@ async function onSubmit(values) {
     values.ordem = Number(values.ordem) ?? null;
     values.etapa_pai_id = null;
 
+    values.peso = Number(values.peso) ?? null;
+    values.percentual_execucao = Number(values.percentual_execucao) ?? null;
     values.responsaveis = responsaveis.value.participantes;
 
     let rota = false;
@@ -170,8 +172,6 @@ async function onSubmit(values) {
             etapa_id: Number(etapa_id_gen),
             inativo: false,
             ordem: Number(values.ordem) ?? null,
-            peso: Number(values.peso) ?? null,
-            percentual_execucao: Number(values.percentual_execucao) ?? null,
           });
         }
       }
