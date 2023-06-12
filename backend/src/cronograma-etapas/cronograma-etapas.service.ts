@@ -423,7 +423,7 @@ export class CronogramaEtapaService {
                     where: {
                         cronograma_id: dto.cronograma_id,
                         nivel: cronogramaEtapa.nivel,
-                        ordem: { gte: dto.ordem },
+                        ordem: { gte: cronogramaEtapa.ordem },
                         id: { not: cronogramaEtapa.id }
                     },
                     select: {
@@ -434,18 +434,16 @@ export class CronogramaEtapaService {
                 });
                 
                 const updates = [];
-                let primeiraRow: boolean = true;
                 for (const row of rows) {
                     const novaOrdem = row.ordem + 1;
 
-                    if (!primeiraRow && rows.filter(e => { e.ordem === novaOrdem }).length === 0) break;
+                    if (row.ordem != cronogramaEtapa.ordem && rows.filter(e => { e.ordem === novaOrdem }).length === 0) break;
 
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
                         data: { ordem: novaOrdem }
                     }));
 
-                    primeiraRow = false;
                 }
 
                 await Promise.all(updates);
