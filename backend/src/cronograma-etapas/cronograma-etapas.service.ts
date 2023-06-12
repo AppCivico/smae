@@ -398,6 +398,9 @@ export class CronogramaEtapaService {
             // É enviado um boolean para avisar se a row já existe (sendi assim um update apenas). assim é possível pular as queries feitas na função e valores hardcoded são retornados.
             const isCronogramaEtapaUpdate: boolean = self ? true : false;
             console.log(dto.etapa_id);
+            const etapa = await prisma.etapa.findFirstOrThrow({where: { id: dto.etapa_id }, select: { etapa_pai_id: true, id: true }});
+            console.log(etapa);
+            console.log('//////////////////');
             const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate, prisma);
 
             const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
