@@ -1081,7 +1081,7 @@ if (indicador_id) {
             </router-link>
             <router-link
               :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/valores`"
-              class="tipinfo right tprimary ml1"
+              class="tipinfo tprimary ml1"
             >
               <svg
                 width="20"
@@ -1091,7 +1091,7 @@ if (indicador_id) {
             <router-link
               v-if="perm.CadastroPessoa?.administrador"
               :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/retroativos`"
-              class="tipinfo right tprimary ml1"
+              class="tipinfo tprimary ml1"
             >
               <svg
                 width="20"
