@@ -1,7 +1,9 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import { useAuthStore, useIniciativasStore, useMetasStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useIniciativasStore } from '@/stores/iniciativas.store';
+import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
