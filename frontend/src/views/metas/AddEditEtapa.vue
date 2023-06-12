@@ -167,7 +167,7 @@ async function onSubmit(values) {
         etapa_id_gen = etapa_id;
 
         if (values.ordem != singleEtapa.value.ordem) {
-          EtapasStore.monitorar({
+          await EtapasStore.monitorar({
             cronograma_id: Number(cronograma_id),
             etapa_id: Number(etapa_id_gen),
             inativo: false,
