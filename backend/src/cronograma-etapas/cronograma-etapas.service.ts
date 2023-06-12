@@ -397,7 +397,8 @@ export class CronogramaEtapaService {
             // Senão resulta em erro de unassigned.
             // É enviado um boolean para avisar se a row já existe (sendi assim um update apenas). assim é possível pular as queries feitas na função e valores hardcoded são retornados.
             const isCronogramaEtapaUpdate: boolean = self ? true : false;
-            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate);
+            console.log(dto.etapa_id);
+            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate, prisma);
 
             const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
                 where: {
@@ -456,7 +457,7 @@ export class CronogramaEtapaService {
         return { id };
     }
 
-    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, isCronogramaEtapaUpdate: boolean): Promise<NivelOrdemForCreate> {
+    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, isCronogramaEtapaUpdate: boolean, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForCreate> {
         let nivel: CronogramaEtapaNivel;
         let ordem: number;
 
@@ -467,7 +468,7 @@ export class CronogramaEtapaService {
             ordem = 1;
         } else {
 
-            const etapa = await this.prisma.etapa.findFirstOrThrow({
+            const etapa = await prismaTx.etapa.findFirstOrThrow({
                 where: { id: etapa_id },
                 select: {
                     id: true,
@@ -489,7 +490,7 @@ export class CronogramaEtapaService {
                 nivel = CronogramaEtapaNivel.SubFase
             }
     
-            const ultimaRow = await this.prisma.cronogramaEtapa.findFirstOrThrow({
+            const ultimaRow = await prismaTx.cronogramaEtapa.findFirstOrThrow({
                 where: {
                     cronograma_id,
                     nivel
