@@ -1,13 +1,15 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as itemFilho } from '@/components/monitoramento/itemFilho.vue';
-import {
-  useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, usePdMStore
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import { default as AddEditEtapa } from '@/views/monitoramento/AddEditEtapa.vue';
 import { storeToRefs } from 'pinia';
 import {
-  onMounted, onUpdated, ref, watch
+  onMounted, onUpdated, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
