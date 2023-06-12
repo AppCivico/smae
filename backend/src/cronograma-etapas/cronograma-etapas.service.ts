@@ -397,7 +397,7 @@ export class CronogramaEtapaService {
             // Senão resulta em erro de unassigned.
             // É enviado um boolean para avisar se a row já existe (sendi assim um update apenas). assim é possível pular as queries feitas na função e valores hardcoded são retornados.
             const isCronogramaEtapaUpdate: boolean = self ? true : false;
-            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate, prisma);
+            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate);
 
             const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
                 where: {
@@ -456,10 +456,9 @@ export class CronogramaEtapaService {
         return { id };
     }
 
-    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, isCronogramaEtapaUpdate: boolean, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForCreate> {
+    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, isCronogramaEtapaUpdate: boolean): Promise<NivelOrdemForCreate> {
         let nivel: CronogramaEtapaNivel;
         let ordem: number;
-        let hardcoded_response: boolean;
 
         if (isCronogramaEtapaUpdate) {
             // Como é utilizada a função de upsert do prisma, os dados do create devem estar disponiveis.
@@ -468,7 +467,7 @@ export class CronogramaEtapaService {
             ordem = 1;
         } else {
 
-            const etapa = await prismaTx.etapa.findFirstOrThrow({
+            const etapa = await this.prisma.etapa.findFirstOrThrow({
                 where: { id: etapa_id },
                 select: {
                     id: true,
@@ -490,7 +489,7 @@ export class CronogramaEtapaService {
                 nivel = CronogramaEtapaNivel.SubFase
             }
     
-            const ultimaRow = await prismaTx.cronogramaEtapa.findFirstOrThrow({
+            const ultimaRow = await this.prisma.cronogramaEtapa.findFirstOrThrow({
                 where: {
                     cronograma_id,
                     nivel
