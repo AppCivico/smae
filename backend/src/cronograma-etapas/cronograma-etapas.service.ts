@@ -553,7 +553,12 @@ export class CronogramaEtapaService {
         if (termino_real) return 0;
 
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-
+        console.log('=================================================');
+        console.log('inicio_previsto: ' + inicio_previsto);
+        console.log('inicio_real: ' + inicio_real);
+        console.log('termino_previsto: ' + termino_previsto);
+        console.log('termino_real: ' + termino_real);
+        console.log('=================================================');
         let diff: number;
         let atraso: number | null;
         if (inicio_real) {
