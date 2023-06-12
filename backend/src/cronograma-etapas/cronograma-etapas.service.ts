@@ -495,7 +495,7 @@ export class CronogramaEtapaService {
                 nivel = CronogramaEtapaNivel.SubFase
             }
     
-            const ultimaRow = await prismaTx.cronogramaEtapa.findFirstOrThrow({
+            const ultimaRow = await prismaTx.cronogramaEtapa.findFirst({
                 where: {
                     cronograma_id,
                     nivel
@@ -504,8 +504,13 @@ export class CronogramaEtapaService {
                 orderBy: { ordem: 'desc' },
                 take: 1
             });
+
+            if (ultimaRow) {
+                ordem = ultimaRow.ordem + 1;
+            } else {
+                ordem = 1;
+            }
     
-            ordem = ultimaRow.ordem + 1;
         }
 
         return { nivel, ordem }
@@ -542,8 +547,15 @@ export class CronogramaEtapaService {
         return await this.durationInDaysHuman(duration);
     }
 
-    async palmirinha(inicio_real: Date | null, termino_real: Date | null, prazo_inicio: Date | null, prazo_termino: Date | null) {
-        
+    async getNewAtraso(inicio_real: Date | null, termino_real: Date | null, prazo_inicio: Date | null, prazo_termino: Date | null) {
+        if (termino_real || (!inicio_real && !termino_real && !prazo_inicio && !prazo_termino)) {
+            return ''
+        } else if (!inicio_real && prazo_inicio) {
+            const prazo_inicio_dt: DateTime = DateTime.fromJSDate(prazo_inicio);
+            const hoje_dt: DateTime = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
+
+            const diff = hoje_dt.diff(prazo_inicio_dt)
+        }
     }
 
     async durationInDaysHuman(duration: number | null): Promise<string> {
