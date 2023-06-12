@@ -50,6 +50,11 @@ export class EtapaService {
             };
             console.log('======================');
             console.log('etapa_id: ' + etapa.id);
+            const etapaDebug = await prisma.etapa.findFirstOrThrow({
+                where: { id: etapa.id },
+                select: {id: true, etapa_pai_id: true}
+            });
+            console.log(etapaDebug.etapa_pai_id);
             console.log('======================');
             await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
 
