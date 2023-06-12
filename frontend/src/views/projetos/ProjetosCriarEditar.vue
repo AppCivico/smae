@@ -207,9 +207,8 @@ function excluirProjeto(id) {
 
 watch(emFoco, () => {
   iniciar();
-});
+}, { immediate: true });
 
-iniciar();
 </script>
 
 <template>
