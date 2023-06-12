@@ -233,6 +233,21 @@ async function checkDelete(id) {
     }
   }
 }
+
+async function apagarVariável(id) {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    try {
+      if (await VariaveisStore.delete(id)) {
+        VariaveisStore.clear();
+        VariaveisStore.getAll(indicador_id);
+        alertStore.success('Item removido!');
+      }
+    } catch (error) {
+      alertStore.error(error);
+    }
+  }, 'Remover');
+}
+
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', parentlink);
 }
@@ -1037,9 +1052,18 @@ if (indicador_id) {
           <td>{{ v.casas_decimais }}</td>
           <td>{{ v.regiao?.descricao ?? '-' }}</td>
           <td style="white-space: nowrap; text-align: right;">
+            <button
+              class="like-a__link tipinfo tprimary"
+              @click="apagarVariável(v.id)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
+            </button>
             <router-link
               :to="`${parentlink}/indicadores/${indicador_id}/variaveis/novo/${v.id}`"
-              class="tipinfo tprimary"
+              class="tipinfo tprimary ml1"
             >
               <svg
                 width="20"
