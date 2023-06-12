@@ -1088,6 +1088,38 @@ p {
   }
 }
 
+.alerta-de-atraso {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    border-radius: 100%;
+    width: 8px;
+    height: 8px;
+    border: 2px solid white;
+    z-index: 1;
+    top: -2px;
+    right: -2px;
+    background-color: currentColor;
+  }
+
+  &.alerta-de-atraso--neutro::after {}
+
+  &.alerta-de-atraso--moderado::after {
+    content: '';
+    color: @laranja;
+  }
+
+  &.alerta-de-atraso--alto::after {
+    content: '';
+    color: @vermelho;
+  }
+
+  &.alerta-de-atraso--concluido::after {
+    content: '';
+    color: @verde;
+  }
+}
 .etapa {
   padding: 0 0 .5rem 1.5rem;
   margin-bottom: 1rem;
@@ -1178,7 +1210,7 @@ p {
     .list {
       .farol {
         text-align: center;
-        position: initial;
+        position: relative;
         min-width: 1.75rem;
         height: 1.75rem;
         line-height: 1.75rem;
@@ -1187,6 +1219,11 @@ p {
         display: flex;
         align-items: center;
         padding: 0.5em;
+
+        &::after {
+          top: -4px;
+          right: -4px;
+        }
       }
     }
   }
