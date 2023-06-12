@@ -2,9 +2,14 @@
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
 import { etapa as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
-import {
-  useAlertStore, useAtividadesStore, useCronogramasStore, useEditModalStore, useEtapasStore, useIniciativasStore, useMetasStore, useRegionsStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAtividadesStore } from '@/stores/atividades.store';
+import { useCronogramasStore } from '@/stores/cronogramas.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useEtapasStore } from '@/stores/etapas.store';
+import { useIniciativasStore } from '@/stores/iniciativas.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
