@@ -69,7 +69,7 @@ export class CEEtapaDto {
     titulo: string | null;
     duracao: string;
     atraso: number | null;
-    atraso_grau: CronogramaEtapaAtrasoGrau;
+    atraso_grau: string;
     ordem: number;
     peso: number | null;
     percentual_execucao: number | null;
