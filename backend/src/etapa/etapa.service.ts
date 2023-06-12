@@ -43,8 +43,6 @@ export class EtapaService {
                 data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
             });
 
-            
-            
             return etapa;
         });
         
@@ -111,7 +109,8 @@ export class EtapaService {
                 titulo: etapa.titulo,
                 descricao: etapa.descricao,
                 nivel: etapa.nivel,
-                prazo: etapa.prazo,
+                prazo_inicio: etapa.prazo_inicio,
+                prazo_termino: etapa.prazo_termino,
                 peso: etapa.peso,
                 percentual_execucao: etapa.percentual_execucao,
                 n_filhos_imediatos: etapa.n_filhos_imediatos,
