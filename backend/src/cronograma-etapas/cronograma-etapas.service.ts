@@ -562,14 +562,16 @@ export class CronogramaEtapaService {
         let diff: number;
         let atraso: number | null;
         if (inicio_real) {
-            if (!termino_previsto){
+            if (termino_previsto == null){
+                console.log('termino_previsto is NULL ');
                 console.warn('Row possui inicio_real, mas não possui termino_previsto, cálculo de atraso em relação ao término é impossível.');
                 return null;
             }
 
             diff = hoje.diff( DateTime.fromJSDate(termino_previsto) ).as('days');
         } else {
-            if (!inicio_previsto) {
+            if (inicio_previsto == null) {
+                console.log('inicio_previsto is NULL ');
                 console.warn('Row não possui inicio_real e nem inicio_previsto. Cálculo de atraso impossível.');
                 return null;
             }
@@ -577,7 +579,8 @@ export class CronogramaEtapaService {
             diff = hoje.diff( DateTime.fromJSDate(inicio_previsto) ).as('days');
         }
 
-        atraso = diff >= 0 ? null : Math.floor(Math.abs(diff));  
+        console.log('diff: ' + diff);
+        atraso = diff <= 0 ? null : Math.floor(Math.abs(diff));  
         return atraso;
     }
 
