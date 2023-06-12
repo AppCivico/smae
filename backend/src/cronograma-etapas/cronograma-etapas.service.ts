@@ -584,15 +584,15 @@ export class CronogramaEtapaService {
         return atraso;
     }
 
-    async getAtrasoGrau(atraso: number | null): Promise<CronogramaEtapaAtrasoGrau> {
+    async getAtrasoGrau(atraso: number | null): Promise<string> {
         if (atraso == 0) {
-            return CronogramaEtapaAtrasoGrau.Concluido;
+            return CronogramaEtapaAtrasoGrau[CronogramaEtapaAtrasoGrau.Concluido];
         } else if (!atraso || atraso && atraso < 30) {
-            return CronogramaEtapaAtrasoGrau.Neutro;
+            return CronogramaEtapaAtrasoGrau[CronogramaEtapaAtrasoGrau.Neutro];
         } else if (atraso >= 30 && atraso < 60) {
-            return CronogramaEtapaAtrasoGrau.Moderado;
+            return CronogramaEtapaAtrasoGrau[CronogramaEtapaAtrasoGrau.Moderado];
         } else {
-            return CronogramaEtapaAtrasoGrau.Alto
+            return CronogramaEtapaAtrasoGrau[CronogramaEtapaAtrasoGrau.Alto]
         }
     }
 
