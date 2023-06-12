@@ -1,8 +1,11 @@
 <script setup>
 import { Dashboard } from '@/components';
-import {
-  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useEtapasStore, useMetasStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCronogramasStore } from '@/stores/cronogramas.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useEtapasStore } from '@/stores/etapas.store';
+import { useMetasStore } from '@/stores/metas.store';
 import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
