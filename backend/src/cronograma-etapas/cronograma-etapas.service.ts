@@ -8,7 +8,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
-import { CECronogramaEtapaDto } from './entities/cronograma-etapa.entity';
+import { CECronogramaEtapaDto, CronogramaEtapaAtrasoGrau } from './entities/cronograma-etapa.entity';
 
 class NivelOrdemForCreate {
     nivel: CronogramaEtapaNivel
@@ -221,6 +221,9 @@ export class CronogramaEtapaService {
 
             first_level_ordem = await this.getOrdem(cronogramaEtapa.ordem, first_level_ordem);
 
+            const atrasoEtapa = await this.getAtraso(cronogramaEtapa.etapa.inicio_previsto, cronogramaEtapa.etapa.inicio_real, cronogramaEtapa.etapa.termino_previsto, cronogramaEtapa.etapa.termino_real);
+            const atrasoEtapaGrau = await this.getAtrasoGrau(atrasoEtapa);
+
             ret.push({
                 id: cronogramaEtapa.id,
                 cronograma_id: cronogramaEtapa.cronograma_id,
@@ -257,7 +260,8 @@ export class CronogramaEtapaService {
 
                     // Cálculo de duração e atraso
                     duracao: await this.getDuracao(cronogramaEtapa.etapa.inicio_real, cronogramaEtapa.etapa.termino_real),
-                    atraso: await this.getAtraso(cronogramaEtapa.etapa.termino_previsto, cronogramaEtapa.etapa.termino_real),
+                    atraso: atrasoEtapa,
+                    atraso_grau: atrasoEtapaGrau,
 
                     responsaveis: cronogramaEtapa.etapa.responsaveis.map(r => {
                         return {
@@ -269,7 +273,9 @@ export class CronogramaEtapaService {
                     etapa_filha: await Promise.all(
                         cronogramaEtapa.etapa.etapa_filha.map(async f => {
                             second_level_ordem = await this.getOrdem(f.CronogramaEtapa[0].ordem, second_level_ordem);
-
+                            const atrasoFase = await this.getAtraso(f.inicio_previsto, f.inicio_real, f.termino_previsto, f.termino_real);
+                            const atrasoFaseGrau = await this.getAtrasoGrau(atrasoFase);
+                            
                             return {
                                 CronogramaEtapa: f.CronogramaEtapa.map(x => {
                                     return {
@@ -297,7 +303,8 @@ export class CronogramaEtapaService {
                                 ordem: second_level_ordem,
                                 n_filhos_imediatos: f.n_filhos_imediatos,
                                 duracao: await this.getDuracao(f.inicio_real, f.termino_real),
-                                atraso: await this.getAtraso(f.termino_previsto, f.termino_real),
+                                atraso: atrasoFase,
+                                atraso_grau: atrasoFaseGrau,
                                 responsaveis: f.responsaveis.map(r => {
                                     return {
                                         id: r.pessoa.id,
@@ -308,7 +315,8 @@ export class CronogramaEtapaService {
                                 etapa_filha: await Promise.all(
                                     f.etapa_filha.map(async ff => {
                                         third_level_ordem = await this.getOrdem(ff.CronogramaEtapa[0].ordem, third_level_ordem);
-
+                                        const atrasoSubFase = await this.getAtraso(ff.inicio_previsto, ff.inicio_real, ff.termino_previsto, ff.termino_real);
+                                        const atrasoSubFaseGrau = await this.getAtrasoGrau(atrasoSubFase);
                                         return {
                                             CronogramaEtapa: ff.CronogramaEtapa.map(x => {
                                                 return { id: x.id, cronograma_id: x.cronograma_id, ordem: third_level_ordem };
@@ -332,7 +340,8 @@ export class CronogramaEtapaService {
                                             n_filhos_imediatos: ff.n_filhos_imediatos,
                                             ordem: third_level_ordem,
                                             duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
-                                            atraso: await this.getAtraso(ff.termino_previsto, ff.termino_real),
+                                            atraso: atrasoSubFase,
+                                            atraso_grau: atrasoSubFaseGrau,
 
                                             responsaveis: ff.responsaveis.map(r => {
                                                 return {
@@ -540,21 +549,42 @@ export class CronogramaEtapaService {
         return await this.durationInDaysHuman(duration);
     }
 
-    async getAtraso(termino_previsto: Date | null, termino_real: Date | null): Promise<string> {
-        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-        const duration = CalculaAtraso.emDias(hoje, termino_previsto, termino_real);
+    async getAtraso(inicio_previsto: Date | null, inicio_real: Date | null, termino_previsto: Date | null, termino_real: Date | null): Promise<number | null>{
+        if (termino_real) return 0;
 
-        return await this.durationInDaysHuman(duration);
+        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
+
+        let diff: number;
+        let atraso: number | null;
+        if (inicio_real) {
+            if (!termino_previsto){
+                console.warn('Row possui inicio_real, mas não possui termino_previsto, cálculo de atraso em relação ao término é impossível.');
+                return null;
+            }
+
+            diff = hoje.diff( DateTime.fromJSDate(termino_previsto) ).as('days');
+        } else {
+            if (!inicio_previsto) {
+                console.warn('Row não possui inicio_real e nem inicio_previsto. Cálculo de atraso impossível.');
+                return null;
+            }
+            
+            diff = hoje.diff( DateTime.fromJSDate(inicio_previsto) ).as('days');
+        }
+
+        atraso = diff >= 0 ? null : Math.floor(Math.abs(diff));  
+        return atraso;
     }
 
-    async getNewAtraso(inicio_real: Date | null, termino_real: Date | null, prazo_inicio: Date | null, prazo_termino: Date | null) {
-        if (termino_real || (!inicio_real && !termino_real && !prazo_inicio && !prazo_termino)) {
-            return ''
-        } else if (!inicio_real && prazo_inicio) {
-            const prazo_inicio_dt: DateTime = DateTime.fromJSDate(prazo_inicio);
-            const hoje_dt: DateTime = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-
-            const diff = hoje_dt.diff(prazo_inicio_dt)
+    async getAtrasoGrau(atraso: number | null): Promise<CronogramaEtapaAtrasoGrau> {
+        if (atraso == 0) {
+            return CronogramaEtapaAtrasoGrau.Concluido;
+        } else if (!atraso || atraso && atraso < 30) {
+            return CronogramaEtapaAtrasoGrau.Neutro;
+        } else if (atraso >= 30 && atraso < 60) {
+            return CronogramaEtapaAtrasoGrau.Moderado;
+        } else {
+            return CronogramaEtapaAtrasoGrau.Alto
         }
     }
 
