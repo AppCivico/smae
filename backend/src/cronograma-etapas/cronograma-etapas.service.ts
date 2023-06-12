@@ -60,7 +60,8 @@ export class CronogramaEtapaService {
                         termino_previsto: true,
                         inicio_real: true,
                         termino_real: true,
-                        prazo: true,
+                        prazo_inicio: true,
+                        prazo_termino: true,
                         titulo: true,
                         responsaveis: {
                             select: {
@@ -146,7 +147,8 @@ export class CronogramaEtapaService {
                                 termino_previsto: true,
                                 inicio_real: true,
                                 termino_real: true,
-                                prazo: true,
+                                prazo_inicio: true,
+                                prazo_termino: true,
                                 titulo: true,
                                 responsaveis: {
                                     select: {
@@ -179,7 +181,8 @@ export class CronogramaEtapaService {
                                         termino_previsto: true,
                                         inicio_real: true,
                                         termino_real: true,
-                                        prazo: true,
+                                        prazo_inicio: true,
+                                        prazo_termino: true,
                                         titulo: true,
                                         responsaveis: {
                                             select: {
@@ -244,7 +247,8 @@ export class CronogramaEtapaService {
                     termino_previsto: cronogramaEtapa.etapa.termino_previsto,
                     inicio_real: cronogramaEtapa.etapa.inicio_real,
                     termino_real: cronogramaEtapa.etapa.termino_real,
-                    prazo: cronogramaEtapa.etapa.prazo,
+                    prazo_inicio: cronogramaEtapa.etapa.prazo_inicio,
+                    prazo_termino: cronogramaEtapa.etapa.prazo_termino,
                     titulo: cronogramaEtapa.etapa.titulo,
                     peso: cronogramaEtapa.etapa.peso,
                     percentual_execucao: cronogramaEtapa.etapa.percentual_execucao,
@@ -285,7 +289,8 @@ export class CronogramaEtapaService {
                                 termino_previsto: f.termino_previsto,
                                 inicio_real: f.inicio_real,
                                 termino_real: f.termino_real,
-                                prazo: f.prazo,
+                                prazo_inicio: f.prazo_inicio,
+                                prazo_termino: f.prazo_termino,
                                 titulo: f.titulo,
                                 peso: f.peso,
                                 percentual_execucao: f.percentual_execucao,
@@ -319,7 +324,8 @@ export class CronogramaEtapaService {
                                             termino_previsto: ff.termino_previsto,
                                             inicio_real: ff.inicio_real,
                                             termino_real: ff.termino_real,
-                                            prazo: ff.prazo,
+                                            prazo_inicio: ff.prazo_inicio,
+                                            prazo_termino: ff.prazo_termino,
                                             titulo: ff.titulo,
                                             peso: ff.peso,
                                             percentual_execucao: ff.percentual_execucao,
@@ -534,6 +540,10 @@ export class CronogramaEtapaService {
         const duration = CalculaAtraso.emDias(hoje, termino_previsto, termino_real);
 
         return await this.durationInDaysHuman(duration);
+    }
+
+    async palmirinha(inicio_real: Date | null, termino_real: Date | null, prazo_inicio: Date | null, prazo_termino: Date | null) {
+        
     }
 
     async durationInDaysHuman(duration: number | null): Promise<string> {

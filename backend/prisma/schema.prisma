@@ -1271,7 +1271,8 @@ model Etapa {
     termino_previsto DateTime?         @db.Date()
     inicio_real      DateTime?         @db.Date()
     termino_real     DateTime?         @db.Date()
-    prazo            Int?
+    prazo_inicio     DateTime?
+    prazo_termino    DateTime?
     status           String?
     CronogramaEtapa  CronogramaEtapa[]
 

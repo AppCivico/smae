@@ -11,7 +11,8 @@ export class Etapa {
     termino_previsto: Date | null;
     inicio_real: Date | null;
     termino_real: Date | null;
-    prazo: number | null;
+    prazo_inicio: Date | null;
+    prazo_termino: Date | null;
     etapa_filha: any | null;
     peso: number | null;
     percentual_execucao: number | null;

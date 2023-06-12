@@ -99,6 +99,26 @@ export class CreateEtapaDto {
     @ValidateIf((object, value) => value !== null)
     termino_real?: Date | null;
 
+    /**
+     * prazo_inicio
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    prazo_inicio?: Date | null;
+
+    /**
+     * prazo_termino
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    prazo_termino?: Date | null;
+
     @IsOptional()
     @IsInt({ message: '$property| Peso precisa ser um número ou null' })
     @Type(() => Number)
