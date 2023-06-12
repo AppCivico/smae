@@ -1,3 +1,9 @@
+export enum CronogramaEtapaAtrasoGrau {
+    Neutro,
+    Moderado,
+    Alto,
+    Concluido
+}
 export class Meta {
     id: number;
     titulo: string;
@@ -62,7 +68,8 @@ export class CEEtapaDto {
     prazo_termino: Date | null;
     titulo: string | null;
     duracao: string;
-    atraso: string;
+    atraso: number | null;
+    atraso_grau: CronogramaEtapaAtrasoGrau;
     ordem: number;
     peso: number | null;
     percentual_execucao: number | null;
