@@ -330,13 +330,15 @@ export class MetaService {
             let metaCronograma: MetaCronograma | null = null;
             if (dbMeta.cronograma) {
                 const cronograma = dbMeta.cronograma[0];
-                const atraso = cronograma ? await this.cronogramaEtapaService.getAtraso(cronograma.inicio_previsto, cronograma.inicio_real, cronograma.termino_previsto, cronograma.termino_real): null;
-                const atrasoGrau = cronograma ? await this.cronogramaEtapaService.getAtrasoGrau(atraso): null;
 
+                let cronogramaAtraso: string | null = null;
+                if (cronograma) {
+                    const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: cronograma.id});
+                    cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
+                }
                 metaCronograma = {
                     id: cronograma ? cronograma.id : null,
-                    atraso: atraso,
-                    atraso_grau: atrasoGrau
+                    atraso_grau: cronogramaAtraso
                 }
             }
 

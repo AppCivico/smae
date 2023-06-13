@@ -82,12 +82,14 @@ export class CronogramaService {
         let ret = [];
         for (const row of rows) {
             const atraso = await this.cronogramaEtapaService.getAtraso(row.inicio_previsto, row.inicio_real, row.termino_previsto, row.termino_real);
-            const atrasoGrau = await this.cronogramaEtapaService.getAtrasoGrau(atraso);
+
+            let cronogramaAtraso: string | null = null;
+            const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: row.id});
+            cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
 
             ret.push({
                 ...row,
-                atraso: atraso,
-                atraso_grau: atrasoGrau
+                atraso_grau: cronogramaAtraso
             })
         }
 

@@ -603,6 +603,45 @@ export class CronogramaEtapaService {
         }
     }
 
+    async getAtrasoMaisSevero(cronogramaEtapaRet: CECronogramaEtapaDto[]): Promise<string | null> {
+        let atrasoMaisSevero: CronogramaEtapaAtrasoGrau | null = null;
+        let comparacao: CronogramaEtapaAtrasoGrau | null = null;
+        for (const row of cronogramaEtapaRet) {
+            const etapa = row.etapa;
+
+            if (etapa) {
+                if (etapa.atraso_grau) atrasoMaisSevero = CronogramaEtapaAtrasoGrau[etapa.atraso_grau as keyof typeof CronogramaEtapaAtrasoGrau];
+                if (atrasoMaisSevero && atrasoMaisSevero == CronogramaEtapaAtrasoGrau.Alto) break;
+
+                if (etapa.etapa_filha) {
+                    for (const fase of etapa.etapa_filha) {
+                        
+                        if (fase.atraso_grau) {
+                            comparacao = CronogramaEtapaAtrasoGrau[fase.atraso_grau as keyof typeof CronogramaEtapaAtrasoGrau];
+                            if (!atrasoMaisSevero || comparacao > atrasoMaisSevero) atrasoMaisSevero = comparacao
+                        }
+
+                        if (atrasoMaisSevero && atrasoMaisSevero == CronogramaEtapaAtrasoGrau.Alto) break;
+
+                        if (fase.etapa_filha) {
+                            for (const subfase of fase.etapa_filha) {
+                                if (subfase.atraso_grau) {
+                                    comparacao = CronogramaEtapaAtrasoGrau[subfase.atraso_grau as keyof typeof CronogramaEtapaAtrasoGrau];
+                                    if (!atrasoMaisSevero || comparacao > atrasoMaisSevero) atrasoMaisSevero = comparacao
+                                }
+        
+                                if (atrasoMaisSevero && atrasoMaisSevero == CronogramaEtapaAtrasoGrau.Alto) break;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return atrasoMaisSevero ? atrasoMaisSevero.toString() : null;
+    }
+
     async durationInDaysHuman(duration: number | null): Promise<string> {
         if (duration == null) return '';
         duration = Math.ceil(duration);
