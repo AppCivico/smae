@@ -134,6 +134,18 @@ function start() {
   }
   if (props.group === 'retroativos') editModalStore.modal(AddEditRealizado, props);
 }
+
+function permitirEdição(indicadorVariavel) {
+  if (!indicadorVariavel) {
+    return true;
+  }
+  if (Array.isArray(indicadorVariavel)
+    && indicadorVariavel.findIndex((x) => x.indicador_origem) === -1) {
+    return true;
+  }
+  return false;
+}
+
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
 
@@ -1054,7 +1066,7 @@ if (indicador_id) {
           <td style="white-space: nowrap; text-align: right;">
             <button
               class="like-a__link tipinfo tprimary"
-              :disabled="v.indicador_variavel.indicador_origem"
+              :disabled="!permitirEdição(v.indicador_variavel)"
               @click="apagarVariável(v.id)"
             >
               <svg
@@ -1072,7 +1084,7 @@ if (indicador_id) {
               ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
             </router-link>
             <router-link
-              v-if="!v.indicador_variavel.indicador_origem"
+              v-if="permitirEdição(v.indicador_variavel)"
               :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}`"
               class="tipinfo tprimary ml1"
             >
