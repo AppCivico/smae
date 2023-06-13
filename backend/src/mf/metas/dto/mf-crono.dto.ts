@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, Max, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { IdCodTituloRespDto } from './mf-meta.dto';
 
@@ -21,6 +21,13 @@ export class MfEtapaDto {
     @IsOnlyDate()
     @Type(() => Date)
     termino_real?: Date;
+
+    @IsOptional()
+    @IsNumber()
+    @ValidateIf((object, value) => value !== null)
+    @Min(0, { message: '$property| Percentual de execução precisa ser positivo ou zero' })
+    @Max(100, { message: '$property| Percentual de execução máximo é 100' })
+    percentual_execucao?: number
 }
 
 export class AtividadesCronoRetorno {
