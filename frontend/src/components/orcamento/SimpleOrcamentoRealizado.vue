@@ -139,7 +139,7 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
           <span class="addlink mt1 mb1"><svg
             width="20"
             height="20"
-          ><use xlink:href="#i_+" /></svg> <span>Adicionar Empenho/Liquidação</span></span>
+          ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
           <ul class="tl">
             <template v-if="$route.meta?.rotasParaAdição?.length">
               <li
@@ -176,7 +176,7 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
         ><svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Adicionar Empenho/Liquidação</span></span>
+        ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
       </div>
     </div>
   </div>
