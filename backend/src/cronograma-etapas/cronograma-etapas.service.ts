@@ -639,7 +639,7 @@ export class CronogramaEtapaService {
 
         }
 
-        return atrasoMaisSevero ? atrasoMaisSevero.toString() : null;
+        return atrasoMaisSevero ? CronogramaEtapaAtrasoGrau[atrasoMaisSevero] : null;
     }
 
     async durationInDaysHuman(duration: number | null): Promise<string> {
