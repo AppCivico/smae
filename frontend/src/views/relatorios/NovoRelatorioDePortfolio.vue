@@ -2,6 +2,7 @@
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
+import truncate from '@/helpers/truncate';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -134,7 +135,7 @@ iniciar();
             :key="item"
             :value="item.id"
           >
-            {{ item.sigla }} - {{ item.descricao }}
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
 

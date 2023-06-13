@@ -2,6 +2,7 @@
 import { Dashboard } from '@/components';
 import { usuário as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
@@ -251,7 +252,7 @@ async function checkClose() {
                   :value="organ.id"
                   :selected="orgao_id && organ.id == orgao_id"
                 >
-                  {{ organ.sigla }}
+                  {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
                 </option>
               </template>
             </Field>
