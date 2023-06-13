@@ -79,18 +79,18 @@ function vazio(s) {
       </div>
     </div>
 
-    <template v-if="!SingleCronograma?.loading&&SingleCronograma?.id">
+    <template v-if="!SingleCronograma?.loading && SingleCronograma?.id">
       <div
-        v-if="!SingleCronogramaEtapas?.loading&&SingleCronogramaEtapas.length"
+        v-if="!SingleCronogramaEtapas?.loading && SingleCronogramaEtapas.length"
         class="etapas"
       >
         <div
-          v-for="(r, index) in SingleCronogramaEtapas?.filter(x=>!x.inativo).sort((a,b)=>a.ordem-b.ordem)"
+          v-for="(r, index) in SingleCronogramaEtapas?.filter(x => !x.inativo).sort((a, b) => a.ordem - b.ordem)"
           :key="r.etapa.id"
           class="etapa"
         >
           <div class="status">
-            <span>{{ index+1 }}</span>
+            <span>{{ index + 1 }}</span>
           </div>
           <div class="title mb1">
             <h3>{{ r.etapa.titulo }}</h3>
@@ -129,7 +129,7 @@ function vazio(s) {
               {{ r.etapa.termino_previsto }}
             </div>
             <div class="ml1 f1">
-              {{ r.etapa.duracao??'-' }}
+              {{ r.etapa.duracao ?? '-' }}
             </div>
             <div class="ml1 f1">
               {{ r.etapa.inicio_real }}
@@ -156,7 +156,7 @@ function vazio(s) {
           </div>
           <hr class="mb05">
           <div
-            v-if="r.cronograma_origem_etapa&&r.cronograma_origem_etapa?.id!=SingleCronograma?.id"
+            v-if="r.cronograma_origem_etapa && r.cronograma_origem_etapa.id != SingleCronograma?.id"
             class="pl3 flex center t11 w700 tc600"
           >
             <router-link
@@ -193,7 +193,7 @@ function vazio(s) {
             class="etapa sub"
           >
             <div class="status">
-              <span>{{ rrindex+1 }}</span>
+              <span>{{ rrindex + 1 }}</span>
             </div>
             <div class="title">
               <h4>{{ rr.titulo }}</h4>
@@ -231,7 +231,7 @@ function vazio(s) {
                 {{ rr.termino_previsto }}
               </div>
               <div class="ml1 f1">
-                {{ rr.duracao??'-' }}
+                {{ rr.duracao ?? '-' }}
               </div>
               <div class="ml1 f1">
                 {{ rr.inicio_real }}
