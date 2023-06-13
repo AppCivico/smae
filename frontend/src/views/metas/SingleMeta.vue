@@ -6,6 +6,7 @@ import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const { temPermissãoPara } = useAuthStore();
 const authStore = useAuthStore();
@@ -34,11 +35,8 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
           Meta
         </div>
         <h1
-          class="alerta-de-atraso"
-          :class="singleMeta.cronograma.atraso_grau
-            ? `alerta-de-atraso--${String(singleMeta.cronograma.atraso_grau).toLowerCase()}`
-            : null"
-          :title="singleMeta.cronograma.atraso ? 'há atrasos' : null"
+          :class="classeParaFarolDeAtraso(singleMeta?.cronograma?.atraso_grau)"
+          :title="textoParaFarolDeAtraso(singleMeta?.cronograma?.atraso_grau)"
           style="padding-right: 4px;"
         >
           {{ singleMeta.codigo }} - {{ singleMeta.titulo }}

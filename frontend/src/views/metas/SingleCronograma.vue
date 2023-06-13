@@ -14,6 +14,7 @@ import {
   onMounted, onUpdated, reactive, ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
@@ -77,13 +78,8 @@ onUpdated(() => { start(); });
           {{ parentLabel }}
         </div>
         <h1
-          class="alerta-de-atraso"
-          :class="singleCronograma.atraso_grau
-            ? `alerta-de-atraso--${String(singleCronograma.atraso_grau).toLowerCase()}`
-            : null"
-          :title="singleCronograma.atraso
-            ? 'há atrasos'
-            : null"
+          :class="classeParaFarolDeAtraso(singleCronograma?.atraso_grau)"
+          :title="textoParaFarolDeAtraso(singleCronograma?.atraso_grau)"
           style="padding-right: 8px;"
         >
           Cronograma
@@ -223,10 +219,8 @@ onUpdated(() => { start(); });
         >
           <div class="status">
             <span
-              :class="r.etapa.atraso_grau
-                ? `alerta-de-atraso alerta-de-atraso--${String(r.etapa.atraso_grau).toLowerCase()}`
-                : null"
-              :title="r.etapa.atraso ? `em atraso há ${r.etapa.atraso} dias` : null"
+              :class="classeParaFarolDeAtraso(r.etapa.atraso_grau)"
+              :title="textoParaFarolDeAtraso(r.etapa.atraso_grau, r.etapa.atraso)"
             >{{ index + 1 }}</span>
           </div>
           <div class="title mb1">
@@ -379,10 +373,8 @@ onUpdated(() => { start(); });
           >
             <div class="status">
               <span
-                :class="rr.atraso_grau
-                  ? `alerta-de-atraso alerta-de-atraso--${String(rr.atraso_grau).toLowerCase()}`
-                  : null"
-                :title="rr.atraso ? `em atraso há ${rr.atraso} dias` : null"
+                :class="classeParaFarolDeAtraso(rr.atraso_grau)"
+                :title="textoParaFarolDeAtraso(rr.atraso_grau, rr.atraso)"
               >
                 <small class="niveis-pais">{{ index + 1 }}.</small>{{ rrindex + 1 }}
               </span>
@@ -538,10 +530,8 @@ onUpdated(() => { start(); });
                   <div class="f2 flex center">
                     <span
                       class="farol f0"
-                      :class="rrr.atraso_grau
-                        ? `alerta-de-atraso alerta-de-atraso--${String(rrr.atraso_grau).toLowerCase()}`
-                        : null"
-                      :title="rrr.atraso ? `em atraso há ${rrr.atraso} dias` : null"
+                      :class="classeParaFarolDeAtraso(rrr.atraso_grau)"
+                      :title="textoParaFarolDeAtraso(rrr.atraso_grau, rrr.atraso)"
                     >
                       <small class="niveis-pais">{{ index + 1 }}.{{ rrindex + 1 }}.</small>{{ rrrindex + 1 }}
                     </span>
