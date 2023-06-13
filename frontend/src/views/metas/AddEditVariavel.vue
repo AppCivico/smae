@@ -2,10 +2,15 @@
 import { variável } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
-import {
-  useAlertStore, useAtividadesStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useRegionsStore, useVariaveisStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAtividadesStore } from '@/stores/atividades.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
+import { useIniciativasStore } from '@/stores/iniciativas.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useRegionsStore } from '@/stores/regions.store';
 import { useResourcesStore } from '@/stores/resources.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
