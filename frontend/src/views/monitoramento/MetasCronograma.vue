@@ -12,6 +12,7 @@ import {
   onMounted, onUpdated, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from '../metas/helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -74,7 +75,13 @@ function vazio(s) {
     </div>
     <div class="mb2">
       <div class="flex spacebetween center">
-        <h1>{{ parentLabel }} {{ currentParent[parentField]?.codigo }} - {{ currentParent[parentField]?.titulo }}</h1>
+        <h1
+          :class="classeParaFarolDeAtraso(SingleCronograma?.atraso_grau)"
+          :title="textoParaFarolDeAtraso(SingleCronograma?.atraso_grau)"
+          style="padding-right: 8px;"
+        >
+          {{ parentLabel }} {{ currentParent[parentField]?.codigo }} - {{ currentParent[parentField]?.titulo }}
+        </h1>
         <hr class="ml2 f1">
       </div>
     </div>
@@ -91,10 +98,8 @@ function vazio(s) {
         >
           <div class="status">
             <span
-              :class="r.etapa.atraso_grau
-                ? `alerta-de-atraso alerta-de-atraso--${String(r.etapa.atraso_grau).toLowerCase()}`
-                : null"
-              :title="r.etapa.atraso ? `em atraso há ${r.etapa.atraso} dias` : null"
+              :class="classeParaFarolDeAtraso(r.etapa.atraso_grau)"
+              :title="textoParaFarolDeAtraso(r.etapa.atraso_grau, r.etapa.atraso)"
             >{{ index + 1 }}</span>
           </div>
           <div class="title mb1">
@@ -201,10 +206,8 @@ function vazio(s) {
           >
             <div class="status">
               <span
-                :class="rr.atraso_grau
-                  ? `alerta-de-atraso alerta-de-atraso--${String(rr.atraso_grau).toLowerCase()}`
-                  : null"
-                :title="rr.atraso ? `em atraso há ${rr.atraso} dias` : null"
+                :class="classeParaFarolDeAtraso(rr.atraso_grau)"
+                :title="textoParaFarolDeAtraso(rr.atraso_grau, rr.atraso)"
               >
                 <small class="niveis-pais">{{ index + 1 }}.</small>{{ rrindex + 1 }}
               </span>
@@ -316,10 +319,8 @@ function vazio(s) {
                   <div class="f2 flex center">
                     <span
                       class="farol f0"
-                      :class="rrr.atraso_grau
-                        ? `alerta-de-atraso alerta-de-atraso--${String(rrr.atraso_grau).toLowerCase()}`
-                        : null"
-                      :title="rrr.atraso ? `em atraso há ${rrr.atraso} dias` : null"
+                      :class="classeParaFarolDeAtraso(rrr.atraso_grau)"
+                      :title="textoParaFarolDeAtraso(rrr.atraso_grau, rrr.atraso)"
                     >
                       <small class="niveis-pais">{{ index + 1 }}.{{ rrindex + 1 }}.</small>{{ rrrindex + 1 }}
                     </span>
