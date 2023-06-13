@@ -16,7 +16,7 @@ const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const ÓrgãosStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();
-const { órgãosOrdenados } = storeToRefs(ÓrgãosStore);
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -124,13 +124,13 @@ iniciar();
             error: errors['parametros.orgao_responsavel_id'],
             loading: portfolioStore.chamadasPendentes.lista
           }"
-          :disabled="!órgãosOrdenados?.length"
+          :disabled="!órgãosComoLista?.length"
         >
           <option :value="null">
             Selecionar
           </option>
           <option
-            v-for="item in órgãosOrdenados"
+            v-for="item in órgãosComoLista"
             :key="item"
             :value="item.id"
           >
