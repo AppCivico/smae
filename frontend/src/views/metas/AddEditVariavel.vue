@@ -1,5 +1,6 @@
 <script setup>
 import { variável } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import {
   useAlertStore, useAtividadesStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useRegionsStore, useVariaveisStore,
@@ -463,7 +464,7 @@ function fieldToDate(d) {
             :key="a.orgao.id"
             :value="a.orgao.id"
           >
-            {{ a.orgao.descricao }}
+            {{ a.orgao.sigla }} - {{ truncate(a.orgao.descricao, 36) }}
           </option>
         </Field>
         <div class="error-msg">

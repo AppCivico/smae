@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import truncate from '@/helpers/truncate';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
@@ -293,7 +294,7 @@ function filterResponsible(orgao_id) {
                   :key="o.orgao_id"
                   :value="o.orgao_id"
                 >
-                  {{ o.orgao.descricao }}
+                  {{ o.orgao.sigla }} - {{ truncate(o.orgao.descricao, 36) }}
                 </option>
               </select>
             </div>

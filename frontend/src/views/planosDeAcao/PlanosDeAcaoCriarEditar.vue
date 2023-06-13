@@ -3,6 +3,7 @@ import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import truncate from '@/helpers/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
@@ -171,7 +172,7 @@ iniciar();
             :key="item"
             :value="item.id"
           >
-            {{ item.sigla }} - {{ item.descricao }}
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
         <ErrorMessage

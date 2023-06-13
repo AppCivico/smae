@@ -632,7 +632,7 @@ watch(emFoco, () => {
             :key="item"
             :value="item.id"
           >
-            {{ item.sigla }} - {{ item.descricao }}
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
         <ErrorMessage
