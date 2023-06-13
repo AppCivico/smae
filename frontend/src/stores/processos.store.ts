@@ -1,7 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ListProjetoSeiDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity.ts';
-
-import filtrarObjetos from '@/helpers/filtrarObjetos';
 import formatProcesso from '@/helpers/formatProcesso';
 import { defineStore } from 'pinia';
 

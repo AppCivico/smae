@@ -2,7 +2,6 @@
 import { CreatePlanoAcaoDto } from '@/../../backend/src/pp/plano-de-acao/dto/create-plano-acao.dto';
 import { ListPlanoAcaoDto, PlanoAcao } from '@/../../backend/src/pp/plano-de-acao/entities/plano-acao.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

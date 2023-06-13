@@ -23,9 +23,6 @@ const route = useRoute();
 const router = useRouter();
 
 const projetosStore = useProjetosStore();
-const {
-  órgãosEnvolvidosNoProjetoEmFoco,
-} = storeToRefs(projetosStore);
 
 const planosDeAçãoStore = usePlanosDeAçãoStore();
 const {

@@ -2,7 +2,6 @@
 import { CreateProjetoSeiDto } from '@/../../backend/src/pp/projeto/dto/create-projeto.dto.ts';
 
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

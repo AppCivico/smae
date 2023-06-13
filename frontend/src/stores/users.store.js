@@ -1,4 +1,3 @@
-import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { defineStore } from 'pinia';
