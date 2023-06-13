@@ -4,7 +4,6 @@ import { ListTarefaDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/s
 
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 import { useProjetosStore } from './projetos.store';
 

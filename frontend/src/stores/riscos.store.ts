@@ -1,7 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from '@/../../backend/src/pp/risco/entities/risco.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
