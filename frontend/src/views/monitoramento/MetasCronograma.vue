@@ -145,6 +145,8 @@ function vazio(s) {
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
               <router-link
+                v-if="!r.etapa.n_filhos_imediatos
+                  && !(r.cronograma_origem_etapa && r.cronograma_origem_etapa.id != SingleCronograma?.id)"
                 :to="`/monitoramento/cronograma/${parentlink}/editar/${r.cronograma_id}/${r.etapa.id}`"
               >
                 <svg
@@ -247,7 +249,10 @@ function vazio(s) {
                 style="flex-basis:20px; height: calc(20px + 1rem);"
               >
                 <router-link
-                  v-if="rr.CronogramaEtapa"
+                  v-if="rr.CronogramaEtapa && !rr.n_filhos_imediatos
+                    && !(r.cronograma_origem_etapa
+                      && r.cronograma_origem_etapa.id != SingleCronograma?.id
+                    )"
                   :to="`/monitoramento/cronograma/${parentlink}/editar/${rr.CronogramaEtapa[0].cronograma_id}/${rr.id}`"
                 >
                   <svg
@@ -322,7 +327,7 @@ function vazio(s) {
                     style="flex-basis:20px; height: calc(20px + 1rem);"
                   >
                     <router-link
-                      v-if="rrr.CronogramaEtapa"
+                      v-if="rrr.CronogramaEtapa && !rrr.n_filhos_imediatos"
                       :to="`/monitoramento/cronograma/${parentlink}/editar/${rrr.CronogramaEtapa[0].cronograma_id}/${rrr.id}`"
                     >
                       <svg
