@@ -6,10 +6,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateCronogramaDto } from './dto/create-cronograma.dto';
 import { FilterCronogramaDto } from './dto/fillter-cronograma.dto';
 import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 
 @Injectable()
 export class CronogramaService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly cronogramaEtapaService: CronogramaEtapaService
+    ) {}
 
     async create(createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
         if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
@@ -41,7 +45,7 @@ export class CronogramaService {
         const atividadeId = filters?.atividade_id;
         const iniciativaId = filters?.iniciativa_id;
 
-        return await this.prisma.cronograma.findMany({
+        const rows = await this.prisma.cronograma.findMany({
             where: {
                 meta_id: metaId,
                 atividade_id: atividadeId,
@@ -74,6 +78,20 @@ export class CronogramaService {
             },
             orderBy: { criado_em: 'desc' }
         });
+
+        let ret = [];
+        for (const row of rows) {
+            const atraso = await this.cronogramaEtapaService.getAtraso(row.inicio_previsto, row.inicio_real, row.termino_previsto, row.termino_real);
+            const atrasoGrau = await this.cronogramaEtapaService.getAtrasoGrau(atraso);
+
+            ret.push({
+                ...row,
+                atraso: atraso,
+                atraso_grau: atrasoGrau
+            })
+        }
+
+        return ret; 
     }
 
     async update(id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {
