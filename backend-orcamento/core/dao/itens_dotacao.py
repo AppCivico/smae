@@ -1,6 +1,9 @@
 from typing import Callable
 from functools import partial
 from collections import OrderedDict
+#temporario por conta do hotfix do endpoint de fontes
+import json
+
 from .base import Dao
 from .api_client import ClientDotacoes as SofClient
 from core.exceptions import EmptyData
@@ -125,8 +128,15 @@ class ItensDotacao:
             if method_name == 'unidades':
                 self.__solve_unidades(ano, data)
                 continue
-            method = getattr(self, method_name)
-            data[method_name] = method(ano=ano)
+            #hotfix endpoint fonte quebrado - vai puxar de forma hardcoded
+            if method_name!= 'fonte_recursos':
+                method = getattr(self, method_name)
+                data[method_name] = method(ano=ano)
+            #aqui é hardcoded porque quebrou o endpoint de fontes
+            else:
+                with open('fontes_cache.json') as f:
+                    hardcode_data = json.load(f)['fonte_recursos']
+                data['fonte_recursos'] = hardcode_data
             
         
         return data

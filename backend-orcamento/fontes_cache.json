@@ -1,0 +1,72 @@
+{
+    "fonte_recursos": [
+            {
+                "codigo": "00",
+                "descricao": "Tesouro Municipal"
+            },
+            {
+                "codigo": "01",
+                "descricao": "Operações de Crédito"
+            },
+            {
+                "codigo": "02",
+                "descricao": "Transferências Federais"
+            },
+            {
+                "codigo": "03",
+                "descricao": "Transferências Estaduais"
+            },
+            {
+                "codigo": "04",
+                "descricao": "Fundo Constitucional da Educação"
+            },
+            {
+                "codigo": "05",
+                "descricao": "Outras Fontes"
+            },
+            {
+                "codigo": "06",
+                "descricao": "Recursos Próprios da Administração Indireta"
+            },
+            {
+                "codigo": "07",
+                "descricao": "Receita Condicionada"
+            },
+            {
+                "codigo": "08",
+                "descricao": "Tesouro Municipal - Recursos Vinculados"
+            },
+            {
+                "codigo": "09",
+                "descricao": "Recursos Próprios da Empresa Dependente"
+            },
+            {
+                "codigo": "10",
+                "descricao": "Alienação de Bens/Ativos"
+            },
+            {
+                "codigo": "11",
+                "descricao": "Depósitos Judiciais"
+            },
+            {
+                "codigo": "12",
+                "descricao": "Recursos Extraorçamentários"
+            },
+            {
+                "codigo": "21",
+                "descricao": "Transf. Fed.: Custeio COVID Fundo a Fundo - Serv. Púb. de Saúde"
+            },
+            {
+                "codigo": "22",
+                "descricao": "Transf. Fed.: Invest. COVID Fundo a Fundo - Serv. Púb. de Saúde"
+            },
+            {
+                "codigo": "23",
+                "descricao": "Transf. Fed.: Convênios/Contratos COVID vinculados à Saúde"
+            },
+            {
+                "codigo": "24",
+                "descricao": "Transferências Federais - LC 173/2020, Art5º, I"
+            }
+        ]
+}

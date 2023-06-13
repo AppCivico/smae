@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from requests.exceptions import HTTPError
+
+
+#temporario porque endpoint de fontes quebrou
+import json
+
 from core.exceptions import EmptyData, UnexpectedResponse
 
 from core.dao import DaoItensDotacao
@@ -93,8 +98,16 @@ def elementos(ano: str, dao: DaoItensDotacao = Depends(get_dao)):
 
 @app.get("/fonte_recursos", response_model=schm_dotacao.ResultItem, tags=['Dotacao'])
 def fonte_recursos(ano: str, dao: DaoItensDotacao = Depends(get_dao)):
+   
+   with open('fontes_cache.json') as f:
+      result = json.load(f)
+   resp_data = [schm_dotacao.ItemBasico(**item) for item in result['fonte_recursos']]
+   resp = schm_dotacao.ResultItem(data=resp_data,
+                    metadados=MetaDados(sucess=True))
 
-   return build_response(dao, 'fonte_recursos', ano=ano)
+   return resp
+   # não vou mais buscar do banco porque quebrou a API (ver com SF o que aconteceu)
+   #return build_response(dao, 'fonte_recursos', ano=ano)
 
 
 @app.get("/all_items", response_model=schm_dotacao.AllItems, tags=['Dotacao'])
