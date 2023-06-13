@@ -1,8 +1,8 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
-import truncate from '@/helpers/truncate';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
+import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
