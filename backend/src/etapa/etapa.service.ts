@@ -24,6 +24,8 @@ export class EtapaService {
         }
 
         const responsaveis = createEtapaDto.responsaveis || [];
+
+        const ordem: number | undefined = createEtapaDto.ordem;
         delete createEtapaDto.ordem;
         delete createEtapaDto.responsaveis;
 
@@ -49,7 +51,7 @@ export class EtapaService {
         const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
             cronograma_id: cronogramaId,
             etapa_id: created.id,
-            ordem: createEtapaDto.ordem
+            ordem: ordem
         };
         await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
 
