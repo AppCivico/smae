@@ -330,8 +330,8 @@ export class MetaService {
             let metaCronograma: MetaCronograma | null = null;
             if (dbMeta.cronograma) {
                 const cronograma = dbMeta.cronograma[0];
-                const atraso = await this.cronogramaEtapaService.getAtraso(cronograma.inicio_previsto, cronograma.inicio_real, cronograma.termino_previsto, cronograma.termino_real);
-                const atrasoGrau = await this.cronogramaEtapaService.getAtrasoGrau(atraso);
+                const atraso = cronograma ? await this.cronogramaEtapaService.getAtraso(cronograma.inicio_previsto, cronograma.inicio_real, cronograma.termino_previsto, cronograma.termino_real): null;
+                const atrasoGrau = cronograma ? await this.cronogramaEtapaService.getAtrasoGrau(atraso): null;
 
                 metaCronograma = {
                     id: cronograma.id,
