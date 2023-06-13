@@ -6,8 +6,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMetaDto, DadosCodTituloIniciativaDto, DadosCodTituloMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
+import { IdNomeExibicao, Meta, MetaCronograma, MetaOrgao, MetaTag } from './entities/meta.entity';
 import { error } from 'console';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -20,7 +21,10 @@ type DadosMetaIniciativaAtividadesDto = {
 
 @Injectable()
 export class MetaService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly cronogramaEtapaService: CronogramaEtapaService
+    ) { }
 
     async create(createMetaDto: CreateMetaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -271,6 +275,17 @@ export class MetaService {
                         },
                     },
                 },
+                cronograma: {
+                    take: 1,
+                    orderBy: {criado_em: 'asc'},
+                    select: {
+                        id: true,
+                        inicio_previsto: true,
+                        inicio_real: true,
+                        termino_previsto: true,
+                        termino_real: true
+                    }
+                }
             },
         });
         const ret: Meta[] = [];
@@ -312,6 +327,19 @@ export class MetaService {
                 });
             }
 
+            let metaCronograma: MetaCronograma | null = null;
+            if (dbMeta.cronograma) {
+                const cronograma = dbMeta.cronograma[0];
+                const atraso = await this.cronogramaEtapaService.getAtraso(cronograma.inicio_previsto, cronograma.inicio_real, cronograma.termino_previsto, cronograma.termino_real);
+                const atrasoGrau = await this.cronogramaEtapaService.getAtrasoGrau(atraso);
+
+                metaCronograma = {
+                    id: cronograma.id,
+                    atraso: atraso,
+                    atraso_grau: atrasoGrau
+                }
+            }
+
             ret.push({
                 id: dbMeta.id,
                 titulo: dbMeta.titulo,
@@ -327,6 +355,7 @@ export class MetaService {
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
                 tags: tags,
+                cronograma: metaCronograma
             });
         }
 

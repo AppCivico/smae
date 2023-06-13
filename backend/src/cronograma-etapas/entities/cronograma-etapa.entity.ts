@@ -42,6 +42,8 @@ export class CECronogramaEtapaDto {
     etapa_id: number;
     ordem: number;
     inativo: boolean;
+    atraso: number | null;
+    atraso_grau: string | null;
 
     etapa: CEEtapaDto | null;
     cronograma_origem_etapa?: CronogramaWithParents;
