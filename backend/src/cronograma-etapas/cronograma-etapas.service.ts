@@ -46,6 +46,15 @@ export class CronogramaEtapaService {
                 inativo: true,
                 ordem: true,
 
+                cronograma: {
+                    select: {
+                        inicio_previsto: true,
+                        inicio_real: true,
+                        termino_previsto: true,
+                        termino_real: true
+                    }
+                },
+
                 etapa: {
                     select: {
                         id: true,
@@ -220,7 +229,10 @@ export class CronogramaEtapaService {
             }
 
             first_level_ordem = await this.getOrdem(cronogramaEtapa.ordem, first_level_ordem);
-
+            
+            const atrasoCronograma = await this.getAtraso(cronogramaEtapa.cronograma.inicio_previsto, cronogramaEtapa.cronograma.inicio_real, cronogramaEtapa.cronograma.termino_previsto, cronogramaEtapa.cronograma.termino_real);
+            const atrasoCronogramaGrau = await this.getAtrasoGrau(atrasoCronograma);
+            
             const atrasoEtapa = await this.getAtraso(cronogramaEtapa.etapa.inicio_previsto, cronogramaEtapa.etapa.inicio_real, cronogramaEtapa.etapa.termino_previsto, cronogramaEtapa.etapa.termino_real);
             const atrasoEtapaGrau = await this.getAtrasoGrau(atrasoEtapa);
 
@@ -230,6 +242,8 @@ export class CronogramaEtapaService {
                 etapa_id: cronogramaEtapa.etapa_id,
                 inativo: cronogramaEtapa.inativo,
                 ordem: first_level_ordem,
+                atraso: atrasoCronograma,
+                atraso_grau: atrasoCronogramaGrau,
 
                 etapa: {
                     CronogramaEtapa: [
@@ -388,7 +402,7 @@ export class CronogramaEtapaService {
 
         return ret_arr;
     }
-
+ 
     async update(dto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
@@ -553,17 +567,11 @@ export class CronogramaEtapaService {
         if (termino_real) return 0;
 
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-        console.log('=================================================');
-        console.log('inicio_previsto: ' + inicio_previsto);
-        console.log('inicio_real: ' + inicio_real);
-        console.log('termino_previsto: ' + termino_previsto);
-        console.log('termino_real: ' + termino_real);
-        console.log('=================================================');
+
         let diff: number;
         let atraso: number | null;
         if (inicio_real) {
             if (termino_previsto == null){
-                console.log('termino_previsto is NULL ');
                 console.warn('Row possui inicio_real, mas não possui termino_previsto, cálculo de atraso em relação ao término é impossível.');
                 return null;
             }
@@ -571,7 +579,6 @@ export class CronogramaEtapaService {
             diff = hoje.diff( DateTime.fromJSDate(termino_previsto) ).as('days');
         } else {
             if (inicio_previsto == null) {
-                console.log('inicio_previsto is NULL ');
                 console.warn('Row não possui inicio_real e nem inicio_previsto. Cálculo de atraso impossível.');
                 return null;
             }
