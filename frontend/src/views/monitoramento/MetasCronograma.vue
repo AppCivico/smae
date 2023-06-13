@@ -90,7 +90,12 @@ function vazio(s) {
           class="etapa"
         >
           <div class="status">
-            <span>{{ index + 1 }}</span>
+            <span
+              :class="r.etapa.atraso_grau
+                ? `alerta-de-atraso alerta-de-atraso--${String(r.etapa.atraso_grau).toLowerCase()}`
+                : null"
+              :title="r.etapa.atraso ? `em atraso há ${r.etapa.atraso} dias` : null"
+            >{{ index + 1 }}</span>
           </div>
           <div class="title mb1">
             <h3>{{ r.etapa.titulo }}</h3>
@@ -195,7 +200,14 @@ function vazio(s) {
             class="etapa sub"
           >
             <div class="status">
-              <span>{{ rrindex + 1 }}</span>
+              <span
+                :class="rr.atraso_grau
+                  ? `alerta-de-atraso alerta-de-atraso--${String(rr.atraso_grau).toLowerCase()}`
+                  : null"
+                :title="rr.atraso ? `em atraso há ${rr.atraso} dias` : null"
+              >
+                <small class="niveis-pais">{{ index + 1 }}.</small>{{ rrindex + 1 }}
+              </span>
             </div>
             <div class="title">
               <h4>{{ rr.titulo }}</h4>
@@ -302,7 +314,15 @@ function vazio(s) {
               >
                 <div class="pl3 flex center t13">
                   <div class="f2 flex center">
-                    <span class="farol f0">{{ rrrindex+1 }}</span> <span>{{ rrr.titulo }}</span>
+                    <span
+                      class="farol f0"
+                      :class="rrr.atraso_grau
+                        ? `alerta-de-atraso alerta-de-atraso--${String(rrr.atraso_grau).toLowerCase()}`
+                        : null"
+                      :title="rrr.atraso ? `em atraso há ${rrr.atraso} dias` : null"
+                    >
+                      <small class="niveis-pais">{{ index + 1 }}.{{ rrindex + 1 }}.</small>{{ rrrindex + 1 }}
+                    </span>
                   </div>
                   <div class="ml1 f1">
                     {{ rrr.inicio_previsto }}
