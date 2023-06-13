@@ -37,7 +37,7 @@ const {
   metaSimplificada,
 } = storeToRefs(projetosStore);
 const {
-  órgãosOrdenados,
+  órgãosComoLista,
   órgãosQueTemResponsáveis,
   órgãosQueTemResponsáveisEPorId,
 } = storeToRefs(ÓrgãosStore);
@@ -594,7 +594,7 @@ watch(emFoco, () => {
             error: errors.orgaos_participantes,
             loading: portfolioStore.chamadasPendentes.lista
           }"
-          :grupo="órgãosOrdenados"
+          :grupo="órgãosComoLista"
           label="sigla"
         />
         <ErrorMessage

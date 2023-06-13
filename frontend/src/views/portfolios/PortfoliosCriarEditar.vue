@@ -24,7 +24,7 @@ const ÓrgãosStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();
 const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(portfolioStore);
-const { órgãosOrdenados } = storeToRefs(ÓrgãosStore);
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 portfolioStore.$reset();
 
@@ -67,7 +67,7 @@ if (props.portfolioId) {
   </div>
 
   <Form
-    v-if="órgãosOrdenados?.length"
+    v-if="órgãosComoLista?.length"
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
@@ -163,7 +163,7 @@ if (props.portfolioId) {
       <AutocompleteField
         name="orgaos"
         :controlador="{ busca: '', participantes: values.orgaos || [] }"
-        :grupo="órgãosOrdenados"
+        :grupo="órgãosComoLista"
         label="sigla"
       />
       <ErrorMessage

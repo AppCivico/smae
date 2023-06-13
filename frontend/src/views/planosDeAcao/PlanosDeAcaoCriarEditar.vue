@@ -15,7 +15,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 const ÓrgãosStore = useOrgansStore();
-const { órgãosOrdenados } = storeToRefs(ÓrgãosStore);
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const alertStore = useAlertStore();
 
@@ -160,14 +160,14 @@ iniciar();
             error: errors.orgao_id,
             loading: projetosStore.chamadasPendentes?.emFoco,
           }"
-          :disabled="!órgãosOrdenados?.length"
+          :disabled="!órgãosComoLista?.length"
         >
           <option :value="0">
             Selecionar
           </option>
 
           <option
-            v-for="item in órgãosOrdenados"
+            v-for="item in órgãosComoLista"
             :key="item"
             :value="item.id"
           >

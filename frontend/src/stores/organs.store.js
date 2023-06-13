@@ -158,14 +158,14 @@ export const useOrgansStore = defineStore({
   },
   getters: {
     // código legado. Originalmente os órgãos não eram ordenados
-    órgãosOrdenados: ({ organs }) => (Array.isArray(organs)
+    órgãosComoLista: ({ organs }) => (Array.isArray(organs)
       ? organs
       : []),
     órgãosPorId: ({ organs }) => (Array.isArray(organs)
       ? organs.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
       : {}),
     órgãosQueTemResponsáveis() {
-      return this.órgãosOrdenados.filter((x) => x.responsible?.length);
+      return this.órgãosComoLista.filter((x) => x.responsible?.length);
     },
     órgãosQueTemResponsáveisEPorId() {
       return this.órgãosQueTemResponsáveis
