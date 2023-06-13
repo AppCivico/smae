@@ -254,7 +254,7 @@ export class MetaService {
                 ativo: true,
                 meta_orgao: {
                     select: {
-                        orgao: { select: { id: true, descricao: true } },
+                        orgao: { select: { id: true, descricao: true, sigla: true } },
                         responsavel: true,
                     },
                 },
