@@ -470,9 +470,6 @@ export class CronogramaEtapaService {
                 for (const row of rows) {
                     const novaOrdem = row.ordem + 1;
 
-                    if (row.ordem != cronogramaEtapa.ordem && rows.filter(e => { e.ordem === novaOrdem }).length === 0) break;
-                    console.log('passou no if do for');
-
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
                         data: { ordem: novaOrdem }
