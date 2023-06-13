@@ -23,7 +23,6 @@ export class MetaTag {
 
 export class MetaCronograma {
     id: number | null
-    atraso: number | null
     atraso_grau: string | null
 }
 

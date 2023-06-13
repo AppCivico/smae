@@ -13,6 +13,5 @@ export class Cronograma {
     termino_real: Date | null;
     regionalizavel: boolean;
     nivel_regionalizacao: number | null;
-    atraso: number | null;
     atraso_grau: string | null
 }
