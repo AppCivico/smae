@@ -33,7 +33,16 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
         <div class="t12 uc w700 tamarelo">
           Meta
         </div>
-        <h1>{{ singleMeta.codigo }} - {{ singleMeta.titulo }}</h1>
+        <h1
+          class="alerta-de-atraso"
+          :class="singleMeta.cronograma.atraso_grau
+            ? `alerta-de-atraso--${String(singleMeta.cronograma.atraso_grau).toLowerCase()}`
+            : null"
+          :title="singleMeta.cronograma.atraso ? 'há atrasos' : null"
+          style="padding-right: 4px;"
+        >
+          {{ singleMeta.codigo }} - {{ singleMeta.titulo }}
+        </h1>
       </div>
       <hr class="ml2 f1">
       <router-link
@@ -125,44 +134,13 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
           </div>
         </div>
         <hr class="mt2 mb2">
+
         <div
-          v-if="(activePdm.possui_contexto_meta && singleMeta.contexto)
-            || singleMeta.cronograma?.atraso"
-          class="flex g2"
+          v-if="activePdm.possui_contexto_meta"
+          class="mr2 f2"
         >
-          <div
-            v-if="activePdm.possui_contexto_meta && singleMeta.contexto"
-            class="mr2 f2"
-          >
-            <h4>{{ activePdm.rotulo_contexto_meta }}</h4>
-            <div>{{ singleMeta.contexto }}</div>
-          </div>
-
-          <div
-            v-if="singleMeta.cronograma"
-            class="mr2 f1"
-          >
-            <h4>
-              <span
-                class="alerta-de-atraso"
-                :class="singleMeta.cronograma.atraso_grau
-                  ? `alerta-de-atraso--${String(singleMeta.cronograma.atraso_grau).toLowerCase()}`
-                  : null"
-                :title="singleMeta.cronograma.atraso
-                  ? `em atraso há ${singleMeta.cronograma.atraso} dias`
-                  : null"
-                style="padding-right: 4px;"
-              >
-                Atraso
-              </span>
-            </h4>
-            <div>
-              {{ singleMeta.cronograma.atraso
-                ? singleMeta.cronograma.atraso + ' dias'
-                : '-' }}
-            </div>
-          </div>
-
+          <h4>{{ activePdm.rotulo_contexto_meta }}</h4>
+          <div>{{ singleMeta.contexto }}</div>
           <hr class="mt2 mb2">
         </div>
         <div

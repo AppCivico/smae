@@ -76,7 +76,18 @@ onUpdated(() => { start(); });
         <div class="t12 uc w700 tamarelo">
           {{ parentLabel }}
         </div>
-        <h1>Cronograma</h1>
+        <h1
+          class="alerta-de-atraso"
+          :class="singleCronograma.atraso_grau
+            ? `alerta-de-atraso--${String(singleCronograma.atraso_grau).toLowerCase()}`
+            : null"
+          :title="singleCronograma.atraso
+            ? 'há atrasos'
+            : null"
+          style="padding-right: 8px;"
+        >
+          Cronograma
+        </h1>
       </div>
       <hr class="ml2 f1">
       <router-link
