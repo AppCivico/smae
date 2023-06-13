@@ -21,7 +21,7 @@ export class SofEntidadeService {
         };
     }
 
-    @Cron('5 0 * * *')
+    @Cron(process.env['SOF_CRONTAB_STRING'] || '5 0 * * *')
     async handleListaSofCron() {
         if (Boolean(process.env['DISABLE_SOF_CRONTAB'])) return;
 
