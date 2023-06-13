@@ -1,3 +1,5 @@
+import { IdSiglaDescricao } from "src/common/dto/IdSigla.dto";
+
 export class IdDesc {
     id: number;
     descricao: string;
@@ -9,7 +11,7 @@ export class IdNomeExibicao {
 }
 
 export class AtividadeOrgao {
-    orgao: IdDesc;
+    orgao: IdSiglaDescricao;
     responsavel: boolean;
     participantes: IdNomeExibicao[];
 }
