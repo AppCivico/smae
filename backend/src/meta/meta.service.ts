@@ -334,7 +334,7 @@ export class MetaService {
                 const atrasoGrau = cronograma ? await this.cronogramaEtapaService.getAtrasoGrau(atraso): null;
 
                 metaCronograma = {
-                    id: cronograma.id,
+                    id: cronograma ? cronograma.id : null,
                     atraso: atraso,
                     atraso_grau: atrasoGrau
                 }
