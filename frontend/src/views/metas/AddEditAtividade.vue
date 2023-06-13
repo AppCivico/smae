@@ -4,15 +4,15 @@ import { default as AutocompleteField } from '@/components/AutocompleteField.vue
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAtividadesStore } from '@/stores/atividades.store';
+import { useIniciativasStore } from '@/stores/iniciativas.store';
+import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
-
-import {
-  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore,
-} from '@/stores';
 
 AtividadeAtiva();
 
