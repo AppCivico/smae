@@ -18,11 +18,15 @@ onMounted(() => {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-      <h1>{{ route.meta.título }}</h1>
-      <hr class="ml2 f1"/>
-      <router-link :to="{ name: 'novoRelatórioSemestralOuAnual' }" class="btn big ml2" v-if="temPermissãoPara('Reports.executar')">
-        Novo relatório
-      </router-link>
+    <h1>{{ route.meta.título }}</h1>
+    <hr class="ml2 f1">
+    <router-link
+      v-if="temPermissãoPara('Reports.executar')"
+      :to="{ name: 'novoRelatórioSemestralOuAnual' }"
+      class="btn big ml2"
+    >
+      Novo relatório
+    </router-link>
   </div>
   <!--div class="flex center mb2">
       <div class="f2 search">
