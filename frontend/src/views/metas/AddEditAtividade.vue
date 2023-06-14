@@ -293,6 +293,7 @@ function filterResponsible(orgao_id) {
                   v-for="o in organsAvailable.filter(a=>a.orgao_id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.orgao_id))"
                   :key="o.orgao_id"
                   :value="o.orgao_id"
+                  :title="o.orgao.descricao"
                 >
                   {{ o.orgao.sigla }} - {{ truncate(o.orgao.descricao, 36) }}
                 </option>
