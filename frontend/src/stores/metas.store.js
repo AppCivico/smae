@@ -107,6 +107,16 @@ export const useMetasStore = defineStore({
             }
             return r;
           });
+
+          if (f.tagId) {
+            this.tempMetas = this.tempMetas
+              .filter((x) => Array.isArray(x.tags) && x.tags.some((y) => y.id === f.tagId));
+          }
+          if (f.órgãoId) {
+            this.tempMetas = this.tempMetas
+              .filter((x) => Array.isArray(x.orgaos_participantes)
+              && x.orgaos_participantes.some((y) => y.orgao?.id === f.órgãoId));
+          }
         }
         const g = f.groupBy ?? 'macro_tema';
         if (this.activePdm[`possui_${g}`]) {

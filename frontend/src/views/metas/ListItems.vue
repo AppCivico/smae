@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import truncate from '@/helpers/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useMetasStore } from '@/stores/metas.store';
@@ -27,6 +28,8 @@ const perm = permissions.value;
 const props = defineProps(['group', 'type', 'parentPage']);
 
 const MetasStore = useMetasStore();
+const ÓrgãosStore = useOrgansStore();
+const TagsStore = useTagsStore();
 const { activePdm, groupedMetas } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
@@ -42,6 +45,9 @@ function filterItems() {
 }
 filterItems();
 function start() {
+  ÓrgãosStore.getAll();
+  TagsStore.getAll();
+
   if (props.group == 'macrotemas') editModalStore.modal(AddEditMacrotemas, props);
   if (props.group == 'subtemas') editModalStore.modal(AddEditSubtemas, props);
   if (props.group == 'temas') editModalStore.modal(AddEditTemas, props);
@@ -160,7 +166,46 @@ function groupSlug(s) {
           </option>
         </select>
       </div>
-      <div class="f2 ml1" />
+      <div class="f1 mr1">
+        <label class="label tc300">Filtrar por órgão participante</label>
+        <select
+          v-model.number="filters.órgãoId"
+          class="inputtext"
+          @change="filterItems"
+        >
+          <option :value="0" />
+
+          <option
+            v-for="item in ÓrgãosStore.órgãosComoLista"
+            :key="item.id"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
+          >
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+          </option>
+        </select>
+      </div>
+      <div class="f1 mr1">
+        <label class="label tc300">Filtrar por tag</label>
+        <select
+          v-model.number="filters.tagId"
+          class="inputtext"
+          @change="filterItems"
+        >
+          <option :value="0" />
+          <template v-if="Array.isArray(TagsStore.Tags)">
+            <option
+              v-for="item in TagsStore.Tags"
+              :key="item.id"
+              :value="item.id"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ truncate(item.descricao, 36) }}
+            </option>
+          </template>
+        </select>
+      </div>
+      <hr class="f2 ml1">
     </div>
 
     <div class="boards">
