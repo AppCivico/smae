@@ -591,12 +591,13 @@ function maskDate(el) {
         >
           <div class="f2">
             <label class="block">
-              <Field
+              <input
                 v-model="acumulativa_meta"
                 name="acumulativa_meta"
                 type="checkbox"
+                disabled
                 class="inputcheckbox"
-              />
+              >
               <span :class="{ 'error': errors.acumulativa_meta }">
                 Etapa monitorada no cronograma da meta
               </span>
@@ -607,12 +608,13 @@ function maskDate(el) {
           </div>
           <div class="f1">
             <label class="label">Ordem no cronograma da meta</label>
-            <Field
+            <input
               v-model="acumulativa_meta_o"
               name="acumulativa_meta_o"
               type="number"
+              disabled
               class="inputtext light mb1"
-            />
+            >
           </div>
         </div>
         <template v-else-if="acumulativa_meta?.loading">
