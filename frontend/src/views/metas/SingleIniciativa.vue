@@ -40,7 +40,13 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
         <div class="t12 uc w700 tamarelo">
           {{ activePdm.rotulo_iniciativa }}
         </div>
-        <h1>{{ singleIniciativa.codigo }} - {{ singleIniciativa.titulo }}</h1>
+        <h1
+          :class="classeParaFarolDeAtraso(singleIniciativa?.cronograma?.atraso_grau)"
+          :title="textoParaFarolDeAtraso(singleIniciativa?.cronograma?.atraso_grau)"
+          style="padding-right: 4px;"
+        >
+          {{ singleIniciativa.codigo }} - {{ singleIniciativa.titulo }}
+        </h1>
       </div>
       <hr class="ml2 f1">
       <router-link

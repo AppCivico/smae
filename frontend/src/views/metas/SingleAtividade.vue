@@ -35,7 +35,13 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
         <div class="t12 uc w700 tamarelo">
           {{ activePdm.rotulo_atividade }}
         </div>
-        <h1>{{ singleAtividade.codigo }} - {{ singleAtividade.titulo }}</h1>
+        <h1
+          :class="classeParaFarolDeAtraso(singleAtividade?.cronograma?.atraso_grau)"
+          :title="textoParaFarolDeAtraso(singleAtividade?.cronograma?.atraso_grau)"
+          style="padding-right: 4px;"
+        >
+          {{ singleAtividade.codigo }} - {{ singleAtividade.titulo }}
+        </h1>
       </div>
       <hr class="ml2 f1">
       <router-link
