@@ -218,17 +218,12 @@ export class CronogramaEtapaService {
         });
 
         const ret: CECronogramaEtapaDto[] = [];
-        let first_level_ordem = 0;
-        let second_level_ordem = 0;
-        let third_level_ordem = 0;
 
         for (const cronogramaEtapa of cronogramaEtapas) {
             if (cronogramaEtapa.etapa.etapa_pai_id) {
                 const firstLevelParentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
                 if (firstLevelParentIndex >= 0) continue;
             }
-
-            first_level_ordem = await this.getOrdem(cronogramaEtapa.ordem, first_level_ordem);
             
             const atrasoCronograma = await this.getAtraso(cronogramaEtapa.cronograma.inicio_previsto, cronogramaEtapa.cronograma.inicio_real, cronogramaEtapa.cronograma.termino_previsto, cronogramaEtapa.cronograma.termino_real);
             const atrasoCronogramaGrau = await this.getAtrasoGrau(atrasoCronograma);
@@ -241,7 +236,7 @@ export class CronogramaEtapaService {
                 cronograma_id: cronogramaEtapa.cronograma_id,
                 etapa_id: cronogramaEtapa.etapa_id,
                 inativo: cronogramaEtapa.inativo,
-                ordem: first_level_ordem,
+                ordem: cronogramaEtapa.ordem,
                 atraso: atrasoCronograma,
                 atraso_grau: atrasoCronogramaGrau,
 
@@ -250,7 +245,7 @@ export class CronogramaEtapaService {
                         {
                             id: cronogramaEtapa.id,
                             cronograma_id: cronogramaEtapa.cronograma_id,
-                            ordem: first_level_ordem,
+                            ordem: cronogramaEtapa.ordem,
                         },
                     ],
 
@@ -269,7 +264,7 @@ export class CronogramaEtapaService {
                     titulo: cronogramaEtapa.etapa.titulo,
                     peso: cronogramaEtapa.etapa.peso,
                     percentual_execucao: cronogramaEtapa.etapa.percentual_execucao,
-                    ordem: first_level_ordem,
+                    ordem: cronogramaEtapa.ordem,
                     n_filhos_imediatos: cronogramaEtapa.etapa.n_filhos_imediatos,
 
                     // Cálculo de duração e atraso
@@ -286,7 +281,6 @@ export class CronogramaEtapaService {
 
                     etapa_filha: await Promise.all(
                         cronogramaEtapa.etapa.etapa_filha.map(async f => {
-                            second_level_ordem = await this.getOrdem(f.CronogramaEtapa[0].ordem, second_level_ordem);
                             const atrasoFase = await this.getAtraso(f.inicio_previsto, f.inicio_real, f.termino_previsto, f.termino_real);
                             const atrasoFaseGrau = await this.getAtrasoGrau(atrasoFase);
                             
@@ -295,7 +289,7 @@ export class CronogramaEtapaService {
                                     return {
                                         id: x.id,
                                         cronograma_id: x.cronograma_id,
-                                        ordem: second_level_ordem,
+                                        ordem: x.ordem,
                                     };
                                 }),
 
@@ -314,7 +308,7 @@ export class CronogramaEtapaService {
                                 titulo: f.titulo,
                                 peso: f.peso,
                                 percentual_execucao: f.percentual_execucao,
-                                ordem: second_level_ordem,
+                                ordem: f.CronogramaEtapa[0].ordem,
                                 n_filhos_imediatos: f.n_filhos_imediatos,
                                 duracao: await this.getDuracao(f.inicio_real, f.termino_real),
                                 atraso: atrasoFase,
@@ -328,12 +322,11 @@ export class CronogramaEtapaService {
 
                                 etapa_filha: await Promise.all(
                                     f.etapa_filha.map(async ff => {
-                                        third_level_ordem = await this.getOrdem(ff.CronogramaEtapa[0].ordem, third_level_ordem);
                                         const atrasoSubFase = await this.getAtraso(ff.inicio_previsto, ff.inicio_real, ff.termino_previsto, ff.termino_real);
                                         const atrasoSubFaseGrau = await this.getAtrasoGrau(atrasoSubFase);
                                         return {
                                             CronogramaEtapa: ff.CronogramaEtapa.map(x => {
-                                                return { id: x.id, cronograma_id: x.cronograma_id, ordem: third_level_ordem };
+                                                return { id: x.id, cronograma_id: x.cronograma_id, ordem: x.ordem };
                                             }),
 
                                             id: ff.id,
@@ -352,7 +345,7 @@ export class CronogramaEtapaService {
                                             peso: ff.peso,
                                             percentual_execucao: ff.percentual_execucao,
                                             n_filhos_imediatos: ff.n_filhos_imediatos,
-                                            ordem: third_level_ordem,
+                                            ordem: ff.CronogramaEtapa[0].ordem,
                                             duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
                                             atraso: atrasoSubFase,
                                             atraso_grau: atrasoSubFaseGrau,
