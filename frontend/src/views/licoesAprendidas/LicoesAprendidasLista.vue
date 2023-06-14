@@ -82,7 +82,7 @@ iniciar();
           {{ schema.fields['data_registro'].spec.label }}
         </th>
         <th class="tl">
-          {{ schema.fields['descricao'].spec.label }}
+          {{ schema.fields['contexto'].spec.label }}
         </th>
         <th class="tl">
           {{ schema.fields['responsavel'].spec.label }}
@@ -107,7 +107,7 @@ iniciar();
           {{ dateToField(linha.data_registro) }}
         </td>
         <th>
-          {{ linha.descricao }}
+          {{ linha.contexto }}
         </th>
         <td>
           {{ linha.responsavel }}

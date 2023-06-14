@@ -159,28 +159,6 @@ iniciar();
     <div class="flex g2 mb1">
       <div class="f2 mb1">
         <LabelFromYup
-          name="descricao"
-          :schema="schema"
-        />
-        <Field
-          id="descricao"
-          name="descricao"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.descricao }"
-        />
-        <ErrorMessage
-          name="descricao"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="f2 mb1">
-        <LabelFromYup
           name="contexto"
           :schema="schema"
         />
@@ -195,6 +173,28 @@ iniciar();
         />
         <ErrorMessage
           name="contexto"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f2 mb1">
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
+        <Field
+          id="descricao"
+          name="descricao"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.descricao }"
+        />
+        <ErrorMessage
+          name="descricao"
           class="error-msg"
         />
       </div>
