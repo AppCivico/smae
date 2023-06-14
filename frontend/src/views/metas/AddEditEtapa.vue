@@ -67,7 +67,7 @@ const minLevel = ref(0);
 
 const acumulativa_iniciativa = ref(0);
 const acumulativa_iniciativa_o = ref(0);
-const acumulativa_meta = ref(0);
+const acumulativa_meta = ref(false);
 const acumulativa_meta_o = ref(0);
 
 const lastParent = ref({});
@@ -123,7 +123,6 @@ if (etapa_id) {
 
   if (etapa_id) {
     if (atividade_id) acumulativa_iniciativa.value = { loading: true };
-    if (iniciativa_id) acumulativa_meta.value = { loading: true };
 
     let p_cron;
     let mon;
@@ -140,7 +139,7 @@ if (etapa_id) {
       p_cron = await CronogramasStore.getItemByParent(meta_id, 'meta_id');
       mon = await EtapasStore.getMonitoramento(p_cron.id, etapa_id);
       if (mon) {
-        acumulativa_meta.value = !mon.inativo ? '1' : false;
+        acumulativa_meta.value = !mon.inativo;
         acumulativa_meta_o.value = mon.ordem;
       }
     }
@@ -596,7 +595,6 @@ function maskDate(el) {
                 v-model="acumulativa_meta"
                 name="acumulativa_meta"
                 type="checkbox"
-                value="1"
                 class="inputcheckbox"
               />
               <span :class="{ 'error': errors.acumulativa_meta }">
