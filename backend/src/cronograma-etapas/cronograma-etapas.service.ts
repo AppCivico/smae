@@ -429,7 +429,9 @@ export class CronogramaEtapaService {
             const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate, prisma);
             console.log('==================');
             console.log(dto);
-            console.log('ordem= ' + dto.ordem)
+            console.log('ordem= ' + dto.ordem);
+            console.log(nivelOrdemForCreate);
+            console.log(self);
             console.log('==================');
             const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
                 where: {
@@ -439,7 +441,7 @@ export class CronogramaEtapaService {
                     },
                 },
                 update: {
-                    ordem: dto.ordem,
+                    ordem: dto.ordem ? dto.ordem : nivelOrdemForCreate.ordem,
                     inativo: dto.inativo,
                 },
                 create: {
