@@ -9,13 +9,13 @@ export const textoParaFarolDeAtraso = ((grau: CronogramaEtapaAtrasoGrau | any, d
 
     case 'Moderado':
       return dias > 0
-        ? `Em atraso moderado de ${dias} dias`
-        : 'Em atraso moderado';
+        ? `Atraso moderado de ${dias} dias`
+        : 'Atraso moderado';
 
     case 'Alto':
       return dias > 0
-        ? `Em longo atraso de ${dias} dias`
-        : 'Em longo atraso';
+        ? `Atraso grave de ${dias} dias`
+        : 'Atraso grave';
 
     default:
       return null;
