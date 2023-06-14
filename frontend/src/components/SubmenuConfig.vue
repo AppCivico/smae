@@ -1,5 +1,5 @@
 <script setup>
-import { useAuthStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 

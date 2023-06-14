@@ -1,6 +1,6 @@
 <script setup>
 import { autenticação as schema } from '@/consts/formSchemas';
-import { useAuthStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
 import { Field, Form } from 'vee-validate';
 
 async function onSubmit(values) {
