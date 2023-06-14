@@ -464,11 +464,9 @@ export class CronogramaEtapaService {
                 const updates = [];
                 let novaOrdem: number | null = null;
                 for (const row of rows) {
-                    console.log('===========================');
-                    console.log(row.id);
-                    console.log(row.ordem);
                     novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
-                    console.log(novaOrdem);
+                    const rowsParaNovaOrdem = rows.filter(e => { e.ordem === novaOrdem});
+                    if (rowsParaNovaOrdem.length === 0) break;
 
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
@@ -477,9 +475,7 @@ export class CronogramaEtapaService {
 
                     const proximaOrdem = novaOrdem + 1;
                     const rowsParaProxOrdem = rows.filter(e => { e.ordem === proximaOrdem});
-
                     if (rowsParaProxOrdem.length === 0) break;
-                    console.log('===========================');
                 }
 
                 await Promise.all(updates);
