@@ -9,11 +9,17 @@ import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-i
 import { FilterIniciativaDto } from './dto/filter-iniciativa.dto';
 import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 
 @Injectable()
 export class IniciativaService {
     private readonly logger = new Logger(IniciativaService.name);
-    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService,
+        private readonly cronogramaEtapaService: CronogramaEtapaService
+    ) { }
 
     async create(createIniciativaDto: CreateIniciativaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -216,6 +222,12 @@ export class IniciativaService {
                         coordenador_responsavel_cp: true,
                     },
                 },
+                Cronograma: {
+                    take: 1,
+                    select: {
+                        id: true
+                    }
+                }
             },
         });
 
@@ -244,6 +256,17 @@ export class IniciativaService {
                 }
             }
 
+            let cronogramaAtraso: CronogramaAtrasoGrau | null = null;
+            if (dbIniciativa.Cronograma) {
+                const cronogramaId = dbIniciativa.Cronograma[0].id;
+
+                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: cronogramaId});
+                cronogramaAtraso = {
+                    id: cronogramaId,
+                    atraso_grau: await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet)
+                };
+            }
+
             ret.push({
                 id: dbIniciativa.id,
                 titulo: dbIniciativa.titulo,
@@ -256,6 +279,7 @@ export class IniciativaService {
                 orgaos_participantes: Object.values(orgaos),
                 compoe_indicador_meta: dbIniciativa.compoe_indicador_meta,
                 ativo: dbIniciativa.ativo,
+                cronograma: cronogramaAtraso,
             });
         }
 

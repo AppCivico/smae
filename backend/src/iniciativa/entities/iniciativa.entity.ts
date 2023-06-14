@@ -1,3 +1,4 @@
+import { CronogramaAtrasoGrau } from "src/common/dto/CronogramaAtrasoGrau.dto";
 import { IdSiglaDescricao } from "src/common/dto/IdSigla.dto";
 
 export class IdDesc {
@@ -28,4 +29,5 @@ export class Iniciativa {
     coordenadores_cp: IdNomeExibicao[];
     compoe_indicador_meta: boolean;
     ativo: boolean;
+    cronograma: CronogramaAtrasoGrau | null
 }

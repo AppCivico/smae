@@ -6,9 +6,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMetaDto, DadosCodTituloIniciativaDto, DadosCodTituloMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
-import { IdNomeExibicao, Meta, MetaCronograma, MetaOrgao, MetaTag } from './entities/meta.entity';
+import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
 import { error } from 'console';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -327,7 +328,7 @@ export class MetaService {
                 });
             }
 
-            let metaCronograma: MetaCronograma | null = null;
+            let metaCronograma: CronogramaAtrasoGrau | null = null;
             if (dbMeta.cronograma) {
                 const cronograma = dbMeta.cronograma[0];
 

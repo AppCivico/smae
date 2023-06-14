@@ -1,3 +1,4 @@
+import { CronogramaAtrasoGrau } from "src/common/dto/CronogramaAtrasoGrau.dto";
 import { IdSiglaDescricao } from "src/common/dto/IdSigla.dto";
 
 export class IdDesc {
@@ -21,11 +22,6 @@ export class MetaTag {
     descricao: string;
 }
 
-export class MetaCronograma {
-    id: number | null
-    atraso_grau: string | null
-}
-
 export class Meta {
     id: number;
     status: string;
@@ -41,5 +37,5 @@ export class Meta {
     orgaos_participantes: MetaOrgao[];
     coordenadores_cp: IdNomeExibicao[];
     tags: MetaTag[];
-    cronograma: MetaCronograma | null;
+    cronograma: CronogramaAtrasoGrau | null;
 }

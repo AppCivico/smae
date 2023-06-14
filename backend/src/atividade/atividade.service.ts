@@ -9,11 +9,17 @@ import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-ati
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { Atividade, AtividadeOrgao, IdNomeExibicao } from './entities/atividade.entity';
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 
 @Injectable()
 export class AtividadeService {
     private readonly logger = new Logger(AtividadeService.name);
-    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService,
+        private readonly cronogramaEtapaService: CronogramaEtapaService
+    ) { }
 
     async create(createAtividadeDto: CreateAtividadeDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -222,6 +228,12 @@ export class AtividadeService {
                         coordenador_responsavel_cp: true,
                     },
                 },
+                Cronograma: {
+                    take: 1,
+                    select: {
+                        id: true
+                    }
+                }
             },
         });
 
@@ -250,6 +262,17 @@ export class AtividadeService {
                 }
             }
 
+            let cronogramaAtraso: CronogramaAtrasoGrau | null = null;
+            if (dbAtividade.Cronograma) {
+                const cronogramaId = dbAtividade.Cronograma[0].id;
+
+                const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: cronogramaId});
+                cronogramaAtraso = {
+                    id: cronogramaId,
+                    atraso_grau: await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet)
+                };
+            }
+
             ret.push({
                 id: dbAtividade.id,
                 titulo: dbAtividade.titulo,
@@ -262,6 +285,7 @@ export class AtividadeService {
                 orgaos_participantes: Object.values(orgaos),
                 compoe_indicador_iniciativa: dbAtividade.compoe_indicador_iniciativa,
                 ativo: dbAtividade.ativo,
+                cronograma: cronogramaAtraso
             });
         }
 
