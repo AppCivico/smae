@@ -1,6 +1,6 @@
 <script setup>
 import { Field, Form } from 'vee-validate';
-import { useAuthStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
 import * as Yup from 'yup';
 
 const schema = Yup.object().shape({
