@@ -251,6 +251,7 @@ async function checkClose() {
                   :key="organ.id"
                   :value="organ.id"
                   :selected="orgao_id && organ.id == orgao_id"
+                  :title="organ.descricao"
                 >
                   {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
                 </option>

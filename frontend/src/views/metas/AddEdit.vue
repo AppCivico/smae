@@ -414,6 +414,7 @@ function filterResponsible(orgao_id) {
                   v-for="(o,k) in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))"
                   :key="k"
                   :value="o.id"
+                  :title="o.descricao"
                 >
                   {{ o.sigla }} - {{ truncate(o.descricao, 36) }}
                 </option>
@@ -473,6 +474,7 @@ function filterResponsible(orgao_id) {
                   v-for="o in OrgansStore.organResponsibles.filter(a=>a.id==item.orgao_id||!orgaos_participantes.map(b=>b.orgao_id).includes(a.id))"
                   :key="o.id"
                   :value="o.id"
+                  :title="o.descricao"
                 >
                   {{ o.sigla }} - {{ truncate(o.descricao, 36) }}
                 </option>

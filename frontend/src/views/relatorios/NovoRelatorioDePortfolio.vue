@@ -134,6 +134,7 @@ iniciar();
             v-for="item in órgãosComoLista"
             :key="item"
             :value="item.id"
+            :title="item.descricao"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
