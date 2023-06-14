@@ -1,12 +1,10 @@
 <script setup>
 import { Dashboard } from '@/components';
-import {
-  useAuthStore,
-  useMacrotemasStore,
-  useMetasStore,
-  useSubtemasStore,
-  useTemasStore,
-} from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useMacrotemasStore } from '@/stores/macrotemas.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useSubtemasStore } from '@/stores/subtemas.store';
+import { useTemasStore } from '@/stores/temas.store';
 import { storeToRefs } from 'pinia';
 import { reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';

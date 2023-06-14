@@ -1,5 +1,4 @@
-import { requestS } from '@/helpers';
-import { usePdMStore } from '@/stores';
+import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -19,7 +18,7 @@ export const useTemasStore = defineStore({
       try {
         if (this.Temas.loading) return;
         this.Temas = { loading: true };
-        const r = await requestS.get(`${baseUrl}/tema`);
+        const r = await this.requestS.get(`${baseUrl}/tema`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           if (!PdMStore.PdM.length) await PdMStore.getAll();
@@ -37,7 +36,7 @@ export const useTemasStore = defineStore({
     async getAllSimple() {
       this.Temas = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/tema`);
+        const r = await this.requestS.get(`${baseUrl}/tema`);
         this.Temas = r.linhas;
       } catch (error) {
         this.Temas = { error };
@@ -56,7 +55,7 @@ export const useTemasStore = defineStore({
       }
     },
     async insert(params) {
-      if (await requestS.post(`${baseUrl}/tema`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/tema`, params)) return true;
       return false;
     },
     async update(id, params) {
@@ -64,11 +63,11 @@ export const useTemasStore = defineStore({
         pdm_id: params.pdm_id,
         descricao: params.descricao,
       };
-      if (await requestS.patch(`${baseUrl}/tema/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/tema/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/tema/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/tema/${id}`)) return true;
       return false;
     },
     async filterTemas(f) {
