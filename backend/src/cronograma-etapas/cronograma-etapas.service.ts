@@ -454,7 +454,7 @@ export class CronogramaEtapaService {
 
             if ( dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem)) ) {
                 console.log('primeiro if');
-                const rows = await prisma.cronogramaEtapa.findMany({
+                let rows = await prisma.cronogramaEtapa.findMany({
                     where: {
                         cronograma_id: dto.cronograma_id,
                         nivel: cronogramaEtapa.nivel,
@@ -467,16 +467,21 @@ export class CronogramaEtapaService {
                     },
                     orderBy: { ordem: 'asc' }
                 });
-                
+
                 const updates = [];
+                let novaOrdem: number | null = null;
                 for (const row of rows) {
-                    const novaOrdem = row.ordem + 1;
+                    novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
 
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
                         data: { ordem: novaOrdem }
                     }));
 
+                    const proximaOrdem = novaOrdem + 1;
+                    const rowsParaProxOrdem = rows.filter(e => { e.ordem === proximaOrdem});
+
+                    if (rowsParaProxOrdem.length === 0) break;
                 }
 
                 await Promise.all(updates);
