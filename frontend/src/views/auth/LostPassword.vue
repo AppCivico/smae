@@ -1,8 +1,7 @@
 <script setup>
 import { Field, Form } from 'vee-validate';
-import * as Yup from 'yup';
-
 import { useAuthStore } from '@/stores';
+import * as Yup from 'yup';
 
 const schema = Yup.object().shape({
   username: Yup.string().email('E-mail inválido').required('Preencha seu e-mail'),
