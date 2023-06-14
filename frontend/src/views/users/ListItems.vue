@@ -80,7 +80,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
               v-for="organ in organs"
               :key="organ.id"
               :value="organ.id"
-              :title="organ.descricao"
+              :title="organ.descricao?.length > 36 ? organ.descricao : null"
             >
               {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
             </option>

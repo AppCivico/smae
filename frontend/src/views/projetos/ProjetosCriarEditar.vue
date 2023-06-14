@@ -583,7 +583,7 @@ watch(emFoco, () => {
             :key="item.id"
             :value="item.id"
             :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
-            :title="item.descricao"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
@@ -593,7 +593,7 @@ watch(emFoco, () => {
           type="text"
           :value="emFoco.orgao_gestor.sigla + ' - ' + truncate(emFoco.orgao_gestor.descricao, 36)"
           class="inputtext light mb1"
-          :title="emFoco.descricao"
+          :title="emFoco.orgao_gestor.descricao?.length > 36 ? emFoco.orgao_gestor.descricao : null"
           disabled
         >
         <ErrorMessage
@@ -686,7 +686,7 @@ watch(emFoco, () => {
             :key="item"
             :value="item.id"
             :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
-            :title="item.descricao"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
@@ -1120,7 +1120,7 @@ watch(emFoco, () => {
                     DotaçãoSegmentos?.[fields[idx].value.fonte_recurso_ano]?.fonte_recursos || []"
                   :key="item.codigo"
                   :value="item.codigo"
-                  :title="item.descricao"
+                  :title="item.descricao?.length > 36 ? item.descricao : null"
                 >
                   {{ item.codigo }} - {{ truncate(item.descricao, 36) }}
                 </option>

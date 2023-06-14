@@ -171,7 +171,7 @@ iniciar();
             v-for="item in órgãosComoLista"
             :key="item"
             :value="item.id"
-            :title="item.descricao"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>

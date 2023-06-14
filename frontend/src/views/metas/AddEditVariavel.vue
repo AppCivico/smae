@@ -468,7 +468,7 @@ function fieldToDate(d) {
             v-for="a in lastParent.orgaos_participantes"
             :key="a.orgao.id"
             :value="a.orgao.id"
-            :title="a.orgao.descricao"
+            :title="a.orgao.descricao?.length > 36 ? a.orgao.descricao : null"
           >
             {{ a.orgao.sigla }} - {{ truncate(a.orgao.descricao, 36) }}
           </option>
