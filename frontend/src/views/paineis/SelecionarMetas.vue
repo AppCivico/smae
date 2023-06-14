@@ -32,7 +32,7 @@ MetasStore.getPdM();
 
 const filters = reactive({
   groupBy: localStorage.getItem('groupBy') ?? 'macro_tema',
-  currentFilter: '',
+  filteredId: '',
 });
 const itemsFiltered = ref(groupedMetas);
 

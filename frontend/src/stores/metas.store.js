@@ -103,8 +103,8 @@ export const useMetasStore = defineStore({
           const ct = this.activePdm[`possui_${f.groupBy}`];
           this.tempMetas = this.Metas.filter((u) => {
             let r = 1;
-            if (tt && ct && f.currentFilter) {
-              r = u[f.groupBy].id == f.currentFilter;
+            if (tt && ct && f.filteredId) {
+              r = u[f.groupBy].id == f.filteredId;
             }
             return r;
           });
