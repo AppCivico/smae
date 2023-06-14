@@ -1,5 +1,5 @@
 <script setup>
-import { usePdMStore } from '@/stores';
+import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
 
 const props = defineProps(['group', 'chave', 'link']);

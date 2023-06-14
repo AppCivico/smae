@@ -1,5 +1,5 @@
 import { storeToRefs } from 'pinia';
-import { useMetasStore } from '@/stores';
+import { useMetasStore } from '@/stores/metas.store';
 import { router } from '@/router';
 
 export const AtividadeAtiva = (async()=>{
