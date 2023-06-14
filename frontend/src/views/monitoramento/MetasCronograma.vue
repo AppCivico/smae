@@ -99,7 +99,7 @@ function vazio(s) {
           <div class="status">
             <span
               :class="classeParaFarolDeAtraso(r.etapa.atraso_grau)"
-              :title="textoParaFarolDeAtraso(r.etapa.atraso_grau, r.etapa.atraso)"
+              :title="textoParaFarolDeAtraso(r.etapa.atraso_grau)"
             >{{ index + 1 }}</span>
           </div>
           <div class="title mb1">
@@ -207,7 +207,7 @@ function vazio(s) {
             <div class="status">
               <span
                 :class="classeParaFarolDeAtraso(rr.atraso_grau)"
-                :title="textoParaFarolDeAtraso(rr.atraso_grau, rr.atraso)"
+                :title="textoParaFarolDeAtraso(rr.atraso_grau)"
               >
                 <small class="niveis-pais">{{ index + 1 }}.</small>{{ rrindex + 1 }}
               </span>
@@ -320,7 +320,7 @@ function vazio(s) {
                     <span
                       class="farol f0"
                       :class="classeParaFarolDeAtraso(rrr.atraso_grau)"
-                      :title="textoParaFarolDeAtraso(rrr.atraso_grau, rrr.atraso)"
+                      :title="textoParaFarolDeAtraso(rrr.atraso_grau)"
                     >
                       <small class="niveis-pais">{{ index + 1 }}.{{ rrindex + 1 }}.</small>{{ rrrindex + 1 }}
                     </span>
