@@ -322,7 +322,7 @@ export const liçãoAprendida = object()
   .shape({
     contexto: string()
       .label('Contexto')
-      .nullable(),
+      .required(),
     data_registro: date()
       .label('Data do registro')
       .required()
