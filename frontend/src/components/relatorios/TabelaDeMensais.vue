@@ -1,8 +1,9 @@
 <script setup>
 import dateToDate from '@/helpers/dateToDate';
-import {
-  useAlertStore, useAuthStore, usePaineisStore, useRelatoriosStore
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { usePaineisStore } from '@/stores/paineis.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
@@ -49,9 +50,9 @@ function excluirRelatório(id) {
       </tr>
     </thead>
     <tbody>
-      <template v-if="relatoriosStore.relatorios.length">
+      <template v-if="relatoriosStore.lista.length">
         <tr
-          v-for="item in relatoriosStore.relatorios"
+          v-for="item in relatoriosStore.lista"
           :key="item.id"
         >
           <td>{{ item.parametros.mes }}/{{ item.parametros.ano }}</td>
