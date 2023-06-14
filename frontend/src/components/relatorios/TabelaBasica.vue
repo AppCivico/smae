@@ -72,6 +72,11 @@ function excluirRelatório(id) {
           </td>
         </tr>
       </template>
+      <tr v-else-if="!relatoriosStore.loading">
+        <td colspan="4">
+          Nenhum resultado encontrado.
+        </td>
+      </tr>
       <tr v-else-if="relatoriosStore.loading">
         <td
           colspan="4"
@@ -83,11 +88,6 @@ function excluirRelatório(id) {
       <tr v-else-if="relatoriosStore.error">
         <td colspan="4">
           erro: {{ relatoriosStore.error }}
-        </td>
-      </tr>
-      <tr v-else>
-        <td colspan="4">
-          Nenhum resultado encontrado.
         </td>
       </tr>
     </tbody>

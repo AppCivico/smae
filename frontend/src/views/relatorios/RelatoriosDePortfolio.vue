@@ -1,17 +1,16 @@
 <script setup>
+import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import TabelaBásica from '@/components/relatorios/TabelaBasica.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
 
 const relatóriosStore = useRelatoriosStore();
 const { temPermissãoPara } = storeToRefs(useAuthStore());
+const fonte = 'Projetos';
 
-onMounted(() => {
-  relatóriosStore.$reset();
-  relatóriosStore.getAll({ fonte: 'Projetos' });
-});
+relatóriosStore.$reset();
+relatóriosStore.getAll({ fonte });
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -26,5 +25,7 @@ onMounted(() => {
     </router-link>
   </div>
 
-  <TabelaBásica />
+  <TabelaBásica class="mb1" />
+
+  <BotãoParaCarregarMais :fonte="fonte" />
 </template>
