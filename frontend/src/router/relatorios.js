@@ -1,23 +1,83 @@
-import MenuSecundario from '@/components/MenuSecundario.vue';
-import NovoMensal from '@/views/relatorios/NovoMensal.vue';
-import NovoOrcamentarioPdM from '@/views/relatorios/NovoOrcamentarioPdM.vue';
-import NovoOrçamentárioPortfolio from '@/views/relatorios/NovoOrcamentarioPortfolio.vue';
-import NovoRelatórioDePortfolio from '@/views/relatorios/NovoRelatorioDePortfolio.vue';
-import NovoRelatórioDePrevisãoDeCustoPdM from '@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPdM.vue';
-import NovoRelatórioDePrevisãoDeCustoPortfolio from '@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolio.vue';
-import NovoRelatórioDeProjeto from '@/views/relatorios/NovoRelatorioDeProjeto.vue';
-import NovoRelatórioDeStatus from '@/views/relatorios/NovoRelatorioDeStatus.vue';
-import NovoSemestralOuAnual from '@/views/relatorios/NovoSemestralOuAnual.vue';
-import RelatóriosDePortfolio from '@/views/relatorios/RelatoriosDePortfolio.vue';
-import RelatóriosDePrevisãoDeCustoPdM from '@/views/relatorios/RelatoriosDePrevisaoDeCustoPdM.vue';
-import RelatóriosDePrevisãoDeCustoPortfolio from '@/views/relatorios/RelatoriosDePrevisaoDeCustoPortfolio.vue';
-import RelatoriosDeProjeto from '@/views/relatorios/RelatoriosDeProjeto.vue';
-import RelatóriosDeStatus from '@/views/relatorios/RelatoriosDeStatus.vue';
-import RelatoriosMensais from '@/views/relatorios/RelatoriosMensais.vue';
-import RelatoriosOrcamentariosPdM from '@/views/relatorios/RelatoriosOrcamentariosPdM.vue';
-import RelatóriosOrçamentáriosPortfolio from '@/views/relatorios/RelatoriosOrcamentariosPortfolio.vue';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
-import RelatoriosSemestraisOuAnuais from '@/views/relatorios/RelatoriosSemestraisOuAnuais.vue';
+import { defineAsyncComponent } from 'vue';
+
+const MenuSecundario = defineAsyncComponent({
+  loader: () => import('@/components/MenuSecundario.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoMensal = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoMensal.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoOrcamentarioPdM = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoOrcamentarioPdM.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoOrçamentárioPortfolio = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoOrcamentarioPortfolio.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoRelatórioDePortfolio = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDePortfolio.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoRelatórioDePrevisãoDeCustoPdM = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPdM.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoRelatórioDePrevisãoDeCustoPortfolio = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolio.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoRelatórioDeProjeto = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDeProjeto.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoRelatórioDeStatus = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoRelatorioDeStatus.vue'),
+  loadingComponent: LoadingComponent,
+});
+const NovoSemestralOuAnual = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosDePortfolio = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDePortfolio.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosDePrevisãoDeCustoPdM = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPdM.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosDePrevisãoDeCustoPortfolio = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDePrevisaoDeCustoPortfolio.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatoriosDeProjeto = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDeProjeto.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosDeStatus = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosDeStatus.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatoriosMensais = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosMensais.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatoriosOrcamentariosPdM = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPdM.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatóriosOrçamentáriosPortfolio = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosOrcamentariosPortfolio.vue'),
+  loadingComponent: LoadingComponent,
+});
+const RelatoriosSemestraisOuAnuais = defineAsyncComponent({
+  loader: () => import('@/views/relatorios/RelatoriosSemestraisOuAnuais.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: '/relatorios',
