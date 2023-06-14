@@ -2,9 +2,11 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
-import {
-  useAlertStore, usePaineisStore, usePdMStore, useRelatoriosStore, useTagsStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePaineisStore } from '@/stores/paineis.store';
+import { usePdMStore } from '@/stores/pdm.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { computed, onMounted } from 'vue';

@@ -5,7 +5,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { useRelatoriosStore } from '@/stores/relatorios.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';

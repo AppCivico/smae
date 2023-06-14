@@ -1,6 +1,7 @@
 <script setup>
 import TabelaDeSemestraisOuAnuais from '@/components/relatorios/TabelaDeSemestraisOuAnuais.vue';
-import { useAuthStore, useRelatoriosStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -11,7 +12,7 @@ const route = useRoute();
 const relatóriosStore = useRelatoriosStore();
 
 onMounted(() => {
-  relatóriosStore.clear();
+  relatóriosStore.$reset();
   relatóriosStore.getAll({ fonte: 'Indicadores' });
 });
 </script>

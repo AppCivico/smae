@@ -5,7 +5,7 @@ import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
-import { useRelatoriosStore } from '@/stores/relatorios.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';

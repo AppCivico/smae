@@ -1,8 +1,8 @@
 <script setup>
 import TabelaDeMensais from '@/components/relatorios/TabelaDeMensais.vue';
-import {
-  useAuthStore, usePaineisStore, useRelatoriosStore
-} from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { usePaineisStore } from '@/stores/paineis.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -15,7 +15,7 @@ const relatóriosStore = useRelatoriosStore();
 
 onMounted(() => {
   PainéisStore.getAll();
-  relatóriosStore.clear();
+  relatóriosStore.$reset();
   relatóriosStore.getAll({ fonte: 'MonitoramentoMensal' });
 });
 </script>

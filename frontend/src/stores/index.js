@@ -19,7 +19,7 @@ export * from './pdm.store';
 export * from './portfolios.store.ts';
 export * from './projetos.store.ts';
 export * from './regions.store';
-export * from './relatorios.store';
+export * from './relatorios.store.ts';
 export * from './resources.store';
 export * from './sideBar.store';
 export * from './subtemas.store';

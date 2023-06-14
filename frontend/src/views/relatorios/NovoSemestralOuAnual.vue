@@ -1,6 +1,8 @@
 <script setup>
 import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
-import { useAlertStore, usePdMStore, useRelatoriosStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePdMStore } from '@/stores/pdm.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted } from 'vue';
