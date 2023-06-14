@@ -1,6 +1,5 @@
-import { requestS } from '@/helpers';
-import { useEtapasStore } from '@/stores';
 import dateToField from '@/helpers/dateToField';
+import { useEtapasStore } from '@/stores/etapas.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -28,7 +27,7 @@ export const useCronogramasStore = defineStore({
         }
         if (!this.Cronogramas[parent_field][p_id]) {
           this.Cronogramas[parent_field][p_id] = { loading: true };
-          const r = await requestS.get(`${baseUrl}/cronograma?${parent_field}=${p_id}`);
+          const r = await this.requestS.get(`${baseUrl}/cronograma?${parent_field}=${p_id}`);
           this.Cronogramas[parent_field][p_id] = r.linhas.map((x) => {
             x.inicio_previsto = dateToField(x.inicio_previsto);
             x.termino_previsto = dateToField(x.termino_previsto);
@@ -81,16 +80,16 @@ export const useCronogramasStore = defineStore({
       }
     },
     async insert(params) {
-      const r = await requestS.post(`${baseUrl}/cronograma`, params);
+      const r = await this.requestS.post(`${baseUrl}/cronograma`, params);
       if (r.id) return r.id;
       return false;
     },
     async update(id, params) {
-      if (await requestS.patch(`${baseUrl}/cronograma/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/cronograma/${id}`, params)) return true;
       return false;
     },
     async delete(cronograma_id) {
-      const r = await requestS.delete(`${baseUrl}/cronograma/${cronograma_id}`);
+      const r = await this.requestS.delete(`${baseUrl}/cronograma/${cronograma_id}`);
       if (r) return true;
       return false;
     },

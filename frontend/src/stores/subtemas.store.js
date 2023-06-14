@@ -1,5 +1,4 @@
-import { requestS } from '@/helpers';
-import { usePdMStore } from '@/stores';
+import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -19,7 +18,7 @@ export const useSubtemasStore = defineStore({
       try {
         if (this.Subtemas.loading) return;
         this.Subtemas = { loading: true };
-        const r = await requestS.get(`${baseUrl}/subtema`);
+        const r = await this.requestS.get(`${baseUrl}/subtema`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           if (!PdMStore.PdM.length) await PdMStore.getAll();
@@ -37,7 +36,7 @@ export const useSubtemasStore = defineStore({
     async getAllSimple() {
       this.Subtemas = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/subtema`);
+        const r = await this.requestS.get(`${baseUrl}/subtema`);
         this.Subtemas = r.linhas;
       } catch (error) {
         this.Subtemas = { error };
@@ -60,7 +59,7 @@ export const useSubtemasStore = defineStore({
         pdm_id: Number(params.pdm_id),
         descricao: params.descricao,
       };
-      if (await requestS.post(`${baseUrl}/subtema`, m)) return true;
+      if (await this.requestS.post(`${baseUrl}/subtema`, m)) return true;
       return false;
     },
     async update(id, params) {
@@ -68,11 +67,11 @@ export const useSubtemasStore = defineStore({
         pdm_id: Number(params.pdm_id),
         descricao: params.descricao,
       };
-      if (await requestS.patch(`${baseUrl}/subtema/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/subtema/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/subtema/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/subtema/${id}`)) return true;
       return false;
     },
     async filterSubtemas(f) {

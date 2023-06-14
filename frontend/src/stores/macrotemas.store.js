@@ -1,5 +1,4 @@
-import { requestS } from '@/helpers';
-import { usePdMStore } from '@/stores';
+import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -19,7 +18,7 @@ export const useMacrotemasStore = defineStore({
       try {
         if (this.Macrotemas.loading) return;
         this.Macrotemas = { loading: true };
-        const r = await requestS.get(`${baseUrl}/macrotema`);
+        const r = await this.requestS.get(`${baseUrl}/macrotema`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           if (!PdMStore.PdM.length) await PdMStore.getAll();
@@ -37,7 +36,7 @@ export const useMacrotemasStore = defineStore({
     async getAllSimple() {
       this.Macrotemas = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/macrotema`);
+        const r = await this.requestS.get(`${baseUrl}/macrotema`);
         this.Macrotemas = r.linhas;
       } catch (error) {
         this.Macrotemas = { error };
@@ -60,7 +59,7 @@ export const useMacrotemasStore = defineStore({
         pdm_id: Number(params.pdm_id),
         descricao: params.descricao,
       };
-      if (await requestS.post(`${baseUrl}/macrotema`, m)) return true;
+      if (await this.requestS.post(`${baseUrl}/macrotema`, m)) return true;
       return false;
     },
     async update(id, params) {
@@ -68,11 +67,11 @@ export const useMacrotemasStore = defineStore({
         pdm_id: Number(params.pdm_id),
         descricao: params.descricao,
       };
-      if (await requestS.patch(`${baseUrl}/macrotema/${id}`, m)) return true;
+      if (await this.requestS.patch(`${baseUrl}/macrotema/${id}`, m)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/macrotema/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/macrotema/${id}`)) return true;
       return false;
     },
     async filterMacrotemas(f) {

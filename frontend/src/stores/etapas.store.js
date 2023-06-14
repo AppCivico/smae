@@ -1,4 +1,3 @@
-import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -44,7 +43,7 @@ export const useEtapasStore = defineStore({
       try {
         if (!this.Etapas[cronograma_id]) {
           this.Etapas[cronograma_id] = { loading: true };
-          const r = await requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}`);
+          const r = await this.requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}`);
           this.Etapas[cronograma_id] = r.linhas.length
             ? r.linhas.map((x) => {
               if (x.cronograma_origem_etapa && x.cronograma_origem_etapa.id == cronograma_id) {
@@ -103,7 +102,7 @@ export const useEtapasStore = defineStore({
       params.termino_previsto = this.fieldToDate(params.termino_previsto);
       params.inicio_real = this.fieldToDate(params.inicio_real);
       params.termino_real = this.fieldToDate(params.termino_real);
-      const r = await requestS.post(`${baseUrl}/cronograma/${cronograma_id}/etapa`, params);
+      const r = await this.requestS.post(`${baseUrl}/cronograma/${cronograma_id}/etapa`, params);
       if (r.id) return r.id;
       return false;
     },
@@ -112,17 +111,17 @@ export const useEtapasStore = defineStore({
       params.termino_previsto = this.fieldToDate(params.termino_previsto);
       params.inicio_real = this.fieldToDate(params.inicio_real);
       params.termino_real = this.fieldToDate(params.termino_real);
-      if (await requestS.patch(`${baseUrl}/etapa/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/etapa/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/etapa/${id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/etapa/${id}`)) {
         return true;
       }
       return false;
     },
     async monitorar(params) {
-      if (await requestS.post(`${baseUrl}/cronograma-etapa`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/cronograma-etapa`, params)) return true;
       return false;
     },
     async getMonitoramento(cronograma_id, etapa_id) {
@@ -130,7 +129,7 @@ export const useEtapasStore = defineStore({
         if (!cronograma_id) throw 'Cronograma inválido';
         if (!etapa_id) throw 'Etapa inválida';
         this.singleMonitoramento = { loading: true };
-        const r = await requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);
+        const r = await this.requestS.get(`${baseUrl}/cronograma-etapa?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);
         this.singleMonitoramento = r.linhas.length ? r.linhas[0] : {};
         return r.linhas.length ? r.linhas[0] : {};
       } catch (error) {

@@ -1,5 +1,5 @@
-import { requestS } from '@/helpers';
-import { useODSStore, usePdMStore } from '@/stores';
+import { useODSStore } from '@/stores/ods.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -19,7 +19,7 @@ export const useTagsStore = defineStore({
       try {
         if (this.Tags.loading) return;
         this.Tags = { loading: true };
-        const r = await requestS.get(`${baseUrl}/tag`);
+        const r = await this.requestS.get(`${baseUrl}/tag`);
         if (r.linhas.length) {
           const PdMStore = usePdMStore();
           const ODSStore = useODSStore();
@@ -44,7 +44,7 @@ export const useTagsStore = defineStore({
     async getAllSimple() {
       this.Tags = { loading: true };
       try {
-        const r = await requestS.get(`${baseUrl}/tag`);
+        const r = await this.requestS.get(`${baseUrl}/tag`);
         if (r.linhas.length) {
           const ODSStore = useODSStore();
           await ODSStore.getAll();
@@ -72,15 +72,15 @@ export const useTagsStore = defineStore({
       }
     },
     async insert(params) {
-      if (await requestS.post(`${baseUrl}/tag`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/tag`, params)) return true;
       return false;
     },
     async update(id, params) {
-      if (await requestS.patch(`${baseUrl}/tag/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/tag/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/tag/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/tag/${id}`)) return true;
       return false;
     },
     async filterTags(f) {

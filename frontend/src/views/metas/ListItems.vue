@@ -1,6 +1,10 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { useAuthStore, useEditModalStore, useMetasStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useTagsStore } from '@/stores/tags.store';
 import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue';
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
