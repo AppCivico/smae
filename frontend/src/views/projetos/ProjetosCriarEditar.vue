@@ -6,6 +6,7 @@ import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudanç
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
+import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
@@ -16,8 +17,10 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, Form,
 } from 'vee-validate';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const listaDeStatuses = arrayToValueAndLabel(statuses);
 
@@ -55,6 +58,26 @@ const props = defineProps({
 });
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
+const possíveisGestores = ref([]);
+const possíveisResponsáveis = ref([]);
+
+const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
+  .reduce((acc, cur) => {
+    if (!acc[cur.orgao_id]) {
+      acc[cur.orgao_id] = [];
+    }
+    acc[cur.orgao_id].push(cur);
+    return acc;
+  }, {}));
+
+const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisResponsáveis.value
+  .reduce((acc, cur) => {
+    if (!acc[cur.orgao_id]) {
+      acc[cur.orgao_id] = [];
+    }
+    acc[cur.orgao_id].push(cur);
+    return acc;
+  }, {}));
 
 const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
@@ -107,6 +130,34 @@ async function buscarMetaSimplificada(valorOuEvento) {
 
   if (idDaMeta) {
     await projetosStore.buscarMetaSimplificada({ meta_ids: idDaMeta });
+  }
+}
+
+async function buscarPossíveisGestores() {
+  try {
+    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gestor_de_projeto: true });
+
+    if (Array.isArray(linhas)) {
+      possíveisGestores.value = linhas;
+    } else {
+      throw new Error('Lista de Gestores fora do formato esperado');
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+async function buscarPossíveisResponsáveis() {
+  try {
+    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { colaborador_de_projeto: true });
+
+    if (Array.isArray(linhas)) {
+      possíveisResponsáveis.value = linhas;
+    } else {
+      throw new Error('Lista de Responsáveis fora do formato esperado');
+    }
+  } catch (error) {
+    alertStore.error(error);
   }
 }
 
@@ -171,6 +222,9 @@ function iniciar() {
     portfolioStore.buscarTudo();
   }
 
+  buscarPossíveisGestores();
+  buscarPossíveisResponsáveis();
+
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
   });
@@ -208,7 +262,6 @@ function excluirProjeto(id) {
 watch(emFoco, () => {
   iniciar();
 }, { immediate: true });
-
 </script>
 
 <template>
@@ -529,6 +582,7 @@ watch(emFoco, () => {
               órgãosDisponíveisNessePortfolio(values.portfolio_id) || []"
             :key="item.id"
             :value="item.id"
+            :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
             :title="item.descricao"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -561,7 +615,7 @@ watch(emFoco, () => {
             busca: '',
             participantes: values.responsaveis_no_orgao_gestor || []
           }"
-          :grupo="órgãosQueTemResponsáveisEPorId[values.orgao_gestor_id]?.responsible
+          :grupo="possíveisGestoresPorÓrgãoId[values.orgao_gestor_id]
             || []"
           :class="{
             error: errors.responsaveis_no_orgao_gestor,
@@ -631,6 +685,7 @@ watch(emFoco, () => {
             v-for="item in órgãosQueTemResponsáveis"
             :key="item"
             :value="item.id"
+            :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
             :title="item.descricao"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -658,8 +713,7 @@ watch(emFoco, () => {
             error: errors.responsavel_id,
             loading: portfolioStore.chamadasPendentes.lista
           }"
-          :disabled="!órgãosQueTemResponsáveisEPorId[values.orgao_responsavel_id]
-            ?.responsible?.length"
+          :disabled="!possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]?.length"
           @update:model-value="values.responsavel_id = Number(values.responsavel_id)
             || null"
         >
@@ -668,7 +722,7 @@ watch(emFoco, () => {
           </option>
           <option
             v-for="item in
-              órgãosQueTemResponsáveisEPorId[values.orgao_responsavel_id]?.responsible || []"
+              possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id] || []"
             :key="item.id"
             :value="item.id"
           >
