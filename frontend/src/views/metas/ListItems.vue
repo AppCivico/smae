@@ -92,21 +92,21 @@ function groupSlug(s) {
             <router-link
               to="/metas/macrotemas/novo"
             >
-              {{ activePdm.rotulo_macro_tema??'Macrotema' }}
+              {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
             </router-link>
           </li>
           <li v-if="perm?.CadastroTema?.inserir && activePdm.possui_tema">
             <router-link
               to="/metas/temas/novo"
             >
-              {{ activePdm.rotulo_tema??'Tema' }}
+              {{ activePdm.rotulo_tema ?? 'Tema' }}
             </router-link>
           </li>
           <li v-if="perm?.CadastroSubTema?.inserir && activePdm.possui_sub_tema">
             <router-link
               to="/metas/subtemas/novo"
             >
-              {{ activePdm.rotulo_sub_tema??'Subtema' }}
+              {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
             </router-link>
           </li>
           <li v-if="perm?.CadastroTag?.inserir">
@@ -129,27 +129,27 @@ function groupSlug(s) {
         >
           <option
             v-if="activePdm.possui_macro_tema"
-            :selected="filters.groupBy=='macro_tema'"
+            :selected="filters.groupBy == 'macro_tema'"
             value="macro_tema"
           >
-            {{ activePdm.rotulo_macro_tema??'Macrotema' }}
+            {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
           </option>
           <option
             v-if="activePdm.possui_tema"
-            :selected="filters.groupBy=='tema'"
+            :selected="filters.groupBy == 'tema'"
             value="tema"
           >
-            {{ activePdm.rotulo_tema??'Tema' }}
+            {{ activePdm.rotulo_tema ?? 'Tema' }}
           </option>
           <option
             v-if="activePdm.possui_sub_tema"
-            :selected="filters.groupBy=='sub_tema'"
+            :selected="filters.groupBy == 'sub_tema'"
             value="sub_tema"
           >
-            {{ activePdm.rotulo_sub_tema??'Subtema' }}
+            {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
           </option>
           <option
-            :selected="filters.groupBy=='todas'"
+            :selected="filters.groupBy == 'todas'"
             value="todas"
           >
             Todas as metas
