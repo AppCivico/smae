@@ -1,24 +1,20 @@
 <script setup>
+import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import TabelaDeOrçamentários from '@/components/relatorios/TabelaDeOrcamentarios.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
-import { useRoute } from 'vue-router';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
-const route = useRoute();
-
 const relatóriosStore = useRelatoriosStore();
+const fonte = 'ProjetoOrcamento';
 
-onMounted(() => {
-  relatóriosStore.$reset();
-  relatóriosStore.getAll({ fonte: 'ProjetoOrcamento' });
-});
+relatóriosStore.$reset();
+relatóriosStore.getAll({ fonte });
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route.meta.título }}</h1>
+    <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <router-link
       v-if="temPermissãoPara('Reports.executar')"
@@ -34,5 +30,7 @@ onMounted(() => {
       </div>
   </div-->
 
-  <TabelaDeOrçamentários />
+  <TabelaDeOrçamentários class="mb1" />
+
+  <BotãoParaCarregarMais :fonte="fonte" />
 </template>
