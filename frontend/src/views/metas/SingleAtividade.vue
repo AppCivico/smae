@@ -1,10 +1,11 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
-import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
 import { useAtividadesStore, useAuthStore, useMetasStore } from '@/stores';
+import { AtividadeAtiva } from '@/helpers/AtividadeAtiva';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 AtividadeAtiva();
 
