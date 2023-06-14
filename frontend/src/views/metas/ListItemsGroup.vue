@@ -45,7 +45,7 @@ currentStore.getById(id);
 
 const filters = reactive({
   groupBy: props.group,
-  currentFilter: id,
+  filteredId: id,
 });
 const itemsFiltered = ref(tempMetas);
 
