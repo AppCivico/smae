@@ -482,7 +482,7 @@ export class CronogramaEtapaService {
                         console.log('=======================');
                         console.log('rowOrdem = ' + row.ordem);
             
-                        if ((self && ordemUtilizada < self.ordem) || (ordemUtilizada == row.ordem)) {
+                        if ((self && ordemUtilizada < self.ordem) || (ordemUtilizada == row.ordem && (self && self.ordem - ordemUtilizada != -1))) {
                             console.log('ordem irá subir');
                             newOrdem = row.ordem + 1;
                         } else {
