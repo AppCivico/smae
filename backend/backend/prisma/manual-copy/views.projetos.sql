@@ -91,9 +91,18 @@ select
         (serie.meta_realizada - coalesce(indicador.acumulado_valor_base,0)) / (serie.meta_prevista - coalesce(indicador.acumulado_valor_base, 0))
       ) * 100)
     end as percetual_execucao,
-    case when coalesce(serie.meta_realizada, 0) >= coalesce(serie.meta_prevista, 1)
+
+    /*case when coalesce(serie.meta_realizada, 0) >= coalesce(serie.meta_prevista, 1)
         then 'Atingida' else 'Não Atingida'
-    end AS status_meta,
+    end*/
+    (
+        select t.descricao
+        from ods a
+        join tag t on t.ods_id = a.id
+        join meta_tag mt on mt.meta_id = meta.id
+        where titulo = 'Status'
+        limit 1
+    ) AS status_meta,
     meta.macro_tema_id, meta.tema_id,
     meta.titulo as titulo_meta
 from meta
