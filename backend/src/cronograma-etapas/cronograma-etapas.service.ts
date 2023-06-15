@@ -411,7 +411,8 @@ export class CronogramaEtapaService {
                 }
             });
 
-            const nivelOrdemForUpsert: NivelOrdemForUpsert = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, prisma);
+            const selfExiste: boolean = self ? true : false;
+            const nivelOrdemForUpsert: NivelOrdemForUpsert = await this.getNivelOrdemForCreate(selfExiste, dto.ordem, dto.cronograma_id, dto.etapa_id, prisma);
             const rowMaxOrdem = await prisma.cronogramaEtapa.findFirst({
                 where: {
                     cronograma_id: dto.cronograma_id,
@@ -491,7 +492,7 @@ export class CronogramaEtapaService {
         return { id };
     }
 
-    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForUpsert> {
+    async getNivelOrdemForCreate(self_existe: boolean, ordem_input: number | undefined, cronograma_id: number, etapa_id: number, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForUpsert> {
         let nivel: CronogramaEtapaNivel;
         let ordem: number;
 
@@ -528,7 +529,11 @@ export class CronogramaEtapaService {
         });
 
         if (ultimaRow) {
-            ordem = ultimaRow.ordem + 1;
+            if (self_existe && ordem_input && ordem_input > ultimaRow.ordem) {
+                ordem = ultimaRow.ordem;
+            } else {
+                ordem = ultimaRow.ordem + 1;
+            }
         } else {
             ordem = 1;
         }
