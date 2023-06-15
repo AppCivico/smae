@@ -440,7 +440,6 @@ export class CronogramaEtapaService {
             });
 
             if ( dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem)) ) {
-                console.log('primeiro if');
                 let rows = await prisma.cronogramaEtapa.findMany({
                     where: {
                         cronograma_id: dto.cronograma_id,
@@ -463,7 +462,7 @@ export class CronogramaEtapaService {
 
                         if (novaOrdem === 0) continue;
                     } else {
-                        novaOrdem = row.ordem + 1;
+                        novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
                     }
 
                     updates.push(prisma.cronogramaEtapa.update({
