@@ -226,6 +226,15 @@ export class EtapaService {
             },
         });
 
+        const cronogramas = await this.prisma.cronogramaEtapa.findMany({
+            where: { etapa_id: id },
+            select: { id: true }
+        });
+
+        for (const cronograma of cronogramas) {
+            await this.cronogramaEtapaService.delete(cronograma.id, user);
+        }
+
         return removed;
     }
 
