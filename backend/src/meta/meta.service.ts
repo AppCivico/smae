@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -23,6 +23,8 @@ type DadosMetaIniciativaAtividadesDto = {
 
 @Injectable()
 export class MetaService {
+    private readonly logger = new Logger(MetaService.name);
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
@@ -209,6 +211,13 @@ export class MetaService {
             filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
+        if (filterIdIn) {
+            this.logger.debug('Filtrando apenas getMetasOndeSouResponsavel');
+            permissionsSet.push({
+                id: { in: filterIdIn }
+            });
+        }
+
         return permissionsSet;
     }
 
@@ -219,7 +228,7 @@ export class MetaService {
             where: {
                 AND: permissionsSet.length > 0 ? [
                     {
-                        OR: permissionsSet
+                        AND: permissionsSet
                     }
                 ] : undefined,
             },
@@ -236,7 +245,7 @@ export class MetaService {
             where: {
                 AND: permissionsSet.length > 0 ? [
                     {
-                        OR: permissionsSet
+                        AND: permissionsSet
                     }
                 ] : undefined,
                 pdm_id: filters?.pdm_id,
@@ -278,6 +287,9 @@ export class MetaService {
                             },
                         },
                     },
+                    orderBy: {
+                        tag: { descricao: 'asc' }
+                    }
                 },
                 cronograma: {
                     take: 1,
