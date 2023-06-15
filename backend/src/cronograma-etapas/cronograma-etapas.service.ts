@@ -466,14 +466,14 @@ export class CronogramaEtapaService {
                 for (const row of rows) {
                     novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
 
+                    const proximaOrdem = novaOrdem + 1;
+                    const rowsParaProxOrdem = rows.filter(e => { e.ordem === proximaOrdem});
+                    if (rowsParaProxOrdem.length === 0) break;
+
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
                         data: { ordem: novaOrdem }
                     }));
-
-                    const proximaOrdem = novaOrdem + 1;
-                    const rowsParaProxOrdem = rows.filter(e => { e.ordem === proximaOrdem});
-                    if (rowsParaProxOrdem.length === 0) break;
                 }
 
                 await Promise.all(updates);
