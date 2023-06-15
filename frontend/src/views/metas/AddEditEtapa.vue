@@ -65,7 +65,7 @@ const regiao_id_mount = ref(null);
 
 const minLevel = ref(0);
 
-const acumulativa_iniciativa = ref(0);
+const acumulativa_iniciativa = ref(false);
 const acumulativa_iniciativa_o = ref(0);
 const acumulativa_meta = ref(false);
 const acumulativa_meta_o = ref(0);
@@ -129,7 +129,7 @@ if (etapa_id) {
       p_cron = await CronogramasStore.getItemByParent(iniciativa_id, 'iniciativa_id');
       mon = await EtapasStore.getMonitoramento(p_cron.id, etapa_id);
       if (mon) {
-        acumulativa_iniciativa.value = !mon.inativo;
+        acumulativa_iniciativa.value = !!mon.ordem;
         acumulativa_iniciativa_o.value = mon.ordem;
       }
     }
@@ -137,7 +137,7 @@ if (etapa_id) {
       p_cron = await CronogramasStore.getItemByParent(meta_id, 'meta_id');
       mon = await EtapasStore.getMonitoramento(p_cron.id, etapa_id);
       if (mon) {
-        acumulativa_meta.value = !mon.inativo;
+        acumulativa_meta.value = !!mon.ordem;
         acumulativa_meta_o.value = mon.ordem;
       }
     }
