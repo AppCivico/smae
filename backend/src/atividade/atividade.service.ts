@@ -263,7 +263,7 @@ export class AtividadeService {
             }
 
             let cronogramaAtraso: CronogramaAtrasoGrau | null = null;
-            if (dbAtividade.Cronograma) {
+            if (dbAtividade.Cronograma && dbAtividade.Cronograma.length > 0) {
                 const cronogramaId = dbAtividade.Cronograma[0].id;
 
                 const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: cronogramaId});

@@ -257,8 +257,8 @@ export class IniciativaService {
             }
 
             let cronogramaAtraso: CronogramaAtrasoGrau | null = null;
-            if (dbIniciativa.Cronograma) {
-                const cronogramaId = dbIniciativa.Cronograma[0].id;
+            if (dbIniciativa.Cronograma && dbIniciativa.Cronograma.length > 0) {
+                const cronogramaId: number = dbIniciativa.Cronograma[0].id;
 
                 const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: cronogramaId});
                 cronogramaAtraso = {
