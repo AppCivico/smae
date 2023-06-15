@@ -298,6 +298,18 @@ export class UploadService {
         } as Download;
     }
 
+    getPersistentDownloadToken(id: number | null): string | null {
+        if (!id) return null;
+
+        return this.jwtService.sign(
+            {
+                arquivo_id: id,
+                aud: DOWNLOAD_AUD,
+            },
+            { noTimestamp: true },
+        );
+    }
+
     checkDownloadToken(downloadToken: string): number {
         let decoded: UploadBody | null = null;
         try {

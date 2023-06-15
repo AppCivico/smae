@@ -10,6 +10,7 @@ import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity
 import { error } from 'console';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
+import { UploadService } from 'src/upload/upload.service';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -24,7 +25,8 @@ type DadosMetaIniciativaAtividadesDto = {
 export class MetaService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService
+        private readonly cronogramaEtapaService: CronogramaEtapaService,
+        private readonly uploadService: UploadService,
     ) { }
 
     async create(createMetaDto: CreateMetaDto, user: PessoaFromJwt) {
@@ -272,13 +274,14 @@ export class MetaService {
                             select: {
                                 id: true,
                                 descricao: true,
+                                arquivo_icone_id: true
                             },
                         },
                     },
                 },
                 cronograma: {
                     take: 1,
-                    orderBy: {criado_em: 'asc'},
+                    orderBy: { criado_em: 'asc' },
                     select: {
                         id: true,
                         inicio_previsto: true,
@@ -325,6 +328,7 @@ export class MetaService {
                 tags.push({
                     id: metaTag.tag.id,
                     descricao: metaTag.tag.descricao,
+                    download_token: this.uploadService.getPersistentDownloadToken(metaTag.tag.arquivo_icone_id),
                 });
             }
 
@@ -334,7 +338,7 @@ export class MetaService {
 
                 let cronogramaAtraso: string | null = null;
                 if (cronograma) {
-                    const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: cronograma.id});
+                    const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({ cronograma_id: cronograma.id });
                     cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
                 }
                 metaCronograma = {
@@ -357,7 +361,13 @@ export class MetaService {
                 ativo: dbMeta.ativo,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
-                tags: tags,
+                tags: tags.map((r) => {
+                    return {
+                        id: r.id,
+                        descricao: r.descricao,
+                        download_token: this.uploadService.getPersistentDownloadToken(r.arquivo_icone_id),
+                    }
+                }),
                 cronograma: metaCronograma
             });
         }
