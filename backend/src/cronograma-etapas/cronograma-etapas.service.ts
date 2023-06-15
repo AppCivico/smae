@@ -439,41 +439,6 @@ export class CronogramaEtapaService {
                 select: { id: true, ordem: true, nivel: true },
             });
 
-            // if ( dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem)) ) {
-            //     let rows = await prisma.cronogramaEtapa.findMany({
-            //         where: {
-            //             cronograma_id: dto.cronograma_id,
-            //             nivel: cronogramaEtapa.nivel,
-            //             id: { not: cronogramaEtapa.id },
-            //             // ordem: { gte: self ? self.ordem : cronogramaEtapa.ordem }
-            //         },
-            //         select: {
-            //             id: true,
-            //             ordem: true
-            //         },
-            //         orderBy: { ordem: 'asc' }
-            //     });
-
-            //     const updates = [];
-            //     let novaOrdem: number | null = null;
-            //     for (const row of rows) {
-            //         if (row.ordem < cronogramaEtapa.ordem) {
-            //             novaOrdem = row.ordem - 1;
-
-            //             if (novaOrdem === 0) continue;
-            //         } else {
-            //             novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
-            //         }
-
-            //         updates.push(prisma.cronogramaEtapa.update({
-            //             where: { id: row.id },
-            //             data: { ordem: novaOrdem }
-            //         }));
-            //     }
-
-            //     await Promise.all(updates);
-            // }
-
             if (dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem))) {
                 let rows = await prisma.cronogramaEtapa.findMany({
                     where: {
@@ -597,12 +562,38 @@ export class CronogramaEtapaService {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
+ 
+        const res = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            const deleted = await this.prisma.cronogramaEtapa.delete({
+                where: { id: id },
+            });
 
-        const deleted = await this.prisma.cronogramaEtapa.delete({
-            where: { id: id },
+            const rows = await prisma.cronogramaEtapa.findMany({
+                where: {
+                    cronograma_id: deleted.cronograma_id,
+                    nivel: deleted.nivel,
+                    ordem: { gt: deleted.ordem },
+                },
+                select: {
+                    id: true,
+                    ordem: true,
+                },
+                orderBy: { ordem: 'asc' },
+            });
+    
+            const updates = rows.map((row) =>
+                prisma.cronogramaEtapa.update({
+                    where: { id: row.id },
+                    data: { ordem: row.ordem - 1 },
+                })
+            );
+    
+            await Promise.all(updates);
+
+            return deleted;
         });
 
-        return deleted;
+        return res;
     }
 
     async getDuracao(inicio_real: Date | null, termino_real: Date | null): Promise<string> {
