@@ -167,7 +167,7 @@ function groupSlug(s) {
         </select>
       </div>
       <div class="f1 mr1">
-        <label class="label tc300">Filtrar por órgão participante</label>
+        <label class="label tc300">Filtrar por órgão</label>
         <select
           v-model.number="filters.órgãoId"
           class="inputtext"
