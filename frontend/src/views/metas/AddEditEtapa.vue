@@ -122,8 +122,6 @@ if (etapa_id) {
   }
 
   if (etapa_id) {
-    if (atividade_id) acumulativa_iniciativa.value = { loading: true };
-
     let p_cron;
     let mon;
 
@@ -131,7 +129,7 @@ if (etapa_id) {
       p_cron = await CronogramasStore.getItemByParent(iniciativa_id, 'iniciativa_id');
       mon = await EtapasStore.getMonitoramento(p_cron.id, etapa_id);
       if (mon) {
-        acumulativa_iniciativa.value = !mon.inativo ? '1' : false;
+        acumulativa_iniciativa.value = !mon.inativo;
         acumulativa_iniciativa_o.value = mon.ordem;
       }
     }
@@ -552,13 +550,13 @@ function maskDate(el) {
         >
           <div class="f2">
             <label class="block">
-              <Field
+              <input
                 v-model="acumulativa_iniciativa"
                 name="acumulativa_iniciativa"
                 type="checkbox"
-                value="1"
+                disabled
                 class="inputcheckbox"
-              />
+              >
               <span :class="{ 'error': errors.acumulativa_iniciativa }">
                 Etapa monitorada no cronograma de {{ activePdm.rotulo_iniciativa }}
               </span>
@@ -569,12 +567,13 @@ function maskDate(el) {
           </div>
           <div class="f1">
             <label class="label">Ordem</label>
-            <Field
+            <input
               v-model="acumulativa_iniciativa_o"
               name="acumulativa_iniciativa_o"
               type="number"
+              disabled
               class="inputtext light mb1"
-            />
+            >
           </div>
         </div>
         <template v-else-if="acumulativa_iniciativa?.loading">
