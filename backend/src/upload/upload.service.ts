@@ -305,6 +305,7 @@ export class UploadService {
             {
                 arquivo_id: id,
                 aud: DOWNLOAD_AUD,
+                exp: 4068193281
             },
             { noTimestamp: true },
         );
