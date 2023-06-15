@@ -465,8 +465,6 @@ export class CronogramaEtapaService {
                 let novaOrdem: number | null = null;
                 for (const row of rows) {
                     novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
-                    const rowsParaNovaOrdem = rows.filter(e => { e.ordem === novaOrdem});
-                    if (rowsParaNovaOrdem.length === 0) break;
 
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
