@@ -29,6 +29,18 @@ export class EtapaService {
         delete createEtapaDto.ordem;
         delete (createEtapaDto as any).responsaveis;
 
+        if (createEtapaDto.inicio_previsto && createEtapaDto.termino_previsto && createEtapaDto.inicio_previsto > createEtapaDto.termino_previsto)
+            throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
+
+        if (createEtapaDto.inicio_real && createEtapaDto.termino_real && createEtapaDto.inicio_real > createEtapaDto.termino_real)
+            throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
+
+        if (createEtapaDto.termino_previsto && createEtapaDto.inicio_previsto && createEtapaDto.termino_previsto < createEtapaDto.inicio_previsto)
+            throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
+
+        if (createEtapaDto.termino_real && createEtapaDto.inicio_real && createEtapaDto.termino_real < createEtapaDto.inicio_real)
+            throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
+
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const etapa = await prisma.etapa.create({
                 data: {
