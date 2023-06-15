@@ -1,0 +1,1 @@
+delete from cronograma_etapa ce where exists (select 1 from etapa where id = ce.etapa_id and removido_em is not null);
