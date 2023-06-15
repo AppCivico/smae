@@ -452,12 +452,12 @@ export class CronogramaEtapaService {
                     },
                     orderBy: { ordem: 'asc' }
                 });
-        
+            
                 const updates = [];
                 let targetOrdem = dto.ordem;
                 let updateRequired = false;
                 let gapFound = false;
-        
+            
                 for (const row of rows) {
                     if (row.ordem === targetOrdem) {
                         targetOrdem++;
@@ -467,18 +467,18 @@ export class CronogramaEtapaService {
                             where: { id: row.id },
                             data: { ordem: targetOrdem }
                         }));
-        
+            
                         targetOrdem++;
                     } else if (row.ordem > targetOrdem) {
                         gapFound = true;
                         break;
                     }
                 }
-        
-                if (gapFound) {
+            
+                if (!updateRequired && gapFound) {
                     targetOrdem = dto.ordem;
                     updateRequired = false;
-        
+            
                     for (const row of rows.reverse()) {
                         if (row.ordem === targetOrdem - 1) {
                             targetOrdem--;
@@ -488,11 +488,12 @@ export class CronogramaEtapaService {
                                 where: { id: row.id },
                                 data: { ordem: targetOrdem }
                             }));
-        
+            
                             targetOrdem--;
                         }
                     }
                 }
+            
                 await Promise.all(updates);
             }
 
@@ -556,45 +557,6 @@ export class CronogramaEtapaService {
 
         return { nivel, ordem }
     }
-
-    // async delete(id: number, user: PessoaFromJwt) {
-    //     if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
-    //         // logo, é um tecnico_cp
-    //         // TODO buscar o ID da meta pelo cronograma, pra verificar
-    //     }
- 
-    //     const res = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-    //         const deleted = await prisma.cronogramaEtapa.delete({
-    //             where: { id: id },
-    //         });
-
-    //         const rows = await prisma.cronogramaEtapa.findMany({
-    //             where: {
-    //                 cronograma_id: deleted.cronograma_id,
-    //                 nivel: deleted.nivel,
-    //                 ordem: { gt: deleted.ordem },
-    //             },
-    //             select: {
-    //                 id: true,
-    //                 ordem: true,
-    //             },
-    //             orderBy: { ordem: 'asc' },
-    //         });
-    
-    //         const updates = rows.map((row) =>
-    //             prisma.cronogramaEtapa.update({
-    //                 where: { id: row.id },
-    //                 data: { ordem: row.ordem - 1 },
-    //             })
-    //         );
-    
-    //         await Promise.all(updates);
-
-    //         return deleted;
-    //     });
-
-    //     return res;
-    // }
 
     async delete(id: number, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
