@@ -27,7 +27,7 @@ export class EtapaService {
 
         const ordem: number | undefined = createEtapaDto.ordem;
         delete createEtapaDto.ordem;
-        delete createEtapaDto.responsaveis;
+        delete (createEtapaDto as any).responsaveis;
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const etapa = await prisma.etapa.create({
@@ -47,7 +47,7 @@ export class EtapaService {
 
             return etapa;
         });
-        
+
         const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
             cronograma_id: cronogramaId,
             etapa_id: created.id,
@@ -151,7 +151,7 @@ export class EtapaService {
                 ( updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime() ||
                   updateEtapaDto.inicio_real  && updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime() ||
                   updateEtapaDto.termino_previsto  && updateEtapaDto.termino_previsto.getTime() != self.termino_previsto?.getTime() ||
-                  updateEtapaDto.termino_real && updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime() 
+                  updateEtapaDto.termino_real && updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime()
                 )
             ) throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
 
@@ -170,7 +170,7 @@ export class EtapaService {
             const inicioReal: Date | null = updateEtapaDto.inicio_real ? updateEtapaDto.inicio_real : self.inicio_real;
             if (updateEtapaDto.termino_real && inicioReal && updateEtapaDto.termino_real < inicioReal)
                 throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
-            
+
             const etapa = await prisma.etapa.update({
                 where: { id: id },
                 data: {
