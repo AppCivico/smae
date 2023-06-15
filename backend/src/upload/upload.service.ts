@@ -34,7 +34,11 @@ const ZipContentTypes = [
 
 @Injectable()
 export class UploadService {
-    constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService, private readonly storage: StorageService) { }
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly prisma: PrismaService,
+        private readonly storage: StorageService,
+    ) { }
 
     async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File | { buffer: Buffer }, ip: string) {
 
@@ -265,7 +269,7 @@ export class UploadService {
                     arquivo_id: id,
                     aud: UPLOAD_AUD,
                 },
-                { expiresIn: '30 days' },
+                { expiresIn: '30d' },
             ),
         } as Upload;
     }
@@ -293,7 +297,7 @@ export class UploadService {
                     arquivo_id: id,
                     aud: DOWNLOAD_AUD,
                 },
-                { expiresIn },
+                { expiresIn: '30d' },
             ),
         } as Download;
     }
@@ -306,7 +310,7 @@ export class UploadService {
                 arquivo_id: id,
                 aud: DOWNLOAD_AUD
             },
-            { noTimestamp: true, expiresIn: undefined },
+            { noTimestamp: true, },
         );
     }
 
