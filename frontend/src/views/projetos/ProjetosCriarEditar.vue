@@ -633,34 +633,6 @@ watch(emFoco, () => {
     <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
-          name="orgaos_participantes"
-          :schema="schema"
-          class="tc300"
-        />
-
-        <AutocompleteField
-          name="orgaos_participantes"
-          :controlador="{
-            busca: '',
-            participantes: values.orgaos_participantes || []
-          }"
-          :class="{
-            error: errors.orgaos_participantes,
-            loading: portfolioStore.chamadasPendentes.lista
-          }"
-          :grupo="órgãosComoLista"
-          label="sigla"
-        />
-        <ErrorMessage
-          name="orgaos_participantes"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
           name="orgao_responsavel_id"
           :schema="schema"
           class="tc300"
@@ -732,6 +704,34 @@ watch(emFoco, () => {
 
         <ErrorMessage
           name="responsavel_id"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="orgaos_participantes"
+          :schema="schema"
+          class="tc300"
+        />
+
+        <AutocompleteField
+          name="orgaos_participantes"
+          :controlador="{
+            busca: '',
+            participantes: values.orgaos_participantes || []
+          }"
+          :class="{
+            error: errors.orgaos_participantes,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          :grupo="órgãosComoLista"
+          label="sigla"
+        />
+        <ErrorMessage
+          name="orgaos_participantes"
           class="error-msg"
         />
       </div>
