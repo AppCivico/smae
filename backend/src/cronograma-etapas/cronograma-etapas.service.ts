@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -557,17 +557,69 @@ export class CronogramaEtapaService {
         return { nivel, ordem }
     }
 
+    // async delete(id: number, user: PessoaFromJwt) {
+    //     if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
+    //         // logo, é um tecnico_cp
+    //         // TODO buscar o ID da meta pelo cronograma, pra verificar
+    //     }
+ 
+    //     const res = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+    //         const deleted = await prisma.cronogramaEtapa.delete({
+    //             where: { id: id },
+    //         });
+
+    //         const rows = await prisma.cronogramaEtapa.findMany({
+    //             where: {
+    //                 cronograma_id: deleted.cronograma_id,
+    //                 nivel: deleted.nivel,
+    //                 ordem: { gt: deleted.ordem },
+    //             },
+    //             select: {
+    //                 id: true,
+    //                 ordem: true,
+    //             },
+    //             orderBy: { ordem: 'asc' },
+    //         });
+    
+    //         const updates = rows.map((row) =>
+    //             prisma.cronogramaEtapa.update({
+    //                 where: { id: row.id },
+    //                 data: { ordem: row.ordem - 1 },
+    //             })
+    //         );
+    
+    //         await Promise.all(updates);
+
+    //         return deleted;
+    //     });
+
+    //     return res;
+    // }
+
     async delete(id: number, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
- 
-        const res = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-            const deleted = await prisma.cronogramaEtapa.delete({
+    
+        const deleted = await this.prisma.cronogramaEtapa.findUnique({
+            where: { id: id },
+            select: {
+                cronograma_id: true,
+                nivel: true,
+                ordem: true,
+            },
+        });
+    
+        if (!deleted) {
+            throw new NotFoundException(`CronogramaEtapa with id ${id} not found`);
+        }
+    
+        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+            await prisma.cronogramaEtapa.delete({
                 where: { id: id },
             });
-
+    
             const rows = await prisma.cronogramaEtapa.findMany({
                 where: {
                     cronograma_id: deleted.cronograma_id,
@@ -588,12 +640,10 @@ export class CronogramaEtapaService {
                 })
             );
     
-            await Promise.all(updates);
-
-            return deleted;
+            return Promise.all(updates);
         });
-
-        return res;
+    
+        return deleted;
     }
 
     async getDuracao(inicio_real: Date | null, termino_real: Date | null): Promise<string> {
