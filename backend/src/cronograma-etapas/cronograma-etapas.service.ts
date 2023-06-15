@@ -564,7 +564,7 @@ export class CronogramaEtapaService {
         }
  
         const res = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-            const deleted = await this.prisma.cronogramaEtapa.delete({
+            const deleted = await prisma.cronogramaEtapa.delete({
                 where: { id: id },
             });
 
