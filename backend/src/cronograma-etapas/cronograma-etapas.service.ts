@@ -425,10 +425,13 @@ export class CronogramaEtapaService {
             const maxOrdem: number = rowMaxOrdem ? rowMaxOrdem.ordem : nivelOrdemForUpsert.ordem;
             const ordemUtilizada = dto.ordem && dto.ordem <= maxOrdem ? dto.ordem : nivelOrdemForUpsert.ordem;
             console.log('===========================');
-            console.log('self = ' + self);
-            console.log('selfExiste = ' + selfExiste);
-            console.log('nivelOrdemForUpsert = ' + nivelOrdemForUpsert);
+            console.log("dto.ordem = " + dto.ordem);
             console.log('maxOrdem = ' + maxOrdem);
+            console.log('self : ');
+            console.log(self);
+            console.log('selfExiste = ' + selfExiste);
+            console.log('nivelOrdemForUpsert : ');
+            console.log(nivelOrdemForUpsert);
             console.log('ordemUtilizada = ' + ordemUtilizada);
             console.log('===========================');
 
@@ -540,11 +543,7 @@ export class CronogramaEtapaService {
         });
 
         if (ultimaRow) {
-            if (self_existe && ordem_input && ordem_input > ultimaRow.ordem) {
-                ordem = ultimaRow.ordem;
-            } else {
-                ordem = ultimaRow.ordem + 1;
-            }
+            ordem = ultimaRow.ordem + 1;
         } else {
             ordem = 1;
         }
