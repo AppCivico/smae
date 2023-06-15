@@ -6,7 +6,7 @@ import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.
 import { CronogramaEtapaModule } from 'src/cronograma-etapas/cronograma-etapas.module';
 
 @Module({
-    imports: [PrismaModule, CronogramaEtapaModule],
+    imports: [PrismaModule, CronogramaEtapaModule, UploadModule],
     controllers: [MetaController],
     providers: [MetaService, CronogramaEtapaService],
     exports: [MetaService]

@@ -20,6 +20,7 @@ export class MetaOrgao {
 export class MetaTag {
     id: number;
     descricao: string;
+    download_token: string | null;
 }
 
 export class Meta {
