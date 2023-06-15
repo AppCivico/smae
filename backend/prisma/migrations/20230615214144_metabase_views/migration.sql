@@ -1,3 +1,4 @@
+drop view view_projetos;
 create or replace view view_projetos as
 select
     *,
