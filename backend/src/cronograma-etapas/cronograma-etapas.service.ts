@@ -439,13 +439,47 @@ export class CronogramaEtapaService {
                 select: { id: true, ordem: true, nivel: true },
             });
 
-            if ( dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem)) ) {
+            // if ( dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem)) ) {
+            //     let rows = await prisma.cronogramaEtapa.findMany({
+            //         where: {
+            //             cronograma_id: dto.cronograma_id,
+            //             nivel: cronogramaEtapa.nivel,
+            //             id: { not: cronogramaEtapa.id },
+            //             // ordem: { gte: self ? self.ordem : cronogramaEtapa.ordem }
+            //         },
+            //         select: {
+            //             id: true,
+            //             ordem: true
+            //         },
+            //         orderBy: { ordem: 'asc' }
+            //     });
+
+            //     const updates = [];
+            //     let novaOrdem: number | null = null;
+            //     for (const row of rows) {
+            //         if (row.ordem < cronogramaEtapa.ordem) {
+            //             novaOrdem = row.ordem - 1;
+
+            //             if (novaOrdem === 0) continue;
+            //         } else {
+            //             novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
+            //         }
+
+            //         updates.push(prisma.cronogramaEtapa.update({
+            //             where: { id: row.id },
+            //             data: { ordem: novaOrdem }
+            //         }));
+            //     }
+
+            //     await Promise.all(updates);
+            // }
+
+            if (dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem))) {
                 let rows = await prisma.cronogramaEtapa.findMany({
                     where: {
                         cronograma_id: dto.cronograma_id,
                         nivel: cronogramaEtapa.nivel,
                         id: { not: cronogramaEtapa.id },
-                        ordem: { gte: self ? self.ordem : cronogramaEtapa.ordem }
                     },
                     select: {
                         id: true,
@@ -453,24 +487,47 @@ export class CronogramaEtapaService {
                     },
                     orderBy: { ordem: 'asc' }
                 });
-
+        
                 const updates = [];
-                let novaOrdem: number | null = null;
+                let targetOrdem = dto.ordem;
+                let updateRequired = false;
+                let gapFound = false;
+        
                 for (const row of rows) {
-                    if (row.ordem < cronogramaEtapa.ordem) {
-                        novaOrdem = row.ordem - 1;
-
-                        if (novaOrdem === 0) continue;
-                    } else {
-                        novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
+                    if (row.ordem === targetOrdem) {
+                        targetOrdem++;
+                        updateRequired = true;
+                    } else if (updateRequired) {
+                        updates.push(prisma.cronogramaEtapa.update({
+                            where: { id: row.id },
+                            data: { ordem: targetOrdem }
+                        }));
+        
+                        targetOrdem++;
+                    } else if (row.ordem > targetOrdem) {
+                        gapFound = true;
+                        break;
                     }
-
-                    updates.push(prisma.cronogramaEtapa.update({
-                        where: { id: row.id },
-                        data: { ordem: novaOrdem }
-                    }));
                 }
-
+        
+                if (gapFound) {
+                    targetOrdem = dto.ordem;
+                    updateRequired = false;
+        
+                    for (const row of rows.reverse()) {
+                        if (row.ordem === targetOrdem - 1) {
+                            targetOrdem--;
+                            updateRequired = true;
+                        } else if (updateRequired) {
+                            updates.push(prisma.cronogramaEtapa.update({
+                                where: { id: row.id },
+                                data: { ordem: targetOrdem }
+                            }));
+        
+                            targetOrdem--;
+                        }
+                    }
+                }
                 await Promise.all(updates);
             }
 
