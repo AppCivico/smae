@@ -304,10 +304,9 @@ export class UploadService {
         return this.jwtService.sign(
             {
                 arquivo_id: id,
-                aud: DOWNLOAD_AUD,
-                exp: 4068193281
+                aud: DOWNLOAD_AUD
             },
-            { noTimestamp: true },
+            { noTimestamp: true, expiresIn: undefined },
         );
     }
 
