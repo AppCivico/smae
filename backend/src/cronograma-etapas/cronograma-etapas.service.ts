@@ -373,12 +373,6 @@ export class CronogramaEtapaService {
         return await this.sortReturn(ret);
     }
 
-    private async getOrdem(ordem_config: number | null, last_ordem: number): Promise<number> {
-        if (ordem_config) return ordem_config;
-
-        return last_ordem + 1;
-    }
-
     private async sortReturn(ret_arr: CECronogramaEtapaDto[]): Promise<CECronogramaEtapaDto[]> {
         ret_arr.sort((a, b) => a.ordem - b.ordem);
         ret_arr.forEach(r => {
