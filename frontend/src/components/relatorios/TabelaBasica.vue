@@ -4,6 +4,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const alertStore = useAlertStore();
@@ -25,6 +26,11 @@ const props = defineProps({
   },
 });
 
+const colunas = computed(() => Object.fromEntries(
+  Object.entries(props
+    .etiquetasParaParâmetros).filter(([key, value]) => value !== undefined),
+));
+
 function excluirRelatório(id) {
   alertStore.confirmAction('Deseja remover o relatório?', () => {
     relatoriosStore.delete(id);
@@ -36,7 +42,11 @@ function excluirRelatório(id) {
   <table class="tablemain">
     <col>
     <col class="col--dataHora">
-    <col v-if="etiquetasParaParâmetros && Object.keys(etiquetasParaParâmetros).length">
+    <colgroup
+      v-if="colunas &&
+        Object.keys(colunas).length"
+      :span="Object.keys(colunas).length"
+    />
     <col
       v-if="temPermissãoPara(['Reports.remover'])"
       class="col--botão-de-ação"
@@ -47,8 +57,11 @@ function excluirRelatório(id) {
       <tr>
         <th>criador</th>
         <th>gerado em</th>
-        <th v-if="etiquetasParaParâmetros && Object.keys(etiquetasParaParâmetros).length">
-          Parâmetros
+        <th
+          v-for="(valor, chave) in (colunas || [])"
+          :key="`header__${chave}`"
+        >
+          {{ valor }}
         </th>
         <th v-if="temPermissãoPara(['Reports.remover'])" />
         <th />
@@ -63,26 +76,16 @@ function excluirRelatório(id) {
         >
           <td>{{ item.criador?.nome_exibicao }}</td>
           <td>{{ localizeDate(item.criado_em) }}</td>
-          <td v-if="etiquetasParaParâmetros && Object.keys(etiquetasParaParâmetros).length">
-            <ul
-              v-if="Object.keys(item.parametros)?.length"
-              class="t13"
-            >
-              <template v-for="(value, key) in item.parametros">
-                <li
-                  v-if="props.etiquetasParaParâmetros?.[key] && value"
-                  :key="key"
-                >
-                  <span
-                    style="display: inline; font-variant: small-caps; text-transform: lowercase;"
-                  >{{ props.etiquetasParaParâmetros?.[key] || key }}</span>:
-                  {{ Array.isArray(value)
-                    ? value.map((x) => props.etiquetasParaValoresDeParâmetros?.[key]?.[x])
-                      .join(', ')
-                    : props.etiquetasParaValoresDeParâmetros?.[key]?.[value] || value }}
-                </li>
-              </template>
-            </ul>
+          <td
+            v-for="(_, chave) in colunas"
+            :key="chave"
+          >
+            {{ Array.isArray(item.parametros[chave])
+              ? item.parametros[chave]
+                .map((x) => props.etiquetasParaValoresDeParâmetros?.[chave]?.[x])
+                .join(', ')
+              : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
+              || item.parametros[chave] }}
           </td>
           <td v-if="temPermissãoPara(['Reports.remover'])">
             <button
@@ -110,18 +113,14 @@ function excluirRelatório(id) {
       </template>
       <tr v-else-if="!relatoriosStore.loading">
         <td
-          :colspan="etiquetasParaParâmetros && Object.keys(etiquetasParaParâmetros).length
-            ? 5
-            : 4"
+          :colspan="4 + (Object.keys(colunas)?.length || 0)"
         >
           Nenhum resultado encontrado.
         </td>
       </tr>
       <tr v-else-if="relatoriosStore.loading">
         <td
-          :colspan="etiquetasParaParâmetros && Object.keys(etiquetasParaParâmetros).length
-            ? 5
-            : 4"
+          :colspan="4 + (Object.keys(colunas)?.length || 0)"
           aria-busy="true"
         >
           Carregando
@@ -129,9 +128,7 @@ function excluirRelatório(id) {
       </tr>
       <tr v-else-if="relatoriosStore.error">
         <td
-          :colspan="etiquetasParaParâmetros && Object.keys(etiquetasParaParâmetros).length
-            ? 5
-            : 4"
+          :colspan="4 + (Object.keys(colunas)?.length || 0)"
         >
           erro: {{ relatoriosStore.error }}
         </td>
