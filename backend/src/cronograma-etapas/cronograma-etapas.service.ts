@@ -468,7 +468,7 @@ export class CronogramaEtapaService {
 
                     const proximaOrdem = novaOrdem + 1;
                     const rowsParaProxOrdem = rows.filter(e => { e.ordem === proximaOrdem});
-                    if (rowsParaProxOrdem.length === 0 && novaOrdem != cronogramaEtapa.ordem) break;
+                    if (rowsParaProxOrdem.length === 0 && row.ordem != cronogramaEtapa.ordem) break;
 
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
