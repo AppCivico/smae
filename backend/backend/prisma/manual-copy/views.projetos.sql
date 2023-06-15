@@ -95,14 +95,15 @@ select
     /*case when coalesce(serie.meta_realizada, 0) >= coalesce(serie.meta_prevista, 1)
         then 'Atingida' else 'Não Atingida'
     end*/
-    (
+    coalesce((
         select t.descricao
         from ods a
         join tag t on t.ods_id = a.id
         join meta_tag mt on mt.meta_id = meta.id
-        where titulo = 'Status'
+        where a.titulo = 'Status'
+        order by t.descricao
         limit 1
-    ) AS status_meta,
+    ), 'Não Informado') AS status_meta,
     meta.macro_tema_id, meta.tema_id,
     meta.titulo as titulo_meta
 from meta
