@@ -361,13 +361,7 @@ export class MetaService {
                 ativo: dbMeta.ativo,
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
-                tags: tags.map((r) => {
-                    return {
-                        id: r.id,
-                        descricao: r.descricao,
-                        download_token: this.uploadService.getPersistentDownloadToken(r.arquivo_icone_id),
-                    }
-                }),
+                tags: tags,
                 cronograma: metaCronograma
             });
         }
