@@ -440,12 +440,22 @@ export class CronogramaEtapaService {
             });
 
             if ( dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem)) ) {
+                let ordemQueryCond;
+                let operacaoOrdem: string;
+                if (isCronogramaEtapaUpdate && dto.ordem < self!.ordem) {
+                    ordemQueryCond = { lte: cronogramaEtapa.ordem };
+                    operacaoOrdem = 'subtracao';
+                } else {
+                    ordemQueryCond = { gte: cronogramaEtapa.ordem };
+                    operacaoOrdem = 'soma';
+                }
+
                 console.log('primeiro if');
                 let rows = await prisma.cronogramaEtapa.findMany({
                     where: {
                         cronograma_id: dto.cronograma_id,
                         nivel: cronogramaEtapa.nivel,
-                        ordem: { gte: cronogramaEtapa.ordem },
+                        ordem: ordemQueryCond,
                         id: { not: cronogramaEtapa.id }
                     },
                     select: {
@@ -458,7 +468,12 @@ export class CronogramaEtapaService {
                 const updates = [];
                 let novaOrdem: number | null = null;
                 for (const row of rows) {
-                    novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
+                    if (operacaoOrdem == 'soma') {
+                        novaOrdem = novaOrdem ? novaOrdem + 1 : row.ordem + 1;
+                    } else {
+                        novaOrdem = novaOrdem ? novaOrdem - 1 : row.ordem - 1;
+                        if (novaOrdem === 0) break;
+                    }
 
                     updates.push(prisma.cronogramaEtapa.update({
                         where: { id: row.id },
