@@ -10,7 +10,7 @@ import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto, CronogramaEtapaAtrasoGrau } from './entities/cronograma-etapa.entity';
 
-class NivelOrdemForCreate {
+class NivelOrdemForUpsert {
     nivel: CronogramaEtapaNivel
     ordem: number
 }
@@ -396,6 +396,8 @@ export class CronogramaEtapaService {
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
 
+        if (dto.ordem && dto.ordem <= 0) dto.ordem = 1; 
+
         let id;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const self = await prisma.cronogramaEtapa.findFirst({
@@ -409,17 +411,18 @@ export class CronogramaEtapaService {
                 }
             });
 
-            // Como é upsert, sempre será necessário pegar os valores para create
-            // Senão resulta em erro de unassigned.
-            // É enviado um boolean para avisar se a row já existe (sendi assim um update apenas). assim é possível pular as queries feitas na função e valores hardcoded são retornados.
-            const isCronogramaEtapaUpdate: boolean = self ? true : false;
-            const nivelOrdemForCreate: NivelOrdemForCreate = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, isCronogramaEtapaUpdate, prisma);
-            console.log('==================');
-            console.log(dto);
-            console.log('ordem= ' + dto.ordem);
-            console.log(nivelOrdemForCreate);
-            console.log(self);
-            console.log('==================');
+            const nivelOrdemForUpsert: NivelOrdemForUpsert = await this.getNivelOrdemForCreate(dto.cronograma_id, dto.etapa_id, prisma);
+            const rowMaxOrdem = await prisma.cronogramaEtapa.findFirst({
+                where: {
+                    cronograma_id: dto.cronograma_id,
+                    nivel: nivelOrdemForUpsert.nivel
+                },
+                select: { ordem: true },
+                orderBy: { ordem: 'desc' },
+                take: 1
+            });
+            const maxOrdem: number = rowMaxOrdem ? rowMaxOrdem.ordem : nivelOrdemForUpsert.ordem;
+
             const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
                 where: {
                     CronogramaEtapaUniq: {
@@ -428,18 +431,18 @@ export class CronogramaEtapaService {
                     },
                 },
                 update: {
-                    ordem: dto.ordem ? dto.ordem : nivelOrdemForCreate.ordem,
+                    ordem: dto.ordem && dto.ordem <= maxOrdem ? dto.ordem : nivelOrdemForUpsert.ordem,
                     inativo: dto.inativo,
                 },
                 create: {
                     ...dto,
-                    nivel: nivelOrdemForCreate.nivel,
-                    ordem: dto.ordem ? dto.ordem : nivelOrdemForCreate.ordem
+                    nivel: nivelOrdemForUpsert.nivel,
+                    ordem: dto.ordem && dto.ordem <= maxOrdem ? dto.ordem : nivelOrdemForUpsert.ordem
                 },
                 select: { id: true, ordem: true, nivel: true },
             });
 
-            if (dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForCreate.ordem))) {
+            if (dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForUpsert.ordem))) {
                 let rows = await prisma.cronogramaEtapa.findMany({
                     where: {
                         cronograma_id: dto.cronograma_id,
@@ -488,55 +491,46 @@ export class CronogramaEtapaService {
         return { id };
     }
 
-    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, isCronogramaEtapaUpdate: boolean, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForCreate> {
+    async getNivelOrdemForCreate(cronograma_id: number, etapa_id: number, prismaTx: Prisma.TransactionClient): Promise<NivelOrdemForUpsert> {
         let nivel: CronogramaEtapaNivel;
         let ordem: number;
 
-        if (isCronogramaEtapaUpdate) {
-            // Como é utilizada a função de upsert do prisma, os dados do create devem estar disponiveis.
-            // Caso seja apenas para o update, não é necessário fazer as queries abaixo, portanto fixando um retorno.
-            nivel = CronogramaEtapaNivel.Etapa;
-            ordem = 1;
-        } else {
-
-            const etapa = await prismaTx.etapa.findFirstOrThrow({
-                where: { id: etapa_id },
-                select: {
-                    id: true,
-                    etapa_pai_id: true,
-                    etapa_pai: {
-                        select: {
-                            id: true,
-                            etapa_pai_id: true
-                        }
+        const etapa = await prismaTx.etapa.findFirstOrThrow({
+            where: { id: etapa_id },
+            select: {
+                id: true,
+                etapa_pai_id: true,
+                etapa_pai: {
+                    select: {
+                        id: true,
+                        etapa_pai_id: true
                     }
                 }
-            });
-    
-            if (!etapa.etapa_pai_id) {
-                nivel = CronogramaEtapaNivel.Etapa;
-            } else if (etapa.etapa_pai_id && (etapa.etapa_pai && !etapa.etapa_pai.etapa_pai_id)) {
-                nivel = CronogramaEtapaNivel.Fase
-            } else {
-                nivel = CronogramaEtapaNivel.SubFase
             }
-    
-            const ultimaRow = await prismaTx.cronogramaEtapa.findFirst({
-                where: {
-                    cronograma_id,
-                    nivel
-                },
-                select: { ordem: true },
-                orderBy: { ordem: 'desc' },
-                take: 1
-            });
+        });
 
-            if (ultimaRow) {
-                ordem = ultimaRow.ordem + 1;
-            } else {
-                ordem = 1;
-            }
-    
+        if (!etapa.etapa_pai_id) {
+            nivel = CronogramaEtapaNivel.Etapa;
+        } else if (etapa.etapa_pai_id && (etapa.etapa_pai && !etapa.etapa_pai.etapa_pai_id)) {
+            nivel = CronogramaEtapaNivel.Fase
+        } else {
+            nivel = CronogramaEtapaNivel.SubFase
+        }
+
+        const ultimaRow = await prismaTx.cronogramaEtapa.findFirst({
+            where: {
+                cronograma_id,
+                nivel
+            },
+            select: { ordem: true },
+            orderBy: { ordem: 'desc' },
+            take: 1
+        });
+
+        if (ultimaRow) {
+            ordem = ultimaRow.ordem + 1;
+        } else {
+            ordem = 1;
         }
 
         return { nivel, ordem }
