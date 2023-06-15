@@ -755,7 +755,7 @@ export class PessoaService {
                             perfil_privilegio: {
                                 some: {
                                     privilegio: {
-                                        codigo: 'SMAE.gestor_de_projeto',
+                                        codigo: 'SMAE.colaborador_de_projeto',
                                     },
                                 },
                             },
