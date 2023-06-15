@@ -488,7 +488,7 @@ export class CronogramaEtapaService {
                         } else {
                             console.log('ordem irá descer');
                             newOrdem = row.ordem - 1;
-                        console.log('=======================');
+                            if (newOrdem <= 0) break;
                         }
                         console.log('=======================');
             
