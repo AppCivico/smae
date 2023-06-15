@@ -445,7 +445,8 @@ export class CronogramaEtapaService {
                     where: {
                         cronograma_id: dto.cronograma_id,
                         nivel: cronogramaEtapa.nivel,
-                        id: { not: cronogramaEtapa.id }
+                        id: { not: cronogramaEtapa.id },
+                        ordem: { gte: self ? self.ordem : cronogramaEtapa.ordem }
                     },
                     select: {
                         id: true,
