@@ -10,11 +10,11 @@ import { UploadService } from './upload.service';
         PrismaModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET,
-            signOptions: { expiresIn: '30d' },
+            signOptions: {},
         }),
     ],
     controllers: [UploadController],
     providers: [UploadService, StorageService],
     exports: [UploadService],
 })
-export class UploadModule {}
+export class UploadModule { }
