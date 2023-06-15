@@ -454,43 +454,27 @@ export class CronogramaEtapaService {
                 });
             
                 const updates = [];
-                let targetOrdem = dto.ordem;
-                let updateRequired = false;
-                let gapFound = false;
+                let startOrdem = self ? self.ordem : Number.MAX_VALUE;
+                let endOrdem = dto.ordem;
             
-                for (const row of rows) {
-                    if (row.ordem === targetOrdem) {
-                        targetOrdem++;
-                        updateRequired = true;
-                    } else if (updateRequired) {
-                        updates.push(prisma.cronogramaEtapa.update({
-                            where: { id: row.id },
-                            data: { ordem: targetOrdem }
-                        }));
-            
-                        targetOrdem++;
-                    } else if (row.ordem > targetOrdem) {
-                        gapFound = true;
-                        break;
-                    }
+                if (startOrdem > endOrdem) {
+                    [startOrdem, endOrdem] = [endOrdem, startOrdem];
                 }
             
-                if (!updateRequired && gapFound) {
-                    targetOrdem = dto.ordem;
-                    updateRequired = false;
+                for (const row of rows) {
+                    if (row.ordem >= startOrdem && row.ordem <= endOrdem) {
+                        let newOrdem;
             
-                    for (const row of rows.reverse()) {
-                        if (row.ordem === targetOrdem - 1) {
-                            targetOrdem--;
-                            updateRequired = true;
-                        } else if (updateRequired) {
-                            updates.push(prisma.cronogramaEtapa.update({
-                                where: { id: row.id },
-                                data: { ordem: targetOrdem }
-                            }));
-            
-                            targetOrdem--;
+                        if (self && dto.ordem < self.ordem) {
+                            newOrdem = row.ordem + 1;
+                        } else {
+                            newOrdem = row.ordem - 1;
                         }
+            
+                        updates.push(prisma.cronogramaEtapa.update({
+                            where: { id: row.id },
+                            data: { ordem: newOrdem }
+                        }));
                     }
                 }
             
