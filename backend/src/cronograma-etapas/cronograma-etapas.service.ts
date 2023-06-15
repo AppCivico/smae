@@ -479,15 +479,18 @@ export class CronogramaEtapaService {
                 for (const row of rows) {
                     if (row.ordem >= startOrdem && row.ordem <= endOrdem) {
                         let newOrdem;
+                        console.log('=======================');
                         console.log('rowOrdem = ' + row.ordem);
             
-                        if (self && ordemUtilizada < self.ordem) {
+                        if ((self && ordemUtilizada < self.ordem) || (ordemUtilizada == row.ordem)) {
                             console.log('ordem irá subir');
                             newOrdem = row.ordem + 1;
                         } else {
                             console.log('ordem irá descer');
                             newOrdem = row.ordem - 1;
+                        console.log('=======================');
                         }
+                        console.log('=======================');
             
                         updates.push(prisma.cronogramaEtapa.update({
                             where: { id: row.id },
