@@ -204,9 +204,11 @@ export class EtapaService {
 
             if (Array.isArray(responsaveis)) {
 
+                const currentVersion = self.responsaveis.map(r => r.pessoa_id).join(',');
                 const newVersionStr = responsaveis.sort((a, b) => a - b).join(',');
-                if (self.responsaveis.join(',') !== newVersionStr) {
-                    this.logger.debug(`responsaveis mudaram: old ${self.responsaveis.join(',')} !== new ${newVersionStr}`);
+
+                if (currentVersion !== newVersionStr) {
+                    this.logger.debug(`responsaveis mudaram: old ${currentVersion} !== new ${newVersionStr}`);
                     const promises = [];
                     for (const responsavel of responsaveis) {
                         promises.push(
