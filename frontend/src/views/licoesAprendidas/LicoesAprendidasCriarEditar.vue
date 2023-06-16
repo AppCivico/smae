@@ -93,8 +93,8 @@ iniciar();
         {{ emFoco.sequencial }} -
       </template>
 
-      {{ emFoco?.descricao
-        ? truncate(emFoco.descricao, 36)
+      {{ emFoco?.contexto
+        ? truncate(emFoco.contexto, 36)
         : 'Lição Aprendida' || 'Nova lição aprendida' }}
     </h1>
 

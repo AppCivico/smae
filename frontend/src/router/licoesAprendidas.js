@@ -75,7 +75,6 @@ export default {
           }),
 
           meta: {
-            título: () => useLiçõesAprendidasStore()?.emFoco?.descricao || 'Editar lição',
             títuloParaMenu: 'Editar lição',
 
             rotaDeEscape: 'liçõesAprendidasListar',
