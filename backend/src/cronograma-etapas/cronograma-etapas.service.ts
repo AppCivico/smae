@@ -512,6 +512,9 @@ export class CronogramaEtapaService {
 
             id = cronogramaEtapa.id;
             return cronogramaEtapa;
+        }, {
+            maxWait: 10000,
+            timeout: 10000,
         });
 
         return { id };
