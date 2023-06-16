@@ -91,7 +91,7 @@ export class MetaService {
                     });
 
                 // reagenda o PDM para recalcular as fases (e status)
-                await this.prisma.cicloFisico.updateMany({
+                await prisma.cicloFisico.updateMany({
                     where: {
                         ativo: true,
                     },
