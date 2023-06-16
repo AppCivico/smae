@@ -387,15 +387,15 @@ CREATE TRIGGER trg_atividade_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR
     FOR EACH STATEMENT
     EXECUTE FUNCTION f_recalc_acesso_pessoas();
 
-CREATE TRIGGER trg_cronograma_etapa_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION f_recalc_acesso_pessoas();
-
 CREATE TRIGGER trg_variavel_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON variavel_responsavel
     FOR EACH STATEMENT
     EXECUTE FUNCTION f_recalc_acesso_pessoas();
 
 CREATE TRIGGER trg_indicador_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON indicador
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION f_recalc_acesso_pessoas();
+
+CREATE TRIGGER trg_etapa_responsavel_recalc_pessoa AFTER INSERT OR DELETE OR UPDATE ON etapa_responsavel
     FOR EACH STATEMENT
     EXECUTE FUNCTION f_recalc_acesso_pessoas();
 

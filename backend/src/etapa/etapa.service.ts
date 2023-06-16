@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -12,10 +12,12 @@ import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-crono
 
 @Injectable()
 export class EtapaService {
+    private readonly logger = new Logger(EtapaService.name);
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService
-    ) {}
+    ) { }
 
     async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
@@ -153,17 +155,23 @@ export class EtapaService {
                     inicio_real: true,
                     termino_previsto: true,
                     termino_real: true,
+                    responsaveis: {
+                        select: {
+                            pessoa_id: true
+                        },
+                        orderBy: { pessoa_id: 'asc' }
+                    }
                 }
             });
 
-            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao && updateEtapaDto.percentual_execucao != self.percentual_execucao )
-              throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
+            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao && updateEtapaDto.percentual_execucao != self.percentual_execucao)
+                throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
 
             if (self.n_filhos_imediatos &&
-                ( updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime() ||
-                  updateEtapaDto.inicio_real  && updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime() ||
-                  updateEtapaDto.termino_previsto  && updateEtapaDto.termino_previsto.getTime() != self.termino_previsto?.getTime() ||
-                  updateEtapaDto.termino_real && updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime()
+                (updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime() ||
+                    updateEtapaDto.inicio_real && updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime() ||
+                    updateEtapaDto.termino_previsto && updateEtapaDto.termino_previsto.getTime() != self.termino_previsto?.getTime() ||
+                    updateEtapaDto.termino_real && updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime()
                 )
             ) throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
 
@@ -195,26 +203,31 @@ export class EtapaService {
             });
 
             if (Array.isArray(responsaveis)) {
-                const operations = [];
-                for (const responsavel of responsaveis) {
-                    operations.push(
-                        prisma.etapaResponsavel.upsert({
-                            where: {
-                                etapa_pessoa_uniq: {
+
+                const newVersionStr = responsaveis.sort((a, b) => a - b).join(',');
+                if (self.responsaveis.join(',') !== newVersionStr) {
+                    const promises = [];
+                    for (const responsavel of responsaveis) {
+                        promises.push(
+                            prisma.etapaResponsavel.upsert({
+                                where: {
+                                    etapa_pessoa_uniq: {
+                                        pessoa_id: responsavel,
+                                        etapa_id: etapa.id,
+                                    },
+                                },
+                                create: {
                                     pessoa_id: responsavel,
                                     etapa_id: etapa.id,
                                 },
-                            },
-                            create: {
-                                pessoa_id: responsavel,
-                                etapa_id: etapa.id,
-                            },
-                            update: {},
-                        }),
-                    );
+                                update: {},
+                            }),
+                        );
+                    }
+                    await Promise.all(promises);
+                } else {
+                    this.logger.debug(`responsaveis continuam iguais, banco não será chamado para evitar recalc da trigger`);
                 }
-
-                await Promise.all(operations);
             }
 
             // apaga tudo por enquanto, não só as que tem algum crono dessa meta
@@ -230,24 +243,24 @@ export class EtapaService {
         const etapa_has_children = await this.prisma.etapa.count({ where: { etapa_pai_id: id, removido_em: null } });
         if (etapa_has_children) throw new HttpException('Apague primeiro os filhos', 400);
 
-        const removed = await this.prisma.etapa.updateMany({
-            where: { id: id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            await prismaTx.etapa.updateMany({
+                where: { id: id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
+
+            const cronogramas = await prismaTx.cronogramaEtapa.findMany({
+                where: { etapa_id: id },
+                select: { id: true }
+            });
+
+            for (const cronograma of cronogramas) {
+                await this.cronogramaEtapaService.delete(cronograma.id, user);
+            }
         });
-
-        const cronogramas = await this.prisma.cronogramaEtapa.findMany({
-            where: { etapa_id: id },
-            select: { id: true }
-        });
-
-        for (const cronograma of cronogramas) {
-            await this.cronogramaEtapaService.delete(cronograma.id, user);
-        }
-
-        return removed;
     }
 
     async buildEtapaResponsaveis(etapaId: number, responsaveis: number[]): Promise<Prisma.EtapaResponsavelCreateManyInput[]> {
