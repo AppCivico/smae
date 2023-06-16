@@ -237,8 +237,12 @@ iniciar();
           <td>
             {{ item.fonte_recurso_cod_sof }}
           </td>
-          <td :title="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao">
-            <template v-if="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao">
+          <td
+            :title="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao"
+          >
+            <template
+              v-if="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao"
+            >
               {{
                 truncate(
                   FontesDeRecursosPorAnoPorCódigo[item.fonte_recurso_ano][item.fonte_recurso_cod_sof].descricao,
@@ -254,7 +258,7 @@ iniciar();
             {{ item.valor_nominal ? `R$ ${dinheiro(item.valor_nominal)}` : '-' }}
           </td>
           <td class="cell--number">
-            {{ item.valor_percentual ? `R$ ${dinheiro(item.valor_percentual)}` : '-' }}
+            {{ item.valor_percentual ? `${dinheiro(item.valor_percentual)}%` : '-' }}
           </td>
         </tr>
         <tr v-if="!emFoco?.fonte_recursos?.length">
