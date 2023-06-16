@@ -100,7 +100,7 @@ select
         select t.descricao
         from ods a
         join tag t on t.ods_id = a.id
-        join meta_tag mt on mt.meta_id = meta.id
+        join meta_tag mt on mt.meta_id = meta.id and mt.tag_id = t.id
         where a.titulo = 'Status'
         order by t.descricao
         limit 1
