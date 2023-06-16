@@ -206,6 +206,7 @@ export class EtapaService {
 
                 const newVersionStr = responsaveis.sort((a, b) => a - b).join(',');
                 if (self.responsaveis.join(',') !== newVersionStr) {
+                    this.logger.debug(`responsaveis mudaram: old ${self.responsaveis.join(',')} !== new ${newVersionStr}`);
                     const promises = [];
                     for (const responsavel of responsaveis) {
                         promises.push(
