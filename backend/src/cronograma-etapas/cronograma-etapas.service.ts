@@ -403,11 +403,16 @@ export class CronogramaEtapaService {
             const self = await prisma.cronogramaEtapa.findFirst({
                 where: {
                     cronograma_id: dto.cronograma_id,
-                    etapa_id: dto.etapa_id
+                    etapa_id: dto.etapa_id,
                 },
                 select: {
                     nivel: true,
-                    ordem: true
+                    ordem: true,
+                    etapa: {
+                        select: {
+                            etapa_pai_id: true
+                        }
+                    }
                 }
             });
 
@@ -451,7 +456,7 @@ export class CronogramaEtapaService {
                     nivel: nivelOrdemForUpsert.nivel,
                     ordem: ordemUtilizada
                 },
-                select: { id: true, ordem: true, nivel: true },
+                select: { id: true, ordem: true, nivel: true, etapa: { select: { etapa_pai_id: true } } },
             });
 
             if (dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForUpsert.ordem))) {
@@ -460,6 +465,9 @@ export class CronogramaEtapaService {
                         cronograma_id: dto.cronograma_id,
                         nivel: cronogramaEtapa.nivel,
                         id: { not: cronogramaEtapa.id },
+                        etapa: {
+                            etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id
+                        }
                     },
                     select: {
                         id: true,
@@ -535,10 +543,15 @@ export class CronogramaEtapaService {
             nivel = CronogramaEtapaNivel.SubFase
         }
 
+        const etapa_pai_id: number | null = etapa.etapa_pai_id;
+
         const ultimaRow = await prismaTx.cronogramaEtapa.findFirst({
             where: {
                 cronograma_id,
-                nivel
+                nivel,
+                etapa: {
+                    etapa_pai_id
+                }
             },
             select: { ordem: true },
             orderBy: { ordem: 'desc' },
