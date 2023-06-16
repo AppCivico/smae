@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { CalculaAtraso } from '../common/CalculaAtraso';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,6 +15,7 @@ class NivelOrdemForUpsert {
 }
 @Injectable()
 export class CronogramaEtapaService {
+    private readonly logger = new Logger(CronogramaEtapaService.name);
     constructor(private readonly prisma: PrismaService) { }
 
     async findAll(filters: FilterCronogramaEtapaDto | undefined = undefined) {
@@ -224,10 +224,10 @@ export class CronogramaEtapaService {
                 const firstLevelParentIndex = cronogramaEtapas.map(e => e.etapa_id).indexOf(cronogramaEtapa.etapa.etapa_pai_id);
                 if (firstLevelParentIndex >= 0) continue;
             }
-            
+
             const atrasoCronograma = await this.getAtraso(cronogramaEtapa.cronograma.inicio_previsto, cronogramaEtapa.cronograma.inicio_real, cronogramaEtapa.cronograma.termino_previsto, cronogramaEtapa.cronograma.termino_real);
             const atrasoCronogramaGrau = await this.getAtrasoGrau(atrasoCronograma);
-            
+
             const atrasoEtapa = await this.getAtraso(cronogramaEtapa.etapa.inicio_previsto, cronogramaEtapa.etapa.inicio_real, cronogramaEtapa.etapa.termino_previsto, cronogramaEtapa.etapa.termino_real);
             const atrasoEtapaGrau = await this.getAtrasoGrau(atrasoEtapa);
 
@@ -283,7 +283,7 @@ export class CronogramaEtapaService {
                         cronogramaEtapa.etapa.etapa_filha.map(async f => {
                             const atrasoFase = await this.getAtraso(f.inicio_previsto, f.inicio_real, f.termino_previsto, f.termino_real);
                             const atrasoFaseGrau = await this.getAtrasoGrau(atrasoFase);
-                            
+
                             return {
                                 CronogramaEtapa: f.CronogramaEtapa.map(x => {
                                     return {
@@ -389,14 +389,14 @@ export class CronogramaEtapaService {
 
         return ret_arr;
     }
- 
+
     async update(dto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
 
-        if (dto.ordem && dto.ordem <= 0) dto.ordem = 1; 
+        if (dto.ordem && dto.ordem <= 0) dto.ordem = 1;
 
         let id;
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -429,16 +429,16 @@ export class CronogramaEtapaService {
             });
             const maxOrdem: number = rowMaxOrdem ? rowMaxOrdem.ordem : nivelOrdemForUpsert.ordem;
             const ordemUtilizada = dto.ordem && dto.ordem <= maxOrdem ? dto.ordem : nivelOrdemForUpsert.ordem;
-            console.log('===========================');
-            console.log("dto.ordem = " + dto.ordem);
-            console.log('maxOrdem = ' + maxOrdem);
-            console.log('self : ');
-            console.log(self);
-            console.log('selfExiste = ' + selfExiste);
-            console.log('nivelOrdemForUpsert : ');
-            console.log(nivelOrdemForUpsert);
-            console.log('ordemUtilizada = ' + ordemUtilizada);
-            console.log('===========================');
+            this.logger.debug('===========================');
+            this.logger.debug("dto.ordem = " + dto.ordem);
+            this.logger.debug('maxOrdem = ' + maxOrdem);
+            this.logger.debug('self : ');
+            this.logger.debug(self);
+            this.logger.debug('selfExiste = ' + selfExiste);
+            this.logger.debug('nivelOrdemForUpsert : ');
+            this.logger.debug(nivelOrdemForUpsert);
+            this.logger.debug('ordemUtilizada = ' + ordemUtilizada);
+            this.logger.debug('===========================');
 
             const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
                 where: {
@@ -475,38 +475,38 @@ export class CronogramaEtapaService {
                     },
                     orderBy: { ordem: 'asc' }
                 });
-            
+
                 const updates = [];
                 let startOrdem = self ? self.ordem : Number.MAX_VALUE;
                 let endOrdem = ordemUtilizada;
-            
+
                 if (startOrdem > endOrdem) {
                     [startOrdem, endOrdem] = [endOrdem, startOrdem];
                 }
-            
+
                 for (const row of rows) {
                     if (row.ordem >= startOrdem && row.ordem <= endOrdem) {
                         let newOrdem;
-                        console.log('=======================');
-                        console.log('rowOrdem = ' + row.ordem);
-            
-                        if ((self && ordemUtilizada < self.ordem) || ( (!self && (ordemUtilizada == row.ordem || ordemUtilizada < row.ordem)) || (self && self.ordem - ordemUtilizada != -1 && self.ordem - ordemUtilizada > -2) )) {
-                            console.log('ordem irá subir');
+                        this.logger.debug('=======================');
+                        this.logger.debug('rowOrdem = ' + row.ordem);
+
+                        if ((self && ordemUtilizada < self.ordem) || ((!self && (ordemUtilizada == row.ordem || ordemUtilizada < row.ordem)) || (self && self.ordem - ordemUtilizada != -1 && self.ordem - ordemUtilizada > -2))) {
+                            this.logger.debug('ordem irá subir');
                             newOrdem = row.ordem + 1;
                         } else {
-                            console.log('ordem irá descer');
+                            this.logger.debug('ordem irá descer');
                             newOrdem = row.ordem - 1;
                             if (newOrdem <= 0) break;
                         }
-                        console.log('=======================');
-            
+                        this.logger.debug('=======================');
+
                         updates.push(prisma.cronogramaEtapa.update({
                             where: { id: row.id },
                             data: { ordem: newOrdem }
                         }));
                     }
                 }
-            
+
                 await Promise.all(updates);
             }
 
@@ -575,7 +575,7 @@ export class CronogramaEtapaService {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
-    
+
         const deleted = await this.prisma.cronogramaEtapa.findUnique({
             where: { id: id },
             select: {
@@ -584,16 +584,16 @@ export class CronogramaEtapaService {
                 ordem: true,
             },
         });
-    
+
         if (!deleted) {
             throw new NotFoundException(`CronogramaEtapa with id ${id} not found`);
         }
-    
+
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             await prisma.cronogramaEtapa.delete({
                 where: { id: id },
             });
-    
+
             const rows = await prisma.cronogramaEtapa.findMany({
                 where: {
                     cronograma_id: deleted.cronograma_id,
@@ -606,17 +606,17 @@ export class CronogramaEtapaService {
                 },
                 orderBy: { ordem: 'asc' },
             });
-    
+
             const updates = rows.map((row) =>
                 prisma.cronogramaEtapa.update({
                     where: { id: row.id },
                     data: { ordem: row.ordem - 1 },
                 })
             );
-    
+
             return Promise.all(updates);
         });
-    
+
         return deleted;
     }
 
@@ -631,7 +631,7 @@ export class CronogramaEtapaService {
         return await this.durationInDaysHuman(duration);
     }
 
-    async getAtraso(inicio_previsto: Date | null, inicio_real: Date | null, termino_previsto: Date | null, termino_real: Date | null): Promise<number | null>{
+    async getAtraso(inicio_previsto: Date | null, inicio_real: Date | null, termino_previsto: Date | null, termino_real: Date | null): Promise<number | null> {
         if (termino_real) return 0;
 
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
@@ -639,23 +639,22 @@ export class CronogramaEtapaService {
         let diff: number;
         let atraso: number | null;
         if (inicio_real) {
-            if (termino_previsto == null){
+            if (termino_previsto == null) {
                 console.warn('Row possui inicio_real, mas não possui termino_previsto, cálculo de atraso em relação ao término é impossível.');
                 return null;
             }
 
-            diff = hoje.diff( DateTime.fromJSDate(termino_previsto) ).as('days');
+            diff = hoje.diff(DateTime.fromJSDate(termino_previsto)).as('days');
         } else {
             if (inicio_previsto == null) {
                 console.warn('Row não possui inicio_real e nem inicio_previsto. Cálculo de atraso impossível.');
                 return null;
             }
-            
-            diff = hoje.diff( DateTime.fromJSDate(inicio_previsto) ).as('days');
+
+            diff = hoje.diff(DateTime.fromJSDate(inicio_previsto)).as('days');
         }
 
-        console.log('diff: ' + diff);
-        atraso = diff <= 0 ? null : Math.floor(Math.abs(diff));  
+        atraso = diff <= 0 ? null : Math.floor(Math.abs(diff));
         return atraso;
     }
 
@@ -683,7 +682,7 @@ export class CronogramaEtapaService {
 
                 if (etapa.etapa_filha) {
                     for (const fase of etapa.etapa_filha) {
-                        
+
                         if (fase.atraso_grau) {
                             comparacao = CronogramaEtapaAtrasoGrau[fase.atraso_grau as keyof typeof CronogramaEtapaAtrasoGrau];
                             if (!atrasoMaisSevero || comparacao > atrasoMaisSevero) atrasoMaisSevero = comparacao
@@ -697,7 +696,7 @@ export class CronogramaEtapaService {
                                     comparacao = CronogramaEtapaAtrasoGrau[subfase.atraso_grau as keyof typeof CronogramaEtapaAtrasoGrau];
                                     if (!atrasoMaisSevero || comparacao > atrasoMaisSevero) atrasoMaisSevero = comparacao
                                 }
-        
+
                                 if (atrasoMaisSevero && atrasoMaisSevero == CronogramaEtapaAtrasoGrau.Alto) break;
                             }
                         }
