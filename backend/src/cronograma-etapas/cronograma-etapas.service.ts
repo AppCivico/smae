@@ -490,7 +490,7 @@ export class CronogramaEtapaService {
                         console.log('=======================');
                         console.log('rowOrdem = ' + row.ordem);
             
-                        if ((self && ordemUtilizada < self.ordem) || ( (!self && (ordemUtilizada == row.ordem || ordemUtilizada < row.ordem)) || (self && self.ordem - ordemUtilizada != -1) )) {
+                        if ((self && ordemUtilizada < self.ordem) || ( (!self && (ordemUtilizada == row.ordem || ordemUtilizada < row.ordem)) || (self && self.ordem - ordemUtilizada != -1 && self.ordem - ordemUtilizada > -2) )) {
                             console.log('ordem irá subir');
                             newOrdem = row.ordem + 1;
                         } else {
