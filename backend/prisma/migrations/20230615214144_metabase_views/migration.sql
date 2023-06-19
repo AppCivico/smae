@@ -88,9 +88,11 @@ select
    -- case when pra evitar division by zero
     case when (coalesce(serie.meta_realizada, 0) - coalesce(indicador.acumulado_valor_base, 0)) = 0
     then 0
-    else round((
-        (serie.meta_realizada - coalesce(indicador.acumulado_valor_base,0)) / (serie.meta_prevista - coalesce(indicador.acumulado_valor_base, 0))
-      ) * 100)
+    else coalesce(
+        round((
+        (serie.meta_realizada - coalesce(indicador.acumulado_valor_base,0)) / nullif((serie.meta_prevista - coalesce(indicador.acumulado_valor_base, 0)),0)
+      ) * 100),
+      0)
     end as percetual_execucao,
 
     /*case when coalesce(serie.meta_realizada, 0) >= coalesce(serie.meta_prevista, 1)
