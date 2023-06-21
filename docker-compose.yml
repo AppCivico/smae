@@ -117,7 +117,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      SOF_API_TOKEN: "${SEI_API_TOKEN}"
+      SEI_API_TOKEN: "${SEI_API_TOKEN}"
       PORT: 80
     networks:
       - api_sei
