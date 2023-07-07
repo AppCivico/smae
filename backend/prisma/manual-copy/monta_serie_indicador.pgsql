@@ -2,6 +2,9 @@ CREATE OR REPLACE FUNCTION monta_serie_indicador (pIndicador_id int, eh_serie_re
     RETURNS varchar
     AS $$
 DECLARE
+    vStartTime timestamp;
+
+
     r record;
     serieRecord record;
     vInicio date;
@@ -66,8 +69,10 @@ BEGIN
         -- filtra apenas as series do tipo escolhido para recalcular, ou todas se for null
         ((vTipoSerie is null) OR ( s.serie::text like vTipoSerie::text || '%' ))
         LOOP
-            RAISE NOTICE '==> delete serie_indicador (indicador=%', pIndicador_id::text || ', serie=' || serieRecord.serie::text ||', vInicio = '|| coalesce(vInicio::text,'(todos)') || ', fim=' || coalesce(vFim::text,'todos') ||') vAcumuladoUsaFormula ' || vAcumuladoUsaFormula;
+            ----RAISE NOTICE '==> delete serie_indicador (indicador=%', pIndicador_id::text || ', serie=' || serieRecord.serie::text ||', vInicio = '|| coalesce(vInicio::text,'(todos)') || ', fim=' || coalesce(vFim::text,'todos') ||') vAcumuladoUsaFormula ' || vAcumuladoUsaFormula;
 
+            vStartTime := clock_timestamp();
+            --raise NOTICE 'apagando serie_indicador... %s', serieRecord.serie;
             -- apaga o periodo escolhido
             DELETE FROM serie_indicador
             WHERE indicador_id = pIndicador_id
@@ -75,7 +80,10 @@ BEGIN
                 AND data_valor >= vInicio
                 AND data_valor <= vFim -- aqui acho que precisa virar < e na hora de calcular tbm tirar 1 periodo
                 ;
+            --raise NOTICE 'apagou serie_indicador em %s', clock_timestamp() - vStartTime;
 
+            vStartTime := clock_timestamp();
+            --raise NOTICE 'recalculando serie_indicador... %', serieRecord.serie;
             -- recalcula o periodo
             FOR r IN
                 SELECT
@@ -103,15 +111,20 @@ BEGIN
                         INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
                             VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente);
                     ELSE
-                        RAISE NOTICE ' RESULTADO NULO %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
+                        ----RAISE NOTICE ' RESULTADO NULO %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
                     END IF;
                 END IF;
 
-                RAISE NOTICE 'r %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
+                ----RAISE NOTICE 'r %', ROW_TO_JSON(r) || ' => ' || coalesce(resultado::text, '(null)');
             END LOOP; -- loop resultados da periodo da serie
+        --raise NOTICE 'recalculou serie_indicador em %', clock_timestamp() - vStartTime;
+
 
         -- se não é pra usar a formula, entrao vamos recalcular automaticamente a serie acumulada usando os resultados
         IF (vAcumuladoUsaFormula = false) THEN
+            vStartTime := clock_timestamp();
+
+            --raise NOTICE 'recalculando acumulado... %', serieRecord.serie;
             -- muito arriscado fazer usando os periodos, entao recaclula tudo
             DELETE FROM serie_indicador
             WHERE indicador_id = pIndicador_id
@@ -147,10 +160,13 @@ BEGIN
                     AND si.serie = serieRecord.serie
             ) SELECT * from theData where theData.valor_acc is not null;
 
+            --raise NOTICE 'recalculado acumulado em %', clock_timestamp() - vStartTime;
         END IF ;
+
     END LOOP; -- loop resultados das series
     --
     RETURN '';
+
 END
 $$
 LANGUAGE plpgsql;
