@@ -409,6 +409,10 @@ export class IndicadorService {
             //}
 
             return indicador;
+        }, {
+            isolationLevel: 'ReadCommitted',
+            maxWait: 60 * 1000,
+            timeout: 120 * 1000
         });
 
         return { id };
@@ -459,9 +463,9 @@ export class IndicadorService {
                     desativado: false
                 },
             });
-        
+
             if (varsInUse > 0) throw new HttpException('Indicador possui variáveis em uso.', 400);
-        
+
             prismaTx.variavel.updateMany({
                 where: {
                     indicador_variavel: {
@@ -475,7 +479,7 @@ export class IndicadorService {
                     removido_por: user.id
                 }
             });
-        
+
             return await prismaTx.indicador.updateMany({
                 where: { id: id },
                 data: {
@@ -483,7 +487,7 @@ export class IndicadorService {
                     removido_em: new Date(Date.now()),
                 },
             });
-        });        
+        });
 
         return removed;
     }
