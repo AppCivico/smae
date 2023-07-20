@@ -79,3 +79,10 @@ async function bootstrap() {
     await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }
 bootstrap();
+process.on('unhandledRejection', (reason, promise) => {
+    if (reason instanceof Error) {
+        console.log('Unhandled Rejection at:', promise, 'reason:', reason, 'Stack trace:', reason.stack);
+    } else {
+        console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+    }
+});
