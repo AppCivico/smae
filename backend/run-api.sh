@@ -5,6 +5,6 @@ env
 ls -lhas
 
 npx prisma migrate deploy
-node dist/prisma/seed.js
+node --enable-source-maps dist/prisma/seed.js
 
-node dist/src/main
+node --enable-source-maps dist/src/main
