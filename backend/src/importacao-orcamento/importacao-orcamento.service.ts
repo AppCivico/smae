@@ -525,25 +525,30 @@ export class ImportacaoOrcamentoService {
             }
 
 
-            let feedback = await this.processaRow(
-                col2row,
-                {
-                    metasIds,
-                    iniciativasIds,
-                    atividadesIds,
-                    projetosIds,
-                    metasCodigos2Ids,
-                    projetosCodigos2Ids,
-                    iniciativasCodigos2Ids,
-                    atividadesCodigos2Ids,
-                    eh_metas: job.pdm_id !== null,
-                    eh_projeto: job.portfolio_id !== null,
-                    anosPort,
-                    anosPdm,
-                    portfolio_id: job.portfolio_id,
-                },
-                user,
-            );
+            let feedback: string;
+            try {
+                feedback = await this.processaRow(
+                    col2row,
+                    {
+                        metasIds,
+                        iniciativasIds,
+                        atividadesIds,
+                        projetosIds,
+                        metasCodigos2Ids,
+                        projetosCodigos2Ids,
+                        iniciativasCodigos2Ids,
+                        atividadesCodigos2Ids,
+                        eh_metas: job.pdm_id !== null,
+                        eh_projeto: job.portfolio_id !== null,
+                        anosPort,
+                        anosPdm,
+                        portfolio_id: job.portfolio_id,
+                    },
+                    user,
+                );
+            } catch (error) {
+                feedback = `Erro durante processamento: ${error}`;
+            }
 
             if (feedback) {
                 linhas_recusadas++;
