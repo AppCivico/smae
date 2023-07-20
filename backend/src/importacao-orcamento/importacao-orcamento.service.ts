@@ -90,7 +90,11 @@ export class ImportacaoOrcamentoService {
             }
         );
 
-        this.executaImportacaoOrcamento(created.id);
+
+        this.executaImportacaoOrcamento(created.id).catch((err) => {
+            this.logger.error(`executaImportacaoOrcamento failed: ${err}`)
+        });
+
 
         return { id: created.id }
     }
@@ -526,6 +530,7 @@ export class ImportacaoOrcamentoService {
 
 
             let feedback: string;
+
             try {
                 feedback = await this.processaRow(
                     col2row,
