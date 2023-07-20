@@ -915,7 +915,8 @@ export class ImportacaoOrcamentoService {
                 resolve();
             });
 
-            await RetryPromise(() => upsertPromise, 5, 2000, 100);
+            await upsertPromise;
+            //await RetryPromise(() => upsertPromise, 5, 2000, 100);
 
         } catch (error) {
             if (error instanceof HttpException)
