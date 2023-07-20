@@ -864,7 +864,8 @@ export class ImportacaoOrcamentoService {
             })
 
         try {
-            const upsertPromise = new Promise<void>(async (resolve, reject) => {
+            const upsertFunction = async () => {
+
                 if (params.eh_metas) {
 
                     if (id) {
@@ -911,12 +912,9 @@ export class ImportacaoOrcamentoService {
                         }, user);
                     }
                 }
+            };
 
-                resolve();
-            });
-
-            await upsertPromise;
-            //await RetryPromise(() => upsertPromise, 5, 2000, 100);
+            await RetryPromise(upsertFunction, 5, 2000, 100);
 
         } catch (error) {
             if (error instanceof HttpException)
