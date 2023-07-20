@@ -734,7 +734,7 @@ export class ImportacaoOrcamentoService {
 
             } catch (error) {
                 if (error instanceof HttpException)
-                    return `Linha inválida: ${error}`;
+                    return `Linha inválida: ${error.message}`;
 
                 return `Erro no processamento da nota-empenho: ${error}`;
             }
@@ -755,7 +755,7 @@ export class ImportacaoOrcamentoService {
 
             } catch (error) {
                 if (error instanceof HttpException)
-                    return `Linha inválida: ${error}`;
+                    return `Linha inválida: ${error.message}`;
 
                 return `Erro no processamento do processo: ${error}`;
             }
@@ -775,7 +775,7 @@ export class ImportacaoOrcamentoService {
 
             } catch (error) {
                 if (error instanceof HttpException)
-                    return `Linha inválida: ${error}`;
+                    return `Linha inválida: ${error.message}`;
 
                 return `Erro no processamento do processo: ${error}`;
             }
