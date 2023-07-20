@@ -58,7 +58,55 @@ export class OrcamentoRealizadoService {
         if (!anoCount)
             throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
 
-        const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
+        const dotacao: string = dto.dotacao;
+        let processo: string | null = null;
+        let nota_empenho: string | null = null;
+
+        nota_empenho = dto.nota_empenho ? dto.nota_empenho.replace(/[^0-9\/]/g, '') : null;
+        processo = dto.processo ? dto.processo.replace(/[^0-9]/g, '') : null;
+
+        // se é por nota_empenho, os testes sobre o uso de limite serão apenas sobre a nota-empenho
+        // da mesma forma, se for pro processo, os testes de limite serão apenas sobre o processo
+        // a dotação *não* acumula a liquidação/empenho dos registro registrados no processo/nota-empenho
+        // pelo menos não na versão do dia 06/12/2022!
+
+        if (nota_empenho) {
+            if (!processo) throw new HttpException('Necessário enviar Processo ao enviar Nota Empenho', 400);
+            if (!dto.nota_ano) throw new HttpException('Faltando enviar o Ano', 400);
+
+            const notaDb = await this.prisma.dotacaoProcessoNota.findUnique({
+                where: {
+                    ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
+                        ano_referencia: +dto.nota_ano!,
+                        dotacao: dto.dotacao,
+                        dotacao_processo: processo,
+                        dotacao_processo_nota: nota_empenho,
+                    },
+                },
+            });
+            if (!notaDb) throw new HttpException('Nota de Empenho não foi encontrada no banco de dados', 400);
+        } else if (processo) {
+            const processoDb = await this.prisma.dotacaoProcesso.findUnique({
+                where: {
+                    ano_referencia_dotacao_dotacao_processo: {
+                        ano_referencia: dto.ano_referencia,
+                        dotacao: dto.dotacao,
+                        dotacao_processo: processo,
+                    },
+                },
+            });
+            if (!processoDb) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
+        } else {
+            const dotacaoDb = await this.prisma.dotacaoRealizado.findUnique({
+                where: {
+                    ano_referencia_dotacao: {
+                        ano_referencia: dto.ano_referencia,
+                        dotacao: dto.dotacao,
+                    },
+                },
+            });
+            if (!dotacaoDb) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
+        }
 
         console.log({ dotacao, processo, nota_empenho });
 
