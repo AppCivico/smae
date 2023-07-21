@@ -6,7 +6,8 @@ export async function RetryPromise<T>(promiseFn: () => Promise<T>, maxRetries = 
     try {
         return await promiseFn();
     } catch (error) {
-        if (error && error?.code === 'P2034') {
+        // https://www.prisma.io/docs/reference/api-reference/error-reference
+        if (error && error.code && ['P2028', 'P2034', 'P2024', 'P1017', 'P1001', 'P1002', 'P1008', 'P1011'].includes(error.code)) {
             const jitterDelay = Math.floor(Math.random() * delay * jitter * 2 - delay * jitter + delay);
             await new Promise((resolve) => setTimeout(resolve, jitterDelay));
             return RetryPromise(promiseFn, maxRetries - 1, delay);

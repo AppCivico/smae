@@ -32,20 +32,20 @@ export class AppController {
     }
 
     async recordPerformance(delayTime: number) {
-        let executionTimes = [];
+        let executionTimes: number[] = [];
         let start = Date.now();
 
-        while (Date.now() - start < 10000) {
-            const queryStart = Date.now();
-            await this.prisma.$transaction(async (prismaTx) => {
+        await this.prisma.$transaction(async (prismaTx) => {
+            while (Date.now() - start < 10000) {
+                const queryStart = Date.now();
                 await prismaTx.$queryRaw`select 1`;
-            });
-            executionTimes.push(Date.now() - queryStart);
+                executionTimes.push(Date.now() - queryStart);
 
-            if (delayTime) {
-                await new Promise(resolve => setTimeout(resolve, delayTime));
+                if (delayTime) {
+                    await new Promise(resolve => setTimeout(resolve, delayTime));
+                }
             }
-        }
+        });
 
         executionTimes.sort((a, b) => a - b);
 
