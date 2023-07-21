@@ -669,12 +669,14 @@ export class ImportacaoOrcamentoService {
         if (validations.length) {
             return 'Linha inválida: ' + validations.reduce((acc, curr) => {
                 return [...acc, ...Object.values(curr.constraints as any)];
-            }, []) + ': DEBUGGER: ' + JSON.stringify({
-                row,
-                row_types: mapObjectToTypes(row as any),
-                raw: col2row,
-                raw_types: mapObjectToTypes(col2row)
-            });
+            }, [])
+                + process.env.INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER ?
+                (': DEBUGGER: ' + JSON.stringify({
+                    row,
+                    row_types: mapObjectToTypes(row as any),
+                    raw: col2row,
+                    raw_types: mapObjectToTypes(col2row)
+                })) : '';
         }
 
         let projeto_id: number | undefined = undefined;
