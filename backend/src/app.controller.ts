@@ -55,7 +55,7 @@ export class AppController {
         let p99 = percentile(99, executionTimes);
         let p999 = percentile(99.9, executionTimes);
 
-        return { min, max, p50, p99, p999, executionTimes };
+        return { min, max, p50, p99, p999, executionTimes: executionTimes.length };
     }
 
     // exemplo de como usar o ejs via server-side
