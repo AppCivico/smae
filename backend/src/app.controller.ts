@@ -1,6 +1,6 @@
 import { Controller, Get, HttpException, Query } from '@nestjs/common';
 import { IsPublic } from './auth/decorators/is-public.decorator';
-import percentile from 'percentile';
+import * as percentile from 'percentile';
 import { PrismaService } from './prisma/prisma.service';
 
 //import { Res } from '@nestjs/common';
@@ -19,14 +19,16 @@ export class AppController {
         return 'pong';
     }
 
+    @IsPublic()
     @Get('/performance-check')
     async performanceCheck(@Query() query: Record<string, string>) {
         if (query.token !== process.env.HEALTH_CHECK_TOKEN)
             throw new HttpException('mismatched HEALTH_CHECK_TOKEN', 401)
 
-        let delayTime = query.delayTime ? Number(query.delayTime) : 0;
-
-        return await this.recordPerformance(delayTime);
+        return {
+            unloaded: await this.recordPerformance(30),
+            loaded: await this.recordPerformance(0)
+        };
     }
 
     async recordPerformance(delayTime: number) {
