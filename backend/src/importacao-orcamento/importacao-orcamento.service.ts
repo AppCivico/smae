@@ -62,6 +62,13 @@ function mapObjectToTypes(obj: Record<string, unknown>): Record<string, string> 
     return newObj;
 }
 
+function toFixed2ButString(n: number): string {
+    const with2Decimals = n.toString().match(/^-?\d+(?:\.\d{0,2})?/);
+
+    if (with2Decimals && with2Decimals[0]) return with2Decimals[0]
+    return n.toFixed();
+}
+
 @Injectable()
 export class ImportacaoOrcamentoService {
     private readonly logger = new Logger(ImportacaoOrcamentoService.name);
@@ -511,6 +518,15 @@ export class ImportacaoOrcamentoService {
                     // traduzindo algumas colunas do excel pro DTO
                     if (columnName === 'ano') {
                         col2row['ano_referencia'] = cellValue;
+                    } else if (['valor_empenho', 'valor_liquidado'].includes(columnName)) {
+                        // essas duas colunas vem como float, e então as vezes vem no excel ta "83242998.52" mas chega aqui "83242998.52000001"
+                        // então vamos fazer o toFixed(2)
+                        col2row[columnName] = +cellValue;
+
+                        if (typeof col2row[columnName] === 'number') {
+                            col2row[columnName] = toFixed2ButString(col2row[columnName]);
+                        }
+
                     } else {
                         col2row[columnName] = cellValue;
                     }
