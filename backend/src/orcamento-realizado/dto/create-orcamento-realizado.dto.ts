@@ -101,7 +101,7 @@ export class CreateOrcamentoRealizadoDto {
     @IsOptional()
     @IsString()
     @Matches(/^\d{4}$/, { message: 'Valor do ano da nota' })
-    nota_ano?: number;
+    nota_ano?: string;
 
     @ValidateNested({ each: true })
     @Type(() => CreateOrcamentoRealizadoItemDto)

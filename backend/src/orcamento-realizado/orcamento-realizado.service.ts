@@ -434,12 +434,17 @@ export class OrcamentoRealizadoService {
 
         if (nota_empenho) {
             if (!processo) throw new HttpException('Necessário enviar Processo ao enviar Nota Empenho', 400);
-            if (!dto.nota_ano) throw new HttpException('Faltando enviar o Ano', 400);
+
+            if (!dto.nota_ano && nota_empenho.includes('/'))
+                dto.nota_ano = nota_empenho.split('/')[1];
+
+            if (!dto.nota_ano)
+                throw new HttpException('Faltando enviar o Ano Referencia da Nota de Empenho', 400);
 
             const notaDb = await this.prisma.dotacaoProcessoNota.findUnique({
                 where: {
                     ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
-                        ano_referencia: +dto.nota_ano!,
+                        ano_referencia: +dto.nota_ano,
                         dotacao: dto.dotacao,
                         dotacao_processo: processo,
                         dotacao_processo_nota: nota_empenho,
