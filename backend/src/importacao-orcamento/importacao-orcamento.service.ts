@@ -113,11 +113,6 @@ export class ImportacaoOrcamentoService {
             this.logger.error(`executaImportacaoOrcamento failed: ${err}`);
         });
 
-        // deixar processar só na fila pra testar se é isso
-        //this.executaImportacaoOrcamento(created.id).catch((err) => {
-        //            this.logger.error(`executaImportacaoOrcamento failed: ${err}`)
-        //      });
-
         return { id: created.id };
     }
 
