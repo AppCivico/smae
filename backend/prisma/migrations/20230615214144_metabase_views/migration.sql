@@ -85,15 +85,15 @@ select
     serie.meta_parcial,
     serie.meta_realizada,
 
-   -- case when pra evitar division by zero
-    case when (coalesce(serie.meta_realizada, 0) - coalesce(indicador.acumulado_valor_base, 0)) = 0
-    then 0
-    else coalesce(
-        round((
-        (serie.meta_realizada - coalesce(indicador.acumulado_valor_base,0)) / nullif((serie.meta_prevista - coalesce(indicador.acumulado_valor_base, 0)),0)
-      ) * 100),
-      0)
-    end as percetual_execucao,
+
+    coalesce(round((
+        (serie.meta_realizada - coalesce(indicador.acumulado_valor_base, 0))
+            /
+        nullif(
+            (serie.meta_prevista - coalesce(indicador.acumulado_valor_base, 0)),
+            0
+        )
+    ) * 100), 0) as percetual_execucao,
 
     /*case when coalesce(serie.meta_realizada, 0) >= coalesce(serie.meta_prevista, 1)
         then 'Atingida' else 'Não Atingida'
