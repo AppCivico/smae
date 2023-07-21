@@ -77,6 +77,7 @@ services:
       CPF_OBRIGATORIO_SEM_RF: "${CPF_OBRIGATORIO_SEM_RF}"
       MATCH_EMAIL_RF_OBRIGATORIO: "${MATCH_EMAIL_RF_OBRIGATORIO}"
       SOF_API_PREFIX: "${SOF_API_PREFIX}"
+      HEALTH_CHECK_TOKEN: "${HEALTH_CHECK_TOKEN}"
     networks:
       - postgres
       - minio
