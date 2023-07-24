@@ -667,16 +667,20 @@ export class ImportacaoOrcamentoService {
         const row = plainToInstance(LinhaCsvInputDto, col2row);
         const validations = await validate(row);
         if (validations.length) {
-            return 'Linha inválida: ' + validations.reduce((acc, curr) => {
+            let response = 'Linha inválida: ' + validations.reduce((acc, curr) => {
                 return [...acc, ...Object.values(curr.constraints as any)];
-            }, [])
-                + process.env.INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER ?
-                (': DEBUGGER: ' + JSON.stringify({
+            }, []);
+
+            if (process.env.INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER) {
+                response += ': DEBUGGER: ' + JSON.stringify({
                     row,
                     row_types: mapObjectToTypes(row as any),
                     raw: col2row,
                     raw_types: mapObjectToTypes(col2row)
-                })) : '';
+                });
+            }
+
+            return response;
         }
 
         let projeto_id: number | undefined = undefined;
