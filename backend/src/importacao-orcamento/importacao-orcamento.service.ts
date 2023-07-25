@@ -527,8 +527,10 @@ export class ImportacaoOrcamentoService {
                             col2row[columnName] = toFixed2ButString(col2row[columnName]);
                         }
 
-                    } else {
+                    } else if (cellValue !== '') {
                         col2row[columnName] = cellValue;
+                    } else {
+                        col2row[columnName] = undefined;
                     }
 
                     row.push(cellValue);
