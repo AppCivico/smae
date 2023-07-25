@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePPOrcamentoRealizadoDto, FilterPPOrcamentoRealizadoDto, UpdatePPOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
 import { ProjetoDetailDto, ProjetoMVPDto } from '../projeto/entities/projeto.entity';
 import { PPOrcamentoRealizado } from './entities/orcamento-realizado.entity';
+import { FormataNotaEmpenho } from '../../common/FormataNotaEmpenho';
 
 const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
 
@@ -377,7 +378,7 @@ export class OrcamentoRealizadoService {
         let processo: string | null = null;
         let nota_empenho: string | null = null;
 
-        nota_empenho = dto.nota_empenho ? dto.nota_empenho.replace(/[^0-9\/]/g, '') : null;
+        nota_empenho = dto.nota_empenho ? FormataNotaEmpenho(dto.nota_empenho) : null;
         processo = dto.processo ? dto.processo.replace(/[^0-9]/g, '') : null;
 
         // se é por nota_empenho, os testes sobre o uso de limite serão apenas sobre a nota-empenho
