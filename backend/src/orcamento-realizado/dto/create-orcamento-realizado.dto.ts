@@ -88,13 +88,13 @@ export class CreateOrcamentoRealizadoDto {
     processo?: string | null;
 
     /**
-     * nota_empenho: esperado exatamente 5 dígitos seguido de barra e o ano da nota
+     * nota_empenho: esperado até 6 dígitos seguido de barra e o ano da nota
      * @example "00000/2022"
      */
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(11)
-    @Matches(/^\d{5}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 00000/' + new Date(Date.now()).getFullYear() })
+    @MaxLength(12)
+    @Matches(/^\d{1,6}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 000000/' + new Date(Date.now()).getFullYear() })
     @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
 
@@ -144,7 +144,7 @@ export class FilterOrcamentoRealizadoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(6)
+    @MaxLength(7)
     nota_empenho?: string;
 
     /**
