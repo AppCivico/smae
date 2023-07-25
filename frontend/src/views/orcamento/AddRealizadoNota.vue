@@ -121,8 +121,8 @@ function maskNota(el) {
   el.target.value = formatNota(el.target.value);
 }
 function formatNota(d) {
-  const data = String(d).replace(/[\D]/g, '').slice(0, 5);
-  const s = data.slice(0, 5);
+  const data = String(d).replace(/[\D]/g, '').slice(0, 6);
+  const s = data.slice(0, 6);
   return s;
 }
 
