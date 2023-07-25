@@ -38,7 +38,8 @@ class EmpenhosLiquidacoes:
             'codGrupo', 
             'codModalidade', 
             'codElemento', 
-            'codFonteRecurso'
+            'codFonteRecurso',
+            'txtDescricaoFonteRecurso'
             )
 
         return keys
