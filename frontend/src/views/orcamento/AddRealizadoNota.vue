@@ -44,7 +44,7 @@ const dota = ref('');
 const dotaAno = ref(ano);
 const respostasof = ref({});
 
-const regdota = /^\d{1,5}$/;
+const regdota = /^\d{1,6}$/;
 const schema = Yup.object().shape({
   nota_empenho: Yup.string().required('Preencha o nota_empenho.').matches(regdota, 'Formato inválido'),
   dotacao: Yup.string(),
@@ -127,7 +127,7 @@ function formatNota(d) {
 }
 
 async function validarDota(evt) {
-  dota.value = String(dota.value).padStart(5, '0');
+  dota.value = String(dota.value).padStart(6, '0');
 
   try {
     respostasof.value = { loading: true };
