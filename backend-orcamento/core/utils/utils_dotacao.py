@@ -16,7 +16,6 @@ class FonteSolver:
             fontes_cache = json.load(f)
 
         return fontes_cache
-
     def build_mapper(self, cache:dict)->dict:
 
         return {item['descricao'] : item['codigo'] for item in cache['fonte_recursos']}
@@ -77,6 +76,11 @@ class ReconstructDotacao:
 
     def natureza_despesa(self, resp:dict)->str:
 
+        self.solve_fonte = FonteSolver()
+
+
+    def natureza_despesa(self, resp:dict)->str:
+
         estrutura = [
             resp['codCategoria'],
             resp['codGrupo'],
@@ -89,6 +93,9 @@ class ReconstructDotacao:
         return ''.join(str(i) for i in estrutura)
 
     def dotacao_txt(self, resp:dict)->str:
+
+
+        fonte = resp['codFonteRecurso'] or self.solve_fonte(resp['txtDescricaoFonteRecurso'])
 
 
         fonte = resp['codFonteRecurso'] or self.solve_fonte(resp['txtDescricaoFonteRecurso'])
@@ -138,7 +145,11 @@ def validacao_dotacao(dotacao):
             int(item)
         except ValueError:
 <<<<<<< HEAD
+<<<<<<< HEAD
             raise ValueError(f'Codigo de dotação não numérica {dotacao} para posição {posit}')
 =======
             raise ValueError(f'Codigo de dotação não numérica {dotacao} para posição {posit}')
 >>>>>>> cc1f3b89 (Truncate dotacao apos 9 partes)
+=======
+            raise ValueError(f'Codigo de dotação não numérica {dotacao} para posição {posit}')
+>>>>>>> 34cf5ee3 (Update from SOF)

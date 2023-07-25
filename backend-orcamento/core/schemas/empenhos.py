@@ -49,7 +49,7 @@ class NotaEmpenho(BuscaEmpenho):
 class Processo(BuscaEmpenho):
 
     processo: str
-
+    
     @validator('processo', pre=True, always=True)
     def format_proc(cls, v):
 
@@ -59,9 +59,9 @@ class Processo(BuscaEmpenho):
         formatado = v.replace('.', '').replace('/', '')
         formatado = formatado.strip()
 
-        if len(formatado) not in (16, 12):
+        if len(formatado) not in (16, 12): 
             raise HTTPException(400, detail=f'Processo {valor_original} fora do padrão.')
-
+        
         try:
             return int(formatado)
         except ValueError:
