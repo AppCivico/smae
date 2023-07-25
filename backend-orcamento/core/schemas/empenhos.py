@@ -37,7 +37,7 @@ class NotaEmpenho(BuscaEmpenho):
         formatado = v.split('/')[0]
         formatado = formatado.strip()
 
-        if len(formatado)<6:
+        if len(formatado)>6:
             raise HTTPException(400, detail=f'Nota de empenho {valor_original} fora do padrão.')
 
         try:
