@@ -5,6 +5,7 @@ import { SofApiService, SofError } from '../sof-api/sof-api.service';
 import { DotacaoService } from './dotacao.service';
 import { AnoDotacaoNotaEmpenhoDto } from './dto/dotacao.dto';
 import { ValorRealizadoNotaEmpenhoDto } from './entities/dotacao.entity';
+import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
 
 @Injectable()
 export class DotacaoProcessoNotaService {
@@ -31,9 +32,8 @@ export class DotacaoProcessoNotaService {
     }
 
     private async sincronizarNotaEmpenhoRealizado(dto: AnoDotacaoNotaEmpenhoDto, mes: number): Promise<ValorRealizadoNotaEmpenhoDto[]> {
-
         const now = new Date(Date.now());
-        dto.nota_empenho = dto.nota_empenho.replace(/[^0-9\/]/g, '');
+        dto.nota_empenho = FormataNotaEmpenho(dto.nota_empenho);
 
         this.logger.debug(`> sincronizarNotaEmpenhoRealizado: ${JSON.stringify(dto)}`);
 
@@ -176,6 +176,8 @@ export class DotacaoProcessoNotaService {
     }> {
         let smae_soma_valor_empenho: string = '0.00';
         let smae_soma_valor_liquidado: string = '0.00';
+
+        dto.nota_empenho = FormataNotaEmpenho(dto.nota_empenho);
 
         if (dto.pdm_id) {
             const qr = await this.prisma.pdmDotacaoProcessoNota.findUnique({
