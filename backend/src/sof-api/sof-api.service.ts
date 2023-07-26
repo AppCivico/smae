@@ -98,6 +98,17 @@ export type InputProcesso = {
     processo: string;
 };
 
+function TrataDotacaoGrande(dotacao: string): string {
+    // trata o caso de dotação grandes
+    // "14.10.16.482.3002.3.354.44905100.02.1.700.0769"
+    //  ->
+    // "14.10.16.482.3002.3.354.44905100.02"
+    if (dotacao.length > 35)
+        return dotacao.split('.').splice(0, 9).join('.');
+
+    return dotacao;
+}
+
 @Injectable()
 export class SofApiService {
     private got: Got;
@@ -238,7 +249,7 @@ export class SofApiService {
                 return {
                     data: (response as SuccessEmpenhosResponse).data.map(d => {
                         return {
-                            dotacao: d.dotacao,
+                            dotacao: TrataDotacaoGrande(d.dotacao),
                             processo: String(d.processo),
                             empenho_liquido: Number(d.empenho_liquido),
                             val_liquidado: Number(d.val_liquidado),
