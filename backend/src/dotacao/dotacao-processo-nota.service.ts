@@ -134,6 +134,10 @@ export class DotacaoProcessoNotaService {
                 ano_referencia: dto.ano,
                 dotacao_processo_nota: dto.nota_empenho,
             },
+            // Caso o SOF esteja realmente mudando o processo ou dotacao pra uma mesma Nota de Empenho:
+            // uma POG:
+            // take: 1,
+            // orderBy: [{sincronizado_em: 'desc'}],
             select: {
                 id: true,
                 dotacao: true,
