@@ -85,5 +85,10 @@ where me.dotacao_processo_nota != new_nota_empenho
 and me.id = x.id;
 
 
+delete from dotacao_processo_nota where length(dotacao) > 35;
+delete from dotacao_processo where length(dotacao) > 35;
+delete from dotacao_realizado where length(dotacao) > 35;
+delete from dotacao_planejado where length(dotacao) > 35;
+
 
 commit;
