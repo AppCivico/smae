@@ -6,7 +6,9 @@ export class PrismaHelpers {
         prisma: PrismaClient,
         model: keyof PrismaClient,
         ids: number[],
-        isCodigoNullable?: boolean,
+        isCodigoNullable: boolean,
+        filterColumn: string,
+        extraValue: any | undefined
     ): Promise<Record<string, number>> {
         if (ids.length === 0) return {};
 
@@ -15,6 +17,9 @@ export class PrismaHelpers {
             whereCondition.codigo = { not: null };
         }
         whereCondition.removido_em = null;
+        if (extraValue !== undefined) {
+            whereCondition[filterColumn] = extraValue;
+        }
 
         const rows = await (prisma[model] as any).findMany({
             where: whereCondition,
