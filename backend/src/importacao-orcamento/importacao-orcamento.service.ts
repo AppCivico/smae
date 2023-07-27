@@ -834,8 +834,10 @@ export class ImportacaoOrcamentoService {
                 ano_referencia: row.ano_referencia,
                 meta_id,
                 dotacao,
-                nota_empenho: dotacao_processo_nota,
-                processo: dotacao_processo,
+                nota_empenho: dotacao_processo_nota !== undefined ? dotacao_processo_nota : null,
+                processo: dotacao_processo !== undefined ? dotacao_processo : null,
+                atividade_id: atividade_id !== undefined ? atividade_id : null,
+                iniciativa_id: iniciativa_id !== undefined ? iniciativa_id : null,
             }, user);
 
             const maisRecente = existeNaMeta.at(-1);
