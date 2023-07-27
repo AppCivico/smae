@@ -27,11 +27,7 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 @Injectable()
 export class OrcamentoRealizadoService {
     liberarValoresMaioresQueSof: boolean;
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
-        private readonly dotacaoService: DotacaoService
-    ) {
+    constructor(private readonly prisma: PrismaService, private readonly orcamentoPlanejado: OrcamentoPlanejadoService, private readonly dotacaoService: DotacaoService) {
         // deixar desligado a verificação
         this.liberarValoresMaioresQueSof = true;
     }
