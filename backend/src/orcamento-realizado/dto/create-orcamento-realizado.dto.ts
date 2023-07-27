@@ -110,7 +110,7 @@ export class CreateOrcamentoRealizadoDto {
     itens: CreateOrcamentoRealizadoItemDto[];
 }
 
-export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, ['ano_referencia', 'dotacao', 'processo', 'nota_empenho']) { }
+export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, ['ano_referencia', 'dotacao', 'processo', 'nota_empenho']) {}
 
 export class FilterOrcamentoRealizadoDto {
     /**
@@ -136,7 +136,7 @@ export class FilterOrcamentoRealizadoDto {
     @IsOptional()
     @IsString()
     @MaxLength(20)
-    processo?: string;
+    processo?: string | null;
 
     /**
      * Filtrar por nota_empenho
@@ -145,7 +145,7 @@ export class FilterOrcamentoRealizadoDto {
     @IsOptional()
     @IsString()
     @MaxLength(7)
-    nota_empenho?: string;
+    nota_empenho?: string | null;
 
     /**
      * Sempre é necessário passar o ano_referencia eg: 2022
@@ -154,6 +154,18 @@ export class FilterOrcamentoRealizadoDto {
     @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
+
+    @IsOptional()
+    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null)
+    iniciativa_id?: number | null;
+
+    @IsOptional()
+    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null)
+    atividade_id?: number | null;
 }
 
 export class ListOrcamentoRealizadoDto {
