@@ -1,10 +1,8 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { AppModule } from './app.module';
-import { TrimPipe } from './common/pipes/trim-pipe';
 
 const winston = require('winston'),
     expressWinston = require('express-winston');
@@ -16,11 +14,11 @@ async function bootstrap() {
         .setTitle('SMAE - OpenAPI file')
         .setDescription(
             '*SMAE*\n\n' +
-            '**CONVERSÃO AUTOMÁTICA PARA CSV**' +
-            '\n\nTodos os endpoints que devolvem `application/json` também podem devolver CSV, utilize o' +
-            'header `Accept: text/csv` para explodir apenas as linhas, ou então `Accept: text/csv; unwind-all` (mais lento, que expande tudo) que transforma todas as arrays em items. ' +
-            '\n\nPor padrão todos os campos deep são achatados (flatten).' +
-            '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.',
+                '**CONVERSÃO AUTOMÁTICA PARA CSV**' +
+                '\n\nTodos os endpoints que devolvem `application/json` também podem devolver CSV, utilize o' +
+                'header `Accept: text/csv` para explodir apenas as linhas, ou então `Accept: text/csv; unwind-all` (mais lento, que expande tudo) que transforma todas as arrays em items. ' +
+                '\n\nPor padrão todos os campos deep são achatados (flatten).' +
+                '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.',
         )
         .addBearerAuth(
             {
@@ -44,17 +42,6 @@ async function bootstrap() {
         },
     });
 
-    app.useGlobalPipes(
-        new TrimPipe(),
-        new ValidationPipe({
-            enableDebugMessages: true,
-            dismissDefaultMessages: false,
-            transform: true,
-            whitelist: true,
-            forbidNonWhitelisted: false, // conferir com o pessoal do frontend, talvez seja muito strict essa config!
-        }),
-    );
-
     app.use(
         expressWinston.logger({
             transports: [
@@ -73,8 +60,7 @@ async function bootstrap() {
     app.setBaseViewsDir(join(__dirname, '..', 'templates'));
     app.setViewEngine('ejs');
 
-    if (process.env.ENABLE_CORS)
-        app.enableCors();
+    if (process.env.ENABLE_CORS) app.enableCors();
 
     await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }
