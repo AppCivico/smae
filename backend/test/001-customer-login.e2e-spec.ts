@@ -26,12 +26,15 @@ describe('AppController (e2e)', () => {
         });
         console.log(exitingOrg);
 
-        const authService = app.get(AuthService);
-
         const findCustomer = await PessoaExpert.getOrCreatePessoa(app, {
             email: 'test@local.com',
             orgao_id: exitingOrg.id,
         });
+
+        console.log(findCustomer)
+
+                const authService = app.get(AuthService);
+                console.log(authService);
 
         session = await authService.criarSession(findCustomer.id);
 

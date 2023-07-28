@@ -6,6 +6,7 @@
     ],
     "moduleNameMapper": {
         "^@/(.*)$": "<rootDir>/src/$1",
+        "^src/(.*)$": "<rootDir>/src/$1",
         "^@test/(.*)$": "<rootDir>/test/$1",
         "^\\.\\.\\/\\.\\.\/public\/js\/(.*)$": "<rootDir>/src/public/js/$1"
     },
@@ -13,7 +14,16 @@
     "testEnvironment": "node",
     "testRegex": ".e2e-spec.ts$",
     "transform": {
-        "^.+\\.(t|j)s$": "ts-jest"
+        "^.+\\.(t|j)s$": [
+            "ts-jest",
+            {
+                "astTransformers": {
+                    "before": [
+                        "test/e2e.swagger.ts"
+                    ]
+                }
+            }
+        ]
     },
     "coverageReporters": [
         "clover",

@@ -1,6 +1,6 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, RouterModule } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, RouterModule } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -71,6 +71,7 @@ import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orc
 import { ProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/projeto-previsao-custo.module';
 import { ProjetoOrcamentoModule } from './reports/projeto-orcamento/projeto-orcamento.module';
 import { ImportacaoOrcamentoModule } from './importacao-orcamento/importacao-orcamento.module';
+import { TrimPipe } from './common/pipes/trim-pipe';
 
 @Module({
     imports: [
@@ -165,6 +166,24 @@ import { ImportacaoOrcamentoModule } from './importacao-orcamento/importacao-orc
         {
             provide: APP_INTERCEPTOR,
             useClass: ContentInterceptor,
+        },
+        {
+            provide: APP_PIPE,
+            useValue: new TrimPipe(),
+        },
+        {
+            provide: APP_PIPE,
+            useValue: new ValidationPipe({
+                enableDebugMessages: true,
+                dismissDefaultMessages: false,
+                transform: true,
+                whitelist: true,
+                // comentando isso, pq não temos como garantir que o OAuth não vai botar um campo novo
+                // no callback
+                // e o o único jeito seria colocando um ValidationPipe em cada controller, ou listando
+                // todos os controllers... então fica desligado
+                //forbidNonWhitelisted: true,
+            }),
         },
         UtilsService,
     ],
