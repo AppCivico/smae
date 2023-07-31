@@ -8,6 +8,7 @@ import { CreatePPOrcamentoRealizadoDto, FilterPPOrcamentoRealizadoDto, UpdatePPO
 import { ProjetoDetailDto, ProjetoMVPDto } from '../projeto/entities/projeto.entity';
 import { PPOrcamentoRealizado } from './entities/orcamento-realizado.entity';
 import { FormataNotaEmpenho } from '../../common/FormataNotaEmpenho';
+import { TrataDotacaoGrande } from '../../sof-api/sof-api.service';
 
 const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
 
@@ -109,6 +110,12 @@ export class OrcamentoRealizadoService {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
+
+                const dotacao_edit = TrataDotacaoGrande(orcamentoRealizado.dotacao);
+                if (orcamentoRealizado.dotacao != dotacao_edit) {
+                    orcamentoRealizado.dotacao = dotacao_edit;
+                    await this.prisma.orcamentoRealizado.update({ where: { id: orcamentoRealizado.id }, data: { dotacao: dotacao_edit } });
+                }
 
                 const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
                 const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
