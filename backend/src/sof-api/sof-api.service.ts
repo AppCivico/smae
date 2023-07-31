@@ -98,7 +98,7 @@ export type InputProcesso = {
     processo: string;
 };
 
-function TrataDotacaoGrande(dotacao: string): string {
+export function TrataDotacaoGrande(dotacao: string): string {
     // trata o caso de dotação grandes
     // "14.10.16.482.3002.3.354.44905100.02.1.700.0769"
     //  ->
