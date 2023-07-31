@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto, UpdateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
+import { TrataDotacaoGrande } from '../sof-api/sof-api.service';
 
 const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
 
@@ -150,6 +151,13 @@ export class OrcamentoRealizadoService {
                 const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+
+                const dotacao_edit = TrataDotacaoGrande(orcRealizado.dotacao);
+                if (orcRealizado.dotacao != dotacao_edit) {
+                    orcRealizado.dotacao = dotacao_edit;
+                    await this.prisma.orcamentoRealizado.update({ where: { id: orcRealizado.id }, data: { dotacao: dotacao_edit } });
+                }
+
                 if (orcRealizado.nota_empenho) {
                     await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, orcRealizado.dotacao, orcRealizado.processo, orcRealizado.nota_empenho);
                 } else if (orcRealizado.processo) {
