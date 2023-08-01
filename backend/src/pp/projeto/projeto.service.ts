@@ -28,7 +28,7 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Fechado: 'Encerramento'
 } as const;
 
-const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
+export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
     Registrado: 'Registrado',
     Selecionado: 'Selecionado',
     EmPlanejamento: 'Em Planejamento',
@@ -36,8 +36,8 @@ const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
     Validado: 'Validado',
     EmAcompanhamento: 'Em Acompanhamento',
     Suspenso: 'Suspenso',
-    Fechado: 'Fechado'
-};
+    Fechado: 'Concluído'
+} as const;
 
 
 export class ProjetoOrgaoParticipante {
