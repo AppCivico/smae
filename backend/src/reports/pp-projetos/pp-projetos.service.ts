@@ -1,12 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
-import { ProjetoService } from '../../pp/projeto/projeto.service';
+import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { ProjetoFase, ProjetoStatus, StatusRisco } from '@prisma/client';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
-import { PPProjetosRelatorioDto, RelProjetosAcompanhamentosDto, RelProjetosCronogramaDto, RelProjetosDto, RelProjetosLicoesAprendidasDto, RelProjetosPlanoAcaoDto, RelProjetosPlanoAcaoMonitoramentosDto, RelProjetosRiscosDto } from './entities/projetos.entity';
+import {
+    PPProjetosRelatorioDto,
+    RelProjetosAcompanhamentosDto,
+    RelProjetosCronogramaDto,
+    RelProjetosDto,
+    RelProjetosLicoesAprendidasDto,
+    RelProjetosPlanoAcaoDto,
+    RelProjetosPlanoAcaoMonitoramentosDto,
+    RelProjetosRiscosDto,
+} from './entities/projetos.entity';
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
@@ -18,159 +27,159 @@ const {
 } = require('json2csv');
 
 type WhereCond = {
-    whereString: string
-    queryParams: any[]
+    whereString: string;
+    queryParams: any[];
 };
 
 const defaultTransform = [flatten({ paths: [] })];
 
 class RetornoDbProjeto {
-    id: number
-    portfolio_id: number
-    portfolio_titulo: string
-    meta_id?: number
-    iniciativa_id?: number
-    atividade_id?: number
-    nome: string
-    codigo?: string
-    objeto: string
-    objetivo: string
-    publico_alvo: string
-    previsao_inicio?: Date
-    previsao_termino?: Date
-    previsao_duracao?: number
-    previsao_custo?: number
-    escopo?: string
-    nao_escopo?: string
-    secretario_responsavel?: string
-    secretario_executivo?: string
-    coordenador_ue?: string
-    data_aprovacao?: Date
-    data_revisao?: Date
-    versao?: string
-    status: ProjetoStatus
+    id: number;
+    portfolio_id: number;
+    portfolio_titulo: string;
+    meta_id?: number;
+    iniciativa_id?: number;
+    atividade_id?: number;
+    nome: string;
+    codigo?: string;
+    objeto: string;
+    objetivo: string;
+    publico_alvo: string;
+    previsao_inicio?: Date;
+    previsao_termino?: Date;
+    previsao_duracao?: number;
+    previsao_custo?: number;
+    escopo?: string;
+    nao_escopo?: string;
+    secretario_responsavel?: string;
+    secretario_executivo?: string;
+    coordenador_ue?: string;
+    data_aprovacao?: Date;
+    data_revisao?: Date;
+    versao?: string;
+    status: ProjetoStatus;
 
-    orgao_responsavel_id: number
-    orgao_responsavel_sigla: string
-    orgao_responsavel_descricao: string
-    orgao_gestor_id: number
-    orgao_gestor_sigla: string
-    orgao_gestor_descricao: string
-    gestores: string
-    responsavel_id: number
-    responsavel_nome_exibicao: string
+    orgao_responsavel_id: number;
+    orgao_responsavel_sigla: string;
+    orgao_responsavel_descricao: string;
+    orgao_gestor_id: number;
+    orgao_gestor_sigla: string;
+    orgao_gestor_descricao: string;
+    gestores: string;
+    responsavel_id: number;
+    responsavel_nome_exibicao: string;
 
-    fonte_recurso_id: number
-    fonte_recurso_nome: string
-    fonte_recurso_cod_sof: string
-    fonte_recurso_ano: number
-    fonte_recurso_valor_pct: number
-    fonte_recurso_valor_nominal: number
+    fonte_recurso_id: number;
+    fonte_recurso_nome: string;
+    fonte_recurso_cod_sof: string;
+    fonte_recurso_ano: number;
+    fonte_recurso_valor_pct: number;
+    fonte_recurso_valor_nominal: number;
 
-    premisa_id: number
-    premissa: string
+    premisa_id: number;
+    premissa: string;
 
-    restricao_id: number
-    restricao: string
+    restricao_id: number;
+    restricao: string;
 
-    orgao_id: number
-    orgao_sigla: string
-    orgao_descricao: string
+    orgao_id: number;
+    orgao_sigla: string;
+    orgao_descricao: string;
 }
 
 class RetornoDbCronograma {
-    projeto_id: number
-    projeto_codigo: string
-    id: number
-    hierarquia?: string
-    numero: number
-    nivel: number
-    tarefa: string
-    inicio_planejado?: Date
-    termino_planejado?: Date
-    custo_estimado?: number
-    inicio_real?: Date
-    termino_real?: Date
-    duracao_real?: number
-    percentual_concluido?: number
-    custo_real?: number
-    dependencias?: string
+    projeto_id: number;
+    projeto_codigo: string;
+    id: number;
+    hierarquia?: string;
+    numero: number;
+    nivel: number;
+    tarefa: string;
+    inicio_planejado?: Date;
+    termino_planejado?: Date;
+    custo_estimado?: number;
+    inicio_real?: Date;
+    termino_real?: Date;
+    duracao_real?: number;
+    percentual_concluido?: number;
+    custo_real?: number;
+    dependencias?: string;
 
-    responsavel_id: number
-    responsavel_nome_exibicao: string
+    responsavel_id: number;
+    responsavel_nome_exibicao: string;
 
-    atraso?: number
+    atraso?: number;
 }
 
 class RetornoDbRiscos {
-    projeto_id: number
-    projeto_codigo: string
-    codigo: string
-    titulo: string
-    data_registro: string
-    status_risco: StatusRisco
-    descricao?: string
-    causa?: string
-    consequencia?: string
-    probabilidade?: number
-    impacto?: number
-    nivel?: number
-    grau?: number
-    resposta?: string
-    tarefas_afetadas?: string
+    projeto_id: number;
+    projeto_codigo: string;
+    codigo: string;
+    titulo: string;
+    data_registro: string;
+    status_risco: StatusRisco;
+    descricao?: string;
+    causa?: string;
+    consequencia?: string;
+    probabilidade?: number;
+    impacto?: number;
+    nivel?: number;
+    grau?: number;
+    resposta?: string;
+    tarefas_afetadas?: string;
 }
 
 class RetornoDbPlanosAcao {
-    projeto_id: number
-    projeto_codigo: string
-    plano_acao_id: number
-    risco_codigo: string
-    contramedida: string
-    medidas_de_contingencia: string
-    prazo_contramedida?: Date
-    custo?: number
-    custo_percentual?: number
-    responsavel?: string
-    data_termino?: Date
+    projeto_id: number;
+    projeto_codigo: string;
+    plano_acao_id: number;
+    risco_codigo: string;
+    contramedida: string;
+    medidas_de_contingencia: string;
+    prazo_contramedida?: Date;
+    custo?: number;
+    custo_percentual?: number;
+    responsavel?: string;
+    data_termino?: Date;
 }
 
 class RetornoDbPlanosAcaoMonitoramentos {
-    projeto_id: number
-    projeto_codigo: string
-    risco_codigo: string
-    plano_acao_id: number
-    data_afericao: Date
-    descricao: string
+    projeto_id: number;
+    projeto_codigo: string;
+    risco_codigo: string;
+    plano_acao_id: number;
+    data_afericao: Date;
+    descricao: string;
 }
 
 class RetornoDbLicoesAprendidas {
-    projeto_id: number
-    projeto_codigo: string
-    sequencial: number
-    data_registro: Date
-    responsavel: string
-    descricao: string
-    observacao?: string
-    contexto?: string
-    resultado?: string
+    projeto_id: number;
+    projeto_codigo: string;
+    sequencial: number;
+    data_registro: Date;
+    responsavel: string;
+    descricao: string;
+    observacao?: string;
+    contexto?: string;
+    resultado?: string;
 }
 
 class RetornoDbAcompanhamentos {
-    projeto_id: number
-    projeto_codigo: string
-    data_registro: Date
-    participantes: string
-    cronograma_paralizado: boolean
-    prazo_encaminhamento: Date | null
-    pauta: string | null
-    prazo_realizado: Date | null
-    detalhamento: string | null
-    encaminhamento: string | null
-    responsavel: string | null
-    observacao: string | null
-    detalhamento_status: string | null
-    pontos_atencao: string | null
-    riscos: string | null
+    projeto_id: number;
+    projeto_codigo: string;
+    data_registro: Date;
+    participantes: string;
+    cronograma_paralizado: boolean;
+    prazo_encaminhamento: Date | null;
+    pauta: string | null;
+    prazo_realizado: Date | null;
+    detalhamento: string | null;
+    encaminhamento: string | null;
+    responsavel: string | null;
+    observacao: string | null;
+    detalhamento_status: string | null;
+    pontos_atencao: string | null;
+    riscos: string | null;
 }
 
 @Injectable()
@@ -179,8 +188,8 @@ export class PPProjetosService implements ReportableService {
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
         private readonly tarefasService: TarefaService,
-        private readonly tarefasUtilsService: TarefaUtilsService
-    ) { }
+        private readonly tarefasUtilsService: TarefaUtilsService,
+    ) {}
 
     async create(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
         const out_projetos: RelProjetosDto[] = [];
@@ -222,6 +231,10 @@ export class PPProjetosService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
             });
+
+            for (const r of dados.linhas) {
+                if (r.status) (r as any)['status-traduzido'] = ProjetoStatusParaExibicao[r.status];
+            }
             const linhas = json2csvParser.parse(dados.linhas);
             out.push({
                 name: 'projetos.csv',
@@ -350,8 +363,6 @@ export class PPProjetosService implements ReportableService {
         return { whereString, queryParams };
     }
 
-
-
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
         const sql = `SELECT
             projeto.id,
@@ -424,9 +435,7 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsProjetos(data));
     }
 
-    private convertRowsProjetos(
-        input: RetornoDbProjeto[],
-    ): RelProjetosDto[] {
+    private convertRowsProjetos(input: RetornoDbProjeto[]): RelProjetosDto[] {
         return input.map(db => {
             return {
                 id: db.id,
@@ -457,45 +466,55 @@ export class PPProjetosService implements ReportableService {
                 orgao_participante: {
                     id: db.orgao_id,
                     sigla: db.orgao_sigla,
-                    descricao: db.orgao_descricao
+                    descricao: db.orgao_descricao,
                 },
 
-                orgao_responsavel: db.orgao_responsavel_id ? {
-                    id: db.orgao_responsavel_id,
-                    sigla: db.orgao_responsavel_sigla,
-                    descricao: db.orgao_responsavel_descricao
-                } : null,
+                orgao_responsavel: db.orgao_responsavel_id
+                    ? {
+                          id: db.orgao_responsavel_id,
+                          sigla: db.orgao_responsavel_sigla,
+                          descricao: db.orgao_responsavel_descricao,
+                      }
+                    : null,
 
                 orgao_gestor: {
                     id: db.orgao_gestor_id,
                     sigla: db.orgao_gestor_sigla,
-                    descricao: db.orgao_gestor_descricao
+                    descricao: db.orgao_gestor_descricao,
                 },
                 gestores: db.gestores,
 
-                responsavel: db.responsavel_id ? {
-                    id: db.responsavel_id,
-                    nome_exibicao: db.responsavel_nome_exibicao
-                } : null,
+                responsavel: db.responsavel_id
+                    ? {
+                          id: db.responsavel_id,
+                          nome_exibicao: db.responsavel_nome_exibicao,
+                      }
+                    : null,
 
-                premissa: db.premisa_id ? {
-                    id: db.premisa_id,
-                    premissa: db.premissa
-                } : null,
+                premissa: db.premisa_id
+                    ? {
+                          id: db.premisa_id,
+                          premissa: db.premissa,
+                      }
+                    : null,
 
-                restricao: db.restricao_id ? {
-                    id: db.restricao_id,
-                    restricao: db.restricao
-                } : null,
+                restricao: db.restricao_id
+                    ? {
+                          id: db.restricao_id,
+                          restricao: db.restricao,
+                      }
+                    : null,
 
-                fonte_recurso: db.fonte_recurso_id ? {
-                    id: db.fonte_recurso_id,
-                    nome: db.fonte_recurso_nome,
-                    fonte_recurso_cod_sof: db.fonte_recurso_cod_sof,
-                    fonte_recurso_ano: db.fonte_recurso_ano,
-                    valor_percentual: db.fonte_recurso_valor_pct,
-                    valor_nominal: db.fonte_recurso_valor_nominal
-                } : null
+                fonte_recurso: db.fonte_recurso_id
+                    ? {
+                          id: db.fonte_recurso_id,
+                          nome: db.fonte_recurso_nome,
+                          fonte_recurso_cod_sof: db.fonte_recurso_cod_sof,
+                          fonte_recurso_ano: db.fonte_recurso_ano,
+                          valor_percentual: db.fonte_recurso_valor_pct,
+                          valor_nominal: db.fonte_recurso_valor_nominal,
+                      }
+                    : null,
             };
         });
     }
@@ -539,53 +558,57 @@ export class PPProjetosService implements ReportableService {
         out.push(...convertedRows);
     }
 
-    private async convertRowsCronograma(
-        input: RetornoDbCronograma[],
-    ): Promise<RelProjetosCronogramaDto[]> {
+    private async convertRowsCronograma(input: RetornoDbCronograma[]): Promise<RelProjetosCronogramaDto[]> {
+        return await Promise.all(
+            input.map(async db => {
+                interface dependenciaRow {
+                    id: number;
+                    tipo: string;
+                    latencia: number;
+                }
 
-        return await Promise.all(input.map(async db => {
-            interface dependenciaRow {
-                id: number
-                tipo: string
-                latencia: number
-            }
+                const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
+                const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
+                return {
+                    projeto_id: db.projeto_id,
+                    projeto_codigo: db.projeto_codigo,
+                    tarefa_id: db.id,
+                    hirearquia: tarefasHierarquia[db.id],
+                    numero: db.numero,
+                    nivel: db.nivel,
+                    tarefa: db.tarefa,
+                    inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
+                    termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
+                    custo_estimado: db.custo_estimado ? db.custo_estimado : null,
+                    inicio_real: db.inicio_real ? Date2YMD.toString(db.inicio_real) : null,
+                    termino_real: db.termino_real ? Date2YMD.toString(db.termino_real) : null,
+                    duracao_real: db.duracao_real ? db.duracao_real : null,
+                    percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
+                    custo_real: db.custo_real ? db.custo_real : null,
+                    dependencias: db.dependencias
+                        ? db.dependencias
+                              .split('/')
+                              .map(e => {
+                                  const row: dependenciaRow = JSON.parse(e);
 
-            const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
-            const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
-            return {
-                projeto_id: db.projeto_id,
-                projeto_codigo: db.projeto_codigo,
-                tarefa_id: db.id,
-                hirearquia: tarefasHierarquia[db.id],
-                numero: db.numero,
-                nivel: db.nivel,
-                tarefa: db.tarefa,
-                inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
-                termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
-                custo_estimado: db.custo_estimado ? db.custo_estimado : null,
-                inicio_real: db.inicio_real ? Date2YMD.toString(db.inicio_real) : null,
-                termino_real: db.termino_real ? Date2YMD.toString(db.termino_real) : null,
-                duracao_real: db.duracao_real ? db.duracao_real : null,
-                percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
-                custo_real: db.custo_real ? db.custo_real : null,
-                dependencias: db.dependencias ? (
-                    db.dependencias.split('/').map(e => {
-                        const row: dependenciaRow = JSON.parse(e);
+                                  const hierarquia = tarefasHierarquia[row.id];
+                                  const tipo = this.tarefasUtilsService.tarefaDependenteTipoSigla(row.tipo);
+                                  const latencia_str = row.latencia == 0 ? '' : row.latencia;
 
-                        const hierarquia = tarefasHierarquia[row.id];
-                        const tipo = this.tarefasUtilsService.tarefaDependenteTipoSigla(row.tipo);
-                        const latencia_str = row.latencia == 0 ? '' : row.latencia;
-
-                        return `${hierarquia} ${tipo} ${latencia_str}`;
-                    }).join('/')
-                ) : null,
-                atraso: db.atraso ? db.atraso : null,
-                responsavel: db.responsavel_id ? {
-                    id: db.responsavel_id,
-                    nome_exibicao: db.responsavel_nome_exibicao
-                } : null,
-            };
-        }));
+                                  return `${hierarquia} ${tipo} ${latencia_str}`;
+                              })
+                              .join('/')
+                        : null,
+                    atraso: db.atraso ? db.atraso : null,
+                    responsavel: db.responsavel_id
+                        ? {
+                              id: db.responsavel_id,
+                              nome_exibicao: db.responsavel_nome_exibicao,
+                          }
+                        : null,
+                };
+            }),
+        );
     }
 
     private async queryDataRiscos(whereCond: WhereCond, out: RelProjetosRiscosDto[]) {
@@ -620,9 +643,7 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsRiscos(data));
     }
 
-    private convertRowsRiscos(
-        input: RetornoDbRiscos[],
-    ): RelProjetosRiscosDto[] {
+    private convertRowsRiscos(input: RetornoDbRiscos[]): RelProjetosRiscosDto[] {
         return input.map(db => {
             let riscoCalc;
             if (db.impacto && db.probabilidade) riscoCalc = RiscoCalc.getResult(db.impacto, db.probabilidade);
@@ -674,9 +695,7 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsPlanosAcao(data));
     }
 
-    private convertRowsPlanosAcao(
-        input: RetornoDbPlanosAcao[],
-    ): RelProjetosPlanoAcaoDto[] {
+    private convertRowsPlanosAcao(input: RetornoDbPlanosAcao[]): RelProjetosPlanoAcaoDto[] {
         return input.map(db => {
             return {
                 projeto_id: db.projeto_id,
@@ -714,9 +733,7 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsPlanosAcaoMonitoramento(data));
     }
 
-    private convertRowsPlanosAcaoMonitoramento(
-        input: RetornoDbPlanosAcaoMonitoramentos[],
-    ): RelProjetosPlanoAcaoMonitoramentosDto[] {
+    private convertRowsPlanosAcaoMonitoramento(input: RetornoDbPlanosAcaoMonitoramentos[]): RelProjetosPlanoAcaoMonitoramentosDto[] {
         return input.map(db => {
             return {
                 projeto_id: db.projeto_id,
@@ -724,7 +741,7 @@ export class PPProjetosService implements ReportableService {
                 risco_codigo: db.risco_codigo,
                 plano_acao_id: db.plano_acao_id,
                 data_afericao: Date2YMD.toString(db.data_afericao),
-                descricao: db.descricao
+                descricao: db.descricao,
             };
         });
     }
@@ -750,9 +767,7 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsLicoesAprendidas(data));
     }
 
-    private convertRowsLicoesAprendidas(
-        input: RetornoDbLicoesAprendidas[],
-    ): RelProjetosLicoesAprendidasDto[] {
+    private convertRowsLicoesAprendidas(input: RetornoDbLicoesAprendidas[]): RelProjetosLicoesAprendidasDto[] {
         return input.map(db => {
             return {
                 projeto_id: db.projeto_id,
@@ -801,9 +816,7 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsAcompanhamentos(data));
     }
 
-    private convertRowsAcompanhamentos(
-        input: RetornoDbAcompanhamentos[],
-    ): RelProjetosAcompanhamentosDto[] {
+    private convertRowsAcompanhamentos(input: RetornoDbAcompanhamentos[]): RelProjetosAcompanhamentosDto[] {
         return input.map(db => {
             return {
                 projeto_id: db.projeto_id,
@@ -820,9 +833,8 @@ export class PPProjetosService implements ReportableService {
                 observacao: db.observacao ? db.observacao : null,
                 detalhamento_status: db.detalhamento_status ? db.detalhamento_status : null,
                 pontos_atencao: db.pontos_atencao ? db.pontos_atencao : null,
-                riscos: db.riscos ? db.riscos : null
+                riscos: db.riscos ? db.riscos : null,
             };
         });
     }
-
 }
