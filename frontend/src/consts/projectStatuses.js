@@ -6,5 +6,5 @@ export default {
   Validado: 'validado', // EmSuspensao ou EmFechamento caso fechado
   EmAcompanhamento: 'em acompanhamento', // Suspenso, fechado
   Suspenso: 'suspenso', // Volta pra EmAcompanhamento ou Fechado
-  Fechado: 'fechado', //
+  Fechado: 'concluído', //
 };

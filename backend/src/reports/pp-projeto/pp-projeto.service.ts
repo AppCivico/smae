@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
-import { ProjetoService } from '../../pp/projeto/projeto.service';
+import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
@@ -11,6 +11,7 @@ import { RiscoService } from 'src/pp/risco/risco.service';
 import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
+import { ProjetoStatus } from '@prisma/client';
 
 const {
     Parser,
@@ -25,8 +26,8 @@ export class PPProjetoService implements ReportableService {
         private readonly projetoService: ProjetoService,
         private readonly riscoService: RiscoService,
         private readonly planoAcaoService: PlanoAcaoService,
-        private readonly tarefaService: TarefaService
-    ) { }
+        private readonly tarefaService: TarefaService,
+    ) {}
 
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
         const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(dto.projeto_id, undefined, 'ReadOnly');
@@ -84,44 +85,48 @@ export class PPProjetoService implements ReportableService {
             meta: projetoRow.meta,
             responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length ? projetoRow.responsaveis_no_orgao_gestor.map(e => e.nome_exibicao).join('|') : null,
 
-            fonte_recursos: projetoRow.fonte_recursos ? (await Promise.all(
-                projetoRow.fonte_recursos.map(async (e) => {
-                    let valor: string;
+            fonte_recursos: projetoRow.fonte_recursos
+                ? (
+                      await Promise.all(
+                          projetoRow.fonte_recursos.map(async e => {
+                              let valor: string;
 
-                    class queryRet {
-                        descricao: string
-                    }
+                              class queryRet {
+                                  descricao: string;
+                              }
 
-                    const nome_fonte: queryRet[] = await this.prisma.$queryRaw`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${e.fonte_recurso_ano} AND col = 'fonte_recursos'`;
+                              const nome_fonte: queryRet[] = await this.prisma
+                                  .$queryRaw`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${e.fonte_recurso_ano} AND col = 'fonte_recursos'`;
 
-                    if (e.valor_nominal) {
-                        valor = e.valor_nominal.toString();
-                    } else {
-                        valor = e.valor_percentual!.toString();
-                    }
+                              if (e.valor_nominal) {
+                                  valor = e.valor_nominal.toString();
+                              } else {
+                                  valor = e.valor_percentual!.toString();
+                              }
 
-                    return `${nome_fonte[0].descricao}: ${valor}`;
-                }))).join('|')
+                              return `${nome_fonte[0].descricao}: ${valor}`;
+                          }),
+                      )
+                  ).join('|')
                 : null,
 
             premissas: projetoRow.premissas ? projetoRow.premissas.map(e => e.premissa).join('|') : null,
             restricoes: projetoRow.restricoes ? projetoRow.restricoes.map(e => e.restricao).join('|') : null,
-            orgaos_participantes: projetoRow.orgaos_participantes ? projetoRow.orgaos_participantes.map(e => e.sigla).join('|') : null
+            orgaos_participantes: projetoRow.orgaos_participantes ? projetoRow.orgaos_participantes.map(e => e.sigla).join('|') : null,
         };
 
         const tarefasHierarquia = await this.tarefaService.tarefasHierarquia(projetoRow);
 
         const tarefasRows = await this.tarefaService.findAll(dto.projeto_id, undefined, {});
         const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map(e => {
-
             return {
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
                 inicio_planejado: Date2YMD.toStringOrNull(e.inicio_planejado),
                 termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
                 custo_estimado: e.custo_estimado,
-                duracao_planejado: e.duracao_planejado
-            }
+                duracao_planejado: e.duracao_planejado,
+            };
         });
 
         const riscoRows = await this.riscoService.findAll(dto.projeto_id, undefined);
@@ -135,8 +140,8 @@ export class PPProjetoService implements ReportableService {
                 impacto: e.impacto,
                 impacto_descricao: e.impacto_descricao,
                 grau: e.grau,
-                grau_descricao: e.grau_descricao
-            }
+                grau_descricao: e.grau_descricao,
+            };
         });
 
         const planoAcaoRows = await this.planoAcaoService.findAll(dto.projeto_id, { risco_id: undefined }, undefined);
@@ -146,30 +151,30 @@ export class PPProjetoService implements ReportableService {
                 contramedida: e.contramedida,
                 prazo_contramedida: Date2YMD.toStringOrNull(e.prazo_contramedida),
                 responsavel: e.responsavel,
-                medidas_de_contingencia: e.medidas_de_contingencia
-            }
+                medidas_de_contingencia: e.medidas_de_contingencia,
+            };
         });
 
         return {
             detail: detail,
             cronograma: tarefasOut,
             riscos: riscosOut,
-            planos_acao: planoAcaoOut
+            planos_acao: planoAcaoOut,
         };
     }
-
 
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
         const dados = myInput as PPProjetoRelatorioDto;
 
         const out: FileOutput[] = [];
 
-
         const json2csvParser = new Parser({
             ...DefaultCsvOptions,
             transforms: defaultTransform,
         });
         const linhas = json2csvParser.parse([dados.detail]);
+        linhas[0]['status-traduzido'] = ProjetoStatusParaExibicao[linhas[0]['status'] as ProjetoStatus];
+
         out.push({
             name: 'detalhes-do-projeto.csv',
             buffer: Buffer.from(linhas, 'utf8'),
@@ -197,7 +202,7 @@ export class PPProjetoService implements ReportableService {
                     { value: 'prazo_contramedida', label: 'prazo_contramedida' },
                     { value: 'responsavel', label: 'responsavel' },
                     { value: 'medidas_de_contingencia', label: 'medidas_de_contingencia' },
-                ]
+                ],
             });
             const linhas = json2csvParser.parse(dados.planos_acao);
             out.push({
@@ -209,7 +214,7 @@ export class PPProjetoService implements ReportableService {
         if (dados.riscos.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
-                transforms: defaultTransform
+                transforms: defaultTransform,
             });
             const linhas = json2csvParser.parse(dados.riscos);
             out.push({
@@ -225,13 +230,13 @@ export class PPProjetoService implements ReportableService {
             },
             include: {
                 arquivo: {
-                    select: { id: true, nome_original: true, caminho: true, descricao: true }
+                    select: { id: true, nome_original: true, caminho: true, descricao: true },
                 },
                 criador: {
-                    select: { id: true, nome_exibicao: true }
-                }
+                    select: { id: true, nome_exibicao: true },
+                },
             },
-            orderBy: { criado_em: 'asc' }
+            orderBy: { criado_em: 'asc' },
         });
 
         if (uploads.length) {
@@ -242,7 +247,7 @@ export class PPProjetoService implements ReportableService {
                     { value: 'arquivo.nome_original', label: 'Nome Original' },
                     {
                         label: 'Criado em',
-                        value: (r: typeof uploads[0]) => {
+                        value: (r: (typeof uploads)[0]) => {
                             return r.criado_em.toISOString();
                         },
                     },
@@ -250,8 +255,7 @@ export class PPProjetoService implements ReportableService {
                     { value: 'criador.nome_exibicao', label: 'Criador (Nome de Exibição)' },
                     { value: 'arquivo.caminho', label: 'Caminho no Object Storage' },
                     { value: 'arquivo.descricao', label: 'descricao do Arquivo' },
-                    { value: 'arquivo.id', label: 'ID do arquivo', },
-
+                    { value: 'arquivo.id', label: 'ID do arquivo' },
                 ],
             });
 
@@ -263,14 +267,17 @@ export class PPProjetoService implements ReportableService {
         }
 
         if (dados.detail && dados.detail.id) {
-            const eap = await this.tarefaService.getEap({
-                id: dados.detail.id,
-                nome: dados.detail.nome!
-            }, 'svg');
+            const eap = await this.tarefaService.getEap(
+                {
+                    id: dados.detail.id,
+                    nome: dados.detail.nome!,
+                },
+                'svg',
+            );
 
             out.push({
                 name: 'eap.svg',
-                buffer: await Stream2Buffer(eap)
+                buffer: await Stream2Buffer(eap),
             });
         }
         return [
@@ -289,4 +296,3 @@ export class PPProjetoService implements ReportableService {
         ];
     }
 }
-
