@@ -173,7 +173,8 @@ export class PPProjetoService implements ReportableService {
             transforms: defaultTransform,
         });
         const linhas = json2csvParser.parse([dados.detail]);
-        linhas[0]['status-traduzido'] = ProjetoStatusParaExibicao[linhas[0]['status'] as ProjetoStatus];
+        console.log(linhas)
+        //linhas[0]['status-traduzido'] = ProjetoStatusParaExibicao[linhas[0]['status'] as ProjetoStatus];
 
         out.push({
             name: 'detalhes-do-projeto.csv',
