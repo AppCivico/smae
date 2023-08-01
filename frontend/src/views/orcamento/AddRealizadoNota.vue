@@ -147,6 +147,10 @@ async function validarDota(evt) {
           params,
         );
       respostasof.value = r;
+
+      [dota.value] = r.nota_empenho && r.nota_empenho.indexOf('/') !== -1
+        ? r.nota_empenho.split('/')
+        : r.nota_empenho;
     }
   } catch (error) {
     respostasof.value = error;
