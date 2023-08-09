@@ -152,6 +152,7 @@ export class TarefaService {
                     duracao_real: dto.duracao_real,
 
                     custo_real: dto.custo_real,
+                    eh_marco: dto.eh_marco,
 
                     numero: numero,
 
