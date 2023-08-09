@@ -27,7 +27,18 @@ export class PessoaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroPessoa.inserir', 'CadastroPessoa.editar', 'CadastroPessoa.inativar', 'PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(
+        'CadastroPessoa.inserir',
+        'CadastroPessoa.editar',
+        'CadastroPessoa.inativar',
+        'PDM.admin_cp',
+        'PDM.tecnico_cp',
+        'PDM.ponto_focal',
+        'SMAE.colaborador_de_projeto',
+        'SMAE.gestor_de_projeto',
+        'Projeto.administrador',
+        'Projeto.administrador_no_orgao',
+    )
     async findAll(@Query() filters: FilterPessoaDto): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters) };
     }
