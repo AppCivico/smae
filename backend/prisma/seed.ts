@@ -358,6 +358,7 @@ const PerfilAcessoConfig: {
             nome: 'Gestor de Projetos no Órgão',
             descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
             privilegios: [
+                'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
                 'Projeto.administrador_no_orgao',
                 'Reports.dashboard_portfolios',
             ]
@@ -366,6 +367,7 @@ const PerfilAcessoConfig: {
             nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
             descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
             privilegios: [
+                'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
                 'SMAE.gestor_de_projeto',
                 'Reports.dashboard_portfolios',
             ]
@@ -374,6 +376,7 @@ const PerfilAcessoConfig: {
             nome: 'Colaborador de Projetos',
             descricao: 'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
             privilegios: [
+                'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
                 'SMAE.colaborador_de_projeto',
                 'Reports.dashboard_portfolios',
             ]
