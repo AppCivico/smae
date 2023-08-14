@@ -15,3 +15,5 @@ def get_my_env_var(var_name):
     return envvar
 
 SOF_API_TOKEN = get_my_env_var('SOF_API_TOKEN')
+SOF_API_HOST = get_my_env_var('SOF_API_HOST')
+SOF_API_VERSION = get_my_env_var('SOF_API_VERSION')
