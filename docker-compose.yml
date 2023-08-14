@@ -102,6 +102,8 @@ services:
     restart: unless-stopped
     environment:
       SOF_API_TOKEN: "${SOF_API_TOKEN}"
+      SOF_API_HOST: "gateway.apilib.prefeitura.sp.gov.br/sf/sof/"
+      SOF_API_VERSION: "v3"
       PORT: 80
     networks:
       - api_orcamento
