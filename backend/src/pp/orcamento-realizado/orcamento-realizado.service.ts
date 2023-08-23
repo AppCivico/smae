@@ -695,15 +695,7 @@ export class OrcamentoRealizadoService {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null) throw new HttpException('Orçamento realizado não encontrado', 404);
-
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(orcamentoRealizado.meta_id) == false) {
-                throw new HttpException('Sem permissão para remover orçamento', 400);
-            }
-        }
+        if (!orcamentoRealizado || orcamentoRealizado.projeto_id === null) throw new HttpException('Orçamento realizado não encontrado', 404);
 
         const now = new Date(Date.now());
 
