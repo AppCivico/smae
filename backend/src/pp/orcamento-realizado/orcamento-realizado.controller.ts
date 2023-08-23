@@ -61,7 +61,7 @@ export class OrcamentoRealizadoController {
         if (projeto.permissoes.apenas_leitura_planejamento) {
             throw new HttpException("Não é possível criar o orçamento no modo apenas leitura.", 400);
         }
-        await this.orcamentoRealizadoService.remove(+params.id, user);
+        await this.orcamentoRealizadoService.remove(+params.id2, user);
         return '';
     }
 }
