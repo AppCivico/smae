@@ -1,4 +1,4 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- CreateTable
 CREATE TABLE "emaildb_config" (
@@ -15,7 +15,7 @@ CREATE TABLE "emaildb_config" (
 
 -- CreateTable
 CREATE TABLE "emaildb_queue" (
-    "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "id" UUID NOT NULL,
     "config_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "template" VARCHAR NOT NULL,
