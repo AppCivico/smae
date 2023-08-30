@@ -11,6 +11,7 @@ import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { PerfilAcessoPrivilegios } from './dto/perifl-acesso-privilegios.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
+import { uuidv7 } from 'uuidv7';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -79,6 +80,7 @@ export class PessoaService {
     async enviaEmailNovaSenha(pessoa: Pessoa, senha: string, solicitadoPeloUsuario: boolean, prisma: Prisma.TransactionClient) {
         await prisma.emaildbQueue.create({
             data: {
+                id: uuidv7(),
                 config_id: 1,
                 subject: solicitadoPeloUsuario ? 'Nova senha solicitada' : 'Nova senha para liberar acesso',
                 template: 'nova-senha.html',
@@ -98,6 +100,7 @@ export class PessoaService {
 
         await prisma.emaildbQueue.create({
             data: {
+                id: uuidv7(),
                 config_id: 1,
                 subject: 'Bem vindo ao SMAE - Senha para primeiro acesso',
                 template: 'primeira-senha.html',

@@ -68,6 +68,7 @@
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.5.0",
     "ts-graphviz": "^1.5.5",
+    "uuidv7": "^0.6.2",
     "winston": "^3.8.2",
     "xlsx": "file:vendor/xlsx-0.19.3.tgz"
   },
