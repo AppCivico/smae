@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -9,7 +9,8 @@ import { PortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
 
 @Injectable()
 export class PortfolioService {
-    constructor(private readonly prisma: PrismaService) { }
+    private readonly logger = new Logger(PortfolioService.name);
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.portfolio.count({
@@ -53,8 +54,7 @@ export class PortfolioService {
 
     async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
         let orgao_id: undefined | number = undefined;
-        if (user != null && !user.hasSomeRoles(['Projeto.administrar_portfolios']) &&
-            (user != null && user.hasSomeRoles(['Projeto.administrador_no_orgao']))) {
+        if (user != null && !user.hasSomeRoles(['Projeto.administrar_portfolios']) && user != null && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
             orgao_id = user.orgao_id!;
         }
 
@@ -64,10 +64,10 @@ export class PortfolioService {
                 removido_em: null,
                 orgaos: orgao_id
                     ? {
-                        some: {
-                            orgao_id: orgao_id,
-                        },
-                    }
+                          some: {
+                              orgao_id: orgao_id,
+                          },
+                      }
                     : undefined,
             },
             select: {
@@ -76,7 +76,7 @@ export class PortfolioService {
                 nivel_maximo_tarefa: true,
                 orgaos: {
                     select: {
-                        orgao_id: true
+                        orgao_id: true,
                     },
                 },
                 descricao: true,
@@ -84,7 +84,6 @@ export class PortfolioService {
                 orcamento_execucao_disponivel_meses: true,
             },
         });
-
 
         return {
             ...r,
@@ -97,15 +96,18 @@ export class PortfolioService {
 
         // só pra manter mais ou menos uma retrocompatibilidade com o frontend
         // preciso pensar melhor nesse filtro
-        if (!user.hasSomeRoles(['Projeto.administrador', 'Projeto.administrar_portfolios'])
-            && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
-            orgao_id = user.orgao_id!;
+        if (!user.hasSomeRoles(['Projeto.administrador', 'Projeto.administrar_portfolios']) && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+            if (!user.orgao_id) {
+                throw new HttpException('Usuário Projeto.administrador_no_orgao precisa ter um órgão definido', 400);
+            }
+            orgao_id = user.orgao_id;
+            this.logger.debug(`Filtro Projeto.administrador_no_orgao: orgao_id=${orgao_id}`);
         }
 
         const listActive = await this.prisma.portfolio.findMany({
             where: {
                 removido_em: null,
-                orgaos: orgao_id ? { some: { orgao_id: orgao_id }, } : undefined,
+                orgaos: orgao_id ? { some: { orgao_id: orgao_id } } : undefined,
             },
             select: {
                 id: true,
@@ -123,7 +125,7 @@ export class PortfolioService {
                     },
                 },
             },
-            orderBy: { titulo: 'asc' }
+            orderBy: { titulo: 'asc' },
         });
 
         return listActive.map(r => {
@@ -146,17 +148,15 @@ export class PortfolioService {
             if (similarExists > 0) throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-
         if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
-
             const toBeRemoved = await this.prisma.portfolioOrgao.findMany({
                 where: {
                     portfolio_id: id,
-                    orgao_id: { notIn: dto.orgaos.map(r => r) }
+                    orgao_id: { notIn: dto.orgaos.map(r => r) },
                 },
                 select: {
-                    orgao: true
-                }
+                    orgao: true,
+                },
             });
 
             for (const orgaoRemoved of toBeRemoved) {
@@ -164,14 +164,13 @@ export class PortfolioService {
                     where: {
                         responsavel: {
                             pessoa_fisica: {
-                                orgao_id: orgaoRemoved.orgao.id
-                            }
-                        }
-                    }
+                                orgao_id: orgaoRemoved.orgao.id,
+                            },
+                        },
+                    },
                 });
 
-                if (findResp > 0)
-                    throw new HttpException(`Não é possível remover o órgão ${orgaoRemoved.orgao.sigla} pois há projetos com responsáveis deste órgão.`, 400);
+                if (findResp > 0) throw new HttpException(`Não é possível remover o órgão ${orgaoRemoved.orgao.sigla} pois há projetos com responsáveis deste órgão.`, 400);
             }
         }
 
@@ -192,9 +191,7 @@ export class PortfolioService {
                 select: { id: true },
             });
 
-
             if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
-
                 await prismaTx.portfolioOrgao.deleteMany({
                     where: { portfolio_id: row.id },
                 });
@@ -215,12 +212,11 @@ export class PortfolioService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-
         const count = await this.prisma.projeto.count({
             where: {
                 removido_em: null,
-                portfolio_id: +id
-            }
+                portfolio_id: +id,
+            },
         });
         if (count > 0) throw new HttpException('Não é possível mais apagar o portfólio, há projetos dependentes.', 400);
 
