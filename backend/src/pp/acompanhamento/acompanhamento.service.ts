@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import { DetailProjetoAcompanhamentoDto, ProjetoAcompanhamento, ProjetoAcompanhamentoRowDto } from './entities/acompanhamento.entity';
+import DOMPurify from 'dompurify';
 
 @Injectable()
 export class AcompanhamentoService {
@@ -21,6 +22,8 @@ export class AcompanhamentoService {
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const now = new Date(Date.now());
+
+        if (dto.detalhamento) dto.detalhamento = DOMPurify.sanitize(dto.detalhamento);
 
             const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                 data: {
@@ -206,6 +209,8 @@ export class AcompanhamentoService {
             },
             select: { id: true }
         });
+
+        if (dto.detalhamento) dto.detalhamento = DOMPurify.sanitize(dto.detalhamento);
 
         const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
 
