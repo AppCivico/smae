@@ -48,13 +48,13 @@ defineProps({
             v-for="coluna, i in colunas"
             :key="`cel__${i}--${item.id}`"
           >
-            <router-link
+            <a
               v-if="item[coluna.nome]?.href"
-              :to="item[coluna.nome].href"
+              :href="item[coluna.nome].href"
               :download="item[coluna.nome].download || null"
             >
               {{ item[coluna.nome].texto ?? item[coluna.nome] }}
-            </router-link>
+            </a>
             <router-link
               v-else-if="item[coluna.nome]?.rota"
               :to="item[coluna.nome].rota"
