@@ -1337,13 +1337,14 @@ enum CronogramaEtapaNivel {
     Fase
     SubFase
 }
+
 model CronogramaEtapa {
     id Int @id @default(autoincrement())
 
     cronograma_id Int
-    cronograma    Cronograma @relation(fields: [cronograma_id], references: [id])
+    cronograma    Cronograma           @relation(fields: [cronograma_id], references: [id])
     etapa_id      Int
-    etapa         Etapa      @relation(fields: [etapa_id], references: [id])
+    etapa         Etapa                @relation(fields: [etapa_id], references: [id])
     nivel         CronogramaEtapaNivel
     ordem         Int
 
@@ -1659,8 +1660,8 @@ model MetaCicloFisicoRisco {
     ciclo_fisico_id Int
 
     referencia_data  DateTime @db.Date
-    detalhamento     String?
-    ponto_de_atencao String?
+    detalhamento     String? /// HTML
+    ponto_de_atencao String? /// HTML
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
@@ -2394,13 +2395,13 @@ model Projeto {
     codigo           String? // abre apenas depois de priorizado
     previsao_custo   Float?
     nome             String
-    objeto           String
-    objetivo         String
+    objeto           String /// HTML
+    objetivo         String /// HTML
     origem_tipo      ProjetoOrigemTipo @default(Outro)
     origem_eh_pdm    Boolean           @default(false)
     origem_outro     String?
     meta_codigo      String?
-    publico_alvo     String
+    publico_alvo     String /// HTML
     previsao_inicio  DateTime?         @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
     previsao_termino DateTime?         @db.Date()
     previsao_duracao Int?
@@ -2439,7 +2440,7 @@ model Projeto {
     principais_etapas String // read-only apos Fase=Registro
 
     // Fase=Planejamento
-    nao_escopo String?
+    nao_escopo String? /// HTML
 
     // Fase=Detalhamento, required pra entrar na fase Planejamento
     secretario_responsavel String?
