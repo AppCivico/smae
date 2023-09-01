@@ -12,6 +12,7 @@ import { PerfilAcessoPrivilegios } from './dto/perifl-acesso-privilegios.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { uuidv7 } from 'uuidv7';
+import { MathRandom } from '../common/math-random';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -322,7 +323,7 @@ export class PessoaService {
         const responsavel_pelos_projetos = await this.prisma.projeto.findMany({
             where: {
                 responsavel_id: pessoa.id,
-                removido_em: null
+                removido_em: null,
             },
             orderBy: { nome: 'asc' },
             select: { id: true, codigo: true, nome: true },
@@ -359,13 +360,13 @@ export class PessoaService {
             async (prismaTx: Prisma.TransactionClient) => {
                 const emailExists = updatePessoaDto.email
                     ? await prismaTx.pessoa.count({
-                        where: {
-                            email: updatePessoaDto.email,
-                            NOT: {
-                                id: pessoaId,
-                            },
-                        },
-                    })
+                          where: {
+                              email: updatePessoaDto.email,
+                              NOT: {
+                                  id: pessoaId,
+                              },
+                          },
+                      })
                     : 0;
                 if (emailExists > 0) {
                     throw new HttpException('email| E-mail está em uso em outra conta', 400);
@@ -641,7 +642,7 @@ export class PessoaService {
 
         const listActive = await this.prisma.pessoa.findMany({
             orderBy: {
-                nome_exibicao: 'asc'
+                nome_exibicao: 'asc',
             },
             where: {
                 NOT: { pessoa_fisica_id: null },
@@ -853,20 +854,20 @@ export class PessoaService {
         const lenSpec = pLength - 2 * len;
 
         for (let i = 0; i < len; i++) {
-            if (Math.random() > 0.8) {
-                password += keyListAlpha.charAt(Math.floor(Math.random() * keyListAlpha.length));
+            if (MathRandom() > 0.8) {
+                password += keyListAlpha.charAt(Math.floor(MathRandom() * keyListAlpha.length));
             } else {
-                password += keyListAlphaUpper.charAt(Math.floor(Math.random() * keyListAlphaUpper.length));
+                password += keyListAlphaUpper.charAt(Math.floor(MathRandom() * keyListAlphaUpper.length));
             }
-            password += keyListInt.charAt(Math.floor(Math.random() * keyListInt.length));
+            password += keyListInt.charAt(Math.floor(MathRandom() * keyListInt.length));
         }
 
-        for (let i = 0; i < lenSpec; i++) password += keyListSpec.charAt(Math.floor(Math.random() * keyListSpec.length));
+        for (let i = 0; i < lenSpec; i++) password += keyListSpec.charAt(MathRandom(MathRandom() * keyListSpec.length));
 
         password = password
             .split('')
             .sort(function () {
-                return 0.5 - Math.random();
+                return 0.5 - MathRandom();
             })
             .join('');
 
