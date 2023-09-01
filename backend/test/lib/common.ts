@@ -4,6 +4,7 @@ import { OrgaoService } from '../../src/orgao/orgao.service';
 import { ListPessoa } from '../../src/pessoa/entities/list-pessoa.entity';
 import { PessoaService } from '../../src/pessoa/pessoa.service';
 import { TipoOrgaoService } from '../../src/tipo-orgao/tipo-orgao.service';
+import { MathRandom } from '../../src/common/math-random';
 
 export class TestOrgData {
     sigla: string;
@@ -63,7 +64,7 @@ export class PessoaExpert {
         const adminProfile = profiles.filter(p => p.nome.match('Administrador Geral'))[0];
         if (!adminProfile) throw 'nao encontrado perfil do admin';
 
-        const randomStr = Math.random().toString();
+        const randomStr = MathRandom().toString();
         const email = cusData.email ?? ['test', randomStr, '@test.com'].join('');
 
         const findPessoa = await pessoaService.findAll({
