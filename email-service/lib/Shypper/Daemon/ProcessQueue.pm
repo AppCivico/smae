@@ -137,10 +137,9 @@ sub listen_queue {
                             $loop_times = 0;
                             $logger->info(to_json($notify));
                             if ($notify->[0] eq 'newconfig') {
-                                ON_TERM_EXIT;
-                                EXIT_IF_ASKED;
-                                $logger->info("reloading config...");
-                                exit;
+                                $logger->info("Reloading config...");
+                                $self->config_bridge->reset_config();
+                                $self->config_bridge->prewarm_configs();
                             }
                         }
 
