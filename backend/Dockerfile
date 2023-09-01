@@ -18,10 +18,10 @@ WORKDIR /usr/src/app
 
 RUN npm --loglevel=error install -g npm@9.6.4
 
-COPY --chown=1000:1000 package.json ./
-COPY --chown=1000:1000 package-lock.json ./
+COPY package.json ./
+COPY package-lock.json ./
 
-COPY --chown=1000:1000 vendor/* ./vendor/
+COPY vendor/* ./vendor/
 
 RUN npm ci
 
@@ -32,6 +32,8 @@ RUN npx prisma generate
 COPY . .
 
 RUN npm run build
+
+USER node
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
