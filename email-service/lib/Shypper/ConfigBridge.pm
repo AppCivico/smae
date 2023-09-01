@@ -4,8 +4,8 @@ use strict;
 use utf8;
 use Shypper;
 
-has 'schema' => ( is => 'rw', );
-has 'logger' => ( is => 'rw', );
+has 'schema' => (is => 'rw',);
+has 'logger' => (is => 'rw',);
 my $configs;
 
 sub prewarm_configs {
@@ -14,8 +14,8 @@ sub prewarm_configs {
     return if $configs;
 
     $self->logger->info("Prewarming configs...");
-    foreach my $cf ( $self->schema->resultset('EmaildbConfig')->all ) {
-        $configs->{ $cf->id } = $cf;
+    foreach my $cf ($self->schema->resultset('EmaildbConfig')->all) {
+        $configs->{$cf->id} = $cf;
 
         # just load template_resolver() on before forking..
         $cf->template_resolver();
@@ -26,7 +26,7 @@ sub prewarm_configs {
 }
 
 sub get_config {
-    my ( $self, $id ) = @_;
+    my ($self, $id) = @_;
 
     return $configs->{$id} if $configs->{$id};
 
@@ -39,6 +39,13 @@ sub get_config {
     $configs->{$id}->email_transporter();
 
     return $configs->{$id};
+}
+
+sub reset_config {
+    my ($self, $id) = @_;
+
+    $configs = {};
+    return;
 }
 
 1;
