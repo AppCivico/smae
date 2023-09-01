@@ -575,7 +575,7 @@ async function criar_emaildb_config() {
             template_resolver_class: 'Shypper::TemplateResolvers::HTTP',
             template_resolver_config: { "base_url": "http://smae_api:3001/public/email-templates/" },
             email_transporter_class: 'Email::Sender::Transport::SMTP::Persistent',
-            email_transporter_config: { "sasl_password": "...", "sasl_username": "apikey", "port": "25", "host": "smtp_web" }
+            email_transporter_config: { "sasl_password": "", "sasl_username": "apikey", "port": "25", "host": "smtp_web" }
         },
     });
 }
