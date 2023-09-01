@@ -865,8 +865,6 @@ export class ProjetoService {
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        //if (dto.codigo) throw new HttpException('codigo| O campo código não deve ser enviado.', 400);
-
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(projetoId, user, 'ReadWrite');
 
