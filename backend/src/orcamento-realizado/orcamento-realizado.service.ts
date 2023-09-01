@@ -304,7 +304,7 @@ export class OrcamentoRealizadoService {
 
         if (
             novo_valor &&
-            this.liberarValoresMaioresQueSof == false &&
+            this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(dotacaoTx.empenho_liquido)
         ) {
             throw new HttpException(
@@ -319,7 +319,7 @@ export class OrcamentoRealizadoService {
 
         if (
             novo_valor &&
-            this.liberarValoresMaioresQueSof == false &&
+            this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(dotacaoTx.valor_liquidado)
         ) {
             throw new HttpException(
@@ -375,7 +375,7 @@ export class OrcamentoRealizadoService {
 
         if (
             novo_valor &&
-            this.liberarValoresMaioresQueSof == false &&
+            this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(processoTx.empenho_liquido)
         ) {
             throw new HttpException(
@@ -390,7 +390,7 @@ export class OrcamentoRealizadoService {
 
         if (
             novo_valor &&
-            this.liberarValoresMaioresQueSof == false &&
+            this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(processoTx.valor_liquidado)
         ) {
             throw new HttpException(
@@ -457,7 +457,7 @@ export class OrcamentoRealizadoService {
 
         if (
             novo_valor &&
-            this.liberarValoresMaioresQueSof == false &&
+            this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(notaEmpenhoTx.empenho_liquido)
         ) {
             throw new HttpException(
@@ -472,7 +472,7 @@ export class OrcamentoRealizadoService {
 
         if (
             novo_valor &&
-            this.liberarValoresMaioresQueSof == false &&
+            this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(notaEmpenhoTx.valor_liquidado)
         ) {
             throw new HttpException(

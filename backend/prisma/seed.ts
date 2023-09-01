@@ -616,7 +616,7 @@ async function criaPrivComPerfilDeAcesso(codPriv: string, perfilAcesso: { id: nu
     if (!match) {
         await prisma.perfilPrivilegio.create({
             data: {
-                perfil_acesso_id: perfilAcesso?.id as number,
+                perfil_acesso_id: perfilAcesso.id,
                 privilegio_id: idPriv,
             },
         });

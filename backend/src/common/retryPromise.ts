@@ -15,8 +15,7 @@ export async function RetryPromise<T>(
     } catch (error) {
         // https://www.prisma.io/docs/reference/api-reference/error-reference
         if (
-            error &&
-            error.code &&
+            error?.code &&
             ['P2028', 'P2034', 'P2024', 'P1017', 'P1001', 'P1002', 'P1008', 'P1011'].includes(error.code)
         ) {
             const jitterDelay = Math.floor(MathRandom() * delay * jitter * 2 - delay * jitter + delay);
