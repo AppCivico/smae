@@ -212,10 +212,7 @@ export class AtividadeService {
         const listActive = await this.prisma.atividade.findMany({
             where: {
                 removido_em: null,
-                AND: [
-                    { iniciativa_id: iniciativa_id ? iniciativa_id : undefined },
-                    { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined },
-                ],
+                AND: [{ iniciativa_id: iniciativa_id }, { iniciativa_id: filterIdIn ? { in: filterIdIn } : undefined }],
             },
             orderBy: [{ codigo: 'asc' }],
             select: {
