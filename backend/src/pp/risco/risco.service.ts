@@ -142,14 +142,13 @@ export class RiscoService {
 
                     return {
                         ...r,
-
-                        impacto_descricao: calcResult ? calcResult.impacto_descricao : null,
-                        probabilidade_descricao: calcResult ? calcResult.probabilidade_descricao : null,
+                        impacto_descricao: calcResult?.impacto_descricao ?? null,
+                        probabilidade_descricao: calcResult?.probabilidade_descricao ?? null,
                         nivel: nivel,
                         grau: grau,
-                        grau_descricao: calcResult ? calcResult.grau_descricao : null,
+                        grau_descricao: calcResult?.grau_descricao ?? null,
                         resposta: resposta,
-                        resposta_descricao: calcResult ? calcResult.resposta_descricao : null,
+                        resposta_descricao: calcResult?.resposta_descricao ?? null,
                     };
                 });
 
