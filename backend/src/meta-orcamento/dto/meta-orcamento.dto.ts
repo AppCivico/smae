@@ -45,14 +45,17 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
      * Custo previsto
      * @example "2341242423.34"
      */
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| Custo até duas casas decimais' }
+    )
     @Min(0, { message: '$property| Custo precisa ser positivo' })
     @Type(() => Number)
     custo_previsto: number;
 }
 
 // deixa mudar praticamente tudo, pois não há contas, então pode mudar a parte-dotação e etc
-export class UpdateMetaOrcamentoDto extends OmitType(PartialType(CreateMetaOrcamentoDto), ['ano_referencia']) { }
+export class UpdateMetaOrcamentoDto extends OmitType(PartialType(CreateMetaOrcamentoDto), ['ano_referencia']) {}
 
 export class FilterMetaOrcamentoDto {
     /**
@@ -73,13 +76,12 @@ export class FilterMetaOrcamentoDto {
 }
 
 export class OrcamentoPrevistoEhZeroStatusDto {
-    previsto_eh_zero: boolean
-    previsto_eh_zero_criado_por: IdNomeExibicao | null
-    previsto_eh_zero_criado_em: Date | null
+    previsto_eh_zero: boolean;
+    previsto_eh_zero_criado_por: IdNomeExibicao | null;
+    previsto_eh_zero_criado_em: Date | null;
 }
 
 export class UpdateOrcamentoPrevistoZeradoDto {
-
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id: number;

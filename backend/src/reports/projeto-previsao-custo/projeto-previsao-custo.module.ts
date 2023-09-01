@@ -6,4 +6,4 @@ import { ProjetoPrevisaoCustoController } from './projeto-previsao-custo.control
     imports: [PrevisaoCustoModule],
     controllers: [ProjetoPrevisaoCustoController],
 })
-export class ProjetoPrevisaoCustoModule { }
+export class ProjetoPrevisaoCustoModule {}

@@ -25,7 +25,11 @@ export class MetasRiscoService {
         return ret;
     }
 
-    async getMetaRisco(dto: FilterRiscoDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListRiscoDto> {
+    async getMetaRisco(
+        dto: FilterRiscoDto,
+        config: PessoaAcessoPdm | null,
+        user: PessoaFromJwt | null
+    ): Promise<MfListRiscoDto> {
         const analisesResult = await this.prisma.metaCicloFisicoRisco.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -50,7 +54,7 @@ export class MetasRiscoService {
         });
 
         return {
-            riscos: analisesResult.map(r => {
+            riscos: analisesResult.map((r) => {
                 return {
                     detalhamento: r.detalhamento || '',
                     ponto_de_atencao: r.ponto_de_atencao || '',

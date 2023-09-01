@@ -12,22 +12,27 @@ import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from './entities/risco.entity';
 import { RiscoService } from './risco.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = [
+    'Projeto.administrador',
+    'Projeto.administrador_no_orgao',
+    'SMAE.gestor_de_projeto',
+    'SMAE.colaborador_de_projeto',
+];
 
 @Controller('projeto')
 @ApiTags('Projeto - Risco')
 export class RiscoController {
-    constructor(
-        private readonly riscoService: RiscoService,
-        private readonly projetoService: ProjetoService,
-
-    ) { }
+    constructor(private readonly riscoService: RiscoService, private readonly projetoService: ProjetoService) {}
 
     @Post(':id/risco')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async create(@Param() params: FindOneParams, @Body() dto: CreateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Param() params: FindOneParams,
+        @Body() dto: CreateRiscoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         return await this.riscoService.create(projeto.id, dto, user);
@@ -57,7 +62,11 @@ export class RiscoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async update(@Param() params: FindTwoParams, @Body() updateRiscoDto: UpdateRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindTwoParams,
+        @Body() updateRiscoDto: UpdateRiscoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.riscoService.update(params.id2, updateRiscoDto, user);
     }
@@ -73,5 +82,4 @@ export class RiscoController {
         await this.riscoService.remove(projeto.id, params.id2, user);
         return '';
     }
-
 }

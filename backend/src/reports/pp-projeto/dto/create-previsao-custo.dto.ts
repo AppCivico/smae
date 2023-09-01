@@ -1,7 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsInt } from 'class-validator';
 
-
 export class CreateRelProjetoDto {
     /**
      * ID do projeto para criar o relatório

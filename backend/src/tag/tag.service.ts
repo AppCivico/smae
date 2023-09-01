@@ -8,10 +8,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
 export class TagService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly uploadService: UploadService,
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
 
     async create(createTagDto: CreateTagDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.tag.count({
@@ -22,7 +19,8 @@ export class TagService {
             },
         });
 
-        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let uploadId: number | null = null;
         if (createTagDto.upload_icone) {
@@ -61,11 +59,12 @@ export class TagService {
                 icone: true,
                 arquivo_icone_id: true,
             },
-            orderBy: { descricao: 'asc' }
+            orderBy: { descricao: 'asc' },
         });
 
         for (const item of listActive) {
-            if (item.arquivo_icone_id) item.icone = this.uploadService.getDownloadToken(item.arquivo_icone_id, '1 days').download_token;
+            if (item.arquivo_icone_id)
+                item.icone = this.uploadService.getDownloadToken(item.arquivo_icone_id, '1 days').download_token;
         }
 
         return listActive;
@@ -94,7 +93,11 @@ export class TagService {
                 },
             });
 
-            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException(
+                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                    400
+                );
         }
 
         await this.prisma.tag.update({

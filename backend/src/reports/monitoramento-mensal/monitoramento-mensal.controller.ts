@@ -14,7 +14,9 @@ export class MonitoramentoMensalController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Reports.executar')
-    async create(@Body() createOrcamentoExecutadoDto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
+    async create(
+        @Body() createOrcamentoExecutadoDto: CreateRelMonitoramentoMensalDto
+    ): Promise<RetMonitoramentoMensal> {
         return await this.monitoramentoMensalService.create(createOrcamentoExecutadoDto);
     }
 }

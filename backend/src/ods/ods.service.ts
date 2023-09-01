@@ -30,7 +30,7 @@ export class OdsService {
                 removido_em: null,
             },
             select: { id: true, descricao: true, titulo: true, numero: true },
-            orderBy: { titulo: 'asc' }
+            orderBy: { titulo: 'asc' },
         });
 
         return listActive;
@@ -64,7 +64,8 @@ export class OdsService {
         const existsDown = await this.prisma.tag.count({
             where: { ods_id: id, removido_em: null },
         });
-        if (existsDown > 0) throw new HttpException(`Há ${existsDown} tag(s) dependentes. Remova primeiro as tags.`, 400);
+        if (existsDown > 0)
+            throw new HttpException(`Há ${existsDown} tag(s) dependentes. Remova primeiro as tags.`, 400);
 
         const created = await this.prisma.ods.updateMany({
             where: { id: id },

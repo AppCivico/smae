@@ -10,7 +10,7 @@ import { UpdatePlanoAcaoDto } from './dto/update-plano-acao.dto';
 @Injectable()
 export class PlanoAcaoService {
     private readonly logger = new Logger(PlanoAcaoService.name);
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(projetoId: number, dto: CreatePlanoAcaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.prisma.projeto.findFirst({
@@ -23,9 +23,9 @@ export class PlanoAcaoService {
             where: {
                 id: dto.projeto_risco_id,
                 projeto_id: projetoId,
-                removido_em: null
+                removido_em: null,
             },
-            select: {id: true}
+            select: { id: true },
         });
         if (!projeto_risco) throw new HttpException('Projeto_risco| Inválido', 400);
 
@@ -35,22 +35,26 @@ export class PlanoAcaoService {
                 medidas_de_contingencia: dto.medidas_de_contingencia || '',
 
                 criado_em: new Date(Date.now()),
-                criado_por: user.id
+                criado_por: user.id,
             },
-            select: {id: true}
-        })
+            select: { id: true },
+        });
 
-        return {id: plano_acao.id}
+        return { id: plano_acao.id };
     }
 
-    async findAll(projetoId: number, filters: FilterPlanoAcaoDto, user: PessoaFromJwt | undefined): Promise<PlanoAcao[]> {
+    async findAll(
+        projetoId: number,
+        filters: FilterPlanoAcaoDto,
+        user: PessoaFromJwt | undefined
+    ): Promise<PlanoAcao[]> {
         return await this.prisma.planoAcao.findMany({
             where: {
                 projeto_risco: {
-                    projeto_id: projetoId
+                    projeto_id: projetoId,
                 },
                 removido_em: null,
-                ...filters
+                ...filters,
             },
             orderBy: { id: 'asc' },
             select: {
@@ -66,16 +70,16 @@ export class PlanoAcaoService {
                 orgao: {
                     select: {
                         id: true,
-                        sigla: true
-                    }
+                        sigla: true,
+                    },
                 },
                 projeto_risco: {
                     select: {
                         id: true,
-                        codigo: true
-                    }
-                }
-            }
+                        codigo: true,
+                    },
+                },
+            },
         });
     }
 
@@ -84,9 +88,9 @@ export class PlanoAcaoService {
             where: {
                 id: plano_acao_id,
                 projeto_risco: {
-                    projeto_id: projetoId
+                    projeto_id: projetoId,
                 },
-                removido_em: null
+                removido_em: null,
             },
             select: {
                 id: true,
@@ -101,10 +105,10 @@ export class PlanoAcaoService {
                 orgao: {
                     select: {
                         id: true,
-                        sigla: true
-                    }
-                }
-            }
+                        sigla: true,
+                    },
+                },
+            },
         });
         if (!plano_acao) throw new HttpException('plano_acao| inválido', 400);
 
@@ -113,14 +117,14 @@ export class PlanoAcaoService {
 
     async update(plano_acao_id: number, dto: UpdatePlanoAcaoDto, user: PessoaFromJwt) {
         return await this.prisma.planoAcao.update({
-            where: {id: plano_acao_id},
+            where: { id: plano_acao_id },
             data: {
                 ...dto,
 
                 atualizado_em: new Date(Date.now()),
-                atualizado_por: user.id
+                atualizado_por: user.id,
             },
-            select: {id: true}
+            select: { id: true },
         });
     }
 
@@ -131,8 +135,8 @@ export class PlanoAcaoService {
             },
             data: {
                 removido_em: new Date(Date.now()),
-                removido_por: user.id
-            }
-        })
+                removido_por: user.id,
+            },
+        });
     }
 }

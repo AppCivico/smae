@@ -9,9 +9,7 @@ import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/auxiliar.dto';
 @ApiTags('Monitoramento Fisico - Metas e variáveis')
 @Controller('mf/auxiliar')
 export class AuxiliarController {
-    constructor(
-        private readonly utilitarioService: AuxiliarService,
-    ) { }
+    constructor(private readonly utilitarioService: AuxiliarService) {}
 
     @ApiBearerAuth('access-token')
     @Patch('auto-preencher')
@@ -28,5 +26,4 @@ export class AuxiliarController {
     async enviar_cp(@Body() dto: EnviarParaCpDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
         await this.utilitarioService.enviar_cp(dto, user);
     }
-
 }

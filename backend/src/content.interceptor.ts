@@ -30,7 +30,7 @@ export class ContentInterceptor implements NestInterceptor {
         const res = context.switchToHttp().getResponse<Response>();
         const content = req.header('Accept');
         return next.handle().pipe(
-            map(async data => {
+            map(async (data) => {
                 if (typeof data !== 'object') return data;
 
                 switch (content) {
@@ -71,7 +71,7 @@ export class ContentInterceptor implements NestInterceptor {
                         break;
                 }
                 return data;
-            }),
+            })
         );
     }
 }

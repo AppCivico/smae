@@ -33,7 +33,11 @@ export class OrgaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroOrgao.editar')
-    async update(@Param() params: FindOneParams, @Body() updateOrgaoDto: UpdateOrgaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateOrgaoDto: UpdateOrgaoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.orgaoService.update(+params.id, updateOrgaoDto, user);
     }
 

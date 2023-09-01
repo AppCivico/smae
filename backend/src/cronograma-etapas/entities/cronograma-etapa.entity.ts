@@ -2,7 +2,7 @@ export enum CronogramaEtapaAtrasoGrau {
     Concluido,
     Neutro,
     Moderado,
-    Alto
+    Alto,
 }
 export class Meta {
     id: number;

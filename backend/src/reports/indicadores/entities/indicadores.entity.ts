@@ -28,7 +28,7 @@ export class RelIndicadoresVariaveisDto extends RelIndicadoresDto {
     regiao_nivel_3: RegiaoDto | null;
     regiao_nivel_2: RegiaoDto | null;
     regiao_nivel_1: RegiaoDto | null;
-    regiao_id: number
+    regiao_id: number;
 }
 
 export class ListIndicadoresDto {

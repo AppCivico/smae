@@ -9,15 +9,15 @@ type TipoAcaoOrcamentaria = 'custeio' | 'investimento' | '';
 
 @Injectable()
 export class DotacaoService {
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) { }
+    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
 
     // 11.13.08.091.*.1.278.*.00 => 11.13.08.091.****.1.278.********.00
     // 11.*.08.091.*.1.278.*.00 => 11.**.08.091.****.1.278.********.00
     expandirParteDotacao(parte_dotacao: string): string {
         const partes = parte_dotacao.split('.');
-        if ((partes[1] == '*')) partes[1] = '**';
-        if ((partes[4] == '*')) partes[4] = '****';
-        if ((partes[7] == '*')) partes[7] = '********';
+        if (partes[1] == '*') partes[1] = '**';
+        if (partes[4] == '*') partes[4] = '****';
+        if (partes[7] == '*') partes[7] = '********';
         return partes.join('.');
     }
 
@@ -90,13 +90,16 @@ export class DotacaoService {
 
         const r: {
             descricao: string;
-        }[] = await this.prisma.$queryRaw`select descricao from sof_entidades_linhas where col = 'projetos_atividades' and ano = ${ano}::int and codigo = ${codigo}`;
+        }[] = await this.prisma
+            .$queryRaw`select descricao from sof_entidades_linhas where col = 'projetos_atividades' and ano = ${ano}::int and codigo = ${codigo}`;
         if (r.length > 0) return r[0].descricao;
         return `(projeto/atividade ${codigo} não foi encontrado)`;
     }
 
     async setManyProjetoAtividade(
-        srcDestList: { dotacao: string; projeto_atividade: string; ano_referencia: number }[] | { parte_dotacao: string; projeto_atividade: string; ano_referencia: number }[],
+        srcDestList:
+            | { dotacao: string; projeto_atividade: string; ano_referencia: number }[]
+            | { parte_dotacao: string; projeto_atividade: string; ano_referencia: number }[]
     ) {
         const byYear: Record<string, Record<string, boolean>> = {};
         for (const r of srcDestList) {
@@ -129,7 +132,8 @@ export class DotacaoService {
             const rows: {
                 codigo: string;
                 descricao: string;
-            }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'projetos_atividades'
+            }[] = await this.prisma
+                .$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'projetos_atividades'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
 
@@ -143,19 +147,29 @@ export class DotacaoService {
             const codigo = (r as any).__codigo as string | undefined;
             if (codigo !== undefined) {
                 delete (r as any).__codigo;
-                r.projeto_atividade = results[r.ano_referencia] && results[r.ano_referencia][codigo] ? results[r.ano_referencia][codigo] : '';
+                r.projeto_atividade =
+                    results[r.ano_referencia] && results[r.ano_referencia][codigo]
+                        ? results[r.ano_referencia][codigo]
+                        : '';
             } else {
                 r.projeto_atividade = '';
             }
         }
     }
 
-    async setManyOrgaoUnidadeFonte(srcDestList: { dotacao: string; dotacao_ano_utilizado: string }[] | { dotacao: string; plan_dotacao_ano_utilizado: string }[]) {
+    async setManyOrgaoUnidadeFonte(
+        srcDestList:
+            | { dotacao: string; dotacao_ano_utilizado: string }[]
+            | { dotacao: string; plan_dotacao_ano_utilizado: string }[]
+    ) {
         const byYearOrgao: Record<string, Record<string, boolean>> = {};
         const byYearUnidade: Record<string, Record<string, boolean>> = {};
         const byYearFonte: Record<string, Record<string, boolean>> = {};
         for (const r of srcDestList) {
-            const ano: string = 'plan_dotacao_ano_utilizado' in r && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
+            const ano: string =
+                'plan_dotacao_ano_utilizado' in r && r.plan_dotacao_ano_utilizado
+                    ? r.plan_dotacao_ano_utilizado
+                    : (r as any).dotacao_ano_utilizado;
             if (!ano) continue;
 
             const orgao = r.dotacao.substring(0, 2);
@@ -185,7 +199,8 @@ export class DotacaoService {
             const rows: {
                 codigo: string;
                 descricao: string;
-            }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
+            }[] = await this.prisma
+                .$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
 
@@ -216,7 +231,8 @@ export class DotacaoService {
                 codigo: string;
                 descricao: string;
                 cod_orgao: string;
-            }[] = await this.prisma.$queryRaw`select codigo, cod_orgao, descricao from sof_entidades_linhas where col = 'unidades'
+            }[] = await this.prisma
+                .$queryRaw`select codigo, cod_orgao, descricao from sof_entidades_linhas where col = 'unidades'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
 
@@ -230,7 +246,10 @@ export class DotacaoService {
         for (let i = 0; i < srcDestList.length; i++) {
             const r = srcDestList[i];
 
-            const ano: string = ('plan_dotacao_ano_utilizado' in r) && r.plan_dotacao_ano_utilizado ? r.plan_dotacao_ano_utilizado : (r as any).dotacao_ano_utilizado;
+            const ano: string =
+                'plan_dotacao_ano_utilizado' in r && r.plan_dotacao_ano_utilizado
+                    ? r.plan_dotacao_ano_utilizado
+                    : (r as any).dotacao_ano_utilizado;
             if (!ano) continue;
 
             const orgao = (r as any).__orgao as string | undefined;
@@ -252,7 +271,12 @@ export class DotacaoService {
                 };
             }
 
-            if (unidade !== undefined && orgao !== undefined && resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade]) {
+            if (
+                unidade !== undefined &&
+                orgao !== undefined &&
+                resultsUnidade[ano] &&
+                resultsUnidade[ano][orgao + '-' + unidade]
+            ) {
                 (r as any).unidade = {
                     codigo: unidade,
                     nome: resultsUnidade[ano] && resultsUnidade[ano][orgao + '-' + unidade],
@@ -336,9 +360,9 @@ export class DotacaoService {
                         ano_referencia: dto.ano,
                         dotacao: dto.dotacao,
                         pdm_id: dto.pdm_id,
-                    }
+                    },
                 },
-                select: { soma_valor_planejado: true }
+                select: { soma_valor_planejado: true },
             });
             if (qr) valor = qr.soma_valor_planejado.toFixed(2);
         } else if (dto.portfolio_id) {
@@ -348,9 +372,9 @@ export class DotacaoService {
                         ano_referencia: dto.ano,
                         dotacao: dto.dotacao,
                         portfolio_id: dto.portfolio_id,
-                    }
+                    },
                 },
-                select: { soma_valor_planejado: true }
+                select: { soma_valor_planejado: true },
             });
             if (qr) valor = qr.soma_valor_planejado.toFixed(2);
         }
@@ -370,7 +394,11 @@ export class DotacaoService {
 
         const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
 
-        if (dotacaoRealizadoExistente && dotacaoRealizadoExistente.informacao_valida && dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual) {
+        if (
+            dotacaoRealizadoExistente &&
+            dotacaoRealizadoExistente.informacao_valida &&
+            dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual
+        ) {
             return [await this.renderDotacaoRealizado(dotacaoRealizadoExistente, dto)];
         }
 
@@ -388,7 +416,10 @@ export class DotacaoService {
         return [await this.renderDotacaoRealizado(dotacaoRealizado, dto)];
     }
 
-    private async renderDotacaoRealizado(dotacao: DotacaoRealizado, dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto> {
+    private async renderDotacaoRealizado(
+        dotacao: DotacaoRealizado,
+        dto: AnoDotacaoDto
+    ): Promise<ValorRealizadoDotacaoDto> {
         return {
             id: dotacao.id,
             dotacao: dotacao.dotacao,
@@ -403,10 +434,9 @@ export class DotacaoService {
         };
     }
 
-
     async get_smae_soma_valor_realizado(dto: AnoDotacaoDto): Promise<{
-        smae_soma_valor_empenho: string,
-        smae_soma_valor_liquidado: string,
+        smae_soma_valor_empenho: string;
+        smae_soma_valor_liquidado: string;
     }> {
         let smae_soma_valor_empenho: string = '0.00';
         let smae_soma_valor_liquidado: string = '0.00';
@@ -418,9 +448,9 @@ export class DotacaoService {
                         ano_referencia: dto.ano,
                         dotacao: dto.dotacao,
                         pdm_id: dto.pdm_id,
-                    }
+                    },
                 },
-                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true },
             });
             if (qr) {
                 smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
@@ -433,9 +463,9 @@ export class DotacaoService {
                         ano_referencia: dto.ano,
                         dotacao: dto.dotacao,
                         portfolio_id: dto.portfolio_id,
-                    }
+                    },
                 },
-                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true },
             });
             if (qr) {
                 smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
@@ -448,7 +478,6 @@ export class DotacaoService {
             smae_soma_valor_liquidado,
         };
     }
-
 
     async sincronizarDotacaoRealizado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
@@ -519,14 +548,14 @@ export class DotacaoService {
                         isolationLevel: 'Serializable',
                         maxWait: 15000,
                         timeout: 60000,
-                    },
+                    }
                 );
             }
         } catch (error) {
             if (error instanceof SofError) {
                 throw new HttpException(
                     'No momento, o serviço SOF está indisponível, e não é possível criar uma dotação de realizado manualmente nesta versão do SMAE.\n\nTente novamente mais tarde',
-                    400,
+                    400
                 );
             }
 
@@ -604,14 +633,14 @@ export class DotacaoService {
                         isolationLevel: 'Serializable',
                         maxWait: 15000,
                         timeout: 60000,
-                    },
+                    }
                 );
             }
         } catch (error) {
             if (error instanceof SofError)
                 throw new HttpException(
                     'No momento, o serviço SOF está indisponível, e não é possível criar uma Dotação de Planejamento manualmente nesta versão do SMAE.\n\nTente novamente mais tarde',
-                    400,
+                    400
                 );
 
             throw error;

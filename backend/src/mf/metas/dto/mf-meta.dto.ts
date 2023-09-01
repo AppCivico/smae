@@ -107,7 +107,7 @@ export class VariavelComSeries {
     series: MfSeriesAgrupadas[];
 }
 
-export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) { }
+export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) {}
 
 export class MfSeriesAgrupadas {
     eh_corrente: boolean;
@@ -166,7 +166,7 @@ export class RetornoMetaVariaveisDto {
 
     permissoes: MfFasesPermissoesDto;
     avancarFases: MfAvancarFasesDto;
-    botao_enviar_cp: boolean
+    botao_enviar_cp: boolean;
 
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro das series
@@ -252,7 +252,10 @@ export class VariavelAnaliseQualitativaDto {
     // o javascript vai perder a precisao na hora do casting pra float
     @IsNumberString(
         {},
-        { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
+        {
+            message:
+                'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
+        }
     )
     @ValidateIf((object, value) => value !== '')
     valor_realizado?: string;
@@ -262,7 +265,10 @@ export class VariavelAnaliseQualitativaDto {
     // o javascript vai perder a precisao na hora do casting pra float
     @IsNumberString(
         {},
-        { message: 'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover' },
+        {
+            message:
+                'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
+        }
     )
     @ValidateIf((object, value) => value !== '')
     valor_realizado_acumulado?: string;

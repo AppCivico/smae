@@ -1,4 +1,4 @@
 export class CronogramaAtrasoGrau {
-    id: number | null
-    atraso_grau: string | null
+    id: number | null;
+    atraso_grau: string | null;
 }

@@ -54,10 +54,6 @@ export class Date2YMD {
     static dbDateToDMY(data: Date | null): string {
         if (!data) return '';
         const dt = DateTime.fromJSDate(data, { zone: 'UTC' });
-        return (
-            dt.day.toString().padStart(2, '0') + '/' +
-            dt.month.toString().padStart(2, '0') + '/' +
-            dt.year
-        );
+        return dt.day.toString().padStart(2, '0') + '/' + dt.month.toString().padStart(2, '0') + '/' + dt.year;
     }
 }

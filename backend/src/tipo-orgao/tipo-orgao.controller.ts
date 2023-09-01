@@ -19,7 +19,10 @@ export class TipoOrgaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoOrgao.inserir')
-    async create(@Body() createTipoOrgaoDto: CreateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createTipoOrgaoDto: CreateTipoOrgaoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.tipoOrgaoService.create(createTipoOrgaoDto, user);
     }
 
@@ -33,7 +36,11 @@ export class TipoOrgaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoOrgao.editar')
-    async update(@Param() params: FindOneParams, @Body() updateTipoOrgaoDto: UpdateTipoOrgaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateTipoOrgaoDto: UpdateTipoOrgaoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.tipoOrgaoService.update(+params.id, updateTipoOrgaoDto, user);
     }
 

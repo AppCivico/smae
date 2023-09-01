@@ -22,7 +22,7 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
-const AdmZip = require("adm-zip");
+const AdmZip = require('adm-zip');
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
@@ -47,7 +47,7 @@ export class ReportsService {
         @Inject(forwardRef(() => PPProjetoService)) private readonly ppProjetoService: PPProjetoService,
         @Inject(forwardRef(() => PPProjetosService)) private readonly ppProjetosService: PPProjetosService,
         @Inject(forwardRef(() => PPStatusService)) private readonly ppStatusService: PPStatusService
-    ) { }
+    ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
         const service: ReportableService | null = this.servicoDaFonte(dto);
@@ -71,8 +71,7 @@ export class ReportsService {
             if (file.name.endsWith('.csv')) {
                 const readCsv: any[] = await new Promise((resolve, reject) => {
                     parse(file.buffer, { columns: true }, (err: any, data: any) => {
-                        if (err)
-                            throw reject(err);
+                        if (err) throw reject(err);
                         resolve(data);
                     });
                 });
@@ -97,7 +96,7 @@ export class ReportsService {
                         type: 'buffer',
                         bookType: 'xlsx',
                         numbers: XLSX_ZAHL_PAYLOAD,
-                        compression: true
+                        compression: true,
                     })
                 );
             }
@@ -202,7 +201,7 @@ export class ReportsService {
         }
 
         return {
-            linhas: rows.map(r => {
+            linhas: rows.map((r) => {
                 return {
                     ...r,
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
@@ -258,13 +257,12 @@ export class ReportsService {
                 }
 
                 await this.verificaRelatorioProjetos();
-
             },
             {
                 maxWait: 30000,
                 timeout: 60 * 1000 * 5,
                 isolationLevel: 'Serializable',
-            },
+            }
         );
     }
 
@@ -277,7 +275,6 @@ export class ReportsService {
     }
 
     private async verificaRelatorioProjetos(filtroId?: number | undefined) {
-
         const pending = await this.prisma.projetoRelatorioFila.findMany({
             where: {
                 executado_em: null,
@@ -289,35 +286,32 @@ export class ReportsService {
                             {
                                 congelado_em: {
                                     lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
-                                }
+                                },
                             },
-                        ]
-                    }
-                ]
-            }
+                        ],
+                    },
+                ],
+            },
         });
 
         for (const job of pending) {
-
             await this.prisma.projetoRelatorioFila.update({
                 where: { id: job.id },
                 data: {
-                    congelado_em: new Date(Date.now())
-                }
+                    congelado_em: new Date(Date.now()),
+                },
             });
 
             const contentType = 'application/zip';
-            const filename = [
-                'Projeto',
-                DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
-            ].filter(r => r).join('-');
-
+            const filename = ['Projeto', DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
+                .filter((r) => r)
+                .join('-');
 
             const dto: CreateReportDto = {
                 fonte: 'Projeto',
                 parametros: {
-                    projeto_id: job.projeto_id
-                } satisfies CreateRelProjetoDto
+                    projeto_id: job.projeto_id,
+                } satisfies CreateRelProjetoDto,
             };
             const files = await this.runReport(dto);
             const zipBuffer = await this.zipFiles(files);
@@ -330,9 +324,8 @@ export class ReportsService {
                 data: {
                     executado_em: new Date(Date.now()),
                     relatorio_id: report.id,
-                }
+                },
             });
         }
     }
-
 }

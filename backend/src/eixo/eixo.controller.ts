@@ -34,7 +34,11 @@ export class EixoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroMacroTema.editar')
-    async update(@Param() params: FindOneParams, @Body() updateEixoDto: UpdateEixoDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateEixoDto: UpdateEixoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.eixoService.update(+params.id, updateEixoDto, user);
     }
 
@@ -73,7 +77,11 @@ export class EixoController2 {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroMacroTema.editar')
-    async update(@Param() params: FindOneParams, @Body() updateEixoDto: UpdateEixoDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateEixoDto: UpdateEixoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.eixoService.update(+params.id, updateEixoDto, user);
     }
 

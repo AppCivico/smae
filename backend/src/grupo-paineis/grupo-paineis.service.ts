@@ -9,7 +9,7 @@ import { GrupoPaineis } from './entities/grupo-paineis.entity';
 
 @Injectable()
 export class GrupoPaineisService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createGrupoPaineisDto: CreateGrupoPaineisDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.grupoPainel.count({
@@ -19,7 +19,8 @@ export class GrupoPaineisService {
             },
         });
 
-        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.grupoPainel.create({
             data: {
@@ -75,10 +76,10 @@ export class GrupoPaineisService {
                     },
                 },
             },
-            orderBy: { nome: 'asc' }
+            orderBy: { nome: 'asc' },
         });
 
-        const ret: GrupoPaineis[] = listActive.map(g => {
+        const ret: GrupoPaineis[] = listActive.map((g) => {
             return {
                 id: g.id,
                 nome: g.nome,
@@ -87,14 +88,14 @@ export class GrupoPaineisService {
                 pessoa_count: g?.pessoas ? g!.pessoas.length : 0,
                 painel_count: g?.paineis ? g!.paineis.length : 0,
 
-                pessoas: g.pessoas.map(p => {
+                pessoas: g.pessoas.map((p) => {
                     return {
                         id: p.pessoa.id,
                         nome_exibicao: p.pessoa.nome_exibicao,
                     };
                 }),
 
-                paineis: g.paineis.map(p => {
+                paineis: g.paineis.map((p) => {
                     return {
                         id: p.painel.id,
                         nome: p.painel.nome,
@@ -116,7 +117,8 @@ export class GrupoPaineisService {
             },
         });
 
-        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         await this.prisma.grupoPainel.update({
             where: { id: id },
@@ -183,14 +185,14 @@ export class GrupoPaineisService {
             pessoa_count: grupo?.pessoas ? grupo!.pessoas.length : 0,
             painel_count: grupo?.paineis ? grupo!.paineis.length : 0,
 
-            pessoas: grupo.pessoas.map(p => {
+            pessoas: grupo.pessoas.map((p) => {
                 return {
                     id: p.pessoa.id,
                     nome_exibicao: p.pessoa.nome_exibicao,
                 };
             }),
 
-            paineis: grupo.paineis.map(p => {
+            paineis: grupo.paineis.map((p) => {
                 return {
                     id: p.painel.id,
                     nome: p.painel.nome,

@@ -8,11 +8,10 @@ import { ProjetoService } from '../projeto/projeto.service';
 import { RiscoController } from './risco.controller';
 import { RiscoService } from './risco.service';
 
-
 @Module({
     imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule],
     controllers: [RiscoController],
     providers: [RiscoService, ProjetoService, PortfolioService],
     exports: [RiscoService],
 })
-export class RiscoModule { }
+export class RiscoModule {}

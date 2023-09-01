@@ -24,13 +24,22 @@ export class CronogramaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.inserir', 'CadastroMeta.inserir')
-    async create(@Body() createCronogramaDto: CreateCronogramaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createCronogramaDto: CreateCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.cronogramaService.create(createCronogramaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
+    @Roles(
+        'CadastroCronograma.editar',
+        'CadastroMeta.inserir',
+        'PDM.admin_cp',
+        'PDM.coordenador_responsavel_cp',
+        'PDM.ponto_focal'
+    )
     async findAll(@Query() filters: FilterCronogramaDto): Promise<ListCronogramaDto> {
         return { linhas: await this.cronogramaService.findAll(filters) };
     }
@@ -39,7 +48,11 @@ export class CronogramaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
-    async update(@Param() params: FindOneParams, @Body() updateCronogramaDto: UpdateCronogramaDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateCronogramaDto: UpdateCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.cronogramaService.update(+params.id, updateCronogramaDto, user);
     }
 
@@ -58,14 +71,27 @@ export class CronogramaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.inserir', 'CadastroMeta.inserir')
-    async createEtapa(@Body() createEtapaDto: CreateEtapaDto, @Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createEtapa(
+        @Body() createEtapaDto: CreateEtapaDto,
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.etapaService.create(+params.id, createEtapaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id/etapa')
-    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
-    async findAllEtapas(@Query() filters: FilterEtapaSemCronoIdDto, @Param() params: FindOneParams): Promise<ListEtapaDto> {
+    @Roles(
+        'CadastroCronograma.editar',
+        'CadastroMeta.inserir',
+        'PDM.admin_cp',
+        'PDM.coordenador_responsavel_cp',
+        'PDM.ponto_focal'
+    )
+    async findAllEtapas(
+        @Query() filters: FilterEtapaSemCronoIdDto,
+        @Param() params: FindOneParams
+    ): Promise<ListEtapaDto> {
         return {
             linhas: await this.etapaService.findAll({
                 ...filters,

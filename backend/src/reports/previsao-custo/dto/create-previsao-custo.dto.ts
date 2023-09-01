@@ -8,7 +8,8 @@ export const PeriodoRelatorioPrevisaoCustoDto = {
     Anterior: 'Anterior',
 };
 
-export type PeriodoRelatorioPrevisaoCustoDto = (typeof PeriodoRelatorioPrevisaoCustoDto)[keyof typeof PeriodoRelatorioPrevisaoCustoDto];
+export type PeriodoRelatorioPrevisaoCustoDto =
+    (typeof PeriodoRelatorioPrevisaoCustoDto)[keyof typeof PeriodoRelatorioPrevisaoCustoDto];
 
 export class PrevisaoCustoParams {
     /**
@@ -16,7 +17,9 @@ export class PrevisaoCustoParams {
      */
     @ApiProperty({ enum: PeriodoRelatorioPrevisaoCustoDto, enumName: 'PeriodoRelatorioPrevisaoCustoDto' })
     @IsEnum(PeriodoRelatorioPrevisaoCustoDto, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(PeriodoRelatorioPrevisaoCustoDto).join(', '),
+        message:
+            '$property| Precisa ser um dos seguintes valores: ' +
+            Object.values(PeriodoRelatorioPrevisaoCustoDto).join(', '),
     })
     periodo_ano: PeriodoRelatorioPrevisaoCustoDto;
 
@@ -32,8 +35,8 @@ export class PrevisaoCustoParams {
 // todos os filtros vão aqui
 export class SuperCreateRelPrevisaoCustoDto extends IntersectionType(FiltroMetasIniAtividadeDto, PrevisaoCustoParams) {
     /**
-    * @example "21"
-    */
+     * @example "21"
+     */
     @IsInt()
     @Transform(({ value }: any) => +value)
     @IsOptional()
@@ -49,11 +52,7 @@ export class SuperCreateRelPrevisaoCustoDto extends IntersectionType(FiltroMetas
 }
 
 // aqui remove os filtros do projeto
-export class CreateRelPrevisaoCustoDto extends OmitType(
-    SuperCreateRelPrevisaoCustoDto,
-    [
-        'projeto_id',
-        'portfolio_id'
-    ] as const
-)
-{ }
+export class CreateRelPrevisaoCustoDto extends OmitType(SuperCreateRelPrevisaoCustoDto, [
+    'projeto_id',
+    'portfolio_id',
+] as const) {}

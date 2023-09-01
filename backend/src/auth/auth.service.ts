@@ -14,7 +14,7 @@ import { PessoaFromJwt } from './models/PessoaFromJwt';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly jwtService: JwtService, private readonly pessoaService: PessoaService) { }
+    constructor(private readonly jwtService: JwtService, private readonly pessoaService: PessoaService) {}
 
     async login(pessoa: Pessoa): Promise<AccessToken | ReducedAccessToken> {
         if (pessoa.senha_bloqueada) {
@@ -59,7 +59,8 @@ export class AuthService {
 
         const isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
         if (!isPasswordValid) {
-            if (pessoa.senha_bloqueada) throw new BadRequestException('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
+            if (pessoa.senha_bloqueada)
+                throw new BadRequestException('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
 
             await this.pessoaService.incrementarSenhaInvalida(pessoa);
             throw new BadRequestException('email| E-mail ou senha inválidos');
@@ -97,7 +98,6 @@ export class AuthService {
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
         });
     }
-
 
     async pessoaPeloSessionId(id: number): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findBySessionId(id);
@@ -146,7 +146,11 @@ export class AuthService {
 
         if (!pessoa) throw new BadRequestException('email| E-mail não encontrado');
 
-        if (pessoa.senha_bloqueada && pessoa.senha_bloqueada_em && Date.now() - pessoa.senha_bloqueada_em.getTime() < 60 * 1000)
+        if (
+            pessoa.senha_bloqueada &&
+            pessoa.senha_bloqueada_em &&
+            Date.now() - pessoa.senha_bloqueada_em.getTime() < 60 * 1000
+        )
             throw new BadRequestException('email| Solicitação já foi efetuada recentemente. Conferia seu e-mail.');
 
         await this.pessoaService.criaNovaSenha(pessoa, true);

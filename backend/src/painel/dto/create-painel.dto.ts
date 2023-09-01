@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsOptional,
+    IsString,
+    MaxLength,
+} from 'class-validator';
 
 export class CreatePainelDto {
     @IsString()

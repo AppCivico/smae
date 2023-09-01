@@ -103,8 +103,7 @@ export function TrataDotacaoGrande(dotacao: string): string {
     // "14.10.16.482.3002.3.354.44905100.02.1.700.0769"
     //  ->
     // "14.10.16.482.3002.3.354.44905100.02"
-    if (dotacao.length > 35)
-        return dotacao.split('.').splice(0, 9).join('.');
+    if (dotacao.length > 35) return dotacao.split('.').splice(0, 9).join('.');
 
     return dotacao;
 }
@@ -128,7 +127,8 @@ export class SofApiService {
         const anoCorrente = nowSp.year;
         if (anoCorrente == +ano) return nowSp.month;
 
-        if (+ano > anoCorrente) throw new HttpException('Não é possível buscar por realizado ou planejado no futuro', 400);
+        if (+ano > anoCorrente)
+            throw new HttpException('Não é possível buscar por realizado ou planejado no futuro', 400);
 
         return 12; // mes mais recente do ano pesquisado
     }
@@ -207,7 +207,7 @@ export class SofApiService {
             if ('metadados' in response && response.metadados.sucess) {
                 return {
                     metadados: response.metadados,
-                    data: (response as SuccessOrcadoResponse).data.map(r => {
+                    data: (response as SuccessOrcadoResponse).data.map((r) => {
                         return {
                             val_orcado_atualizado: Number(r.val_orcado_atualizado),
                             val_orcado_inicial: Number(r.val_orcado_inicial),
@@ -236,7 +236,10 @@ export class SofApiService {
         }
     }
 
-    private async doEmpenhoRequest(endpoint: string, input: InputDotacao | InputProcesso | InputNotaEmpenho): Promise<SuccessEmpenhosResponse> {
+    private async doEmpenhoRequest(
+        endpoint: string,
+        input: InputDotacao | InputProcesso | InputNotaEmpenho
+    ): Promise<SuccessEmpenhosResponse> {
         this.logger.debug(`chamando ${endpoint} com ${JSON.stringify(input)}`);
         try {
             const response: ApiResponse = await this.got
@@ -247,7 +250,7 @@ export class SofApiService {
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
             if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/')) {
                 return {
-                    data: (response as SuccessEmpenhosResponse).data.map(d => {
+                    data: (response as SuccessEmpenhosResponse).data.map((d) => {
                         return {
                             dotacao: TrataDotacaoGrande(d.dotacao),
                             processo: String(d.processo),
@@ -267,7 +270,10 @@ export class SofApiService {
                 body = String(error.response.body);
                 this.logger.debug(`${endpoint}.res.body: ${body}`);
                 if (error.response.statusCode == 404) {
-                    throw new HttpException('Dotação/Processo ou Nota de Empenho não foi encontrada, confira os valores informados.', 400);
+                    throw new HttpException(
+                        'Dotação/Processo ou Nota de Empenho não foi encontrada, confira os valores informados.',
+                        400
+                    );
                 } else if (error.response.statusCode == 422) {
                     throw new HttpException(`Confira os valores informados: ${body}`, 400);
                 }

@@ -15,7 +15,8 @@ export class OrgaoService {
                 removido_em: null,
             },
         });
-        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         if (createOrgaoDto.sigla) {
             const similarExists = await this.prisma.orgao.count({
@@ -24,7 +25,8 @@ export class OrgaoService {
                     removido_em: null,
                 },
             });
-            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         const created = await this.prisma.orgao.create({
@@ -52,7 +54,7 @@ export class OrgaoService {
                     select: { descricao: true, id: true },
                 },
             },
-            orderBy: [ {sigla: 'asc'} ]
+            orderBy: [{ sigla: 'asc' }],
         });
         return listActive;
     }
@@ -74,7 +76,11 @@ export class OrgaoService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException(
+                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                    400
+                );
         }
 
         if (updateOrgaoDto.sigla) {
@@ -85,7 +91,8 @@ export class OrgaoService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.orgao.update({

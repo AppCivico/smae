@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 export class PrismaHelpers {
-
     static async prismaCodigo2IdMap(
         prisma: PrismaClient,
         model: keyof PrismaClient,
@@ -31,5 +30,4 @@ export class PrismaHelpers {
             return { ...p, [c.codigo.toLowerCase()]: c.id };
         }, {});
     }
-
 }

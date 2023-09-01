@@ -19,9 +19,7 @@ const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class PPStatusService implements ReportableService {
-    constructor(
-        private readonly prisma: PrismaService
-    ) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
         console.log(dto.portfolio_id);
@@ -33,7 +31,7 @@ export class PPStatusService implements ReportableService {
         const projetoRows = await this.prisma.projeto.findMany({
             where: {
                 portfolio_id: dto.portfolio_id,
-                removido_em: null
+                removido_em: null,
             },
             select: {
                 id: true,
@@ -46,8 +44,8 @@ export class PPStatusService implements ReportableService {
 
                 orgao_responsavel: {
                     select: {
-                        sigla: true
-                    }
+                        sigla: true,
+                    },
                 },
 
                 tarefas: {
@@ -55,8 +53,8 @@ export class PPStatusService implements ReportableService {
                     select: {
                         tarefa: true,
                         inicio_real: true,
-                        termino_real: true
-                    }
+                        termino_real: true,
+                    },
                 },
 
                 ProjetoAcompanhamento: {
@@ -66,21 +64,21 @@ export class PPStatusService implements ReportableService {
                         detalhamento_status: true,
                         pontos_atencao: true,
                         cronograma_paralisado: true,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
 
-        const projetoStatusOut: RelProjetoStatusRelatorioDto[] = projetoRows.map(p => {
+        const projetoStatusOut: RelProjetoStatusRelatorioDto[] = projetoRows.map((p) => {
             let cronograma: string;
             const acompanhamento = p.ProjetoAcompanhamento[0];
 
             if (acompanhamento && acompanhamento.cronograma_paralisado) {
-                cronograma = 'Paralisado'
+                cronograma = 'Paralisado';
             } else if (p.em_atraso) {
-                cronograma = 'Atrasado'
+                cronograma = 'Atrasado';
             } else {
-                cronograma = 'Em dia'
+                cronograma = 'Em dia';
             }
 
             return {
@@ -94,36 +92,40 @@ export class PPStatusService implements ReportableService {
 
                 orgao_responsavel_sigla: p.orgao_responsavel ? p.orgao_responsavel.sigla : null,
 
-                detalhamento_status: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].detalhamento_status : null,
+                detalhamento_status: p.ProjetoAcompanhamento.length
+                    ? p.ProjetoAcompanhamento[0].detalhamento_status
+                    : null,
                 pontos_atencao: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].pontos_atencao : null,
 
-                tarefas: p.tarefas.length ? p.tarefas.map(t => {
-                    let status: string;
+                tarefas: p.tarefas.length
+                    ? p.tarefas
+                          .map((t) => {
+                              let status: string;
 
-                    if (t.termino_real) {
-                        status = 'Concluída';
-                    } else if (t.inicio_real) {
-                        status = 'Em andamento'
-                    } else {
-                        status = 'Não iniciada'
-                    }
+                              if (t.termino_real) {
+                                  status = 'Concluída';
+                              } else if (t.inicio_real) {
+                                  status = 'Em andamento';
+                              } else {
+                                  status = 'Não iniciada';
+                              }
 
-                    return `${t.tarefa}=${status}`
-                }).join('/') : null,
-            }
+                              return `${t.tarefa}=${status}`;
+                          })
+                          .join('/')
+                    : null,
+            };
         });
 
         return {
-            linhas: projetoStatusOut
+            linhas: projetoStatusOut,
         };
     }
-
 
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
         const dados = myInput as PPProjetoStatusRelatorioDto;
 
         const out: FileOutput[] = [];
-
 
         const json2csvParser = new Parser({
             ...DefaultCsvOptions,
@@ -143,7 +145,7 @@ export class PPStatusService implements ReportableService {
                         params: params,
                         horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
-                    'utf8',
+                    'utf8'
                 ),
             },
             ...out,

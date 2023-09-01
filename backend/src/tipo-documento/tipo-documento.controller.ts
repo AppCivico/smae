@@ -19,7 +19,10 @@ export class TipoDocumentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoDocumento.inserir')
-    async create(@Body() createTipoDocumentoDto: CreateTipoDocumentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createTipoDocumentoDto: CreateTipoDocumentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.tipoDocumentoService.create(createTipoDocumentoDto, user);
     }
 
@@ -33,7 +36,11 @@ export class TipoDocumentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTipoDocumento.editar')
-    async update(@Param() params: FindOneParams, @Body() updateTipoDocumentoDto: UpdateTipoDocumentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateTipoDocumentoDto: UpdateTipoDocumentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.tipoDocumentoService.update(+params.id, updateTipoDocumentoDto, user);
     }
 

@@ -1,4 +1,16 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsInt,
+    IsOptional,
+    IsString,
+    Max,
+    MaxLength,
+    Min,
+    MinLength,
+    ValidateIf,
+} from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { Transform } from 'class-transformer';
 
@@ -25,18 +37,18 @@ export class CreatePortfolioDto {
     @Min(1)
     @Max(32)
     @Transform(({ value }: any) => +value)
-    nivel_maximo_tarefa?: number
+    nivel_maximo_tarefa?: number;
 
     @IsOptional()
     @IsString({ message: '$property| Descrição precisa ser alfanumérico' })
     @MinLength(0)
     @MaxLength(2040)
-    descricao?: string
+    descricao?: string;
 
     @IsOptional()
     @IsOnlyDate()
     @ValidateIf((object, value) => value !== null)
-    data_criacao?: Date | null
+    data_criacao?: Date | null;
 
     @IsOptional()
     @ArrayMinSize(1, { message: '$property| precisa ter pelo menos um item' })

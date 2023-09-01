@@ -30,7 +30,7 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
         await this.$connect();
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        this.$on('query', async e => {
+        this.$on('query', async (e) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             console.log(`${e.query} ${e.params} took ${e.duration}ms`);
@@ -50,8 +50,14 @@ export class PrismaService extends PrismaServiceBase {
         super();
     }
 
-    async $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): Promise<UnwrapTuple<P>>;
-    async $transaction<R>(fn: (prisma: Omit<this, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use">) => Promise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): Promise<R>;
+    async $transaction<P extends Prisma.PrismaPromise<any>[]>(
+        arg: [...P],
+        options?: { isolationLevel?: Prisma.TransactionIsolationLevel }
+    ): Promise<UnwrapTuple<P>>;
+    async $transaction<R>(
+        fn: (prisma: Omit<this, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>) => Promise<R>,
+        options?: { maxWait?: number; timeout?: number; isolationLevel?: Prisma.TransactionIsolationLevel }
+    ): Promise<R>;
 
     async $transaction(arg: any, options?: any): Promise<any> {
         if (Array.isArray(arg)) {
@@ -61,7 +67,6 @@ export class PrismaService extends PrismaServiceBase {
 
             return RetryPromise(transactionPromiseFn, 10, 10000, 2000);
         } else if (typeof arg === 'function') {
-
             if (!options) options = {};
 
             if (options.timeout === undefined) options.timeout = 60 * 1000;
@@ -74,6 +79,6 @@ export class PrismaService extends PrismaServiceBase {
             return RetryPromise(transactionPromiseFn, 10, 10000, 2000);
         }
 
-        throw new Error("Invalid arguments passed to $transaction");
+        throw new Error('Invalid arguments passed to $transaction');
     }
 }

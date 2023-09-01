@@ -5,7 +5,13 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMetaOrcamentoDto, FilterMetaOrcamentoDto, OrcamentoPrevistoEhZeroStatusDto, UpdateMetaOrcamentoDto, UpdateOrcamentoPrevistoZeradoDto } from './dto/meta-orcamento.dto';
+import {
+    CreateMetaOrcamentoDto,
+    FilterMetaOrcamentoDto,
+    OrcamentoPrevistoEhZeroStatusDto,
+    UpdateMetaOrcamentoDto,
+    UpdateOrcamentoPrevistoZeradoDto,
+} from './dto/meta-orcamento.dto';
 import { MetaOrcamento } from './entities/meta-orcamento.entity';
 
 export class MetaOrcamentoUpdatedRet {
@@ -18,7 +24,7 @@ export class MetaOrcamentoService {
         private readonly prisma: PrismaService,
         private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
         private readonly dotacaoService: DotacaoService
-    ) { }
+    ) {}
 
     async create(dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
@@ -65,7 +71,7 @@ export class MetaOrcamentoService {
             {
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         // se por acaso tiver algum boolean zerado, remove ele
@@ -104,7 +110,7 @@ export class MetaOrcamentoService {
             orderBy: [{ meta_id: 'asc' }, { criado_em: 'desc' }],
         });
 
-        const list = metaOrcamentos.map(r => {
+        const list = metaOrcamentos.map((r) => {
             return {
                 ...r,
                 meta: { ...r.meta! },
@@ -118,12 +124,11 @@ export class MetaOrcamentoService {
         return list;
     }
 
-
     async update(id: number, dto: UpdateMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamentoUpdatedRet> {
         const alreadyUpdated = await this.prisma.orcamentoPrevisto.count({
             where: {
-                versao_anterior_id: +id
-            }
+                versao_anterior_id: +id,
+            },
         });
         if (alreadyUpdated) throw new HttpException('meta orçamento já foi atualizado, atualize a página', 400);
 
@@ -149,7 +154,11 @@ export class MetaOrcamentoService {
         if (!metaOrcamento) throw new HttpException('meta orçamento não encontrada', 400);
 
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
-            where: { pdm_id: meta.pdm_id, ano_referencia: metaOrcamento.ano_referencia, previsao_custo_disponivel: true },
+            where: {
+                pdm_id: meta.pdm_id,
+                ano_referencia: metaOrcamento.ano_referencia,
+                previsao_custo_disponivel: true,
+            },
         });
         if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
 
@@ -203,7 +212,7 @@ export class MetaOrcamentoService {
             {
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return { id: id, new_id };
@@ -213,7 +222,8 @@ export class MetaOrcamentoService {
         const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!metaOrcamento || metaOrcamento.meta_id == null) throw new HttpException('meta orçamento não encontrada', 400);
+        if (!metaOrcamento || metaOrcamento.meta_id == null)
+            throw new HttpException('meta orçamento não encontrada', 400);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
@@ -230,7 +240,6 @@ export class MetaOrcamentoService {
         });
     }
 
-
     async orcamento_previsto_zero(meta_id: number, ano_referencia: number): Promise<OrcamentoPrevistoEhZeroStatusDto> {
         const opz = await this.prisma.orcamentoPrevistoZerado.findFirst({
             where: {
@@ -240,22 +249,22 @@ export class MetaOrcamentoService {
             },
             select: {
                 criador: { select: { id: true, nome_exibicao: true } },
-                criado_em: true
-            }
+                criado_em: true,
+            },
         });
         if (opz) {
             return {
                 previsto_eh_zero: true,
                 previsto_eh_zero_criado_por: opz.criador,
-                previsto_eh_zero_criado_em: opz.criado_em
-            }
+                previsto_eh_zero_criado_em: opz.criado_em,
+            };
         }
 
         return {
             previsto_eh_zero: false,
             previsto_eh_zero_criado_por: null,
-            previsto_eh_zero_criado_em: null
-        }
+            previsto_eh_zero_criado_em: null,
+        };
     }
 
     async patchZerado(dto: UpdateOrcamentoPrevistoZeradoDto, user: PessoaFromJwt): Promise<void> {
@@ -271,7 +280,7 @@ export class MetaOrcamentoService {
                 data: {
                     removido_em: now,
                     removido_por: user.id,
-                }
+                },
             });
 
             // se é pra considerar zero, cria uma nova linha
@@ -285,18 +294,20 @@ export class MetaOrcamentoService {
                     },
                 });
                 if (count > 0)
-                    throw new HttpException(`Para usar o ano ${dto.ano_referencia} como R$ 0,00, é necessário não ter nenhum registro de custo previsto.`, 400);
+                    throw new HttpException(
+                        `Para usar o ano ${dto.ano_referencia} como R$ 0,00, é necessário não ter nenhum registro de custo previsto.`,
+                        400
+                    );
 
                 await this.prisma.orcamentoPrevistoZerado.create({
                     data: {
                         meta_id: dto.meta_id,
                         ano_referencia: dto.ano_referencia,
                         criado_por: user.id,
-                        criado_em: now
-                    }
+                        criado_em: now,
+                    },
                 });
             }
         });
     }
-
 }

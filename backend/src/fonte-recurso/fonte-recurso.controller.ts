@@ -19,7 +19,10 @@ export class FonteRecursoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroFonteRecurso.inserir')
-    async create(@Body() createFonteRecursoDto: CreateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createFonteRecursoDto: CreateFonteRecursoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.fonteRecursoService.create(createFonteRecursoDto, user);
     }
 
@@ -33,7 +36,11 @@ export class FonteRecursoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroFonteRecurso.editar')
-    async update(@Param() params: FindOneParams, @Body() updateFonteRecursoDto: UpdateFonteRecursoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateFonteRecursoDto: UpdateFonteRecursoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.fonteRecursoService.update(+params.id, updateFonteRecursoDto, user);
     }
 

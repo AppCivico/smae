@@ -4,18 +4,16 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class TarefaUtilsService {
-    constructor(private readonly prisma: PrismaService,) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async decrementaNumero(
-        dto:
-            {
-                tarefa_pai_id: number | null,
-                numero: number
-            },
+        dto: {
+            tarefa_pai_id: number | null;
+            numero: number;
+        },
         prismaTx: Prisma.TransactionClient,
         projetoId: number
     ) {
-
         const numeroMaximo = await this.maxNumeroNivel(prismaTx, dto);
 
         // não faz sentido, já que sempre existe pelo menos a própria task que estava sendo removida
@@ -34,15 +32,13 @@ export class TarefaUtilsService {
             END) AND
             numero >= ${dto.numero}::int
         `;
-
     }
 
     async incrementaNumero(
-        dto:
-            {
-                tarefa_pai_id: number | null,
-                numero: number
-            },
+        dto: {
+            tarefa_pai_id: number | null;
+            numero: number;
+        },
         prismaTx: Prisma.TransactionClient,
         projetoId: number
     ): Promise<number> {
@@ -71,10 +67,13 @@ export class TarefaUtilsService {
         return numero;
     }
 
-    async maxNumeroNivel(prismaTx: Prisma.TransactionClient, dto: { tarefa_pai_id: number | null }): Promise<number | null> {
+    async maxNumeroNivel(
+        prismaTx: Prisma.TransactionClient,
+        dto: { tarefa_pai_id: number | null }
+    ): Promise<number | null> {
         const lookup = await prismaTx.tarefa.aggregate({
             _max: { numero: true },
-            where: { removido_em: null, tarefa_pai_id: dto.tarefa_pai_id }
+            where: { removido_em: null, tarefa_pai_id: dto.tarefa_pai_id },
         });
         return lookup._max.numero;
     }
@@ -86,18 +85,20 @@ export class TarefaUtilsService {
     async verifica_nivel_maximo(projetoId: number, nivel: number) {
         const portConfig = await this.prisma.projeto.findFirstOrThrow({
             where: { id: projetoId },
-            select: { portfolio: { select: { nivel_maximo_tarefa: true } } }
+            select: { portfolio: { select: { nivel_maximo_tarefa: true } } },
         });
         if (nivel > portConfig.portfolio.nivel_maximo_tarefa)
-            throw new HttpException(`Nível da tarefa não pode ser maior que o configurado no portfólio (${portConfig.portfolio.nivel_maximo_tarefa})`, 400);
+            throw new HttpException(
+                `Nível da tarefa não pode ser maior que o configurado no portfólio (${portConfig.portfolio.nivel_maximo_tarefa})`,
+                400
+            );
     }
 
     async verifica_orgao(orgao_id: number) {
         const count = await this.prisma.orgao.count({
             where: { id: orgao_id, removido_em: null },
         });
-        if (count == 0)
-            throw new HttpException(`Órgão não foi encontrado.`, 400);
+        if (count == 0) throw new HttpException(`Órgão não foi encontrado.`, 400);
     }
 
     tarefaDependenteTipoSigla(tipo: string): string {
@@ -108,16 +109,15 @@ export class TarefaUtilsService {
                 ret = 'II';
                 break;
             case 'inicia_pro_termino':
-                ret = 'IT'
+                ret = 'IT';
                 break;
             case 'termina_pro_inicio':
-                ret = 'TI'
+                ret = 'TI';
                 break;
             case 'termina_pro_termino':
-                ret = 'TT'
+                ret = 'TT';
         }
 
         return ret;
     }
-
 }

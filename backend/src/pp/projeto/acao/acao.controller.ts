@@ -9,12 +9,17 @@ import { CreateAcaoDto } from './dto/acao.dto';
 @ApiTags('Projeto')
 @Controller('projeto-acao')
 export class AcaoController {
-    constructor(private readonly acaoService: AcaoService) { }
+    constructor(private readonly acaoService: AcaoService) {}
 
     @Patch()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto')
+    @Roles(
+        'Projeto.administrador',
+        'Projeto.administrador_no_orgao',
+        'SMAE.gestor_de_projeto',
+        'SMAE.colaborador_de_projeto'
+    )
     @ApiResponse({ description: 'sucesso ao executar ação', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async create(@Body() dto: CreateAcaoDto, @CurrentUser() user: PessoaFromJwt) {
@@ -22,5 +27,4 @@ export class AcaoController {
 
         return '';
     }
-
 }

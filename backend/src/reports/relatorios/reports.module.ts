@@ -33,4 +33,4 @@ import { PPStatusModule } from '../pp-status/pp-status.module';
     providers: [ReportsService],
     exports: [ReportsService],
 })
-export class ReportsModule { }
+export class ReportsModule {}

@@ -14,13 +14,13 @@ export class SubTemaService {
     async create(createSubTemaDto: CreateSubTemaDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const descricaoExists = await prismaTx.subTema.count({
-                where: { 
+                where: {
                     pdm_id: createSubTemaDto.pdm_id,
                     descricao: {
                         equals: createSubTemaDto.descricao,
-                        mode: 'insensitive'   
-                    }
-                }
+                        mode: 'insensitive',
+                    },
+                },
             });
             if (descricaoExists) throw new HttpException('descricao| Já existe um Sub-tema com esta descrição.', 400);
 
@@ -32,7 +32,7 @@ export class SubTemaService {
                 },
                 select: { id: true, descricao: true },
             });
-    
+
             return subTema;
         });
 
@@ -52,7 +52,7 @@ export class SubTemaService {
                 descricao: true,
                 pdm_id: true,
             },
-            orderBy: { descricao: 'asc' }
+            orderBy: { descricao: 'asc' },
         });
         return listActive;
     }
@@ -60,37 +60,40 @@ export class SubTemaService {
     async update(id: number, updateSubTemaDto: UpdateSubTemaDto, user: PessoaFromJwt) {
         delete updateSubTemaDto.pdm_id; // nao deixa editar o PDM
 
-        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            if (updateSubTemaDto.descricao) {
-                const self = await prismaTx.subTema.findFirstOrThrow({
-                    where: { id },
-                    select: { pdm_id: true }
+        const updated = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (updateSubTemaDto.descricao) {
+                    const self = await prismaTx.subTema.findFirstOrThrow({
+                        where: { id },
+                        select: { pdm_id: true },
+                    });
+
+                    const descricaoExists = await prismaTx.subTema.count({
+                        where: {
+                            pdm_id: self.pdm_id,
+                            descricao: {
+                                equals: updateSubTemaDto.descricao,
+                                mode: 'insensitive',
+                            },
+                        },
+                    });
+                    if (descricaoExists)
+                        throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+                }
+
+                const subTema = await this.prisma.subTema.update({
+                    where: { id: id },
+                    data: {
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                        ...updateSubTemaDto,
+                    },
+                    select: { id: true },
                 });
 
-                const descricaoExists = await prismaTx.subTema.count({
-                    where: { 
-                        pdm_id: self.pdm_id,
-                        descricao: {
-                            equals: updateSubTemaDto.descricao,
-                            mode: 'insensitive'   
-                        }
-                    }
-                });
-                if (descricaoExists) throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+                return subTema;
             }
-
-            const subTema = await this.prisma.subTema.update({
-                where: { id: id },
-                data: {
-                    atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
-                    ...updateSubTemaDto,
-                },
-                select: { id: true }
-            });
-    
-            return subTema;
-        });
+        );
 
         return updated;
     }

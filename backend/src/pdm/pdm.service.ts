@@ -17,19 +17,18 @@ import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmDocument } from './entities/pdm-document.entity';
 
-
 type CicloFisicoResumo = {
     id: number;
     pdm_id: number;
     data_ciclo: Date;
     ciclo_fase_atual_id: number | null;
-    CicloFaseAtual: CicloFisicoFase | null
+    CicloFaseAtual: CicloFisicoFase | null;
 };
 
 @Injectable()
 export class PdmService {
     private readonly logger = new Logger(PdmService.name);
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) { }
+    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
 
     async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.pdm.count({
@@ -37,7 +36,8 @@ export class PdmService {
                 descricao: { endsWith: createPdmDto.nome, mode: 'insensitive' },
             },
         });
-        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let arquivo_logo_id: undefined | number;
         if (createPdmDto.upload_logo) {
@@ -105,14 +105,10 @@ export class PdmService {
                 arquivo_logo_id: true,
                 nivel_orcamento: true,
             },
-            orderBy: [
-                { ativo: 'desc', },
-                { data_inicio: 'desc' },
-                { data_fim: 'desc' }
-            ]
+            orderBy: [{ ativo: 'desc' }, { data_inicio: 'desc' }, { data_fim: 'desc' }],
         });
 
-        const listActiveTmp = listActive.map(pdm => {
+        const listActiveTmp = listActive.map((pdm) => {
             let logo = null;
             if (pdm.arquivo_logo_id) {
                 logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
@@ -126,7 +122,9 @@ export class PdmService {
                 data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
                 data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
                 periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
-                periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
+                periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(
+                    pdm.periodo_do_ciclo_participativo_inicio
+                ),
             };
         });
 
@@ -156,9 +154,17 @@ export class PdmService {
     }
 
     private async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt, pdm: { ativo: boolean }) {
-        if (updatePdmDto.ativo !== pdm.ativo && updatePdmDto.ativo === true && user.hasSomeRoles(['CadastroPdm.ativar']) === false) {
+        if (
+            updatePdmDto.ativo !== pdm.ativo &&
+            updatePdmDto.ativo === true &&
+            user.hasSomeRoles(['CadastroPdm.ativar']) === false
+        ) {
             throw new ForbiddenException(`Você não pode ativar Plano de Metas`);
-        } else if (updatePdmDto.ativo !== pdm.ativo && updatePdmDto.ativo === false && user.hasSomeRoles(['CadastroPdm.inativar']) === false) {
+        } else if (
+            updatePdmDto.ativo !== pdm.ativo &&
+            updatePdmDto.ativo === false &&
+            user.hasSomeRoles(['CadastroPdm.inativar']) === false
+        ) {
             throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
         }
     }
@@ -174,7 +180,11 @@ export class PdmService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException(
+                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                    400
+                );
         }
 
         let arquivo_logo_id: number | undefined | null;
@@ -224,8 +234,7 @@ export class PdmService {
             }
         });
 
-        if (verificarCiclos)
-            await this.executaJobCicloFisico(ativarPdm, id, now);
+        if (verificarCiclos) await this.executaJobCicloFisico(ativarPdm, id, now);
 
         // força o carregamento da tabela pdmOrcamentoConfig
         await this.getOrcamentoConfig(id, true);
@@ -260,8 +269,7 @@ export class PdmService {
         // imediatamente, roda quantas vezes for necessário as evoluções de ciclo
         while (1) {
             const keepGoing = await this.verificaCiclosPendentes(Date2YMD.toString(now));
-            if (!keepGoing)
-                break;
+            if (!keepGoing) break;
         }
     }
 
@@ -403,7 +411,7 @@ export class PdmService {
                 maxWait: 30000,
                 timeout: 60 * 1000 * 5,
                 isolationLevel: 'Serializable',
-            },
+            }
         );
     }
 
@@ -434,11 +442,11 @@ export class PdmService {
                             {
                                 acordar_ciclo_executou_em: {
                                     lt: DateTime.now().minus({ minutes: 1 }).toJSDate(),
-                                }
+                                },
                             },
-                        ]
-                    }
-                ]
+                        ],
+                    },
+                ],
             },
             select: {
                 pdm_id: true,
@@ -450,7 +458,7 @@ export class PdmService {
                 pdm: {
                     select: { ativo: true },
                 },
-                CicloFaseAtual: true
+                CicloFaseAtual: true,
             },
             orderBy: {
                 data_ciclo: 'asc',
@@ -466,7 +474,9 @@ export class PdmService {
 
         try {
             if (cf.acordar_ciclo_errmsg) {
-                this.logger.warn(`Mensagem de erro anterior: ${cf.acordar_ciclo_errmsg}, limpando mensagem e tentando novamente...`);
+                this.logger.warn(
+                    `Mensagem de erro anterior: ${cf.acordar_ciclo_errmsg}, limpando mensagem e tentando novamente...`
+                );
                 await this.prisma.cicloFisico.update({
                     where: { id: cf.id },
                     data: { acordar_ciclo_errmsg: null },
@@ -513,14 +523,18 @@ export class PdmService {
         this.logger.log(`Verificando ciclo atual ${cf.data_ciclo} - Hoje em SP = ${Date2YMD.toString(hojeEmSp)}`);
 
         if (cf.CicloFaseAtual) {
-            this.logger.log('No banco, fase atual é ' +
-                cf.CicloFaseAtual.id +
-                ` com inicio em ${Date2YMD.toString(cf.CicloFaseAtual.data_inicio)} e fim ${Date2YMD.toString(cf.CicloFaseAtual.data_fim)}`);
+            this.logger.log(
+                'No banco, fase atual é ' +
+                    cf.CicloFaseAtual.id +
+                    ` com inicio em ${Date2YMD.toString(cf.CicloFaseAtual.data_inicio)} e fim ${Date2YMD.toString(
+                        cf.CicloFaseAtual.data_fim
+                    )}`
+            );
         } else {
             this.logger.log(`Não há nenhuma fase atualmente associada com o Ciclo Fisico`);
             this.logger.debug(
                 'ciclo_fase_atual_id está null, provavelmente o ciclo não deveria ter sido executado ainda,' +
-                ' ou o PDM acabou de ser re-ativado, ou é a primeira vez do ciclo'
+                    ' ou o PDM acabou de ser re-ativado, ou é a primeira vez do ciclo'
             );
         }
 
@@ -539,7 +553,7 @@ export class PdmService {
             return;
         }
 
-        this.logger.log(`Fase corrente: ${JSON.stringify(fase_corrente)}`)
+        this.logger.log(`Fase corrente: ${JSON.stringify(fase_corrente)}`);
         if (cf.ciclo_fase_atual_id === null || cf.ciclo_fase_atual_id !== fase_corrente.id) {
             await this.cicloFisicoAtualizaFase(cf, fase_corrente);
         } else {
@@ -559,16 +573,13 @@ export class PdmService {
         }
     }
 
-
     private async cicloFisicoAtualizaFase(cf: CicloFisicoResumo, fase_corrente: CicloFisicoFase) {
         let pdm_id = cf.pdm_id;
         let ciclo_fisico_id = fase_corrente.ciclo_fisico_id;
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-
             if (cf.ciclo_fase_atual_id === null)
                 this.logger.log(`Iniciando ciclo id=${cf.id}, data ${cf.data_ciclo}) pela primeira vez!`);
-
 
             // se mudou de ciclo_fisico, precisa fechar e re-abrir
             if (fase_corrente.ciclo_fisico_id !== cf.id) {
@@ -587,7 +598,11 @@ export class PdmService {
                 ciclo_fisico_id = fase_corrente.ciclo_fisico_id;
             }
 
-            this.logger.log(`Trocando fase do ciclo de ${cf.ciclo_fase_atual_id ?? 'null'} para ${fase_corrente.id} (${fase_corrente.ciclo_fase})`);
+            this.logger.log(
+                `Trocando fase do ciclo de ${cf.ciclo_fase_atual_id ?? 'null'} para ${fase_corrente.id} (${
+                    fase_corrente.ciclo_fase
+                })`
+            );
 
             await prismaTxn.cicloFisico.update({
                 where: { id: ciclo_fisico_id },
@@ -669,7 +684,7 @@ export class PdmService {
             previsao_custo_disponivel: boolean;
             planejado_disponivel: boolean;
             execucao_disponivel: boolean;
-            execucao_disponivel_meses: number[]
+            execucao_disponivel_meses: number[];
         }[] = await this.prisma.$queryRaw`
             select
                 extract('year' from x.x)::int as ano_referencia,
@@ -704,10 +719,10 @@ export class PdmService {
                             select: { id: true },
                         });
                     },
-                    { isolationLevel: 'Serializable' },
+                    { isolationLevel: 'Serializable' }
                 );
 
-                const row_without_id_idx = rows.findIndex(rwi => rwi.ano_referencia === r.ano_referencia);
+                const row_without_id_idx = rows.findIndex((rwi) => rwi.ano_referencia === r.ano_referencia);
                 rows[row_without_id_idx].id = created_orcamento_config.id;
             }
         }
@@ -747,7 +762,7 @@ export class PdmService {
                             execucao_disponivel_meses: orcamentoConfig.execucao_disponivel_meses,
                         },
                         select: { id: true },
-                    }),
+                    })
                 );
             }
 

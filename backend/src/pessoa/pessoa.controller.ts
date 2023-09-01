@@ -37,7 +37,7 @@ export class PessoaController {
         'SMAE.colaborador_de_projeto',
         'SMAE.gestor_de_projeto',
         'Projeto.administrador',
-        'Projeto.administrador_no_orgao',
+        'Projeto.administrador_no_orgao'
     )
     async findAll(@Query() filters: FilterPessoaDto): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters) };
@@ -47,7 +47,11 @@ export class PessoaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPessoa.editar')
-    async update(@Param() params: FindOneParams, @Body() updatePessoaDto: UpdatePessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updatePessoaDto: UpdatePessoaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.pessoaService.update(+params.id, updatePessoaDto, user);
     }
 

@@ -1,5 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiExtraModels,
+    ApiOkResponse,
+    ApiResponse,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    refs,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -28,7 +36,7 @@ export class PdmController {
         private readonly objetivoEstrategicoService: ObjetivoEstrategicoService,
         private readonly subTemaService: SubTemaService,
         private readonly eixoService: EixoService,
-        private readonly tagService: TagService,
+        private readonly tagService: TagService
     ) {}
 
     @Post()
@@ -64,7 +72,11 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.editar')
-    async update(@Param() params: FindOneParams, @Body() updatePdmDto: UpdatePdmDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updatePdmDto: UpdatePdmDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.pdmService.update(+params.id, updatePdmDto, user);
     }
 
@@ -76,7 +88,11 @@ export class PdmController {
     @ApiOkResponse({
         schema: { anyOf: refs(Pdm, DetalhePdmDto) },
     })
-    async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @Query() detail: FilterPdmDetailDto): Promise<Pdm | DetalhePdmDto> {
+    async get(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @Query() detail: FilterPdmDetailDto
+    ): Promise<Pdm | DetalhePdmDto> {
         const pdm = await this.pdmService.getDetail(+params.id, user);
 
         if (!detail.incluir_auxiliares) return pdm;
@@ -107,7 +123,7 @@ export class PdmController {
     async updatePdmOrcamentoConfig(
         @Param() params: FindOneParams,
         @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
-        @CurrentUser() user: PessoaFromJwt,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId[]> {
         return await this.pdmService.updatePdmOrcamentoConfig(+params.id, updatePdmOrcamentoConfigDto);
     }
@@ -116,7 +132,11 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPdm.inserir', 'CadastroPdm.editar')
-    async upload(@Param() params: FindOneParams, @Body() createPdmDocDto: CreatePdmDocumentDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async upload(
+        @Param() params: FindOneParams,
+        @Body() createPdmDocDto: CreatePdmDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.pdmService.append_document(params.id, createPdmDocDto, user);
     }
 

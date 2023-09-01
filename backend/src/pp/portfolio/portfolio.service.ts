@@ -19,42 +19,50 @@ export class PortfolioService {
                 removido_em: null,
             },
         });
-        if (similarExists > 0) throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
 
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const row = await prismaTx.portfolio.create({
-                data: {
-                    criado_por: user.id,
-                    criado_em: new Date(Date.now()),
-                    titulo: dto.titulo,
-                    nivel_maximo_tarefa: dto.nivel_maximo_tarefa || undefined, // deixa o default do banco
-                    descricao: dto.descricao,
-                    data_criacao: dto.data_criacao,
-                    orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
-                },
-                select: { id: true },
-            });
-
-            if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
-                await prismaTx.portfolioOrgao.createMany({
-                    data: dto.orgaos.map(r => {
-                        return {
-                            orgao_id: r,
-                            portfolio_id: row.id,
-                        };
-                    }),
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const row = await prismaTx.portfolio.create({
+                    data: {
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                        titulo: dto.titulo,
+                        nivel_maximo_tarefa: dto.nivel_maximo_tarefa || undefined, // deixa o default do banco
+                        descricao: dto.descricao,
+                        data_criacao: dto.data_criacao,
+                        orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
+                    },
+                    select: { id: true },
                 });
-            }
 
-            return row;
-        });
+                if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
+                    await prismaTx.portfolioOrgao.createMany({
+                        data: dto.orgaos.map((r) => {
+                            return {
+                                orgao_id: r,
+                                portfolio_id: row.id,
+                            };
+                        }),
+                    });
+                }
+
+                return row;
+            }
+        );
 
         return created;
     }
 
     async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
         let orgao_id: undefined | number = undefined;
-        if (user != null && !user.hasSomeRoles(['Projeto.administrar_portfolios']) && user != null && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+        if (
+            user != null &&
+            !user.hasSomeRoles(['Projeto.administrar_portfolios']) &&
+            user != null &&
+            user.hasSomeRoles(['Projeto.administrador_no_orgao'])
+        ) {
             orgao_id = user.orgao_id!;
         }
 
@@ -87,7 +95,7 @@ export class PortfolioService {
 
         return {
             ...r,
-            orgaos: r.orgaos.map(rr => rr.orgao_id),
+            orgaos: r.orgaos.map((rr) => rr.orgao_id),
         };
     }
 
@@ -96,7 +104,10 @@ export class PortfolioService {
 
         // só pra manter mais ou menos uma retrocompatibilidade com o frontend
         // preciso pensar melhor nesse filtro
-        if (!user.hasSomeRoles(['Projeto.administrador', 'Projeto.administrar_portfolios']) && user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+        if (
+            !user.hasSomeRoles(['Projeto.administrador', 'Projeto.administrar_portfolios']) &&
+            user.hasSomeRoles(['Projeto.administrador_no_orgao'])
+        ) {
             if (!user.orgao_id) {
                 throw new HttpException('Usuário Projeto.administrador_no_orgao precisa ter um órgão definido', 400);
             }
@@ -128,10 +139,10 @@ export class PortfolioService {
             orderBy: { titulo: 'asc' },
         });
 
-        return listActive.map(r => {
+        return listActive.map((r) => {
             return {
                 ...r,
-                orgaos: r.orgaos.map(rr => rr.orgao),
+                orgaos: r.orgaos.map((rr) => rr.orgao),
             };
         });
     }
@@ -145,14 +156,15 @@ export class PortfolioService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
             const toBeRemoved = await this.prisma.portfolioOrgao.findMany({
                 where: {
                     portfolio_id: id,
-                    orgao_id: { notIn: dto.orgaos.map(r => r) },
+                    orgao_id: { notIn: dto.orgaos.map((r) => r) },
                 },
                 select: {
                     orgao: true,
@@ -170,43 +182,49 @@ export class PortfolioService {
                     },
                 });
 
-                if (findResp > 0) throw new HttpException(`Não é possível remover o órgão ${orgaoRemoved.orgao.sigla} pois há projetos com responsáveis deste órgão.`, 400);
+                if (findResp > 0)
+                    throw new HttpException(
+                        `Não é possível remover o órgão ${orgaoRemoved.orgao.sigla} pois há projetos com responsáveis deste órgão.`,
+                        400
+                    );
             }
         }
 
         // conferir se todos os órgãos que estão saindo realmente nao estão em uso em nenhum projeto ativo
         // como orgao_gestor_id
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const row = await prismaTx.portfolio.update({
-                where: { id: id },
-                data: {
-                    atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
-                    titulo: dto.titulo,
-                    nivel_maximo_tarefa: dto.nivel_maximo_tarefa,
-                    descricao: dto.descricao,
-                    data_criacao: dto.data_criacao,
-                    orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
-                },
-                select: { id: true },
-            });
-
-            if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
-                await prismaTx.portfolioOrgao.deleteMany({
-                    where: { portfolio_id: row.id },
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const row = await prismaTx.portfolio.update({
+                    where: { id: id },
+                    data: {
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                        titulo: dto.titulo,
+                        nivel_maximo_tarefa: dto.nivel_maximo_tarefa,
+                        descricao: dto.descricao,
+                        data_criacao: dto.data_criacao,
+                        orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
+                    },
+                    select: { id: true },
                 });
 
-                await prismaTx.portfolioOrgao.createMany({
-                    data: dto.orgaos.map(r => {
-                        return {
-                            orgao_id: r,
-                            portfolio_id: row.id,
-                        };
-                    }),
-                });
+                if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
+                    await prismaTx.portfolioOrgao.deleteMany({
+                        where: { portfolio_id: row.id },
+                    });
+
+                    await prismaTx.portfolioOrgao.createMany({
+                        data: dto.orgaos.map((r) => {
+                            return {
+                                orgao_id: r,
+                                portfolio_id: row.id,
+                            };
+                        }),
+                    });
+                }
+                return row;
             }
-            return row;
-        });
+        );
 
         return { id: created.id };
     }
