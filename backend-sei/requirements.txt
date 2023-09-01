@@ -28,3 +28,4 @@ uvicorn==0.21.1
 watchfiles==0.18.1
 websockets==10.4
 zeep==4.2.1
+certifi>=2023.7.22
