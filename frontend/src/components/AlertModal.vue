@@ -25,8 +25,9 @@ async function callbackFn() {
     >
       <div
         class="mr2"
-        v-html="alert.message"
-      />
+      >
+        {{ alert.message }}
+      </div>
       <template v-if="alert.type == 'confirmAction'">
         <button
           class="btn amarelo mr1"
