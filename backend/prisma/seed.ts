@@ -233,7 +233,7 @@ const removerNomePerfil = (nome: string) => {
     return {
         nome: nome,
         descricao: '',
-        privilegios: false as false,
+        privilegios: false as const,
     };
 };
 
@@ -414,43 +414,9 @@ async function atualizar_modulos_e_privilegios() {
         const privilegio = PrivConfig[codModulo];
 
         if (privilegio === false) {
-            await prisma.perfilPrivilegio.deleteMany({
-                where: {
-                    privilegio: {
-                        modulo: {
-                            codigo: codModulo,
-                        },
-                    },
-                },
-            });
-
-            await prisma.privilegio.deleteMany({
-                where: {
-                    modulo: {
-                        codigo: codModulo,
-                    },
-                },
-            });
-
-            await prisma.modulo.deleteMany({
-                where: {
-                    codigo: codModulo,
-                },
-            });
+            await removeModulo(codModulo);
         } else {
-            const moduloObject = await prisma.modulo.upsert({
-                where: { codigo: codModulo },
-                update: {
-                    descricao: ModuloDescricao[codModulo as string] as string,
-                },
-                create: {
-                    codigo: codModulo,
-                    descricao: ModuloDescricao[codModulo as string] as string,
-                },
-            });
-            for (const priv of privilegio) {
-                promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string));
-            }
+            await upsertModulo(codModulo, privilegio);
         }
     }
 
@@ -473,8 +439,49 @@ async function atualizar_modulos_e_privilegios() {
             },
         },
     });
+
+    async function upsertModulo(codModulo: string, privilegio: [ListaDePrivilegios, string][]) {
+        const moduloObject = await prisma.modulo.upsert({
+            where: { codigo: codModulo },
+            update: {
+                descricao: ModuloDescricao[codModulo],
+            },
+            create: {
+                codigo: codModulo,
+                descricao: ModuloDescricao[codModulo],
+            },
+        });
+        for (const priv of privilegio) {
+            promises.push(upsert_privilegios(moduloObject.id, priv[0], priv[1]));
+        }
+    }
 }
 
+async function removeModulo(codModulo: string) {
+    await prisma.perfilPrivilegio.deleteMany({
+        where: {
+            privilegio: {
+                modulo: {
+                    codigo: codModulo,
+                },
+            },
+        },
+    });
+
+    await prisma.privilegio.deleteMany({
+        where: {
+            modulo: {
+                codigo: codModulo,
+            },
+        },
+    });
+
+    await prisma.modulo.deleteMany({
+        where: {
+            codigo: codModulo,
+        },
+    });
+}
 async function criar_texto_config() {
     await prisma.textoConfig.upsert({
         where: { id: 1 },
@@ -545,60 +552,74 @@ async function atualizar_perfil_acesso() {
                 },
             });
         } else {
-            let perfilAcesso = await prisma.perfilAcesso.findFirst({
-                where: { nome: perfilAcessoConf.nome },
-                select: { id: true },
-            });
-            if (!perfilAcesso) {
-                perfilAcesso = await prisma.perfilAcesso.create({
-                    data: {
-                        nome: perfilAcessoConf.nome,
-                        descricao: perfilAcessoConf.descricao,
-                    },
-                    select: { id: true },
-                });
-            } else {
-                await prisma.perfilAcesso.update({
-                    where: { id: perfilAcesso.id },
-                    data: {
-                        nome: perfilAcessoConf.nome,
-                        descricao: perfilAcessoConf.descricao,
-                    },
-                });
-            }
-
-            await prisma.perfilPrivilegio.deleteMany({
-                where: {
-                    perfil_acesso_id: perfilAcesso.id,
-                    privilegio: {
-                        codigo: { notIn: perfilAcessoConf.privilegios },
-                    },
-                },
-            });
+            let perfilAcesso = await ensurePerfilAcessoExists(perfilAcessoConf);
 
             for (const codPriv of perfilAcessoConf.privilegios) {
-                const priv = await prisma.privilegio.findFirst({ where: { codigo: codPriv } });
-                if (!priv) {
-                    throw `Não encontrado priv ${codPriv}`;
-                }
-                const idPriv = priv.id;
-
-                const match = await prisma.perfilPrivilegio.findFirst({
-                    where: {
-                        perfil_acesso_id: perfilAcesso.id,
-                        privilegio_id: idPriv,
-                    },
-                });
-                if (!match) {
-                    await prisma.perfilPrivilegio.create({
-                        data: {
-                            perfil_acesso_id: perfilAcesso?.id as number,
-                            privilegio_id: idPriv,
-                        },
-                    });
-                }
+                await criaPrivComPerfilDeAcesso(codPriv, perfilAcesso);
             }
         }
+    }
+}
+
+async function ensurePerfilAcessoExists(perfilAcessoConf: {
+    nome: string;
+    descricao: string;
+    privilegios: ListaDePrivilegios[] | false;
+}) {
+    let perfilAcesso = await prisma.perfilAcesso.findFirst({
+        where: { nome: perfilAcessoConf.nome },
+        select: { id: true },
+    });
+    if (!perfilAcesso) {
+        perfilAcesso = await prisma.perfilAcesso.create({
+            data: {
+                nome: perfilAcessoConf.nome,
+                descricao: perfilAcessoConf.descricao,
+            },
+            select: { id: true },
+        });
+    } else {
+        await prisma.perfilAcesso.update({
+            where: { id: perfilAcesso.id },
+            data: {
+                nome: perfilAcessoConf.nome,
+                descricao: perfilAcessoConf.descricao,
+            },
+        });
+    }
+
+    if (Array.isArray(perfilAcessoConf.privilegios))
+        await prisma.perfilPrivilegio.deleteMany({
+            where: {
+                perfil_acesso_id: perfilAcesso.id,
+                privilegio: {
+                    codigo: { notIn: perfilAcessoConf.privilegios },
+                },
+            },
+        });
+    return perfilAcesso;
+}
+
+async function criaPrivComPerfilDeAcesso(codPriv: string, perfilAcesso: { id: number }) {
+    const priv = await prisma.privilegio.findFirst({ where: { codigo: codPriv } });
+    if (!priv) {
+        throw `Não encontrado priv ${codPriv}`;
+    }
+    const idPriv = priv.id;
+
+    const match = await prisma.perfilPrivilegio.findFirst({
+        where: {
+            perfil_acesso_id: perfilAcesso.id,
+            privilegio_id: idPriv,
+        },
+    });
+    if (!match) {
+        await prisma.perfilPrivilegio.create({
+            data: {
+                perfil_acesso_id: perfilAcesso?.id as number,
+                privilegio_id: idPriv,
+            },
+        });
     }
 }
 
