@@ -41,6 +41,7 @@ import {
     VariavelConferidaDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
+import { MathRandom } from '../../common/math-random';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
