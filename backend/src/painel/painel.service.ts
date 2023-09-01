@@ -623,7 +623,6 @@ export class PainelService {
 
     private async populatePainelConteudoDetalhe(conteudos: PainelConteudoForSync[], prisma: Prisma.TransactionClient) {
         const created: PainelConteudoDetalheForSync[] = [];
-        // const deleted: PainelConteudoDetalheForSync[] = [];
         const unchanged: PainelConteudoDetalheForSync[] = [];
         const existent_painel_conteudo_detalhes: PainelConteudoDetalheForSync[] = [];
 
