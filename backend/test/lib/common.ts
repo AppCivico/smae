@@ -19,7 +19,7 @@ export class OrganizacaoExpert {
         const orgService = app.get(OrgaoService);
 
         const findOrg = await orgService.findAll();
-        exitingOrg = findOrg.filter(o => o.descricao == orgData.descricao)[0];
+        exitingOrg = findOrg.filter((o) => o.descricao == orgData.descricao)[0];
         if (!exitingOrg) {
             let tipo_orgao_id = orgData.tipo_orgao_id;
             if (!tipo_orgao_id) {
@@ -61,7 +61,7 @@ export class PessoaExpert {
 
         const pessoaService = app.get(PessoaService);
         const profiles = await pessoaService.listaPerfilAcesso();
-        const adminProfile = profiles.filter(p => p.nome.match('Administrador Geral'))[0];
+        const adminProfile = profiles.filter((p) => p.nome.match('Administrador Geral'))[0];
         if (!adminProfile) throw 'nao encontrado perfil do admin';
 
         const randomStr = MathRandom().toString();
@@ -70,14 +70,18 @@ export class PessoaExpert {
         const findPessoa = await pessoaService.findAll({
             email: email,
         });
-        exitingPessoa = findPessoa.filter(o => o.email == email)[0];
+        exitingPessoa = findPessoa.filter((o) => o.email == email)[0];
         if (!exitingPessoa) {
             await pessoaService.criarPessoa({
                 perfil_acesso_ids: cusData.perfil_acesso_ids ?? [adminProfile.id],
                 email: email,
                 nome_completo: cusData.nome_completo ?? 'nome_completo ' + randomStr,
                 nome_exibicao: cusData.nome_exibicao ?? 'nome_exibicao ' + randomStr,
-                orgao_id: cusData.orgao_id ?? (await OrganizacaoExpert.getOrCreateOrg(app, { descricao: randomStr, sigla: randomStr })).id,
+                orgao_id:
+                    cusData.orgao_id ??
+                    (
+                        await OrganizacaoExpert.getOrCreateOrg(app, { descricao: randomStr, sigla: randomStr })
+                    ).id,
             });
 
             const findPessoa = await pessoaService.findAll({

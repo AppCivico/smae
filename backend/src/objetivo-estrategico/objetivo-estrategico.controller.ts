@@ -20,7 +20,10 @@ export class ObjetivoEstrategicoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTema.inserir')
-    async create(@Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
     }
 
@@ -34,7 +37,11 @@ export class ObjetivoEstrategicoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTema.editar')
-    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
     }
 
@@ -59,7 +66,10 @@ export class ObjetivoEstrategicoController2 {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTema.inserir')
-    async create(@Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
     }
 
@@ -73,7 +83,11 @@ export class ObjetivoEstrategicoController2 {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTema.editar')
-    async update(@Param() params: FindOneParams, @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
     }
 

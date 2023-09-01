@@ -20,7 +20,7 @@ import { OrcamentoRealizadoService as ProjetoOrcamentoRealizadoService } from 's
 import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
-import { read, utils, writeXLSX } from "xlsx";
+import { read, utils, writeXLSX } from 'xlsx';
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
@@ -36,26 +36,26 @@ class NextPageTokenJwtBody {
 }
 
 type ProcessaLinhaParams = {
-    metasIds: number[]
-    iniciativasIds: number[]
-    atividadesIds: number[]
-    projetosIds: number[]
-    metasCodigos2Ids: Record<string, number>
-    projetosCodigos2Ids: Record<string, number>
-    iniciativasCodigos2Ids: Record<string, number>
-    atividadesCodigos2Ids: Record<string, number>
-    eh_projeto: boolean
-    eh_metas: boolean
-    anosPort: number[]
-    anosPdm: Record<string, number[]>
-    portfolio_id: number | null
+    metasIds: number[];
+    iniciativasIds: number[];
+    atividadesIds: number[];
+    projetosIds: number[];
+    metasCodigos2Ids: Record<string, number>;
+    projetosCodigos2Ids: Record<string, number>;
+    iniciativasCodigos2Ids: Record<string, number>;
+    atividadesCodigos2Ids: Record<string, number>;
+    eh_projeto: boolean;
+    eh_metas: boolean;
+    anosPort: number[];
+    anosPdm: Record<string, number[]>;
+    portfolio_id: number | null;
 };
 
 function mapObjectToTypes(obj: Record<string, unknown>): Record<string, string> {
     const keys = Object.keys(obj);
 
     const newObj: Record<string, string> = {};
-    keys.forEach(key => {
+    keys.forEach((key) => {
         newObj[key] = typeof obj[key];
     });
 
@@ -65,7 +65,7 @@ function mapObjectToTypes(obj: Record<string, unknown>): Record<string, string> 
 function toFixed2ButString(n: number): string {
     const with2Decimals = n.toString().match(/^-?\d+(?:\.\d{0,2})?/);
 
-    if (with2Decimals && with2Decimals[0]) return with2Decimals[0]
+    if (with2Decimals && with2Decimals[0]) return with2Decimals[0];
     return n.toFixed();
 }
 
@@ -84,16 +84,17 @@ export class ImportacaoOrcamentoService {
         @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
         @Inject(forwardRef(() => MetaService)) private readonly metaService: MetaService,
 
-        @Inject(forwardRef(() => PdmOrcamentoRealizadoService)) private readonly pdmOrcResService: PdmOrcamentoRealizadoService,
-        @Inject(forwardRef(() => ProjetoOrcamentoRealizadoService)) private readonly ppOrcResService: ProjetoOrcamentoRealizadoService,
-    ) { }
+        @Inject(forwardRef(() => PdmOrcamentoRealizadoService))
+        private readonly pdmOrcResService: PdmOrcamentoRealizadoService,
+        @Inject(forwardRef(() => ProjetoOrcamentoRealizadoService))
+        private readonly ppOrcResService: ProjetoOrcamentoRealizadoService
+    ) {}
 
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadToken(dto.upload);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-
                 const importacao = await prismaTxn.importacaoOrcamento.create({
                     data: {
                         criado_por: user.id,
@@ -108,12 +109,11 @@ export class ImportacaoOrcamentoService {
             }
         );
 
-
         this.executaImportacaoOrcamento(created.id).catch((err) => {
             this.logger.error(`executaImportacaoOrcamento failed: ${err}`);
         });
 
-        return { id: created.id }
+        return { id: created.id };
     }
 
     private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
@@ -131,12 +131,11 @@ export class ImportacaoOrcamentoService {
     }
 
     async findAll_portfolio(user: PessoaFromJwt): Promise<PortfolioDto[]> {
-
         const filtros: Prisma.Enumerable<Prisma.PortfolioWhereInput> = [];
 
         if (user.hasSomeRoles(['Projeto.orcamento'])) {
             const projetos = await this.projetoService.findAllIds(user);
-            this.logger.warn(`só pode ver os projetos ${projetos.map(r => r.id).join(',')}`);
+            this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
 
             filtros.push({
                 OR: [
@@ -144,22 +143,22 @@ export class ImportacaoOrcamentoService {
                         Projeto: {
                             some: {
                                 id: {
-                                    in: projetos.map(r => r.id)
-                                }
-                            }
-                        }
-                    }
-                ]
+                                    in: projetos.map((r) => r.id),
+                                },
+                            },
+                        },
+                    },
+                ],
             });
         } else {
             // nao retorna nenhum
-            filtros.push({ id: -1 })
+            filtros.push({ id: -1 });
         }
 
         const listActive = await this.prisma.portfolio.findMany({
             where: {
                 removido_em: null,
-                AND: filtros
+                AND: filtros,
             },
             select: {
                 id: true,
@@ -177,19 +176,21 @@ export class ImportacaoOrcamentoService {
                     },
                 },
             },
-            orderBy: { titulo: 'asc' }
+            orderBy: { titulo: 'asc' },
         });
 
-        return listActive.map(r => {
+        return listActive.map((r) => {
             return {
                 ...r,
-                orgaos: r.orgaos.map(rr => rr.orgao),
+                orgaos: r.orgaos.map((rr) => rr.orgao),
             };
         });
-
     }
 
-    async findAll(filters: FilterImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<PaginatedDto<ImportacaoOrcamentoDto>> {
+    async findAll(
+        filters: FilterImportacaoOrcamentoDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedDto<ImportacaoOrcamentoDto>> {
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
@@ -212,12 +213,12 @@ export class ImportacaoOrcamentoService {
 
         if (filters.apenas_com_portfolio) {
             this.logger.debug(`filtrando apenas_com_portfolio=true`);
-            filtros.push({ portfolio_id: { not: null } })
+            filtros.push({ portfolio_id: { not: null } });
         }
 
         if (user.hasSomeRoles(['Projeto.orcamento']) && (filters.portfolio_id || filters.apenas_com_portfolio)) {
             const projetos = await this.projetoService.findAllIds(user);
-            this.logger.warn(`só pode ver os projetos ${projetos.map(r => r.id).join(',')}`);
+            this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
 
             filtros.push({
                 OR: [
@@ -227,22 +228,22 @@ export class ImportacaoOrcamentoService {
                             Projeto: {
                                 some: {
                                     id: {
-                                        in: projetos.map(r => r.id)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                ]
+                                        in: projetos.map((r) => r.id),
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
             });
         } else {
             this.logger.warn('não pode ver os projetos');
-            filtros.push({ portfolio_id: null })
+            filtros.push({ portfolio_id: null });
         }
 
         if (user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
             const metas = await this.metaService.findAllIds(user);
-            this.logger.warn(`só pode as metas ${metas.map(r => r.id)}`);
+            this.logger.warn(`só pode as metas ${metas.map((r) => r.id)}`);
 
             filtros.push({
                 OR: [
@@ -252,59 +253,59 @@ export class ImportacaoOrcamentoService {
                             Meta: {
                                 some: {
                                     id: {
-                                        in: metas.map(r => r.id)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                ]
+                                        in: metas.map((r) => r.id),
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
             });
         } else {
             this.logger.warn('não pode ver as metas');
-            filtros.push({ pdm_id: null })
+            filtros.push({ pdm_id: null });
         }
 
         const registros = await this.prisma.importacaoOrcamento.findMany({
             where: {
                 portfolio_id: filters.portfolio_id,
                 pdm_id: filters.pdm_id,
-                AND: [...filtros]
+                AND: [...filtros],
             },
             include: {
                 arquivo: {
-                    select: { tamanho_bytes: true, nome_original: true }
+                    select: { tamanho_bytes: true, nome_original: true },
                 },
                 saida_arquivo: {
-                    select: { tamanho_bytes: true, nome_original: true }
+                    select: { tamanho_bytes: true, nome_original: true },
                 },
                 criador: { select: { id: true, nome_exibicao: true } },
                 pdm: { select: { id: true, nome: true } },
                 portfolio: { select: { id: true, titulo: true } },
             },
-            orderBy: [
-                { criado_em: 'desc' }
-            ],
+            orderBy: [{ criado_em: 'desc' }],
             skip: offset,
             take: ipp + 1,
         });
 
         const linhas = registros.map((r) => {
-
             return {
                 id: r.id,
                 arquivo: {
                     id: r.arquivo_id,
                     tamanho_bytes: r.arquivo.tamanho_bytes,
                     nome_original: r.arquivo.nome_original,
-                    token: (this.uploadService.getDownloadToken(r.arquivo_id, '1d')).download_token,
+                    token: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
                 },
-                saida_arquivo: r.saida_arquivo_id && r.saida_arquivo ? {
-                    id: r.saida_arquivo_id,
-                    tamanho_bytes: r.saida_arquivo.tamanho_bytes,
-                    nome_original: r.saida_arquivo.nome_original,
-                    token: (this.uploadService.getDownloadToken(r.saida_arquivo_id, '1d')).download_token,
-                } : null,
+                saida_arquivo:
+                    r.saida_arquivo_id && r.saida_arquivo
+                        ? {
+                              id: r.saida_arquivo_id,
+                              tamanho_bytes: r.saida_arquivo.tamanho_bytes,
+                              nome_original: r.saida_arquivo.nome_original,
+                              token: this.uploadService.getDownloadToken(r.saida_arquivo_id, '1d').download_token,
+                          }
+                        : null,
                 pdm: r.pdm,
                 portfolio: r.portfolio,
                 criado_por: r.criador,
@@ -313,7 +314,7 @@ export class ImportacaoOrcamentoService {
                 processado_errmsg: r.processado_errmsg,
                 linhas_importadas: r.linhas_importadas,
                 linhas_recusadas: r.linhas_recusadas,
-            }
+            };
         });
 
         if (linhas.length > ipp) {
@@ -327,9 +328,7 @@ export class ImportacaoOrcamentoService {
             token_proxima_pagina: token_proxima_pagina,
             linhas,
         };
-
     }
-
 
     @Cron('* * * * *')
     async handleCron() {
@@ -349,13 +348,12 @@ export class ImportacaoOrcamentoService {
                 }
 
                 await this.verificaImportacaoOrcamento();
-
             },
             {
                 maxWait: 30000,
                 timeout: 60 * 1000 * 5,
                 isolationLevel: 'Serializable',
-            },
+            }
         );
     }
 
@@ -379,30 +377,28 @@ export class ImportacaoOrcamentoService {
                             {
                                 congelado_em: {
                                     lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
-                                }
+                                },
                             },
-                        ]
-                    }
-                ]
+                        ],
+                    },
+                ],
             },
             select: {
                 id: true,
-                congelado_em: true
-            }
+                congelado_em: true,
+            },
         });
 
         for (const job of pending) {
-
             if (job.congelado_em && Math.abs(DateTime.fromJSDate(job.congelado_em).diffNow().as('seconds')) < 120) {
                 this.logger.warn(`Job ${job.id} já foi congelado há pouco tempo`);
                 continue;
             } else if (job.congelado_em === null) {
-
                 const updated = await this.prisma.importacaoOrcamento.updateMany({
                     where: { id: job.id, congelado_em: null },
                     data: {
-                        congelado_em: new Date(Date.now())
-                    }
+                        congelado_em: new Date(Date.now()),
+                    },
                 });
 
                 if (updated.count === 0) {
@@ -414,13 +410,13 @@ export class ImportacaoOrcamentoService {
                 await this.prisma.importacaoOrcamento.update({
                     where: { id: job.id },
                     data: {
-                        congelado_em: new Date(Date.now())
-                    }
+                        congelado_em: new Date(Date.now()),
+                    },
                 });
             }
 
             try {
-                await this.processaArquivo(job.id)
+                await this.processaArquivo(job.id);
             } catch (error) {
                 console.log(error);
                 this.logger.error(error);
@@ -430,46 +426,49 @@ export class ImportacaoOrcamentoService {
                     data: {
                         linhas_importadas: 0,
                         processado_errmsg: `Erro ao processar arquivo: ${error}`,
-                        processado_em: new Date(Date.now())
-                    }
+                        processado_em: new Date(Date.now()),
+                    },
                 });
-
             }
         }
     }
 
     private async processaArquivo(id: number) {
-
         const job = await this.prisma.importacaoOrcamento.findUniqueOrThrow({
             where: { id: +id },
             include: {
                 arquivo: {
                     select: { nome_original: true },
-                }
-            }
+                },
+            },
         });
 
         const nome_arquivo = job.arquivo.nome_original.replace(/[^A-Za-z0-9\.]/g, '-');
 
-        const inputBuffer = await Stream2Buffer((await this.uploadService.getReadableStreamById(job.arquivo_id)).stream);
+        const inputBuffer = await Stream2Buffer(
+            (
+                await this.uploadService.getReadableStreamById(job.arquivo_id)
+            ).stream
+        );
 
         const inputXLSX = read(inputBuffer, {
-            type: 'buffer'
-
+            type: 'buffer',
         });
 
         const sheetName = inputXLSX.SheetNames[0];
         const sheet = inputXLSX.Sheets[sheetName];
         const range = utils.decode_range(sheet['!ref']!);
 
-        const colunaHeaderIndex = OrcamentoImportacaoHelpers.createColumnHeaderIndex(sheet, [...ColunasNecessarias, ...OutrasColumns]);
+        const colunaHeaderIndex = OrcamentoImportacaoHelpers.createColumnHeaderIndex(sheet, [
+            ...ColunasNecessarias,
+            ...OutrasColumns,
+        ]);
 
         const outputXLSX = utils.book_new();
         const row = [];
         [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
             const colIndex = colunaHeaderIndex[columnName];
-            if (colIndex >= 0)
-                row.push(columnName);
+            if (colIndex >= 0) row.push(columnName);
         });
         row.push('Status');
 
@@ -486,19 +485,43 @@ export class ImportacaoOrcamentoService {
 
         if (job.portfolio_id) {
             const projetosDoUser = await this.projetoService.findAllIds(user);
-            projetosIds.push(...projetosDoUser.map(r => r.id));
+            projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
             const metasDoUser = await this.metaService.findAllIds(user);
 
-            metasIds.push(...metasDoUser.map(r => r.id));
+            metasIds.push(...metasDoUser.map((r) => r.id));
         }
 
         this.logger.log(JSON.stringify({ job, metasIds, projetosIds }));
 
-        const projetosCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'projeto', projetosIds, true, 'portfolio_id', job.portfolio_id);
-        const metasCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(this.prisma, 'meta', metasIds, false, 'pdm_id', job.pdm_id);
+        const projetosCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(
+            this.prisma,
+            'projeto',
+            projetosIds,
+            true,
+            'portfolio_id',
+            job.portfolio_id
+        );
+        const metasCodigos2Ids = await PrismaHelpers.prismaCodigo2IdMap(
+            this.prisma,
+            'meta',
+            metasIds,
+            false,
+            'pdm_id',
+            job.pdm_id
+        );
 
-        let { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids }: { iniciativasIds: number[]; atividadesIds: number[]; iniciativasCodigos2Ids: Record<string, number>; atividadesCodigos2Ids: Record<string, number>; } = await this.carregaIniciativaAtiv(metasIds);
+        let {
+            iniciativasIds,
+            atividadesIds,
+            iniciativasCodigos2Ids,
+            atividadesCodigos2Ids,
+        }: {
+            iniciativasIds: number[];
+            atividadesIds: number[];
+            iniciativasCodigos2Ids: Record<string, number>;
+            atividadesCodigos2Ids: Record<string, number>;
+        } = await this.carregaIniciativaAtiv(metasIds);
 
         let linhas_importadas: number = 0;
         let linhas_recusadas: number = 0;
@@ -508,7 +531,6 @@ export class ImportacaoOrcamentoService {
             let col2row: any = {};
 
             [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
-
                 const colIndex = colunaHeaderIndex[columnName];
 
                 if (colIndex >= 0) {
@@ -526,7 +548,6 @@ export class ImportacaoOrcamentoService {
                         if (typeof col2row[columnName] === 'number') {
                             col2row[columnName] = toFixed2ButString(col2row[columnName]);
                         }
-
                     } else if (cellValue !== '') {
                         col2row[columnName] = cellValue;
                     } else {
@@ -540,22 +561,24 @@ export class ImportacaoOrcamentoService {
             const anosPort: number[] = [];
             const anosPdm: Record<string, typeof anosPort> = {};
             if (job.portfolio_id) {
-                anosPort.push(...(await this.prisma.portfolio.findFirstOrThrow({
-                    where: { id: job.portfolio_id },
-                    select: { orcamento_execucao_disponivel_meses: true }
-                })).orcamento_execucao_disponivel_meses);
+                anosPort.push(
+                    ...(
+                        await this.prisma.portfolio.findFirstOrThrow({
+                            where: { id: job.portfolio_id },
+                            select: { orcamento_execucao_disponivel_meses: true },
+                        })
+                    ).orcamento_execucao_disponivel_meses
+                );
             } else if (job.pdm_id) {
-
                 const anosPdmRows = await this.prisma.pdmOrcamentoConfig.findMany({
                     where: { pdm_id: job.pdm_id },
-                    select: { ano_referencia: true, execucao_disponivel_meses: true }
+                    select: { ano_referencia: true, execucao_disponivel_meses: true },
                 });
 
                 for (const r of anosPdmRows) {
                     anosPdm[r.ano_referencia] = r.execucao_disponivel_meses;
                 }
             }
-
 
             let feedback: string;
 
@@ -577,7 +600,7 @@ export class ImportacaoOrcamentoService {
                         anosPdm,
                         portfolio_id: job.portfolio_id,
                     },
-                    user,
+                    user
                 );
             } catch (error) {
                 feedback = `Erro durante processamento: ${error}`;
@@ -603,26 +626,37 @@ export class ImportacaoOrcamentoService {
             compression: true,
         });
 
-        const upload_id = await RetryPromise(() => {
-            return this.uploadService.upload({
-                tipo: 'IMPORTACAO_ORCAMENTO',
-                arquivo: buffer,
-                descricao: `${nome_arquivo}-processado.xlsx`
-            }, user, { buffer }, '')
-        }, 50, 1000, 100);
-
-        await RetryPromise(() => this.prisma.importacaoOrcamento.update({
-            where: {
-                id: job.id
+        const upload_id = await RetryPromise(
+            () => {
+                return this.uploadService.upload(
+                    {
+                        tipo: 'IMPORTACAO_ORCAMENTO',
+                        arquivo: buffer,
+                        descricao: `${nome_arquivo}-processado.xlsx`,
+                    },
+                    user,
+                    { buffer },
+                    ''
+                );
             },
-            data: {
-                saida_arquivo_id: upload_id,
-                processado_em: new Date(Date.now()),
-                linhas_importadas,
-                linhas_recusadas,
-            }
-        }));
+            50,
+            1000,
+            100
+        );
 
+        await RetryPromise(() =>
+            this.prisma.importacaoOrcamento.update({
+                where: {
+                    id: job.id,
+                },
+                data: {
+                    saida_arquivo_id: upload_id,
+                    processado_em: new Date(Date.now()),
+                    linhas_importadas,
+                    linhas_recusadas,
+                },
+            })
+        );
     }
 
     private async carregaIniciativaAtiv(metasIds: number[]) {
@@ -634,7 +668,7 @@ export class ImportacaoOrcamentoService {
             const iniciativas = await this.prisma.iniciativa.findMany({
                 where: {
                     meta_id: { in: metasIds },
-                    removido_em: null
+                    removido_em: null,
                 },
                 select: {
                     id: true,
@@ -645,8 +679,8 @@ export class ImportacaoOrcamentoService {
                             id: true,
                             codigo: true,
                         },
-                        where: { removido_em: null }
-                    }
+                        where: { removido_em: null },
+                    },
                 },
             });
 
@@ -655,7 +689,8 @@ export class ImportacaoOrcamentoService {
                 iniciativasIds.push(iniciativa.id);
 
                 for (const atividade of iniciativa.atividade) {
-                    atividadesCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.id}-${atividade.codigo}`.toLowerCase()] = atividade.id;
+                    atividadesCodigos2Ids[`${iniciativa.meta_id}-${iniciativa.id}-${atividade.codigo}`.toLowerCase()] =
+                        atividade.id;
                     atividadesIds.push(atividade.id);
                 }
             }
@@ -664,22 +699,25 @@ export class ImportacaoOrcamentoService {
         return { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids };
     }
 
-
     async processaRow(col2row: any, params: ProcessaLinhaParams, user: PessoaFromJwt): Promise<string> {
         const row = plainToInstance(LinhaCsvInputDto, col2row);
         const validations = await validate(row);
         if (validations.length) {
-            let response = 'Linha inválida: ' + validations.reduce((acc, curr) => {
-                return [...acc, ...Object.values(curr.constraints as any)];
-            }, []);
+            let response =
+                'Linha inválida: ' +
+                validations.reduce((acc, curr) => {
+                    return [...acc, ...Object.values(curr.constraints as any)];
+                }, []);
 
             if (process.env.INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER) {
-                response += ': DEBUGGER: ' + JSON.stringify({
-                    row,
-                    row_types: mapObjectToTypes(row as any),
-                    raw: col2row,
-                    raw_types: mapObjectToTypes(col2row)
-                });
+                response +=
+                    ': DEBUGGER: ' +
+                    JSON.stringify({
+                        row,
+                        row_types: mapObjectToTypes(row as any),
+                        raw: col2row,
+                        raw_types: mapObjectToTypes(col2row),
+                    });
             }
 
             return response;
@@ -694,17 +732,23 @@ export class ImportacaoOrcamentoService {
         if (row.nota_empenho && row.dotacao) return 'Linhas inválida: nota empenho ou enviar dotação';
         if (row.processo && row.dotacao) return 'Linhas inválida: enviar processo ou dotação';
 
-        if (!row.dotacao && !row.processo && !row.nota_empenho) return 'Linhas inválida: é necessário pelo menos dotação, processo ou nota de empenho';
+        if (!row.dotacao && !row.processo && !row.nota_empenho)
+            return 'Linhas inválida: é necessário pelo menos dotação, processo ou nota de empenho';
 
         if (params.eh_metas) {
             if (row.meta_codigo && row.meta_id) return 'Linha inválida: meta código e meta id são de uso exclusivo';
-            if (row.iniciativa_codigo && row.iniciativa_id) return 'Linha inválida: iniciativa código e iniciativa id são de uso exclusivo';
-            if (row.atividade_codigo && row.atividade_id) return 'Linha inválida: atividade código e atividade id são de uso exclusivo';
+            if (row.iniciativa_codigo && row.iniciativa_id)
+                return 'Linha inválida: iniciativa código e iniciativa id são de uso exclusivo';
+            if (row.atividade_codigo && row.atividade_id)
+                return 'Linha inválida: atividade código e atividade id são de uso exclusivo';
 
-            if (row.iniciativa_codigo && !(row.meta_codigo || row.meta_id)) return 'Linha inválida: não há como buscar iniciativa por código sem saber a meta';
-            if (row.atividade_codigo && !(row.iniciativa_codigo || row.iniciativa_id)) return 'Linha inválida: não há como buscar atividade por código sem saber a iniciativa';
+            if (row.iniciativa_codigo && !(row.meta_codigo || row.meta_id))
+                return 'Linha inválida: não há como buscar iniciativa por código sem saber a meta';
+            if (row.atividade_codigo && !(row.iniciativa_codigo || row.iniciativa_id))
+                return 'Linha inválida: não há como buscar atividade por código sem saber a iniciativa';
 
-            if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto não pode ser usado em importações do PDM';
+            if (row.projeto_codigo && row.projeto_id)
+                return 'Linha inválida: projeto não pode ser usado em importações do PDM';
 
             if (row.meta_id) meta_id = row.meta_id;
             // valida a meta
@@ -713,40 +757,52 @@ export class ImportacaoOrcamentoService {
 
             if (row.iniciativa_id) iniciativa_id = row.iniciativa_id;
             // valida a iniciativa
-            if (row.iniciativa_codigo) iniciativa_id = params.iniciativasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`.toLowerCase()];
-            if (row.iniciativa_codigo && !iniciativa_id) return `Linha inválida: iniciativa não encontrada, código ${row.iniciativa_codigo} na meta ID ${meta_id}`;
+            if (row.iniciativa_codigo)
+                iniciativa_id = params.iniciativasCodigos2Ids[`${meta_id}-${row.iniciativa_codigo}`.toLowerCase()];
+            if (row.iniciativa_codigo && !iniciativa_id)
+                return `Linha inválida: iniciativa não encontrada, código ${row.iniciativa_codigo} na meta ID ${meta_id}`;
 
             if (row.atividade_id) atividade_id = row.atividade_id;
             // valida a atividade
-            if (row.atividade_codigo) atividade_id = params.atividadesCodigos2Ids[`${meta_id}-${iniciativa_id}-${row.atividade_codigo}`.toLowerCase()];
-            if (row.atividade_codigo && !atividade_id) return `Linha inválida: atividade não encontrada, código ${row.atividade_codigo} na iniciativa ID ${iniciativa_id}}`;
+            if (row.atividade_codigo)
+                atividade_id =
+                    params.atividadesCodigos2Ids[`${meta_id}-${iniciativa_id}-${row.atividade_codigo}`.toLowerCase()];
+            if (row.atividade_codigo && !atividade_id)
+                return `Linha inválida: atividade não encontrada, código ${row.atividade_codigo} na iniciativa ID ${iniciativa_id}}`;
 
             // valida se tem permissão de fato pra ver tudo
             if (!params.metasIds.includes(meta_id)) return `Linha inválida: sem permissão na meta ID ${meta_id}`;
-            if (iniciativa_id && !params.iniciativasIds.includes(iniciativa_id)) return `Linha inválida: sem permissão na iniciativa ID ${iniciativa_id}`;
-            if (atividade_id && !params.atividadesIds.includes(atividade_id)) return `Linha inválida: sem permissão na atividade ID ${atividade_id}`;
+            if (iniciativa_id && !params.iniciativasIds.includes(iniciativa_id))
+                return `Linha inválida: sem permissão na iniciativa ID ${iniciativa_id}`;
+            if (atividade_id && !params.atividadesIds.includes(atividade_id))
+                return `Linha inválida: sem permissão na atividade ID ${atividade_id}`;
 
             const mes_ref = params.anosPdm[row.ano_referencia];
             if (!mes_ref) return `Linha inválida: ano ${row.ano_referencia} não está configurado`;
 
-            if (!mes_ref.includes(row.mes)) return `Linha inválida: mês ${row.mes} não está liberado no ano ${row.ano_referencia}`;
-
+            if (!mes_ref.includes(row.mes))
+                return `Linha inválida: mês ${row.mes} não está liberado no ano ${row.ano_referencia}`;
         } else if (params.eh_projeto) {
-            if (row.meta_codigo && row.meta_id) return 'Linha inválida: meta não pode ser usado em importações de projetos';
-            if (row.iniciativa_codigo && row.iniciativa_id) return 'Linha inválida: iniciativa não pode ser usado em importações de projetos';
-            if (row.atividade_codigo && row.atividade_id) return 'Linha inválida: atividade meta não pode ser usado em importações de projetos';
+            if (row.meta_codigo && row.meta_id)
+                return 'Linha inválida: meta não pode ser usado em importações de projetos';
+            if (row.iniciativa_codigo && row.iniciativa_id)
+                return 'Linha inválida: iniciativa não pode ser usado em importações de projetos';
+            if (row.atividade_codigo && row.atividade_id)
+                return 'Linha inválida: atividade meta não pode ser usado em importações de projetos';
 
-            if (row.projeto_codigo && row.projeto_id) return 'Linha inválida: projeto código e projeto id são de uso exclusivo';
+            if (row.projeto_codigo && row.projeto_id)
+                return 'Linha inválida: projeto código e projeto id são de uso exclusivo';
 
             if (row.projeto_id) projeto_id = row.projeto_id;
             if (row.projeto_codigo) projeto_id = params.projetosCodigos2Ids[row.projeto_codigo.toLowerCase()];
 
             if (!projeto_id) return `Linha inválida: projeto não encontrado, código ${row.projeto_codigo}`;
 
-            if (!params.projetosIds.includes(projeto_id)) return `Linha inválida: sem permissão no projeto ID ${projeto_id}`;
+            if (!params.projetosIds.includes(projeto_id))
+                return `Linha inválida: sem permissão no projeto ID ${projeto_id}`;
 
-            if (!params.anosPort.includes(row.mes)) return `Linha inválida: mês ${row.mes} não está liberado no portfólio`;
-
+            if (!params.anosPort.includes(row.mes))
+                return `Linha inválida: mês ${row.mes} não está liberado no portfólio`;
         }
 
         let dotacao: string | undefined = undefined;
@@ -769,10 +825,8 @@ export class ImportacaoOrcamentoService {
                 dotacao = ne[0].dotacao;
                 dotacao_processo = ne[0].processo;
                 dotacao_processo_nota = ne[0].nota_empenho;
-
             } catch (error) {
-                if (error instanceof HttpException)
-                    return `Linha inválida: ${error.message}`;
+                if (error instanceof HttpException) return `Linha inválida: ${error.message}`;
 
                 return `Erro no processamento da nota-empenho: ${error}`;
             }
@@ -786,20 +840,18 @@ export class ImportacaoOrcamentoService {
                 });
 
                 if (processo.length === 0) return 'Linha inválida: processo não encontrado';
-                if (processo.length !== 1) return `Linha inválida: ${processo.length} dotações encontradas pelo processo, cadastre pelo sistema`;
+                if (processo.length !== 1)
+                    return `Linha inválida: ${processo.length} dotações encontradas pelo processo, cadastre pelo sistema`;
 
                 dotacao = processo[0].dotacao;
                 dotacao_processo = processo[0].processo;
-
             } catch (error) {
-                if (error instanceof HttpException)
-                    return `Linha inválida: ${error.message}`;
+                if (error instanceof HttpException) return `Linha inválida: ${error.message}`;
 
                 return `Erro no processamento do processo: ${error}`;
             }
         } else if (row.dotacao) {
             try {
-
                 const dotacaoRet = await this.dotacaoService.valorRealizadoDotacao({
                     ano: row.ano_referencia,
                     dotacao: row.dotacao,
@@ -810,15 +862,13 @@ export class ImportacaoOrcamentoService {
                 if (dotacaoRet.length === 0) return 'Linha inválida: dotação não encontrada';
 
                 dotacao = dotacaoRet[0].dotacao;
-
             } catch (error) {
-                if (error instanceof HttpException)
-                    return `Linha inválida: ${error.message}`;
+                if (error instanceof HttpException) return `Linha inválida: ${error.message}`;
 
                 return `Erro no processamento do processo: ${error}`;
             }
         } else {
-            return 'Erro: código não implementado'
+            return 'Erro: código não implementado';
         }
 
         if (!dotacao) return 'Erro: faltando dotacao';
@@ -830,25 +880,28 @@ export class ImportacaoOrcamentoService {
         if (params.eh_metas) {
             if (!meta_id) return 'Linha inválida: faltando meta_id';
 
-            const existeNaMeta = await this.pdmOrcResService.findAll({
-                ano_referencia: row.ano_referencia,
-                meta_id,
-                dotacao,
-                nota_empenho: dotacao_processo_nota !== undefined ? dotacao_processo_nota : null,
-                processo: dotacao_processo !== undefined ? dotacao_processo : null,
-                atividade_id: atividade_id !== undefined ? atividade_id : null,
-                iniciativa_id: iniciativa_id !== undefined ? iniciativa_id : null,
-            }, user);
+            const existeNaMeta = await this.pdmOrcResService.findAll(
+                {
+                    ano_referencia: row.ano_referencia,
+                    meta_id,
+                    dotacao,
+                    nota_empenho: dotacao_processo_nota !== undefined ? dotacao_processo_nota : null,
+                    processo: dotacao_processo !== undefined ? dotacao_processo : null,
+                    atividade_id: atividade_id !== undefined ? atividade_id : null,
+                    iniciativa_id: iniciativa_id !== undefined ? iniciativa_id : null,
+                },
+                user
+            );
 
             const maisRecente = existeNaMeta.at(-1);
             if (maisRecente) {
                 id = maisRecente.id;
-                itens = maisRecente.itens.map(r => {
+                itens = maisRecente.itens.map((r) => {
                     return {
                         mes: r.mes,
                         valor_empenho: +r.valor_empenho,
-                        valor_liquidado: +r.valor_liquidado
-                    }
+                        valor_liquidado: +r.valor_liquidado,
+                    };
                 });
             }
 
@@ -859,7 +912,6 @@ export class ImportacaoOrcamentoService {
                     item.valor_liquidado = row.valor_liquidado;
                 }
             }
-
         } else if (params.eh_projeto) {
             if (!projeto_id) return 'Linha inválida: faltando projeto_id';
 
@@ -873,17 +925,19 @@ export class ImportacaoOrcamentoService {
                     dotacao,
                     nota_empenho: dotacao_processo_nota,
                     processo: dotacao_processo,
-                }, user);
+                },
+                user
+            );
 
             const maisRecente = existeNaMeta.at(-1);
             if (maisRecente) {
                 id = maisRecente.id;
-                itens = maisRecente.itens.map(r => {
+                itens = maisRecente.itens.map((r) => {
                     return {
                         mes: r.mes,
                         valor_empenho: +r.valor_empenho,
-                        valor_liquidado: +r.valor_liquidado
-                    }
+                        valor_liquidado: +r.valor_liquidado,
+                    };
                 });
             }
 
@@ -901,71 +955,76 @@ export class ImportacaoOrcamentoService {
                 mes: row.mes,
                 valor_empenho: row.valor_empenho,
                 valor_liquidado: row.valor_liquidado,
-            })
+            });
 
         try {
             const upsertFunction = async () => {
-
                 if (params.eh_metas) {
-
                     if (id) {
-                        await this.pdmOrcResService.update(id, {
-                            itens,
-                            meta_id,
-                            atividade_id,
-                            iniciativa_id
-                        }, user);
+                        await this.pdmOrcResService.update(
+                            id,
+                            {
+                                itens,
+                                meta_id,
+                                atividade_id,
+                                iniciativa_id,
+                            },
+                            user
+                        );
                     } else {
-                        await this.pdmOrcResService.create({
-                            ano_referencia: row.ano_referencia,
-                            dotacao: dotacao!,
-                            processo: dotacao_processo,
-                            nota_empenho: dotacao_processo_nota,
-                            itens,
-                            meta_id,
-                            atividade_id,
-                            iniciativa_id
-                        }, user);
+                        await this.pdmOrcResService.create(
+                            {
+                                ano_referencia: row.ano_referencia,
+                                dotacao: dotacao!,
+                                processo: dotacao_processo,
+                                nota_empenho: dotacao_processo_nota,
+                                itens,
+                                meta_id,
+                                atividade_id,
+                                iniciativa_id,
+                            },
+                            user
+                        );
                     }
-
                 } else if (params.eh_projeto) {
-
                     if (id) {
-                        await this.ppOrcResService.update({
-                            id: projeto_id!,
-                            portfolio_id: params.portfolio_id!,
-                        }, id, {
-                            itens,
-
-
-                        }, user);
+                        await this.ppOrcResService.update(
+                            {
+                                id: projeto_id!,
+                                portfolio_id: params.portfolio_id!,
+                            },
+                            id,
+                            {
+                                itens,
+                            },
+                            user
+                        );
                     } else {
-                        await this.ppOrcResService.create({
-                            id: projeto_id!,
-                            portfolio_id: params.portfolio_id!,
-                        }, {
-                            ano_referencia: row.ano_referencia,
-                            dotacao: dotacao!,
-                            processo: dotacao_processo,
-                            nota_empenho: dotacao_processo_nota,
-                            itens,
-                        }, user);
+                        await this.ppOrcResService.create(
+                            {
+                                id: projeto_id!,
+                                portfolio_id: params.portfolio_id!,
+                            },
+                            {
+                                ano_referencia: row.ano_referencia,
+                                dotacao: dotacao!,
+                                processo: dotacao_processo,
+                                nota_empenho: dotacao_processo_nota,
+                                itens,
+                            },
+                            user
+                        );
                     }
                 }
             };
 
             await RetryPromise(upsertFunction, 5, 2000, 100);
-
         } catch (error) {
-            if (error instanceof HttpException)
-                return `Linha inválida: ${error}`;
+            if (error instanceof HttpException) return `Linha inválida: ${error}`;
 
             return `Erro no processamento do processo: ${error}`;
         }
 
         return '';
     }
-
-
-
 }

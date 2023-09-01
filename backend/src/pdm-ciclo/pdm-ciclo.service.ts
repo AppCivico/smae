@@ -59,11 +59,11 @@ export class PdmCicloService {
                 id: ciclo.id,
                 data_ciclo: ciclo.data_ciclo,
                 ativo: ciclo.ativo,
-                inicio_coleta: ciclo.fases.filter(n => n.ciclo_fase == 'Coleta')[0].data_inicio,
-                inicio_qualificacao: ciclo.fases.filter(n => n.ciclo_fase == 'Analise')[0].data_inicio,
-                inicio_analise_risco: ciclo.fases.filter(n => n.ciclo_fase == 'Risco')[0].data_inicio,
-                inicio_fechamento: ciclo.fases.filter(n => n.ciclo_fase == 'Fechamento')[0].data_inicio,
-                fechamento: ciclo.fases.filter(n => n.ciclo_fase == 'Fechamento')[0].data_fim,
+                inicio_coleta: ciclo.fases.filter((n) => n.ciclo_fase == 'Coleta')[0].data_inicio,
+                inicio_qualificacao: ciclo.fases.filter((n) => n.ciclo_fase == 'Analise')[0].data_inicio,
+                inicio_analise_risco: ciclo.fases.filter((n) => n.ciclo_fase == 'Risco')[0].data_inicio,
+                inicio_fechamento: ciclo.fases.filter((n) => n.ciclo_fase == 'Fechamento')[0].data_inicio,
+                fechamento: ciclo.fases.filter((n) => n.ciclo_fase == 'Fechamento')[0].data_fim,
                 pode_editar: ativoVisto,
             });
 
@@ -98,7 +98,7 @@ export class PdmCicloService {
             if (Date2YMD.toString(cicloEscolhido.data_ciclo) <= Date2YMD.toString(cicloAtivo.data_ciclo))
                 throw new HttpException(
                     `Você só pode editar ciclos que ainda não foram iniciados (após ${cicloAtivo.data_ciclo}) ou de PDM não ativos (com nenhum ciclo ativo)`,
-                    404,
+                    404
                 );
 
         const cicloAnterior = await this.prisma.cicloFisico.findFirst({
@@ -118,25 +118,30 @@ export class PdmCicloService {
         if (cicloAnterior) {
             console.dir({ cicloAnterior }, { depth: null });
 
-            const inicioDoFechamentoAnterior = cicloAnterior.fases.filter(n => n.ciclo_fase == 'Fechamento')[0].data_inicio;
+            const inicioDoFechamentoAnterior = cicloAnterior.fases.filter((n) => n.ciclo_fase == 'Fechamento')[0]
+                .data_inicio;
 
             if (Date2YMD.toString(dto.inicio_coleta) <= Date2YMD.toString(inicioDoFechamentoAnterior)) {
                 throw new HttpException(
-                    `início da coleta ${Date2YMD.toString(dto.inicio_coleta)} não pode encolher mais do que o início do fechamento anterior ${Date2YMD.toString(
-                        inicioDoFechamentoAnterior,
+                    `início da coleta ${Date2YMD.toString(
+                        dto.inicio_coleta
+                    )} não pode encolher mais do que o início do fechamento anterior ${Date2YMD.toString(
+                        inicioDoFechamentoAnterior
                     )}`,
-                    400,
+                    400
                 );
             }
         }
 
         if (cicloSucessor) {
             console.dir({ cicloSucessor }, { depth: null });
-            const fimDaColetaSucessor = cicloSucessor.fases.filter(n => n.ciclo_fase == 'Coleta')[0].data_fim;
+            const fimDaColetaSucessor = cicloSucessor.fases.filter((n) => n.ciclo_fase == 'Coleta')[0].data_fim;
             if (Date2YMD.toString(dto.fechamento) >= Date2YMD.toString(fimDaColetaSucessor)) {
                 throw new HttpException(
-                    `Fechamento ${Date2YMD.toString(dto.fechamento)} não pode passar do final da próxima coleta ${Date2YMD.toString(fimDaColetaSucessor)}`,
-                    400,
+                    `Fechamento ${Date2YMD.toString(
+                        dto.fechamento
+                    )} não pode passar do final da próxima coleta ${Date2YMD.toString(fimDaColetaSucessor)}`,
+                    400
                 );
             }
         }

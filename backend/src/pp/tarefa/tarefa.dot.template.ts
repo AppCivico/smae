@@ -35,9 +35,10 @@ function escapeDotLabel(inputString: string): string {
 
 @Injectable()
 export class TarefaDotTemplate {
-
     _generateNode(id: number, label: string, fillColor: string, fontcolor: string, color: string, fontname: string) {
-        return `node${id} [label="${escapeDotLabel(label)}", fillcolor="${fillColor}", fontcolor="${fontcolor}", color="${color}", style="rounded,filled", fontname="${fontname}"]`;
+        return `node${id} [label="${escapeDotLabel(
+            label
+        )}", fillcolor="${fillColor}", fontcolor="${fontcolor}", color="${color}", style="rounded,filled", fontname="${fontname}"]`;
     }
 
     _createEdge(fromId: string, toId: string) {
@@ -45,11 +46,11 @@ export class TarefaDotTemplate {
     }
 
     _getLevel1Nodes(rows: TarefaRows) {
-        return rows.filter(r => r.nivel === 1);
+        return rows.filter((r) => r.nivel === 1);
     }
 
     _getLevel2Nodes(rows: TarefaRows) {
-        return rows.filter(r => r.nivel === 2);
+        return rows.filter((r) => r.nivel === 2);
     }
 
     buildGraphvizString(projetoLabel: string, rows: TarefaRows) {
@@ -68,37 +69,70 @@ export class TarefaDotTemplate {
               // Set distance between nodes on the same rank
               ranksep=0.2;
 
-              nodeX [label="${escapeDotLabel(projetoLabel)}", fillcolor="#152741" color="transparent" fontcolor="#F7C234", style="rounded,filled", fontname="Roboto Bold"]
+              nodeX [label="${escapeDotLabel(
+                  projetoLabel
+              )}", fillcolor="#152741" color="transparent" fontcolor="#F7C234", style="rounded,filled", fontname="Roboto Bold"]
               // Define nodes
-              ${this._getLevel1Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#E3E5E8", "#000000BB", '#E3E5E8', 'Roboto Bold')).join("\n")}
-              ${this._getLevel2Nodes(rows).map(row => this._generateNode(row.id, SplitString.splitString(row.tarefa, 20), "#ffffff", "#000000", "#E3E5E8", 'Roboto')).join("\n")}
+              ${this._getLevel1Nodes(rows)
+                  .map((row) =>
+                      this._generateNode(
+                          row.id,
+                          SplitString.splitString(row.tarefa, 20),
+                          '#E3E5E8',
+                          '#000000BB',
+                          '#E3E5E8',
+                          'Roboto Bold'
+                      )
+                  )
+                  .join('\n')}
+              ${this._getLevel2Nodes(rows)
+                  .map((row) =>
+                      this._generateNode(
+                          row.id,
+                          SplitString.splitString(row.tarefa, 20),
+                          '#ffffff',
+                          '#000000',
+                          '#E3E5E8',
+                          'Roboto'
+                      )
+                  )
+                  .join('\n')}
 
               // Define edges for level 1
-              ${this._getLevel1Nodes(rows).map(row => this._createEdge("X", row.id.toString())).join("\n")}
+              ${this._getLevel1Nodes(rows)
+                  .map((row) => this._createEdge('X', row.id.toString()))
+                  .join('\n')}
 
               // Define edges for level 1 to the first row of level 2
-              ${this._getLevel1Nodes(rows).flatMap(row => {
-            const firstLevel2Row = this._getLevel2Nodes(rows).find(r2 => r2.tarefa_pai_id === row.id && r2.numero === 1);
-            if (firstLevel2Row) {
-                return this._createEdge(row.id.toString(), firstLevel2Row.id.toString());
-            } else {
-                return [];
-            }
-        }).join("\n")}
+              ${this._getLevel1Nodes(rows)
+                  .flatMap((row) => {
+                      const firstLevel2Row = this._getLevel2Nodes(rows).find(
+                          (r2) => r2.tarefa_pai_id === row.id && r2.numero === 1
+                      );
+                      if (firstLevel2Row) {
+                          return this._createEdge(row.id.toString(), firstLevel2Row.id.toString());
+                      } else {
+                          return [];
+                      }
+                  })
+                  .join('\n')}
 
               // Define the edges for level 2 nodes
-              ${this._getLevel2Nodes(rows).map(row => {
-            const prevRow = this._getLevel2Nodes(rows).find(r2 => r2.tarefa_pai_id === row.tarefa_pai_id && r2.numero === row.numero - 1);
-            if (prevRow) {
-                return this._createEdge(prevRow.id.toString(), row.id.toString());
-            } else {
-                return "";
-            }
-        }).join("\n")}
+              ${this._getLevel2Nodes(rows)
+                  .map((row) => {
+                      const prevRow = this._getLevel2Nodes(rows).find(
+                          (r2) => r2.tarefa_pai_id === row.tarefa_pai_id && r2.numero === row.numero - 1
+                      );
+                      if (prevRow) {
+                          return this._createEdge(prevRow.id.toString(), row.id.toString());
+                      } else {
+                          return '';
+                      }
+                  })
+                  .join('\n')}
             }
           `;
 
         return graphvizString;
     }
-
 }

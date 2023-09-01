@@ -5,7 +5,11 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrcamentoRealizadoDto, FilterOrcamentoRealizadoDto, UpdateOrcamentoRealizadoDto } from './dto/create-orcamento-realizado.dto';
+import {
+    CreateOrcamentoRealizadoDto,
+    FilterOrcamentoRealizadoDto,
+    UpdateOrcamentoRealizadoDto,
+} from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
 import { TrataDotacaoGrande } from '../sof-api/sof-api.service';
@@ -23,7 +27,11 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 @Injectable()
 export class OrcamentoRealizadoService {
     liberarValoresMaioresQueSof: boolean;
-    constructor(private readonly prisma: PrismaService, private readonly orcamentoPlanejado: OrcamentoPlanejadoService, private readonly dotacaoService: DotacaoService) {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
+        private readonly dotacaoService: DotacaoService
+    ) {
         // deixar desligado a verificação
         this.liberarValoresMaioresQueSof = true;
     }
@@ -47,7 +55,8 @@ export class OrcamentoRealizadoService {
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
             where: { pdm_id: meta.pdm_id, ano_referencia: dto.ano_referencia, execucao_disponivel: true },
         });
-        if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
+        if (!anoCount)
+            throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
 
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
@@ -63,7 +72,13 @@ export class OrcamentoRealizadoService {
                 const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
-                    mes_utilizado = await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
+                    mes_utilizado = await this.atualizaNotaEmpenho(
+                        meta.pdm_id,
+                        prismaTxn,
+                        dotacao,
+                        processo,
+                        nota_empenho
+                    );
                 } else if (processo) {
                     mes_utilizado = await this.atualizaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
                 } else if (dotacao) {
@@ -88,15 +103,17 @@ export class OrcamentoRealizadoService {
                         soma_valor_liquidado,
                         itens: {
                             createMany: {
-                                data: dto.itens.map((item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
-                                    return {
-                                        valor_empenho: item.valor_empenho,
-                                        valor_liquidado: item.valor_liquidado,
-                                        mes: item.mes,
-                                        data_referencia: new Date([dto.ano_referencia, item.mes, '01'].join('-')),
-                                        mes_corrente: item.mes == mes_correte,
-                                    };
-                                }),
+                                data: dto.itens.map(
+                                    (item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
+                                        return {
+                                            valor_empenho: item.valor_empenho,
+                                            valor_liquidado: item.valor_liquidado,
+                                            mes: item.mes,
+                                            data_referencia: new Date([dto.ano_referencia, item.mes, '01'].join('-')),
+                                            mes_corrente: item.mes == mes_correte,
+                                        };
+                                    }
+                                ),
                             },
                         },
                     },
@@ -109,7 +126,7 @@ export class OrcamentoRealizadoService {
                 isolationLevel: 'Serializable',
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return created;
@@ -119,7 +136,8 @@ export class OrcamentoRealizadoService {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null) throw new HttpException('Orçamento realizado não encontrado', 404);
+        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null)
+            throw new HttpException('Orçamento realizado não encontrado', 404);
         console.log(dto);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
@@ -138,9 +156,14 @@ export class OrcamentoRealizadoService {
         });
 
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
-            where: { pdm_id: meta.pdm_id, ano_referencia: orcamentoRealizado.ano_referencia, execucao_disponivel: true },
+            where: {
+                pdm_id: meta.pdm_id,
+                ano_referencia: orcamentoRealizado.ano_referencia,
+                execucao_disponivel: true,
+            },
         });
-        if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
+        if (!anoCount)
+            throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
 
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -155,15 +178,35 @@ export class OrcamentoRealizadoService {
                 const dotacao_edit = TrataDotacaoGrande(orcRealizado.dotacao);
                 if (orcRealizado.dotacao != dotacao_edit) {
                     orcRealizado.dotacao = dotacao_edit;
-                    await this.prisma.orcamentoRealizado.update({ where: { id: orcRealizado.id }, data: { dotacao: dotacao_edit } });
+                    await this.prisma.orcamentoRealizado.update({
+                        where: { id: orcRealizado.id },
+                        data: { dotacao: dotacao_edit },
+                    });
                 }
 
                 if (orcRealizado.nota_empenho) {
-                    await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, orcRealizado.dotacao, orcRealizado.processo, orcRealizado.nota_empenho);
+                    await this.atualizaNotaEmpenho(
+                        meta.pdm_id,
+                        prismaTxn,
+                        orcRealizado.dotacao,
+                        orcRealizado.processo,
+                        orcRealizado.nota_empenho
+                    );
                 } else if (orcRealizado.processo) {
-                    await this.atualizaProcesso(meta.pdm_id, prismaTxn, { ano_referencia: orcRealizado.ano_referencia }, orcRealizado.dotacao, orcRealizado.processo);
+                    await this.atualizaProcesso(
+                        meta.pdm_id,
+                        prismaTxn,
+                        { ano_referencia: orcRealizado.ano_referencia },
+                        orcRealizado.dotacao,
+                        orcRealizado.processo
+                    );
                 } else if (orcRealizado.dotacao) {
-                    await this.atualizaDotacao(meta.pdm_id, prismaTxn, { ano_referencia: orcRealizado.ano_referencia }, orcRealizado.dotacao);
+                    await this.atualizaDotacao(
+                        meta.pdm_id,
+                        prismaTxn,
+                        { ano_referencia: orcRealizado.ano_referencia },
+                        orcRealizado.dotacao
+                    );
                 } else {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
                 }
@@ -189,15 +232,19 @@ export class OrcamentoRealizadoService {
                         soma_valor_liquidado: nova_soma_valor_liquidado,
                         itens: {
                             createMany: {
-                                data: dto.itens.map((item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
-                                    return {
-                                        valor_empenho: item.valor_empenho,
-                                        valor_liquidado: item.valor_liquidado,
-                                        mes: item.mes,
-                                        data_referencia: new Date([orcRealizado.ano_referencia, item.mes, '01'].join('-')),
-                                        mes_corrente: item.mes == mes_corrente,
-                                    };
-                                }),
+                                data: dto.itens.map(
+                                    (item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
+                                        return {
+                                            valor_empenho: item.valor_empenho,
+                                            valor_liquidado: item.valor_liquidado,
+                                            mes: item.mes,
+                                            data_referencia: new Date(
+                                                [orcRealizado.ano_referencia, item.mes, '01'].join('-')
+                                            ),
+                                            mes_corrente: item.mes == mes_corrente,
+                                        };
+                                    }
+                                ),
                             },
                         },
                     },
@@ -209,13 +256,18 @@ export class OrcamentoRealizadoService {
                 isolationLevel: 'Serializable',
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return updated;
     }
 
-    private async atualizaDotacao(pdm_id: number, prismaTxn: Prisma.TransactionClient, dto: PartialOrcamentoRealizadoDto, dotacao: string) {
+    private async atualizaDotacao(
+        pdm_id: number,
+        prismaTxn: Prisma.TransactionClient,
+        dto: PartialOrcamentoRealizadoDto,
+        dotacao: string
+    ) {
         console.log({
             func: 'atualizaDotacao',
             dotacao,
@@ -230,7 +282,11 @@ export class OrcamentoRealizadoService {
             },
         });
 
-        if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir durante a atualização.', 400);
+        if (!dotacaoTx)
+            throw new HttpException(
+                'Operação não pode ser realizada no momento. Dotação deixou de existir durante a atualização.',
+                400
+            );
         const mes_utilizado = dotacaoTx.mes_utilizado;
 
         await prismaTxn.dotacaoRealizado.update({
@@ -246,28 +302,46 @@ export class OrcamentoRealizadoService {
             },
         });
 
-        if (novo_valor && this.liberarValoresMaioresQueSof == false && novo_valor.soma_valor_empenho.greaterThan(dotacaoTx.empenho_liquido)) {
+        if (
+            novo_valor &&
+            this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_empenho.greaterThan(dotacaoTx.empenho_liquido)
+        ) {
             throw new HttpException(
                 `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(
-                    2,
-                )}) seria maior do que o valor de empenho para a Dotação-Processo (${dotacaoTx.empenho_liquido.toFixed(2)}).` + FRASE_FIM,
-                400,
+                    2
+                )}) seria maior do que o valor de empenho para a Dotação-Processo (${dotacaoTx.empenho_liquido.toFixed(
+                    2
+                )}).` + FRASE_FIM,
+                400
             );
         }
 
-        if (novo_valor && this.liberarValoresMaioresQueSof == false && novo_valor.soma_valor_liquidado.greaterThan(dotacaoTx.valor_liquidado)) {
+        if (
+            novo_valor &&
+            this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_liquidado.greaterThan(dotacaoTx.valor_liquidado)
+        ) {
             throw new HttpException(
                 `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(
-                    2,
-                )}) seria maior do que o valor liquidado para a Dotação-Processo (${dotacaoTx.valor_liquidado.toFixed(2)}).` + FRASE_FIM,
-                400,
+                    2
+                )}) seria maior do que o valor liquidado para a Dotação-Processo (${dotacaoTx.valor_liquidado.toFixed(
+                    2
+                )}).` + FRASE_FIM,
+                400
             );
         }
 
         return mes_utilizado;
     }
 
-    private async atualizaProcesso(pdm_id: number, prismaTxn: Prisma.TransactionClient, dto: PartialOrcamentoRealizadoDto, dotacao: string, processo: string) {
+    private async atualizaProcesso(
+        pdm_id: number,
+        prismaTxn: Prisma.TransactionClient,
+        dto: PartialOrcamentoRealizadoDto,
+        dotacao: string,
+        processo: string
+    ) {
         const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
             where: {
                 ano_referencia_dotacao_dotacao_processo: {
@@ -278,7 +352,11 @@ export class OrcamentoRealizadoService {
             },
             select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true },
         });
-        if (!processoTx) throw new HttpException('Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.', 400);
+        if (!processoTx)
+            throw new HttpException(
+                'Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.',
+                400
+            );
         const mes_utilizado = processoTx.mes_utilizado;
 
         await prismaTxn.dotacaoProcesso.update({
@@ -295,21 +373,33 @@ export class OrcamentoRealizadoService {
             },
         });
 
-        if (novo_valor && this.liberarValoresMaioresQueSof == false && novo_valor.soma_valor_empenho.greaterThan(processoTx.empenho_liquido)) {
+        if (
+            novo_valor &&
+            this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_empenho.greaterThan(processoTx.empenho_liquido)
+        ) {
             throw new HttpException(
                 `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(
-                    2,
-                )}) seria maior do que o valor de empenho para a Dotação-Processo (${processoTx.empenho_liquido.toFixed(2)}).` + FRASE_FIM,
-                400,
+                    2
+                )}) seria maior do que o valor de empenho para a Dotação-Processo (${processoTx.empenho_liquido.toFixed(
+                    2
+                )}).` + FRASE_FIM,
+                400
             );
         }
 
-        if (novo_valor && this.liberarValoresMaioresQueSof == false && novo_valor.soma_valor_liquidado.greaterThan(processoTx.valor_liquidado)) {
+        if (
+            novo_valor &&
+            this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_liquidado.greaterThan(processoTx.valor_liquidado)
+        ) {
             throw new HttpException(
                 `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(
-                    2,
-                )}) seria maior do que o valor liquidado para a Dotação-Processo (${processoTx.valor_liquidado.toFixed(2)}).` + FRASE_FIM,
-                400,
+                    2
+                )}) seria maior do que o valor liquidado para a Dotação-Processo (${processoTx.valor_liquidado.toFixed(
+                    2
+                )}).` + FRASE_FIM,
+                400
             );
         }
 
@@ -320,7 +410,13 @@ export class OrcamentoRealizadoService {
         return +nota_empenho.split('/')[1];
     }
 
-    private async atualizaNotaEmpenho(pdm_id: number, prismaTxn: Prisma.TransactionClient, dotacao: string, processo: string | null, nota_empenho: string) {
+    private async atualizaNotaEmpenho(
+        pdm_id: number,
+        prismaTxn: Prisma.TransactionClient,
+        dotacao: string,
+        processo: string | null,
+        nota_empenho: string
+    ) {
         const notaEmpenhoTx = await prismaTxn.dotacaoProcessoNota.findUnique({
             where: {
                 ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
@@ -337,7 +433,11 @@ export class OrcamentoRealizadoService {
             },
             select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true },
         });
-        if (!notaEmpenhoTx) throw new HttpException('Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.', 400);
+        if (!notaEmpenhoTx)
+            throw new HttpException(
+                'Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.',
+                400
+            );
         const mes_utilizado = notaEmpenhoTx.mes_utilizado;
 
         await prismaTxn.dotacaoProcessoNota.update({
@@ -355,28 +455,42 @@ export class OrcamentoRealizadoService {
             },
         });
 
-        if (novo_valor && this.liberarValoresMaioresQueSof == false && novo_valor.soma_valor_empenho.greaterThan(notaEmpenhoTx.empenho_liquido)) {
+        if (
+            novo_valor &&
+            this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_empenho.greaterThan(notaEmpenhoTx.empenho_liquido)
+        ) {
             throw new HttpException(
                 `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(
-                    2,
-                )}) seria maior do que o valor de empenho para a Nota-Empenho (${notaEmpenhoTx.empenho_liquido.toFixed(2)}).` + FRASE_FIM,
-                400,
+                    2
+                )}) seria maior do que o valor de empenho para a Nota-Empenho (${notaEmpenhoTx.empenho_liquido.toFixed(
+                    2
+                )}).` + FRASE_FIM,
+                400
             );
         }
 
-        if (novo_valor && this.liberarValoresMaioresQueSof == false && novo_valor.soma_valor_liquidado.greaterThan(notaEmpenhoTx.valor_liquidado)) {
+        if (
+            novo_valor &&
+            this.liberarValoresMaioresQueSof == false &&
+            novo_valor.soma_valor_liquidado.greaterThan(notaEmpenhoTx.valor_liquidado)
+        ) {
             throw new HttpException(
                 `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(
-                    2,
-                )}) seria maior do que o valor liquidado para a Nota-Empenho (${notaEmpenhoTx.valor_liquidado.toFixed(2)}).` + FRASE_FIM,
-                400,
+                    2
+                )}) seria maior do que o valor liquidado para a Nota-Empenho (${notaEmpenhoTx.valor_liquidado.toFixed(
+                    2
+                )}).` + FRASE_FIM,
+                400
             );
         }
 
         return mes_utilizado;
     }
 
-    async validaDotProcNota(dto: CreateOrcamentoRealizadoDto): Promise<{ dotacao: string; processo: string | null; nota_empenho: string | null }> {
+    async validaDotProcNota(
+        dto: CreateOrcamentoRealizadoDto
+    ): Promise<{ dotacao: string; processo: string | null; nota_empenho: string | null }> {
         const dotacao: string = dto.dotacao;
         let processo: string | null = null;
         let nota_empenho: string | null = null;
@@ -527,7 +641,7 @@ export class OrcamentoRealizadoService {
                 OR: Object.keys(notaEncontradasSemAno).map((nota_prefixo: string) => {
                     return { dotacao_processo_nota: { startsWith: nota_prefixo } };
                 }),
-                ano_referencia: { in: Object.keys(anoNotas).map(ano => +ano) },
+                ano_referencia: { in: Object.keys(anoNotas).map((ano) => +ano) },
             },
             select: {
                 dotacao: true,
@@ -643,7 +757,10 @@ export class OrcamentoRealizadoService {
                     empenho_liquido = notaInfo.empenho_liquido.toFixed(2);
                     valor_liquidado = notaInfo.valor_liquidado.toFixed(2);
                 }
-            } else if (orcaRealizado.processo && processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo]) {
+            } else if (
+                orcaRealizado.processo &&
+                processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo]
+            ) {
                 const processoInfo = processoInfoRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
                 const processoSomaInfo = processoInfoSomaRef[orcaRealizado.dotacao + '_' + orcaRealizado.processo];
 
@@ -692,7 +809,7 @@ export class OrcamentoRealizadoService {
                 valor_liquidado,
                 projeto_atividade: '',
                 execucao_disponivel_meses: orc_config?.execucao_disponivel_meses ?? [],
-                itens: orcaRealizado.itens.map(item => {
+                itens: orcaRealizado.itens.map((item) => {
                     return {
                         ...item,
                         valor_empenho: item.valor_empenho.toFixed(2),
@@ -711,7 +828,8 @@ export class OrcamentoRealizadoService {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null) throw new HttpException('Orçamento realizado não encontrado', 404);
+        if (!orcamentoRealizado || orcamentoRealizado.meta_id === null)
+            throw new HttpException('Orçamento realizado não encontrado', 404);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
@@ -744,7 +862,8 @@ export class OrcamentoRealizadoService {
                                 },
                             },
                         });
-                        if (!notaTx) throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
+                        if (!notaTx)
+                            throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
 
                         await prismaTxn.dotacaoProcessoNota.update({
                             where: { id: notaTx.id },
@@ -760,7 +879,8 @@ export class OrcamentoRealizadoService {
                                 },
                             },
                         });
-                        if (!processoTx) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
+                        if (!processoTx)
+                            throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
 
                         await prismaTxn.dotacaoProcesso.update({
                             where: { id: processoTx.id },
@@ -775,7 +895,8 @@ export class OrcamentoRealizadoService {
                                 },
                             },
                         });
-                        if (!processoTx) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
+                        if (!processoTx)
+                            throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
 
                         await prismaTxn.dotacaoRealizado.update({
                             where: { id: processoTx.id },
@@ -786,7 +907,7 @@ export class OrcamentoRealizadoService {
             },
             {
                 isolationLevel: 'Serializable',
-            },
+            }
         );
     }
 }

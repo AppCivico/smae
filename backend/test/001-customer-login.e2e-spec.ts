@@ -31,10 +31,10 @@ describe('AppController (e2e)', () => {
             orgao_id: exitingOrg.id,
         });
 
-        console.log(findCustomer)
+        console.log(findCustomer);
 
-                const authService = app.get(AuthService);
-                console.log(authService);
+        const authService = app.get(AuthService);
+        console.log(authService);
 
         session = await authService.criarSession(findCustomer.id);
 
@@ -53,6 +53,9 @@ describe('AppController (e2e)', () => {
     });
 
     it('/minha-conta (GET) should be 200', async () => {
-        return await request(app.getHttpServer()).get('/minha-conta').auth(session.access_token, { type: 'bearer' }).expect(200);
+        return await request(app.getHttpServer())
+            .get('/minha-conta')
+            .auth(session.access_token, { type: 'bearer' })
+            .expect(200);
     });
 });

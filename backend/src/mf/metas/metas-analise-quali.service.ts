@@ -5,7 +5,12 @@ import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
-import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from './../metas/dto/mf-meta-analise-quali.dto';
+import {
+    AnaliseQualitativaDocumentoDto,
+    AnaliseQualitativaDto,
+    FilterAnaliseQualitativaDto,
+    MfListAnaliseQualitativaDto,
+} from './../metas/dto/mf-meta-analise-quali.dto';
 
 @Injectable()
 export class MetasAnaliseQualiService {
@@ -25,7 +30,11 @@ export class MetasAnaliseQualiService {
         return ret;
     }
 
-    async getMetaAnaliseQualitativa(dto: FilterAnaliseQualitativaDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListAnaliseQualitativaDto> {
+    async getMetaAnaliseQualitativa(
+        dto: FilterAnaliseQualitativaDto,
+        config: PessoaAcessoPdm | null,
+        user: PessoaFromJwt | null
+    ): Promise<MfListAnaliseQualitativaDto> {
         const analisesResult = await this.prisma.metaCicloFisicoAnalise.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -76,7 +85,7 @@ export class MetasAnaliseQualiService {
         });
 
         return {
-            arquivos: arquivosResult.map(r => {
+            arquivos: arquivosResult.map((r) => {
                 return {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
@@ -84,7 +93,7 @@ export class MetasAnaliseQualiService {
                     arquivo: { ...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes') },
                 };
             }),
-            analises: analisesResult.map(r => {
+            analises: analisesResult.map((r) => {
                 return {
                     informacoes_complementares: r.informacoes_complementares || '',
                     referencia_data: Date2YMD.toString(r.referencia_data),
@@ -98,7 +107,11 @@ export class MetasAnaliseQualiService {
         };
     }
 
-    async addMetaAnaliseQualitativaDocumento(dto: AnaliseQualitativaDocumentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
+    async addMetaAnaliseQualitativaDocumento(
+        dto: AnaliseQualitativaDocumentoDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);
@@ -146,7 +159,11 @@ export class MetasAnaliseQualiService {
         });
     }
 
-    async addMetaAnaliseQualitativa(dto: AnaliseQualitativaDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
+    async addMetaAnaliseQualitativa(
+        dto: AnaliseQualitativaDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);

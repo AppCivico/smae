@@ -1,7 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumberString, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsNumberString,
+    IsOptional,
+    IsString,
+    Max,
+    Min,
+    ValidateIf,
+} from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class CreateVariavelDto {
@@ -45,7 +58,13 @@ export class CreateVariavelDto {
      * Para não perder precisão no JSON, usar em formato string, mesmo sendo um número
      * @example "0.0"
      */
-    @IsNumberString({}, { message: '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String' })
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+        }
+    )
     valor_base: number;
 
     @IsInt({ message: '$property| $property inválido' })

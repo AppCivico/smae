@@ -11,7 +11,7 @@ import { PrismaService } from './prisma/prisma.service';
 
 @Controller()
 export class AppController {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     @IsPublic()
     @Get('/ping')
@@ -23,11 +23,11 @@ export class AppController {
     @Get('/performance-check')
     async performanceCheck(@Query() query: Record<string, string>) {
         if (query.token !== process.env.HEALTH_CHECK_TOKEN)
-            throw new HttpException('mismatched HEALTH_CHECK_TOKEN', 401)
+            throw new HttpException('mismatched HEALTH_CHECK_TOKEN', 401);
 
         return {
             unloaded: await this.recordPerformance(30),
-            loaded: await this.recordPerformance(0)
+            loaded: await this.recordPerformance(0),
         };
     }
 
@@ -42,7 +42,7 @@ export class AppController {
                 executionTimes.push(Date.now() - queryStart);
 
                 if (delayTime) {
-                    await new Promise(resolve => setTimeout(resolve, delayTime));
+                    await new Promise((resolve) => setTimeout(resolve, delayTime));
                 }
             }
         });

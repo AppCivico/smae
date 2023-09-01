@@ -4,7 +4,11 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateOrcamentoPrevistoDto, FilterOrcamentoPrevistoDto, ProjetoUpdateOrcamentoPrevistoZeradoDto } from './dto/create-orcamento-previsto.dto';
+import {
+    CreateOrcamentoPrevistoDto,
+    FilterOrcamentoPrevistoDto,
+    ProjetoUpdateOrcamentoPrevistoZeradoDto,
+} from './dto/create-orcamento-previsto.dto';
 import { OrcamentoPrevistoDto } from './entities/orcamento-previsto.entity';
 import { UpdateOrcamentoPrevistoDto } from './dto/create-orcamento-previsto.dto';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -17,14 +21,9 @@ export class ProjetoOrcamentoUpdatedRet {
 
 @Injectable()
 export class OrcamentoPrevistoService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService
-    ) { }
+    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
 
     async create(projeto_id: number, dto: CreateOrcamentoPrevistoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-
-
         // não tem meta, logo, não tem ciclo/PDM, provavelmente vamos criar outra table
         //const anoCount = await this.prisma.pdmOrcamentoConfig.count({
         //  where: { pdm_id: meta.pdm_id, ano_referencia: dto.ano_referencia, previsao_custo_disponivel: true },
@@ -54,14 +53,17 @@ export class OrcamentoPrevistoService {
             {
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return created;
     }
 
-    async findAll(projeto_id: number, filters: FilterOrcamentoPrevistoDto, user: PessoaFromJwt): Promise<OrcamentoPrevistoDto[]> {
-
+    async findAll(
+        projeto_id: number,
+        filters: FilterOrcamentoPrevistoDto,
+        user: PessoaFromJwt
+    ): Promise<OrcamentoPrevistoDto[]> {
         const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
                 ano_referencia: filters?.ano_referencia,
@@ -83,7 +85,7 @@ export class OrcamentoPrevistoService {
             orderBy: [{ meta_id: 'asc' }, { criado_em: 'desc' }],
         });
 
-        const list = metaOrcamentos.map(r => {
+        const list = metaOrcamentos.map((r) => {
             return {
                 ...r,
                 projeto_id: r.projeto_id!,
@@ -97,18 +99,21 @@ export class OrcamentoPrevistoService {
         return list;
     }
 
-
-    async update(projeto_id: number, id: number, dto: UpdateOrcamentoPrevistoDto, user: PessoaFromJwt): Promise<ProjetoOrcamentoUpdatedRet> {
-
+    async update(
+        projeto_id: number,
+        id: number,
+        dto: UpdateOrcamentoPrevistoDto,
+        user: PessoaFromJwt
+    ): Promise<ProjetoOrcamentoUpdatedRet> {
         const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
-            where: { id: +id, removido_em: null, projeto_id, },
+            where: { id: +id, removido_em: null, projeto_id },
         });
         if (!metaOrcamento) throw new HttpException('projeto orçamento não encontrada', 400);
 
         const alreadyUpdated = await this.prisma.orcamentoPrevisto.count({
             where: {
-                versao_anterior_id: +id
-            }
+                versao_anterior_id: +id,
+            },
         });
         if (alreadyUpdated) throw new HttpException('projeto orçamento já foi atualizado, atualize a página', 400);
 
@@ -163,7 +168,7 @@ export class OrcamentoPrevistoService {
             {
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return { id: id, new_id };
@@ -173,7 +178,8 @@ export class OrcamentoPrevistoService {
         const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
             where: { id: +id, removido_em: null, projeto_id },
         });
-        if (!metaOrcamento || metaOrcamento.projeto_id == null) throw new HttpException('projeto orçamento não encontrada', 400);
+        if (!metaOrcamento || metaOrcamento.projeto_id == null)
+            throw new HttpException('projeto orçamento não encontrada', 400);
 
         const now = new Date(Date.now());
         await this.prisma.orcamentoPrevisto.updateMany({
@@ -182,8 +188,10 @@ export class OrcamentoPrevistoService {
         });
     }
 
-
-    async orcamento_previsto_zero(projeto_id: number, ano_referencia: number): Promise<OrcamentoPrevistoEhZeroStatusDto> {
+    async orcamento_previsto_zero(
+        projeto_id: number,
+        ano_referencia: number
+    ): Promise<OrcamentoPrevistoEhZeroStatusDto> {
         const opz = await this.prisma.orcamentoPrevistoZerado.findFirst({
             where: {
                 projeto_id: projeto_id,
@@ -193,24 +201,28 @@ export class OrcamentoPrevistoService {
             select: {
                 criador: { select: { id: true, nome_exibicao: true } },
                 criado_em: true,
-            }
+            },
         });
         if (opz) {
             return {
                 previsto_eh_zero: true,
                 previsto_eh_zero_criado_por: opz.criador,
-                previsto_eh_zero_criado_em: opz.criado_em
-            }
+                previsto_eh_zero_criado_em: opz.criado_em,
+            };
         }
 
         return {
             previsto_eh_zero: false,
             previsto_eh_zero_criado_por: null,
             previsto_eh_zero_criado_em: null,
-        }
+        };
     }
 
-    async patchZerado(projeto_id: number, dto: ProjetoUpdateOrcamentoPrevistoZeradoDto, user: PessoaFromJwt): Promise<void> {
+    async patchZerado(
+        projeto_id: number,
+        dto: ProjetoUpdateOrcamentoPrevistoZeradoDto,
+        user: PessoaFromJwt
+    ): Promise<void> {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // apaga/remove todas versões anteriores não removidas
@@ -223,7 +235,7 @@ export class OrcamentoPrevistoService {
                 data: {
                     removido_em: now,
                     removido_por: user.id,
-                }
+                },
             });
 
             // se é pra considerar zero, cria uma nova linha
@@ -237,18 +249,20 @@ export class OrcamentoPrevistoService {
                     },
                 });
                 if (count > 0)
-                    throw new HttpException(`Para usar o ano ${dto.ano_referencia} como R$ 0,00, é necessário não ter nenhum registro de custo previsto.`, 400);
+                    throw new HttpException(
+                        `Para usar o ano ${dto.ano_referencia} como R$ 0,00, é necessário não ter nenhum registro de custo previsto.`,
+                        400
+                    );
 
                 await this.prisma.orcamentoPrevistoZerado.create({
                     data: {
                         projeto_id: projeto_id,
                         ano_referencia: dto.ano_referencia,
                         criado_por: user.id,
-                        criado_em: now
-                    }
+                        criado_em: now,
+                    },
                 });
             }
         });
     }
-
 }

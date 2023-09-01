@@ -8,11 +8,10 @@ import { ProjetoService } from '../projeto/projeto.service';
 import { PlanoAcaoController } from './plano-de-acao.controller';
 import { PlanoAcaoService } from './plano-de-acao.service';
 
-
 @Module({
     imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule],
     controllers: [PlanoAcaoController],
     providers: [PlanoAcaoService, ProjetoService, PortfolioService],
     exports: [PlanoAcaoService],
 })
-export class PlanoAcaoModule { }
+export class PlanoAcaoModule {}

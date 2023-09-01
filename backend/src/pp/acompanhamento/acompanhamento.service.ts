@@ -7,78 +7,83 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
-import { DetailProjetoAcompanhamentoDto, ProjetoAcompanhamento, ProjetoAcompanhamentoRowDto } from './entities/acompanhamento.entity';
+import {
+    DetailProjetoAcompanhamentoDto,
+    ProjetoAcompanhamento,
+    ProjetoAcompanhamentoRowDto,
+} from './entities/acompanhamento.entity';
 import DOMPurify from 'dompurify';
 
 @Injectable()
 export class AcompanhamentoService {
     private readonly logger = new Logger(AcompanhamentoService.name);
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(projeto_id: number, dto: CreateProjetoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-
         //if (!dto.risco_tarefa_outros && Array.isArray(dto.risco) == false || (Array.isArray(dto.risco) && dto.risco.length == 0))
         //throw new HttpException('Se não for enviado um risco do sistema, é necessário informar um risco externo', 400);
 
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const now = new Date(Date.now());
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const now = new Date(Date.now());
 
-        if (dto.detalhamento) dto.detalhamento = DOMPurify.sanitize(dto.detalhamento);
+                if (dto.detalhamento) dto.detalhamento = DOMPurify.sanitize(dto.detalhamento);
 
-            const acompanhamento = await prismaTx.projetoAcompanhamento.create({
-                data: {
-                    projeto_id: projeto_id,
-                    ...{
-                        ...dto,
-                        risco: undefined,
-                        acompanhamentos: undefined,
+                const acompanhamento = await prismaTx.projetoAcompanhamento.create({
+                    data: {
+                        projeto_id: projeto_id,
+                        ...{
+                            ...dto,
+                            risco: undefined,
+                            acompanhamentos: undefined,
+                        },
+
+                        criado_em: now,
+                        criado_por: user.id,
                     },
-
-                    criado_em: now,
-                    criado_por: user.id
-                },
-                select: { id: true }
-            });
-
-            if (Array.isArray(dto.risco) && dto.risco.length) {
-                await prismaTx.projetoAcompanhamentoRisco.createMany({
-                    data: dto.risco.map((r) => {
-                        return {
-                            projeto_acompanhamento_id: acompanhamento.id,
-                            projeto_risco_id: r,
-                        }
-                    })
+                    select: { id: true },
                 });
+
+                if (Array.isArray(dto.risco) && dto.risco.length) {
+                    await prismaTx.projetoAcompanhamentoRisco.createMany({
+                        data: dto.risco.map((r) => {
+                            return {
+                                projeto_acompanhamento_id: acompanhamento.id,
+                                projeto_risco_id: r,
+                            };
+                        }),
+                    });
+                }
+
+                if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
+                    await prismaTx.projetoAcompanhamentoItem.createMany({
+                        data: dto.acompanhamentos.map((r, i) => {
+                            return {
+                                encaminhamento: r.encaminhamento,
+                                prazo_encaminhamento: r.prazo_encaminhamento,
+                                prazo_realizado: r.prazo_realizado,
+                                responsavel: r.responsavel,
+                                projeto_acompanhamento_id: acompanhamento.id,
+                                ordem: i + 1,
+                            };
+                        }),
+                    });
+                }
+
+                await this.atualizaProjeto(prismaTx, projeto_id, now);
+
+                return { id: acompanhamento.id };
             }
+        );
 
-            if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
-                await prismaTx.projetoAcompanhamentoItem.createMany({
-                    data: dto.acompanhamentos.map((r, i) => {
-                        return {
-                            encaminhamento: r.encaminhamento,
-                            prazo_encaminhamento: r.prazo_encaminhamento,
-                            prazo_realizado: r.prazo_realizado,
-                            responsavel: r.responsavel,
-                            projeto_acompanhamento_id: acompanhamento.id,
-                            ordem: i + 1,
-                        }
-                    })
-                });
-            }
-
-            await this.atualizaProjeto(prismaTx, projeto_id, now);
-
-            return { id: acompanhamento.id };
-        });
-
-        return { id: created.id }
+        return { id: created.id };
     }
 
     async findAll(projetoId: number, user: PessoaFromJwt): Promise<ProjetoAcompanhamento[]> {
         const projetoAcompanhamento = await this.prisma.projetoAcompanhamento.findMany({
             where: {
                 projeto_id: projetoId,
-                removido_em: null
+                removido_em: null,
             },
             orderBy: [{ criado_em: 'desc' }],
             select: {
@@ -90,7 +95,7 @@ export class AcompanhamentoService {
                 pauta: true,
 
                 ProjetoAcompanhamentoItem: {
-                    orderBy: { ordem: 'asc' }
+                    orderBy: { ordem: 'asc' },
                 },
 
                 ProjetoAcompanhamentoRisco: {
@@ -98,15 +103,15 @@ export class AcompanhamentoService {
                         projeto_risco: {
                             select: {
                                 id: true,
-                                codigo: true
-                            }
-                        }
-                    }
-                }
-            }
+                                codigo: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
-        return projetoAcompanhamento.map(a => {
+        return projetoAcompanhamento.map((a) => {
             return {
                 id: a.id,
                 data_registro: a.data_registro,
@@ -116,13 +121,13 @@ export class AcompanhamentoService {
 
                 acompanhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
-                risco: a.ProjetoAcompanhamentoRisco.map(r => {
+                risco: a.ProjetoAcompanhamentoRisco.map((r) => {
                     return {
                         id: r.projeto_risco.id,
-                        codigo: r.projeto_risco.codigo
-                    }
-                })
-            }
+                        codigo: r.projeto_risco.codigo,
+                    };
+                }),
+            };
         });
     }
 
@@ -131,8 +136,8 @@ export class AcompanhamentoService {
             encaminhamento: r.encaminhamento,
             prazo_encaminhamento: r.prazo_encaminhamento ? r.prazo_encaminhamento : null,
             prazo_realizado: r.prazo_realizado ? r.prazo_realizado : null,
-            responsavel: r.responsavel
-        }
+            responsavel: r.responsavel,
+        };
     }
 
     async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<DetailProjetoAcompanhamentoDto> {
@@ -140,7 +145,7 @@ export class AcompanhamentoService {
             where: {
                 id,
                 projeto_id: projetoId,
-                removido_em: null
+                removido_em: null,
             },
             select: {
                 id: true,
@@ -156,7 +161,7 @@ export class AcompanhamentoService {
                 cronograma_paralisado: true,
 
                 ProjetoAcompanhamentoItem: {
-                    orderBy: { ordem: 'asc' }
+                    orderBy: { ordem: 'asc' },
                 },
 
                 ProjetoAcompanhamentoRisco: {
@@ -164,21 +169,19 @@ export class AcompanhamentoService {
                         projeto_risco: {
                             select: {
                                 id: true,
-                                codigo: true
-                            }
-                        }
-                    }
-                }
-            }
+                                codigo: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         if (!projetoAcompanhamento) throw new HttpException('Não foi possível encontrar o Acompanhamento', 400);
-
 
         return {
             id: projetoAcompanhamento.id,
             data_registro: projetoAcompanhamento.data_registro,
             participantes: projetoAcompanhamento.participantes,
-
 
             detalhamento: projetoAcompanhamento.detalhamento,
             pauta: projetoAcompanhamento.pauta,
@@ -191,13 +194,13 @@ export class AcompanhamentoService {
 
             acompanhamentos: projetoAcompanhamento.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
-            risco: projetoAcompanhamento.ProjetoAcompanhamentoRisco.map(r => {
+            risco: projetoAcompanhamento.ProjetoAcompanhamentoRisco.map((r) => {
                 return {
                     id: r.projeto_risco.id,
-                    codigo: r.projeto_risco.codigo
-                }
-            })
-        }
+                    codigo: r.projeto_risco.codigo,
+                };
+            }),
+        };
     }
 
     async update(projeto_id: number, id: number, dto: UpdateProjetoAcompanhamentoDto, user: PessoaFromJwt) {
@@ -207,71 +210,70 @@ export class AcompanhamentoService {
                 removido_em: null,
                 projeto_id: projeto_id,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         if (dto.detalhamento) dto.detalhamento = DOMPurify.sanitize(dto.detalhamento);
 
-        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-
-            const now = new Date(Date.now());
-            if (dto.risco !== undefined) {
-                await prismaTx.projetoAcompanhamentoRisco.deleteMany({
-                    where: { projeto_acompanhamento_id: self.id }
-                });
-
-                if (Array.isArray(dto.risco) && dto.risco.length > 0)
-                    await prismaTx.projetoAcompanhamentoRisco.createMany({
-                        data: dto.risco.map((r) => {
-                            return {
-                                projeto_acompanhamento_id: self.id,
-                                projeto_risco_id: r,
-                            }
-                        })
+        const updated = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const now = new Date(Date.now());
+                if (dto.risco !== undefined) {
+                    await prismaTx.projetoAcompanhamentoRisco.deleteMany({
+                        where: { projeto_acompanhamento_id: self.id },
                     });
-            }
 
-            if (dto.acompanhamentos !== undefined) {
-                await prismaTx.projetoAcompanhamentoItem.deleteMany({
-                    where: { projeto_acompanhamento_id: self.id }
-                });
-
-                if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
-                    await prismaTx.projetoAcompanhamentoItem.createMany({
-                        data: dto.acompanhamentos.map((r, i) => {
-                            return {
-                                encaminhamento: r.encaminhamento,
-                                prazo_encaminhamento: r.prazo_encaminhamento,
-                                prazo_realizado: r.prazo_realizado,
-                                responsavel: r.responsavel,
-                                projeto_acompanhamento_id: self.id,
-                                ordem: i + 1,
-                            }
-                        })
-                    });
+                    if (Array.isArray(dto.risco) && dto.risco.length > 0)
+                        await prismaTx.projetoAcompanhamentoRisco.createMany({
+                            data: dto.risco.map((r) => {
+                                return {
+                                    projeto_acompanhamento_id: self.id,
+                                    projeto_risco_id: r,
+                                };
+                            }),
+                        });
                 }
-            }
 
-            await this.atualizaProjeto(prismaTx, projeto_id, now);
+                if (dto.acompanhamentos !== undefined) {
+                    await prismaTx.projetoAcompanhamentoItem.deleteMany({
+                        where: { projeto_acompanhamento_id: self.id },
+                    });
 
-            return await prismaTx.projetoAcompanhamento.update({
-                where: {
-                    id,
-                },
-                data: {
-                    ...{
-                        ...dto,
-                        risco: undefined,
-                        acompanhamentos: undefined,
+                    if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
+                        await prismaTx.projetoAcompanhamentoItem.createMany({
+                            data: dto.acompanhamentos.map((r, i) => {
+                                return {
+                                    encaminhamento: r.encaminhamento,
+                                    prazo_encaminhamento: r.prazo_encaminhamento,
+                                    prazo_realizado: r.prazo_realizado,
+                                    responsavel: r.responsavel,
+                                    projeto_acompanhamento_id: self.id,
+                                    ordem: i + 1,
+                                };
+                            }),
+                        });
+                    }
+                }
+
+                await this.atualizaProjeto(prismaTx, projeto_id, now);
+
+                return await prismaTx.projetoAcompanhamento.update({
+                    where: {
+                        id,
                     },
-                    atualizado_em: now,
-                    atualizado_por: user.id,
-                },
-                select: { id: true }
-            });
-
-
-        });
+                    data: {
+                        ...{
+                            ...dto,
+                            risco: undefined,
+                            acompanhamentos: undefined,
+                        },
+                        atualizado_em: now,
+                        atualizado_por: user.id,
+                    },
+                    select: { id: true },
+                });
+            }
+        );
 
         return updated;
     }
@@ -280,8 +282,8 @@ export class AcompanhamentoService {
         await prismaTx.projeto.update({
             where: { id: projeto_id },
             data: {
-                tarefas_proximo_recalculo: now
-            }
+                tarefas_proximo_recalculo: now,
+            },
         });
     }
 
@@ -292,19 +294,18 @@ export class AcompanhamentoService {
                 removido_em: null,
                 projeto_id: projeto_id,
             },
-            select: { id: true }
+            select: { id: true },
         });
 
         return await this.prisma.projetoAcompanhamento.updateMany({
             where: {
                 id,
-                projeto_id: projeto_id
+                projeto_id: projeto_id,
             },
             data: {
                 removido_em: new Date(Date.now()),
-                removido_por: user.id
-            }
-        })
+                removido_por: user.id,
+            },
+        });
     }
-
 }

@@ -1,77 +1,88 @@
-import { Type } from "class-transformer"
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, MinLength, ValidateIf, ValidateNested } from "class-validator"
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly"
+import { Type } from 'class-transformer';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsBoolean,
+    IsInt,
+    IsOptional,
+    IsString,
+    MaxLength,
+    MinLength,
+    ValidateIf,
+    ValidateNested,
+} from 'class-validator';
+import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class ProjetoAcompanhamentoDto {
     @IsString()
     @MinLength(1)
     @MaxLength(50000)
-    encaminhamento: string
+    encaminhamento: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(250)
-    responsavel?: string
+    responsavel?: string;
 
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    prazo_encaminhamento?: Date
+    prazo_encaminhamento?: Date;
 
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    prazo_realizado?: Date
+    prazo_realizado?: Date;
 }
 
 export class CreateProjetoAcompanhamentoDto {
     @IsOptional()
     @IsString()
     @MaxLength(50000)
-    pauta?: string
+    pauta?: string;
 
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    data_registro: Date
+    data_registro: Date;
 
     @IsString()
     @MaxLength(2048)
-    participantes: string
+    participantes: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(50000)
-    detalhamento?: string
+    detalhamento?: string;
 
     @IsOptional()
     @IsArray({ message: 'acompanhamentos precisa ser uma array, campo obrigatório' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
     @ValidateNested({ each: true })
     @Type(() => ProjetoAcompanhamentoDto)
-    acompanhamentos?: ProjetoAcompanhamentoDto[]
+    acompanhamentos?: ProjetoAcompanhamentoDto[];
 
     @IsOptional()
     @IsString()
     @MaxLength(50000)
-    observacao?: string
+    observacao?: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(50000)
-    detalhamento_status?: string
+    detalhamento_status?: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(50000)
-    pontos_atencao?: string
+    pontos_atencao?: string;
 
     @IsOptional()
     @IsBoolean()
-    cronograma_paralisado?: boolean
-
+    cronograma_paralisado?: boolean;
 
     //@IsOptional()
     //@IsString()
@@ -80,7 +91,7 @@ export class CreateProjetoAcompanhamentoDto {
     /**
      * enviar array dos ids dos projeto-risco-id array vazia ou nulo para remover
      * @example "[]"
-    */
+     */
     @IsOptional()
     @IsArray({ message: '$property| risco(s): precisa ser uma array ou.' })
     @ArrayMinSize(0, { message: '$property| risco(s): precisa ter pelo menos um item' })
@@ -88,5 +99,4 @@ export class CreateProjetoAcompanhamentoDto {
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     @ValidateIf((object, value) => value !== null)
     risco?: number[] | null;
-
 }

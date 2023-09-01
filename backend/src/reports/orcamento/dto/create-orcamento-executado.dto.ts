@@ -44,17 +44,13 @@ export class OrcamentoExecutadoParams {
 
 // excluindo o atividade/iniciativa pq nunca tem resultados pra orçamento
 // logo n faz sentido ir buscar
-export class SuperCreateOrcamentoExecutadoDto
-    extends IntersectionType(
-        OmitType(
-            FiltroMetasIniAtividadeDto, ['atividade_id', 'iniciativa_id'] as const
-        ),
-        OrcamentoExecutadoParams
-    ) {
-
+export class SuperCreateOrcamentoExecutadoDto extends IntersectionType(
+    OmitType(FiltroMetasIniAtividadeDto, ['atividade_id', 'iniciativa_id'] as const),
+    OrcamentoExecutadoParams
+) {
     /**
-    * @example "21"
-    */
+     * @example "21"
+     */
     @IsInt()
     @Transform(({ value }: any) => +value)
     @IsOptional()
@@ -70,12 +66,7 @@ export class SuperCreateOrcamentoExecutadoDto
 }
 
 // aqui remove os filtros do projeto
-export class PdmCreateOrcamentoExecutadoDto extends OmitType(
-    SuperCreateOrcamentoExecutadoDto,
-    [
-        'projeto_id',
-        'portfolio_id'
-    ] as const
-)
-{ }
-
+export class PdmCreateOrcamentoExecutadoDto extends OmitType(SuperCreateOrcamentoExecutadoDto, [
+    'projeto_id',
+    'portfolio_id',
+] as const) {}

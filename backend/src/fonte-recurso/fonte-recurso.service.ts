@@ -15,7 +15,8 @@ export class FonteRecursoService {
                 removido_em: null,
             },
         });
-        if (similarExists > 0) throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
 
         if (createFonteRecursoDto.sigla) {
             const similarExists = await this.prisma.fonteRecurso.count({
@@ -24,7 +25,8 @@ export class FonteRecursoService {
                     removido_em: null,
                 },
             });
-            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         const created = await this.prisma.fonteRecurso.create({
@@ -49,7 +51,7 @@ export class FonteRecursoService {
                 fonte: true,
                 sigla: true,
             },
-            orderBy: { fonte: 'asc' }
+            orderBy: { fonte: 'asc' },
         });
         return listActive;
     }
@@ -63,7 +65,8 @@ export class FonteRecursoService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('fonte| Fonte igual ou semelhante já existe em outro registro ativo', 400);
         }
         if (updateFonteRecursoDto.sigla) {
             const similarExists = await this.prisma.fonteRecurso.count({
@@ -73,7 +76,8 @@ export class FonteRecursoService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.fonteRecurso.update({

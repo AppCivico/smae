@@ -50,18 +50,25 @@ const defaultTransform = [flatten({ paths: [] })];
 @Injectable()
 export class IndicadoresService implements ReportableService {
     private readonly logger = new Logger(IndicadoresService.name);
-    constructor(private readonly prisma: PrismaService, private readonly utils: UtilsService) { }
+    constructor(private readonly prisma: PrismaService, private readonly utils: UtilsService) {}
 
     async create(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
         if (dto.periodo == 'Semestral' && !dto.semestre) {
             throw new HttpException('Necessário enviar semestre para o periodo Semestral', 400);
         }
-        const { metas, iniciativas, atividades } = await this.utils.applyFilter(dto, { iniciativas: true, atividades: true });
+        const { metas, iniciativas, atividades } = await this.utils.applyFilter(dto, {
+            iniciativas: true,
+            atividades: true,
+        });
 
         const indicadores = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
-                OR: [{ meta_id: { in: metas.map(r => r.id) } }, { iniciativa_id: { in: iniciativas.map(r => r.id) } }, { atividade_id: { in: atividades.map(r => r.id) } }],
+                OR: [
+                    { meta_id: { in: metas.map((r) => r.id) } },
+                    { iniciativa_id: { in: iniciativas.map((r) => r.id) } },
+                    { atividade_id: { in: atividades.map((r) => r.id) } },
+                ],
             },
             select: { id: true },
         });
@@ -70,14 +77,14 @@ export class IndicadoresService implements ReportableService {
         const out_regioes: RelIndicadoresVariaveisDto[] = [];
 
         await this.queryData(
-            indicadores.map(r => r.id),
+            indicadores.map((r) => r.id),
             dto,
-            out,
+            out
         );
         await this.queryDataRegiao(
-            indicadores.map(r => r.id),
+            indicadores.map((r) => r.id),
             dto,
-            out_regioes,
+            out_regioes
         );
 
         return {
@@ -137,10 +144,13 @@ export class IndicadoresService implements ReportableService {
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int").replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
+                sql
+                    .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+                    .replace(':DATA:', 'dt.dt::date::text')
+                    .replace(':OFFSET:', ''),
                 anoInicio + '-01-01',
                 dto.ano + 1 + '-01-01',
-                '1 month',
+                '1 month'
             );
 
             out.push(...this.convertRows(data, null));
@@ -149,7 +159,7 @@ export class IndicadoresService implements ReportableService {
                 sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
                 anoInicio + '-12-01',
                 dto.ano + 1 + '-12-01',
-                '1 year',
+                '1 year'
             );
 
             out.push(...this.convertRows(data, null));
@@ -158,26 +168,36 @@ export class IndicadoresService implements ReportableService {
             const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
             const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)").replace(':OFFSET:', ''),
+                sql
+                    .replace(':JANELA:', '6')
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
+                    .replace(':OFFSET:', ''),
                 base_mes,
                 base_mes,
-                '1 decade',
+                '1 decade'
             );
 
             out.push(...this.convertRows(base_data, null));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
             // indo buscar 6 meses, por isso sempre tem valor
             const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text").replace(':OFFSET:', "- '1 month'::interval"),
+                sql
+                    .replace(':JANELA:', '6')
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
+                    .replace(':OFFSET:', "- '1 month'::interval"),
                 dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
-                '1 month',
+                '1 month'
             );
             out.push(...this.convertRows(base_data, null));
         }
     }
 
-    private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresVariaveisDto[]) {
+    private async queryDataRegiao(
+        indicadoresOrVar: number[],
+        dto: CreateRelIndicadorDto,
+        out: RelIndicadoresVariaveisDto[]
+    ) {
         if (indicadoresOrVar.length == 0) return;
 
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
@@ -232,48 +252,57 @@ export class IndicadoresService implements ReportableService {
         `;
 
         const regioes = await this.prisma.regiao.findMany({
-            where: { removido_em: null }
+            where: { removido_em: null },
         });
 
         if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
             const data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', "extract('month' from periodicidade_intervalo(v.periodicidade))::int").replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
+                sql
+                    .replace(':JANELA:', "extract('month' from periodicidade_intervalo(v.periodicidade))::int")
+                    .replace(':DATA:', 'dt.dt::date::text')
+                    .replace(':OFFSET:', ''),
                 anoInicio + '-01-01',
                 dto.ano + 1 + '-01-01',
-                '1 month',
+                '1 month'
             );
 
-            out.push(...this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]);
+            out.push(...(this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]));
         } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
             const data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
                 anoInicio + '-12-01',
                 dto.ano + 1 + '-12-01',
-                '1 year',
+                '1 year'
             );
 
-            out.push(...this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]);
+            out.push(...(this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
             const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
             const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
             const base_data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)").replace(':OFFSET:', ''),
+                sql
+                    .replace(':JANELA:', '6')
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
+                    .replace(':OFFSET:', ''),
                 base_mes,
                 base_mes,
-                '1 decade',
+                '1 decade'
             );
 
-            out.push(...this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]);
+            out.push(...(this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]));
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
             // indo buscar 6 meses, por isso sempre tem valor
             const base_data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', '6').replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text").replace(':OFFSET:', "- '1 month'::interval"),
+                sql
+                    .replace(':JANELA:', '6')
+                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
+                    .replace(':OFFSET:', "- '1 month'::interval"),
                 dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
-                '1 month',
+                '1 month'
             );
-            out.push(...this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]);
+            out.push(...(this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]));
         }
     }
 
@@ -289,14 +318,14 @@ export class IndicadoresService implements ReportableService {
             {
                 value: (row: RetornoDb) => {
                     if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map(t => t.descricao).join('\n');
+                    return row.meta_tags.map((t) => t.descricao).join('\n');
                 },
                 label: 'Meta Tags',
             },
             {
                 value: (row: RetornoDb) => {
                     if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map(t => t.id).join(', ');
+                    return row.meta_tags.map((t) => t.id).join(', ');
                 },
                 label: 'Tags IDs',
             },
@@ -372,7 +401,7 @@ export class IndicadoresService implements ReportableService {
                         params: params,
                         horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
-                    'utf8',
+                    'utf8'
                 ),
             },
             ...out,
@@ -383,10 +412,7 @@ export class IndicadoresService implements ReportableService {
         input: RetornoDb[] | RetornoDbRegiao[],
         regioesDb: Regiao[] | null
     ): RelIndicadoresDto[] | RelIndicadoresVariaveisDto[] {
-        return input.map(db => {
-
-
-
+        return input.map((db) => {
             return {
                 indicador: {
                     codigo: db.indicador_codigo,
@@ -397,28 +423,36 @@ export class IndicadoresService implements ReportableService {
                 },
                 meta: db.meta_id ? { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id } : null,
                 meta_tags: db.meta_tags ? db.meta_tags : null,
-                iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
-                atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
+                iniciativa: db.iniciativa_id
+                    ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id }
+                    : null,
+                atividade: db.atividade_id
+                    ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id }
+                    : null,
 
                 data: db.data,
                 serie: db.serie,
                 valor: db.valor,
 
-                variavel: db.variavel_id ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id } : undefined,
-                ...("regiao_id" in db && regioesDb ? this.convertRowsRegiao(regioesDb, db) : {})
-
+                variavel: db.variavel_id
+                    ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id }
+                    : undefined,
+                ...('regiao_id' in db && regioesDb ? this.convertRowsRegiao(regioesDb, db) : {}),
             };
         });
     }
 
-    convertRowsRegiao(regioesDb: Regiao[], db: RetornoDbRegiao): {
-        regiao_nivel_4: RegiaoDto | null
-        regiao_nivel_3: RegiaoDto | null
-        regiao_nivel_2: RegiaoDto | null
-        regiao_nivel_1: RegiaoDto | null
-        regiao_id: number
+    convertRowsRegiao(
+        regioesDb: Regiao[],
+        db: RetornoDbRegiao
+    ): {
+        regiao_nivel_4: RegiaoDto | null;
+        regiao_nivel_3: RegiaoDto | null;
+        regiao_nivel_2: RegiaoDto | null;
+        regiao_nivel_1: RegiaoDto | null;
+        regiao_id: number;
     } {
-        const regiao_by_id: Record<number, typeof regioesDb[0]> = {};
+        const regiao_by_id: Record<number, (typeof regioesDb)[0]> = {};
         for (const r of regioesDb) {
             regiao_by_id[r.id] = r;
         }
@@ -454,7 +488,7 @@ export class IndicadoresService implements ReportableService {
             regiao_nivel_2: this.render_regiao(regiao_by_id, regiao_nivel_2),
             regiao_nivel_1: this.render_regiao(regiao_by_id, regiao_nivel_1),
             regiao_id,
-        }
+        };
     }
 
     render_regiao(regiao_by_id: Record<number, Regiao>, regiao_id: number | null): RegiaoDto | null {
@@ -467,8 +501,6 @@ export class IndicadoresService implements ReportableService {
             id: regiao_by_id[regiao_id].id,
             nivel: regiao_by_id[regiao_id].nivel,
             parente_id: regiao_by_id[regiao_id].parente_id,
-        }
+        };
     }
-
-
 }

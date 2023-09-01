@@ -4,7 +4,13 @@ import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
 import { DotacaoService } from './dotacao.service';
 import { AnoDotacaoDto, AnoDotacaoNotaEmpenhoDto, AnoDotacaoProcessoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
-import { ListValorRealizadoDotacaoDto, ListValorRealizadoNotaEmpenhoDto, ListValorRealizadoProcessoDto, OrcadoProjetoDto, ValorPlanejadoDto } from './entities/dotacao.entity';
+import {
+    ListValorRealizadoDotacaoDto,
+    ListValorRealizadoNotaEmpenhoDto,
+    ListValorRealizadoProcessoDto,
+    OrcadoProjetoDto,
+    ValorPlanejadoDto,
+} from './entities/dotacao.entity';
 
 // o controller de dotação só verifica se o usuário está autenticado,
 // mas não confere se tem os privilégios de orçamento, como ele é apenas read-only
@@ -14,8 +20,8 @@ export class DotacaoController {
     constructor(
         private readonly dotacaoService: DotacaoService,
         private readonly processoService: DotacaoProcessoService,
-        private readonly notaEmpenhoService: DotacaoProcessoNotaService,
-    ) { }
+        private readonly notaEmpenhoService: DotacaoProcessoNotaService
+    ) {}
 
     @ApiTags('Orçamento - Planejado')
     @ApiOperation({
@@ -73,7 +79,9 @@ export class DotacaoController {
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
             '**Retorna sempre apenas uma linha, se voltar mais de uma no SOF, retorna erro 400**',
     })
-    async valorRealizadoDotacaoNotaEmpenho(@Body() dto: AnoDotacaoNotaEmpenhoDto): Promise<ListValorRealizadoNotaEmpenhoDto> {
+    async valorRealizadoDotacaoNotaEmpenho(
+        @Body() dto: AnoDotacaoNotaEmpenhoDto
+    ): Promise<ListValorRealizadoNotaEmpenhoDto> {
         return {
             linhas: await this.notaEmpenhoService.valorRealizadoNotaEmpenho(dto),
         };

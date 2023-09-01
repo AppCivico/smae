@@ -15,7 +15,8 @@ export class TipoDocumentoService {
                 removido_em: null,
             },
         });
-        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoDocumento.create({
             data: {
@@ -41,7 +42,7 @@ export class TipoDocumentoService {
                 titulo: true,
                 codigo: true,
             },
-            orderBy: { codigo: 'asc' }
+            orderBy: { codigo: 'asc' },
         });
         return listActive;
     }
@@ -55,7 +56,11 @@ export class TipoDocumentoService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException(
+                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                    400
+                );
         }
 
         await this.prisma.tipoDocumento.update({

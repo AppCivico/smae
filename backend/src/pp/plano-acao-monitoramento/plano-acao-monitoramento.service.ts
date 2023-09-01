@@ -3,44 +3,47 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreatePlanoAcaoMonitoramentoDto, FilterPlanoAcaoMonitoramentoDto, UpdatePlanoAcaoMonitoramentoDto } from './dto/create-plano-acao-monitoramento.dto';
+import {
+    CreatePlanoAcaoMonitoramentoDto,
+    FilterPlanoAcaoMonitoramentoDto,
+    UpdatePlanoAcaoMonitoramentoDto,
+} from './dto/create-plano-acao-monitoramento.dto';
 import { PlanoAcaoMonitoramentoDto } from './entities/plano-acao-monitoramento.entity';
-
 
 @Injectable()
 export class PlanoAcaoMonitoramentoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(projetoId: number, dto: CreatePlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-
         const countProj = await this.prisma.planoAcao.count({
             where: {
                 id: dto.plano_acao_id,
                 projeto_risco: {
                     projeto_id: projetoId,
-                }
-            }
-        });
-        if (countProj == 0) throw new HttpException("Não foi encontrado nenhum plano de ação.", 404);
-
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-
-            const row = await prismaTx.planoAcaoMonitoramento.create({
-                data: {
-                    criado_por: user.id,
-                    criado_em: new Date(Date.now()),
-                    data_afericao: dto.data_afericao,
-                    descricao: dto.descricao,
-                    plano_acao_id: dto.plano_acao_id,
-                    ultima_revisao: false,
                 },
-                select: { id: true },
-            });
-
-            await this.updateUltimaRevisaoPelaDataAfericao(prismaTx, dto.plano_acao_id);
-
-            return row;
+            },
         });
+        if (countProj == 0) throw new HttpException('Não foi encontrado nenhum plano de ação.', 404);
+
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const row = await prismaTx.planoAcaoMonitoramento.create({
+                    data: {
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                        data_afericao: dto.data_afericao,
+                        descricao: dto.descricao,
+                        plano_acao_id: dto.plano_acao_id,
+                        ultima_revisao: false,
+                    },
+                    select: { id: true },
+                });
+
+                await this.updateUltimaRevisaoPelaDataAfericao(prismaTx, dto.plano_acao_id);
+
+                return row;
+            }
+        );
 
         return created;
     }
@@ -61,12 +64,15 @@ export class PlanoAcaoMonitoramentoService {
         AND removido_em IS NULL`;
     }
 
-    async update(projetoId: number, id: number, dto: UpdatePlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-
+    async update(
+        projetoId: number,
+        id: number,
+        dto: UpdatePlanoAcaoMonitoramentoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const self = await this.getPlanoAcao(id, projetoId);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-
             await prismaTx.planoAcaoMonitoramento.update({
                 where: {
                     id: id,
@@ -75,16 +81,14 @@ export class PlanoAcaoMonitoramentoService {
                     ...dto,
                     atualizado_em: new Date(Date.now()),
                     atualizado_por: user.id,
-                }
+                },
             });
 
             await this.updateUltimaRevisaoPelaDataAfericao(prismaTx, self.plano_acao_id);
-
         });
 
         return { id: self.id };
     }
-
 
     private async getPlanoAcao(id: number, projetoId: number) {
         const self = await this.prisma.planoAcaoMonitoramento.findFirst({
@@ -94,16 +98,19 @@ export class PlanoAcaoMonitoramentoService {
                 plano_acao: {
                     projeto_risco: {
                         projeto_id: projetoId,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
-        if (!self)
-            throw new HttpException("Não foi encontrar o plano de ação.", 404);
+        if (!self) throw new HttpException('Não foi encontrar o plano de ação.', 404);
         return self;
     }
 
-    async findAll(projetoId: number, dto: FilterPlanoAcaoMonitoramentoDto, user: PessoaFromJwt): Promise<PlanoAcaoMonitoramentoDto[]> {
+    async findAll(
+        projetoId: number,
+        dto: FilterPlanoAcaoMonitoramentoDto,
+        user: PessoaFromJwt
+    ): Promise<PlanoAcaoMonitoramentoDto[]> {
         const listActive = await this.prisma.planoAcaoMonitoramento.findMany({
             where: {
                 removido_em: null,
@@ -112,14 +119,11 @@ export class PlanoAcaoMonitoramentoService {
                 plano_acao: {
                     projeto_risco: {
                         projeto_id: projetoId,
-                        id: dto.projeto_risco_id
-                    }
+                        id: dto.projeto_risco_id,
+                    },
                 },
             },
-            orderBy: [
-                { data_afericao: 'desc' },
-                { criado_em: 'desc' },
-            ],
+            orderBy: [{ data_afericao: 'desc' }, { criado_em: 'desc' }],
             select: {
                 id: true,
                 plano_acao_id: true,
@@ -136,11 +140,10 @@ export class PlanoAcaoMonitoramentoService {
             },
         });
 
-        return listActive
+        return listActive;
     }
 
     async remove(projetoId: number, id: number, user: PessoaFromJwt) {
-
         const self = await this.getPlanoAcao(id, projetoId);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -150,7 +153,7 @@ export class PlanoAcaoMonitoramentoService {
                     plano_acao: {
                         projeto_risco: {
                             projeto_id: projetoId,
-                        }
+                        },
                     },
                     removido_em: null,
                 },
@@ -161,10 +164,12 @@ export class PlanoAcaoMonitoramentoService {
             });
 
             if (updated.count == 0)
-                throw new HttpException("Nenhuma linha foi removida. Item pode já ter sido removido anteriormente.", 400);
+                throw new HttpException(
+                    'Nenhuma linha foi removida. Item pode já ter sido removido anteriormente.',
+                    400
+                );
 
             await this.updateUltimaRevisaoPelaDataAfericao(prismaTx, self.plano_acao_id);
-
         });
     }
 }

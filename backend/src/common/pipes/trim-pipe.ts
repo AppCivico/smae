@@ -7,7 +7,7 @@ export class TrimPipe implements PipeTransform {
     }
 
     private trim(values: any) {
-        Object.keys(values).forEach(key => {
+        Object.keys(values).forEach((key) => {
             if (this.isObj(values[key])) {
                 values[key] = this.trim(values[key]);
             } else {

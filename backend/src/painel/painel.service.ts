@@ -8,14 +8,19 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
-import { PainelConteudoSerie, SerieRow, SeriesTemplate, SimplifiedPainelConteudoSeries } from './dto/detalhe-painel.dto';
+import {
+    PainelConteudoSerie,
+    SerieRow,
+    SeriesTemplate,
+    SimplifiedPainelConteudoSeries,
+} from './dto/detalhe-painel.dto';
 import { FilterPainelDto } from './dto/filter-painel.dto';
 import {
     PainelConteudoDetalheUpdateRet,
     PainelConteudoIdAndMeta,
     PainelConteudoUpsertRet,
     UpdatePainelConteudoDetalheDto,
-    UpdatePainelConteudoVisualizacaoDto
+    UpdatePainelConteudoVisualizacaoDto,
 } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 
@@ -40,7 +45,7 @@ export class PainelDateRange {
 
 @Injectable()
 export class PainelService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(createPainelDto: CreatePainelDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.painel.count({
@@ -50,42 +55,45 @@ export class PainelService {
             },
         });
 
-        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const grupos_to_assign = [];
-            if (createPainelDto.grupos) {
-                const grupos = createPainelDto.grupos;
-                delete createPainelDto.grupos;
+        const created = await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const grupos_to_assign = [];
+                if (createPainelDto.grupos) {
+                    const grupos = createPainelDto.grupos;
+                    delete createPainelDto.grupos;
 
-                for (const grupo of grupos) {
-                    grupos_to_assign.push({ grupo_painel_id: grupo });
+                    for (const grupo of grupos) {
+                        grupos_to_assign.push({ grupo_painel_id: grupo });
+                    }
                 }
-            }
 
-            const pdm_ativo = await prisma.pdm.findFirstOrThrow({
-                where: { ativo: true },
-                select: { id: true },
-            });
+                const pdm_ativo = await prisma.pdm.findFirstOrThrow({
+                    where: { ativo: true },
+                    select: { id: true },
+                });
 
-            const painel = await prisma.painel.create({
-                data: {
-                    criado_por: user.id,
-                    criado_em: new Date(Date.now()),
-                    pdm_id: pdm_ativo.id,
-                    ...createPainelDto,
+                const painel = await prisma.painel.create({
+                    data: {
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                        pdm_id: pdm_ativo.id,
+                        ...createPainelDto,
 
-                    grupos: {
-                        createMany: {
-                            data: grupos_to_assign,
+                        grupos: {
+                            createMany: {
+                                data: grupos_to_assign,
+                            },
                         },
                     },
-                },
-                select: { id: true },
-            });
+                    select: { id: true },
+                });
 
-            return painel;
-        });
+                return painel;
+            }
+        );
 
         return created;
     }
@@ -102,7 +110,7 @@ export class PainelService {
         if (restringirGrupos) {
             userGrupos = await this.prisma.pessoaGrupoPainel.findMany({
                 where: { pessoa_id: user.id },
-                select: { grupo_painel_id: true }
+                select: { grupo_painel_id: true },
             });
         }
 
@@ -111,21 +119,25 @@ export class PainelService {
                 ativo: ativo,
                 removido_em: null,
 
-                grupos: userGrupos ? {
-                    some: {
-                        grupo_painel: {
-                            id: {
-                                in: userGrupos.map(g => g.grupo_painel_id)
-                            }
-                        }
-                    }
-                } : undefined,
+                grupos: userGrupos
+                    ? {
+                          some: {
+                              grupo_painel: {
+                                  id: {
+                                      in: userGrupos.map((g) => g.grupo_painel_id),
+                                  },
+                              },
+                          },
+                      }
+                    : undefined,
 
-                painel_conteudo: filters?.meta_id ? {
-                    some: {
-                        meta_id: filters.meta_id
-                    }
-                } : undefined
+                painel_conteudo: filters?.meta_id
+                    ? {
+                          some: {
+                              meta_id: filters.meta_id,
+                          },
+                      }
+                    : undefined,
             },
             select: {
                 id: true,
@@ -211,7 +223,7 @@ export class PainelService {
                     },
                 },
             },
-            orderBy: { nome: 'asc' }
+            orderBy: { nome: 'asc' },
         });
     }
 
@@ -282,13 +294,13 @@ export class PainelService {
                                             variavel: {
                                                 indicador_variavel: {
                                                     some: {
-                                                        desativado: false
-                                                    }
-                                                }
-                                            }
+                                                        desativado: false,
+                                                    },
+                                                },
+                                            },
                                         },
-                                        { iniciativa: { removido_em: null } }
-                                    ]
+                                        { iniciativa: { removido_em: null } },
+                                    ],
                                 },
                                 orderBy: [{ ordem: 'asc' }],
                                 select: {
@@ -317,13 +329,13 @@ export class PainelService {
                                                     variavel: {
                                                         indicador_variavel: {
                                                             some: {
-                                                                desativado: false
-                                                            }
-                                                        }
-                                                    }
+                                                                desativado: false,
+                                                            },
+                                                        },
+                                                    },
                                                 },
-                                                { atividade: { removido_em: null } }
-                                            ]
+                                                { atividade: { removido_em: null } },
+                                            ],
                                         },
                                         select: {
                                             id: true,
@@ -388,11 +400,12 @@ export class PainelService {
             where: {
                 nome: { equals: updatePainelDto.nome, mode: 'insensitive' },
                 removido_em: null,
-                NOT: { id: +id }
+                NOT: { id: +id },
             },
         });
 
-        if (similarExists > 0) throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const grupos_to_assign = [];
@@ -449,57 +462,63 @@ export class PainelService {
     }
 
     async createConteudo(painel_id: number, createConteudoDto: CreateParamsPainelConteudoDto, user: PessoaFromJwt) {
-        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoUpsertRet> => {
-            const painel = await this.prisma.painel.findFirstOrThrow({
-                where: { id: painel_id },
-                select: {
-                    mostrar_acumulado_por_padrao: true,
-                    mostrar_indicador_por_padrao: true,
-                    mostrar_planejado_por_padrao: true,
+        const ret = await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient): Promise<PainelConteudoUpsertRet> => {
+                const painel = await this.prisma.painel.findFirstOrThrow({
+                    where: { id: painel_id },
+                    select: {
+                        mostrar_acumulado_por_padrao: true,
+                        mostrar_indicador_por_padrao: true,
+                        mostrar_planejado_por_padrao: true,
 
-                    periodicidade: true,
+                        periodicidade: true,
 
-                    painel_conteudo: {
-                        select: {
-                            id: true,
-                            meta_id: true,
+                        painel_conteudo: {
+                            select: {
+                                id: true,
+                                meta_id: true,
+                            },
                         },
                     },
-                },
-            });
-
-            const conteudos = [];
-            for (const meta of createConteudoDto.metas) {
-                const conteudo_already_exists = painel.painel_conteudo.filter(r => {
-                    return r.meta_id === meta;
                 });
-                if (conteudo_already_exists.length > 0) continue;
 
-                conteudos.push(
-                    prisma.painelConteudo.create({
-                        data: {
-                            painel_id: painel_id,
-                            meta_id: meta,
-                            mostrar_acumulado: painel.mostrar_acumulado_por_padrao,
-                            mostrar_indicador: painel.mostrar_indicador_por_padrao,
-                            mostrar_planejado: painel.mostrar_planejado_por_padrao,
-                            periodicidade: painel.periodicidade,
-                        },
-                        select: { id: true, meta_id: true, mostrar_indicador: true },
-                    }),
+                const conteudos = [];
+                for (const meta of createConteudoDto.metas) {
+                    const conteudo_already_exists = painel.painel_conteudo.filter((r) => {
+                        return r.meta_id === meta;
+                    });
+                    if (conteudo_already_exists.length > 0) continue;
+
+                    conteudos.push(
+                        prisma.painelConteudo.create({
+                            data: {
+                                painel_id: painel_id,
+                                meta_id: meta,
+                                mostrar_acumulado: painel.mostrar_acumulado_por_padrao,
+                                mostrar_indicador: painel.mostrar_indicador_por_padrao,
+                                mostrar_planejado: painel.mostrar_planejado_por_padrao,
+                                periodicidade: painel.periodicidade,
+                            },
+                            select: { id: true, meta_id: true, mostrar_indicador: true },
+                        })
+                    );
+                }
+                const created = await Promise.all(conteudos);
+
+                await this.populatePainelConteudoDetalhe(created, prisma);
+
+                const deleted = await this.checkDeletedPainelConteudo(
+                    createConteudoDto.metas,
+                    painel.painel_conteudo,
+                    prisma
                 );
+
+                return {
+                    created: created,
+                    deleted: deleted,
+                };
             }
-            const created = await Promise.all(conteudos);
-
-            await this.populatePainelConteudoDetalhe(created, prisma);
-
-            const deleted = await this.checkDeletedPainelConteudo(createConteudoDto.metas, painel.painel_conteudo, prisma);
-
-            return {
-                created: created,
-                deleted: deleted,
-            };
-        });
+        );
 
         return ret;
     }
@@ -519,11 +538,15 @@ export class PainelService {
                 mostrar_acumulado_periodo: true,
                 ordem: true,
             },
-            orderBy: { id: 'desc' }
+            orderBy: { id: 'desc' },
         });
     }
 
-    async updatePainelConteudoVisualizacao(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto) {
+    async updatePainelConteudoVisualizacao(
+        painel_id: number,
+        painel_conteudo_id: number,
+        updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto
+    ) {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({ where: { id: painel_conteudo_id } });
             if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
@@ -544,45 +567,56 @@ export class PainelService {
         return { id: painel_conteudo_id };
     }
 
-    async updatePainelConteudoDetalhes(painel_id: number, painel_conteudo_id: number, updatePainelConteudoDetalheDto: UpdatePainelConteudoDetalheDto) {
-        const ret = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<PainelConteudoDetalheUpdateRet> => {
-            const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({ where: { id: painel_conteudo_id } });
-            if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
-
-            const operations = [];
-            if (updatePainelConteudoDetalheDto.mostrar_indicador_meta || updatePainelConteudoDetalheDto.mostrar_indicador_meta === false) {
-                const painel_conteudo = await prisma.painelConteudo.findFirst({
+    async updatePainelConteudoDetalhes(
+        painel_id: number,
+        painel_conteudo_id: number,
+        updatePainelConteudoDetalheDto: UpdatePainelConteudoDetalheDto
+    ) {
+        const ret = await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient): Promise<PainelConteudoDetalheUpdateRet> => {
+                const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({
                     where: { id: painel_conteudo_id },
-                    select: { mostrar_indicador: true },
                 });
+                if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
 
-                if (painel_conteudo?.mostrar_indicador != updatePainelConteudoDetalheDto.mostrar_indicador_meta) {
+                const operations = [];
+                if (
+                    updatePainelConteudoDetalheDto.mostrar_indicador_meta ||
+                    updatePainelConteudoDetalheDto.mostrar_indicador_meta === false
+                ) {
+                    const painel_conteudo = await prisma.painelConteudo.findFirst({
+                        where: { id: painel_conteudo_id },
+                        select: { mostrar_indicador: true },
+                    });
+
+                    if (painel_conteudo?.mostrar_indicador != updatePainelConteudoDetalheDto.mostrar_indicador_meta) {
+                        operations.push(
+                            prisma.painelConteudo.update({
+                                where: { id: painel_conteudo_id },
+                                data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador_meta },
+                                select: { id: true },
+                            })
+                        );
+                    }
+                }
+
+                for (const detalhe of updatePainelConteudoDetalheDto.detalhes!) {
                     operations.push(
-                        prisma.painelConteudo.update({
-                            where: { id: painel_conteudo_id },
-                            data: { mostrar_indicador: updatePainelConteudoDetalheDto.mostrar_indicador_meta },
+                        prisma.painelConteudoDetalhe.update({
+                            where: {
+                                id: detalhe.id,
+                            },
+                            data: { mostrar_indicador: detalhe.mostrar_indicador },
                             select: { id: true },
-                        }),
+                        })
                     );
                 }
+
+                const updated = await Promise.all(operations);
+
+                return { updated };
             }
-
-            for (const detalhe of updatePainelConteudoDetalheDto.detalhes!) {
-                operations.push(
-                    prisma.painelConteudoDetalhe.update({
-                        where: {
-                            id: detalhe.id,
-                        },
-                        data: { mostrar_indicador: detalhe.mostrar_indicador },
-                        select: { id: true },
-                    }),
-                );
-            }
-
-            const updated = await Promise.all(operations);
-
-            return { updated };
-        });
+        );
 
         return ret;
     }
@@ -625,7 +659,7 @@ export class PainelService {
                 },
             });
 
-            detalhes_db.forEach(i => {
+            detalhes_db.forEach((i) => {
                 existent_painel_conteudo_detalhes.push({
                     id: i.id,
                     variavel_id: i.variavel_id,
@@ -634,7 +668,7 @@ export class PainelService {
                     tipo: i.tipo,
                 });
 
-                i.filhos.forEach(f => {
+                i.filhos.forEach((f) => {
                     existent_painel_conteudo_detalhes.push({
                         id: f.id,
                         variavel_id: f.variavel_id,
@@ -643,7 +677,7 @@ export class PainelService {
                         tipo: f.tipo,
                     });
 
-                    f.filhos.forEach(ff => {
+                    f.filhos.forEach((ff) => {
                         existent_painel_conteudo_detalhes.push({
                             id: ff.id,
                             variavel_id: ff.variavel_id,
@@ -659,11 +693,11 @@ export class PainelService {
                 where: {
                     meta: {
                         id: painel_conteudo.meta_id,
-                        removido_em: null
+                        removido_em: null,
                     },
                     removido_em: null,
                     iniciativa_id: null,
-                    atividade_id: null
+                    atividade_id: null,
                 },
                 select: { id: true, meta_id: true },
             });
@@ -674,7 +708,7 @@ export class PainelService {
                     where: {
                         indicador: {
                             removido_em: null,
-                            id: row.id
+                            id: row.id,
                         },
                         desativado: false,
                     },
@@ -682,7 +716,9 @@ export class PainelService {
                 });
 
                 for (const row of indicador_variaveis) {
-                    const already_exists = existent_painel_conteudo_detalhes.find(i => i.variavel_id === row.variavel_id);
+                    const already_exists = existent_painel_conteudo_detalhes.find(
+                        (i) => i.variavel_id === row.variavel_id
+                    );
 
                     if (already_exists) {
                         unchanged.push(already_exists);
@@ -711,8 +747,8 @@ export class PainelService {
                     removido_em: null,
                     meta: {
                         removido_em: null,
-                        id: painel_conteudo.meta_id
-                    }
+                        id: painel_conteudo.meta_id,
+                    },
                 },
                 select: { id: true },
             });
@@ -721,7 +757,7 @@ export class PainelService {
             for (const iniciativa of meta_iniciativas) {
                 let parent_iniciativa;
 
-                const already_exists = existent_painel_conteudo_detalhes.find(i => i.iniciativa_id === iniciativa.id);
+                const already_exists = existent_painel_conteudo_detalhes.find((i) => i.iniciativa_id === iniciativa.id);
 
                 if (already_exists) {
                     parent_iniciativa = already_exists;
@@ -749,8 +785,8 @@ export class PainelService {
                             removido_em: null,
                             iniciativa: {
                                 removido_em: null,
-                                id: iniciativa.id
-                            }
+                                id: iniciativa.id,
+                            },
                         },
                         desativado: false,
                     },
@@ -758,7 +794,9 @@ export class PainelService {
                 });
 
                 for (const variavel of iniciativa_variaveis) {
-                    const already_exists = existent_painel_conteudo_detalhes.find(i => i.variavel_id == variavel.variavel_id);
+                    const already_exists = existent_painel_conteudo_detalhes.find(
+                        (i) => i.variavel_id == variavel.variavel_id
+                    );
 
                     if (already_exists) {
                         unchanged.push(already_exists);
@@ -788,8 +826,8 @@ export class PainelService {
                         removido_em: null,
                         iniciativa: {
                             removido_em: null,
-                            id: iniciativa.id
-                        }
+                            id: iniciativa.id,
+                        },
                     },
                     select: { id: true },
                 });
@@ -797,25 +835,28 @@ export class PainelService {
                 for (const atividade of atividades) {
                     let parent_atividade;
 
-                    const already_exists = existent_painel_conteudo_detalhes.find(i => i.atividade_id == atividade.id);
+                    const already_exists = existent_painel_conteudo_detalhes.find(
+                        (i) => i.atividade_id == atividade.id
+                    );
                     if (already_exists) {
                         parent_atividade = already_exists;
                         unchanged.push(already_exists);
                     } else {
-                        const created_painel_conteudo_detalhe = (parent_atividade = await prisma.painelConteudoDetalhe.create({
-                            data: {
-                                painel_conteudo_id: painel_conteudo.id,
-                                mostrar_indicador: false,
-                                tipo: PainelConteudoTipoDetalhe.Atividade,
-                                pai_id: parent_iniciativa.id,
-                                atividade_id: atividade.id,
-                            },
-                            select: {
-                                id: true,
-                                atividade_id: true,
-                                tipo: true,
-                            },
-                        }));
+                        const created_painel_conteudo_detalhe = (parent_atividade =
+                            await prisma.painelConteudoDetalhe.create({
+                                data: {
+                                    painel_conteudo_id: painel_conteudo.id,
+                                    mostrar_indicador: false,
+                                    tipo: PainelConteudoTipoDetalhe.Atividade,
+                                    pai_id: parent_iniciativa.id,
+                                    atividade_id: atividade.id,
+                                },
+                                select: {
+                                    id: true,
+                                    atividade_id: true,
+                                    tipo: true,
+                                },
+                            }));
                         created.push(created_painel_conteudo_detalhe);
                     }
 
@@ -825,8 +866,8 @@ export class PainelService {
                                 removido_em: null,
                                 atividade: {
                                     id: atividade.id,
-                                    removido_em: null
-                                }
+                                    removido_em: null,
+                                },
                             },
                             desativado: false,
                         },
@@ -834,7 +875,9 @@ export class PainelService {
                     });
 
                     for (const variavel of atividade_variaveis) {
-                        const already_exists = existent_painel_conteudo_detalhes.find(i => i.variavel_id == variavel.variavel_id);
+                        const already_exists = existent_painel_conteudo_detalhes.find(
+                            (i) => i.variavel_id == variavel.variavel_id
+                        );
 
                         if (already_exists) {
                             unchanged.push(already_exists);
@@ -863,20 +906,22 @@ export class PainelService {
 
         // Tratando rows que precisam ser deletadas
         const saved_rows: PainelConteudoDetalheForSync[] = unchanged.concat(created);
-        const deleted: PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(e => !saved_rows.includes(e));
+        const deleted: PainelConteudoDetalheForSync[] = existent_painel_conteudo_detalhes.filter(
+            (e) => !saved_rows.includes(e)
+        );
 
-        console.log("lgt existent_painel_conteudo_detalhes=" + existent_painel_conteudo_detalhes.length);
-        console.log("lgt unchanged=" + unchanged.length);
-        console.log("lgt created=" + created.length);
-        console.log("lgt saved_rows=" + saved_rows.length);
-        console.log("lgt deleted=" + deleted.length);
+        console.log('lgt existent_painel_conteudo_detalhes=' + existent_painel_conteudo_detalhes.length);
+        console.log('lgt unchanged=' + unchanged.length);
+        console.log('lgt created=' + created.length);
+        console.log('lgt saved_rows=' + saved_rows.length);
+        console.log('lgt deleted=' + deleted.length);
 
         console.dir(created, { depth: 2 });
 
         await prisma.painelConteudoDetalhe.deleteMany({
             where: {
-                id: { in: deleted.map(e => e.id) }
-            }
+                id: { in: deleted.map((e) => e.id) },
+            },
         });
 
         return {
@@ -886,10 +931,14 @@ export class PainelService {
         };
     }
 
-    private async checkDeletedPainelConteudo(metas: number[], conteudos: PainelConteudoIdAndMeta[], prisma: Prisma.TransactionClient): Promise<PainelConteudoIdAndMeta[]> {
+    private async checkDeletedPainelConteudo(
+        metas: number[],
+        conteudos: PainelConteudoIdAndMeta[],
+        prisma: Prisma.TransactionClient
+    ): Promise<PainelConteudoIdAndMeta[]> {
         const deleted: PainelConteudoIdAndMeta[] = [];
         for (const existent_conteudo of conteudos) {
-            const conteudo_kept = metas.filter(v => {
+            const conteudo_kept = metas.filter((v) => {
                 return v === existent_conteudo.meta_id;
             });
 
@@ -962,7 +1011,7 @@ export class PainelService {
         periodicidade: Periodicidade,
         periodo_valor: number | null,
         periodo_inicio: Date | null,
-        periodo_fim: Date | null,
+        periodo_fim: Date | null
     ): Promise<PainelDateRange> {
         const ret: {
             start: Date;
@@ -977,7 +1026,11 @@ export class PainelService {
 
             const multiplier = await this.getMultiplierForPeriodicidade(periodicidade);
 
-            if (periodicidade === Periodicidade.Anual || periodicidade === Periodicidade.Quinquenal || periodicidade === Periodicidade.Secular) {
+            if (
+                periodicidade === Periodicidade.Anual ||
+                periodicidade === Periodicidade.Quinquenal ||
+                periodicidade === Periodicidade.Secular
+            ) {
                 ret.start = new Date(new Date().getFullYear() - periodo_valor * multiplier, 0, 1);
                 ret.end = new Date(new Date().getFullYear(), 0, 1);
             } else if (periodicidade === Periodicidade.Semestral) {
@@ -1061,7 +1114,11 @@ export class PainelService {
             const date = end.minus({ second: 1 });
 
             ret = date.toLocaleString({ month: '2-digit', year: 'numeric' });
-        } else if (periodicidade === Periodicidade.Secular || periodicidade === Periodicidade.Quinquenal || periodicidade === Periodicidade.Anual) {
+        } else if (
+            periodicidade === Periodicidade.Secular ||
+            periodicidade === Periodicidade.Quinquenal ||
+            periodicidade === Periodicidade.Anual
+        ) {
             ret = start.toLocaleString({ year: 'numeric' });
         } else {
             ret = start.toLocaleString({ month: '2-digit', year: 'numeric' });
@@ -1075,7 +1132,7 @@ export class PainelService {
         periodo_valor: number | null,
         start_date: Date,
         end_date: Date,
-        series_order_size: number,
+        series_order_size: number
     ): Promise<SeriesTemplate[]> {
         const series_template: SeriesTemplate[] = [];
 
@@ -1121,7 +1178,8 @@ export class PainelService {
                 config.multiplier = 1;
         }
 
-        if (!config.multiplier || !config.time_unit) throw new Error('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
+        if (!config.multiplier || !config.time_unit)
+            throw new Error('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
 
         if (!periodo_valor) periodo_valor = 1;
 
@@ -1139,7 +1197,9 @@ export class PainelService {
         let i = 0;
         while (window_start < end) {
             if (periodicidade === Periodicidade.Semestral) {
-                window_start = window_end ? window_start.plus({ quarter: 1 }).startOf('quarter') : window_start.startOf('quarter');
+                window_start = window_end
+                    ? window_start.plus({ quarter: 1 }).startOf('quarter')
+                    : window_start.startOf('quarter');
                 window_end = window_start.plus({ quarters: 1 }).endOf('quarter');
             } else {
                 // Objeto que é utilizado para soma no Luxon (ex: {days: 10}).
@@ -1176,18 +1236,36 @@ export class PainelService {
         if (config.periodo === Periodo.Anteriores) {
             if (!config.periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
 
-            const date_range = await this.getStartEndDate(config.periodo, config.periodicidade, config.periodo_valor, config.periodo_fim, config.periodo_fim);
+            const date_range = await this.getStartEndDate(
+                config.periodo,
+                config.periodicidade,
+                config.periodo_valor,
+                config.periodo_fim,
+                config.periodo_fim
+            );
             gte = date_range.start;
             lte = date_range.end;
 
-            series_template = await this.getSeriesTemplate(config.periodicidade, config.periodo_valor, gte, lte, series_order.length);
+            series_template = await this.getSeriesTemplate(
+                config.periodicidade,
+                config.periodo_valor,
+                gte,
+                lte,
+                series_order.length
+            );
         } else if (config.periodo === Periodo.EntreDatas) {
             if (!config.periodo_inicio || !config.periodo_fim) throw new Error('Faltando configuração de periodos');
 
             gte = config.periodo_inicio;
             lte = config.periodo_fim;
 
-            series_template = await this.getSeriesTemplate(config.periodicidade, config.periodo_valor, gte, lte, series_order.length);
+            series_template = await this.getSeriesTemplate(
+                config.periodicidade,
+                config.periodo_valor,
+                gte,
+                lte,
+                series_order.length
+            );
         } else {
             gte = new Date(0);
             lte = new Date();
@@ -1386,36 +1464,36 @@ export class PainelService {
         if (config.periodo === Periodo.Todos) {
             const all_series: SerieRow[] = [];
 
-            series.meta.indicador.forEach(r => {
-                r.SerieIndicador.forEach(s => {
+            series.meta.indicador.forEach((r) => {
+                r.SerieIndicador.forEach((s) => {
                     all_series.push(s);
                 });
             });
 
-            series.detalhes.forEach(d => {
-                d.variavel?.serie_variavel.forEach(s => {
+            series.detalhes.forEach((d) => {
+                d.variavel?.serie_variavel.forEach((s) => {
                     all_series.push(s);
                 });
 
-                d.iniciativa?.Indicador.forEach(i => {
-                    i.SerieIndicador.forEach(s => {
+                d.iniciativa?.Indicador.forEach((i) => {
+                    i.SerieIndicador.forEach((s) => {
                         all_series.push(s);
                     });
                 });
 
-                d.filhos.forEach(f => {
-                    f.atividade?.Indicador.forEach(i => {
-                        i.SerieIndicador.forEach(s => {
+                d.filhos.forEach((f) => {
+                    f.atividade?.Indicador.forEach((i) => {
+                        i.SerieIndicador.forEach((s) => {
                             all_series.push(s);
                         });
                     });
 
-                    f.variavel?.serie_variavel.forEach(s => {
+                    f.variavel?.serie_variavel.forEach((s) => {
                         all_series.push(s);
                     });
 
-                    f.filhos.forEach(ff => {
-                        ff.variavel?.serie_variavel.forEach(s => {
+                    f.filhos.forEach((ff) => {
+                        ff.variavel?.serie_variavel.forEach((s) => {
                             all_series.push(s);
                         });
                     });
@@ -1432,7 +1510,13 @@ export class PainelService {
                 const earliest = new Date(all_series[0].data_valor);
                 const latest = new Date(all_series.at(-1)!.data_valor);
 
-                series_template = await this.getSeriesTemplate(config.periodicidade, null, earliest, latest, series_order.length);
+                series_template = await this.getSeriesTemplate(
+                    config.periodicidade,
+                    null,
+                    earliest,
+                    latest,
+                    series_order.length
+                );
             }
         }
 
@@ -1449,48 +1533,54 @@ export class PainelService {
                 indicador:
                     series.mostrar_indicador && series.meta.indicador.length > 0
                         ? {
-                            id: series.meta.indicador[0].id,
-                            codigo: series.meta.indicador[0].codigo,
-                            titulo: series.meta.indicador[0].titulo,
+                              id: series.meta.indicador[0].id,
+                              codigo: series.meta.indicador[0].codigo,
+                              titulo: series.meta.indicador[0].titulo,
 
-                            series: series_template.map(t => {
-                                const series_for_period = series.meta.indicador[0].SerieIndicador.filter(r => {
-                                    return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
-                                });
+                              series: series_template.map((t) => {
+                                  const series_for_period = series.meta.indicador[0].SerieIndicador.filter((r) => {
+                                      return (
+                                          r.data_valor.getTime() >= t.periodo_inicio.getTime() &&
+                                          r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                      );
+                                  });
 
-                                return {
-                                    titulo: t.titulo,
-                                    periodo_inicio: t.periodo_inicio,
-                                    periodo_fim: t.periodo_fim,
+                                  return {
+                                      titulo: t.titulo,
+                                      periodo_inicio: t.periodo_inicio,
+                                      periodo_fim: t.periodo_fim,
 
-                                    valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                        const serie_match_arr = series_for_period.filter(sm => {
-                                            return sm.serie == series_order[ix];
-                                        });
-                                        const serie_match = serie_match_arr[0];
+                                      valores_nominais: t.valores_nominais.map((vn, ix) => {
+                                          const serie_match_arr = series_for_period.filter((sm) => {
+                                              return sm.serie == series_order[ix];
+                                          });
+                                          const serie_match = serie_match_arr[0];
 
-                                        if (serie_match) {
-                                            return serie_match.valor_nominal;
-                                        } else {
-                                            return '';
-                                        }
-                                    }),
-                                };
-                            }),
-                        }
+                                          if (serie_match) {
+                                              return serie_match.valor_nominal;
+                                          } else {
+                                              return '';
+                                          }
+                                      }),
+                                  };
+                              }),
+                          }
                         : {},
             },
 
-            detalhes: series.detalhes.map(d => {
+            detalhes: series.detalhes.map((d) => {
                 return {
                     variavel: {
                         id: d.variavel?.id,
                         titulo: d.variavel?.titulo,
 
-                        series: series_template.map(t => {
+                        series: series_template.map((t) => {
                             const series_for_period =
-                                d.variavel?.serie_variavel.filter(r => {
-                                    return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
+                                d.variavel?.serie_variavel.filter((r) => {
+                                    return (
+                                        r.data_valor.getTime() >= t.periodo_inicio.getTime() &&
+                                        r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                    );
                                 }) || [];
 
                             return {
@@ -1498,7 +1588,7 @@ export class PainelService {
                                 periodo_inicio: t.periodo_inicio,
                                 periodo_fim: t.periodo_fim,
                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                    const serie_match_arr = series_for_period.filter(sm => {
+                                    const serie_match_arr = series_for_period.filter((sm) => {
                                         return sm.serie == series_order[ix];
                                     });
                                     const serie_match = serie_match_arr[0];
@@ -1517,16 +1607,19 @@ export class PainelService {
                         id: d.iniciativa?.id,
                         titulo: d.iniciativa?.titulo,
 
-                        indicador: d.iniciativa?.Indicador.map(i => {
+                        indicador: d.iniciativa?.Indicador.map((i) => {
                             return {
                                 id: i.id,
                                 codigo: i.codigo,
                                 titulo: i.titulo,
 
-                                series: series_template.map(t => {
+                                series: series_template.map((t) => {
                                     const series_for_period =
-                                        i.SerieIndicador.filter(r => {
-                                            return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
+                                        i.SerieIndicador.filter((r) => {
+                                            return (
+                                                r.data_valor.getTime() >= t.periodo_inicio.getTime() &&
+                                                r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                            );
                                         }) || [];
 
                                     return {
@@ -1534,7 +1627,7 @@ export class PainelService {
                                         periodo_inicio: t.periodo_inicio,
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                            const serie_match_arr = series_for_period.filter(sm => {
+                                            const serie_match_arr = series_for_period.filter((sm) => {
                                                 return sm.serie == series_order[ix];
                                             });
                                             const serie_match = serie_match_arr[0];
@@ -1551,15 +1644,18 @@ export class PainelService {
                         }),
                     },
 
-                    filhos: d.filhos.map(f => {
+                    filhos: d.filhos.map((f) => {
                         return {
                             variavel: {
                                 id: f.variavel?.id,
                                 titulo: f.variavel?.titulo,
-                                series: series_template.map(t => {
+                                series: series_template.map((t) => {
                                     const series_for_period =
-                                        f.variavel?.serie_variavel.filter(r => {
-                                            return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
+                                        f.variavel?.serie_variavel.filter((r) => {
+                                            return (
+                                                r.data_valor.getTime() >= t.periodo_inicio.getTime() &&
+                                                r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                            );
                                         }) || [];
 
                                     return {
@@ -1567,7 +1663,7 @@ export class PainelService {
                                         periodo_inicio: t.periodo_inicio,
                                         periodo_fim: t.periodo_fim,
                                         valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                            const serie_match_arr = series_for_period.filter(sm => {
+                                            const serie_match_arr = series_for_period.filter((sm) => {
                                                 return sm.serie == series_order[ix];
                                             });
                                             const serie_match = serie_match_arr[0];
@@ -1586,16 +1682,19 @@ export class PainelService {
                                 id: f.atividade?.id,
                                 titulo: f.atividade?.titulo,
 
-                                indicador: f.atividade?.Indicador.map(i => {
+                                indicador: f.atividade?.Indicador.map((i) => {
                                     return {
                                         id: i.id,
                                         codigo: i.codigo,
                                         titulo: i.titulo,
 
-                                        series: series_template.map(t => {
+                                        series: series_template.map((t) => {
                                             const series_for_period =
-                                                i.SerieIndicador.filter(r => {
-                                                    return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
+                                                i.SerieIndicador.filter((r) => {
+                                                    return (
+                                                        r.data_valor.getTime() >= t.periodo_inicio.getTime() &&
+                                                        r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                                    );
                                                 }) || [];
 
                                             return {
@@ -1603,7 +1702,7 @@ export class PainelService {
                                                 periodo_inicio: t.periodo_inicio,
                                                 periodo_fim: t.periodo_fim,
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                                    const serie_match_arr = series_for_period.filter(sm => {
+                                                    const serie_match_arr = series_for_period.filter((sm) => {
                                                         return sm.serie == series_order[ix];
                                                     });
                                                     const serie_match = serie_match_arr[0];
@@ -1620,16 +1719,19 @@ export class PainelService {
                                 }),
                             },
 
-                            filhos: f.filhos.map(af => {
+                            filhos: f.filhos.map((af) => {
                                 return {
                                     variavel: {
                                         id: af.variavel?.id,
                                         titulo: af.variavel?.titulo,
 
-                                        series: series_template.map(t => {
+                                        series: series_template.map((t) => {
                                             const series_for_period =
-                                                af.variavel?.serie_variavel.filter(r => {
-                                                    return r.data_valor.getTime() >= t.periodo_inicio.getTime() && r.data_valor.getTime() <= t.periodo_fim.getTime();
+                                                af.variavel?.serie_variavel.filter((r) => {
+                                                    return (
+                                                        r.data_valor.getTime() >= t.periodo_inicio.getTime() &&
+                                                        r.data_valor.getTime() <= t.periodo_fim.getTime()
+                                                    );
                                                 }) || [];
 
                                             return {
@@ -1637,7 +1739,7 @@ export class PainelService {
                                                 periodo_inicio: t.periodo_inicio,
                                                 periodo_fim: t.periodo_fim,
                                                 valores_nominais: t.valores_nominais.map((vn, ix) => {
-                                                    const serie_match_arr = series_for_period.filter(sm => {
+                                                    const serie_match_arr = series_for_period.filter((sm) => {
                                                         return sm.serie == series_order[ix];
                                                     });
                                                     const serie_match = serie_match_arr[0];
@@ -1664,27 +1766,30 @@ export class PainelService {
         return ret;
     }
 
-    async getSimplifiedPainelSeries(opts: { painel_id: number; metas_ids: number[] }): Promise<SimplifiedPainelConteudoSeries[]> {
+    async getSimplifiedPainelSeries(opts: {
+        painel_id: number;
+        metas_ids: number[];
+    }): Promise<SimplifiedPainelConteudoSeries[]> {
         interface values {
             [key: string]: number | Decimal | '';
         }
 
         class RetMeta {
-            meta_id: number
-            meta_codigo: string
-            meta_titulo: string
+            meta_id: number;
+            meta_codigo: string;
+            meta_titulo: string;
         }
 
         class RetIniciativa {
-            iniciativa_id?: number | null
-            iniciativa_codigo?: string | null
-            iniciativa_titulo?: string | null
+            iniciativa_id?: number | null;
+            iniciativa_codigo?: string | null;
+            iniciativa_titulo?: string | null;
         }
 
         class RetAtividade {
-            atividade_id?: number | null
-            atividade_codigo?: string | null
-            atividade_titulo?: string | null
+            atividade_id?: number | null;
+            atividade_codigo?: string | null;
+            atividade_titulo?: string | null;
         }
 
         const painel_conteudo_db = await this.prisma.painelConteudo.findMany({
@@ -1717,7 +1822,7 @@ export class PainelService {
                     indicador_id: painel_conteudo_series.meta.indicador.id,
                     indicador_codigo: painel_conteudo_series.meta.indicador.codigo,
                     indicador_titulo: painel_conteudo_series.meta.indicador.titulo,
-                    series: painel_conteudo_series.meta.indicador.series?.map(s => {
+                    series: painel_conteudo_series.meta.indicador.series?.map((s) => {
                         const values: values = {};
                         s.valores_nominais.forEach((vn, i) => {
                             values[series_order[i]] = vn;
@@ -1731,15 +1836,14 @@ export class PainelService {
                 });
             }
 
-            painel_conteudo_series.detalhes?.forEach(d => {
+            painel_conteudo_series.detalhes?.forEach((d) => {
                 const iniciativa: RetIniciativa = {
                     iniciativa_id: d.iniciativa ? d.iniciativa.id : null,
                     iniciativa_codigo: d.iniciativa ? d.iniciativa.codigo : null,
-                    iniciativa_titulo: d.iniciativa ? d.iniciativa.titulo : null
+                    iniciativa_titulo: d.iniciativa ? d.iniciativa.titulo : null,
                 };
 
                 if (d.variavel?.series && d.variavel?.series?.length > 0) {
-
                     ret.push({
                         ...painel_conteudo_meta,
                         ...iniciativa,
@@ -1747,7 +1851,7 @@ export class PainelService {
                         variavel_id: d.variavel.id,
                         variavel_codigo: d.variavel.codigo,
                         variavel_titulo: d.variavel.titulo,
-                        series: d.variavel.series.map(s => {
+                        series: d.variavel.series.map((s) => {
                             const values: values = {};
                             s.valores_nominais.forEach((vn, i) => {
                                 values[series_order[i]] = vn;
@@ -1762,7 +1866,7 @@ export class PainelService {
                 }
 
                 if (d.iniciativa?.indicador) {
-                    d.iniciativa.indicador.forEach(ii => {
+                    d.iniciativa.indicador.forEach((ii) => {
                         if (ii.series && ii.series.length > 0) {
                             ret.push({
                                 ...painel_conteudo_meta,
@@ -1770,7 +1874,7 @@ export class PainelService {
                                 indicador_id: ii.id,
                                 indicador_codigo: ii.codigo,
                                 indicador_titulo: ii.titulo,
-                                series: ii.series.map(s => {
+                                series: ii.series.map((s) => {
                                     const values: values = {};
                                     s.valores_nominais.forEach((vn, i) => {
                                         values[series_order[i]] = vn;
@@ -1786,11 +1890,11 @@ export class PainelService {
                     });
                 }
 
-                d.filhos?.forEach(f => {
+                d.filhos?.forEach((f) => {
                     const atividade: RetAtividade = {
                         atividade_id: f.atividade ? f.atividade.id : null,
                         atividade_codigo: f.atividade ? f.atividade.codigo : null,
-                        atividade_titulo: f.atividade ? f.atividade.titulo : null
+                        atividade_titulo: f.atividade ? f.atividade.titulo : null,
                     };
 
                     if (f.variavel?.series && f.variavel?.series?.length > 0) {
@@ -1801,7 +1905,7 @@ export class PainelService {
                             variavel_id: f.variavel.id,
                             variavel_codigo: f.variavel.codigo,
                             variavel_titulo: f.variavel.titulo,
-                            series: f.variavel.series.map(s => {
+                            series: f.variavel.series.map((s) => {
                                 const values: values = {};
                                 s.valores_nominais.forEach((vn, i) => {
                                     values[series_order[i]] = vn;
@@ -1816,7 +1920,7 @@ export class PainelService {
                     }
 
                     if (f.atividade?.indicador) {
-                        f.atividade.indicador.forEach(ai => {
+                        f.atividade.indicador.forEach((ai) => {
                             if (ai.series && ai.series.length > 0) {
                                 ret.push({
                                     ...painel_conteudo_meta,
@@ -1825,7 +1929,7 @@ export class PainelService {
                                     indicador_id: ai.id,
                                     indicador_codigo: ai.codigo,
                                     indicador_titulo: ai.titulo,
-                                    series: ai.series.map(s => {
+                                    series: ai.series.map((s) => {
                                         const values: values = {};
                                         s.valores_nominais.forEach((vn, i) => {
                                             values[series_order[i]] = vn;
@@ -1841,11 +1945,11 @@ export class PainelService {
                         });
                     }
 
-                    d.filhos?.forEach(ff => {
+                    d.filhos?.forEach((ff) => {
                         const atividade: RetAtividade = {
                             atividade_id: ff.atividade ? ff.atividade.id : null,
                             atividade_codigo: ff.atividade ? ff.atividade.codigo : null,
-                            atividade_titulo: ff.atividade ? ff.atividade.titulo : null
+                            atividade_titulo: ff.atividade ? ff.atividade.titulo : null,
                         };
 
                         if (ff.variavel?.series && ff.variavel?.series?.length > 0) {
@@ -1856,7 +1960,7 @@ export class PainelService {
                                 variavel_id: ff.variavel.id,
                                 variavel_codigo: ff.variavel.codigo,
                                 variavel_titulo: ff.variavel.titulo,
-                                series: ff.variavel.series.map(s => {
+                                series: ff.variavel.series.map((s) => {
                                     const values: values = {};
                                     s.valores_nominais.forEach((vn, i) => {
                                         values[series_order[i]] = vn;
@@ -1871,7 +1975,7 @@ export class PainelService {
                         }
 
                         if (ff.atividade?.indicador) {
-                            ff.atividade.indicador.forEach(ai => {
+                            ff.atividade.indicador.forEach((ai) => {
                                 if (ai.series && ai.series.length > 0) {
                                     ret.push({
                                         ...painel_conteudo_meta,
@@ -1880,7 +1984,7 @@ export class PainelService {
                                         indicador_id: ai.id,
                                         indicador_codigo: ai.codigo,
                                         indicador_titulo: ai.titulo,
-                                        series: ai.series.map(s => {
+                                        series: ai.series.map((s) => {
                                             const values: values = {};
                                             s.valores_nominais.forEach((vn, i) => {
                                                 values[series_order[i]] = vn;

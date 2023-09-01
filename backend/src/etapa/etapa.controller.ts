@@ -16,7 +16,11 @@ export class EtapaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
-    async update(@Param() params: FindOneParams, @Body() updateEtapaDto: UpdateEtapaDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateEtapaDto: UpdateEtapaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.etapaService.update(+params.id, updateEtapaDto, user);
     }
 

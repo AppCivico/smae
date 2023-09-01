@@ -1,9 +1,8 @@
-import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
+import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 
 @ValidatorConstraint({ name: 'EitherPdmOrPortfolio', async: false })
 export class EitherPdmOrPortfolio implements ValidatorConstraintInterface {
     validate(value: any, args: ValidationArguments) {
-
         const { pdm_id, portfolio_id } = args.object as any;
 
         // verifica se tem um ou o outro, mas não ambos ao mesmo tempo

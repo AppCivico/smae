@@ -1,11 +1,11 @@
 export class ProjetoRiscoCalcResults {
-    nivel: number
-    grau_valor: number
-    grau_descricao: string
-    resposta_valor: number
-    resposta_descricao: string
-    impacto_descricao: string
-    probabilidade_descricao: string
+    nivel: number;
+    grau_valor: number;
+    grau_descricao: string;
+    resposta_valor: number;
+    resposta_descricao: string;
+    impacto_descricao: string;
+    probabilidade_descricao: string;
 }
 
 const probabilidadeDescricao = ['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta/Fato'];
@@ -66,14 +66,9 @@ export class RiscoCalc {
             resposta_valor,
             resposta_descricao,
             impacto_descricao,
-            probabilidade_descricao
-        }
+            probabilidade_descricao,
+        };
     }
 }
 
-export {
-    grauDescricao,
-    probabilidadeDescricao,
-    respostaDescricao,
-    impactoDescricao,
-}
+export { grauDescricao, probabilidadeDescricao, respostaDescricao, impactoDescricao };

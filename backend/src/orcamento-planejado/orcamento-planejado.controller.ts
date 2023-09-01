@@ -5,19 +5,27 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateOrcamentoPlanejadoDto, FilterOrcamentoPlanejadoDto, ListOrcamentoPlanejadoDto, UpdateOrcamentoPlanejadoDto } from './dto/orcamento-planejado.dto';
+import {
+    CreateOrcamentoPlanejadoDto,
+    FilterOrcamentoPlanejadoDto,
+    ListOrcamentoPlanejadoDto,
+    UpdateOrcamentoPlanejadoDto,
+} from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejadoService } from './orcamento-planejado.service';
 
 @ApiTags('Orçamento - Planejado')
 @Controller('orcamento-planejado')
 export class OrcamentoPlanejadoController {
-    constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) { }
+    constructor(private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
-    async create(@Body() createMetaDto: CreateOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createMetaDto: CreateOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.orcamentoPlanejadoService.create(createMetaDto, user);
     }
 
@@ -25,14 +33,21 @@ export class OrcamentoPlanejadoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
-    async update(@Param() params: FindOneParams, @Body() createMetaDto: UpdateOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() createMetaDto: UpdateOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.orcamentoPlanejadoService.update(+params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
-    async findAll(@Query() filters: FilterOrcamentoPlanejadoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListOrcamentoPlanejadoDto> {
+    async findAll(
+        @Query() filters: FilterOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListOrcamentoPlanejadoDto> {
         return {
             linhas: await this.orcamentoPlanejadoService.findAll(filters, user),
         };

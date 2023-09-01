@@ -13,7 +13,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     // não requirido, mas se não existir não vai autorizar
     public hasSomeRoles(anyRequiredRole: ListaDePrivilegios[]) {
         if (!this.privilegios) return false;
-        return anyRequiredRole.some(role => this.privilegios.includes(role));
+        return anyRequiredRole.some((role) => this.privilegios.includes(role));
     }
 
     public async assertHasMetaRespAccess(meta_id: number, metaResponsavel: any) {
@@ -25,7 +25,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     }
 
     public async getMetasOndeSouResponsavel(
-        metaResponsavel: any, // não consegui mais usar o delegate do prisma, o building fica em loop pra sempre....
+        metaResponsavel: any // não consegui mais usar o delegate do prisma, o building fica em loop pra sempre....
     ): Promise<number[]> {
         if (!this.privilegios) return [];
 
@@ -34,6 +34,6 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
             select: { meta_id: true },
         });
 
-        return (metas as { meta_id: number }[]).map(r => r.meta_id);
+        return (metas as { meta_id: number }[]).map((r) => r.meta_id);
     }
 }

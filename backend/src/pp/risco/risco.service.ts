@@ -15,142 +15,147 @@ export class RiscoService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(projetoId: number, dto: CreateRiscoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const calcResult = dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
+        const calcResult =
+            dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
 
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            // Na criação, o código é fixado, para sempre ir para o final da lista.
-            const ultimoCodigoUsado = await prismaTx.projetoRisco.findFirst({
-                where: {
-                    projeto_id: projetoId,
-                    removido_em: null,
-                },
-                orderBy: { codigo: 'desc' },
-                take: 1,
-                select: {
-                    codigo: true,
-                },
-            });
-
-            let codigo: number;
-            if (!ultimoCodigoUsado) {
-                codigo = 1;
-            } else {
-                codigo = ultimoCodigoUsado.codigo + 1;
-            }
-
-            const risco = await prismaTx.projetoRisco.create({
-                data: {
-                    projeto_id: projetoId,
-                    status_risco: StatusRisco.SemInformacao,
-
-                    codigo: codigo,
-                    registrado_em: dto.registrado_em,
-                    probabilidade: dto.probabilidade,
-                    impacto: dto.impacto,
-                    descricao: dto.descricao,
-                    causa: dto.causa,
-                    titulo: dto.titulo,
-                    consequencia: dto.consequencia,
-                    risco_tarefa_outros: dto.risco_tarefa_outros,
-
-                    nivel: calcResult?.nivel,
-                    grau: calcResult?.grau_valor,
-                    resposta: calcResult?.resposta_descricao,
-
-                    criado_em: new Date(Date.now()),
-                    criado_por: user.id,
-                },
-                select: { id: true },
-            });
-
-            if (dto.tarefa_id) {
-                await prismaTx.riscoTarefa.createMany({
-                    data: dto.tarefa_id.map(t => {
-                        return {
-                            projeto_risco_id: risco.id,
-                            tarefa_id: t,
-                        };
-                    }),
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Na criação, o código é fixado, para sempre ir para o final da lista.
+                const ultimoCodigoUsado = await prismaTx.projetoRisco.findFirst({
+                    where: {
+                        projeto_id: projetoId,
+                        removido_em: null,
+                    },
+                    orderBy: { codigo: 'desc' },
+                    take: 1,
+                    select: {
+                        codigo: true,
+                    },
                 });
-            }
 
-            return { id: risco.id };
-        });
+                let codigo: number;
+                if (!ultimoCodigoUsado) {
+                    codigo = 1;
+                } else {
+                    codigo = ultimoCodigoUsado.codigo + 1;
+                }
+
+                const risco = await prismaTx.projetoRisco.create({
+                    data: {
+                        projeto_id: projetoId,
+                        status_risco: StatusRisco.SemInformacao,
+
+                        codigo: codigo,
+                        registrado_em: dto.registrado_em,
+                        probabilidade: dto.probabilidade,
+                        impacto: dto.impacto,
+                        descricao: dto.descricao,
+                        causa: dto.causa,
+                        titulo: dto.titulo,
+                        consequencia: dto.consequencia,
+                        risco_tarefa_outros: dto.risco_tarefa_outros,
+
+                        nivel: calcResult?.nivel,
+                        grau: calcResult?.grau_valor,
+                        resposta: calcResult?.resposta_descricao,
+
+                        criado_em: new Date(Date.now()),
+                        criado_por: user.id,
+                    },
+                    select: { id: true },
+                });
+
+                if (dto.tarefa_id) {
+                    await prismaTx.riscoTarefa.createMany({
+                        data: dto.tarefa_id.map((t) => {
+                            return {
+                                projeto_risco_id: risco.id,
+                                tarefa_id: t,
+                            };
+                        }),
+                    });
+                }
+
+                return { id: risco.id };
+            }
+        );
 
         return created;
     }
 
     async findAll(projetoId: number, user: PessoaFromJwt | undefined): Promise<ProjetoRisco[]> {
-        const projetoRiscoList = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<ProjetoRisco[]> => {
-            const projetoRisco = await prismaTx.projetoRisco.findMany({
-                where: {
-                    projeto_id: projetoId,
-                    removido_em: null,
-                },
-                orderBy: [{ codigo: 'asc' }],
-                select: {
-                    id: true,
-                    codigo: true,
-                    registrado_em: true,
-                    descricao: true,
-                    causa: true,
-                    consequencia: true,
-                    probabilidade: true,
-                    impacto: true,
-                    nivel: true,
-                    grau: true,
-                    resposta: true,
-                    risco_tarefa_outros: true,
-                    status_risco: true,
-                    titulo: true,
-                    planos_de_acao_sem_dt_term: true,
-                },
-            });
+        const projetoRiscoList = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<ProjetoRisco[]> => {
+                const projetoRisco = await prismaTx.projetoRisco.findMany({
+                    where: {
+                        projeto_id: projetoId,
+                        removido_em: null,
+                    },
+                    orderBy: [{ codigo: 'asc' }],
+                    select: {
+                        id: true,
+                        codigo: true,
+                        registrado_em: true,
+                        descricao: true,
+                        causa: true,
+                        consequencia: true,
+                        probabilidade: true,
+                        impacto: true,
+                        nivel: true,
+                        grau: true,
+                        resposta: true,
+                        risco_tarefa_outros: true,
+                        status_risco: true,
+                        titulo: true,
+                        planos_de_acao_sem_dt_term: true,
+                    },
+                });
 
-            const projetoRiscoPromises = projetoRisco.map(async r => {
-                let nivel: number | null = null;
-                let grau: number | null = null;
-                let resposta: string | null = null;
-                let calcResult;
+                const projetoRiscoPromises = projetoRisco.map(async (r) => {
+                    let nivel: number | null = null;
+                    let grau: number | null = null;
+                    let resposta: string | null = null;
+                    let calcResult;
 
-                if (r.probabilidade && r.impacto) calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
+                    if (r.probabilidade && r.impacto) calcResult = RiscoCalc.getResult(r.probabilidade, r.impacto);
 
-                if (r.nivel && r.grau && r.resposta) {
-                    nivel = r.nivel;
-                    grau = r.grau;
-                    resposta = r.resposta;
-                } else {
-                    if (calcResult) {
-                        nivel = calcResult.nivel;
-                        grau = calcResult.grau_valor;
-                        resposta = calcResult.resposta_descricao;
+                    if (r.nivel && r.grau && r.resposta) {
+                        nivel = r.nivel;
+                        grau = r.grau;
+                        resposta = r.resposta;
+                    } else {
+                        if (calcResult) {
+                            nivel = calcResult.nivel;
+                            grau = calcResult.grau_valor;
+                            resposta = calcResult.resposta_descricao;
 
-                        await prismaTx.projetoRisco.update({
-                            where: { id: r.id },
-                            data: {
-                                nivel,
-                                grau,
-                                resposta,
-                            },
-                        });
+                            await prismaTx.projetoRisco.update({
+                                where: { id: r.id },
+                                data: {
+                                    nivel,
+                                    grau,
+                                    resposta,
+                                },
+                            });
+                        }
                     }
-                }
 
-                return {
-                    ...r,
+                    return {
+                        ...r,
 
-                    impacto_descricao: calcResult ? calcResult.impacto_descricao : null,
-                    probabilidade_descricao: calcResult ? calcResult.probabilidade_descricao : null,
-                    nivel: nivel,
-                    grau: grau,
-                    grau_descricao: calcResult ? calcResult.grau_descricao : null,
-                    resposta: resposta,
-                    resposta_descricao: calcResult ? calcResult.resposta_descricao : null,
-                };
-            });
+                        impacto_descricao: calcResult ? calcResult.impacto_descricao : null,
+                        probabilidade_descricao: calcResult ? calcResult.probabilidade_descricao : null,
+                        nivel: nivel,
+                        grau: grau,
+                        grau_descricao: calcResult ? calcResult.grau_descricao : null,
+                        resposta: resposta,
+                        resposta_descricao: calcResult ? calcResult.resposta_descricao : null,
+                    };
+                });
 
-            return Promise.all(projetoRiscoPromises);
-        });
+                return Promise.all(projetoRiscoPromises);
+            }
+        );
 
         return projetoRiscoList;
     }
@@ -231,10 +236,15 @@ export class RiscoService {
         if (!projetoRisco) throw new HttpException('Não foi possível encontrar o Risco', 400);
 
         let calcResult;
-        if (projetoRisco.probabilidade && projetoRisco.impacto) calcResult = RiscoCalc.getResult(projetoRisco.probabilidade, projetoRisco.impacto);
+        if (projetoRisco.probabilidade && projetoRisco.impacto)
+            calcResult = RiscoCalc.getResult(projetoRisco.probabilidade, projetoRisco.impacto);
 
         // Flag para informar se o código pode ser atualizado.
-        const valoresStatusAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+        const valoresStatusAceitaveis: ProjetoStatus[] = [
+            ProjetoStatus.Registrado,
+            ProjetoStatus.Selecionado,
+            ProjetoStatus.EmPlanejamento,
+        ];
         const edicaoLimitada: boolean = valoresStatusAceitaveis.includes(projetoRisco.projeto.status) ? true : false;
 
         return {
@@ -247,14 +257,14 @@ export class RiscoService {
             resposta: calcResult ? calcResult.resposta_descricao : null,
             edicao_limitada: edicaoLimitada,
 
-            tarefas_afetadas: projetoRisco?.RiscoTarefa.map(r => {
+            tarefas_afetadas: projetoRisco?.RiscoTarefa.map((r) => {
                 return {
                     tarefa_id: r.tarefa.id,
                     tarefa: r.tarefa.tarefa,
                 };
             }),
 
-            planos_de_acao: projetoRisco.planos_de_acao.map(pa => {
+            planos_de_acao: projetoRisco.planos_de_acao.map((pa) => {
                 return {
                     ...pa,
                 };
@@ -276,7 +286,7 @@ export class RiscoService {
 
                     await prismaTx.riscoTarefa.deleteMany({ where: { projeto_risco_id: projeto_risco_id } });
                     await prismaTx.riscoTarefa.createMany({
-                        data: tarefa_id.map(r => {
+                        data: tarefa_id.map((r) => {
                             return {
                                 projeto_risco_id: projeto_risco_id,
                                 tarefa_id: r,
@@ -287,7 +297,11 @@ export class RiscoService {
 
                 if (dto.codigo && dto.codigo != self.codigo) {
                     // O código só pode ser modificado caso o status do Projeto for diferente de ['Planejado','Validado ','EmAcompanhamento','Suspenso','Fechado ']
-                    const valoresAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+                    const valoresAceitaveis: ProjetoStatus[] = [
+                        ProjetoStatus.Registrado,
+                        ProjetoStatus.Selecionado,
+                        ProjetoStatus.EmPlanejamento,
+                    ];
 
                     const projetoRisco = await prismaTx.projetoRisco.findFirst({
                         where: { id: projeto_risco_id },
@@ -332,7 +346,7 @@ export class RiscoService {
                                 prismaTx.projetoRisco.update({
                                     where: { id: row.id },
                                     data: { codigo: row.codigo + 1 },
-                                }),
+                                })
                             );
 
                             primeiraRow = false;
@@ -344,7 +358,8 @@ export class RiscoService {
                     }
                 }
 
-                const calcResult = dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
+                const calcResult =
+                    dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
 
                 return await prismaTx.projetoRisco.update({
                     where: { id: projeto_risco_id },
@@ -373,7 +388,7 @@ export class RiscoService {
             {
                 maxWait: 15000,
                 timeout: 60000,
-            },
+            }
         );
 
         return updated;
@@ -382,7 +397,11 @@ export class RiscoService {
     async remove(projeto_id: number, projeto_risco_id: number, user: PessoaFromJwt) {
         const deleted = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Deve ser verificado o status
-            const valoresAceitaveis: ProjetoStatus[] = [ProjetoStatus.Registrado, ProjetoStatus.Selecionado, ProjetoStatus.EmPlanejamento];
+            const valoresAceitaveis: ProjetoStatus[] = [
+                ProjetoStatus.Registrado,
+                ProjetoStatus.Selecionado,
+                ProjetoStatus.EmPlanejamento,
+            ];
 
             const self = await prismaTx.projetoRisco.findFirstOrThrow({
                 where: {

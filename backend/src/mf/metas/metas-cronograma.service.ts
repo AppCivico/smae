@@ -53,7 +53,7 @@ export class MetasCronogramaService {
 
         const cronoMeta = await this.prisma.meta.findFirstOrThrow({
             where: {
-                id: { in: dadosMetas.map(r => r.meta_id) },
+                id: { in: dadosMetas.map((r) => r.meta_id) },
             },
             select: {
                 codigo: true,
@@ -82,7 +82,7 @@ export class MetasCronogramaService {
 
         const iniciativas = await this.prisma.iniciativa.findMany({
             where: {
-                id: { in: dadosMetas.filter(n => n.iniciativa_id !== null).map(n => n.iniciativa_id!) },
+                id: { in: dadosMetas.filter((n) => n.iniciativa_id !== null).map((n) => n.iniciativa_id!) },
                 removido_em: null,
             },
             select: {
@@ -115,7 +115,7 @@ export class MetasCronogramaService {
 
         const atividades = await this.prisma.atividade.findMany({
             where: {
-                id: { in: dadosMetas.filter(n => n.atividade_id !== null).map(n => n.atividade_id!) },
+                id: { in: dadosMetas.filter((n) => n.atividade_id !== null).map((n) => n.atividade_id!) },
                 removido_em: null,
             },
             select: {
@@ -158,7 +158,9 @@ export class MetasCronogramaService {
                 id: meta_id,
                 titulo: cronoMeta.titulo,
                 codigo: cronoMeta.codigo,
-                cronogramas: dadosMetas.filter(n => n.atividade_id == null && n.iniciativa_id == null).map(n => n.cronograma_id),
+                cronogramas: dadosMetas
+                    .filter((n) => n.atividade_id == null && n.iniciativa_id == null)
+                    .map((n) => n.cronograma_id),
             },
         };
 
@@ -171,7 +173,9 @@ export class MetasCronogramaService {
                     titulo: iniciativa.titulo,
                     ...this.mfService.extraiResponsaveis(iniciativa.iniciativa_responsavel),
                 },
-                cronogramas: dadosMetas.filter(n => n.atividade_id == null && n.iniciativa_id == iniciativa.id).map(n => n.cronograma_id),
+                cronogramas: dadosMetas
+                    .filter((n) => n.atividade_id == null && n.iniciativa_id == iniciativa.id)
+                    .map((n) => n.cronograma_id),
             };
 
             for (const atividade of atividades) {
@@ -184,7 +188,7 @@ export class MetasCronogramaService {
                         titulo: atividade.titulo,
                         ...this.mfService.extraiResponsaveis(atividade.atividade_responsavel),
                     },
-                    cronogramas: dadosMetas.filter(n => n.atividade_id == atividade.id).map(n => n.cronograma_id),
+                    cronogramas: dadosMetas.filter((n) => n.atividade_id == atividade.id).map((n) => n.cronograma_id),
                 });
             }
 

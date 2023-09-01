@@ -10,6 +10,6 @@ import { MetaService } from './meta.service';
     imports: [PrismaModule, CronogramaEtapaModule, UploadModule],
     controllers: [MetaController],
     providers: [MetaService, CronogramaEtapaService],
-    exports: [MetaService]
+    exports: [MetaService],
 })
 export class MetaModule {}

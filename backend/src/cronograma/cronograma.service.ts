@@ -24,18 +24,20 @@ export class CronogramaService {
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const cronograma = await prisma.cronograma.create({
-                data: {
-                    criado_por: user.id,
-                    criado_em: new Date(Date.now()),
-                    ...createCronogramaDto,
-                },
-                select: { id: true },
-            });
+        const created = await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const cronograma = await prisma.cronograma.create({
+                    data: {
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                        ...createCronogramaDto,
+                    },
+                    select: { id: true },
+                });
 
-            return cronograma;
-        });
+                return cronograma;
+            }
+        );
 
         return created;
     }
@@ -74,26 +76,31 @@ export class CronogramaService {
                 termino_real: true,
                 regionalizavel: true,
                 nivel_regionalizacao: true,
-                percentual_execucao: true
+                percentual_execucao: true,
             },
-            orderBy: { criado_em: 'desc' }
+            orderBy: { criado_em: 'desc' },
         });
 
         let ret = [];
         for (const row of rows) {
-            const atraso = await this.cronogramaEtapaService.getAtraso(row.inicio_previsto, row.inicio_real, row.termino_previsto, row.termino_real);
+            const atraso = await this.cronogramaEtapaService.getAtraso(
+                row.inicio_previsto,
+                row.inicio_real,
+                row.termino_previsto,
+                row.termino_real
+            );
 
             let cronogramaAtraso: string | null = null;
-            const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({cronograma_id: row.id});
+            const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({ cronograma_id: row.id });
             cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
 
             ret.push({
                 ...row,
-                atraso_grau: cronogramaAtraso
-            })
+                atraso_grau: cronogramaAtraso,
+            });
         }
 
-        return ret; 
+        return ret;
     }
 
     async update(id: number, updateCronogoramaDto: UpdateCronogramaDto, user: PessoaFromJwt) {

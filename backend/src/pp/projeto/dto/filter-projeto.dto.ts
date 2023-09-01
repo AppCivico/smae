@@ -26,7 +26,7 @@ export class FilterProjetoDto {
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
     @IsEnum(ProjetoStatus, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
-        each: true
+        each: true,
     })
     status?: ProjetoStatus[];
 

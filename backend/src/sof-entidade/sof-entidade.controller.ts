@@ -12,7 +12,10 @@ export class SofEntidadeController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Header('Cache-Control', 'max-age=3600')
-    @ApiOperation({ summary: 'Dados do ano corrente são atualizados diariamente, resposta pode ser salva em storage local por ate 24h' })
+    @ApiOperation({
+        summary:
+            'Dados do ano corrente são atualizados diariamente, resposta pode ser salva em storage local por ate 24h',
+    })
     async findByYear(@Param() params: FindAnoParams): Promise<SofEntidadeDto> {
         return (await this.sofEntidadeService.findByYear(+params.ano)) as any as SofEntidadeDto;
     }

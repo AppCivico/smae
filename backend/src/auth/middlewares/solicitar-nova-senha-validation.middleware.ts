@@ -17,7 +17,7 @@ export class SolicitarNovaSenhaValidationMiddleware implements NestMiddleware {
             throw new BadRequestException(
                 validations.reduce((acc, curr) => {
                     return [...acc, ...Object.values(curr.constraints as any)];
-                }, []),
+                }, [])
             );
         }
         next();
