@@ -15,6 +15,23 @@ Acesse [o README do frontend](frontend/README.md) para instruções de desenvolv
 
 Copie o arquivo `.env.example` para `.env` e faça as modificações das chaves e portas.
 
+Edite o arquivo `frontend/docker/nginx.conf` trocando o seu host-name, na linha:
+
+    server_name my-custom-host;
+
+ou então mude para
+
+    server_name _;
+
+e remova as linhas:
+
+    server {
+        location / {
+            return 403;
+        }
+    }
+
+
 A configuração do MinIO pode ser trocada pelo S3 ou outro serviço equivalente (e então remover o serviço do MinIO do docker-compose.yaml)
 
 Na primeira vez que subir o sistema com gerenciamento de arquivos via MinIO, será necessário subir o MinIO, criar um bucket, e configurar um usuário e senha para os uploads, e então atualizar o `.env` com as configurações realizadas. Todas essas tarefas podem ser feitas pelo console web, https://min.io/docs/minio/linux/administration/minio-console.html
