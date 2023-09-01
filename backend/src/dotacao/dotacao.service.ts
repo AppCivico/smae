@@ -242,7 +242,6 @@ export class DotacaoService {
             }
         }
 
-        //console.dir({ resultsOrgao, resultsFonte, resultsUnidade }, { depth: 4 });
         for (let i = 0; i < srcDestList.length; i++) {
             const r = srcDestList[i];
 

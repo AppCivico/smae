@@ -456,7 +456,7 @@ export class MetaService {
 
                 if (op) {
                     // Caso os orgaos_participantes estejam atrelados a Iniciativa ou Atividade
-                    // Não podem ser excluidos
+                    // Não podem ser excluídos
                     await this.checkHasOrgaosParticipantesChildren(meta.id, op);
 
                     await prisma.metaOrgao.deleteMany({ where: { meta_id: id } });
@@ -530,6 +530,7 @@ export class MetaService {
         const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
         const orgaos_match = orgaos_in_use.some((x) => orgaos_to_be_created.includes(x));
 
+        // TODO check this exception!
         // if (!orgaos_match)
         // throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
     }

@@ -1,5 +1,4 @@
 import { HttpException } from '@nestjs/common';
-//import { Prisma } from "@prisma/client";
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { PessoaFromJwtBase } from './PessoaFromJwtBase';
 
