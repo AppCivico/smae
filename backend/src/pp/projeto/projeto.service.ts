@@ -16,6 +16,7 @@ import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
+import DOMPurify from 'dompurify';
 
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Registrado: 'Registro',
@@ -883,6 +884,11 @@ export class ProjetoService {
 
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
+
+            if (dto.objeto) DOMPurify.sanitize(dto.objeto);
+            if (dto.objetivo) DOMPurify.sanitize(dto.objetivo);
+            if (dto.publico_alvo) DOMPurify.sanitize(dto.publico_alvo);
+            if (dto.nao_escopo) DOMPurify.sanitize(dto.nao_escopo);
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
