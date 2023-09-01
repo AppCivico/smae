@@ -135,6 +135,13 @@ sub listen_queue {
 
                         while (my $notify = $dbh && $dbh->pg_notifies) {
                             $loop_times = 0;
+                            $logger->info(to_json($notify));
+                            if ($notify->[0] eq 'newconfig') {
+                                ON_TERM_EXIT;
+                                EXIT_IF_ASKED;
+                                $logger->info("reloading config...");
+                                exit;
+                            }
                         }
 
                         if ($loop_times <= 0) {
@@ -179,6 +186,7 @@ sub listen_queue {
                                 $dbh = $self->schema->storage->dbh;
                                 $logger->info("LISTEN newemail");
                                 $dbh->do("LISTEN newemail");
+                                $dbh->do("LISTEN newconfig");
                             }
 
                             ON_TERM_EXIT;

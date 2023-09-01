@@ -30,6 +30,7 @@ ADD cpanfile /tmp/cpanfile
 ADD docker/install-cpan-extra-modules.sh /tmp/install-cpan-extra-modules.sh
 USER app
 RUN /tmp/install-cpan-extra-modules.sh
+# essa imagem baseimage:focal-1.2.0 sobe um supervisor, o app roda o app como user 'app', exec /sbin/setuser app
 USER root
 
 ENV VARIABLES_JSON_IS_UTF8=1
