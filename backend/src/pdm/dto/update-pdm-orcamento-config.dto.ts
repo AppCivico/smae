@@ -1,5 +1,15 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsNumber, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsBoolean,
+    IsInt,
+    IsNumber,
+    IsOptional,
+    ValidateIf,
+    ValidateNested,
+} from 'class-validator';
 
 export class UpdatePdmOrcamentoConfigDto {
     @IsArray()

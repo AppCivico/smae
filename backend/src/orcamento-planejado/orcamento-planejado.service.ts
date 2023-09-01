@@ -5,12 +5,16 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrcamentoPlanejadoDto, FilterOrcamentoPlanejadoDto, UpdateOrcamentoPlanejadoDto } from './dto/orcamento-planejado.dto';
+import {
+    CreateOrcamentoPlanejadoDto,
+    FilterOrcamentoPlanejadoDto,
+    UpdateOrcamentoPlanejadoDto,
+} from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejado } from './entities/orcamento-planejado.entity';
 
 @Injectable()
 export class OrcamentoPlanejadoService {
-    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) { }
+    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
 
     async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const dotacao = await this.prisma.dotacaoPlanejado.findFirst({
@@ -37,7 +41,8 @@ export class OrcamentoPlanejadoService {
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
             where: { pdm_id: meta.pdm_id, ano_referencia: dto.ano_referencia, planejado_disponivel: true },
         });
-        if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com o planejamento liberado', 400);
+        if (!anoCount)
+            throw new HttpException('Ano de referencia não encontrado ou não está com o planejamento liberado', 400);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -61,7 +66,11 @@ export class OrcamentoPlanejadoService {
                     where: { id: dotacao.id },
                     select: { id: true },
                 });
-                if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.', 400);
+                if (!dotacaoTx)
+                    throw new HttpException(
+                        'Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.',
+                        400
+                    );
 
                 // dispara a trigger
                 await prismaTxn.dotacaoPlanejado.update({
@@ -75,7 +84,7 @@ export class OrcamentoPlanejadoService {
                 isolationLevel: 'Serializable',
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return created;
@@ -103,16 +112,25 @@ export class OrcamentoPlanejadoService {
         });
 
         const anoCount = await this.prisma.pdmOrcamentoConfig.count({
-            where: { pdm_id: meta.pdm_id, ano_referencia: orcamentoPlanejado.ano_referencia, planejado_disponivel: true },
+            where: {
+                pdm_id: meta.pdm_id,
+                ano_referencia: orcamentoPlanejado.ano_referencia,
+                planejado_disponivel: true,
+            },
         });
-        if (!anoCount) throw new HttpException('Ano de referencia não encontrado ou não está com o planejamento liberado', 400);
+        if (!anoCount)
+            throw new HttpException('Ano de referencia não encontrado ou não está com o planejamento liberado', 400);
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
                 const orcamentoPlanejadoTx = await this.prisma.orcamentoPlanejado.findFirst({
                     where: { id: +id, removido_em: null },
                 });
-                if (!orcamentoPlanejadoTx) throw new HttpException('Operação não pode ser realizada no momento. Registro deixou de existir no meio da atualização.', 400);
+                if (!orcamentoPlanejadoTx)
+                    throw new HttpException(
+                        'Operação não pode ser realizada no momento. Registro deixou de existir no meio da atualização.',
+                        400
+                    );
 
                 const dotacaoTx = await this.prisma.dotacaoPlanejado.findUnique({
                     where: {
@@ -122,7 +140,11 @@ export class OrcamentoPlanejadoService {
                         },
                     },
                 });
-                if (!dotacaoTx) throw new HttpException('Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.', 400);
+                if (!dotacaoTx)
+                    throw new HttpException(
+                        'Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.',
+                        400
+                    );
 
                 await prismaTxn.orcamentoPlanejado.update({
                     where: {
@@ -146,7 +168,7 @@ export class OrcamentoPlanejadoService {
                 isolationLevel: 'Serializable',
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return { id: orcamentoPlanejado.id };
@@ -178,7 +200,8 @@ export class OrcamentoPlanejadoService {
             meta_id = dto.meta_id;
         }
 
-        if (meta_id === undefined || meta_id == null) throw new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
+        if (meta_id === undefined || meta_id == null)
+            throw new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
 
         console.log({ meta_id, iniciativa_id, atividade_id });
 
@@ -192,7 +215,10 @@ export class OrcamentoPlanejadoService {
             filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
         }
 
-        const meta = await this.prisma.meta.findFirst({ where: { id: filters.meta_id, removido_em: null }, select: { pdm_id: true } });
+        const meta = await this.prisma.meta.findFirst({
+            where: { id: filters.meta_id, removido_em: null },
+            select: { pdm_id: true },
+        });
         if (!meta) throw new HttpException(`meta_id| Meta não foi encontrada`, 404);
 
         const queryRows = await this.prisma.orcamentoPlanejado.findMany({
@@ -231,7 +257,7 @@ export class OrcamentoPlanejadoService {
             select: {
                 soma_valor_planejado: true,
                 pressao_orcamentaria: true,
-                dotacao: true
+                dotacao: true,
             },
         });
         const dotacoesSomaRef: Record<string, (typeof dotacoesSomaInfo)[0]> = {};
@@ -271,13 +297,15 @@ export class OrcamentoPlanejadoService {
             const dotacaoSomaInfo = dotacoesSomaRef[orcamentoPlanejado.dotacao] || {
                 soma_valor_planejado: new Decimal(0),
                 pressao_orcamentaria: false,
-                dotacao: ''
+                dotacao: '',
             };
 
             if (dotacaoInfo) {
                 pressao_orcamentaria = dotacaoSomaInfo.pressao_orcamentaria;
                 if (pressao_orcamentaria) {
-                    pressao_orcamentaria_valor = Number(+dotacaoSomaInfo.soma_valor_planejado - +dotacaoInfo.val_orcado_atualizado).toFixed(2);
+                    pressao_orcamentaria_valor = Number(
+                        +dotacaoSomaInfo.soma_valor_planejado - +dotacaoInfo.val_orcado_atualizado
+                    ).toFixed(2);
                 }
 
                 smae_soma_valor_planejado = dotacaoSomaInfo.soma_valor_planejado.toFixed(2);
@@ -317,7 +345,8 @@ export class OrcamentoPlanejadoService {
         const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
             where: { id: +id, removido_em: null },
         });
-        if (!orcamentoPlanejado || orcamentoPlanejado.meta_id === null) throw new HttpException('Orçamento planejado não encontrado', 404);
+        if (!orcamentoPlanejado || orcamentoPlanejado.meta_id === null)
+            throw new HttpException('Orçamento planejado não encontrado', 404);
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
@@ -338,7 +367,10 @@ export class OrcamentoPlanejadoService {
 
                 if (linhasAfetadas.count == 1) {
                     const dotacaoAgora = await prismaTxn.dotacaoPlanejado.findFirstOrThrow({
-                        where: { dotacao: orcamentoPlanejado.dotacao, ano_referencia: orcamentoPlanejado.ano_referencia },
+                        where: {
+                            dotacao: orcamentoPlanejado.dotacao,
+                            ano_referencia: orcamentoPlanejado.ano_referencia,
+                        },
                         select: { id: true },
                     });
 
@@ -351,8 +383,7 @@ export class OrcamentoPlanejadoService {
             },
             {
                 isolationLevel: 'Serializable',
-            },
+            }
         );
     }
-
 }

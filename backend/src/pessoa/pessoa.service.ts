@@ -78,7 +78,12 @@ export class PessoaService {
         });
     }
 
-    async enviaEmailNovaSenha(pessoa: Pessoa, senha: string, solicitadoPeloUsuario: boolean, prisma: Prisma.TransactionClient) {
+    async enviaEmailNovaSenha(
+        pessoa: Pessoa,
+        senha: string,
+        solicitadoPeloUsuario: boolean,
+        prisma: Prisma.TransactionClient
+    ) {
         await prisma.emaildbQueue.create({
             data: {
                 id: uuidv7(),
@@ -174,7 +179,7 @@ export class PessoaService {
                     select: { perfil_acesso_id: true },
                 })
             )
-                .map(e => e.perfil_acesso_id)
+                .map((e) => e.perfil_acesso_id)
                 .sort((a, b) => +a - +b)
                 .join(',');
             const newPessoaPerfis = updatePessoaDto.perfil_acesso_ids.sort((a, b) => +a - +b).join(',');
@@ -182,7 +187,7 @@ export class PessoaService {
             // verificar se realmente esta acontecendo uma mudança, pois o frontend sempre envia os dados
             if (newPessoaPerfis !== oldPessoaPerfis) {
                 // verifica tbm se não está tentando remover o admin, mas nesse caso, tbm é necessario
-                await this.verificarPerfilNaoContemAdmin(oldPessoaPerfis.split(',').map(n => +n));
+                await this.verificarPerfilNaoContemAdmin(oldPessoaPerfis.split(',').map((n) => +n));
 
                 // verifica se não está tentando adicionar admin
                 await this.verificarPerfilNaoContemAdmin(updatePessoaDto.perfil_acesso_ids);
@@ -240,7 +245,9 @@ export class PessoaService {
         }
 
         if (pessoaCurrentOrgao == undefined && updatePessoaDto.orgao_id) {
-            throw new ForbiddenException(`Atualização do órgão da pessoa não é possível, peça atualização no banco de dados.`);
+            throw new ForbiddenException(
+                `Atualização do órgão da pessoa não é possível, peça atualização no banco de dados.`
+            );
         }
     }
 
@@ -261,13 +268,13 @@ export class PessoaService {
         });
 
         const codigos = privilegios.reduce((prev, r) => {
-            return [...prev, ...r.perfil_privilegio.map(s => s.privilegio.codigo)];
+            return [...prev, ...r.perfil_privilegio.map((s) => s.privilegio.codigo)];
         }, []);
 
         if (codigos.includes('SMAE.superadmin'))
             throw new HttpException(
                 'O seu usuário não pode adicionar ou remover permissões de outros usuários que são administradores do sistema, ou adicionar a permissão de administrador para um usuário já existente.',
-                400,
+                400
             );
 
         console.log(codigos);
@@ -282,14 +289,27 @@ export class PessoaService {
     }
 
     private verificarRFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
-        if (this.#matchEmailRFObrigatorio && !dto.registro_funcionario && dto.email && dto.email.endsWith('@' + this.#matchEmailRFObrigatorio)) {
-            throw new HttpException(`registro_funcionario| Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`, 400);
+        if (
+            this.#matchEmailRFObrigatorio &&
+            !dto.registro_funcionario &&
+            dto.email &&
+            dto.email.endsWith('@' + this.#matchEmailRFObrigatorio)
+        ) {
+            throw new HttpException(
+                `registro_funcionario| Registro de funcionário obrigatório para e-mails terminando @${
+                    this.#matchEmailRFObrigatorio
+                }`,
+                400
+            );
         }
 
         if (!this.#cpfObrigatorioSemRF) return;
 
         if (!dto.cpf && !dto.registro_funcionario) {
-            throw new HttpException('registro_funcionario| Registro de funcionário obrigatório caso CPF não seja informado', 400);
+            throw new HttpException(
+                'registro_funcionario| Registro de funcionário obrigatório caso CPF não seja informado',
+                400
+            );
         }
     }
 
@@ -343,8 +363,8 @@ export class PessoaService {
             cargo: pessoa.pessoa_fisica?.cargo || null,
             registro_funcionario: pessoa.pessoa_fisica?.registro_funcionario || null,
             cpf: pessoa.pessoa_fisica?.cpf || null,
-            perfil_acesso_ids: pessoa.PessoaPerfil.map(e => e.perfil_acesso_id),
-            grupos: pessoa.GruposDePaineisQueParticipo.map(e => e.grupo_painel),
+            perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id),
+            grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
         };
 
@@ -380,7 +400,10 @@ export class PessoaService {
                         },
                     });
                     if (registroFuncionarioExists > 0) {
-                        throw new HttpException('registro_funcionario| Registro de funcionário já atrelado a outra conta', 400);
+                        throw new HttpException(
+                            'registro_funcionario| Registro de funcionário já atrelado a outra conta',
+                            400
+                        );
                     }
                 }
 
@@ -483,7 +506,9 @@ export class PessoaService {
                     });
 
                     for (const perm of updatePessoaDto.perfil_acesso_ids) {
-                        promises.push(prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } }));
+                        promises.push(
+                            prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } })
+                        );
                     }
                     await Promise.all(promises);
 
@@ -496,7 +521,7 @@ export class PessoaService {
                 isolationLevel: 'Serializable',
                 maxWait: 5000,
                 timeout: 5000,
-            },
+            }
         );
 
         return { id: pessoaId };
@@ -536,7 +561,10 @@ export class PessoaService {
                         where: { pessoa_fisica: { registro_funcionario: createPessoaDto.registro_funcionario } },
                     });
                     if (registroFuncionarioExists > 0) {
-                        throw new HttpException('registro_funcionario| Registro de funcionário já atrelado a outra conta', 400);
+                        throw new HttpException(
+                            'registro_funcionario| Registro de funcionário já atrelado a outra conta',
+                            400
+                        );
                     }
                 }
 
@@ -586,7 +614,9 @@ export class PessoaService {
 
                 const promises = [];
                 for (const perm of createPessoaDto.perfil_acesso_ids) {
-                    promises.push(prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } }));
+                    promises.push(
+                        prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: created.id } })
+                    );
                 }
                 promises.push(this.enviaPrimeiraSenha(created, newPass, prismaTx));
                 await Promise.all(promises);
@@ -601,7 +631,7 @@ export class PessoaService {
                 isolationLevel: 'Serializable',
                 maxWait: 5000,
                 timeout: 5000,
-            },
+            }
         );
 
         return { id: pessoa.id };
@@ -654,7 +684,7 @@ export class PessoaService {
             select: selectColumns,
         });
 
-        const listFixed = listActive.map(p => {
+        const listFixed = listActive.map((p) => {
             return {
                 id: p.id,
                 nome_completo: p.nome_completo,
@@ -666,7 +696,7 @@ export class PessoaService {
                 email: p.email,
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
-                perfil_acesso_ids: p.PessoaPerfil.map(e => e.perfil_acesso_id),
+                perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id),
             };
         });
 

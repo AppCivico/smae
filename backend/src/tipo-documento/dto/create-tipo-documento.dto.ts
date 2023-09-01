@@ -13,7 +13,10 @@ function CheckExt(validationOptions?: ValidationOptions) {
             },
             validator: {
                 validate(value: any) {
-                    return typeof value === 'string' && /^(?:(?:[\w0-9]{1,8}))(?:\s*\,\s*(?:[\w0-9]{1,8})){0,99}$/.test(value);
+                    return (
+                        typeof value === 'string' &&
+                        /^(?:(?:[\w0-9]{1,8}))(?:\s*\,\s*(?:[\w0-9]{1,8})){0,99}$/.test(value)
+                    );
                 },
             },
         });

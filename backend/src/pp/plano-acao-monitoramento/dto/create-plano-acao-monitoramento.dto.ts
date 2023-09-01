@@ -1,25 +1,25 @@
-import { OmitType, PartialType } from "@nestjs/mapped-types"
-import { Transform, Type } from "class-transformer"
-import { IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator"
-import { IsOnlyDate } from "../../../common/decorators/IsDateOnly"
+import { OmitType, PartialType } from '@nestjs/mapped-types';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 export class CreatePlanoAcaoMonitoramentoDto {
     @IsInt()
-    plano_acao_id: number
+    plano_acao_id: number;
 
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
-    data_afericao: Date
+    data_afericao: Date;
 
     @IsString()
     @MaxLength(2048)
-    descricao: string
+    descricao: string;
 }
 
-export class UpdatePlanoAcaoMonitoramentoDto extends OmitType(PartialType(CreatePlanoAcaoMonitoramentoDto), ['plano_acao_id'] as const) {
-
-}
+export class UpdatePlanoAcaoMonitoramentoDto extends OmitType(PartialType(CreatePlanoAcaoMonitoramentoDto), [
+    'plano_acao_id',
+] as const) {}
 
 export class FilterPlanoAcaoMonitoramentoDto {
     @IsOptional()

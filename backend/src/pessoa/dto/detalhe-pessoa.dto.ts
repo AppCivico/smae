@@ -1,7 +1,7 @@
 export class ProjetosResponsavelDto {
-    id: number
-    codigo: string | null
-    nome: string
+    id: number;
+    codigo: string | null;
+    nome: string;
 }
 
 export class DetalhePessoaDto {

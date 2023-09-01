@@ -6,14 +6,22 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
-import { AnaliseQualitativaDocumentoDto, AnaliseQualitativaDto, FilterAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from './../metas/dto/mf-meta-analise-quali.dto';
+import {
+    AnaliseQualitativaDocumentoDto,
+    AnaliseQualitativaDto,
+    FilterAnaliseQualitativaDto,
+    MfListAnaliseQualitativaDto,
+} from './../metas/dto/mf-meta-analise-quali.dto';
 import { MetasAnaliseQualiService } from './../metas/metas-analise-quali.service';
 import { MfListVariavelAnaliseQualitativaDto, RequestInfoDto } from './dto/mf-meta.dto';
 
 @ApiTags('Monitoramento Fisico - análise qualitativa da meta')
 @Controller('metas')
 export class MetasAnaliseQualiController {
-    constructor(private readonly metasAnaliseQualiService: MetasAnaliseQualiService, private readonly mfService: MfService) {}
+    constructor(
+        private readonly metasAnaliseQualiService: MetasAnaliseQualiService,
+        private readonly mfService: MfService
+    ) {}
 
     @ApiBearerAuth('access-token')
     @Get('analise-qualitativa')
@@ -22,7 +30,10 @@ export class MetasAnaliseQualiController {
     @ApiOkResponse({
         schema: { allOf: refs(MfListVariavelAnaliseQualitativaDto, RequestInfoDto) },
     })
-    async GetMetaAnaliseQualitativa(@Query() dto: FilterAnaliseQualitativaDto, @CurrentUser() user: PessoaFromJwt): Promise<MfListAnaliseQualitativaDto & RequestInfoDto> {
+    async GetMetaAnaliseQualitativa(
+        @Query() dto: FilterAnaliseQualitativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<MfListAnaliseQualitativaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
@@ -39,7 +50,10 @@ export class MetasAnaliseQualiController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaAnaliseQualitativaDocumento(@Body() dto: AnaliseQualitativaDocumentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaAnaliseQualitativaDocumento(
+        @Body() dto: AnaliseQualitativaDocumentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         return {
@@ -67,7 +81,10 @@ export class MetasAnaliseQualiController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaAnaliseQualitativa(@Body() dto: AnaliseQualitativaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaAnaliseQualitativa(
+        @Body() dto: AnaliseQualitativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 

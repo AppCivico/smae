@@ -1,5 +1,18 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsInt,
+    IsNumber,
+    IsOptional,
+    IsString,
+    Max,
+    MaxLength,
+    Min,
+    MinLength,
+    ValidateIf,
+} from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class CreateEtapaDto {
@@ -131,5 +144,5 @@ export class CreateEtapaDto {
     @ValidateIf((object, value) => value !== null)
     @Min(0, { message: '$property| Percentual de execução precisa ser positivo ou zero' })
     @Max(100, { message: '$property| Percentual de execução máximo é 100' })
-    percentual_execucao?: number
+    percentual_execucao?: number;
 }

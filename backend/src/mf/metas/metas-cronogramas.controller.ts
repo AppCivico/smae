@@ -1,5 +1,13 @@
 import { Body, Controller, Get, HttpException, Param, Patch, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiExtraModels,
+    ApiOkResponse,
+    ApiOperation,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    refs,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -24,7 +32,7 @@ export class MetasCronogramaController {
         private readonly cronogramaEtapaService: CronogramaEtapaService,
         private readonly metasCronogramaService: MetasCronogramaService,
         private readonly etapaService: EtapaService,
-        private readonly mfService: MfService,
+        private readonly mfService: MfService
     ) {}
 
     @Get('cronograma')
@@ -34,7 +42,10 @@ export class MetasCronogramaController {
     @ApiOkResponse({
         schema: { allOf: refs(ListCronogramaDto, RequestInfoDto) },
     })
-    async cronogramas(@Query() filters: FilterCronogramaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListCronogramaDto & RequestInfoDto> {
+    async cronogramas(
+        @Query() filters: FilterCronogramaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListCronogramaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
@@ -53,7 +64,10 @@ export class MetasCronogramaController {
     @ApiOkResponse({
         schema: { allOf: refs(ListCronogramaEtapaDto, RequestInfoDto) },
     })
-    async cronogramas_etapas(@Query() filters: FilterCronogramaEtapaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListCronogramaEtapaDto & RequestInfoDto> {
+    async cronogramas_etapas(
+        @Query() filters: FilterCronogramaEtapaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListCronogramaEtapaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
@@ -69,7 +83,11 @@ export class MetasCronogramaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    async patch_crono_etapa(@Param() params: FindOneParams, @Body() updateEtapaDto: MfEtapaDto, @CurrentUser() user: PessoaFromJwt) {
+    async patch_crono_etapa(
+        @Param() params: FindOneParams,
+        @Body() updateEtapaDto: MfEtapaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         if (config.cronogramas_etapas.includes(params.id) == false) {
@@ -91,7 +109,10 @@ export class MetasCronogramaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    async iniciativa_atividades(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RetornoMetaCronogramaDto> {
+    async iniciativa_atividades(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RetornoMetaCronogramaDto> {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         if (config.metas_cronograma.includes(params.id) == false) {

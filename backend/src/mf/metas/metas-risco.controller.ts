@@ -21,7 +21,10 @@ export class MetasRiscoController {
     @ApiOkResponse({
         schema: { allOf: refs(MfListRiscoDto, RequestInfoDto) },
     })
-    async GetMetaRisco(@Query() dto: FilterRiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<MfListRiscoDto & RequestInfoDto> {
+    async GetMetaRisco(
+        @Query() dto: FilterRiscoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<MfListRiscoDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
@@ -38,7 +41,10 @@ export class MetasRiscoController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaRisco(@Body() dto: RiscoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaRisco(
+        @Body() dto: RiscoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 

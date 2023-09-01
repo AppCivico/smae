@@ -30,7 +30,13 @@ export class SerieUpsert {
      * valor pra ser salvo
      * @example "vazio or ou decimal como string '3.141567'"
      * */
-    @IsNumberString({}, { message: 'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou nulo' })
+    @IsNumberString(
+        {},
+        {
+            message:
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou nulo',
+        }
+    )
     @ValidateIf((object, value) => value !== '')
     valor: string;
 

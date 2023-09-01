@@ -5,11 +5,10 @@ import { OrcamentoService } from '../orcamento/orcamento.service';
 import { CreateRelProjetoOrcamentoDto } from './dto/create-projeto-orcamento.dto';
 import { ListOrcamentoExecutadoDto } from '../orcamento/entities/orcamento-executado.entity';
 
-
 @ApiTags('Relatórios - API')
 @Controller('relatorio/projeto-orcamento')
 export class ProjetoOrcamentoController {
-    constructor(private readonly orcamentoExecutadoService: OrcamentoService) { }
+    constructor(private readonly orcamentoExecutadoService: OrcamentoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')

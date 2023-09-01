@@ -10,7 +10,7 @@ export class TextoConfigController {
     constructor(
         // TODO implementar o patch
         private readonly textoConfigService: TextoConfigService,
-        private readonly prisma: PrismaService,
+        private readonly prisma: PrismaService
     ) {}
 
     @ApiTags('Público')

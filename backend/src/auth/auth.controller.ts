@@ -1,5 +1,15 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiExtraModels,
+    ApiNoContentResponse,
+    ApiOkResponse,
+    ApiResponse,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    refs,
+} from '@nestjs/swagger';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';

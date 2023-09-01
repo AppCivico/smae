@@ -1,7 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoOrigemTipo } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUrl, Matches, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsEnum,
+    IsInt,
+    IsNumber,
+    IsOptional,
+    IsString,
+    IsUrl,
+    Matches,
+    MaxLength,
+    Min,
+    MinLength,
+    ValidateIf,
+} from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateProjetoDto {
@@ -32,7 +47,6 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     responsaveis_no_orgao_gestor: number[] | null;
 
-
     /**
      * tipo da origem
      *
@@ -42,7 +56,7 @@ export class CreateProjetoDto {
     @IsEnum(ProjetoOrigemTipo, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
     })
-    origem_tipo: ProjetoOrigemTipo
+    origem_tipo: ProjetoOrigemTipo;
 
     /**
      * origem, não é obrigatório se enviar o campo `origem_tipo` com os valores `PdmSistema`.
@@ -88,7 +102,7 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    meta_codigo?: string | null
+    meta_codigo?: string | null;
 
     /**
      * ID dos órgãos participantes do projeto
@@ -154,12 +168,15 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsInt({ message: '$property| precisa ser inteiro' })
     @Min(0, { message: '$property| Mínimo 0' })
-    tolerancia_atraso?: number
+    tolerancia_atraso?: number;
 
     /**
      * previsão de custo, número positivo com até 2 casas, pode enviar null
      **/
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| Custo até duas casas decimais' }
+    )
     @Min(0, { message: '$property| Custo precisa ser positivo' })
     @Transform((a: any) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -180,7 +197,6 @@ export class CreateProjetoDto {
     @IsString()
     @MaxLength(50000)
     principais_etapas: string;
-
 }
 
 export class CreateProjetoDocumentDto {
@@ -202,29 +218,32 @@ export class CreateProjetoSeiDto {
     @Matches(/^[0-9\-\.\/\\]+$/, {
         message: '$property| Precisa ser apenas números, pontos, barras ou traços.',
     })
-    processo_sei: string
+    processo_sei: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(50000)
-    descricao: string
+    descricao: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(2000)
-    @IsUrl({
-        protocols: ['http', 'https'],
-        require_tld: true,
-        require_protocol: true,
-        require_host: true,
-        require_port: false,
-        require_valid_protocol: true,
-        allow_underscores: false,
-        allow_trailing_dot: false,
-        allow_protocol_relative_urls: false,
-        allow_fragments: true,
-        allow_query_components: true,
-        validate_length: true
-    }, { message: '$property| O link um precisa ter o protocolo HTTP ou HTTPS, um TLD válido.' })
-    link: string
+    @IsUrl(
+        {
+            protocols: ['http', 'https'],
+            require_tld: true,
+            require_protocol: true,
+            require_host: true,
+            require_port: false,
+            require_valid_protocol: true,
+            allow_underscores: false,
+            allow_trailing_dot: false,
+            allow_protocol_relative_urls: false,
+            allow_fragments: true,
+            allow_query_components: true,
+            validate_length: true,
+        },
+        { message: '$property| O link um precisa ter o protocolo HTTP ou HTTPS, um TLD válido.' }
+    )
+    link: string;
 }

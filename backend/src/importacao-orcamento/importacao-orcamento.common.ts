@@ -1,4 +1,4 @@
-import { utils } from "xlsx";
+import { utils } from 'xlsx';
 
 // digitar tudo em lowercase
 // o espaço no excel tbm é ignorado e vira _ depois do trim
@@ -24,7 +24,6 @@ export const OutrasColumns = [
 ];
 
 export class OrcamentoImportacaoHelpers {
-
     static createColumnHeaderIndex(sheet: any, columns: string[]): { [key: string]: number } {
         const index: { [key: string]: number } = {};
         const primeiraLinhaRange = utils.decode_range(sheet['!ref']);
@@ -42,10 +41,7 @@ export class OrcamentoImportacaoHelpers {
                     cellValue = cellValue.replace(/c[óo]d$/g, 'codigo');
                     cellValue = cellValue.replace(/código/g, 'codigo');
 
-                    if (
-                        cellValue === columnName ||
-                        (cellValue === 'mês' && columnName === 'mes')
-                    ) {
+                    if (cellValue === columnName || (cellValue === 'mês' && columnName === 'mes')) {
                         index[columnName] = colIndex;
                         break;
                     }

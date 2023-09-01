@@ -17,9 +17,26 @@ import { GraphvizModule } from 'src/graphviz/graphviz.module';
 import { TarefaDotTemplate } from 'src/pp/tarefa/tarefa.dot.template';
 
 @Module({
-    imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule, RiscoModule, TarefaModule, PlanoAcaoModule, GraphvizModule],
+    imports: [
+        PrismaModule,
+        ProjetoModule,
+        PortfolioModule,
+        UploadModule,
+        RiscoModule,
+        TarefaModule,
+        PlanoAcaoModule,
+        GraphvizModule,
+    ],
     controllers: [PPProjetoController],
-    providers: [PPProjetoService, ProjetoService, RiscoService, TarefaService, PlanoAcaoService, TarefaUtilsService, TarefaDotTemplate],
+    providers: [
+        PPProjetoService,
+        ProjetoService,
+        RiscoService,
+        TarefaService,
+        PlanoAcaoService,
+        TarefaUtilsService,
+        TarefaDotTemplate,
+    ],
     exports: [PPProjetoService],
 })
-export class PPProjetoModule { }
+export class PPProjetoModule {}

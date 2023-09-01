@@ -20,7 +20,10 @@ export class SubTemaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroSubTema.inserir')
-    async create(@Body() createSubTemaDto: CreateSubTemaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createSubTemaDto: CreateSubTemaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.subTemaService.create(createSubTemaDto, user);
     }
 
@@ -34,7 +37,11 @@ export class SubTemaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroSubTema.editar')
-    async update(@Param() params: FindOneParams, @Body() updateSubTemaDto: UpdateSubTemaDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateSubTemaDto: UpdateSubTemaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.subTemaService.update(+params.id, updateSubTemaDto, user);
     }
 

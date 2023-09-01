@@ -1,17 +1,31 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, Validate, ValidateIf, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, isInt } from 'class-validator';
+import {
+    IsInt,
+    IsOptional,
+    IsString,
+    Matches,
+    Max,
+    MaxLength,
+    Min,
+    Validate,
+    ValidateIf,
+    ValidationArguments,
+    ValidatorConstraint,
+    ValidatorConstraintInterface,
+    isInt,
+} from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';
 
 export const PROCESSO_REGEXP = /^(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)$/;
-export const PROCESSO_MESSAGE = 'Processo não está no formato esperado: DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)';
+export const PROCESSO_MESSAGE =
+    'Processo não está no formato esperado: DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)';
 export const PROCESSO_DESCRIPTION = `há dois tipos de processo:
 - processo SEI (16 dígitos) esperado "6016.2021/00532295", "6016.2021/0053229-5" ou "6016202100532295"
 
 - processo SINPROC (12 dígitos) esperado: "AAAA-D.DDD.DDD-D" ou "201601234567"
 
 no banco será normalizado para o valor o número sozinho`;
-
 
 export class AnoDto {
     /**
@@ -42,7 +56,9 @@ export class AnoDotacaoDto extends AnoDto {
      */
     @IsString()
     @MaxLength(40)
-    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, { message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00' })
+    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, {
+        message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00',
+    })
     dotacao: string;
 }
 
@@ -93,7 +109,8 @@ export class ParteDotacaoDto {
     @MaxLength(40)
     // faz o match parcial, mas alguns campos precisam ser completos
     @Matches(/^\d{2}\.(\d{2}|\*)\.\d{2}\.\d{3}\.(\d{4}|\*)\.\d\.\d{3}\.(\d{8}|\*)\.\d{2}$/, {
-        message: 'Dotação parcial não está no formato esperado: 00.00.00.000.*.0.000.*.00, podendo estar parcialmente preenchida com * nos campos faltantes',
+        message:
+            'Dotação parcial não está no formato esperado: 00.00.00.000.*.0.000.*.00, podendo estar parcialmente preenchida com * nos campos faltantes',
     })
     @ValidateIf((object, value) => value !== '')
     parte_dotacao: string;

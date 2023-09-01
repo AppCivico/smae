@@ -11,4 +11,4 @@ import { OrcamentoRealizadoService } from './orcamento-realizado.service';
     providers: [OrcamentoRealizadoService],
     exports: [OrcamentoRealizadoService],
 })
-export class OrcamentoRealizadoModule { }
+export class OrcamentoRealizadoModule {}

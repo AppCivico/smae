@@ -7,7 +7,7 @@ import { UpdateRegiaoDto } from './dto/update-regiao.dto';
 
 @Injectable()
 export class RegiaoService {
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) { }
+    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
 
     async create(createRegiaoDto: CreateRegiaoDto, user: PessoaFromJwt) {
         if (!createRegiaoDto.parente_id) {
@@ -17,14 +17,17 @@ export class RegiaoService {
         }
 
         if (createRegiaoDto.parente_id) {
-            const upper = await this.prisma.regiao.findFirst({ where: { id: createRegiaoDto.parente_id, removido_em: null }, select: { nivel: true, descricao: true } });
+            const upper = await this.prisma.regiao.findFirst({
+                where: { id: createRegiaoDto.parente_id, removido_em: null },
+                select: { nivel: true, descricao: true },
+            });
             if (!upper) throw new HttpException('Região acima não encontrada', 404);
 
             if (upper.nivel != createRegiaoDto.nivel - 1) {
                 throw new HttpException(
                     'Região acima precisa ser do nível menor que a nova região' +
-                    ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != nova região (nível ${createRegiaoDto.nivel}) - 1)`,
-                    400,
+                        ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != nova região (nível ${createRegiaoDto.nivel}) - 1)`,
+                    400
                 );
             }
         }
@@ -33,10 +36,14 @@ export class RegiaoService {
             const nivel1exists = await this.prisma.regiao.count({
                 where: {
                     removido_em: null,
-                    nivel: 1
+                    nivel: 1,
                 },
             });
-            if (nivel1exists > 0) throw new HttpException('nivel| Já existe uma região nivel 1 no SMAE, só é suportado um município por vez.', 400);
+            if (nivel1exists > 0)
+                throw new HttpException(
+                    'nivel| Já existe uma região nivel 1 no SMAE, só é suportado um município por vez.',
+                    400
+                );
         }
 
         const similarExists = await this.prisma.regiao.count({
@@ -46,7 +53,8 @@ export class RegiaoService {
                 nivel: createRegiaoDto.nivel,
             },
         });
-        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let uploadId: number | null = null;
         if (createRegiaoDto.upload_shapefile) {
@@ -85,25 +93,35 @@ export class RegiaoService {
         });
 
         for (const item of listActive) {
-            if (item.arquivo_shapefile_id) item.shapefile = this.uploadService.getDownloadToken(item.arquivo_shapefile_id, '1 days').download_token;
+            if (item.arquivo_shapefile_id)
+                item.shapefile = this.uploadService.getDownloadToken(
+                    item.arquivo_shapefile_id,
+                    '1 days'
+                ).download_token;
         }
 
         return listActive;
     }
 
     async update(id: number, updateRegiaoDto: UpdateRegiaoDto, user: PessoaFromJwt) {
-        const self = await this.prisma.regiao.findFirst({ where: { id: id, removido_em: null }, select: { nivel: true, descricao: true } });
+        const self = await this.prisma.regiao.findFirst({
+            where: { id: id, removido_em: null },
+            select: { nivel: true, descricao: true },
+        });
         if (!self) throw new HttpException('Região não encontrada', 404);
 
         if (updateRegiaoDto.parente_id) {
-            const upper = await this.prisma.regiao.findFirst({ where: { id: updateRegiaoDto.parente_id, removido_em: null }, select: { nivel: true, descricao: true } });
+            const upper = await this.prisma.regiao.findFirst({
+                where: { id: updateRegiaoDto.parente_id, removido_em: null },
+                select: { nivel: true, descricao: true },
+            });
             if (!upper) throw new HttpException('Região acima não encontrada', 404);
 
             if (upper.nivel != self.nivel - 1) {
                 throw new HttpException(
                     'Região acima precisa ser do nível menor que região atual' +
-                    ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != região "${self.descricao}" (nível ${self.nivel}) - 1)`,
-                    400,
+                        ` (região acima, "${upper.descricao}" (nível ${upper.nivel}) != região "${self.descricao}" (nível ${self.nivel}) - 1)`,
+                    400
                 );
             }
         }
@@ -117,7 +135,11 @@ export class RegiaoService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException(
+                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                    400
+                );
         }
 
         let uploadId: number | null | undefined = undefined;
@@ -152,7 +174,11 @@ export class RegiaoService {
         const existsDown = await this.prisma.regiao.count({
             where: { parente_id: id, removido_em: null },
         });
-        if (existsDown > 0) throw new HttpException(`Há ${existsDown} região(ões) dependentes. Apague primeiro as regiões abaixo.`, 400);
+        if (existsDown > 0)
+            throw new HttpException(
+                `Há ${existsDown} região(ões) dependentes. Apague primeiro as regiões abaixo.`,
+                400
+            );
 
         const created = await this.prisma.regiao.updateMany({
             where: { id: id },

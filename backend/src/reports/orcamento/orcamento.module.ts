@@ -7,16 +7,9 @@ import { OrcamentoController } from './orcamento.controller';
 import { OrcamentoService } from './orcamento.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        DotacaoModule,
-        PrevisaoCustoModule
-    ],
+    imports: [PrismaModule, DotacaoModule, PrevisaoCustoModule],
     controllers: [OrcamentoController],
-    providers: [
-        OrcamentoService,
-        UtilsService,
-    ],
+    providers: [OrcamentoService, UtilsService],
     exports: [OrcamentoService],
 })
-export class OrcamentoModule { }
+export class OrcamentoModule {}

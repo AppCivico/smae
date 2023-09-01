@@ -15,9 +15,16 @@ export class ErrorFilter implements ExceptionFilter {
         if (exception.code == 'P2025') {
             response.status(404).json({ message: 'Recurso acessado não foi encontrado ' + request.url });
         } else if (exception.code == 'P2034') {
-            response.status(423).json({ message: 'Aconteceu um impasse durante a execução das transações no banco de dados. Por favor, repita a operação.' });
+            response
+                .status(423)
+                .json({
+                    message:
+                        'Aconteceu um impasse durante a execução das transações no banco de dados. Por favor, repita a operação.',
+                });
         } else {
-            response.status(500).json({ message: 'Erro interno durante execução, banco de dados: Prisma Code: ' + exception.code });
+            response
+                .status(500)
+                .json({ message: 'Erro interno durante execução, banco de dados: Prisma Code: ' + exception.code });
         }
     }
 }

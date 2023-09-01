@@ -13,24 +13,33 @@ import { LicaoAprendida, ListLicoesAprendidasDto } from './entities/licoes-apren
 import { LicoesAprendidasService } from './licoes-aprendidas.service';
 import { ProjetoService } from '../projeto/projeto.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = [
+    'Projeto.administrador',
+    'Projeto.administrador_no_orgao',
+    'SMAE.gestor_de_projeto',
+    'SMAE.colaborador_de_projeto',
+];
 
 @Controller('projeto')
 @ApiTags('Projeto - Lições Aprendidas')
 export class LicoesAprendidasController {
     constructor(
         private readonly licoesAprendidasService: LicoesAprendidasService,
-        private readonly projetoService: ProjetoService,
-    ) { }
+        private readonly projetoService: ProjetoService
+    ) {}
 
     @Post(':id/licoes-aprendidas')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async create(@Param() params: FindOneParams, @Body() createLicoesAprendidasDto: CreateLicoesApreendidasDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Param() params: FindOneParams,
+        @Body() createLicoesAprendidasDto: CreateLicoesApreendidasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento) {
-            throw new HttpException("Não é possível criar as lições aprendidas em modo de leitura", 400);
+            throw new HttpException('Não é possível criar as lições aprendidas em modo de leitura', 400);
         }
         return await this.licoesAprendidasService.create(params.id, createLicoesAprendidasDto, user);
     }
@@ -39,10 +48,13 @@ export class LicoesAprendidasController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListLicoesAprendidasDto> {
+    async findAll(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListLicoesAprendidasDto> {
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return {
-            linhas: await this.licoesAprendidasService.findAll(params.id, user)
+            linhas: await this.licoesAprendidasService.findAll(params.id, user),
         };
     }
 
@@ -60,12 +72,16 @@ export class LicoesAprendidasController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async update(@Param() params: FindTwoParams, @Body() dto: UpdateLicoesAprendidasDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateLicoesAprendidasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento) {
-            throw new HttpException("Não é possível editar as lições aprendidas em modo de leitura", 400);
+            throw new HttpException('Não é possível editar as lições aprendidas em modo de leitura', 400);
         }
-        return await this.licoesAprendidasService.update(params.id, params.id2, dto, user)
+        return await this.licoesAprendidasService.update(params.id, params.id2, dto, user);
     }
 
     @Delete(':id/licoes-aprendidas/:id2')
@@ -77,10 +93,10 @@ export class LicoesAprendidasController {
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento) {
-            throw new HttpException("Não é possível remover as lições aprendidas em modo de leitura", 400);
+            throw new HttpException('Não é possível remover as lições aprendidas em modo de leitura', 400);
         }
 
         await this.licoesAprendidasService.remove(params.id, params.id2, user);
-        return ''
+        return '';
     }
 }

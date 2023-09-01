@@ -17,4 +17,4 @@ import { TarefaDotTemplate } from './tarefa.dot.template';
     providers: [TarefaService, ProjetoService, TarefaUtilsService, PortfolioService, TarefaDotTemplate],
     exports: [TarefaService],
 })
-export class TarefaModule { }
+export class TarefaModule {}

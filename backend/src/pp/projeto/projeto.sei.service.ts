@@ -6,13 +6,11 @@ import { CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
 
-
 @Injectable()
 export class ProjetoSeiService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async append_sei(projeto: ProjetoDetailDto, dto: CreateProjetoSeiDto, user: PessoaFromJwt) {
-
         dto.processo_sei = dto.processo_sei.replace(/[^0-9]/g, '');
 
         const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
@@ -20,11 +18,14 @@ export class ProjetoSeiService {
                 projeto_id: projeto.id,
                 processo_sei: dto.processo_sei,
                 removido_em: null,
-            }
+            },
         });
 
         if (existenteProjetoSei > 0)
-            throw new HttpException(`processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`, 400);
+            throw new HttpException(
+                `processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`,
+                400
+            );
 
         const projetoSei = await this.prisma.projetoRegistroSei.create({
             data: {
@@ -35,19 +36,22 @@ export class ProjetoSeiService {
                 criado_por: user.id,
                 categoria: 'Manual',
             },
-            select: { id: true }
+            select: { id: true },
         });
 
-        return { id: projetoSei.id }
+        return { id: projetoSei.id };
     }
 
-    async list_sei(projeto: ProjetoDetailDto, user: PessoaFromJwt, filterId: number | undefined = undefined): Promise<ProjetoSeiDto[]> {
-
+    async list_sei(
+        projeto: ProjetoDetailDto,
+        user: PessoaFromJwt,
+        filterId: number | undefined = undefined
+    ): Promise<ProjetoSeiDto[]> {
         const projetosSei = await this.prisma.projetoRegistroSei.findMany({
             where: {
                 projeto_id: projeto.id,
                 removido_em: null,
-                id: filterId
+                id: filterId,
             },
             select: {
                 id: true,
@@ -57,12 +61,10 @@ export class ProjetoSeiService {
                 link: true,
                 criador: { select: { id: true, nome_exibicao: true } },
             },
-            orderBy: [
-                { criado_em: 'desc' }
-            ]
-        })
+            orderBy: [{ criado_em: 'desc' }],
+        });
 
-        return projetosSei
+        return projetosSei;
     }
 
     async update_sei(projeto: ProjetoDetailDto, seiID: number, dto: UpdateProjetoRegistroSeiDto, user: PessoaFromJwt) {
@@ -75,63 +77,68 @@ export class ProjetoSeiService {
                     processo_sei: dto.processo_sei,
                     removido_em: null,
                     id: {
-                        not: seiID
-                    }
-                }
+                        not: seiID,
+                    },
+                },
             });
 
             if (existenteProjetoSei > 0)
-                throw new HttpException(`processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`, 400);
+                throw new HttpException(
+                    `processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`,
+                    400
+                );
         }
 
         const self = await this.prisma.projetoRegistroSei.findFirstOrThrow({
             where: {
                 projeto_id: projeto.id,
                 id: seiID,
-                removido_em: null
-            }
+                removido_em: null,
+            },
         });
         if (self.categoria !== 'Manual')
-            throw new HttpException(`processo_sei| Processo SEI não pode ser alterado, pois foi criado pelo sistema.`, 400);
-
+            throw new HttpException(
+                `processo_sei| Processo SEI não pode ser alterado, pois foi criado pelo sistema.`,
+                400
+            );
 
         await this.prisma.projetoRegistroSei.updateMany({
             where: {
                 projeto_id: projeto.id,
-                id: seiID
+                id: seiID,
             },
             data: {
                 ...dto,
                 atualizado_em: new Date(),
                 atualizado_por: user.id,
-            }
+            },
         });
 
-        return { id: seiID }
+        return { id: seiID };
     }
-
 
     async remove_sei(projeto: ProjetoDetailDto, seiID: number, user: PessoaFromJwt) {
         const self = await this.prisma.projetoRegistroSei.findFirstOrThrow({
             where: {
                 projeto_id: projeto.id,
                 id: seiID,
-                removido_em: null
-            }
+                removido_em: null,
+            },
         });
         if (self.categoria !== 'Manual')
-            throw new HttpException(`processo_sei| Processo SEI não pode ser removido, pois foi criado pelo sistema.`, 400);
+            throw new HttpException(
+                `processo_sei| Processo SEI não pode ser removido, pois foi criado pelo sistema.`,
+                400
+            );
 
         await this.prisma.projetoRegistroSei.update({
             where: {
-                id: seiID
+                id: seiID,
             },
             data: {
                 removido_em: new Date(),
-                removido_por: user.id
-            }
+                removido_por: user.id,
+            },
         });
     }
-
-
 }

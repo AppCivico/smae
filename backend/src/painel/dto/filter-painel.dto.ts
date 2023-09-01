@@ -10,11 +10,11 @@ export class FilterPainelDto {
     @IsOptional()
     @IsNumber()
     @Transform((a: any) => (a.value === '' ? undefined : +a.value))
-    meta_id?: number
+    meta_id?: number;
 }
 
 export class FilterPainelDaMetaDto {
     @IsNumber()
     @Transform(({ value }: any) => +value)
-    meta_id: number
+    meta_id: number;
 }

@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -18,7 +29,7 @@ import {
     VariavelAnaliseQualitativaDocumentoDto,
     VariavelAnaliseQualitativaDto,
     VariavelComplementacaoDto,
-    VariavelConferidaDto
+    VariavelConferidaDto,
 } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
@@ -35,7 +46,10 @@ export class MetasController {
     @ApiOkResponse({
         schema: { allOf: refs(ListMfMetasDto, RequestInfoDto) },
     })
-    async metas(@Query() params: FilterMfMetasDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMfMetasDto & RequestInfoDto> {
+    async metas(
+        @Query() params: FilterMfMetasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListMfMetasDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
@@ -55,10 +69,15 @@ export class MetasController {
     @ApiOkResponse({
         schema: { allOf: refs(RetornoMetaVariaveisDto, RequestInfoDto) },
     })
-    async metaVariaveis(@Param() params: FindOneParams, @Query() opts: FilterMfVariaveis, @CurrentUser() user: PessoaFromJwt): Promise<RetornoMetaVariaveisDto & RequestInfoDto> {
+    async metaVariaveis(
+        @Param() params: FindOneParams,
+        @Query() opts: FilterMfVariaveis,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RetornoMetaVariaveisDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
-        if (config.metas_variaveis.includes(params.id) === false) throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+        if (config.metas_variaveis.includes(params.id) === false)
+            throw new HttpException('ID da meta não faz parte do seu perfil', 404);
 
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo
@@ -80,7 +99,10 @@ export class MetasController {
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
-    async AddMetaVariavelAnaliseQualitativa(@Body() dto: VariavelAnaliseQualitativaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId & RequestInfoDto> {
+    async AddMetaVariavelAnaliseQualitativa(
+        @Body() dto: VariavelAnaliseQualitativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         // mesma coisa, pra editar um ciclo, vamos precisar de
@@ -100,7 +122,7 @@ export class MetasController {
     })
     async GetMetaVariavelAnaliseQualitativa(
         @Query() dto: FilterVariavelAnaliseQualitativaDto,
-        @CurrentUser() user: PessoaFromJwt,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<MfListVariavelAnaliseQualitativaDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
@@ -120,7 +142,7 @@ export class MetasController {
     })
     async AddMetaVariavelAnaliseQualitativaDocumento(
         @Body() dto: VariavelAnaliseQualitativaDocumentoDto,
-        @CurrentUser() user: PessoaFromJwt,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
@@ -137,7 +159,10 @@ export class MetasController {
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async DeleteMetaVariavelAnaliseQualitativaDocumento(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+    async DeleteMetaVariavelAnaliseQualitativaDocumento(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         const config = await this.mfService.pessoaAcessoPdm(user);
         await this.metasService.deleteMetaVariavelAnaliseQualitativaDocumento(params.id, config, user);
 
@@ -175,7 +200,11 @@ export class MetasController {
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async MudarMetaCicloFase(@Param() params: FindOneParams, @Body() dto: CicloFaseDto, @CurrentUser() user: PessoaFromJwt) {
+    async MudarMetaCicloFase(
+        @Param() params: FindOneParams,
+        @Body() dto: CicloFaseDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();

@@ -21,13 +21,21 @@ export class GrupoPaineisController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroGrupoPaineis.inserir')
-    async create(@Body() createGrupoPaineisDto: CreateGrupoPaineisDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createGrupoPaineisDto: CreateGrupoPaineisDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.grupoPaineisService.create(createGrupoPaineisDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get('')
-    @Roles('CadastroPessoa.inserir', 'CadastroGrupoPaineis.inserir', 'CadastroGrupoPaineis.editar', 'CadastroGrupoPaineis.remover')
+    @Roles(
+        'CadastroPessoa.inserir',
+        'CadastroGrupoPaineis.inserir',
+        'CadastroGrupoPaineis.editar',
+        'CadastroGrupoPaineis.remover'
+    )
     async findAll(@Query() filters: FilterGrupoPaineisDto): Promise<ListGrupoPaineisDto> {
         return { linhas: await this.grupoPaineisService.findAll(filters) };
     }
@@ -36,7 +44,11 @@ export class GrupoPaineisController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroGrupoPaineis.editar')
-    async update(@Param() params: FindOneParams, @Body() updateGrupoPaineisDto: UpdateGrupoPaineisDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateGrupoPaineisDto: UpdateGrupoPaineisDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.grupoPaineisService.update(+params.id, updateGrupoPaineisDto, user);
     }
 
@@ -53,7 +65,12 @@ export class GrupoPaineisController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    @Roles('CadastroPainel.visualizar', 'CadastroGrupoPaineis.inserir', 'CadastroGrupoPaineis.editar', 'CadastroGrupoPaineis.remover')
+    @Roles(
+        'CadastroPainel.visualizar',
+        'CadastroGrupoPaineis.inserir',
+        'CadastroGrupoPaineis.editar',
+        'CadastroGrupoPaineis.remover'
+    )
     async getDetail(@Param() params: FindOneParams): Promise<DetailGrupoPaineisDto> {
         return await this.grupoPaineisService.getDetail(params.id);
     }

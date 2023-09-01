@@ -15,7 +15,7 @@ export class OrcamentoExecutadoSaidaDto {
     orgao: CodigoNome;
     unidade: CodigoNome;
     fonte: CodigoNome;
-    acao_orcamentaria: string
+    acao_orcamentaria: string;
 
     /**
      * fonte: SMAE/ horário que o SMAE foi buscar a dotação

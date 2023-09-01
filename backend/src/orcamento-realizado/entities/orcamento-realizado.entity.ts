@@ -33,5 +33,5 @@ export class OrcamentoRealizado {
 
     itens: OrcamentoRealizadoItem[];
 
-    execucao_disponivel_meses: number[]
+    execucao_disponivel_meses: number[];
 }

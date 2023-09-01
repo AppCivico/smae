@@ -20,7 +20,10 @@ export class IniciativaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIniciativa.inserir', 'CadastroMeta.inserir')
-    async create(@Body() createIniciativaDto: CreateIniciativaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createIniciativaDto: CreateIniciativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.iniciativaService.create(createIniciativaDto, user);
     }
 
@@ -28,7 +31,10 @@ export class IniciativaController {
     @Get()
     @ApiUnauthorizedResponse()
     @Roles('CadastroMeta.listar')
-    async findAll(@Query() filters: FilterIniciativaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIniciativaDto> {
+    async findAll(
+        @Query() filters: FilterIniciativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListIniciativaDto> {
         return { linhas: await this.iniciativaService.findAll(filters, user) };
     }
 
@@ -36,7 +42,11 @@ export class IniciativaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIniciativa.editar', 'CadastroMeta.inserir')
-    async update(@Param() params: FindOneParams, @Body() updateIniciativaDto: UpdateIniciativaDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateIniciativaDto: UpdateIniciativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.iniciativaService.update(+params.id, updateIniciativaDto, user);
     }
 

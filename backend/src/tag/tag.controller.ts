@@ -34,7 +34,11 @@ export class TagController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroTag.editar')
-    async update(@Param() params: FindOneParams, @Body() updateTagDto: UpdateTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateTagDto: UpdateTagDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.tagService.update(+params.id, updateTagDto, user);
     }
 

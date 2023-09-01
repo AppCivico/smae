@@ -24,7 +24,7 @@ export class UploadController {
         @Body() createUploadDto: CreateUploadDto,
         @CurrentUser() user: PessoaFromJwt,
         @UploadedFile() file: Express.Multer.File,
-        @IpAddress() ipAddress: string,
+        @IpAddress() ipAddress: string
     ): Promise<Upload> {
         const uploadFile = await this.uploadService.upload(createUploadDto, user, file, ipAddress);
 

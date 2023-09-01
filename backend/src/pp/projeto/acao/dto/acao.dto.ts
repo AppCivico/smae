@@ -1,6 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
-import { IsEnum, IsInt } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsEnum, IsInt } from 'class-validator';
 
 export const ProjetoAcao = {
     'arquivar': 'arquivar',
@@ -23,9 +23,9 @@ export class CreateAcaoDto {
     @IsEnum(ProjetoAcao, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoAcao).join(', '),
     })
-    acao: ProjetoAcao
+    acao: ProjetoAcao;
 
     @IsInt()
     @Transform(({ value }: any) => +value)
-    projeto_id: number
+    projeto_id: number;
 }

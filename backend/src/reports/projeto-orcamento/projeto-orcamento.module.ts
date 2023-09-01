@@ -6,4 +6,4 @@ import { ProjetoOrcamentoController } from './projeto-orcamento.controller';
     imports: [OrcamentoModule],
     controllers: [ProjetoOrcamentoController],
 })
-export class ProjetoOrcamentoModule { }
+export class ProjetoOrcamentoModule {}

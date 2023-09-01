@@ -5,11 +5,8 @@ import { AuxiliarController } from './auxiliar.controller';
 import { AuxiliarService } from './auxiliar.service';
 
 @Module({
-    imports: [
-        forwardRef(() => MetasModule),
-        forwardRef(() => MfModule),
-    ],
+    imports: [forwardRef(() => MetasModule), forwardRef(() => MfModule)],
     controllers: [AuxiliarController],
-    providers: [AuxiliarService]
+    providers: [AuxiliarService],
 })
-export class AuxiliarModule { }
+export class AuxiliarModule {}

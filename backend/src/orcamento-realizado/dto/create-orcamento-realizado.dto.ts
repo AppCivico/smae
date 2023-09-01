@@ -1,6 +1,19 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsInt, IsNumber, IsOptional, IsString, Matches, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsInt,
+    IsNumber,
+    IsOptional,
+    IsString,
+    Matches,
+    Max,
+    MaxLength,
+    Min,
+    ValidateIf,
+    ValidateNested,
+} from 'class-validator';
 import { PROCESSO_DESCRIPTION, PROCESSO_MESSAGE, PROCESSO_REGEXP } from '../../dotacao/dto/dotacao.dto';
 import { OrcamentoRealizado } from '../entities/orcamento-realizado.entity';
 
@@ -9,7 +22,10 @@ export class CreateOrcamentoRealizadoItemDto {
      * Valor Empenho para meta - no momento aceitando zero, mas é meio sem sentido IMHO, uma vez que se ta registrando é pq ta alocado!
      * @example "42343.34"
      */
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Empenho com até duas casas decimais' })
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| Valor Empenho com até duas casas decimais' }
+    )
     @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
     @Type(() => Number)
     valor_empenho: number;
@@ -18,7 +34,10 @@ export class CreateOrcamentoRealizadoItemDto {
      * Valor Liquidado para meta - zero ou mais
      * @example "42343.34"
      */
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Valor Liquidado com até duas casas decimais' })
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| Valor Liquidado com até duas casas decimais' }
+    )
     @Min(0, { message: '$property| Valor Liquidado precisa ser positivo ou zero' })
     @Type(() => Number)
     valor_liquidado: number;
@@ -76,7 +95,9 @@ export class CreateOrcamentoRealizadoDto {
      */
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
     @MaxLength(40)
-    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, { message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00' })
+    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, {
+        message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00',
+    })
     dotacao: string;
 
     @IsOptional()
@@ -94,7 +115,9 @@ export class CreateOrcamentoRealizadoDto {
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
     @MaxLength(12)
-    @Matches(/^\d{1,6}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 000000/' + new Date(Date.now()).getFullYear() })
+    @Matches(/^\d{1,6}\/2\d{3}$/, {
+        message: 'Nota não está no formato esperado: 000000/' + new Date(Date.now()).getFullYear(),
+    })
     @ValidateIf((object, value) => value !== null && value !== '')
     nota_empenho?: string | null;
 
@@ -110,7 +133,12 @@ export class CreateOrcamentoRealizadoDto {
     itens: CreateOrcamentoRealizadoItemDto[];
 }
 
-export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, ['ano_referencia', 'dotacao', 'processo', 'nota_empenho']) {}
+export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealizadoDto, [
+    'ano_referencia',
+    'dotacao',
+    'processo',
+    'nota_empenho',
+]) {}
 
 export class FilterOrcamentoRealizadoDto {
     /**

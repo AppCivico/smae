@@ -6,12 +6,8 @@ import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        forwardRef(() => ProjetoModule),
-        forwardRef(() => MetaModule),
-    ],
+    imports: [PrismaModule, forwardRef(() => ProjetoModule), forwardRef(() => MetaModule)],
     controllers: [DashboardController],
-    providers: [DashboardService]
+    providers: [DashboardService],
 })
-export class DashboardModule { }
+export class DashboardModule {}

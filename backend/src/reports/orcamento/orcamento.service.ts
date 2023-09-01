@@ -7,7 +7,11 @@ import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { SuperCreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
-import { ListOrcamentoExecutadoDto, OrcamentoExecutadoSaidaDto, OrcamentoPlanejadoSaidaDto } from './entities/orcamento-executado.entity';
+import {
+    ListOrcamentoExecutadoDto,
+    OrcamentoExecutadoSaidaDto,
+    OrcamentoPlanejadoSaidaDto,
+} from './entities/orcamento-executado.entity';
 
 const {
     Parser,
@@ -81,12 +85,13 @@ class RetornoPlanejadoDb {
 
 @Injectable()
 export class OrcamentoService implements ReportableService {
-    private readonly logger = new Logger(OrcamentoService.name)
+    private readonly logger = new Logger(OrcamentoService.name);
     constructor(
-        private readonly utils: UtilsService, private readonly prisma: PrismaService,
+        private readonly utils: UtilsService,
+        private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
-        private readonly prevCustoService: PrevisaoCustoService,
-    ) { }
+        private readonly prevCustoService: PrevisaoCustoService
+    ) {}
 
     async create(dto: SuperCreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
         console.log(dto);
@@ -99,7 +104,7 @@ export class OrcamentoService implements ReportableService {
         // sem portfolio_id e sem projeto_id = filtra por meta
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
             const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
-            filtroMetas = metas.map(r => r.id);
+            filtroMetas = metas.map((r) => r.id);
         }
 
         const orgaoMatch: any[] = [];
@@ -181,7 +186,11 @@ export class OrcamentoService implements ReportableService {
         };
     }
 
-    private async queryConsolidadoPlanejado(ano_ini: string, ano_fim: string, search: { id: number }[]): Promise<RetornoPlanejadoDb[]> {
+    private async queryConsolidadoPlanejado(
+        ano_ini: string,
+        ano_fim: string,
+        search: { id: number }[]
+    ): Promise<RetornoPlanejadoDb[]> {
         return await this.prisma.$queryRaw`
             with previsoes as (
                 select
@@ -214,7 +223,7 @@ export class OrcamentoService implements ReportableService {
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.removido_em is null
-                and op.id = ANY(${search.map(r => r.id)}::int[])
+                and op.id = ANY(${search.map((r) => r.id)}::int[])
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -248,7 +257,11 @@ export class OrcamentoService implements ReportableService {
             `;
     }
 
-    private async queryAnaliticoPlanejado(ano_ini: string, ano_fim: string, search: { id: number }[]): Promise<RetornoPlanejadoDb[]> {
+    private async queryAnaliticoPlanejado(
+        ano_ini: string,
+        ano_fim: string,
+        search: { id: number }[]
+    ): Promise<RetornoPlanejadoDb[]> {
         return await this.prisma.$queryRaw`
             with previsoes as (
                 select
@@ -283,7 +296,7 @@ export class OrcamentoService implements ReportableService {
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.removido_em is null
-                and op.id = ANY(${search.map(r => r.id)}::int[])
+                and op.id = ANY(${search.map((r) => r.id)}::int[])
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -336,7 +349,7 @@ export class OrcamentoService implements ReportableService {
                 left join atividade ma on ma.id = o.atividade_id
                 left join projeto p on p.id = o.projeto_id
 
-                where i.id = ANY(${search.map(r => r.id)}::int[])
+                where i.id = ANY(${search.map((r) => r.id)}::int[])
                 and i.mes_corrente = TRUE
             ), analitico as (
             select
@@ -444,7 +457,7 @@ export class OrcamentoService implements ReportableService {
                 left join atividade ma on ma.id = o.atividade_id
                 left join projeto p on p.id = o.projeto_id
 
-                where i.id = ANY(${search.map(r => r.id)}::int[])
+                where i.id = ANY(${search.map((r) => r.id)}::int[])
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -491,8 +504,12 @@ export class OrcamentoService implements ReportableService {
 
         return {
             meta: { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id },
-            iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
-            atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
+            iniciativa: db.iniciativa_id
+                ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id }
+                : null,
+            atividade: db.atividade_id
+                ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id }
+                : null,
             projeto: db.projeto_id ? { codigo: db.projeto_codigo, nome: db.projeto_nome!, id: +db.projeto_id } : null,
 
             acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
@@ -527,8 +544,12 @@ export class OrcamentoService implements ReportableService {
 
         return {
             meta: { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id },
-            iniciativa: db.iniciativa_id ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id } : null,
-            atividade: db.atividade_id ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id } : null,
+            iniciativa: db.iniciativa_id
+                ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id }
+                : null,
+            atividade: db.atividade_id
+                ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id }
+                : null,
             projeto: db.projeto_id ? { codigo: db.projeto_codigo, nome: db.projeto_nome!, id: +db.projeto_id } : null,
 
             acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
@@ -540,7 +561,9 @@ export class OrcamentoService implements ReportableService {
             unidade: { codigo: '', nome: '' },
             fonte: { codigo: '', nome: '' },
 
-            plan_dotacao_sincronizado_em: db.plan_dotacao_sincronizado_em ? db.plan_dotacao_sincronizado_em.toISOString() : null,
+            plan_dotacao_sincronizado_em: db.plan_dotacao_sincronizado_em
+                ? db.plan_dotacao_sincronizado_em.toISOString()
+                : null,
             plan_sof_val_orcado_atualizado: db.plan_sof_val_orcado_atualizado,
             plan_valor_planejado: db.plan_valor_planejado,
             plan_dotacao_ano_utilizado: db.plan_dotacao_ano_utilizado?.toString() || null,
@@ -592,17 +615,19 @@ export class OrcamentoService implements ReportableService {
             { value: 'projeto.id', label: 'ID do Projeto' },
         ];
 
-        const campos = pdm ? [
-            { value: 'meta.codigo', label: 'Código da Meta' },
-            { value: 'meta.titulo', label: 'Título da Meta' },
-            { value: 'meta.id', label: 'ID da Meta' },
-            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-        ] : camposProjeto;
+        const campos = pdm
+            ? [
+                  { value: 'meta.codigo', label: 'Código da Meta' },
+                  { value: 'meta.titulo', label: 'Título da Meta' },
+                  { value: 'meta.id', label: 'ID da Meta' },
+                  { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+                  { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
+                  { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
+                  { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
+                  { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
+                  { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
+              ]
+            : camposProjeto;
 
         if (dados.linhas.length) {
             const json2csvParser = new Parser({
@@ -637,9 +662,9 @@ export class OrcamentoService implements ReportableService {
                 ],
             });
             const linhas = json2csvParser.parse(
-                dados.linhas.map(r => {
+                dados.linhas.map((r) => {
                     return { ...r, logs: r.logs.join('\r\n') };
-                }),
+                })
             );
             out.push({
                 name: 'executado.csv',
@@ -671,9 +696,9 @@ export class OrcamentoService implements ReportableService {
                 ],
             });
             const linhas = json2csvParser.parse(
-                dados.linhas_planejado.map(r => {
+                dados.linhas_planejado.map((r) => {
                     return { ...r, logs: r.logs.join('\r\n') };
-                }),
+                })
             );
             out.push({
                 name: 'planejado.csv',
@@ -717,7 +742,7 @@ export class OrcamentoService implements ReportableService {
                         params: params,
                         horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
-                    'utf8',
+                    'utf8'
                 ),
             },
             ...out,

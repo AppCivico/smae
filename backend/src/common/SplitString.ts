@@ -1,5 +1,4 @@
 export class SplitString {
-
     static splitString(inputString: string, length: number): string {
         let splitArray: string[] = [];
         let splitIndex: number = 0;
@@ -17,5 +16,4 @@ export class SplitString {
         }
         return splitArray.join('\n');
     }
-
 }
