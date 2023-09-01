@@ -22,7 +22,6 @@ export class LoginValidationMiddleware implements NestMiddleware {
             );
         }
 
-        //throw '';
         next();
     }
 }

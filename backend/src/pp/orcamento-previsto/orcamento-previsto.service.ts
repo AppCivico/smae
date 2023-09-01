@@ -25,10 +25,6 @@ export class OrcamentoPrevistoService {
 
     async create(projeto_id: number, dto: CreateOrcamentoPrevistoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // não tem meta, logo, não tem ciclo/PDM, provavelmente vamos criar outra table
-        //const anoCount = await this.prisma.pdmOrcamentoConfig.count({
-        //  where: { pdm_id: meta.pdm_id, ano_referencia: dto.ano_referencia, previsao_custo_disponivel: true },
-        //});
-        //if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
 
         const created = await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -116,11 +112,6 @@ export class OrcamentoPrevistoService {
             },
         });
         if (alreadyUpdated) throw new HttpException('projeto orçamento já foi atualizado, atualize a página', 400);
-
-        //const anoCount = await this.prisma.pdmOrcamentoConfig.count({
-        //    where: { pdm_id: meta.pdm_id, ano_referencia: metaOrcamento.ano_referencia, previsao_custo_disponivel: true },
-        //});
-        //if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
 
         const new_id = await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient): Promise<number> => {

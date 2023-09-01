@@ -310,7 +310,6 @@ export class MetasService {
             cicloFisicoAtivo,
             metaEstaFaseColeta
         );
-        //console.dir(calcSerieVariaveis, { depth: 33 });
 
         const cicloFase = indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : '';
 

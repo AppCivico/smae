@@ -117,7 +117,6 @@ export class MetasCronogramaController {
 
         if (config.metas_cronograma.includes(params.id) == false) {
             return { meta: null };
-            //throw new HttpException('Meta não encontrada no ciclo', 404);
         }
 
         const ret = await this.metasCronogramaService.metaIniciativaAtividadesComCrono(params.id);
