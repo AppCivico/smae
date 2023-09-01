@@ -9,11 +9,7 @@ import {
     MaxLength,
     Min,
     Validate,
-    ValidateIf,
-    ValidationArguments,
-    ValidatorConstraint,
-    ValidatorConstraintInterface,
-    isInt,
+    ValidateIf
 } from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';
 

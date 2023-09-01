@@ -30,7 +30,7 @@ export class IniciativaService {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(createIniciativaDto.meta_id) == false) {
+            if (!filterIdIn.includes(createIniciativaDto.meta_id)) {
                 throw new HttpException('Sem permissão para criar iniciativa nesta meta', 400);
             }
         }
@@ -298,7 +298,7 @@ export class IniciativaService {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(self.meta_id) == false)
+            if (!filterIdIn.includes(self.meta_id))
                 throw new HttpException('Sem permissão para editar iniciativa', 400);
         }
 
@@ -415,7 +415,7 @@ export class IniciativaService {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(self.meta_id) == false)
+            if (!filterIdIn.includes(self.meta_id))
                 throw new HttpException('Sem permissão para remover iniciativa', 400);
         }
 
