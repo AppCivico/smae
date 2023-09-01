@@ -1,9 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
-const prisma = new PrismaClient(
-    { log: ['query'] }
-)
-
+const prisma = new PrismaClient({ log: ['query'] });
 
 const ModuloDescricao: Record<string, string> = {
     CadastroOrgao: 'Cadastro de Órgão',
@@ -37,7 +34,6 @@ const ModuloDescricao: Record<string, string> = {
 type ListaDeModulos = keyof typeof ModuloDescricao;
 
 const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]> = {
-
     CadastroCargo: false,
     CadastroCoordenadoria: false,
     CadastroDepartamento: false,
@@ -79,14 +75,16 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['CadastroPessoa.editar', 'Editar dados das pessoas com o mesmo órgão'],
         ['CadastroPessoa.inativar', 'Inativar pessoas com o mesmo órgão'],
         ['CadastroPessoa.ativar', 'Ativar pessoas com o mesmo órgão'],
-        ['CadastroPessoa.administrador', 'Editar/Inserir/Inativar/Ativar qualquer pessoa, até mesmo outros administradores'],
+        [
+            'CadastroPessoa.administrador',
+            'Editar/Inserir/Inativar/Ativar qualquer pessoa, até mesmo outros administradores',
+        ],
     ],
     CadastroUnidadeMedida: [
         ['CadastroUnidadeMedida.inserir', 'Inserir Unidade de Medida'],
         ['CadastroUnidadeMedida.editar', 'Editar Unidade de Medida'],
         ['CadastroUnidadeMedida.remover', 'Remover Unidade de Medida'],
     ],
-
 
     CadastroRegiao: [
         ['CadastroRegiao.inserir', 'Inserir Regiões'],
@@ -124,11 +122,14 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     CadastroMeta: [
         // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
         // quando tem essa permissão, é liberado vários outros itens
-        ['CadastroMeta.inserir', 'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis.'],
+        [
+            'CadastroMeta.inserir',
+            'Administrar Metas, Iniciativas, Atividades, Indicadores, Cronogramas/Etapas e Painéis.',
+        ],
         ['CadastroMeta.editar', 'Editar Metas que for responsável'],
         ['CadastroMeta.remover', 'Remover Metas que for responsável'],
         ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
-        ['CadastroMeta.listar', 'Lista metas, iniciativas e atividades']
+        ['CadastroMeta.listar', 'Lista metas, iniciativas e atividades'],
     ],
     CadastroIndicador: [
         // quem puder editar ou inserir indicador, vai poder gerenciar as variáveis
@@ -190,7 +191,6 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['PDM.admin_cp', '(Monitoramento) Administrador CP'],
         ['PDM.ponto_focal', '(Monitoramento) Ponto Focal'],
     ],
-
 };
 
 let todosPrivilegios: ListaDePrivilegios[] = [];
@@ -200,11 +200,10 @@ for (const codModulo in PrivConfig) {
     if (privilegio === false) continue;
 
     for (const priv of privilegio) {
-        todosPrivilegios.push(priv[0])
+        todosPrivilegios.push(priv[0]);
     }
 }
-console.log(todosPrivilegios)
-
+console.log(todosPrivilegios);
 
 const PrivRespNaCp: ListaDePrivilegios[] = [
     'PDM.coordenador_responsavel_cp',
@@ -234,17 +233,19 @@ const removerNomePerfil = (nome: string) => {
     return {
         nome: nome,
         descricao: '',
-        privilegios: false as false
-    }
+        privilegios: false as false,
+    };
 };
 
 const atualizacoesPerfil: Array<PromiseLike<any>> = [];
 const atualizarNomePerfil = (nomeCorrente: string, nomesAnterioes: string[]) => {
     for (const nomeAnterior of nomesAnterioes) {
-        atualizacoesPerfil.push(prisma.perfilAcesso.updateMany({
-            where: { nome: nomeAnterior },
-            data: { nome: nomeCorrente }
-        }));
+        atualizacoesPerfil.push(
+            prisma.perfilAcesso.updateMany({
+                where: { nome: nomeAnterior },
+                data: { nome: nomeCorrente },
+            })
+        );
     }
     return nomeCorrente;
 };
@@ -252,161 +253,151 @@ const atualizarNomePerfil = (nomeCorrente: string, nomesAnterioes: string[]) => 
 const PerfilAcessoConfig: {
     nome: string;
     descricao: string;
-    privilegios: ListaDePrivilegios[] | false
+    privilegios: ListaDePrivilegios[] | false;
 }[] = [
-        // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo usando o
-        // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
-        {
-            nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
-            descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
-            privilegios: [
-                'SMAE.superadmin',
-                ...todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false),
-            ]
-        },
-        {
-            nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
-            descricao: 'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
-            privilegios: [
-                'PDM.admin_cp',
-                'CadastroPdm.editar',
-                'CadastroMacroTema.inserir',
-                'CadastroMacroTema.editar',
-                'CadastroMacroTema.remover',
-                'CadastroTema.inserir',
-                'CadastroTema.editar',
-                'CadastroTema.remover',
-                'CadastroSubTema.inserir',
-                'CadastroSubTema.editar',
-                'CadastroSubTema.remover',
-                'CadastroTag.inserir',
-                'CadastroTag.editar',
-                'CadastroTag.remover',
-                'CadastroMeta.inserir', // pq ele é admin_cp, vai poder editar varias coisas
-                'CadastroMeta.listar',
-                'CadastroMeta.editar',
-                'CadastroMeta.remover',
-                'CadastroIndicador.inserir',
-                'CadastroIndicador.editar',
-                'CadastroIndicador.remover',
-                'CadastroIniciativa.inserir',
-                'CadastroIniciativa.editar',
-                'CadastroIniciativa.remover',
-                'CadastroAtividade.inserir',
-                'CadastroAtividade.editar',
-                'CadastroAtividade.remover',
-                'CadastroCronograma.inserir',
-                'CadastroCronograma.editar',
-                'CadastroCronograma.remover',
-                'CadastroPainel.inserir',
-                'CadastroPainel.editar',
-                'CadastroPainel.remover',
-                'CadastroPainel.visualizar',
+    // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo usando o
+    // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
+    {
+        nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
+        descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
+        privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE)\./.test(e) === false)],
+    },
+    {
+        nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
+        descricao:
+            'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
+        privilegios: [
+            'PDM.admin_cp',
+            'CadastroPdm.editar',
+            'CadastroMacroTema.inserir',
+            'CadastroMacroTema.editar',
+            'CadastroMacroTema.remover',
+            'CadastroTema.inserir',
+            'CadastroTema.editar',
+            'CadastroTema.remover',
+            'CadastroSubTema.inserir',
+            'CadastroSubTema.editar',
+            'CadastroSubTema.remover',
+            'CadastroTag.inserir',
+            'CadastroTag.editar',
+            'CadastroTag.remover',
+            'CadastroMeta.inserir', // pq ele é admin_cp, vai poder editar varias coisas
+            'CadastroMeta.listar',
+            'CadastroMeta.editar',
+            'CadastroMeta.remover',
+            'CadastroIndicador.inserir',
+            'CadastroIndicador.editar',
+            'CadastroIndicador.remover',
+            'CadastroIniciativa.inserir',
+            'CadastroIniciativa.editar',
+            'CadastroIniciativa.remover',
+            'CadastroAtividade.inserir',
+            'CadastroAtividade.editar',
+            'CadastroAtividade.remover',
+            'CadastroCronograma.inserir',
+            'CadastroCronograma.editar',
+            'CadastroCronograma.remover',
+            'CadastroPainel.inserir',
+            'CadastroPainel.editar',
+            'CadastroPainel.remover',
+            'CadastroPainel.visualizar',
 
-                'Reports.executar',
-                'Reports.remover',
+            'Reports.executar',
+            'Reports.remover',
 
-                'Reports.dashboard_pdm',
-            ]
-        },
-        {
-            nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
-            descricao: 'Pode criar e editar usuários no mesmo órgão',
-            privilegios: [
-                'CadastroPessoa.inserir',
-                'CadastroPessoa.editar',
-                'CadastroPessoa.inativar',
-                'CadastroPessoa.ativar'
-            ]
-        },
-        {
-            nome: 'Ponto Focal',
-            descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
-            privilegios: [
-                'PDM.ponto_focal',
-                'CadastroMeta.listar',
-                'CadastroPainel.visualizar',
-            ]
-        },
-        {
-            nome: atualizarNomePerfil('Responsável por meta na Coordenadoria de Planejamento', ['Responsável por meta na CP']),
-            descricao: 'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
-            privilegios: PrivRespNaCp
-        },
-        {
-            nome: atualizarNomePerfil('Orçamento - Metas', ['Orçamento']),
-            descricao: 'Pode criar orçamento para as metas que tem acesso.',
-            privilegios: [
-                'CadastroMeta.orcamento'
-            ]
-        },
-        {
-            nome: 'Orçamento - Projetos',
-            descricao: 'Pode criar orçamento para os projetos que tem acesso.',
-            privilegios: [
-                'Projeto.orcamento'
-            ]
-        },
-        {
-            nome: 'Administrador de Portfólio',
-            descricao: 'Gerenciar os Portfólios',
-            privilegios: [
-                'Projeto.administrar_portfolios',
-            ]
-        },
-        {
-            nome: 'Gestor de Projetos no Órgão',
-            descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
-            privilegios: [
-                'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
-                'Projeto.administrador_no_orgao',
-                'Reports.dashboard_portfolios',
-            ]
-        },
-        {
-            nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
-            descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
-            privilegios: [
-                'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
-                'SMAE.gestor_de_projeto',
-                'Reports.dashboard_portfolios',
-            ]
-        },
-        {
-            nome: 'Colaborador de Projetos',
-            descricao: 'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
-            privilegios: [
-                'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
-                'SMAE.colaborador_de_projeto',
-                'Reports.dashboard_portfolios',
-            ]
-        },
-        {
-            nome: 'Analista de dados',
-            descricao: 'Entra diretamente para as análises e tem acesso total para metas e projetos',
-            privilegios: [
-                'SMAE.loga_direto_na_analise',
-                'SMAE.acesso_bi',
-                'Reports.dashboard_pdm',
-                'Reports.dashboard_portfolios',
-            ]
-        },
-        removerNomePerfil('Técnico CP'),
-        removerNomePerfil('Orçamento'),
-        removerNomePerfil('Unidade de Entregas'),
-        removerNomePerfil('Responsável por meta na CP - orçamento'),
-        removerNomePerfil('Administrador de Portfolio'),
-        removerNomePerfil('Administrador Geral'),
-        removerNomePerfil('Administrador CP'),
-        removerNomePerfil('Coordenadoria de Planejamento'),
-        removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
-        removerNomePerfil('Responsável por meta na CP'),
-    ];
-
+            'Reports.dashboard_pdm',
+        ],
+    },
+    {
+        nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
+        descricao: 'Pode criar e editar usuários no mesmo órgão',
+        privilegios: [
+            'CadastroPessoa.inserir',
+            'CadastroPessoa.editar',
+            'CadastroPessoa.inativar',
+            'CadastroPessoa.ativar',
+        ],
+    },
+    {
+        nome: 'Ponto Focal',
+        descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
+        privilegios: ['PDM.ponto_focal', 'CadastroMeta.listar', 'CadastroPainel.visualizar'],
+    },
+    {
+        nome: atualizarNomePerfil('Responsável por meta na Coordenadoria de Planejamento', [
+            'Responsável por meta na CP',
+        ]),
+        descricao:
+            'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+        privilegios: PrivRespNaCp,
+    },
+    {
+        nome: atualizarNomePerfil('Orçamento - Metas', ['Orçamento']),
+        descricao: 'Pode criar orçamento para as metas que tem acesso.',
+        privilegios: ['CadastroMeta.orcamento'],
+    },
+    {
+        nome: 'Orçamento - Projetos',
+        descricao: 'Pode criar orçamento para os projetos que tem acesso.',
+        privilegios: ['Projeto.orcamento'],
+    },
+    {
+        nome: 'Administrador de Portfólio',
+        descricao: 'Gerenciar os Portfólios',
+        privilegios: ['Projeto.administrar_portfolios'],
+    },
+    {
+        nome: 'Gestor de Projetos no Órgão',
+        descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
+        privilegios: [
+            'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
+            'Projeto.administrador_no_orgao',
+            'Reports.dashboard_portfolios',
+        ],
+    },
+    {
+        nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
+        descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
+        privilegios: [
+            'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
+            'SMAE.gestor_de_projeto',
+            'Reports.dashboard_portfolios',
+        ],
+    },
+    {
+        nome: 'Colaborador de Projetos',
+        descricao:
+            'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
+        privilegios: [
+            'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
+            'SMAE.colaborador_de_projeto',
+            'Reports.dashboard_portfolios',
+        ],
+    },
+    {
+        nome: 'Analista de dados',
+        descricao: 'Entra diretamente para as análises e tem acesso total para metas e projetos',
+        privilegios: [
+            'SMAE.loga_direto_na_analise',
+            'SMAE.acesso_bi',
+            'Reports.dashboard_pdm',
+            'Reports.dashboard_portfolios',
+        ],
+    },
+    removerNomePerfil('Técnico CP'),
+    removerNomePerfil('Orçamento'),
+    removerNomePerfil('Unidade de Entregas'),
+    removerNomePerfil('Responsável por meta na CP - orçamento'),
+    removerNomePerfil('Administrador de Portfolio'),
+    removerNomePerfil('Administrador Geral'),
+    removerNomePerfil('Administrador CP'),
+    removerNomePerfil('Coordenadoria de Planejamento'),
+    removerNomePerfil('Criador e Gestor de Projetos no Órgão'),
+    removerNomePerfil('Responsável por meta na CP'),
+];
 
 async function main() {
-    if (atualizacoesPerfil.length)
-        await Promise.all(atualizacoesPerfil);
+    if (atualizacoesPerfil.length) await Promise.all(atualizacoesPerfil);
 
     await criar_emaildb_config();
     await criar_texto_config();
@@ -414,120 +405,53 @@ async function main() {
     await atualizar_perfil_acesso();
 
     await atualizar_superadmin();
-    //await atualizar_ods();
-    //await atualizar_tipo_orgao();
-    //await atualizar_orgao();
-
 }
-
-/*
-
-async function atualizar_orgao() {
-    let list = [{ sigla: 'SEPEP', desc: 'Secretaria Executiva de Planejamento e Entregas Prioritárias', tipo: 'Secretaria' }];
-
-    for (const item of list) {
-        const tipo = await prisma.tipoOrgao.findFirstOrThrow({
-            where: { descricao: item.tipo },
-        });
-
-        await prisma.orgao.upsert({
-            where: { descricao: item.desc },
-            update: {
-                sigla: item.sigla,
-                tipo_orgao_id: tipo.id,
-            },
-            create: {
-                sigla: item.sigla,
-                descricao: item.desc,
-                tipo_orgao_id: tipo.id,
-            },
-        });
-    }
-}
-
-async function atualizar_ods() {
-    let list = [{ numero: 1, titulo: 'Erradicação da Pobreza' }];
-
-    for (const desc of list) {
-        await prisma.ods.upsert({
-            where: { numero: desc.numero },
-            update: { titulo: desc.titulo },
-            create: {
-                numero: desc.numero as number,
-                titulo: desc.titulo,
-                descricao: ''
-            },
-        });
-    }
-}
-
-async function atualizar_tipo_orgao() {
-    let list = ['Secretaria', 'Subprefeitura', 'Autarquia', 'Empresa Pública'];
-
-    for (const desc of list) {
-        let found = await prisma.tipoOrgao.findFirst({ where: { descricao: desc }, select: { id: true } });
-        if (!found) {
-            found = await prisma.tipoOrgao.create({
-                data: {
-                    descricao: desc
-                }, select: { id: true }
-            });
-        }
-    }
-}
-*/
 
 async function atualizar_modulos_e_privilegios() {
-
     const promises: Array<PromiseLike<any>> = [];
 
     for (const codModulo in PrivConfig) {
         const privilegio = PrivConfig[codModulo];
 
         if (privilegio === false) {
-
             await prisma.perfilPrivilegio.deleteMany({
                 where: {
                     privilegio: {
                         modulo: {
-                            codigo: codModulo
-                        }
-                    }
-                }
+                            codigo: codModulo,
+                        },
+                    },
+                },
             });
 
             await prisma.privilegio.deleteMany({
                 where: {
                     modulo: {
-                        codigo: codModulo
-                    }
-                }
+                        codigo: codModulo,
+                    },
+                },
             });
 
             await prisma.modulo.deleteMany({
                 where: {
-                    codigo: codModulo
-                }
+                    codigo: codModulo,
+                },
             });
-
         } else {
-
             const moduloObject = await prisma.modulo.upsert({
                 where: { codigo: codModulo },
                 update: {
                     descricao: ModuloDescricao[codModulo as string] as string,
                 },
-                create:
-                {
+                create: {
                     codigo: codModulo,
                     descricao: ModuloDescricao[codModulo as string] as string,
                 },
             });
             for (const priv of privilegio) {
-                promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string))
+                promises.push(upsert_privilegios(moduloObject.id, priv[0] as string, priv[1] as string));
             }
         }
-
     }
 
     await Promise.all(promises);
@@ -536,101 +460,102 @@ async function atualizar_modulos_e_privilegios() {
         where: {
             privilegio: {
                 codigo: {
-                    notIn: todosPrivilegios
-                }
-            }
-        }
+                    notIn: todosPrivilegios,
+                },
+            },
+        },
     });
 
     await prisma.privilegio.deleteMany({
         where: {
             codigo: {
-                notIn: todosPrivilegios
-            }
-        }
+                notIn: todosPrivilegios,
+            },
+        },
     });
-
 }
 
 async function criar_texto_config() {
     await prisma.textoConfig.upsert({
         where: { id: 1 },
         update: {},
-        create:
-        {
+        create: {
             bemvindo_email: 'Ao acessar o SMAE, Você está ciente e autoriza...',
             tos: '...O acesso ao SMAE indica ciência e concordância com os termos acima',
         },
     });
 }
 
-
 async function criar_emaildb_config() {
     await prisma.emaildbConfig.upsert({
         where: { id: 1 },
         update: {},
-        create:
-        {
+        create: {
             from: '"Sistema" <sistema@exemplo.com>',
             template_resolver_class: 'Shypper::TemplateResolvers::HTTP',
-            template_resolver_config: { "base_url": "http://smae_api:3001/public/email-templates/" },
+            template_resolver_config: { 'base_url': 'http://smae_api:3001/public/email-templates/' },
             email_transporter_class: 'Email::Sender::Transport::SMTP::Persistent',
-            email_transporter_config: { "sasl_password": "", "sasl_username": "apikey", "port": "25", "host": "smtp_web" }
+            email_transporter_config: {
+                'sasl_password': '',
+                'sasl_username': 'apikey',
+                'port': '25',
+                'host': 'smtp_web',
+            },
         },
     });
 }
 
 async function upsert_privilegios(moduloId: number, codigo: string, nome: string) {
-
     return prisma.privilegio.upsert({
         where: { codigo: codigo },
         update: { nome: nome, modulo_id: moduloId },
         create: {
             nome: nome,
             modulo_id: moduloId,
-            codigo: codigo
-        }
+            codigo: codigo,
+        },
     });
 }
 
-
 async function atualizar_perfil_acesso() {
-
     for (const perfilAcessoConf of PerfilAcessoConfig) {
-
         if (perfilAcessoConf.privilegios === false) {
-
             // apagar quem tiver acesso ao perfilAcesso e remover o próprio perfil
-            const perfilAcesso = await prisma.perfilAcesso.findFirst({ where: { nome: perfilAcessoConf.nome }, select: { id: true } });
+            const perfilAcesso = await prisma.perfilAcesso.findFirst({
+                where: { nome: perfilAcessoConf.nome },
+                select: { id: true },
+            });
             if (!perfilAcesso) continue;
 
             await prisma.pessoaPerfil.deleteMany({
                 where: {
-                    perfil_acesso_id: perfilAcesso.id
-                }
+                    perfil_acesso_id: perfilAcesso.id,
+                },
             });
 
             await prisma.perfilPrivilegio.deleteMany({
                 where: {
-                    perfil_acesso_id: perfilAcesso.id
-                }
+                    perfil_acesso_id: perfilAcesso.id,
+                },
             });
 
             await prisma.perfilAcesso.delete({
                 where: {
-                    id: perfilAcesso.id
-                }
+                    id: perfilAcesso.id,
+                },
             });
-
         } else {
-
-            let perfilAcesso = await prisma.perfilAcesso.findFirst({ where: { nome: perfilAcessoConf.nome }, select: { id: true } });
+            let perfilAcesso = await prisma.perfilAcesso.findFirst({
+                where: { nome: perfilAcessoConf.nome },
+                select: { id: true },
+            });
             if (!perfilAcesso) {
                 perfilAcesso = await prisma.perfilAcesso.create({
                     data: {
                         nome: perfilAcessoConf.nome,
                         descricao: perfilAcessoConf.descricao,
-                    }, select: { id: true }
+                    },
+                    select: { id: true },
                 });
             } else {
                 await prisma.perfilAcesso.update({
@@ -638,7 +563,7 @@ async function atualizar_perfil_acesso() {
                     data: {
                         nome: perfilAcessoConf.nome,
                         descricao: perfilAcessoConf.descricao,
-                    }
+                    },
                 });
             }
 
@@ -646,9 +571,9 @@ async function atualizar_perfil_acesso() {
                 where: {
                     perfil_acesso_id: perfilAcesso.id,
                     privilegio: {
-                        codigo: { notIn: perfilAcessoConf.privilegios }
-                    }
-                }
+                        codigo: { notIn: perfilAcessoConf.privilegios },
+                    },
+                },
             });
 
             for (const codPriv of perfilAcessoConf.privilegios) {
@@ -661,40 +586,36 @@ async function atualizar_perfil_acesso() {
                 const match = await prisma.perfilPrivilegio.findFirst({
                     where: {
                         perfil_acesso_id: perfilAcesso.id,
-                        privilegio_id: idPriv
-                    }
+                        privilegio_id: idPriv,
+                    },
                 });
                 if (!match) {
                     await prisma.perfilPrivilegio.create({
                         data: {
                             perfil_acesso_id: perfilAcesso?.id as number,
-                            privilegio_id: idPriv
-                        }
-                    })
+                            privilegio_id: idPriv,
+                        },
+                    });
                 }
             }
         }
-
     }
 }
-
 
 async function atualizar_superadmin() {
     await prisma.tipoOrgao.upsert({
         where: { id: 1 },
         update: {},
-        create:
-        {
+        create: {
             id: 1,
-            descricao: 'registro 1 do tipo orgao'
+            descricao: 'registro 1 do tipo orgao',
         },
     });
 
     await prisma.orgao.upsert({
         where: { id: 1 },
         update: {},
-        create:
-        {
+        create: {
             id: 1,
             descricao: 'registro 1 do orgao',
             sigla: 'ID1',
@@ -702,57 +623,53 @@ async function atualizar_superadmin() {
         },
     });
 
-
     const pessoa = await prisma.pessoa.upsert({
         where: { email: 'superadmin@admin.com' },
         update: {},
-        create:
-        {
+        create: {
             pessoa_fisica: {
                 create: {
                     cargo: '',
                     cpf: '',
                     lotacao: '',
-                    orgao_id: 1
-                }
+                    orgao_id: 1,
+                },
             },
             senha_bloqueada: false,
             qtde_senha_invalida: 0,
             nome_completo: 'super admin',
             nome_exibicao: 'super admin',
             email: 'superadmin@admin.com',
-            senha: '$2b$10$2DUUZc55NxezhEydgfUSTexk4.1qjbvb.873cZhCpIvjw4izkFqcW' // "!286!QDM7H",
+            senha: '$2b$10$2DUUZc55NxezhEydgfUSTexk4.1qjbvb.873cZhCpIvjw4izkFqcW', // "!286!QDM7H",
         },
     });
 
-    const idPerfilAcesso = (await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'Administrador Geral do SMAE' } })).id;
+    const idPerfilAcesso = (
+        await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'Administrador Geral do SMAE' } })
+    ).id;
 
     let pessoaPerfilAdmin = await prisma.pessoaPerfil.findFirst({
         where: {
             pessoa_id: pessoa.id,
             perfil_acesso_id: idPerfilAcesso,
-        }
+        },
     });
     if (!pessoaPerfilAdmin) {
         pessoaPerfilAdmin = await prisma.pessoaPerfil.create({
             data: {
                 pessoa_id: pessoa.id,
-                perfil_acesso_id: idPerfilAcesso
-            }
+                perfil_acesso_id: idPerfilAcesso,
+            },
         });
     }
-
 }
-
-
 
 main()
     .then(async () => {
-        await prisma.$disconnect()
+        await prisma.$disconnect();
     })
     .catch(async (e) => {
-        console.error(e)
-        await prisma.$disconnect()
-        process.exit(1)
-    })
-
+        console.error(e);
+        await prisma.$disconnect();
+        process.exit(1);
+    });
